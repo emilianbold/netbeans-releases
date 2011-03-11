@@ -73,14 +73,25 @@ class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener
         logEvent(evt, "insertUpdate");
         // Fire the prioritized listeners
         EventListener[][] listenersArray = getListenersArray();
+        // Attempt to fire to all listeners catching possible exception(s) and report first fired then
+        RuntimeException runtimeException = null;
         for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
             logPriority(priority);
             EventListener[] listeners = listenersArray[priority];
             for (int i = listeners.length - 1; i >= 0; i--) {
                 DocumentListener l = (DocumentListener) listeners[i];
                 logListener(l);
-                l.insertUpdate(evt);
+                try {
+                    l.insertUpdate(evt);
+                } catch (RuntimeException ex) {
+                    if (runtimeException == null) { // Only record first thrown
+                        runtimeException = ex;
+                    }
+                }
             }
+        }
+        if (runtimeException != null) {
+            throw runtimeException; // Re-throw remembered exception
         }
         logEventEnd("insertUpdate");
     }
@@ -93,14 +104,25 @@ class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener
         logEvent(evt, "removeUpdate");
         // Fire the prioritized listeners
         EventListener[][] listenersArray = getListenersArray();
+        // Attempt to fire to all listeners catching possible exception(s) and report first fired then
+        RuntimeException runtimeException = null;
         for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
             logPriority(priority);
             EventListener[] listeners = listenersArray[priority];
             for (int i = listeners.length - 1; i >= 0; i--) {
                 DocumentListener l = (DocumentListener) listeners[i];
                 logListener(l);
-                l.removeUpdate(evt);
+                try {
+                    l.removeUpdate(evt);
+                } catch (RuntimeException ex) {
+                    if (runtimeException == null) { // Only record first thrown
+                        runtimeException = ex;
+                    }
+                }
             }
+        }
+        if (runtimeException != null) {
+            throw runtimeException; // Re-throw remembered exception
         }
         logEventEnd("removeUpdate");
     }
@@ -113,14 +135,25 @@ class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener
         logEvent(evt, "changedUpdate");
         // Fire the prioritized listeners
         EventListener[][] listenersArray = getListenersArray();
+        // Attempt to fire to all listeners catching possible exception(s) and report first fired then
+        RuntimeException runtimeException = null;
         for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
             logPriority(priority);
             EventListener[] listeners = listenersArray[priority];
             for (int i = listeners.length - 1; i >= 0; i--) {
                 DocumentListener l = (DocumentListener) listeners[i];
                 logListener(l);
-                l.changedUpdate(evt);
+                try {
+                    l.changedUpdate(evt);
+                } catch (RuntimeException ex) {
+                    if (runtimeException == null) { // Only record first thrown
+                        runtimeException = ex;
+                    }
+                }
             }
+        }
+        if (runtimeException != null) {
+            throw runtimeException; // Re-throw remembered exception
         }
         logEventEnd("changedUpdate");
     }
