@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.java.source.indexing;
 
-import java.util.Iterator;
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.Diagnostic;
@@ -54,24 +57,31 @@ import javax.tools.JavaFileObject;
 class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
 
     private static final Logger ERROR_LOG = Logger.getLogger(DiagnosticListenerImpl.class.getName() + "-errors");
-    private final List<Diagnostic<? extends JavaFileObject>> diagnostics = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+    private final Map<URI, List<Diagnostic<? extends JavaFileObject>>> diagnostics = new HashMap<URI, List<Diagnostic<? extends JavaFileObject>>>();
 
     public void report(Diagnostic<? extends JavaFileObject> d) {
         assert logDiagnostic(d);
-        
-        diagnostics.add(d);
+
+        JavaFileObject source = d.getSource();
+
+        if (source != null) {
+            List<Diagnostic<? extends JavaFileObject>> current = diagnostics.get(source.toUri());
+
+            if (current == null) {
+                diagnostics.put(source.toUri(), current = new LinkedList<Diagnostic<? extends JavaFileObject>>());
+            }
+
+            current.add(d);
+        }
     }
 
     public List<Diagnostic<? extends JavaFileObject>> getDiagnostics(JavaFileObject file) {
-        List<Diagnostic<? extends JavaFileObject>> result = new LinkedList<Diagnostic<? extends JavaFileObject>>();
-        Iterator<Diagnostic<? extends JavaFileObject>> it = diagnostics.iterator();
-        while (it.hasNext()) {
-            Diagnostic<? extends JavaFileObject> d = it.next();
-            if (d.getSource() == file) {
-                result.add(d);
-                it.remove();
-            }
+        List<Diagnostic<? extends JavaFileObject>> result = diagnostics.remove(file.toUri());
+
+        if (result == null) {
+            result = Collections.emptyList();
         }
+
         return result;
     }
 
