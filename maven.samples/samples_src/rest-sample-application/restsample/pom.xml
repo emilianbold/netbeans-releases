@@ -20,7 +20,7 @@
         <repository>
             <id>netbeans</id>
             <name>repository hosting netbeans.org api artifacts</name>
-            <url>http://bits.netbeans.org/maven2</url>
+            <url>http://bits.netbeans.org/maven2/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -52,8 +52,8 @@
             </releases>
         </repository>
         <repository>
-            <url>http://download.java.net/maven/2</url>
-            <id>restapi</id>
+            <url>http://download.java.net/maven/2/</url>
+            <id>java.net2</id>
             <layout>default</layout>
             <name>Repository for library Library[restapi]</name>
         </repository>

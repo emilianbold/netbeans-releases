@@ -460,11 +460,10 @@ public final class MavenModelUtils {
                     ModelUtils.addModelRepository(
                         mavenProject.getMavenProject(),
                         model,
-                        "http://download.java.net/maven/2"); //NOI18N
+                        "http://download.java.net/maven/2/"); //NOI18N
             if (rep != null) {
-                rep.setId("metro"); //NOI18N
+                rep.setId("java.net2"); //NOI18N
                 rep.setLayout("default"); //NOI18N
-                rep.setName("Repository for library[metro]"); //NOI18N
             }
         }
         addPluginRepository( model );
@@ -475,9 +474,7 @@ public final class MavenModelUtils {
         
         Repository pluginRepository = model.getFactory().createPluginRepository();
         
-        String javaNet = "java.net";                                    // NOI18N
-        pluginRepository.setName( javaNet );
-        pluginRepository.setId(javaNet);
+        pluginRepository.setId("java.net2"); // NOI18N
         pluginRepository.setUrl("http://download.java.net/maven/2/");    // NOI18N
         
         org.netbeans.modules.maven.model.pom.Project project = model.getProject();

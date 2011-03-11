@@ -58,12 +58,12 @@ public final class RepositoryInfo {
     /** @see org.sonatype.nexus.index.context.DefaultIndexingContext#INDEX_DIRECTORY */
     static final String DEFAULT_INDEX_SUFFIX = ".index/"; // NOI18N
 
-    private String id;
-    private String type;
-    private String name;
-    private String repositoryPath;
-    private String repositoryUrl;
-    private String indexUpdateUrl;
+    private final String id;
+    private final String type;
+    private final String name;
+    private final String repositoryPath;
+    private final String repositoryUrl;
+    private final String indexUpdateUrl;
 
     public RepositoryInfo(String id, String type, String name, String repositoryPath, String repositoryUrl) {
         this(id, type, name, repositoryPath, repositoryUrl, null);
