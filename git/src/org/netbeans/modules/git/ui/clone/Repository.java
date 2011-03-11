@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.util.ChangeSupport;
@@ -181,6 +182,8 @@ public class Repository implements DocumentListener, ActionListener {
     public void actionPerformed(ActionEvent ae) {
         if(ae.getSource() == panel.directoryBrowseButton) {
             onBrowse();
+        } else if(ae.getSource() == panel.proxySettingsButton) {
+            onProxyConfiguration();
         }
     }
     
@@ -283,4 +286,8 @@ public class Repository implements DocumentListener, ActionListener {
             comboEditor.setText(f.toURI().toString());
         }
     }    
+    
+    private void onProxyConfiguration() {
+        OptionsDisplayer.getDefault().open("General");              // NOI18N
+    }       
 }
