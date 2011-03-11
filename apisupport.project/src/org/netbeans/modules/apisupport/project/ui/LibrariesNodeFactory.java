@@ -51,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -61,11 +60,7 @@ import org.openide.nodes.Node;
 @NodeFactory.Registration(projectType="org-netbeans-modules-apisupport-project", position=300)
 public class LibrariesNodeFactory implements NodeFactory {
     
-    /** Creates a new instance of LibrariesNodeFactory */
-    public LibrariesNodeFactory() {
-    }
-    
-    public NodeList createNodes(Project p) {
+    public @Override NodeList<?> createNodes(Project p) {
         NbModuleProject proj =  p.getLookup().lookup(NbModuleProject.class);
         assert proj != null;
         return new LibraryNL(proj);
@@ -79,7 +74,7 @@ public class LibrariesNodeFactory implements NodeFactory {
             project = prj;
         }
     
-        public List<String> keys() {
+        public @Override List<String> keys() {
             List<String> toRet = new ArrayList<String>();
             toRet.add(LibrariesNode.LIBRARIES_NAME);
             for (String testType : project.supportedTestTypes()) {
@@ -87,36 +82,28 @@ public class LibrariesNodeFactory implements NodeFactory {
             }
             return toRet;
         }
-        
-        private FileObject resolveFileObjectFromProperty(String property){
-            String filename = project.evaluator().getProperty(property);
-            if (filename == null) {
-                return null;
-            }
-            return project.getHelper().resolveFileObject(filename);
+
+        public @Override void addChangeListener(ChangeListener l) {
         }
 
-        public void addChangeListener(ChangeListener l) {
+        public @Override void removeChangeListener(ChangeListener l) {
         }
 
-        public void removeChangeListener(ChangeListener l) {
-        }
-
-        public Node node(String key) {
-            if (key == LibrariesNode.LIBRARIES_NAME) {
+        public @Override Node node(String key) {
+            if (key.equals(LibrariesNode.LIBRARIES_NAME)) {
                 return  new LibrariesNode(project);
             } else {
                 return new UnitTestLibrariesNode(key, project);
             }
         }
 
-        public void addNotify() {
+        public @Override void addNotify() {
             //TODO shall we somehow listen on project and ech for the 
             // test.unit.src.dir prop appearance/disappearance ??
         }
 
-        public void removeNotify() {
+        public @Override void removeNotify() {
         }
-}
+    }
 
 }
