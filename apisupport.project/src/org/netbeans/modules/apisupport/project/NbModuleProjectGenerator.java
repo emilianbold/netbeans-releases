@@ -106,7 +106,7 @@ public class NbModuleProjectGenerator {
     /** Generates standalone NetBeans Module. */
     public static void createStandAloneModule(final File projectDir, final String cnb,
             final String name, final String bundlePath,
-            final String layerPath, final String platformID, final boolean osgi) throws IOException {
+            final String layerPath, final String platformID, final boolean osgi, final boolean tests) throws IOException {
         try {
             logUsage("StandAloneModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -124,7 +124,7 @@ public class NbModuleProjectGenerator {
                     if (layerPath != null) {
                         createLayerInSrc(dirFO, layerPath);
                     }
-                    createEmptyTestDir(dirFO);
+                    createEmptyTestDir(dirFO, tests);
                     createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
@@ -139,7 +139,7 @@ public class NbModuleProjectGenerator {
     /** Generates suite component NetBeans Module. */
     public static void createSuiteComponentModule(final File projectDir, final String cnb,
             final String name, final String bundlePath,
-            final String layerPath, final File suiteDir, final boolean osgi) throws IOException {
+            final String layerPath, final File suiteDir, final boolean osgi, final boolean tests) throws IOException {
         try {
             logUsage("SuiteComponentModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -157,7 +157,7 @@ public class NbModuleProjectGenerator {
                     if (layerPath != null) {
                         createLayerInSrc(dirFO, layerPath);
                     }
-                    createEmptyTestDir(dirFO);
+                    createEmptyTestDir(dirFO, tests);
                     createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
@@ -260,7 +260,7 @@ public class NbModuleProjectGenerator {
                     if (layerPath != null) {
                         createLayerInSrc(dirFO, layerPath);
                     }
-                    createEmptyTestDir(dirFO);
+                    createEmptyTestDir(dirFO, false);
                     createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
@@ -449,8 +449,10 @@ public class NbModuleProjectGenerator {
         return layerFO;
     }
     
-    private static void createEmptyTestDir(FileObject projectDir) throws IOException {
-        FileUtil.createFolder(projectDir, "test/unit/src"); // NOI18N
+    private static void createEmptyTestDir(FileObject projectDir, boolean tests) throws IOException {
+        if (tests) {
+            FileUtil.createFolder(projectDir, "test/unit/src"); // NOI18N
+        }
     }
     
     private static void createInitialProperties(FileObject projectDir) throws IOException {
