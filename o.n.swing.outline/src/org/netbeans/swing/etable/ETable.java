@@ -368,7 +368,12 @@ public class ETable extends JTable {
         super(rowData, columnNames);
         updateMouseListener();
     }
-    
+
+    @Override
+    protected ListSelectionModel createDefaultSelectionModel() {
+        return new ETableSelectionModel();
+    }
+
     /**
      * Returns true if the cell at <code>row</code> and <code>column</code>
      * is editable.  Otherwise, invoking <code>setValueAt</code> on the cell
