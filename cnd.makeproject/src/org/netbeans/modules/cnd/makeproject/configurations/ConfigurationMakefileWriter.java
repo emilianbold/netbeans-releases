@@ -1465,13 +1465,13 @@ public class ConfigurationMakefileWriter {
 
         bw.write("#\n"); // NOI18N
         bw.write("# dmake command\n"); // NOI18N
-        bw.write("ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \\\n"); // NOI18N
+        bw.write("ROOT:sh = /bin/cat nbproject/private/Makefile-variables.mk > /dev/null || \\\n"); // NOI18N
 	bw.write("\tmkdir -p nbproject/private && \\\n"); // NOI18N
 	bw.write("\ttouch nbproject/private/Makefile-variables.mk\n"); // NOI18N
 
         bw.write("#\n"); // NOI18N
         bw.write("# gmake command\n"); // NOI18N
-        bw.write(".PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)\n"); // NOI18N
+        bw.write(".PHONY: $(shell /bin/cat nbproject/private/Makefile-variables.mk > /dev/null || mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)\n"); // NOI18N
         bw.write("#\n"); // NOI18N
         bw.write("include nbproject/private/Makefile-variables.mk\n"); // NOI18N
     }
