@@ -88,11 +88,8 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
     private WizardDescriptor wizard;
     private InstallPanel panel;
     
-    private final TomcatVersion tomcatVersion;
-    
-    public AddInstanceIterator(TomcatVersion tomcatVersion) {
-        this.tomcatVersion = tomcatVersion;
-        
+    public AddInstanceIterator() {
+        super();
     }
 
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
@@ -144,20 +141,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
             //       when something goes wrong, so that we can provide reasonable feedback about failures to the user
             TomcatManager manager = null;
             try {
-                switch (panel.getVisual().getTomcatVersion()) {
-                    case TOMCAT_50:
-                        manager = (TomcatManager) TomcatFactory.create50().getDeploymentManager(url, username, password);
-                        break;
-                    case TOMCAT_55:
-                        manager = (TomcatManager) TomcatFactory.create55().getDeploymentManager(url, username, password);
-                        break;
-                    case TOMCAT_60 :
-                        manager = (TomcatManager) TomcatFactory.create60().getDeploymentManager(url, username, password);
-                        break;
-                    case TOMCAT_70:
-                    default:
-                        manager = (TomcatManager) TomcatFactory.create70().getDeploymentManager(url, username, password);
-                }
+                manager = (TomcatManager) TomcatFactory.getInstance().getDeploymentManager(url, username, password);
             } catch (DeploymentManagerCreationException e) {
                 // this should never happen
                 Logger.getLogger(AddInstanceIterator.class.getName()).log(Level.SEVERE, null, e);
@@ -185,7 +169,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
 
     public WizardDescriptor.Panel current() {
         if (panel == null) {
-            panel = new InstallPanel(tomcatVersion);
+            panel = new InstallPanel();
         }
         setContentData((JComponent)panel.getComponent());
         setContentSelectedIndex((JComponent)panel.getComponent());
@@ -222,7 +206,8 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
             File bundledHome = TomcatInstallUtil.getBundledHome();
             // INFO: DO NOT FORGET TO CHANGE THE BUNDLED TOMCAT VERSION (AND THE VERSION STRING BELLOW) WHEN UPGRADING
             //       5.5.17  - hopefully this string helps not to miss it;)
-            if (tomcatVersion != TomcatManager.TomcatVersion.TOMCAT_55 
+            TomcatVersion version = bundledHome == null ? null : TomcatFactory.getTomcatVersion(bundledHome);
+            if (version != TomcatManager.TomcatVersion.TOMCAT_55 
                     || bundledHome == null || !bundledHome.exists()) {
                 // If there is no bundled Tomcat or the being installed Tomcat is a different
                 // version, there is no place where to get the startup scripts from. Lets inform 

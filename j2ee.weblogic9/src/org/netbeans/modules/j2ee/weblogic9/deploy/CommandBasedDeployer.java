@@ -84,7 +84,7 @@ import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
-import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
+import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -835,9 +835,9 @@ public final class CommandBasedDeployer {
                 try {
                     InputStream is = new BufferedInputStream(weblogicXml.getInputStream());
                     try {
-                        String[] ctx = WeblogicWebApp.createGraph(is).getContextRoot();
-                        if (ctx != null && ctx.length > 0) {
-                            moduleId.setContextURL(serverUrl + ctx[0]);
+                        String ctx = WebApplicationModel.forInputStream(is).getContextRoot();
+                        if (ctx != null) {
+                            moduleId.setContextURL(serverUrl + ctx);
                             return;
                         }
                     } finally {
@@ -856,10 +856,10 @@ public final class CommandBasedDeployer {
                     ZipEntry entry = null;
                     while ((entry = zis.getNextEntry()) != null) {
                         if ("WEB-INF/weblogic.xml".equals(entry.getName())) { // NOI18N
-                            String[] ddContextRoots =
-                                    WeblogicWebApp.createGraph(new ZipEntryInputStream(zis)).getContextRoot();
-                            if (ddContextRoots != null && ddContextRoots.length > 0) {
-                                contextRoot = ddContextRoots[0];
+                            String ddContextRoot =
+                                    WebApplicationModel.forInputStream(new ZipEntryInputStream(zis)).getContextRoot();
+                            if (ddContextRoot != null) {
+                                contextRoot = ddContextRoot;
                             }
                             break;
                         }

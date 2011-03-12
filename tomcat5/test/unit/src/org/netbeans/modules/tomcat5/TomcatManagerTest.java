@@ -82,7 +82,7 @@ public class TomcatManagerTest extends TestBase {
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
                 url, "", "", "Test Tomcat");
         
-        TomcatManager manager = (TomcatManager) TomcatFactory.create55().getDeploymentManager(url, null, null);
+        TomcatManager manager = (TomcatManager) TomcatFactory.getInstance().getDeploymentManager(url, null, null);
         
         assertEquals(9999, manager.getServerPort());
         assertEquals(7777, manager.getShutdownPort());

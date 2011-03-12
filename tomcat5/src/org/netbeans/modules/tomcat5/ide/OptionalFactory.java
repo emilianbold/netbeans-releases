@@ -71,29 +71,6 @@ import org.netbeans.modules.tomcat5.wizard.AddInstanceIterator;
  */
 public class OptionalFactory extends OptionalDeploymentManagerFactory {
     
-    private final TomcatVersion version;
-    
-    /** Creates a new instance of OptionalFactory */
-    private OptionalFactory(TomcatVersion version) {
-        this.version = version;
-    }
-    
-    public static OptionalFactory create50() {
-        return new OptionalFactory(TomcatVersion.TOMCAT_50);
-    }
-    
-    public static OptionalFactory create55() {
-        return new OptionalFactory(TomcatVersion.TOMCAT_55);
-    }
-    
-    public static OptionalFactory create60() {
-        return new OptionalFactory(TomcatVersion.TOMCAT_60);
-    }
-
-    public static OptionalFactory create70() {
-        return new OptionalFactory(TomcatVersion.TOMCAT_70);
-    }
-    
     public FindJSPServlet getFindJSPServlet (javax.enterprise.deploy.spi.DeploymentManager dm) {
         return new FindJSPServletImpl (dm);
     }
@@ -111,7 +88,7 @@ public class OptionalFactory extends OptionalDeploymentManagerFactory {
     }
 
     public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
-        return new AddInstanceIterator(version);
+        return new AddInstanceIterator();
     }
     
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
