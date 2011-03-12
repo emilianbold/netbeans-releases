@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.config;
-
+package org.netbeans.modules.j2ee.weblogic9.dd.model;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.schema2beans.BaseBean;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-
 /**
- * Utility class that provides support for WebLogic DD configuration.
- * 
- * @author sherold
+ *
+ * @author Petr Hejl
  */
-class ConfigUtil {
+public class BaseDescriptorModel {
+
+    protected static final Version VERSION_10_3_1 = Version.fromJsr277NotationWithFallback("10.3.1"); // NOI18N
+
+    protected static final Version VERSION_10_3_0 = Version.fromJsr277NotationWithFallback("10.3.0"); // NOI18N
     
-    /** Creates a new instance of ConfigUtil */
-    private ConfigUtil() {
+    private final CommonDDBean bean;
+
+    public BaseDescriptorModel(CommonDDBean bean) {
+        this.bean = bean;
+    }    
+    
+    public final void write(final OutputStream os) throws IOException {
+        bean.write(os);
     }
     
-    
-    public static void writefile(final File file, final BaseBean bean) throws ConfigurationException {
+    public final void write(final File file) throws ConfigurationException {
         try {
             FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
             if (cfolder == null) {
@@ -78,7 +83,7 @@ class ConfigUtil {
                 try {
                     cfolder = FileUtil.createFolder(parentFile);
                 } catch (IOException ioe) {
-                    String msg = NbBundle.getMessage(ConfigUtil.class, "MSG_FailedToCreateConfigFolder", parentFile.getPath());
+                    String msg = NbBundle.getMessage(EjbJarModel.class, "MSG_FailedToCreateConfigFolder", parentFile.getPath());
                     throw new ConfigurationException(msg, ioe);
                 }
             }
@@ -105,8 +110,8 @@ class ConfigUtil {
                 }
             });
         } catch (IOException e) {
-            String msg = NbBundle.getMessage(ConfigUtil.class, "MSG_writeToFileFailed", file.getPath());
+            String msg = NbBundle.getMessage(EjbJarModel.class, "MSG_WriteToFileFailed", file.getPath());
             throw new ConfigurationException(msg, e);
         }
-    }
+    }      
 }

@@ -48,11 +48,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicApplication;
+import org.netbeans.modules.j2ee.weblogic9.dd.model.EarApplicationModel;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -75,14 +76,26 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
     private final J2eeModule j2eeModule;
     private final DataObject dataObject;
     
-    private WeblogicApplication weblogicApplication;
-        
+    private final Version serverVersion;
+    
+    private final boolean isWebProfile;
+    
+    private EarApplicationModel weblogicApplication;
+     
+    public EarDeploymentConfiguration(J2eeModule j2eeModule) {
+        this(j2eeModule, null, false);
+    }
+    
     /**
      * Creates a new instance of EarDeploymentConfiguration 
      */
-    public EarDeploymentConfiguration(J2eeModule j2eeModule) {
+    public EarDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion,
+            boolean isWebProfile) {
+
         super(j2eeModule);
         this.j2eeModule = j2eeModule;
+        this.serverVersion = serverVersion;
+        this.isWebProfile = isWebProfile;
         file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-application.xml"); // NOI18N
         getWeblogicApplication();
         DataObject dataObject = null;
@@ -100,13 +113,13 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
      *
      * @return weblogicApplication graph or null if the weblogic-application.xml file is not parseable.
      */
-    public synchronized WeblogicApplication getWeblogicApplication() {
+    public synchronized EarApplicationModel getWeblogicApplication() {
         if (weblogicApplication == null) {
             try {
                 if (file.exists()) {
                     // load configuration if already exists
                     try {
-                        weblogicApplication = weblogicApplication.createGraph(file);
+                        weblogicApplication = EarApplicationModel.forFile(file);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
@@ -114,8 +127,8 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
                     }
                 } else {
                     // create weblogic-application.xml if it does not exist yet
-                    weblogicApplication = genereateweblogicApplication();
-                    ConfigUtil.writefile(file, weblogicApplication);
+                    weblogicApplication = genereateWeblogicApplication();
+                    weblogicApplication.write(file);
                 }
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
@@ -144,7 +157,7 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
     // FIXME this is not a proper implementation - deployment PLAN should be saved
     // not a deployment descriptor    
     public void save(OutputStream os) throws ConfigurationException {
-        WeblogicApplication weblogicApplication = getWeblogicApplication();
+        EarApplicationModel weblogicApplication = getWeblogicApplication();
         if (weblogicApplication == null) {
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", file.getPath());
             throw new ConfigurationException(msg);
@@ -162,7 +175,7 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
     /**
      * Genereate Context graph.
      */
-    private WeblogicApplication genereateweblogicApplication() {
-        return new WeblogicApplication();
+    private EarApplicationModel genereateWeblogicApplication() {
+        return EarApplicationModel.generate(serverVersion);
     }
 }

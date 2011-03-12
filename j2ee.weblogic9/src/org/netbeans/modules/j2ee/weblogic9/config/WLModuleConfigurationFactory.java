@@ -44,17 +44,21 @@
 
 package org.netbeans.modules.j2ee.weblogic9.config;
 
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 
 /**
  * WebLogic implementation of the ModuleConfigurationFactory.
  * 
  * @author sherold
  */
-public class WLModuleConfigurationFactory implements ModuleConfigurationFactory {
+public class WLModuleConfigurationFactory implements ModuleConfigurationFactory2 {
     
     /** Creates a new instance of JBModuleConfigurationFactory */
     public WLModuleConfigurationFactory() {
@@ -70,5 +74,27 @@ public class WLModuleConfigurationFactory implements ModuleConfigurationFactory 
         }
         throw new ConfigurationException("Not supported module: " + j2eeModule.getType());
     }
+
+    @Override
+    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
+        if (!instanceUrl.startsWith(WLDeploymentFactory.URI_PREFIX)) {
+            return create(j2eeModule);
+        }
+        try {
+            WLDeploymentManager dm = (WLDeploymentManager) WLDeploymentFactory.getInstance().getDeploymentManager(instanceUrl, null, null);
+            Version version = dm.getServerVersion();
+            if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
+                return new WarDeploymentConfiguration(j2eeModule, version, dm.isWebProfile());
+            } else if (J2eeModule.Type.EJB.equals(j2eeModule.getType())) {
+                return new EjbDeploymentConfiguration(j2eeModule, version, dm.isWebProfile());
+            } else if (J2eeModule.Type.EAR.equals(j2eeModule.getType())) {
+                return new EarDeploymentConfiguration(j2eeModule, version, dm.isWebProfile());
+            }            
+        } catch (DeploymentManagerCreationException ex) {
+            return create(j2eeModule);
+        }
+        throw new ConfigurationException("Not supported module: " + j2eeModule.getType());
+    }
+    
     
 }

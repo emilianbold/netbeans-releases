@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-@Multiple({
-    @Schema2Beans(
-        schema="../../resources/weblogic-deployment-plan.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="deployment-plan"
-    ),
-    @Schema2Beans(
-        schema="../../resources/weblogic-jdbc-data-source.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jdbc-data-source"
-    )
-})
-package org.netbeans.modules.j2ee.weblogic9.config.gen;
+package org.netbeans.modules.j2ee.weblogic9.dd.model;
 
-import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
-import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
-import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+
+/**
+ *
+ * @author Petr Hejl
+ */
+public interface WeblogicEjbJar extends CommonDDBean {
+
+}

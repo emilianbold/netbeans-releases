@@ -40,29 +40,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-@Multiple({
-    @Schema2Beans(
-        schema="../../resources/weblogic-deployment-plan.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="deployment-plan"
-    ),
-    @Schema2Beans(
-        schema="../../resources/weblogic-jdbc-data-source.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jdbc-data-source"
-    )
-})
-package org.netbeans.modules.j2ee.weblogic9.config.gen;
+
+@Schema2Beans(
+    schema="../../resources/weblogic-ejb-jar_9_0.xsd",
+    schemaType=SchemaType.XML_SCHEMA,
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    validate=true,
+    attrProp=true,
+    removeUnreferencedNodes=true,
+    docRoot="weblogic-ejb-jar",
+    mddFile="../../resources/weblogic-ejb-jar_9_0.mdd"
+)
+package org.netbeans.modules.j2ee.weblogic9.dd.ejb90;
 
 import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
 import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
 import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
