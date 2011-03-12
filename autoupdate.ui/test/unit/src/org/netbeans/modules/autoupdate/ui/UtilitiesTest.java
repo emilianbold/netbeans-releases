@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ public class UtilitiesTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
         MockServices.setServices(
             MockUpdateProvider.class,
             MockInstalledModuleProvider.class
