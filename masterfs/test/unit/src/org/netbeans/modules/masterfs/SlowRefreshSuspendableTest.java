@@ -227,7 +227,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
         assertTrue("Background I/O access needs to stop before we finish our task", counter.finished);
 
-        assertEquals("Change notified", 1, listener.cnt);
+        assertTrue("At least one Change notified", 1 <= listener.cnt);
         assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
         assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
         if (counter.goingIdle == 0) {
