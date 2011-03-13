@@ -53,7 +53,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.*;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -108,7 +107,14 @@ public class ModelSupport implements PropertyChangeListener {
     private FileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
-    private final RequestProcessor RP = new RequestProcessor("ModelSupport processor", 2); // NOI18N
+    private final RequestProcessor.Task openProjectsTask = 
+            new RequestProcessor("ModelSupport processor", 1).create( // NOI18N
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        openProjects();
+                    }
+                }); 
 
     private ModelSupport() {
     }
@@ -150,7 +156,7 @@ public class ModelSupport implements PropertyChangeListener {
                 }
                 postponeParse = false;
                 NativeProjectRegistry.getDefault().addPropertyChangeListener(this);
-                openProjects();
+                openProjectsTask.schedule(0);
             } else {
                 if (TRACE_STARTUP) {
                     System.out.println("Model support: Postpone open projects"); // NOI18N
@@ -164,25 +170,8 @@ public class ModelSupport implements PropertyChangeListener {
                             System.out.println("Model support: invoked after ready UI"); // NOI18N
                         }
                         postponeParse = false;
-                        Runnable task = new Runnable() {
-
-                            @Override
-                            public void run() {
-                                NativeProjectRegistry.getDefault().addPropertyChangeListener(ModelSupport.this);
-                                openProjects();
-                            }
-                        };
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            if (TRACE_STARTUP) {
-                                System.out.println("Model support: invokeWhenUIReady redirect from UI"); // NOI18N
-                            }
-                            RP.post(task);
-                        } else {
-                            if (TRACE_STARTUP) {
-                                System.out.println("Model support: invokeWhenUIReady run directly"); // NOI18N
-                            }
-                            task.run();
-                        }
+                        NativeProjectRegistry.getDefault().addPropertyChangeListener(ModelSupport.this);
+                        openProjectsTask.schedule(0);
                     }
                 });
             }
@@ -209,13 +198,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (TRACE_STARTUP) {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
-                    RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            openProjects();
-                        }
-                    });
+                    openProjectsTask.schedule(0);
                 }
             }
         } catch (Exception e) {
