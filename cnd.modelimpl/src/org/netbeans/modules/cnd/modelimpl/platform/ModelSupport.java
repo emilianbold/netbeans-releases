@@ -106,7 +106,7 @@ public class ModelSupport implements PropertyChangeListener {
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
-    private static final boolean TRACE_STARTUP = false;
+    private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
     private final RequestProcessor RP = new RequestProcessor("ModelSupport processor", 2); // NOI18N
 
@@ -173,8 +173,14 @@ public class ModelSupport implements PropertyChangeListener {
                             }
                         };
                         if (SwingUtilities.isEventDispatchThread()) {
+                            if (TRACE_STARTUP) {
+                                System.out.println("Model support: invokeWhenUIReady redirect from UI"); // NOI18N
+                            }
                             RP.post(task);
                         } else {
+                            if (TRACE_STARTUP) {
+                                System.out.println("Model support: invokeWhenUIReady run directly"); // NOI18N
+                            }
                             task.run();
                         }
                     }
@@ -219,8 +225,10 @@ public class ModelSupport implements PropertyChangeListener {
 
     private void openProjects() {
         Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
-
         synchronized (openedProjects) {
+            if (TRACE_STARTUP) {
+                System.out.println("Model support: openProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
+            }
             Set<Lookup.Provider> nowOpened = new HashSet<Lookup.Provider>();
             for(NativeProject project : projects) {
                 Provider makeProject = project.getProject();
