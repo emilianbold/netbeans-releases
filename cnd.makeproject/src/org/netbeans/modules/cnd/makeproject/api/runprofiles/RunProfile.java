@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -103,7 +104,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Default Profile. One and only one profile is the default.
     private boolean defaultProfile;
     // Run Directory. Relative or absolute.
-    private String baseDir; // Alwasy set, always absolute
+    private String baseDir; // can be null; in this case configuration is asked for it
     private String runDir;  // relative (to baseDir) or absolute
     // Should start a build before executing/debugging.
     private boolean buildFirst;
@@ -155,11 +156,13 @@ public final class RunProfile implements ConfigurationAuxObject {
      */
     public RunProfile(String baseDir, int platform, MakeConfiguration makeConfiguration) {
         this(baseDir, platform, null, CONSOLE_TYPE_OUTPUT_WINDOW, makeConfiguration);
+        CndUtils.assertNotNull(baseDir, "null baseDir"); //NOI18N
     }
 
-    public RunProfile(String baseDir, PropertyChangeSupport pcs, MakeConfiguration makeConfiguration) {
+    public RunProfile(MakeConfiguration makeConfiguration, PropertyChangeSupport pcs) {
         //TODO: PlatformTypes.getDefaultPlatform() it's not always right
-        this(baseDir, PlatformTypes.getDefaultPlatform(), pcs, getDefaultConsoleType(), makeConfiguration);
+        this(null, PlatformTypes.getDefaultPlatform(), pcs, getDefaultConsoleType(), makeConfiguration);
+        CndUtils.assertNotNull(makeConfiguration, "null makeConfiguration"); //NOI18N
     }
 
     @Override
@@ -252,11 +255,11 @@ public final class RunProfile implements ConfigurationAuxObject {
                 name = getString("TerminalType_KDE"); // NOI18N
                 list.add(name);
                 termPaths.put(name, termPath);
-                termOptions.put(name, "--workdir " + escapeDir(baseDir) + " -e \"" + dorun + // NOI18N
+                termOptions.put(name, "--workdir " + escapeDir(getBaseDir()) + " -e \"" + dorun + // NOI18N
                         "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 if (termPaths.get(def) == null) {
                     termPaths.put(def, termPath);
-                    termOptions.put(def, "--workdir " + escapeDir(baseDir) + " -e \"" + dorun + // NOI18N
+                    termOptions.put(def, "--workdir " + escapeDir(getBaseDir()) + " -e \"" + dorun + // NOI18N
                             "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 }
             }
@@ -450,13 +453,18 @@ public final class RunProfile implements ConfigurationAuxObject {
      * Base directory is what run directory is relative to, if it is relative.
      */
     public String getBaseDir() {
-        if (makeConfiguration == null) {
+        if (baseDir != null) {
             return baseDir;
         } else {
-            return makeConfiguration.getSourceBaseDir();
+            CndUtils.assertNotNullInConsole(makeConfiguration, "makeConfiguration"); //NOI18N
+            if (makeConfiguration != null) {
+                return makeConfiguration.getSourceBaseDir();
+            } else {
+                return null;
+            }
         }
     }
-
+        
     /*
      * Sets base directory. Base directory should  always be set and is always absolute.
      * Base directory is what run directory is relative to if it is relative.
@@ -511,7 +519,7 @@ public final class RunProfile implements ConfigurationAuxObject {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         }
         
-        if (makeConfiguration.getFileSystemHost().isLocal()) {
+        if (makeConfiguration != null && makeConfiguration.getFileSystemHost().isLocal()) {
             // TODO:fullRemote while cleaning up, remove the entire "if" branch - the "else" one should work in any case
             // It's hight resistance mode now, that's why I'm leaving "local/classic remote" branch as it was - VK
             // convert to canonical path
@@ -528,7 +536,12 @@ public final class RunProfile implements ConfigurationAuxObject {
         } else {
             try {
                 String canonicalDir = FileSystemProvider.getCanonicalPath(makeConfiguration.getFileSystemHost(), runDirectory);
-                return canonicalDir;
+                CndUtils.assertNotNullInConsole(canonicalDir, "Can not canonicalize " + runDirectory); //NOI18N
+                if (canonicalDir == null) {
+                    return runDirectory;
+                } else {
+                    return canonicalDir;
+                }
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N
                 return runDirectory;
