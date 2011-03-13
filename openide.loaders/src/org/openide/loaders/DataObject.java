@@ -112,7 +112,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * ! Use syncModified for modifications instead !*/
     private static final ModifiedRegistry modified = new ModifiedRegistry();
     /** sync modified data (for modification operations) */
-    private static final Set<DOSavable> syncModified = Collections.synchronizedSet(modified);
+    private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
     /** Modified flag */
     private boolean modif = false;
@@ -458,10 +458,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             this.modif = modif;
             DOSavable dos = new DOSavable(this);
             if (modif) {
-                syncModified.add (dos);
+                syncModified.add (this);
                 dos.add();
             } else {
-                syncModified.remove (dos);
+                syncModified.remove (this);
                 dos.remove();
             }
             firePropertyChange(DataObject.PROP_MODIFIED,
@@ -1181,10 +1181,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         */
         public Set<DataObject> getModifiedSet() {
             synchronized (syncModified) {
-                HashSet<DataObject> set = new HashSet<DataObject>();
-                for (DOSavable dos : syncModified) { 
-                    set.add(dos.obj);
-                }
+                HashSet<DataObject> set = new HashSet<DataObject>(syncModified);
                 return set;
             }
         }
@@ -1197,7 +1194,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         }
     }
 
-    private static final class ModifiedRegistry extends HashSet<DOSavable> {
+    private static final class ModifiedRegistry extends HashSet<DataObject> {
         static final long serialVersionUID =-2861723614638919680L;
         private static final Logger REGLOG = Logger.getLogger("org.openide.loaders.DataObject.Registry"); // NOI18N
         
@@ -1222,7 +1219,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         /***** overriding of methods which change content in order to notify
         * listeners about the content change */
         @Override
-        public boolean add (DOSavable o) {
+        public boolean add (DataObject o) {
             boolean result = super.add(o);
             REGLOG.log(Level.FINER, "Data Object {0} modified, change {1}", new Object[] { o, result }); // NOI18N
             if (result) {
