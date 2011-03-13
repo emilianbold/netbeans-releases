@@ -635,6 +635,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             (String) modifiersCombo.getSelectedItem() + ":" : ""; // NOI18N
         
         StringBuilder buf = new StringBuilder(mod);
+        boolean defValueInDecl = defaultsOnlyInFunDeclaration.isSelected();
         // other than access modifiers - using data provided by the element
         // first of all, reset access modifier, because it is generated from combo value
 //        String otherMod = CsmVisibility.toString(((CallableFeature) refactoredObj).getModifiers() & 0xFFFFFFF8);
@@ -663,9 +664,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             buf.append(parameters[i].get(PARAM_TYPE));
             buf.append(' ');
             buf.append(parameters[i].get(PARAM_NAME));
-            String defParam = (String) parameters[i].get(PARAM_VALUE);
-            if (defParam != null && defParam.length() > 0) {
-                buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
+            if (defValueInDecl) {
+                String defParam = (String) parameters[i].get(PARAM_VALUE);
+                defParam = defParam.trim();
+                if (defParam != null && defParam.length() > 0) {
+                    buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
+                }
             }
             if (i < parameters.length - 1) {
                 buf.append(',').append(' '); // NOI18N
@@ -730,6 +734,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public Class getColumnClass(int c) {
             return getValueAt(0, c).getClass();
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int row, int column) {
+            if (column == PARAM_NAME || column == PARAM_TYPE || column == PARAM_VALUE) {
+                if (aValue instanceof String) {
+                    aValue = ((String)aValue).toString().trim();
+                }
+            }
+            super.setValueAt(aValue, row, column);
         }
     } // end ParamTableModel
 
