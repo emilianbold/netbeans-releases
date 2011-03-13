@@ -60,7 +60,7 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
     }
 
     /** Implementation of {@link Savable#save} contract. Calls
-     * {@link #handleSave} and {@lin #unregister}.
+     * {@link #handleSave} and {@link #unregister}.
      * 
      * @throws IOException if call to {@link #handleSave} throws IOException
      */
