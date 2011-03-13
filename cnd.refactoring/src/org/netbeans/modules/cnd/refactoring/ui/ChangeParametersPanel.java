@@ -102,6 +102,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         return this;
     }
     
+    /*package*/final static int PARAM_NAME = 0;
+    /*package*/final static int PARAM_TYPE = 1;
+    /*package*/final static int PARAM_VALUE = 2;
+    /*package*/final static int PARAM_ORIG_INDEX = 3;
+    /*package*/final static int PARAM_USED = 4;
+
     private static final String[] columnNames = {
         getString("LBL_ChangeParsColName"), // NOI18N
         getString("LBL_ChangeParsColType"), // NOI18N
@@ -386,10 +392,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         int[] selectedRows = paramTable.getSelectedRows();
         ListSelectionModel selectionModel = paramTable.getSelectionModel();
         for (int i = 0; i < selectedRows.length; ++i) {
-            boolean b = ((Boolean) ((Vector) model.getDataVector().get(selectedRows[i] - i)).get(4)).booleanValue();
+            boolean b = ((Boolean) ((Vector) model.getDataVector().get(selectedRows[i] - i)).get(PARAM_USED)).booleanValue();
             if (!b) {
                 String title = getString("LBL_ChangeParsCannotDeleteTitle");
-                String mes = MessageFormat.format(getString("LBL_ChangeParsCannotDelete"),((Vector) model.getDataVector().get(selectedRows[i] - i)).get(0));
+                String mes = MessageFormat.format(getString("LBL_ChangeParsCannotDelete"),((Vector) model.getDataVector().get(selectedRows[i] - i)).get(PARAM_NAME));
                 int a = JOptionPane.showConfirmDialog(this, mes, title, JOptionPane.YES_NO_OPTION);
                 if (a==JOptionPane.YES_OPTION) {
                     model.removeRow(selectedRows[i] - i);
@@ -553,7 +559,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     // vector of objects
                     @SuppressWarnings("unchecked")
                     Vector<Object> data = (Vector<Object>) model.getDataVector().get(originalIndex);
-                    data.set(4, removable);
+                    data.set(PARAM_USED, removable);
                 }
                 originalIndex++;
             }
@@ -653,24 +659,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @SuppressWarnings("unchecked")
         Vector<List<Object>> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
-        if (parameters.length > 0) {
-            int i;
-            for (i = 0; i < parameters.length - 1; i++) {
-                buf.append(parameters[i].get(1));
-                buf.append(' ');
-                buf.append(parameters[i].get(0));
-                String defParam = (String) parameters[i].get(2);
-                if (defParam != null && defParam.length() > 0) {
-                    buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
-                }
-                buf.append(',').append(' '); // NOI18N
-            }
-            buf.append(parameters[i].get(1));
+        for (int i = 0; i < parameters.length; i++) {
+            buf.append(parameters[i].get(PARAM_TYPE));
             buf.append(' ');
-            buf.append(parameters[i].get(0));
-            String defParam = (String) parameters[i].get(2);
+            buf.append(parameters[i].get(PARAM_NAME));
+            String defParam = (String) parameters[i].get(PARAM_VALUE);
             if (defParam != null && defParam.length() > 0) {
                 buf.append(" /* = ").append(defParam).append(" */"); // NOI18N
+            }
+            if (i < parameters.length - 1) {
+                buf.append(',').append(' '); // NOI18N
             }
         }
         buf.append(')'); //NOI18N
@@ -721,12 +719,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             // otherwise, check that user can change only the values provided
             // for the new parameter. (name change of old parameters aren't
             // allowed.
-            Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(3);
+            Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(PARAM_ORIG_INDEX);
             return origIdx.intValue() == -1 ? true : false;
         }
         
         public boolean isRemovable(int row) {
-            return ((Boolean) ((Vector) getDataVector().get(row)).get(4)).booleanValue();
+            return ((Boolean) ((Vector) getDataVector().get(row)).get(PARAM_USED)).booleanValue();
         }
         
         @Override
