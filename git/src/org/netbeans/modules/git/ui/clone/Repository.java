@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
@@ -58,6 +59,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.util.ChangeSupport;
@@ -199,8 +202,8 @@ public class Repository implements DocumentListener, ActionListener {
             valid = true;
             msg = null;
             
-            String uri = getUrlString();
-            if(uri == null || uri.trim().isEmpty()) {
+            GitURI uri = getURI();
+            if(uri == null) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(Repository.class, "MSG_EMPTY_URI_ERROR"), true);
             } else {
@@ -217,18 +220,20 @@ public class Repository implements DocumentListener, ActionListener {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                String urlString = getUrlString();
-                if(urlString == null) {
+                GitURI uri = getURI();
+                if(uri == null) {
                     return;
                 }
                 
                 boolean isFile = true;
-                for (Scheme s : Scheme.values()) {
-                    if(s == Scheme.FILE) continue;
-                    if(urlString.startsWith(s.toString())) {
-                        panel.tipLabel.setText(s.getTip());
-                        isFile = false;
-                        break;
+                if(uri.getScheme() != null) {
+                    for (Scheme s : Scheme.values()) {
+                        if(s == Scheme.FILE) continue;
+                        if(uri.getScheme().startsWith(s.toString())) {
+                            panel.tipLabel.setText(s.getTip());
+                            isFile = false;
+                            break;
+                        }
                     }
                 }
                 if(isFile) {
@@ -248,8 +253,16 @@ public class Repository implements DocumentListener, ActionListener {
         });
     }
 
-    String getUrlString() {
-        return (String) panel.urlComboBox.getEditor().getItem();        
+    GitURI getURI() {
+        String uriString = (String) panel.urlComboBox.getEditor().getItem();        
+        if(uriString != null && !uriString.isEmpty()) {
+            try {
+                return new GitURI(uriString);
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.INFO, uriString, ex);
+    }
+        }
+        return null;
     }
     
     private void initUrlComboValues() {

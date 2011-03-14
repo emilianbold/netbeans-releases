@@ -45,7 +45,6 @@ package org.netbeans.modules.git.ui.clone;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.modules.git.ui.repository.remote.*;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +55,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.utils.WizardStepProgressSupport;
@@ -98,9 +98,9 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             if(!validateRepository()) return;
 
             final File tempRepository = Utils.getTempFolder();
-            String uri = repository.getUrlString();
-            if (uri != null && !uri.trim().isEmpty()) {
-                support = new RepositoryStepProgressSupport(panel.progressPanel, repository.getUrlString());        
+            GitURI uri = repository.getURI();
+            if (uri != null) {
+                support = new RepositoryStepProgressSupport(panel.progressPanel, uri);        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
             }    
@@ -120,8 +120,8 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         return branches;
     }
         
-    public String getUriString() {
-        return repository.getUrlString();
+    public GitURI getURI() {
+        return repository.getURI();
     }
 
     @Override
@@ -155,9 +155,9 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     }
 
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
-        private final String uri;
+        private final GitURI uri;
 
-        public RepositoryStepProgressSupport(JPanel panel, String uri) {
+        public RepositoryStepProgressSupport(JPanel panel, GitURI uri) {
             super(panel, true);
             this.uri = uri;
         }
@@ -168,7 +168,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 GitClient client = getClient();
                 client.init(this);
                 branches = new HashMap<String, GitBranch>();
-                branches.putAll(client.listRemoteBranches(uri, this));
+                branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
                 setValid(false, new Message(ex.getMessage(), true));
