@@ -875,7 +875,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                     // Locations should already be in local path form.
 		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
 		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
-                            ((MakeConfiguration)getNDI().getConfiguration()).getFileSystemHost());
+                            NativeDebuggerImpl.this);
 		    if (l != null) {
                         ShowMode showMode = ShowMode.NONE;
                         if (andShow) {
@@ -1658,7 +1658,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    return Collections.emptySet();
 	}
 
-	return Autos.get(EditorBridge.documentFor(location.src()), location.line()-1);
+	return Autos.get(EditorBridge.documentFor(location.src(), this), location.line()-1);
     }
     
     public int getAutosCount() {
