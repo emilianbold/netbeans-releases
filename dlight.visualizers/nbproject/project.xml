@@ -169,6 +169,7 @@
                 <friend>com.sun.tools.dlight.php</friend>
                 <friend>com.sun.tools.dlight.sysmon</friend>
                 <friend>com.sun.tools.dlight.systemwide</friend>
+                <friend>com.sun.tools.dlight.systemwide.visualizers</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
