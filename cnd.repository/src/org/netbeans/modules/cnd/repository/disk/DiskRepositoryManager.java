@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
@@ -80,7 +82,8 @@ import org.openide.util.CharSequences;
  * @author Sergey Grinev
  */
 public class DiskRepositoryManager implements Repository, RepositoryWriter {
-
+    
+    private static final Logger LOG = Logger.getLogger(DiskRepositoryManager.class.getName());
     private final Map<Integer, Unit> units;
     private final RepositoryQueue queue;
     private final RepositoryThreadManager threadManager;
@@ -237,16 +240,27 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             // iz #146241 IllegalStateException in the case revious session terminated with ^C in console
             // if there are projects that aren't yet closed => the data might be corrupted! => clean untit
             closeUnit(translator.getUnitName(entry.getKey()), true, null);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.INFO, "Closing unit{0} done.", entry.getValue().getName());
+            }
         }
 
         try {
             queueLock.writeLock().lock();
             cleanAndWriteQueue();
+            if (!units.isEmpty()) {
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "Not empty unit list after closing.");
+                }
+            }
             units.clear();
         } finally {
             queueLock.writeLock().unlock();
         }
         RepositoryTranslatorImpl.shutdown();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.INFO, "Repository shutdown done.");
+        }
     }
 
     @Override
@@ -328,9 +342,11 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         if (CndUtils.isDebugMode()) {
             Collection<KeyValueQueue.Entry<Key, Persistent>> clearQueue = queue.clearQueue(new UnitFilter(unitName));
             if (!clearQueue.isEmpty()) {
-                System.err.println("UNSAVED ENTRIES FOR " + unitName);
-                for (KeyValueQueue.Entry<Key, Persistent> entry : clearQueue) {
-                    System.err.printf("\t%s\n\t%s\n", entry.getKey(), entry.getValue());
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "UNSAVED ENTRIES FOR {0}", unitName);
+                    for (KeyValueQueue.Entry<Key, Persistent> entry : clearQueue) {
+                        LOG.log(Level.INFO, "\t{0}\n\t{1}", new Object[]{entry.getKey(), entry.getValue()});
+                    }
                 }
             }
         }
