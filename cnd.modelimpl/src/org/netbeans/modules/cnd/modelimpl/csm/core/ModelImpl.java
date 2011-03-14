@@ -774,6 +774,16 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 for (CsmProject lib : libraries) {
                     printOut.printf("\tlib[%d]=%s\n", ++libInd, lib);// NOI18N
                 }
+                Object platformProject = prj.getPlatformProject();
+                printOut.printf("platformProjec=%s\n", platformProject);// NOI18N
+                if (platformProject instanceof NativeProject) {
+                    NativeProject np = (NativeProject) platformProject;
+                    List<NativeProject> dependences = np.getDependences();
+                    libInd = 0;
+                    for (NativeProject nativeLib : dependences) {
+                        printOut.printf("\tnativeLib[%d]=%s\n", ++libInd, nativeLib);// NOI18N
+                    }
+                }
                 if (withContainers) {
                     ((ProjectBase) prj).traceFileContainer(printOut);
                 }

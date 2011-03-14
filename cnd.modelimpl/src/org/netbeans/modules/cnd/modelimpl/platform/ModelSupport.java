@@ -53,7 +53,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.*;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -106,9 +105,16 @@ public class ModelSupport implements PropertyChangeListener {
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
-    private static final boolean TRACE_STARTUP = false;
+    private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
-    private final RequestProcessor RP = new RequestProcessor("ModelSupport processor", 2); // NOI18N
+    private final RequestProcessor.Task openProjectsTask = 
+            new RequestProcessor("ModelSupport processor", 1).create( // NOI18N
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        openProjects();
+                    }
+                }); 
 
     private ModelSupport() {
     }
@@ -150,7 +156,7 @@ public class ModelSupport implements PropertyChangeListener {
                 }
                 postponeParse = false;
                 NativeProjectRegistry.getDefault().addPropertyChangeListener(this);
-                openProjects();
+                openProjectsTask.schedule(0);
             } else {
                 if (TRACE_STARTUP) {
                     System.out.println("Model support: Postpone open projects"); // NOI18N
@@ -164,19 +170,8 @@ public class ModelSupport implements PropertyChangeListener {
                             System.out.println("Model support: invoked after ready UI"); // NOI18N
                         }
                         postponeParse = false;
-                        Runnable task = new Runnable() {
-
-                            @Override
-                            public void run() {
-                                NativeProjectRegistry.getDefault().addPropertyChangeListener(ModelSupport.this);
-                                openProjects();
-                            }
-                        };
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            RP.post(task);
-                        } else {
-                            task.run();
-                        }
+                        NativeProjectRegistry.getDefault().addPropertyChangeListener(ModelSupport.this);
+                        openProjectsTask.schedule(0);
                     }
                 });
             }
@@ -203,13 +198,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (TRACE_STARTUP) {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
-                    RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            openProjects();
-                        }
-                    });
+                    openProjectsTask.schedule(0);
                 }
             }
         } catch (Exception e) {
@@ -219,8 +208,10 @@ public class ModelSupport implements PropertyChangeListener {
 
     private void openProjects() {
         Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
-
         synchronized (openedProjects) {
+            if (TRACE_STARTUP) {
+                System.out.println("Model support: openProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
+            }
             Set<Lookup.Provider> nowOpened = new HashSet<Lookup.Provider>();
             for(NativeProject project : projects) {
                 Provider makeProject = project.getProject();
