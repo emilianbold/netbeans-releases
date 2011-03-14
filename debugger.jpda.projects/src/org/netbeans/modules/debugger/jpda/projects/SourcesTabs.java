@@ -104,7 +104,11 @@ public class SourcesTabs extends JTabbedPane {
         } else {
             ProjectInformation pi = (ProjectInformation) p.getLookup ().
                 lookup (ProjectInformation.class);
-            setTitleAt(0, pi.getDisplayName());
+            if (pi != null) {
+                setTitleAt(0, pi.getDisplayName());
+            } else {
+                setTitleAt(0, p.getProjectDirectory().getName());
+            }
         }
     }
 
