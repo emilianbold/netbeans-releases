@@ -64,7 +64,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -202,7 +201,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
     @Override
     public HelpCtx getHelp () {
-        return new HelpCtx(SelectRemotePanel.class);
+        return new HelpCtx(SelectUriPanel.class);
     }
 
     public String getSelectedUri () {
