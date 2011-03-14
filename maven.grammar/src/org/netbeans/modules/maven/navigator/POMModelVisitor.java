@@ -156,8 +156,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 try {
                     mdl.sync();
                 } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, "cause of #190041?", ex);
                 }
+            }
+            if (!mdl.getState().equals(Model.State.VALID)) {
+                LOG.log(Level.WARNING, "#190041: invalid model {0}", t.getName());
+                return;
             }
             t = t.getModel().getProject();
         }
