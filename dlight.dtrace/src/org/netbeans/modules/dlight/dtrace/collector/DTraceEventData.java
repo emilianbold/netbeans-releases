@@ -55,19 +55,25 @@ public final class DTraceEventData {
 
     private final DataRow dataRow;
     private final List<CharSequence> callStack;
+    private final long contextID;
 
     public DTraceEventData(final DataRow dataRow) {
-        this(dataRow, null);
+        this(dataRow, null, -1);
     }
 
-    public DTraceEventData(final DataRow dataRow, final List<CharSequence> callStack) {
+    public DTraceEventData(final DataRow dataRow, final List<CharSequence> callStack, long contextID) {
         assert dataRow != null;
         this.dataRow = dataRow;
         this.callStack = callStack;
+        this.contextID = contextID;
     }
 
     public List<CharSequence> getEventCallStack() {
         return callStack == null ? null : Collections.unmodifiableList(callStack);
+    }
+
+    public long getContextID() {
+        return contextID;
     }
 
     public DataRow getDataRow() {
