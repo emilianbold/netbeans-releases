@@ -307,6 +307,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <package>org.netbeans.modules.cnd.refactoring.api.ui</package>

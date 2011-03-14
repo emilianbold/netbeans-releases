@@ -139,6 +139,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>

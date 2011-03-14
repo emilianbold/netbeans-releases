@@ -68,6 +68,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
