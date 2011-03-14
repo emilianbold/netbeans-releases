@@ -3,7 +3,7 @@
 if test ! -e /space/hudsonserver/master 
 then
 
-if [ -n $j2ee_enabled ]
+if [ -n "$j2ee_enabled" ]
 then
 
 cd $performance/j2ee
