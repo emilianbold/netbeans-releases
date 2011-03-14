@@ -101,6 +101,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                 validateBeforeNext();
             }
         });
+        getJComponent().setName(NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranches.remoteBranches")); //NOI18N
     }
     
     @Override
@@ -117,7 +118,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
 
     @Override
-    protected JComponent getJComponent () {
+    protected final JComponent getJComponent () {
         return branches.getPanel();
     }
 
