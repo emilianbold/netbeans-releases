@@ -43,8 +43,13 @@
  */
 package org.netbeans.modules.java.editor.rename;
 
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -52,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,6 +66,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.ElementScanner6;
@@ -304,6 +311,19 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 : info.getTrees().getElement(path);
         
         if (el == null) {
+            if (EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(path.getLeaf().getKind())) {
+                Token<JavaTokenId> span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, doc, path);
+                if (span != null && span.offset(null) <= adjustedCaret[0] && adjustedCaret[0] <= span.offset(null) + span.length()) {
+                    if (path.getLeaf().getKind() != Kind.LABELED_STATEMENT) {
+                        StatementTree tgt = info.getTreeUtilities().getBreakContinueTarget(path);
+                        path = tgt != null ? info.getTrees().getPath(info.getCompilationUnit(), tgt) : null;
+                    }
+                    if (path != null) {
+                        wasResolved[0] = true;
+                        return collectLabels(info, doc, path);
+                    }
+                }
+            }            
             wasResolved[0] = false;
             return null;
         }
@@ -369,6 +389,31 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         return null;
+    }
+
+    private static Set<Token> collectLabels(final CompilationInfo info, final Document document, final TreePath labeledStatement) {
+        final Set<Token> result = new LinkedHashSet<Token>();
+        if (labeledStatement.getLeaf().getKind() == Kind.LABELED_STATEMENT) {
+            result.add(org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, document, labeledStatement));
+            final Name label = ((LabeledStatementTree)labeledStatement.getLeaf()).getLabel();
+            new TreePathScanner <Void, Void>() {
+                @Override
+                public Void visitBreak(BreakTree node, Void p) {
+                    if (node.getLabel() != null && label.contentEquals(node.getLabel())) {
+                        result.add(org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, document, getCurrentPath()));
+                    }
+                    return super.visitBreak(node, p);
+                }
+                @Override
+                public Void visitContinue(ContinueTree node, Void p) {
+                    if (node.getLabel() != null && label.contentEquals(node.getLabel())) {
+                        result.add(org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, document, getCurrentPath()));
+                    }
+                    return super.visitContinue(node, p);
+                }
+            }.scan(labeledStatement, null);
+        }
+        return result;
     }
 
     private static boolean allowInstantRename(Element e, ElementUtilities eu) {
