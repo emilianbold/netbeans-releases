@@ -233,7 +233,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public List<String> getSelectedRefSpecs () {
         List<String> specs = new LinkedList<String>();
         for (BranchMapping b : branches.getSelectedBranches()) {
-            specs.add(org.netbeans.libs.git.Utils.getRefSpec(b.remoteBranch, remote.getRemoteName()));
+            specs.add(org.netbeans.libs.git.utils.Utils.getRefSpec(b.remoteBranch, remote.getRemoteName()));
         }
         return specs;
     }
@@ -279,7 +279,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         }
         
         public String getRefSpec () {
-            return org.netbeans.libs.git.Utils.getRefSpec(remoteBranch, remote.getRemoteName());
+            return org.netbeans.libs.git.utils.Utils.getRefSpec(remoteBranch, remote.getRemoteName());
         }
 
         @Override
