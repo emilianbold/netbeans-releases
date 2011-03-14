@@ -61,6 +61,10 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard.ImportedProject;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
@@ -70,6 +74,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
 public final class RemoteProjectImportWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -242,7 +247,22 @@ public final class RemoteProjectImportWizardIterator implements WizardDescriptor
                     } else {
                         record = ServerList.get(remoteEnvironment);
                     }
-                    if (record.isSetUp() || record.setUp()) {
+                    boolean needsInitialization = record.isOffline();
+                    if (!needsInitialization) {
+                        needsInitialization = CompilerSetManager.get(remoteEnvironment).getCompilerSets().isEmpty();
+                    }
+                    if (needsInitialization) {
+                        record.validate(true);
+                        if (record.isOnline()) {
+                            RequestProcessor.Task task = ToolsPanelSupport.restoreCompilerSets(remoteEnvironment);
+                            task.waitFinished();
+//                            ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+//                            CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
+//                            csm.initialize(false, true, null);
+//                            cacheManager.applyChanges();
+                        }
+                    }
+                    if (record.isOnline()) {
                         String remoteProjectFolder = importedProject.getRemoteProjectFolder();
                         if (handle != null) {
                             handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.import", CndPathUtilitities.getDirName(remoteProjectFolder)));
