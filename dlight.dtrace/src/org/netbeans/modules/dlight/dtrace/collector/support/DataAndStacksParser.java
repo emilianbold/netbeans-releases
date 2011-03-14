@@ -132,7 +132,7 @@ final class DataAndStacksParser implements DTraceOutputParser {
 
             if (currData != null) {
                 if (currStack != null && currStack.size() > 0) {
-                    result = new DTraceEventData(new DataRow(colNames, currData), currStack);
+                    result = new DTraceEventData(new DataRow(colNames, currData), currStack, -1);
                     currStack = null;
                 } else {
                     // Empty line after data.. just return data

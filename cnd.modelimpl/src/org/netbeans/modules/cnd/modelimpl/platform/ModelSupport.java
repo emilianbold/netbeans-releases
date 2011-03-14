@@ -62,6 +62,7 @@ import org.netbeans.api.project.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -178,12 +179,16 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    private volatile boolean closed = false;
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
         modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
-            model.shutdown();
+            synchronized (openedProjects) {
+                model.shutdown();
+                closed = true;
+            }
         }
     }
 
@@ -207,8 +212,14 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private void openProjects() {
+        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+            return;
+        }
         Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
         synchronized (openedProjects) {
+            if (closed) {
+                return;
+            }
             if (TRACE_STARTUP) {
                 System.out.println("Model support: openProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
             }
@@ -341,6 +352,9 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
+                    if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+                        return;
+                    }
                     NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
                     // enable by default
                     boolean enableModel = (settings == null) ? true : settings.isCodeAssistanceEnabled();
@@ -387,7 +401,7 @@ public class ModelSupport implements PropertyChangeListener {
             Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
         }
         ModelImpl model = theModel;
-        if (model == null) {
+        if (model == null || model.getState() != CsmModelState.ON) {
             return;
         }
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);

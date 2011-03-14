@@ -45,10 +45,13 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,6 +80,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -178,11 +182,13 @@ public class IndexerVersionsTest extends NbTestCase {
         assertTrue(handler.getSources().isEmpty());
 
 
+        RepositoryUpdater.getDefault().ignoreIndexerCacheEvents(false);     //Ugly but needed by NB pre 7.1 IndexerCache
         indexerFactory = new MockIndexerFactory(2);
         int secondVersion = indexerFactory.getIndexVersion();
         assertNull(CacheFolder.getDataFolder(srcRoot1.getURL()).getFileObject(String.format("%s/%d", indexerFactory.getIndexerName(), secondVersion)));
         assertNull(CacheFolder.getDataFolder(srcRoot2.getURL()).getFileObject(String.format("%s/%d", indexerFactory.getIndexerName(), secondVersion)));        
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
+        Thread.sleep(2000);
 
         handler.reset();
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
@@ -191,7 +197,8 @@ public class IndexerVersionsTest extends NbTestCase {
         assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
         assertNotNull(CacheFolder.getDataFolder(srcRoot1.getURL()).getFileObject(String.format("%s/%d", indexerFactory.getIndexerName(), firstVersion)));
         assertNotNull(CacheFolder.getDataFolder(srcRoot1.getURL()).getFileObject(String.format("%s/%d", indexerFactory.getIndexerName(), secondVersion)));
-
+        awaitRepositoryUpdaterSilence(TIMEOUT);
+        assertEquals(Collections.singleton(f1),indexerFactory.reset());
 
         handler.reset();
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp2});
@@ -200,7 +207,8 @@ public class IndexerVersionsTest extends NbTestCase {
         assertEquals(this.srcRoot2.getURL(), handler.getSources().get(0));
         assertNotNull(CacheFolder.getDataFolder(srcRoot2.getURL()).getFileObject(String.format("%s/%d", indexerFactory.getIndexerName(), firstVersion)));
         assertNotNull(CacheFolder.getDataFolder(srcRoot2.getURL()).getFileObject(String.format("%s/%d", indexerFactory.getIndexerName(), secondVersion)));
-
+        awaitRepositoryUpdaterSilence(TIMEOUT);
+//        assertEquals(Collections.singleton(f2),indexerFactory.reset());  - Fixme: BUG in pre 7.1 IndexerCache
     }
 
 
@@ -222,6 +230,24 @@ public class IndexerVersionsTest extends NbTestCase {
         if (set != null) {
             set.removeAll(Arrays.asList(classpaths));
         }
+    }
+
+    private void assertEquals(final Collection<? extends FileObject> expected, final Iterable<? extends Indexable> result) {
+        final Set<FileObject> expectedCopy = new HashSet<FileObject>(expected);
+        for (Indexable i : result) {
+            final FileObject fo = URLMapper.findFileObject(i.getURL());
+            if (fo != null) {
+                assertTrue("Expected: " + expected +" Result: " + result,expectedCopy.remove(fo));
+            }
+        }
+        assertTrue("Expected: " + expected +" Result: " + result, expectedCopy.isEmpty());
+    }
+
+    private boolean awaitRepositoryUpdaterSilence(final long timeout) throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AwaitWork awaitWork = new AwaitWork(latch);
+        RepositoryUpdater.getDefault().scheduleWork(awaitWork, false);
+        return latch.await(timeout, TimeUnit.MILLISECONDS);
     }
     // </editor-fold>
 
@@ -316,6 +342,7 @@ public class IndexerVersionsTest extends NbTestCase {
     public static class MockIndexerFactory extends CustomIndexerFactory {
 
         private int version;
+        private final List<Indexable> indexables = Collections.synchronizedList(new LinkedList<Indexable>());
 
         public MockIndexerFactory(int version) {
             this.version = version;
@@ -325,7 +352,12 @@ public class IndexerVersionsTest extends NbTestCase {
         public CustomIndexer createIndexer() {
             return new CustomIndexer() {
                 @Override
-                protected void index(Iterable<? extends Indexable> files, Context context) {                    
+                protected void index(Iterable<? extends Indexable> files, Context context) {
+                    synchronized (indexables) {
+                        for (Indexable i : files) {
+                            indexables.add(i);
+                        }
+                    }
                 }
             };
         }
@@ -351,6 +383,14 @@ public class IndexerVersionsTest extends NbTestCase {
         @Override
         public int getIndexVersion() {
             return version;
+        }
+
+        public List<? extends Indexable> reset() {
+            synchronized (indexables) {
+                final List<Indexable> result = new ArrayList<Indexable>(indexables);
+                indexables.clear();
+                return result;
+            }
         }
     }
 
@@ -395,6 +435,24 @@ public class IndexerVersionsTest extends NbTestCase {
         @Override
         public void close() throws SecurityException {            
         }
+    }
+
+    private static final class AwaitWork extends RepositoryUpdater.Work {
+
+        private final CountDownLatch latch;
+
+        private AwaitWork(final CountDownLatch latch) {
+            super(false,false,false,false);
+            assert latch != null;
+            this.latch = latch;
+        }
+
+        @Override
+        protected boolean getDone() {
+            latch.countDown();
+            return true;
+        }
+
     }
     //</editor-fold>
 

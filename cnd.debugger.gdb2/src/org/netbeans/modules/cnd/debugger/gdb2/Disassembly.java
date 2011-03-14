@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -240,7 +239,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                         //String path = debugger.getRunDirectory();
                         String fileStr = readValue(FILE_HEADER, msg, combinedPos);
                         if (resolvedFileName != null && CndPathUtilitities.getBaseName(resolvedFileName).equals(fileStr)) {
-                            FileObject src_fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(resolvedFileName));
+                            FileObject src_fo = EditorBridge.findFileObject(resolvedFileName, debugger);
                             if (src_fo != null && src_fo.isValid()) {
                                 try {
                                     String lineText = DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText();

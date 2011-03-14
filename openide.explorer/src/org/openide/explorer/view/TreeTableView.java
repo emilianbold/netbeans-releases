@@ -1348,7 +1348,6 @@ public class TreeTableView extends BeanTreeView {
             @Override
             protected NodeListener createNodeListener() {
                 return new FilterNode.NodeAdapter(this) {
-
                     @Override
                     protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
                         super.propertyChange(fn, ev);
@@ -1376,6 +1375,12 @@ public class TreeTableView extends BeanTreeView {
                                             }
                                         }
                                 );
+                            }
+                        }
+                        if (ev.getPropertyName().equals(Node.PROP_PARENT_NODE)) {
+                            final Node node = (Node)ev.getSource();
+                            if (node.getParentNode() == null) {
+                                original2filter.remove(node);
                             }
                         }
                     }

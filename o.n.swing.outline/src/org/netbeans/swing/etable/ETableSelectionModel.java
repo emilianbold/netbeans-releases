@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.debugger;
+package org.netbeans.swing.etable;
 
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
+import javax.swing.DefaultListSelectionModel;
 
 /**
- *
- * @author Egor Ushakov
+ * This class prevents from automatic selection of inserted lines.
+ * 
+ * @author Martin Entlicher
  */
-public class MacroSupport {
-    // utility class
-    private MacroSupport() {
-    }
-    
-    public static String expandMacro(NativeDebugger debugger, String expr) {
-        Frame currentFrame = debugger.getCurrentFrame();
-        if (currentFrame != null) {
-            StyledDocument doc = getDocument(debugger, currentFrame);
-            if (doc != null) {
-                int offset = getOffset(currentFrame, doc);
-                if (offset >= 0) {
-                    String expand = CsmMacroExpansion.expand(doc, offset, expr);
-                    if (expand != null) {
-                        return expand;
-                    }
-                }
-            }
-        }
-        return expr;
-    }
-    
-    private static StyledDocument getDocument(NativeDebugger debugger, Frame frame) {
-        String fullPath = frame.getFullPath();
-        if (fullPath == null) {
-            return null;
-        }
-        FileObject fo = EditorBridge.findFileObject(fullPath, debugger);
-        if (fo != null /*paranoia*/ && fo.isValid()) {
-            return (StyledDocument) CsmUtilities.getDocument(fo);
-        }
-        return null;
+class ETableSelectionModel extends DefaultListSelectionModel {
+
+    private ThreadLocal<Boolean> insertingLines = new ThreadLocal<Boolean>();
+
+    @Override
+    public void insertIndexInterval(int index, int length, boolean before) {
+        insertingLines.set(Boolean.TRUE);
+        super.insertIndexInterval(index, length, before);
     }
 
-    private static int getOffset(Frame frame, StyledDocument doc) {
-        try {
-            int lineNumber = Integer.valueOf(frame.getLineNo());
-            if (lineNumber >= 0 && doc != null) {
-                return NbDocument.findLineOffset(doc, lineNumber-1);
-            }
-        } catch(NumberFormatException ex) {
-            Exceptions.printStackTrace(ex);
+    @Override
+    public int getSelectionMode() {
+        if (insertingLines.get() == Boolean.TRUE) {
+            insertingLines.remove();
+            // When we're inserting lines, they are not automatically selected
+            // if the selection mode is single selection.
+            return SINGLE_SELECTION;
         }
-        return -1;
+        return super.getSelectionMode();
     }
+
 }

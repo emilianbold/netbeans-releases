@@ -199,6 +199,5 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         LOG.info("Refresh finished");
 
         assertEquals("Just one file checked: " + counter.files, 1, counter.files.size());
-        assertEquals("No change detected", 0, listener.cnt);
     }
 }

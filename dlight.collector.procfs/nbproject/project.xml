@@ -61,6 +61,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>org.netbeans.modules.dlight.msa</friend>
                 <package>org.netbeans.modules.dlight.collector.procfs</package>

@@ -97,6 +97,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <package>org.netbeans.modules.dlight.api.terminal</package>

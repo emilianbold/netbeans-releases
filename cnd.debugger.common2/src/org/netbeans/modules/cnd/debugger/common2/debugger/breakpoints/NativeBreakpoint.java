@@ -91,10 +91,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.openide.filesystems.FileSystem;
 
 
 /**
@@ -240,7 +240,7 @@ public abstract class NativeBreakpoint
 	return DebuggerManager.get();
     } 
 
-    private static NativeDebugger currentDebugger() {
+    protected static NativeDebugger currentDebugger() {
 	return manager().currentNativeDebugger();
     }
 
@@ -1806,9 +1806,9 @@ public abstract class NativeBreakpoint
     public void addAnnotation(String filename, int line, long addr) {
 	Line l = null;
 
-	if (line != 0)            
-	    l = EditorBridge.getLine(filename, line, 
-                    ((MakeConfiguration)currentDebugger().getNDI().getConfiguration()).getFileSystemHost());
+	if (line != 0) {
+	    l = EditorBridge.getLine(filename, line, currentDebugger());
+        }
 	//if (l != null)
 	addAnnotation(l, addr);
     }
@@ -1816,7 +1816,7 @@ public abstract class NativeBreakpoint
     /**
      * Register a new annotation with this bpt.
      */
-    public void addAnnotation(Line l, long addr ) {
+    public void addAnnotation(Line l, long addr) {
 	assert ! isMidlevel() : "cannot add annotations to midlevel bpts";
 
 	DebuggerAnnotation.Listener listener =
@@ -1898,14 +1898,6 @@ public abstract class NativeBreakpoint
 
     public void seedToplevelAnnotations() {
 	assert this.isToplevel();
-
-	if (DebuggerManager.isPerTargetBpts())
-	    return;
-
-	if (this instanceof LineBreakpoint) {
-	    LineBreakpoint lb = (LineBreakpoint) this;
-	    lb.addAnnotation(lb.getFileName(), lb.getLineNumber(), 0);
-	}
     }
 
 
@@ -3042,13 +3034,14 @@ public abstract class NativeBreakpoint
      * Used for toggling.
      */
     public static NativeBreakpoint newLineBreakpoint(String fileName,
-						   int lineNo) {
+						     int lineNo,
+                                                     FileSystem fs) {
 	NativeBreakpoint bpt =
 	    newBreakpointOfType(LineBreakpointType.class);
 	if (bpt == null)
 	    return null;
 	LineBreakpoint lb = (LineBreakpoint) bpt;
-	lb.setFileAndLine(fileName, lineNo);
+	lb.setFileAndLine(fileName, lineNo, fs);
 	return lb;
     }
 
