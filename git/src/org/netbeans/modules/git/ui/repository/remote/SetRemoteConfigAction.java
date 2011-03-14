@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -54,7 +53,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
-import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -86,19 +84,7 @@ public class SetRemoteConfigAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
-        String selectedRemote = getSelectedRemote(context.getElements().lookupAll(Node.class));
-        setRemote(repository, selectedRemote);
-    }
-
-    public void setRemote (File repository, String selectedRemote) {
-        RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        info.refreshRemotes();
-        Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        SetupRemoteWizard wiz = new SetupRemoteWizard(repository, remotes, selectedRemote);
-        if (wiz.show()) {
-            GitRemoteConfig remote = wiz.getRemote();
-            updateRemote(repository, remote, null);
-        }
+        //
     }
 
     @Override

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.repository.remote;
+package org.netbeans.modules.git.ui.fetch;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -108,9 +108,9 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         setValid(true, null);
         boolean acceptEmptySelection = mode == Mode.ACCEPT_EMPTY_SELECTION;
         if (!acceptEmptySelection && branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
+            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
         } else if (acceptEmptySelection && branches.isEmpty()) {
-            setValid(true, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranch"), true)); //NOI18N
+            setValid(true, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranch"), true)); //NOI18N
         } else {
             setValid(true, null);
         }
@@ -179,7 +179,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         branches.setBranches(new ArrayList<BranchMapping>(0));
         if (fetchUri != null) {
             final String uri = fetchUri;
-            model.addElement(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.loadingBranches")); //NOI18N
+            model.addElement(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.loadingBranches")); //NOI18N
             branches.setEnabled(false);
             Utils.post(new Runnable() {
                 @Override
@@ -215,7 +215,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                             }
                         }
                     };
-                    supp.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.loadingBranches")); //NOI18N
+                    supp.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.loadingBranches")); //NOI18N
                 }
             });
         }
