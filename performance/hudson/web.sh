@@ -1,7 +1,7 @@
 #!/bin/bash
 if test ! -e /space/hudsonserver/master 
 then
-if [ -n $web_enabled ]
+if [ -n "$web_enabled" ]
 then
 
 cd $performance/web

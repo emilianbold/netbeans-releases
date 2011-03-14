@@ -1,7 +1,7 @@
 if test ! -e /space/hudsonserver/master 
 then
 
-if [ -n $languages_enabled ]
+if [ -n "$languages_enabled" ]
 then
 
 cd $performance/languages
