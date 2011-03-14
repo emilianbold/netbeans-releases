@@ -39,22 +39,87 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.utils;
 
-import java.text.MessageFormat;
+import java.net.URISyntaxException;
+import org.eclipse.jgit.transport.URIish;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class Utils {
-
-    private Utils() { }
+public class GitURI {
+    private URIish uri;
     
-    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
-            
-    public static String getRefSpec(GitBranch branch, String remoteName) {
-        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
+    private GitURI() {}
+    
+    // a private constructor with URIish uri causes:
+    // cannot access org.eclipse.jgit.transport.URIish 
+    // class file for org.eclipse.jgit.transport.URIish not found
+    private GitURI create(URIish uri) {
+        GitURI u = new GitURI();
+        u.uri = uri;
+        return u;
     }
-        
+    
+    public GitURI(String uri) throws URISyntaxException {
+        this.uri = new URIish(uri);
+    }
+
+    public String toPrivateString() {
+        return uri.toPrivateString();
+    }
+
+    public GitURI setUser(String n) {
+        return create(uri.setUser(n));
+    }
+
+    public GitURI setScheme(String n) {
+        return create(uri.setScheme(n));
+    }
+
+    public GitURI setPort(int n) {
+        return create(uri.setPort(n));
+    }
+
+    public GitURI setPath(String n) {
+        return create(uri.setPath(n));
+    }
+
+    public GitURI setPass(String n) {
+        return create(uri.setPass(n));
+    }
+
+    public GitURI setHost(String n) {
+        return create(uri.setHost(n));
+    }
+
+    public boolean isRemote() {
+        return uri.isRemote();
+    }
+
+    public String getUser() {
+        return uri.getUser();
+    }
+
+    public String getScheme() {
+        return uri.getScheme();
+    }
+
+    public int getPort() {
+        return uri.getPort();
+    }
+
+    public String getPath() {
+        return uri.getPath();
+    }
+
+    public String getPass() {
+        return uri.getPass();
+    }
+
+    public String getHost() {
+        return uri.getHost();
+    }
+    
 }
