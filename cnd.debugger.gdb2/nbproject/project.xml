@@ -203,7 +203,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
+                <package>org.netbeans.modules.cnd.debugger.gdb2</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

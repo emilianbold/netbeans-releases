@@ -1443,17 +1443,24 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL, boolean inIDE);
         protected abstract SlownessData getSlownessData();
+        
+        DialogDescriptor findDD() {
+            if (dd == null) {
+                if (report) {
+                    dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
+                } else {
+                    dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
+                }
+            }
+            return dd;
+        }
 
         public void doShow(DataType dataType) {
             if (dataType == DataType.DATA_UIGESTURE) {
                 logDeactivated();
             }
-            if (report) {
-                dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
-            } else {
-                dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
-            }
-
+            findDD();
+            
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
 
             String defaultURI = NbBundle.getMessage(Installer.class, msg);
@@ -1964,7 +1971,8 @@ public class Installer extends ModuleInstall implements Runnable {
                         p.setViewportView(browser);
                         p.setBorder(BorderFactory.createEmptyBorder());
                         p.setPreferredSize(dim);
-                        dd.setMessage(p);
+                        DialogDescriptor descr = findDD();
+                        descr.setMessage(p);
                         //        AbstractNode root = new AbstractNode(new Children.Array());
                         //        root.setName("root"); // NOI18N
                         //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
@@ -1975,11 +1983,11 @@ public class Installer extends ModuleInstall implements Runnable {
                         //
                         //        panel.getExplorerManager().setRootContext(root);
                         Object[] arr = new Object[]{exitMsg};
-                        dd.setOptions(arr);
-                        dd.setClosingOptions(arr);
-                        dd.setButtonListener(SubmitInteractive.this);
-                        dd.setModal(true);
-                        d = DialogDisplayer.getDefault().createDialog(dd);
+                        descr.setOptions(arr);
+                        descr.setClosingOptions(arr);
+                        descr.setButtonListener(SubmitInteractive.this);
+                        descr.setModal(true);
+                        d = DialogDisplayer.getDefault().createDialog(descr);
                     }
                 });
             } catch (InterruptedException ex) {
@@ -2115,19 +2123,34 @@ public class Installer extends ModuleInstall implements Runnable {
 
         private void showProfilerSnapshot(ActionEvent e){
              File tempFile = null;
-             try {
-                tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
-                tempFile = FileUtil.normalizeFile(tempFile);
-                OutputStream os = new FileOutputStream(tempFile);
-                os.write(slownData.getNpsContent());
-                os.close();
-                FileObject fo = FileUtil.toFileObject(tempFile);
-                final Node obj = DataObject.find(fo).getNodeDelegate();
-                Action a = obj.getPreferredAction();
-                if (a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
-                }
-                a.actionPerformed(e);
+             try { 
+                 tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
+                 tempFile = FileUtil.normalizeFile(tempFile);
+                 OutputStream os = new FileOutputStream(tempFile);
+                 os.write(slownData.getNpsContent());
+                 os.close();
+
+                 File gestures = new File(new File(new File(
+                         new File(System.getProperty("netbeans.user")), // NOI18N
+                         "var"), "log"), "uigestures"); // NOI18N
+
+                 SelfSampleVFS fs;
+                 if (gestures.exists()) {
+                     fs = new SelfSampleVFS(
+                             new String[]{"selfsampler.npss", "selfsampler.log"},
+                             new File[]{tempFile, gestures});
+                 } else {
+                     fs = new SelfSampleVFS(
+                             new String[]{"selfsampler.npss"},
+                             new File[]{tempFile});
+                 }
+                 FileObject fo = fs.findResource("selfsampler.npss");
+                 final Node obj = DataObject.find(fo).getNodeDelegate();
+                 Action a = obj.getPreferredAction();
+                 if (a instanceof ContextAwareAction) {
+                     a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
+                 }
+                 a.actionPerformed(e);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {

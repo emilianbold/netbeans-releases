@@ -128,8 +128,10 @@
                 <friend>com.sun.tools.dlight.apache</friend>
                 <friend>com.sun.tools.dlight.mysql</friend>
                 <friend>com.sun.tools.dlight.php</friend>
-                <friend>com.sun.tools.dlight.tools.customizer</friend>
+                <friend>com.sun.tools.dlight.sysmon</friend>
+                <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>com.sun.tools.dlight.txtrace</friend>
+                <friend>com.sun.tools.dlight.util</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>

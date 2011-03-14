@@ -547,6 +547,14 @@ public class CndPathUtilitities {
         }
     }
 
+    public static boolean isIgnoredFolder(File file) {
+        if (file.isDirectory()) {
+            String name = file.getName();
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
+        }
+        return false;
+    }
+        
     /**
      * Same as String.equals, but allows arguments to be null
      */

@@ -30,9 +30,9 @@
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="vendorName" alignment="0" min="-2" pref="111" max="-2" attributes="0"/>
-                          <Component id="javaHome" alignment="0" pref="540" max="32767" attributes="1"/>
-                          <Component id="vmOptions" alignment="0" pref="540" max="32767" attributes="1"/>
-                          <Component id="memoryOptions" alignment="0" pref="540" max="32767" attributes="0"/>
+                          <Component id="javaHome" alignment="0" pref="432" max="32767" attributes="1"/>
+                          <Component id="vmOptions" alignment="0" pref="432" max="32767" attributes="1"/>
+                          <Component id="memoryOptions" alignment="0" pref="432" max="32767" attributes="0"/>
                           <Component id="vmOptionsSampleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="memoryOptionsCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -69,7 +69,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="memoryOptionsCommentLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="127" max="32767" attributes="0"/>
+              <EmptySpace pref="164" max="32767" attributes="0"/>
               <Component id="noteChangesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

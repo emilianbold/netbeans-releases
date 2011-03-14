@@ -78,17 +78,17 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
         return null;
     }
 
-    @Override
-    public String getReferredExpression(Snapshot snapshot, int offset) {
-        return null;
-    }
+//    @Override
+//    public String getReferredExpression(Snapshot snapshot, int offset) {
+//        return null;
+//    }
 
     @Override
     public List<VariableInfo> getManagedBeans(FileObject context) {
         List<WebBean> beans = getWebBeans(context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (WebBean bean : beans) {
-            result.add(new VariableInfo(bean.getName(), bean.getBeanClassName()));
+            result.add(VariableInfo.createResolvedVariable(bean.getName(), bean.getBeanClassName()));
         }
         return result;
     }
@@ -99,7 +99,12 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     }
 
     @Override
-    public List<VariableInfo> getBeansInScope(String scope, FileObject context) {
+    public List<VariableInfo> getBeansInScope(String scope, Snapshot context) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<VariableInfo> getRawObjectProperties(String name, Snapshot context) {
         return Collections.emptyList();
     }
 

@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -71,6 +73,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -162,7 +167,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     private void renameTo(String newPath) {
         Folder f = getFolder();
-        String oldPath = getAbsPath();
+        String oldPath;
+        if (fileObject != null) {
+            try {
+                oldPath = CndFileUtils.normalizeAbsolutePath(fileObject.getFileSystem(), getAbsPath());
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                oldPath = CndFileUtils.normalizeAbsolutePath(getAbsPath());
+            }
+        } else {
+            oldPath = CndFileUtils.normalizeAbsolutePath(getAbsPath());
+        }
         Item item = f.addItem(new Item(newPath));
         if (item != null && item.getFolder() != null) {
             if (item.getFolder().isProjectFiles()) {
@@ -181,7 +196,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String getAbsolutePath() {
         synchronized (this) {
             if (fileObject != null) {
-                return CndFileUtils.getNormalizedPath(fileObject);
+                return CndFileUtils.normalizePath(fileObject);
             }
         }
         return getNormalizedFile().getAbsolutePath();
@@ -284,7 +299,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (fileObject == null) {
             return getNormalizedFile().getPath();
         } else {
-            return CndFileUtils.getNormalizedPath(fileObject);
+            return CndFileUtils.normalizePath(fileObject);
         }
     }
     
@@ -391,15 +406,49 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private FileObject getFileObjectImpl(boolean retryInvalid) {
         synchronized (this) {
             if (fileObject == null || (retryInvalid && !fileObject.isValid())) {
-                File curFile = getNormalizedFile();
-                fileObject = CndFileUtils.toFileObject(curFile);
-                if (fileObject == null || !fileObject.isValid()) {
-                    fileObject = CndFileUtils.toFileObject(getCanonicalFile());
+                Folder f = getFolder();
+                if (f == null) {
+                    // don't know file system, fall back to the default one
+                    // but do not cache file object
+                    String p = getPath();
+                    ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+                    if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
+                        p = FileSystemProvider.normalizeAbsolutePath(p, env);                        
+                        FileObject fo = FileSystemProvider.getFileObject(env, p);
+                        if (fo == null) {
+                            fo = InvalidFileObjectSupport.getInvalidFileObject(FileSystemProvider.getFileSystem(env), p);
+                        }
+                        return fo;
+                    } else {
+                        return null; // no folder and relative path
+                    }
+                } else {                    
+                    MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();                                        
+                    FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
+                    fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
+//                    // TODO: do we need this?
+//                    if (fileObject == null || !fileObject.isValid()) {
+//                        String absPath = getPath();
+//                        if (!CndPathUtilitities.isPathAbsolute(absPath)) {
+//                            absPath = cfgDescr.getBaseDir() + '/' + getPath();
+//                        }
+//                        String canonicalPath;
+//                        try {
+//                            FileSystem fs = baseDirFO.getFileSystem();
+//                            canonicalPath = FileSystemProvider.getCanonicalPath(fs, absPath);
+//                            fileObject = fs.findResource(canonicalPath);
+//                        } catch (FileStateInvalidException ex) {
+//                            Exceptions.printStackTrace(ex);
+//                        } catch (IOException ex) {
+//                            ex.printStackTrace(System.err);
+//                        }
+//                    }
                 }
             }
         }
         return fileObject;
     }
+    
 
     public DataObject getDataObject() {
         synchronized (this) {
@@ -751,37 +800,51 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     private static final class SpiAccessor {
 
-        private UserOptionsProvider provider;
+        private Collection<? extends UserOptionsProvider> providers;
 
-        private synchronized UserOptionsProvider getProvider() {
-            if (provider == null) {
-                provider = Lookup.getDefault().lookup(UserOptionsProvider.class);
+        private synchronized Collection<? extends UserOptionsProvider> getProviders() {
+            if (providers == null) {
+                providers = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
             }
-            return provider;
+            return providers;
         }
 
         private SpiAccessor() {
         }
 
         private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if (getProvider() != null) {
-                return getProvider().getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
+            if(!getProviders().isEmpty()) {
+                List<String> res = new ArrayList<String>();
+                for (UserOptionsProvider provider : getProviders()) {
+                    res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
+                }
+                return res;
             } else {
                 return includes;
             }
         }
 
         private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if (getProvider() != null) {
-                return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
+            if(!getProviders().isEmpty()) {
+                List<String> res = new ArrayList<String>();
+                for (UserOptionsProvider provider : getProviders()) {
+                    res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
+                }
+                return res;
             } else {
                 return macros;
             }
         }
 
         private LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if (getProvider() != null) {
-                return getProvider().getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
+            if(!getProviders().isEmpty()) {
+                for (UserOptionsProvider provider : getProviders()) {
+                    LanguageFlavor languageFlavor = provider.getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
+                    if(languageFlavor != null && languageFlavor != LanguageFlavor.UNKNOWN) {
+                        return languageFlavor;
+                    }
+                }
+                return LanguageFlavor.UNKNOWN;
             } else {
                 return LanguageFlavor.UNKNOWN;
             }

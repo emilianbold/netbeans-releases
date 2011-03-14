@@ -119,6 +119,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_GF_ADDONS_LOCATION_TEXT);
         setProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY,
                 DEFAULT_AS_ADDONS_LOCATION_TEXT);
+        setProperty(JUNIT_PRESENT_TEXT_PROPERTY,
+                DEFAULT_JUNIT_PRESENT_TEXT_PROPERTY);
         
         setProperty(NEXT_BUTTON_TEXT_PROPERTY,
                 DEFAULT_NEXT_BUTTON_TEXT);
@@ -239,11 +241,15 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             final List<Product> dependentOnGf = new LinkedList<Product>();
             final List<Product> dependentOnAs = new LinkedList<Product>();
             boolean nbBasePresent = false;
+            boolean junitPresent = false;
             
             for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
-                
+                if (product.getUid().equals(NB_JAVASE_UID) &&
+                                product.getProperty(JUNIT_ACCEPTED_PROPERTY).equals("true")) {
+                    junitPresent = true;
+                }
                 try {
                     if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
                         nbBasePresent = product.getUid().equals(NB_BASE_UID) ? true : nbBasePresent;
@@ -344,6 +350,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 text.append(StringUtils.format(
                         panel.getProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnAs)));
+                text.append(StringUtils.LF);                
+            }
+            //temporary solution to include JUnit into panel
+            if (junitPresent) {
+                text.append(StringUtils.LF);                
+                text.append(panel.getProperty(JUNIT_PRESENT_TEXT_PROPERTY));
                 text.append(StringUtils.LF);                
             }
             locationsPane.setText(text);
@@ -877,6 +889,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "addons.gf.install.location.text"; // NOI18N
     public static final String AS_ADDONS_LOCATION_TEXT_PROPERTY =
             "addons.as.install.location.text"; // NOI18N
+    public static final String JUNIT_PRESENT_TEXT_PROPERTY =
+            "junit.present.text"; // NOI18N
+    public static final String JUNIT_ACCEPTED_PROPERTY =
+            "junit.accepted"; // NOI18N
     
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
@@ -937,6 +953,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_NB_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.addons.nb.install.location.text"); // NOI18N
+    public static final String DEFAULT_JUNIT_PRESENT_TEXT_PROPERTY =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.junit.present.text"); // NOI18N
     
     public static final String DEFAULT_NEXT_BUTTON_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -977,6 +996,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
     public static final String NB_BASE_UID = 
             "nb-base";//NOI18N
+    public static final String NB_JAVASE_UID =
+            "nb-javase";//NOI18N
+    public static final String JUNIT_UID =
+            "junit";//NOI18N
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
     public static final String GLASSFISH_JVM_OPTION_NAME =

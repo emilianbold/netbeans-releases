@@ -85,9 +85,12 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files); // NOI18N
-        addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files); // NOI18N
-
+        addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files);
+        if (project.getActiveConfiguration() != null && project.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+            if (!pdp.getConfigurationDescriptor().getProjectMakefileName().isEmpty()) {
+                addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files);
+            }
+        }
         return files;
     }
 

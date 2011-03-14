@@ -1,4 +1,0 @@
-Test8Spec:CLASS:[]:ESCAPED{Test8Spec}:
-  describe: Foo:TEST:[]:ESCAPED{describe: Foo}:
-    it: should do other thing:TEST:[]:ESCAPED{it: should do other thing}:
-    it: should do something:TEST:[]:ESCAPED{it: should do something}:

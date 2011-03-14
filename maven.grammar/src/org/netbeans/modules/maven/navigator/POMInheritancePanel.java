@@ -46,8 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -129,12 +127,11 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                            explorerManager.setRootContext(new AbstractNode(ch));
                         } 
                     });
-                } catch (ModelBuildingException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
+                } catch (final ModelBuildingException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(true);
-                           explorerManager.setRootContext(createErrorNode());
+                           explorerManager.setRootContext(POMModelPanel.createErrorNode(ex));
                         }
                     });
                 }
@@ -215,12 +212,6 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
 
     private static Node createEmptyNode() {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        return an;
-    }
-
-    private static Node createErrorNode() {
-        AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Error"));
         return an;
     }
     

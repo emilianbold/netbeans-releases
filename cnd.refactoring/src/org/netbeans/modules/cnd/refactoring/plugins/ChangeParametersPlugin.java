@@ -356,7 +356,11 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                         skipComma = true;
                     }
                 } else if (funInfo.hasParam(originalIndex)) {
+                    wereChanges |= (originalIndex != i); // swap of params change
                     CharSequence origText = funInfo.getParameter(originalIndex);
+                    if (i == 0) {
+                        origText = origText.toString().trim();
+                    }
                     if (!skipComma && needSpaceAfterComma() && !Character.isWhitespace(origText.charAt(0))) {
                         newText.append(" "); // NOI18N
                     }

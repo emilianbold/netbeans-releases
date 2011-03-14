@@ -231,18 +231,18 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
         int x = listOrdering.getSelectedIndex();
         if (x > 0) {
             exchange(x-1);
+            listOrdering.setSelectedIndex(x-1);
+            refreshDdModel();
         }
-        listOrdering.setSelectedIndex(x-1);
-        refreshDdModel();
     }//GEN-LAST:event_bUpActionPerformed
 
     private void bDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDownActionPerformed
         int x = listOrdering.getSelectedIndex();
         if (x >= 0 && x < listModel.size()-1) {
             exchange(x);
+            listOrdering.setSelectedIndex(x+1);
+            refreshDdModel();            
         }
-        listOrdering.setSelectedIndex(x+1);
-        refreshDdModel();
     }//GEN-LAST:event_bDownActionPerformed
 
     private String getNameFromUser(String value) {

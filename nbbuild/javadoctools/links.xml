@@ -193,7 +193,6 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-jellytools-ide}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-ide"/>
 <link href="${javadoc.docs.org-netbeans-modules-jellytools-java}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-java"/>
 <link href="${javadoc.docs.org-netbeans-modules-jellytools-platform}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-platform"/>
-<link href="${javadoc.docs.org-netbeans-modules-jellytools-ruby}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools-ruby"/>
 <link href="${javadoc.docs.org-netbeans-modules-javacard-spi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-javacard-spi"/>
 <link href="${javadoc.docs.org-netbeans-modules-keyring}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-keyring"/>
 <link href="${javadoc.docs.org-netbeans-modules-schema2beans}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-schema2beans"/>
@@ -202,3 +201,5 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-dlight-nativeexecution}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-dlight-nativeexecution"/>
 <link href="${javadoc.docs.org-netbeans-core-netigso}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core-netigso"/>
 <link href="${javadoc.docs.org-netbeans-modules-parsing-lucene}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-parsing-lucene"/>
+<link href="${javadoc.docs.org-netbeans-modules-autoupdate-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-autoupdate-ui"/>
+<link href="${javadoc.docs.org-netbeans-modules-php-project}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-php-project"/>

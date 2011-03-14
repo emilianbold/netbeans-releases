@@ -106,6 +106,8 @@ public class JsParser extends Parser {
         };
         lastResult = parseBuffer(context, Sanitize.NONE);
         lastResult.setErrors(errors);
+        
+//        JsUtils.dumpAST(lastResult.getRootNode(), System.out);
     }
 
     public @Override Result getResult(Task task) throws ParseException {

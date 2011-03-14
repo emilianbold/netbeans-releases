@@ -67,6 +67,7 @@ public final class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFact
         SemanticHighlightingOptions.instance().addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         for (FileObject file : OpenedEditors.getDefault().getVisibleEditorsFiles()){
             reschedule(file);

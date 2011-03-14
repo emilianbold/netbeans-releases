@@ -44,28 +44,20 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
-import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.util.CharSequences;
@@ -78,8 +70,6 @@ import org.openide.util.CharSequences;
 public abstract class APTBaseMacroMap implements APTMacroMap {
 
     protected APTMacroMapSnapshot active;
-    
-    private static final String DEFINE_PREFIX="#define "; // NOI18N
     
     /**
      * Creates a new instance of APTBaseMacroMap
@@ -107,37 +97,17 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
      * analyze macroText string with structure "macro=value" and put in map
      */
     private void define(String macroText, boolean isSystem) {
-        macroText = DEFINE_PREFIX + macroText;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
-        try {
-            APTToken next = (APTToken) stream.nextToken();
-            // use define node to initialize #define directive from stream
-            APTDefineNode defNode = new APTDefineNode(next);
-            boolean look4Equal = true;
-            do {
-                next = (APTToken) stream.nextToken();
-                if (look4Equal && (next.getType() == APTTokenTypes.ASSIGNEQUAL)) {
-                    // skip the first equal token, it's delimeter
-                    look4Equal = false;
-                    next = (APTToken) stream.nextToken();
-                }
-            } while (defNode.accept(null, next));
-            // special check for macros without values, we must set it to be 1
-            if (defNode.getBody().isEmpty() && look4Equal) {
-                defNode.accept(null, APTUtils.DEF_MACRO_BODY);
-            }
+        APTDefine defNode = APTUtils.createAPTDefine(macroText);
+        if (defNode != null) {
             if (isSystem) {
                 defineImpl(null, defNode, Kind.COMPILER_PREDEFINED);
             } else {
                 defineImpl(null, defNode, Kind.USER_SPECIFIED);
             }
-        } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, 
-                    "error on lexing macros {0}\n\t{1}", // NOI18N
-                    new Object[] {macroText, ex.getMessage()});
         }
     }
 
+    @Override
     public void define(APTFile file, APTDefine define, Kind macroType) {
         defineImpl(file, define, macroType);
     }
@@ -148,6 +118,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         putMacro(name.getTextID(), createMacro(filePath, define, macroType));
     }
 
+    @Override
     public void undef(APTFile file, APTToken name) {
         putMacro(name.getTextID(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
@@ -161,15 +132,18 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro access
 
+    @Override
     public final boolean isDefined(APTToken token) {
         return getMacro(token) != null;
     } 
 
+    @Override
     public final boolean isDefined(CharSequence token) {
         token = CharSequences.create(token);
         return getMacro(token) != null;
     } 
 
+    @Override
     public APTMacro getMacro(APTToken token) {
         APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
@@ -186,6 +160,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     
     protected abstract APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent);
     
+    @Override
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
@@ -202,6 +177,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         }
     }
     
+    @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);
     }
@@ -304,39 +280,49 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             return null;
         }
 
+        @Override
         public boolean pushExpanding(APTToken token) {
             return false;
         }
 
+        @Override
         public void popExpanding() {
         }
 
+        @Override
         public boolean isExpanding(APTToken token) {
             return false;
         }    
         
+        @Override
         public boolean isDefined(APTToken token) {
             return false;
         }
         
+        @Override
         public boolean isDefined(CharSequence token) {
             return false;
         }
 
 
+        @Override
         public APTMacro getMacro(APTToken token) {
             return null;
         }      
 
+        @Override
         public void define(APTFile file, APTDefine define, Kind macroType) {
         }
 
+        @Override
         public void undef(APTFile file, APTToken name) {
         }
 
+        @Override
         public void setState(State state) {
         }
 
+        @Override
         public State getState() {
             return new StateImpl((APTMacroMapSnapshot )null);
         }

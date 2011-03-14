@@ -145,6 +145,16 @@ public class ClassEncapsulationTest extends TestBase {
                             "}");
     }
 
+    public void testLimitByEnclosing194543() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private static final class A {\n"+
+                            "        class E {}\n"+
+                            "    }\n"+
+                            "}");
+    }
+
     public void testEnumIgnore() throws Exception {
         Preferences p = RulesManager.getPreferences(ClassEncapsulation.class.getName() + ".publicCls", HintsSettings.getCurrentProfileId());
 

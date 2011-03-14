@@ -55,8 +55,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -75,6 +73,7 @@ import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelProblem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.pom.ModelList;
@@ -332,12 +331,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                            explorerManager.setRootContext(hold.createNode());
                         } 
                     });
-                } catch (ModelBuildingException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
+                } catch (final ModelBuildingException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(true);
-                           explorerManager.setRootContext(createErrorNode());
+                           explorerManager.setRootContext(createErrorNode(ex));
                         }
                     });
                 }
@@ -478,9 +476,16 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         return an;
     }
 
-    private static Node createErrorNode() {
+    static Node createErrorNode(ModelBuildingException x) {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Error"));
+        StringBuilder b = new StringBuilder();
+        for (ModelProblem p : x.getProblems()) {
+            if (b.length() > 0) {
+                b.append("; ");
+            }
+            b.append(p.getMessage());
+        }
+        an.setDisplayName(b.toString());
         return an;
     }
 

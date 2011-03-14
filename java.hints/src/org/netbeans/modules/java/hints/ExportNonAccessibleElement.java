@@ -57,6 +57,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.DisjunctiveType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.NoType;
@@ -342,6 +343,20 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                  (el.getEnclosingElement().getKind().isClass() || el.getEnclosingElement().getKind().isInterface()) &&
                  !el.getEnclosingElement().getModifiers().contains(Modifier.FINAL))
             ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean visitDisjunctive(DisjunctiveType tm, Void p) {
+        for (TypeMirror t : tm.getAlternatives()) {
+            if (stop) {
+                return false;
+            }
+            
+            if (t.accept(this, p)) {
                 return true;
             }
         }

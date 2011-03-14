@@ -1,2 +1,0 @@
-foo = true
-if !fo

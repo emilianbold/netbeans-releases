@@ -102,7 +102,14 @@ public final class XMLUtil extends Object {
 
         assert input != null : "InputSource cannot be null";
         
-        return builder.parse(input);            
+        try {
+            return builder.parse(input);
+        } catch (SAXException ex) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Cannot parse");
+            msg.append("Thread.cCL: ").append(Thread.currentThread().getContextClassLoader());
+            throw new SAXException(msg.toString(), ex);
+        }
     }
     
     public static Document createDocument(String rootQName) throws DOMException {

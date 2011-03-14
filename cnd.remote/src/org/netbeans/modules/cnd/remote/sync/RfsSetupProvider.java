@@ -156,14 +156,14 @@ public class RfsSetupProvider implements SetupProvider {
 
         HostInfo.OSFamily osFamily = null;
         HostInfo.CpuFamily cpuFamily = null;
-        HostInfo.OS os = null;
+        String osVersion = null;
 
         if (HostInfoUtils.isHostInfoAvailable(env)) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                 osFamily = hostInfo.getOSFamily();
                 cpuFamily = hostInfo.getCpuFamily();
-                os = hostInfo.getOS();
+                osVersion = hostInfo.getOS().getVersion();
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.log(Level.WARNING, "Exception when getting host info:", ex);
             } catch (CancellationException ex) {
@@ -171,11 +171,12 @@ public class RfsSetupProvider implements SetupProvider {
             }
         }
 
-        if (osFamily == null || cpuFamily == null) { // in fact either both or none is null
+        if (osFamily == null || cpuFamily == null || osVersion == null) { // in fact either all or none is null
             RemoteServerRecord record = RemoteServerList.getInstance().get(env, false);
             if (record != null) {
                 osFamily = record.getOsFamily();
                 cpuFamily = record.getCpuFamily();
+                osVersion = record.getOsVersion();
             }
         }
 
@@ -191,7 +192,7 @@ public class RfsSetupProvider implements SetupProvider {
                 //BZ #189231 Smart secure copy does not work on (remote) Solaris 8
                 //Disable Automatic copying on Solaris 8 as it is not supported platform
                 //NFS file sharing can be used in this case
-                if (getSolarisOSVersionNumber(os.getVersion()) <= 8){
+                if (osVersion == null || getSolarisOSVersionNumber(osVersion) <= 8) {
                     return Boolean.FALSE;
                 }
                 return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? Boolean.TRUE : Boolean.FALSE;

@@ -80,28 +80,31 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.sun.tools.analytics.indicators</friend>
-                <friend>com.sun.tools.analytics.oss.support</friend>
-                <friend>com.sun.tools.analytics.management</friend>
+                <friend>com.sun.tools.analytics.dataproviders</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
+                <friend>com.sun.tools.analytics.indicators</friend>
+                <friend>com.sun.tools.analytics.management</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.dlight.systemwide.threadmap</friend>
+                <friend>com.sun.tools.dlight.systemwide.visualizers</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
-                <friend>org.netbeans.modules.dlight.uncover</friend>
-                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.threads</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.core.stack.api</package>

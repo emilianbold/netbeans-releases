@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -57,9 +58,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -71,7 +74,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -91,6 +93,7 @@ import org.openide.windows.InputOutput;
 public class DefaultProjectActionHandler implements ProjectActionHandler, ExecutionListener {
 
     private ProjectActionEvent pae;
+    private Collection<OutputStreamHandler> outputHandlers;
     //private volatile ExecutorTask executorTask;
     private volatile Future<Integer> executorTask;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
@@ -100,8 +103,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = false;
 
     @Override
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
+        this.outputHandlers = outputHandlers;
     }
 
     @Override
@@ -130,7 +134,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             assert false;
         }
 
-        final String runDirectory = pae.getProfile().getRunDirectory();
+        final String runDirectory = pae.getProfile().getRunDirectory(); // it's local so far
         final MakeConfiguration conf = pae.getConfiguration();
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -231,7 +235,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
                     pae.getProject(), conf.getCompilerSet().getCompilerSet(),
-                    execEnv, CndFileUtils.toFileObject(runDirectory));
+                    execEnv, RemoteFileUtil.getFileObject(runDirectory, pae.getProject()));
         }
 
         // TODO: this is actual only for sun studio compiler
@@ -244,9 +248,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             // return null;
         }
 
+        WriterRedirector writer = null;
+        if (outputHandlers != null && outputHandlers.size() > 0) {
+            writer = new WriterRedirector(outputHandlers);
+        }
+
         ProcessChangeListener processChangeListener =
-                new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io);
+                new ProcessChangeListener(this, writer, converter, io);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setWorkingDirectory(workingDirectory).
@@ -443,6 +451,39 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 return lineConvertor.convert(line);
             }
             return null;
+        }
+    }
+
+    private static final class WriterRedirector extends Writer {
+        private final Collection<OutputStreamHandler> handlers;
+        WriterRedirector(Collection<BuildActionsProvider.OutputStreamHandler> handlers) {
+            this.handlers = handlers;
+        }
+
+        @Override
+        public void write(String line) throws IOException {
+            for (OutputStreamHandler outputStreamHandler : handlers) {
+                outputStreamHandler.handleLine(line);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            for (OutputStreamHandler outputStreamHandler : handlers) {
+                outputStreamHandler.flush();
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            for (OutputStreamHandler outputStreamHandler : handlers) {
+                outputStreamHandler.close();
+            }
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) throws IOException {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
     }
 }

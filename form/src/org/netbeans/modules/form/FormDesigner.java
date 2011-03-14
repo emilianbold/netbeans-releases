@@ -145,6 +145,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public static final int MODE_ADD = 2;
     
     private boolean initialized = false;
+    private int finishActivation = 0; // > 0 select in inspector after open, > 1 also activate (focus)
 
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
@@ -192,13 +193,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (formEditor != null) { // Issue 67879
             explorerManager = new ExplorerManager();
 
-            // add FormDataObject to lookup so it can be obtained from multiview TopComponent
             ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
             final FormDataObject formDataObject = formEditor.getFormDataObject();
             lookup = new FormProxyLookup(new Lookup[] {
                 ExplorerUtils.createLookup(explorerManager, map),
                 PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile()),
-                Lookup.EMPTY // placeholder for data node lookup used when no node selected in the form
+                Lookup.EMPTY, // placeholder for UndoRedo.Provider
+                formDataObject.getNodeDelegate().getLookup() // so FDO is found in multiview TC lookup
+                // last two items may change, see switchXXXInLookup methods
             });
             associateLookup(lookup);
 
@@ -213,6 +215,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         removeAll();
 
         formModel = formEditor.getFormModel();
+
+        switchUndoRedoInLookup(true);
 
         componentLayer = new ComponentLayer(formModel);
         handleLayer = new HandleLayer(this);
@@ -282,7 +286,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                 list.add(n);
                             }
                         }
-                        switchLookup(list.isEmpty()); // if no form node, select data node (of FormDataObject)
+                        // if no form node, select data node (of FormDataObject)
+                        switchNodeInLookup(list.isEmpty());
                         explorerManager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException ex) {
                         Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
@@ -324,18 +329,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         // vlv: print
         designPanel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-
-        // Issue 137741
-        RADComponent topMetacomp = formModel.getTopRADComponent();
-        if (topMetacomp == null) {
-            ComponentInspector inspector = ComponentInspector.getInstance();
-            inspector.focusForm(formEditor);
-            try {
-                inspector.setSelectedNodes(new Node[] {formEditor.getFormRootNode()}, formEditor);
-            } catch (PropertyVetoException pvex) {}
-        } else {
-            setSelectedComponent(topMetacomp);
-        }
     }
 
     void reset(FormEditor formEditor) {
@@ -379,6 +372,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
             topDesignComponent = null;
             formModel = null;
+            switchUndoRedoInLookup(false); // so it can be set to new value when reloaded
         }
         
         replicator = null;
@@ -389,7 +383,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         this.formEditor = formEditor;
     }
 
-    private void switchLookup(boolean includeDataNodeLookup) {
+    private void switchNodeInLookup(boolean includeDataNodeLookup) {
         if (settingLookup) {
             return;
         }
@@ -400,6 +394,33 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             lookups[index] = includeDataNodeLookup
                     ? formEditor.getFormDataObject().getNodeDelegate().getLookup()
                     : Lookup.EMPTY;
+            try {
+                settingLookup = true; // avoid re-entrant call
+                lookup.setSubLookups(lookups);
+            } finally {
+                settingLookup = false;
+            }
+        }
+    }
+
+    private void switchUndoRedoInLookup(boolean includeUndoRedo) {
+        if (settingLookup) {
+            return;
+        }
+        Lookup[] lookups = lookup.getSubLookups();
+        int index = lookups.length - 2;
+        boolean undoInLookup = (lookups[index] != Lookup.EMPTY);
+        if (includeUndoRedo != undoInLookup) {
+            final UndoRedo ur = getUndoRedo();
+            if (includeUndoRedo && ur != null) {
+                lookups[index] = Lookups.singleton(new UndoRedo.Provider() {
+                    @Override public UndoRedo getUndoRedo() {
+                        return ur;
+                    }
+                });
+            } else {
+                lookups[index] = Lookup.EMPTY;
+            }
             try {
                 settingLookup = true; // avoid re-entrant call
                 lookup.setSubLookups(lookups);
@@ -1706,9 +1727,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     @Override
     public void componentActivated() {
-        if (formModel == null)
+        if (formModel == null) {
+            // too early, just after invoking pre-loading task, form not loaded yet
+            finishActivation = 2;
             return;
+        }
+        componentActivated(true);
+    }
 
+    private void componentActivated(boolean stillActive) {
         formEditor.setFormDesigner(this);
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditor) {
@@ -1719,15 +1746,22 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 updateComponentInspector();
         }
 
-        ci.attachActions();
-        if (textEditLayer == null || !textEditLayer.isVisible())
-            handleLayer.requestFocus();               
+        if (stillActive) {
+            ci.attachActions();
+            if (textEditLayer == null || !textEditLayer.isVisible()) {
+                handleLayer.requestFocus();
+            }
+        }        
     }
 
     @Override
     public void componentDeactivated() {
-        if (formModel == null)
+        if (formModel == null) {
+            if (finishActivation > 1) {
+                finishActivation = 1; // losing focus, but still selected
+            }
             return;
+        }
         
         if (textEditLayer != null && textEditLayer.isVisible())
             textEditLayer.finishEditing(false);
@@ -1826,6 +1860,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     }
                 });
             }
+            finishActivation = 1;
         } else {
             finishComponentShowing();
         }
@@ -1899,29 +1934,32 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 removeAll();
                 return;
             }
-            // hack: after IDE start, if some form is opened but not active in
-            // winsys, we need to select it in ComponentInspector
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (formEditor != null && formEditor.isFormLoaded()
-                            && ComponentInspector.exists()
-                            && ComponentInspector.getInstance().getFocusedForm() == null) {
-                        ComponentInspector.getInstance().focusForm(formEditor);
-                    }
-                }
-            });
         }
         if (!initialized) {
             initialize();
         }
         FormEditorSupport.checkFormGroupVisibility();
+        if (finishActivation > 0) { // still at least selected, or even active
+            boolean stillActive = (finishActivation == 2);
+            finishActivation = 0;
+            componentActivated(stillActive);
+            RADComponent topMetacomp = formModel.getTopRADComponent();
+            if (topMetacomp != null) {
+                setSelectedComponent(topMetacomp);
+            } else {
+                try {
+                    ComponentInspector.getInstance().setSelectedNodes(
+                            new Node[] {formEditor.getFormRootNode()}, formEditor);
+                } catch (PropertyVetoException pvex) {}
+            }
+        }
 
         Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 3: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
     }
 
     @Override
     public void componentHidden() {
+        finishActivation = 0;
         super.componentHidden();
         FormEditorSupport.checkFormGroupVisibility();
     }

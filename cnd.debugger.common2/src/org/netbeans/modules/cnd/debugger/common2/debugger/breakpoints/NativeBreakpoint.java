@@ -1805,8 +1805,9 @@ public abstract class NativeBreakpoint
     public void addAnnotation(String filename, int line, long addr) {
 	Line l = null;
 
-	if (line != 0)
-	    l = EditorBridge.getLine(filename, line);
+	if (line != 0) {
+	    l = EditorBridge.getLine(filename, line, currentDebugger());
+        }
 	//if (l != null)
 	addAnnotation(l, addr);
     }

@@ -56,7 +56,6 @@ import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
@@ -241,13 +240,12 @@ public final class FiltersManager {
             
             // add toggle buttons
             JToggleButton curToggle;
-            Dimension space = new Dimension(3, 0);
             for (int i = 0; i < toggles.size(); i++) {
                 curToggle = toggles.get(i);
                 curToggle.addActionListener(this);
                 toolbar.add(curToggle);
                 if (i != toggles.size() - 1) {
-                    toolbar.addSeparator(space);
+                    toolbar.add(new Space());
                 }
             }
             
@@ -346,5 +344,23 @@ public final class FiltersManager {
         }
     
     } // end of FiltersComponent
+
+    private static class Space extends JComponent {
+
+        private static final Dimension SPACE = new Dimension(3, 3);
+
+        @Override
+        public Dimension getPreferredSize() {
+            return getMinimumSize();
+        }
+        @Override
+        public Dimension getMaximumSize() {
+            return getMinimumSize();
+        }
+        @Override
+        public Dimension getMinimumSize() {
+            return SPACE;
+        }
+    }
     
 }

@@ -42,16 +42,22 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
-import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup.Provider;
 
 /**
  * FileOwnerQuery dealing with files that are not in the project directory.
@@ -62,33 +68,50 @@ import org.openide.filesystems.FileUtil;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=98)
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
 
+    @Override
     public Project getOwner(URI uri) {
+        return getOwner(toFileObject(uri));
+    }
+    
+    private FileObject toFileObject(URI uri) {
         try {
-            if ("file".equals(uri.getScheme())) { // NOI18N
-                return getOwner(CndFileUtils.createLocalFile(uri));
-            }
-        } catch (IllegalArgumentException x) {/* skip it */}
+            URL url =  uri.toURL();
+            return URLMapper.findFileObject(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return null;
     }
 
+    @Override
     public Project getOwner(FileObject fo) {
-        File f = FileUtil.toFile(fo);
-        return f != null ? getOwner(f) : null;
-    }
-
-    private Project getOwner(File f) {
-        String path = f.getAbsolutePath();
-        for (Project project : OpenProjects.getDefault().getOpenProjects()) {
-            ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (provider != null && provider.gotDescriptor()) {
-                MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                if (descriptor != null && (descriptor.findProjectItemByPath(path) != null
-                            || descriptor.findExternalItemByPath(path) != null)) {
-                    return project;
+        if (fo == null) {
+            return null;
+        }
+        FileSystem fs;
+        try {
+            fs = fo.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }        
+        String path = fo.getPath();
+        for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
+            Provider project = nativeProject.getProject();
+            if (project instanceof Project) {
+                if (!fs.equals(RemoteFileUtil.getProjectSourceFileSystem((Project) project))) {
+                    return null;
+                }
+                ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                if (provider != null && provider.gotDescriptor()) {
+                    MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                    if (descriptor != null && (descriptor.findProjectItemByPath(path) != null
+                                || descriptor.findExternalItemByPath(path) != null)) {
+                        return (Project) project;
+                    }
                 }
             }
         }
         return null;
     }
-
 }

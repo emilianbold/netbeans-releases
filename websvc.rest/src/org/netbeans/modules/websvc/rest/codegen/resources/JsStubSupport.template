@@ -194,9 +194,22 @@ var rjsSupport = {
     },
 
     delete_ : function(url) {
-        var xmlHttpReq = this.open('DELETE', url, 'application/xml', 0, false);
+	return this.delete_(url, 'application/xml' , null);
+    },
+
+    delete_ : function(url,mime, content) {
+        var length = 0;
+  	if ( content !=null && content != undefined ){
+		length = content.length;
+	}
+        var xmlHttpReq = this.open('DELETE', url, mime , length, false);
         try {
-          xmlHttpReq.send(null);
+	  if ( length == 0 ){
+          	xmlHttpReq.send(null);
+	  }
+	  else {
+          	xmlHttpReq.send(content);
+	  }
           if (xmlHttpReq.readyState == 4) {
               var status = xmlHttpReq.status;
               if(status == 204) {

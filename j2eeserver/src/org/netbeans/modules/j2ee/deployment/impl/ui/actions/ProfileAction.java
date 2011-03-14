@@ -56,15 +56,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Profile server action starts the server in the profile mode.
  *
  * @author sherold
  */
-public class ProfileAction extends NodeAction {
+public class ProfileAction extends ControlAction {
     
     public String getName() {
         return NbBundle.getMessage(DebugAction.class, "LBL_Profile");
@@ -102,7 +100,7 @@ public class ProfileAction extends NodeAction {
             if (settings == null) {
                 return;
             }
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     String title = NbBundle.getMessage(DebugAction.class, "LBL_Profiling", si.getDisplayName());
                     ProgressUI progressUI = new ProgressUI(title, false);

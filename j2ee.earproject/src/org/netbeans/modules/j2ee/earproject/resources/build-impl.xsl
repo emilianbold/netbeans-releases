@@ -650,6 +650,7 @@ exists or setup the property manually. For example like this:
                     </xsl:if>
                     <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg=@{{subprojectname}}"/>
+                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
                     <arg line="@{{args}}"/>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>

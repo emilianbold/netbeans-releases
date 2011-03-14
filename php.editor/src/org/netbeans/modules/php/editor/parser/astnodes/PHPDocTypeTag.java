@@ -57,9 +57,9 @@ public class PHPDocTypeTag extends PHPDocTag {
         "NULL", "INT", "INTEGER", "BOOL", "STRING"
         );
 
-    private final List<PHPDocNode> types;
+    private final List<PHPDocTypeNode> types;
 
-    public PHPDocTypeTag(int start, int end, PHPDocTag.Type kind, String value, List<PHPDocNode> types) {
+    public PHPDocTypeTag(int start, int end, PHPDocTag.Type kind, String value, List<PHPDocTypeNode> types) {
         super(start, end, kind, value);
         this.types = types;
     }
@@ -68,7 +68,7 @@ public class PHPDocTypeTag extends PHPDocTag {
      *
      * @return list of PHPDocNode or PHPDocStaticAccessType
      */
-    public List<PHPDocNode> getTypes() {
+    public List<PHPDocTypeNode> getTypes() {
         return types;
     }
 

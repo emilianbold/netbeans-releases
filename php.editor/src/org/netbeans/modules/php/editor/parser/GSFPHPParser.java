@@ -213,7 +213,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                         ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
                         Symbol token = fcScanner.next_token();
                         while (token.sym != ASTPHP5Symbols.EOF) {
-                            if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION) {
+                            if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION || isRequireFunction(token)) {
                                 ok = false;
                                 break;
                             }
@@ -344,7 +344,145 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 return sanitizeRemoveBlock(context, error.getCurrentToken().left);
             }
         }
+        if (sanitizing == Sanitize.REQUIRE_FUNCTION_INCOMPLETE) {
+            List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
+            if (syntaxErrors.size() > 0) {
+                PHP5ErrorHandler.SyntaxError error =  syntaxErrors.get(0);
+                
+                int start = Utils.getRowStart(context.getSource(), error.getPreviousToken().left);
+                int end = Utils.getRowEnd(context.getSource(), error.getCurrentToken().left);
+                
+                return sanitizeRequireAndInclude(context, start, end);
+            }
+        }
         return false;
+    }
+    
+    protected boolean sanitizeRequireAndInclude(Context context, int start, int end) {
+        try {
+            String source = context.getSource();
+            String phpOpenDelimiter = "<?";
+            String actualSource = phpOpenDelimiter + source.substring(start, end) + "?>";
+            ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(actualSource), shortTags, aspTags);
+            char delimiter = '0';
+
+            Symbol token = scanner.next_token();
+            while (token.sym != ASTPHP5Symbols.EOF) {
+                if (isRequireFunction(token)) {
+                    boolean containsOpenParenthese = false;
+                    int currentLeftOffset = token.right;
+
+                    char c = actualSource.charAt(currentLeftOffset);
+                    if (isStringDelimiter(c)) {
+                        delimiter = c;
+                    } else {
+                        currentLeftOffset++;
+
+                        if (Character.isWhitespace(c)) {
+                            // fetch all following whitespaces
+                            while (Character.isWhitespace(actualSource.charAt(currentLeftOffset))) {
+                                currentLeftOffset++;
+                            }
+
+                            char cc = actualSource.charAt(currentLeftOffset);
+                            if (isStringDelimiter(cc)) {
+                                delimiter = cc;
+                            } else if (cc == '(') {
+                                containsOpenParenthese = true;
+                                currentLeftOffset++;
+                                delimiter = actualSource.charAt(currentLeftOffset);
+                            }
+                        } else if (c == '(') {
+                            containsOpenParenthese = true;
+                            delimiter = actualSource.charAt(currentLeftOffset);
+                        }
+                    }
+
+                    if (isStringDelimiter(delimiter)) {
+                        char expectedCloseDelimiter = actualSource.charAt(currentLeftOffset + 1);
+
+                        boolean hasCloseDelimiter = false;
+                        boolean hasCloseParenthese = false;
+                        if (expectedCloseDelimiter ==  delimiter) {
+                            hasCloseDelimiter = true;
+                            currentLeftOffset++;
+
+                            char expectedCloseParenthese = actualSource.charAt(currentLeftOffset + 1);
+                            if (expectedCloseParenthese == ')') {
+                                hasCloseParenthese = true;
+                                currentLeftOffset++;
+                            }
+                        }
+
+                        boolean canBeSanitized = true;
+                        for (int i = 1; i <= numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese); i++) {
+                            if (!Character.isWhitespace(actualSource.charAt(currentLeftOffset + i))) {
+                                canBeSanitized = false;
+                                break;
+                            }
+                        }
+
+                        if (canBeSanitized) {
+                            int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
+                            context.sanitizedSource = source.substring(0, start + currentLeftOffset - 1) 
+                                    + sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese) 
+                                    + source.substring(start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1);
+                            System.out.println(context.sanitizedSource);
+                            return true;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                token = scanner.next_token();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Exception during 'require' sanitization.", ex);
+        }
+
+        return false;
+    }
+
+    private boolean isRequireFunction(Symbol token) {
+        return token.sym == ASTPHP5Symbols.T_REQUIRE || token.sym == ASTPHP5Symbols.T_REQUIRE_ONCE 
+                || token.sym == ASTPHP5Symbols.T_INCLUDE || token.sym == ASTPHP5Symbols.T_INCLUDE_ONCE;
+    }
+
+    private boolean isStringDelimiter(char c) {
+        return c == '"' || c == '\'';
+    }
+
+    private String sanitizationString(char delimiter, boolean containsOpenParenthese, boolean containsCloseDelimiter, boolean containsCloseParenthese) {
+        if (containsCloseDelimiter) {
+            if (containsOpenParenthese) {
+                if (containsCloseParenthese) {
+                    return ";";
+                } else {
+                    return ");";
+                }
+            } else {
+                return ";";
+            }
+        } else {
+            if (containsOpenParenthese) {
+                return delimiter + ");";
+            } else {
+                return delimiter + ";";
+            }
+        }
+    }
+
+    private int numberOfSanitizedChars(boolean containsOpenParenthese, boolean containsCloseDelimiter, boolean containsCloseParenthese) {
+        int chars = 1;
+
+        if (containsOpenParenthese) {
+            chars += containsCloseParenthese ? 0 : 1;
+        }
+
+        chars += containsCloseDelimiter ? 0 : 1;
+
+        return chars;
     }
 
     protected boolean sanitizeCurly (Context context) {
@@ -490,6 +628,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         switch(sanitizing) {
             case NONE:
             case MISSING_CURLY:
+                return parseBuffer(context, Sanitize.REQUIRE_FUNCTION_INCOMPLETE, errorHandler);
+            case REQUIRE_FUNCTION_INCOMPLETE:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_CURRENT, errorHandler);
             case SYNTAX_ERROR_CURRENT:
                 // one more time
@@ -561,6 +701,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         EDITED_LINE,
         /** Attempt to fix missing } */
         MISSING_CURLY,
+        /** Try tu fix incomplete 'require("' function for FS code complete */
+        REQUIRE_FUNCTION_INCOMPLETE,
     }
     
     /** Parsing context */

@@ -279,6 +279,15 @@ is divided into following sections:
                 <condition property="is.server.weblogic" value="true">
                     <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
                 </condition>
+                <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
+                    <and>
+                        <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
+                        <not>
+                            <os family="unix"/>
+                        </not>
+                    </and>
+                </condition>
+                <property name="javac.fork" value="${{jdkBug6558476}}"/>
             </target>
             
             <!-- COS feature - used in run-deploy -->
@@ -420,8 +429,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:attribute name="fork">${javac.fork}</xsl:attribute> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
                             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             </xsl:if>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>

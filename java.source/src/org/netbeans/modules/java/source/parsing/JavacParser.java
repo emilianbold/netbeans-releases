@@ -459,7 +459,7 @@ public class JavacParser extends Parser {
             if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
                 try {
                     nct.setCompilationController(
-                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot)),
+                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, true)),
                         parseId);
                 } catch (IOException ioe) {
                     throw new ParseException ("Javac Failure", ioe);
@@ -617,7 +617,7 @@ public class JavacParser extends Parser {
             final FileObject root,
             final Snapshot snapshot,
             final JavacTaskImpl javac) throws IOException {
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, javac, snapshot);
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, javac, snapshot, false);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});
@@ -631,7 +631,8 @@ public class JavacParser extends Parser {
             final ClasspathInfo cpInfo,
             final JavacParser parser,
             final DiagnosticListener<? super JavaFileObject> diagnosticListener,
-            final ClassNamesForFileOraculum oraculum) {
+            final ClassNamesForFileOraculum oraculum,
+            final boolean detached) {
         String sourceLevel = null;
         if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
@@ -656,7 +657,7 @@ public class JavacParser extends Parser {
         }
         JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, dcc, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
         Context context = javacTask.getContext();
-        TreeLoader.preRegister(context, cpInfo);
+        TreeLoader.preRegister(context, cpInfo, detached);
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }

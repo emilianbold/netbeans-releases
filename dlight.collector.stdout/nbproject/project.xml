@@ -74,6 +74,7 @@
             <friend-packages>
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.dlight.lint</friend>
+                <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>

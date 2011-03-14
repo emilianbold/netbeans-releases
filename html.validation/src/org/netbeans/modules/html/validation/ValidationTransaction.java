@@ -22,9 +22,12 @@
  */
 package org.netbeans.modules.html.validation;
 
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import org.netbeans.api.progress.ProgressHandle;
@@ -171,6 +174,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/table/", "http://c.validator.nu/nfc/",
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
+    
+    private static String INTERNAL_ERROR_MSG = "Validation of the code failed unexpectedly, the validator results may be inaccurate. See the IDE log for more information"; //NOI18N
+    
     protected String document = null;
     ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
@@ -507,7 +513,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
         if (version.isXhtml()) {
-            return ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION;
+            return ParserMode.XML_NO_EXTERNAL_ENTITIES; //we do not use the parser for validation, no need to load external entities
         } else {
             switch (version) {
                 case HTML41_STRICT:
@@ -644,7 +650,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } catch (TooManyErrorsException e) {
             LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
@@ -657,26 +663,79 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
+            reportRuntimeExceptionOnce(e);
+            errorHandler.internalError(
+                    e,
+                    INTERNAL_ERROR_MSG);
+        } catch (Error e) {
             LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
-        } catch (Error e) {
-            LOGGER.log(Level.SEVERE, getDocumentInternalErrorMsg(), e);
-            errorHandler.internalError(
-                    e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
     }
 
+    private static final Set<Object> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Object>();
+
+    //report REs only once per ide session and use lower log levels for known issues
+    private void reportRuntimeExceptionOnce(RuntimeException e) {
+        int hash = document.hashCode();
+        hash = 21 * hash + e.getClass().hashCode();
+        if(e.getMessage() != null) {
+            hash = 21 * hash + e.getMessage().hashCode();
+        } else {
+            //no message provided, so use the whole stacktrace hashcode
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.flush();
+            sw.flush();
+            hash = 21 * hash + sw.toString().hashCode();
+        }
+
+        final int fhash = hash;
+        Object marker = new Object() {
+
+            @Override
+            public boolean equals(Object o) {
+                return o.hashCode() == hashCode();
+            }
+
+            @Override
+            public int hashCode() {
+                return fhash;
+            }
+
+        };
+        if(REPORTED_RUNTIME_EXCEPTIONS.add(marker)) {
+            Level level = isKnownProblem(e) ? Level.FINE : Level.INFO;
+            LOGGER.log(level, getDocumentInternalErrorMsg(), e);
+        }
+    }
+
+    private static boolean isKnownProblem(RuntimeException e) {
+        //issue #194939
+        if(e.getClass().equals(StringIndexOutOfBoundsException.class)) {
+            StackTraceElement[] stelements = e.getStackTrace();
+            if(stelements.length >= 1) {
+                if(stelements[1].getClassName().equals("com.thaiopensource.validate.schematron.OutputHandler") //NOI18N
+                        && stelements[1].getMethodName().equals("startElement")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private String getDocumentErrorMsg() {
-        return new StringBuilder().append("An error occured during validation of ").append(document).toString();
+        return new StringBuilder().append("An error occurred during validation of ").append(document).toString(); //NOI18N
     }
 
     private String getDocumentInternalErrorMsg() {
-        return new StringBuilder().append("An internal error occured during validation of ").append(document).toString();
+        return new StringBuilder().append("An internal error occurred during validation of ").append(document).toString(); //NOI18N
     }
 
     /**
@@ -1456,6 +1515,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     static int PATTERN_LEN_LIMIT = 10; //consider backward match PATTER_LEN_LIMIT long as OK
 
     static int findBackwardDiff(CharSequence text, int tlen, char[] pattern, int pstart, int plen) {
+        assert text.length() >= tlen;
         assert plen > 0;
         int pend = pstart + plen - 1;
         int limitedpstart = plen - PATTERN_LEN_LIMIT > 0 ? pstart + (plen - PATTERN_LEN_LIMIT) : pstart;

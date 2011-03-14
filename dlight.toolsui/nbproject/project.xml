@@ -47,6 +47,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.util</friend>
+                <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
                 <package>org.netbeans.modules.dlight.toolsui.api</package>

@@ -71,11 +71,9 @@ import org.openide.windows.WindowManager;
  */
 @ServiceProvider(service=RunLevel.class)
 public class GuiRunLevel implements RunLevel {
-    private static int count;
     
     public GuiRunLevel() {
         MainLookup.started();
-        assert count++ == 0 : "Only one instance allowed"; // NOI18N
     }
     
     /** Initialization of the manager.

@@ -45,11 +45,8 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Image;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
-import org.openide.util.ImageUtilities;
 
 /**
  * Base class for inner tabs in the Welcome Page
@@ -59,12 +56,10 @@ import org.openide.util.ImageUtilities;
 abstract class AbstractTab extends JPanel implements Constants {
 
     private boolean initialized = false;
-    private final Image bottomBar;
     
     public AbstractTab() {
         super( new BorderLayout() );
         setOpaque(false);
-         bottomBar = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/bottom_bar.png"); //NOI18N
     }
 
     @Override
@@ -77,12 +72,4 @@ abstract class AbstractTab extends JPanel implements Constants {
     }
 
     protected abstract void buildContent();
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        int imgWidth = bottomBar.getWidth(this);
-        int imgHeight = bottomBar.getHeight(this);
-        g.drawImage(bottomBar, getWidth()-imgWidth, getHeight()-imgHeight, this);
-    }
 }

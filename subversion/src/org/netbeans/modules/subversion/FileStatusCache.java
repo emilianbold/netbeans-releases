@@ -723,11 +723,11 @@ public class FileStatusCache {
         propertySupport.removePropertyChangeListener(listener);
     }
     
-    // --- Package private contract ------------------------------------------
-    
-    boolean ready() {
+    public boolean ready() {
         return ready;
     }
+    
+    // --- Package private contract ------------------------------------------
 
     /**
      * compute the cache index

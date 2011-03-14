@@ -90,7 +90,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private final byte arrayDepth;
     private byte flags;
     private CharSequence classifierText;
-    private int parseCount;
+    private volatile CachePair lastCache = EMPTY_CACHE_PAIR;
 
     final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
 
@@ -482,10 +482,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public CsmClassifier getClassifier() {
         CsmClassifier classifier = _getClassifier();
         boolean needToRender = true;
-        Resolver parent = ResolverFactory.getCurrentResolver();
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
             needToRender = false;
+            Resolver parent = ResolverFactory.getCurrentResolver();
             if (!isTypeWithClassifier() && (qname != null) && (parent != null) && !CsmKindUtilities.isBuiltIn(classifier)) {
                 // check visibility of classifier
                 if (ForwardClass.isForwardClass(classifier) || !CsmIncludeResolver.getDefault().isObjectVisible(parent.getStartFile(), classifier)) {
@@ -495,9 +495,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
         }
         if (needToRender) {
-            int newParseCount = FileImpl.getParseCount();
-            if (classifier != null) {
-                if (newParseCount == parseCount) {
+            CachePair newCachePair = new CachePair(FileImpl.getParseCount(), ResolverFactory.getCurrentStartFile(this));
+            if (classifier != null) {                
+                if (newCachePair.equals(lastCache)) {
                     return classifier;
                 }
             }
@@ -510,7 +510,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
             synchronized (this) {
                 _setClassifier(classifier);
-                parseCount = newParseCount;
+                lastCache = newCachePair;
             }
             classifier = _getClassifier();
         }
@@ -743,4 +743,47 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         instantiationParams.trimToSize();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
+    
+    private final static CachePair EMPTY_CACHE_PAIR = new CachePair(-1, null);
+    
+    private static final class CachePair {
+        private final int parseCount;
+        private final CsmUID<CsmFile> fileUID;
+
+        public CachePair(int parseCount, CsmUID<CsmFile> fileUID) {
+            this.parseCount = parseCount;
+            this.fileUID = fileUID;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CachePair other = (CachePair) obj;
+            if (this.parseCount != other.parseCount) {
+                return false;
+            }
+            if (this.fileUID != other.fileUID && (this.fileUID == null || !this.fileUID.equals(other.fileUID))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + this.parseCount;
+            hash = 37 * hash + (this.fileUID != null ? this.fileUID.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "CachePair{" + "parseCount=" + parseCount + ", fileUID=" + fileUID + '}'; // NOI18N
+        }
+    }    
 }

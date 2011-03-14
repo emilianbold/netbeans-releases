@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -69,7 +69,7 @@ public enum ServerDetails {
                     + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
                 new String[0],
                 "http://download.java.net/glassfish/" + // NOI18N
-                    "3.1/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
+                    "3.1/release/glassfish-3.1.zip?nbretriever=fallback", // NOI18N
                 "http://serverplugins.netbeans.org/glassfishv3/post69v3-1.txt" // NOI18N
             );
     

@@ -110,7 +110,7 @@ public final class DisassemblerWindow extends TopComponent {
 	if (debugger == null) return;
 	debugger.registerDisassemblerWindow(this);
         super.componentShowing ();
-	view.getController().requestDis();
+	view.getController().requestDis(true);
     }
 
     // interface TopComponent

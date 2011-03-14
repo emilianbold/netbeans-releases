@@ -83,6 +83,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -1949,7 +1950,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         nueStatements.add(make.ExpressionStatement(invocation));
 
                     nueStatements.addAll(statements.subList(to + 1, statements.size()));
+                    
+                    Map<Tree, Tree> rewritten = new IdentityHashMap<Tree, Tree>();
 
+                    doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
+                    
                     if (replaceOther) {
                         //handle duplicates
                         Document doc = copy.getDocument();
@@ -1960,7 +1965,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
-                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
+                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(new TreePath(new TreePath(mdd.firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, mdd.firstLeaf.getParentPath().getLeaf())), mdd.firstLeaf.getLeaf()));
                             int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
                             int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
 
@@ -2016,7 +2021,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             newStatements.addAll(parentStatements.subList(mdd.dupeEnd + 1, parentStatements.size()));
 
-                            doReplaceInBlockCatchSingleStatement(copy, mdd.firstLeaf, newStatements);
+                            doReplaceInBlockCatchSingleStatement(copy, rewritten, mdd.firstLeaf, newStatements);
                         }
 
                         introduceBag(doc).clear();
@@ -2065,7 +2070,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
-                    doReplaceInBlockCatchSingleStatement(copy, firstStatement, nueStatements);
                 }
             }).commit();
 
@@ -2074,9 +2078,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     }
 
-    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
+    private static Tree resolveRewritten(Map<Tree, Tree> rewritten, Tree t) {
+        while (rewritten.containsKey(t)) {
+            t = rewritten.get(t);
+        }
+        
+        return t;
+    }
+    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, Map<Tree, Tree> rewritten, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
         TreeMaker make = copy.getTreeMaker();
-        Tree toReplace = firstLeaf.getParentPath().getLeaf();
+        Tree toReplace = resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf());
         Tree nueTree;
 
         switch (toReplace.getKind()) {
@@ -2095,6 +2106,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         copy.rewrite(toReplace, nueTree);
+        rewritten.put(toReplace, nueTree);
     }
 
     private static final class IntroduceExpressionBasedMethodFix implements Fix {

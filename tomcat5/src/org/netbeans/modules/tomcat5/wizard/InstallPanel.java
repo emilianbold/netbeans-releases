@@ -90,11 +90,11 @@ class InstallPanel implements WizardDescriptor.Panel, ChangeListener {
         boolean result = getVisual().hasValidData();
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
-        if (!result) {
+        //if (!result) {
             wizard.putProperty(
                     getVisual().isInfoMessage() ? WizardDescriptor.PROP_INFO_MESSAGE : WizardDescriptor.PROP_ERROR_MESSAGE,
                     getVisual().getErrorMessage());
-        }
+        //}
         return result;
     }
 

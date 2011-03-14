@@ -61,8 +61,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * File and offset -based key for declarations
  */
 
-/*package*/
-final class OffsetableDeclarationKey extends OffsetableKey {
+/*package*/ final class OffsetableDeclarationKey extends OffsetableKey {
     
     OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
 	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), obj.getName());

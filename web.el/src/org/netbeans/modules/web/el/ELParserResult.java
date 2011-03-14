@@ -76,13 +76,13 @@ public final class ELParserResult extends ParserResult {
     }
 
     public ELElement addValidElement(Node node, String expression, OffsetRange embeddedOffset) {
-        ELElement element = ELElement.valid(node, expression, embeddedOffset, this);
+        ELElement element = ELElement.valid(node, expression, embeddedOffset, getSnapshot());
         add(element);
         return element;
     }
 
     public ELElement addErrorElement(ELException error, String expression, OffsetRange embeddedOffset) {
-        ELElement element = ELElement.error(error, expression, embeddedOffset, this);
+        ELElement element = ELElement.error(error, expression, embeddedOffset, getSnapshot());
         add(element);
         return element;
     }

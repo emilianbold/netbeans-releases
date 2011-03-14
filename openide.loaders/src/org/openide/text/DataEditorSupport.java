@@ -459,6 +459,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
                     } catch (CharacterCodingException e) {
                         ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
                         return false;
+                    } catch (IllegalStateException e) {
+                        if (!e.getMessage().contains("CODING_END")) {
+                            ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
+                            return false;
+                        }
                     }
                 }
             } finally {

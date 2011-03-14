@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -58,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,6 +67,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -873,7 +879,8 @@ public class NbModuleSuite {
         }
         
         private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
-        private static Pattern VERSION = Pattern.compile("OpenIDE-Module-Specification-Version: *([0-9\\.]*)", Pattern.MULTILINE);
+        private static final Pattern JAR_URL = Pattern.compile("(jar:)?(file:.+[.]jar)(!/)?");
+        private static final Pattern MAVEN_CP = Pattern.compile("Maven-Class-Path: (.+)$", Pattern.MULTILINE);
         /** Looks for all modules on classpath of given loader and builds 
          * their list from them.
          */
@@ -892,7 +899,14 @@ public class NbModuleSuite {
 
             return cnbs;
         }
-        private static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
+        private static final Set<String> pseudoModules = new HashSet<String>(Arrays.asList(
+                "org.openide.util",
+                "org.openide.util.lookup",
+                "org.openide.modules",
+                "org.netbeans.bootstrap",
+                "org.openide.filesystems",
+                "org.netbeans.core.startup"));
+        static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
@@ -900,17 +914,18 @@ public class NbModuleSuite {
                 Matcher m = CODENAME.matcher(manifest);
                 if (m.find()) {
                     String cnb = m.group(1);
-                    Matcher v = VERSION.matcher(manifest);
-                    if (!v.find()) {
-                        throw new IllegalStateException("Cannot find version:\n" + manifest);
-                    }
                     File jar = jarFromURL(url);
                     if (jar == null) {
                         continue;
                     }
-                    if (jar.getParentFile().getName().matches("lib|core") || /* from Maven */ jar.getParentFile().getParentFile().getName().matches("org-openide-util|org-openide-util-lookup|org-openide-modules|org-netbeans-bootstrap|org-openide-filesystems|org-netbeans-core-startup")) {
+                    if (pseudoModules.contains(cnb)) {
                         // Otherwise will get DuplicateException.
                         continue;
+                    }
+                    Matcher m2 = MAVEN_CP.matcher(manifest);
+                    if (m2.find()) {
+                        // Do not use ((URLClassLoader) loader).getURLs() as this does not work for Surefire Booter.
+                        jar = rewrite(jar, m2.group(1).split(" "), System.getProperty("java.class.path"));
                     }
                     String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -930,6 +945,65 @@ public class NbModuleSuite {
                     writeModule(f, xml);
                 }
             }
+        }
+        private static File rewrite(File jar, String[] mavenCP, String classpath) throws IOException { // #190992
+            String[] classpathEntries = tokenizePath(classpath);
+            StringBuilder classPathHeader = new StringBuilder();
+            for (String artifact : mavenCP) {
+                String[] grpArtVers = artifact.split(":");
+                String suffix = File.separatorChar + grpArtVers[0].replace('.', File.separatorChar) + File.separatorChar + grpArtVers[1] + File.separatorChar + grpArtVers[2] + File.separatorChar + grpArtVers[1] + '-' + grpArtVers[2] + ".jar";
+                File dep = null;
+                for (String classpathEntry : classpathEntries) {
+                    if (classpathEntry.endsWith(suffix)) {
+                        dep = new File(classpathEntry);
+                        break;
+                    }
+                }
+                if (dep == null) {
+                    throw new IOException("no match for " + artifact + " found in " + classpath);
+                }
+                File depCopy = File.createTempFile(artifact.replace(':', '-') + '-', ".jar");
+                depCopy.deleteOnExit();
+                NbTestCase.copytree(dep, depCopy);
+                if (classPathHeader.length() > 0) {
+                    classPathHeader.append(' ');
+                }
+                classPathHeader.append(depCopy.getName());
+            }
+            String n = jar.getName();
+            int dot = n.lastIndexOf('.');
+            File jarCopy = File.createTempFile(n.substring(0, dot) + '-', n.substring(dot));
+            jarCopy.deleteOnExit();
+            InputStream is = new FileInputStream(jar);
+            try {
+                OutputStream os = new FileOutputStream(jarCopy);
+                try {
+                    JarInputStream jis = new JarInputStream(is);
+                    Manifest mani = new Manifest(jis.getManifest());
+                    mani.getMainAttributes().putValue("Class-Path", classPathHeader.toString());
+                    JarOutputStream jos = new JarOutputStream(os, mani);
+                    JarEntry entry;
+                    while ((entry = jis.getNextJarEntry()) != null) {
+                        if (entry.getName().matches("META-INF/.+[.]SF")) {
+                            throw new IOException("cannot handle signed JARs");
+                        }
+                        jos.putNextEntry(entry);
+                        byte[] buf = new byte[(int) entry.getSize()];
+                        int read = jis.read(buf, 0, buf.length);
+                        if (read != buf.length) {
+                            throw new IOException("read wrong amount");
+                        }
+                        jos.write(buf);
+                    }
+                    jis.close();
+                    jos.close();
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
+            return jarCopy;
         }
         
         private static Pattern MANIFEST = Pattern.compile("jar:(file:.*)!/META-INF/MANIFEST.MF", Pattern.MULTILINE);
@@ -1153,11 +1227,13 @@ public class NbModuleSuite {
                 if (previous.equals(xml)) {
                     return;
                 }
-                LOG.log(Level.FINE, "rewrite module file: {0}", file);
-                charDump(previous);
-                LOG.fine("new----");
-                charDump(xml);
-                LOG.fine("end----");
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "rewrite module file: {0}", file);
+                    charDump(previous);
+                    LOG.fine("new----");
+                    charDump(xml);
+                    LOG.fine("end----");
+                }
             }
             FileOutputStream os = new FileOutputStream(file);
             os.write(xml.getBytes("UTF-8"));

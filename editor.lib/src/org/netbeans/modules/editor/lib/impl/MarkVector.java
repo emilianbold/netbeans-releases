@@ -336,7 +336,7 @@ public final class MarkVector {
                     MultiMark firstItemMark = dirFirstItem.mark;
                     int index = offsetGapIndex;
                     
-                    while (markArray[getRawIndex(index)] != firstItemMark) {
+                    while (index < markArray.length && markArray[getRawIndex(index)] != firstItemMark) {
                         index++;
                     }
                     

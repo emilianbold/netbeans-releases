@@ -61,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -197,6 +198,14 @@ public class ProjectGenerator {
                                 throw new IllegalArgumentException("For some reason the folder " + directory +
                                         " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
                             }
+                        }
+                        for (AntBasedProjectType abpt : Lookups.forPath("Services").lookupAll(AntBasedProjectType.class)) {
+                            if (abpt.getType().equals(type)) {
+                                throw new IllegalArgumentException("Factory type " + type + " is in Services lookup but not global");
+                            }
+                        }
+                        if (FileUtil.getConfigFile("Services/AntBasedProjectTypes/" + type.replace('.', '-') + ".instance") != null) {
+                            throw new IllegalArgumentException("Factory type " + type + " is registered but does not appear in lookup");
                         }
                         throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N
                     }
