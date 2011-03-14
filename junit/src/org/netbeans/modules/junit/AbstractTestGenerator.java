@@ -1421,7 +1421,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
                 boolean useNoArgConstructor = hasAccessibleNoArgConstructor(srcClass);
 
-                if (isClassEjb31Bean(workingCopy, srcClass)) {
+                if (isClassEjb31Bean(workingCopy, srcClass) && isMethodInContainerLookup(srcClass, srcMethod)) {
                     statements.addAll(generateEJBLookupCode(maker, srcClass, srcMethod));
                 } else {
                     VariableTree instanceVarInit = maker.Variable(
@@ -1493,8 +1493,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     statements.add(comparisonStmt);
             }
 
-            // close EJBContainer if ejb called
-            if (isClassEjb31Bean(workingCopy, srcClass)) {
+            // close EJBContainer if searching in container lookup was called
+            if (isClassEjb31Bean(workingCopy, srcClass) && isMethodInContainerLookup(srcClass, srcMethod)) {
                 statements.add(generateEJBCleanUpCode(maker));
             }
         }
@@ -2117,6 +2117,30 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return false;
     }
 
+    /**
+     * Checks whether is given method declared by no-interface Bean or by interface annotated by
+     * {@code @javax.ejb.Remote} or {@code @javax.ejb.Local}
+     *
+     * @param srcClass class for which are generated test cases
+     * @param srcMethod method of interest
+     * @return {@code true} if the bean is no-interface or method is declared by
+     * respectively annotated interface, {@code false} otherwise
+     */
+    private static boolean isMethodInContainerLookup(TypeElement srcClass, ExecutableElement srcMethod) {
+        // check for no-interface LocalBean
+        List<? extends AnnotationMirror> annotations = srcClass.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotations) {
+            String annotation = ((TypeElement)annotationMirror.getAnnotationType().asElement()).getQualifiedName().toString();
+            if (annotation.equals("javax.ejb.LocalBean"))   // NOI18N
+                return true;
+        }
+        // check if method is declared by @Remote, @Local interface
+        if (getEjbInterfaceDeclaringMethod(srcMethod, srcClass.getInterfaces()) != null) {
+            return true;
+        }
+        return false;
+    }
+
     private List<VariableTree> generateEJBLookupCode(TreeMaker maker, TypeElement srcClass, ExecutableElement srcMethod) {
         final String ejbContainerPackage = "javax.ejb.embeddable.EJBContainer"; // NOI18N
         List<VariableTree> trees = new ArrayList<VariableTree>();
@@ -2167,8 +2191,25 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param srcMethod currently generated method 
      * @return {@code String} which should be used for searching in context
      */
-    private String getBeanInterfaceOrImplementationClassName(TypeElement srcClass, ExecutableElement srcMethod) {
-        List<? extends TypeMirror> interfaces = srcClass.getInterfaces();
+    private static String getBeanInterfaceOrImplementationClassName(TypeElement srcClass, ExecutableElement srcMethod) {
+        String interfaceClassName = getEjbInterfaceDeclaringMethod(srcMethod, srcClass.getInterfaces());
+        if (interfaceClassName != null) {
+            return interfaceClassName;
+        } else {
+            return srcClass.getSimpleName().toString();
+        }
+    }
+
+    /**
+     * Gets interface classname which is annotated as Remote or Local and declares 
+     * given method or {@code null} if no such interface was found
+     *
+     * @param srcMethod method which should be declared
+     * @param interfaces {@code List} of interfaces to be scanned for {@code @Local},
+     * {@code @Remote} annotation and method declaration
+     * @return interface classname when was found satisfactory interface, {@code null} otherwise
+     */
+    private static String getEjbInterfaceDeclaringMethod(ExecutableElement srcMethod, List<? extends TypeMirror> interfaces) {
         for (TypeMirror typeMirror : interfaces) {
             if (typeMirror instanceof DeclaredType) {
                 DeclaredType declaredType = (DeclaredType) typeMirror;
@@ -2179,7 +2220,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 }
             }
         }
-        return srcClass.getSimpleName().toString();
+        return null;
     }
 
     /**
@@ -2188,7 +2229,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param trgInterface interface which should be annotated
      * @return {@code true} if the interface is annotated, {@code false} otherwise
      */
-    private boolean isLocalOrRemoteInterface(TypeElement trgInterface) {
+    private static boolean isLocalOrRemoteInterface(TypeElement trgInterface) {
         List<? extends AnnotationMirror> annotations = trgInterface.getAnnotationMirrors();
         for (AnnotationMirror am : annotations) {
             String annotation = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
@@ -2208,7 +2249,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param srcMethod method to be declared
      * @return {@code true} if the method is declared by the interface, {@code false} otherwise
      */
-    private boolean isMethodDeclaredByInterface(TypeElement trgInterface, ExecutableElement srcMethod) {
+    private static boolean isMethodDeclaredByInterface(TypeElement trgInterface, ExecutableElement srcMethod) {
         List<? extends Element> enclosedElements = trgInterface.getEnclosedElements();
         List<? extends VariableElement> methodParameters = srcMethod.getParameters();
         for (Element enclosedElement : enclosedElements) {

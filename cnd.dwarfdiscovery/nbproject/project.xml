@@ -124,6 +124,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <package>org.netbeans.modules.cnd.dwarfdiscovery</package>
             </friend-packages>

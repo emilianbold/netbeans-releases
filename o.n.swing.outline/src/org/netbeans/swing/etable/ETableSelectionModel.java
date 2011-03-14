@@ -39,44 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataRow;
+package org.netbeans.swing.etable;
+
+import javax.swing.DefaultListSelectionModel;
 
 /**
- * This result is a DataRow that should be inserted in an appropriate 
- * DataStorage and, optionally, a call stack that should be binded with the data.
+ * This class prevents from automatic selection of inserted lines.
  * 
- * @author ak119685
+ * @author Martin Entlicher
  */
-public final class DTraceEventData {
+class ETableSelectionModel extends DefaultListSelectionModel {
 
-    private final DataRow dataRow;
-    private final List<CharSequence> callStack;
-    private final long contextID;
+    private ThreadLocal<Boolean> insertingLines = new ThreadLocal<Boolean>();
 
-    public DTraceEventData(final DataRow dataRow) {
-        this(dataRow, null, -1);
+    @Override
+    public void insertIndexInterval(int index, int length, boolean before) {
+        insertingLines.set(Boolean.TRUE);
+        super.insertIndexInterval(index, length, before);
     }
 
-    public DTraceEventData(final DataRow dataRow, final List<CharSequence> callStack, long contextID) {
-        assert dataRow != null;
-        this.dataRow = dataRow;
-        this.callStack = callStack;
-        this.contextID = contextID;
+    @Override
+    public int getSelectionMode() {
+        if (insertingLines.get() == Boolean.TRUE) {
+            insertingLines.remove();
+            // When we're inserting lines, they are not automatically selected
+            // if the selection mode is single selection.
+            return SINGLE_SELECTION;
+        }
+        return super.getSelectionMode();
     }
 
-    public List<CharSequence> getEventCallStack() {
-        return callStack == null ? null : Collections.unmodifiableList(callStack);
-    }
-
-    public long getContextID() {
-        return contextID;
-    }
-
-    public DataRow getDataRow() {
-        return dataRow;
-    }
 }

@@ -301,6 +301,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>

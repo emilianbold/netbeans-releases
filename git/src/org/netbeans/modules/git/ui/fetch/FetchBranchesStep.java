@@ -40,7 +40,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.repository.remote;
+package org.netbeans.modules.git.ui.fetch;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -101,6 +101,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                 validateBeforeNext();
             }
         });
+        getJComponent().setName(NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranches.remoteBranches")); //NOI18N
     }
     
     @Override
@@ -108,16 +109,16 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         setValid(true, null);
         boolean acceptEmptySelection = mode == Mode.ACCEPT_EMPTY_SELECTION;
         if (!acceptEmptySelection && branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
+            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
         } else if (acceptEmptySelection && branches.isEmpty()) {
-            setValid(true, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranch"), true)); //NOI18N
+            setValid(true, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranch"), true)); //NOI18N
         } else {
             setValid(true, null);
         }
     }
 
     @Override
-    protected JComponent getJComponent () {
+    protected final JComponent getJComponent () {
         return branches.getPanel();
     }
 
@@ -179,7 +180,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         branches.setBranches(new ArrayList<BranchMapping>(0));
         if (fetchUri != null) {
             final String uri = fetchUri;
-            model.addElement(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.loadingBranches")); //NOI18N
+            model.addElement(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.loadingBranches")); //NOI18N
             branches.setEnabled(false);
             Utils.post(new Runnable() {
                 @Override
@@ -215,7 +216,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                             }
                         }
                     };
-                    supp.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.loadingBranches")); //NOI18N
+                    supp.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.loadingBranches")); //NOI18N
                 }
             });
         }
@@ -233,7 +234,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public List<String> getSelectedRefSpecs () {
         List<String> specs = new LinkedList<String>();
         for (BranchMapping b : branches.getSelectedBranches()) {
-            specs.add(org.netbeans.libs.git.Utils.getRefSpec(b.remoteBranch, remote.getRemoteName()));
+            specs.add(org.netbeans.libs.git.utils.Utils.getRefSpec(b.remoteBranch, remote.getRemoteName()));
         }
         return specs;
     }
@@ -279,7 +280,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         }
         
         public String getRefSpec () {
-            return org.netbeans.libs.git.Utils.getRefSpec(remoteBranch, remote.getRemoteName());
+            return org.netbeans.libs.git.utils.Utils.getRefSpec(remoteBranch, remote.getRemoteName());
         }
 
         @Override

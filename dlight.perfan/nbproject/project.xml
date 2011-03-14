@@ -114,6 +114,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>

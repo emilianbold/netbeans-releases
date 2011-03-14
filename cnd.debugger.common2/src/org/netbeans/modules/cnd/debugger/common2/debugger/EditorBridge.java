@@ -50,6 +50,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import java.io.File;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 import org.openide.text.Line;
 import org.openide.text.CloneableEditorSupport;
@@ -179,7 +180,7 @@ public final class EditorBridge {
 	return op[0];
     }
 
-    private static DataObject dataObjectForLine(Line l) {
+    public static DataObject dataObjectForLine(Line l) {
 	// 6502318
 	if (l == null)
 	    return null;
@@ -290,18 +291,26 @@ public final class EditorBridge {
     }
     
     public static FileObject findFileObject(String fileName, NativeDebugger debugger) {
+        return findFileObject(fileName, getSourceFileSystem(debugger));
+    }
+    
+    private static FileObject findFileObject(String fileName, FileSystem fs) {
         CndUtils.assertAbsolutePathInConsole(fileName);
-        FileSystem fs = getSourceFileSystem(debugger);
         String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, fs);
         return CndFileUtils.toFileObject(fs, normPath);
     }
     
     public static FileSystem getSourceFileSystem(NativeDebugger debugger) {
         if (debugger != null) {
-            return ((MakeConfiguration)debugger.getNDI().getConfiguration()).getSourceFileSystem();
-        } else {
-            return CndFileUtils.getLocalFileSystem();
+            NativeDebuggerInfo ndi = debugger.getNDI();
+            if (ndi != null) {
+                Configuration conf = ndi.getConfiguration();
+                if (conf instanceof MakeConfiguration) {
+                    return ((MakeConfiguration)conf).getSourceFileSystem();
+                }
+            }
         }
+        return CndFileUtils.getLocalFileSystem();
     }
 
     /**
@@ -310,6 +319,10 @@ public final class EditorBridge {
 
     public static Line getLine(String fileName, int lineNumber, NativeDebugger debugger) {
 	return getLine(findFileObject(fileName, debugger), lineNumber);
+    }
+    
+    public static Line getLine(String fileName, int lineNumber, FileSystem fs) {
+	return getLine(findFileObject(fileName, fs), lineNumber);
     }
 
     private static Line getLine(FileObject fo, int lineNumber) {

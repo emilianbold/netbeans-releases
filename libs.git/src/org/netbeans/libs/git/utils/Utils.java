@@ -39,44 +39,23 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector;
+package org.netbeans.libs.git.utils;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataRow;
+import java.text.MessageFormat;
+import org.netbeans.libs.git.GitBranch;
 
 /**
- * This result is a DataRow that should be inserted in an appropriate 
- * DataStorage and, optionally, a call stack that should be binded with the data.
- * 
- * @author ak119685
+ *
+ * @author Tomas Stupka
  */
-public final class DTraceEventData {
+public class Utils {
 
-    private final DataRow dataRow;
-    private final List<CharSequence> callStack;
-    private final long contextID;
-
-    public DTraceEventData(final DataRow dataRow) {
-        this(dataRow, null, -1);
+    private Utils() { }
+    
+    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+            
+    public static String getRefSpec(GitBranch branch, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
     }
-
-    public DTraceEventData(final DataRow dataRow, final List<CharSequence> callStack, long contextID) {
-        assert dataRow != null;
-        this.dataRow = dataRow;
-        this.callStack = callStack;
-        this.contextID = contextID;
-    }
-
-    public List<CharSequence> getEventCallStack() {
-        return callStack == null ? null : Collections.unmodifiableList(callStack);
-    }
-
-    public long getContextID() {
-        return contextID;
-    }
-
-    public DataRow getDataRow() {
-        return dataRow;
-    }
+        
 }
