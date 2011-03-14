@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -294,12 +295,15 @@ public class ToolsPanelSupport {
                 cacheManager.restoreCompilerSets(oldCsm);
             }
         };
-        ModalMessageDlg.runLongTask(
-                WindowManager.getDefault().getMainWindow(),
-                runnable, null, null,
-                NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsTitle"), // NOI18N
-                NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsMessage")); // NOI18N
-
+        if (SwingUtilities.isEventDispatchThread()) {
+            ModalMessageDlg.runLongTask(
+                    WindowManager.getDefault().getMainWindow(),
+                    runnable, null, null,
+                    NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsTitle"), // NOI18N
+                    NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsMessage")); // NOI18N
+        } else {
+            runnable.run();
+        }
         return RequestProcessor.getDefault().post(
                 new CompilerSetAction(null, null, CompilerSetActionType.NONE));
     }
