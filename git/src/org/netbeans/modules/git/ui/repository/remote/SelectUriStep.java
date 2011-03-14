@@ -156,6 +156,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         if (panel.rbConfiguredUri.isSelected()) {
             if (panel.cmbConfiguredRepositories.getSelectedIndex() == -1) {
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptySelection"), false); //NOI18N
+                valid = false;
             }
         } else if (panel.rbCreateNew.isSelected()) {
             String remoteUri = panel.txtRemoteUri.getText().trim();
@@ -165,7 +166,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             }
         }
         setValid(valid, msg);
-        if (!EventQueue.isDispatchThread()) {
+        if (valid && !EventQueue.isDispatchThread()) {
             final Message[] message = new Message[1];
             supp = new GitProgressSupport.NoOutputLogging() {
                 @Override
