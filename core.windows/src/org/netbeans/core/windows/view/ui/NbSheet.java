@@ -45,6 +45,7 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -499,7 +500,18 @@ public final class NbSheet extends TopComponent {
          * @param ev event describing the node
          */
         @Override
-        public void nodeDestroyed(NodeEvent ev) {
+        public void nodeDestroyed(final NodeEvent ev) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    handleNodeDestroyed(ev);
+                }
+            });
+        }
+
+        final void handleNodeDestroyed(NodeEvent ev) {
+            assert EventQueue.isDispatchThread();
+            
             Node destroyedNode = ev.getNode();
             NodeListener listener = listenerMap.get(destroyedNode);
             PropertyChangeListener pListener = pListenerMap.get(destroyedNode);
@@ -511,11 +523,7 @@ public final class NbSheet extends TopComponent {
             // close top component (our outer class) if last node was destroyed
             if (listenerMap.isEmpty() && !global) {
                 //fix #39251 start - posting the closing of TC to awtevent thread
-                Mutex.EVENT.readAccess(new Runnable() {
-                    public void run() {
-                        close();
-                    }
-                });
+                close();
                 //fix #39251 end
             } else {
                 setNodesWithoutReattaching(
@@ -525,6 +533,7 @@ public final class NbSheet extends TopComponent {
         }
 
         public void attach (Node[] nodes) {
+            assert EventQueue.isDispatchThread();
             listenerMap = new HashMap<Node,NodeListener>(nodes.length * 2);
             pListenerMap = new HashMap<Node,PropertyChangeListener>(nodes.length * 2);
             NodeListener curListener = null;
@@ -542,6 +551,7 @@ public final class NbSheet extends TopComponent {
         }
 
         public void detach () {
+            assert EventQueue.isDispatchThread();
             if (listenerMap == null) {
                 return;
             }
@@ -566,7 +576,9 @@ public final class NbSheet extends TopComponent {
             }
         }
 
+        @Override
         public void run() {
+            assert EventQueue.isDispatchThread();
             updateTitle();
         }
 
