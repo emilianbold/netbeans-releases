@@ -65,8 +65,6 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -95,11 +93,11 @@ public class IpeUtils {
 	         is some problem (IOException etc. in File's getCanonicalPath
 		 method)
     */
-    public static String normalizePath(String path, ExecutionEnvironment env) {
+    public static String normalizePath(String path, FileSystem fs) {
 	if (path == null)
 	    return null;
 	try {
-            return FileSystemProvider.getCanonicalPath(env, path);
+            return FileSystemProvider.getCanonicalPath(fs, path);
 	} catch (IOException e) {
 	    return null;
 	}
@@ -298,13 +296,6 @@ public class IpeUtils {
 	return dp.toString();
     }
      */
-
-
-    public static FileObject findFileObject(String fileName, ExecutionEnvironment env) {
-        CndUtils.assertAbsolutePathInConsole(fileName);
-        String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, env);
-        return FileSystemProvider.getFileObject(env, normPath);
-    }   
 
     /** Compare two boolean values and return 0 if they are equal,
 	-1 if the first is "less" than the second, and 1 if the first

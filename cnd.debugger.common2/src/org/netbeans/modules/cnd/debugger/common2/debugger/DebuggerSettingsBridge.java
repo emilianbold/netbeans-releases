@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 import org.openide.ErrorManager;
 
@@ -67,8 +66,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointBag;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 
 /**
@@ -397,16 +394,9 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      *
      */
     public void noteProgLoaded(String progname) {
-
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-        if (info != null) {
-            Configuration conf = info.getConfiguration();
-            if (conf instanceof MakeConfiguration) { // paranoidal check? might be just != null
-                env = ((MakeConfiguration) conf).getFileSystemHost();
-            }
-        }        
+        
 	if (IpeUtils.sameString("-", tentativeTarget) || // NOI18N
-	    IpeUtils.sameString(progname, IpeUtils.normalizePath(tentativeTarget, env)) &&
+	    IpeUtils.sameString(progname, IpeUtils.normalizePath(tentativeTarget, EditorBridge.getSourceFileSystem(debugger))) &&
 	    ! isInUse(tentativeSettings.runProfile(), debugger)) {
 
 	    // Nothing to do

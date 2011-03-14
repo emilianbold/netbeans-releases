@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2;
 
-import java.io.File;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
-import org.openide.loaders.DataNode;
 import org.openide.windows.InputOutput;
 
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -63,10 +61,6 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStrea
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.windows.IOSelect;
 
 /**
@@ -203,27 +197,27 @@ public class DbgActionHandler implements ProjectActionHandler {
         }
     }
 
-    private static DataNode findDebuggableNode(String filePath) {
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath)));
-        if (fo == null) {
-            return null; // FIXUP
-        }
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (Exception e) {
-            // FIXUP
-        }
-        if (dataObject == null) {
-            return null; // FIXUP
-        }
-        Node node = dataObject.getNodeDelegate();
-        if (node == null) {
-            return null; // FIXUP
-        }
-        if (!(node instanceof DataNode)) {
-            return null;
-        }
-        return (DataNode)node;
-    }
+//    private static DataNode findDebuggableNode(String filePath) {
+//        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath)));
+//        if (fo == null) {
+//            return null; // FIXUP
+//        }
+//        DataObject dataObject = null;
+//        try {
+//            dataObject = DataObject.find(fo);
+//        } catch (Exception e) {
+//            // FIXUP
+//        }
+//        if (dataObject == null) {
+//            return null; // FIXUP
+//        }
+//        Node node = dataObject.getNodeDelegate();
+//        if (node == null) {
+//            return null; // FIXUP
+//        }
+//        if (!(node instanceof DataNode)) {
+//            return null;
+//        }
+//        return (DataNode)node;
+//    }
 }
