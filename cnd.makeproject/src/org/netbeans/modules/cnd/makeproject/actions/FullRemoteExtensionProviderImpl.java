@@ -121,16 +121,8 @@ public class FullRemoteExtensionProviderImpl implements FullRemoteExtensionProvi
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
                     ExecutionEnvironment env = remoteProject.getSourceFileSystemHost();
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                        try {
-                            ConnectionManager.getInstance().connectTo(env);
-                        } catch (IOException ex) {
-                           LOGGER.log(Level.SEVERE, NbBundle.getMessage(FullRemoteExtensionProviderImpl.class, "ERR_Connection_Error"), ex);
-                           return;
-                        } catch (CancellationException ex) {
-                            LOGGER.severe(NbBundle.getMessage(FullRemoteExtensionProviderImpl.class, "ERR_Connection_Cancelled"));
-                            return;
-                        }
-                    }                            
+                        return;
+                    }
                     String remotePath = remoteProject.resolveRelativeRemotePath("."); //NOI18N
                     FileObject localProjectFO = mkd.getProjectDirFileObject();
                     try {

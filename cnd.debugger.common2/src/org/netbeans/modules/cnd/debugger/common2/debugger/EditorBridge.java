@@ -71,7 +71,9 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  * A bridge to the NB editor.
@@ -286,16 +288,31 @@ public final class EditorBridge {
 	}
 	throw new Exception();
     }
+    
+    public static FileObject findFileObject(String fileName, NativeDebugger debugger) {
+        CndUtils.assertAbsolutePathInConsole(fileName);
+        FileSystem fs = getSourceFileSystem(debugger);
+        String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, fs);
+        return CndFileUtils.toFileObject(fs, normPath);
+    }
+    
+    public static FileSystem getSourceFileSystem(NativeDebugger debugger) {
+        if (debugger != null) {
+            return ((MakeConfiguration)debugger.getNDI().getConfiguration()).getSourceFileSystem();
+        } else {
+            return CndFileUtils.getLocalFileSystem();
+        }
+    }
 
     /**
      * Find the Line object for the given file:line pair
      */
 
-    public static Line getLine(String fileName, int lineNumber, ExecutionEnvironment env) {
-	return getLine(IpeUtils.findFileObject(fileName, env), lineNumber);
+    public static Line getLine(String fileName, int lineNumber, NativeDebugger debugger) {
+	return getLine(findFileObject(fileName, debugger), lineNumber);
     }
 
-    public static Line getLine(FileObject fo, int lineNumber) {
+    private static Line getLine(FileObject fo, int lineNumber) {
 
 	if (Log.Editor.debug)
 	    System.out.printf("getline(\"%s\", %d)\n", fo.getPath(), lineNumber); // NOI18N
@@ -344,6 +361,27 @@ public final class EditorBridge {
 	} catch (Exception e) {
 	}
     }
+    
+    /**
+     * Force the editor to save the given filename.
+     */
+    public static boolean saveFile(String fileName, NativeDebugger debugger) {
+        FileObject fo = findFileObject(fileName, debugger);
+        DataObject dao = dataObjectFor(fo);
+        if (dao == null)
+            return false;
+
+        EditorCookie ec = dao.getCookie(EditorCookie.class);
+        if (ec == null)
+            return false;
+
+        try {
+	    ec.saveDocument();
+	} catch (java.io.IOException ex) {
+	    return false;
+	}
+	return true;
+    }
 
     public static Date lastModified(Line line) {
 	DataObject dao = dataObjectForLine(line);
@@ -388,13 +426,10 @@ public final class EditorBridge {
      * @param pathname
      * @return
      */
-    public static StyledDocument documentFor(String pathname) {
+    public static StyledDocument documentFor(String pathname, NativeDebugger debugger) {
 	if (IpeUtils.isEmpty(pathname))
 	    return null;
-	File docFile = new File(pathname);
-	if (!docFile.exists())
-	    return null;
-	FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(docFile));
+	FileObject fo = findFileObject(pathname, debugger);
 	if (fo == null || !fo.isValid())
 	    return null;
 	DataObject dob = null;

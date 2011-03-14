@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
@@ -1806,9 +1805,9 @@ public abstract class NativeBreakpoint
     public void addAnnotation(String filename, int line, long addr) {
 	Line l = null;
 
-	if (line != 0)            
-	    l = EditorBridge.getLine(filename, line, 
-                    ((MakeConfiguration)currentDebugger().getNDI().getConfiguration()).getFileSystemHost());
+	if (line != 0) {
+	    l = EditorBridge.getLine(filename, line, currentDebugger());
+        }
 	//if (l != null)
 	addAnnotation(l, addr);
     }

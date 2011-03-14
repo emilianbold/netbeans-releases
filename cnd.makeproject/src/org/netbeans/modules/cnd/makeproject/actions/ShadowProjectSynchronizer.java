@@ -166,6 +166,7 @@ public class ShadowProjectSynchronizer {
         this.localProject = FileUtil.createFolder(FileUtil.normalizeFile(localProjectFile));
         ProgressHandle progress = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync", localProject.getNameExt(), env.getDisplayName()));
+        progress.setInitialDelay(4000);
         progress.start();
         try {
             updateRemoteProjectImpl(progress);
@@ -267,7 +268,10 @@ public class ShadowProjectSynchronizer {
     public void updateRemoteProjectImpl(ProgressHandle progress) throws IOException, SAXException, InterruptedException {
         FileObject localNbprojectFO = getFileObject(localProject, "nbproject"); // NOI18N
         
-        this.remoteProject = getFileObject(env, remoteProjectPath);
+        this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProjectPath);
+        if (remoteProject == null || !remoteProject.isValid()) {
+            return;
+        }
         FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
 
         progress.switchToDeterminate(7);
@@ -276,8 +280,6 @@ public class ShadowProjectSynchronizer {
         AtomicReference<FileObject> remoteTmpFoRef = new AtomicReference<FileObject>();
         final AtomicReference<Boolean> remoteTmpFOCreationSuccess = new AtomicReference<Boolean>(false);
         AtomicReference<String> remoteTmpFOErrMsg = new AtomicReference<String>();
-        RequestProcessor.Task remoteTmpFOTask = prepareRemoteNbProject(remoteNbprojectFO, remoteTmpFoRef, 
-                remoteTmpFOCreationSuccess, remoteTmpFOErrMsg);
         
         FileObject tmpFO = createTempDir(localProject.getName(), ".tmp"); // NOI18N
         try {
@@ -300,6 +302,8 @@ public class ShadowProjectSynchronizer {
             
             // wait for remote temporary directory creation, make sure it's ok
             progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_remote_temp"));
+            RequestProcessor.Task remoteTmpFOTask = prepareRemoteNbProject(remoteNbprojectFO, remoteTmpFoRef, 
+                    remoteTmpFOCreationSuccess, remoteTmpFOErrMsg);
             remoteTmpFOTask.waitFinished();
             if (!remoteTmpFOCreationSuccess.get()) {
                 throw new IOException(remoteTmpFOErrMsg.get());
@@ -331,8 +335,7 @@ public class ShadowProjectSynchronizer {
             progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_cleanup"));
             Future<Integer> rmTask = CommonTasksSupport.rmDir(
                     env, remoteNbprojectFO.getPath() + '/' + TMP_NBPROJECT_SUBFOLDER_PATH, true, new PrintWriter(System.err));
-
-            remoteNbprojectFO.refresh();
+            
             progress.progress(6);
 
             // it's better to wait, otherwise subsequent save might clash with this cleanup
@@ -346,6 +349,7 @@ public class ShadowProjectSynchronizer {
             } catch (ExecutionException ex) {
                 LOGGER.log(Level.INFO, "Exception when cleaning up remote temporary directory", ex);
             }
+            remoteNbprojectFO.refresh();
         } finally {
             remove(tmpFO);
             progress.progress(7);
@@ -473,15 +477,6 @@ public class ShadowProjectSynchronizer {
         return null;
     }
     
-    private static FileObject getFileObject(ExecutionEnvironment env, String absPath) throws FileNotFoundException {
-        FileObject fo = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), absPath);
-        if (fo == null || ! fo.isValid()) {
-            String text = env.getDisplayName() + ':' + absPath; //NOI18N
-            throw new FileNotFoundException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", text));
-        }        
-        return fo;
-    }
-
     private static FileObject getFileObject(FileObject base, String relPath) throws FileNotFoundException {
         FileObject fo = base.getFileObject(relPath);
         if (fo == null || ! fo.isValid()) {
