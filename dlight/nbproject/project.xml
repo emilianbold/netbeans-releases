@@ -112,6 +112,8 @@
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.uncover.cli</friend>
                 <friend>com.sun.tools.analytics.web.managment</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
                 <friend>com.sun.tools.dlight.apache</friend>
                 <friend>com.sun.tools.dlight.branding</friend>
@@ -119,6 +121,7 @@
                 <friend>com.sun.tools.dlight.mysql</friend>
                 <friend>com.sun.tools.dlight.php</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
+                <friend>com.sun.tools.dlight.storage</friend>
                 <friend>com.sun.tools.dlight.sysmon</friend>
                 <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>com.sun.tools.dlight.systemwide.threadmap</friend>
