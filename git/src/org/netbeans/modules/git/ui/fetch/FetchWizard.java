@@ -53,7 +53,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.modules.git.ui.repository.remote.FetchBranchesStep;
 import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
 import org.netbeans.modules.git.ui.repository.remote.SelectUriStep;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;

@@ -118,6 +118,7 @@ public abstract class WizardStepProgressSupport extends GitProgressSupport {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {                
+                WizardStepProgressSupport.super.finishProgress();
                 panel.remove(progressComponent);
                 panel.revalidate();
                 panel.repaint();
@@ -125,7 +126,6 @@ public abstract class WizardStepProgressSupport extends GitProgressSupport {
                 setEnabled(true);
             }
         });                
-        WizardStepProgressSupport.super.finishProgress();
     }
 
     @Override

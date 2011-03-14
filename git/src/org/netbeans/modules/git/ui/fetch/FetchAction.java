@@ -43,7 +43,6 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.GitClient;
@@ -57,14 +56,11 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.git.ui.repository.remote.FetchUrisPanelController;
-import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfigAction;
-import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -76,31 +72,29 @@ public class FetchAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
+        fetch(repository);
+    }
+    
+    public void fetch (final File repository, GitRemoteConfig remote) {
+        if (remote.getUris().size() != 1) {
+            Utils.post(new Runnable () {
+                @Override
+                public void run () {
+                    fetch(repository);
+                }
+            });
+        } else {
+            fetch(repository, remote.getUris().get(0), remote.getFetchRefSpecs());
+        }
+    }
+    
+    private void fetch (File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refreshRemotes();
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         FetchWizard wiz = new FetchWizard(repository, remotes);
         if (wiz.show()) {
             fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs());
-        }
-    }
-    
-    public void fetch (final File repository, GitRemoteConfig remote) {
-        if (remote.getUris().size() != 1) {
-            final FetchUrisPanelController controller = new FetchUrisPanelController(remote);
-            if (controller.showDialog()) {
-                final RemoteConfig config = RemoteConfig.createUpdatableRemote(repository, remote.getRemoteName());
-                config.setFetchUris(Arrays.asList(controller.getURIs()));
-                SystemAction.get(SetRemoteConfigAction.class).updateRemote(repository, config, new Runnable() {
-                    @Override
-                    public void run () {
-                        fetch(repository, controller.getSelectedURI(), config.getFetchRefSpecs());
-                    }
-                    
-                });
-            }
-        } else {
-            fetch(repository, remote.getUris().get(0), remote.getFetchRefSpecs());
         }
     }
     

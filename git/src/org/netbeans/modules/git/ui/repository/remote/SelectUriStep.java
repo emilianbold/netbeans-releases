@@ -64,7 +64,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -156,6 +155,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         if (panel.rbConfiguredUri.isSelected()) {
             if (panel.cmbConfiguredRepositories.getSelectedIndex() == -1) {
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptySelection"), false); //NOI18N
+                valid = false;
             }
         } else if (panel.rbCreateNew.isSelected()) {
             String remoteUri = panel.txtRemoteUri.getText().trim();
@@ -165,7 +165,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             }
         }
         setValid(valid, msg);
-        if (!EventQueue.isDispatchThread()) {
+        if (valid && !EventQueue.isDispatchThread()) {
             final Message[] message = new Message[1];
             supp = new GitProgressSupport.NoOutputLogging() {
                 @Override
@@ -201,7 +201,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
     @Override
     public HelpCtx getHelp () {
-        return new HelpCtx(SelectRemotePanel.class);
+        return new HelpCtx(SelectUriPanel.class);
     }
 
     public String getSelectedUri () {
