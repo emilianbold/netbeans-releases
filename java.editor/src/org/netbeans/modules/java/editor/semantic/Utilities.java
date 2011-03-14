@@ -44,9 +44,12 @@
 package org.netbeans.modules.java.editor.semantic;
 
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -281,7 +284,58 @@ public class Utilities {
         if (class2Kind.get(ParameterizedTypeTree.class).contains(leaf.getKind())) {
             return findIdentifierSpanImpl(info, new TreePath(decl, ((ParameterizedTypeTree) leaf).getType()));
         }
-        throw new IllegalArgumentException("Only MethodDecl, VariableDecl, MemberSelectTree, IdentifierTree and ClassDecl are accepted by this method. Got: " + leaf.getKind());
+        if (class2Kind.get(BreakTree.class).contains(leaf.getKind())) {
+            Name name = ((BreakTree) leaf).getLabel();
+            
+            if (name == null || name.length() == 0)
+                return null;
+            
+            SourcePositions positions = info.getTrees().getSourcePositions();
+            CompilationUnitTree cu = info.getCompilationUnit();
+            int start = (int)positions.getStartPosition(cu, leaf);
+            int end   = (int)positions.getEndPosition(cu, leaf);
+            
+            if (start == (-1) || end == (-1)) {
+                return null;
+            }
+            
+           return findTokenWithText(info, name.toString(), start, end);
+        }
+        if (class2Kind.get(ContinueTree.class).contains(leaf.getKind())) {
+            Name name = ((ContinueTree) leaf).getLabel();
+            
+            if (name == null || name.length() == 0)
+                return null;
+            
+            SourcePositions positions = info.getTrees().getSourcePositions();
+            CompilationUnitTree cu = info.getCompilationUnit();
+            int start = (int)positions.getStartPosition(cu, leaf);
+            int end   = (int)positions.getEndPosition(cu, leaf);
+            
+            if (start == (-1) || end == (-1)) {
+                return null;
+            }
+            
+           return findTokenWithText(info, name.toString(), start, end);
+        }
+        if (class2Kind.get(LabeledStatementTree.class).contains(leaf.getKind())) {
+            Name name = ((LabeledStatementTree) leaf).getLabel();
+            
+            if (name == null || name.length() == 0)
+                return null;
+            
+            SourcePositions positions = info.getTrees().getSourcePositions();
+            CompilationUnitTree cu = info.getCompilationUnit();
+            int start = (int)positions.getStartPosition(cu, leaf);
+            int end   = (int)positions.getStartPosition(cu, ((LabeledStatementTree) leaf).getStatement());
+            
+            if (start == (-1) || end == (-1)) {
+                return null;
+            }
+            
+           return findTokenWithText(info, name.toString(), start, end);
+        }
+        throw new IllegalArgumentException("Only MethodDecl, VariableDecl, MemberSelectTree, IdentifierTree, ClassDecl, BreakTree, ContinueTree, and LabeledStatementTree are accepted by this method. Got: " + leaf.getKind());
     }
 
     public static int[] findIdentifierSpan( final TreePath decl, final CompilationInfo info, final Document doc) {
