@@ -47,7 +47,7 @@ import org.netbeans.modules.openide.awt.SavableRegistry;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.util.Lookup;
 
-/** Context interface that represents ability to save. To get best
+/** Context interface that represents ability to persist its state to long term storage. To get best
  * interaction with the system, it is preferable to use {@link AbstractSavable}
  * to create instances of this interface rather than implementing it 
  * directly.
