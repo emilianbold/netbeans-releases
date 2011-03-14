@@ -888,7 +888,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
 
             public void showErrorInEditor(String fileName, int lineNumber) {
-                Line line = EditorBridge.getLine(fileName, lineNumber);
+                Line line = EditorBridge.getLine(fileName, lineNumber, DebuggerManager.get().currentDebugger());
 
                 if (line != null) {
                     EditorBridge.showInEditor(line);
@@ -900,7 +900,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
 
             public void showFrameInEditor(String fileName, int lineNumber) {
-                Line line = EditorBridge.getLine(fileName, lineNumber);
+                Line line = EditorBridge.getLine(fileName, lineNumber, DebuggerManager.get().currentDebugger());
 
                 if (line != null) {
                     EditorBridge.showInEditor(line);

@@ -1520,6 +1520,6 @@ public final class Dbx extends CommonDbx {
     @Override
     protected final boolean save_file(String filename) {
 	filename = debugger.localToRemote("save_file", filename); // NOI18N
-	return EditorBridge.saveFile(filename);
+	return EditorBridge.saveFile(filename, debugger);
     }
 }

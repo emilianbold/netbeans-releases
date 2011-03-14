@@ -62,6 +62,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 
 
 import org.openide.ErrorManager;
@@ -144,7 +145,7 @@ public class RtcView extends JPanel
 	public void showBlocks(boolean all, boolean detailed) { }
 
 	public void showErrorInEditor(String fileName, int lineNumber) {
-	    Line line = EditorBridge.getLine(fileName, lineNumber);
+	    Line line = EditorBridge.getLine(fileName, lineNumber, DebuggerManager.get().currentDebugger());
 
 	    if (line != null) {
 		EditorBridge.showInEditor(line);
@@ -156,7 +157,7 @@ public class RtcView extends JPanel
 	}
 
 	public void showFrameInEditor(String fileName, int lineNumber) {
-	    Line line = EditorBridge.getLine(fileName, lineNumber);
+	    Line line = EditorBridge.getLine(fileName, lineNumber, DebuggerManager.get().currentDebugger());
 
 	    if (line != null) {
 		EditorBridge.showInEditor(line);
