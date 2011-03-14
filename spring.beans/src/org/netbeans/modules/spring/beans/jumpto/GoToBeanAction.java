@@ -44,31 +44,31 @@ package org.netbeans.modules.spring.beans.jumpto;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.api.jumpto.type.TypeBrowser;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Rohan Ranade
  */
+@ActionID(category="Edit", id="org.netbeans.modules.spring.beans.jumpto.type.GoToBean")
+@ActionRegistration(displayName="#TXT_GoToSpringBean")
+@ActionReference(path="Menu/GoTo", position=250)
 public class GoToBeanAction extends AbstractAction {
 
     public GoToBeanAction() {
         super(NbBundle.getMessage(GoToBeanAction.class, "TXT_GoToSpringBean"));
         putValue("PopupMenuText", NbBundle.getBundle(GoToBeanAction.class).getString("editor-popup-TXT_GoToSpringBean")); // NOI18N
-
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         TypeDescriptor typeDescriptor = TypeBrowser.browse(NbBundle.getMessage(GoToBeanAction.class, "DLG_GoToSpringBean"), null, new SpringBeansTypeProvider());
         if (typeDescriptor != null) {
             typeDescriptor.open();
         }
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
 }
