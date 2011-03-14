@@ -50,6 +50,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import java.io.File;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 import org.openide.text.Line;
 import org.openide.text.CloneableEditorSupport;
@@ -298,10 +299,15 @@ public final class EditorBridge {
     
     public static FileSystem getSourceFileSystem(NativeDebugger debugger) {
         if (debugger != null) {
-            return ((MakeConfiguration)debugger.getNDI().getConfiguration()).getSourceFileSystem();
-        } else {
-            return CndFileUtils.getLocalFileSystem();
+            NativeDebuggerInfo ndi = debugger.getNDI();
+            if (ndi != null) {
+                Configuration conf = ndi.getConfiguration();
+                if (conf instanceof MakeConfiguration) {
+                    return ((MakeConfiguration)conf).getSourceFileSystem();
+                }
+            }
         }
+        return CndFileUtils.getLocalFileSystem();
     }
 
     /**

@@ -204,6 +204,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <package>org.netbeans.modules.cnd.debugger.gdb2</package>
             </friend-packages>
