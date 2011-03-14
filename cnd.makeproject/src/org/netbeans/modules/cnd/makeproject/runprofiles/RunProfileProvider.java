@@ -58,7 +58,7 @@ public class RunProfileProvider implements ConfigurationAuxObjectProvider {
      */
     @Override
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
-        RunProfile runProfile = new RunProfile(baseDir, pcs, (MakeConfiguration) configuration);
+        RunProfile runProfile = new RunProfile((MakeConfiguration) configuration, pcs);
         return runProfile;
     }
 }

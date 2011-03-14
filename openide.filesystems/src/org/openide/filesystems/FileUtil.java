@@ -1966,8 +1966,9 @@ public final class FileUtil extends Object {
             int index = path.indexOf("!/"); //NOI18N
 
             if (index >= 0) {
+                String jarPath = null;
                 try {
-                    String jarPath = path.substring(0, index);
+                    jarPath = path.substring(0, index);
                     if (jarPath.indexOf("file://") > -1 && jarPath.indexOf("file:////") == -1) {  //NOI18N
                         /* Replace because JDK application classloader wrongly recognizes UNC paths. */
                         jarPath = jarPath.replaceFirst("file://", "file:////");  //NOI18N
@@ -1975,7 +1976,8 @@ public final class FileUtil extends Object {
                     return new URL(jarPath);
 
                 } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(mue);
+                    Exceptions.printStackTrace(Exceptions.attachMessage(mue,
+                    "URL: " + url.toExternalForm() +" jarPath: " + jarPath));   //NOI18N
                 }
             }
         }

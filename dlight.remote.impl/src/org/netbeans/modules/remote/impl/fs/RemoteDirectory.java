@@ -425,16 +425,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
 
-        if (!force) {
-            // check whether it is cached in memory
-            synchronized (refLock) {
-                if (storageRef != null) {
-                    storage = storageRef.get();
-                }
+        // check whether it is cached in memory
+        synchronized (refLock) {
+            if (storageRef != null) {
+                storage = storageRef.get();
             }
-            if (storage != null) {
-                return storage;
-            }
+        }
+        if (! force && storage != null) {
+            return storage;
         }
 
         boolean loaded;
