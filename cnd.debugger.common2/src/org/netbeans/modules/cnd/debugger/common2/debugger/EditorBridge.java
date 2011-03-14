@@ -180,7 +180,7 @@ public final class EditorBridge {
 	return op[0];
     }
 
-    private static DataObject dataObjectForLine(Line l) {
+    public static DataObject dataObjectForLine(Line l) {
 	// 6502318
 	if (l == null)
 	    return null;
@@ -291,8 +291,11 @@ public final class EditorBridge {
     }
     
     public static FileObject findFileObject(String fileName, NativeDebugger debugger) {
+        return findFileObject(fileName, getSourceFileSystem(debugger));
+    }
+    
+    private static FileObject findFileObject(String fileName, FileSystem fs) {
         CndUtils.assertAbsolutePathInConsole(fileName);
-        FileSystem fs = getSourceFileSystem(debugger);
         String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, fs);
         return CndFileUtils.toFileObject(fs, normPath);
     }
@@ -316,6 +319,10 @@ public final class EditorBridge {
 
     public static Line getLine(String fileName, int lineNumber, NativeDebugger debugger) {
 	return getLine(findFileObject(fileName, debugger), lineNumber);
+    }
+    
+    public static Line getLine(String fileName, int lineNumber, FileSystem fs) {
+	return getLine(findFileObject(fileName, fs), lineNumber);
     }
 
     private static Line getLine(FileObject fo, int lineNumber) {

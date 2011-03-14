@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
+import org.openide.filesystems.FileObject;
 
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
+import org.openide.filesystems.FileStateInvalidException;
 
 
 /*
@@ -123,7 +125,8 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 
     /* interface ActionsProvider */
     public void doAction(Object action) {
-        String fileName = EditorContextBridge.getCurrentFilePath();
+        FileObject currentFileObject = EditorContextBridge.getCurrentFileObject();
+        String fileName = currentFileObject.getPath();
         if (fileName.trim().equals("")) {
             return;
         }
@@ -168,7 +171,11 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
         else if (address != null) {
             bpt = NativeBreakpoint.newInstructionBreakpoint(address);
         } else {
-            bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo);
+            try {
+                bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo, currentFileObject.getFileSystem());
+            } catch (FileStateInvalidException ex) {
+                // just do not create
+            }
         }
             
         // toggle on
