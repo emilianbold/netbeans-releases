@@ -122,7 +122,9 @@ public class SvnClientFactory {
      * if the svn executable path was changed. 
      */
     public synchronized static void resetCLI() {
-        if(isCLI()) { 
+        if(exception != null || // looks like factory setup didn't work at all, so lets give it a shot
+           isCLI()) 
+        { 
             instance = null;
         }
     }
