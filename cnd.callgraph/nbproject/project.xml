@@ -79,6 +79,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.navigation</friend>
                 <package>org.netbeans.modules.cnd.callgraph.api</package>
                 <package>org.netbeans.modules.cnd.callgraph.api.ui</package>

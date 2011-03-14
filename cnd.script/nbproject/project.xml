@@ -231,6 +231,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.severity1.makefilemodule</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.embedded.deployment.make</friend>
                 <friend>org.netbeans.modules.cnd.spellchecker.bindings</friend>
                 <package>org.netbeans.modules.cnd.api.makefile</package>
