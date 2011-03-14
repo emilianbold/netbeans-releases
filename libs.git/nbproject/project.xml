@@ -94,6 +94,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.git</friend>
                 <package>org.netbeans.libs.git</package>
                 <package>org.netbeans.libs.git.progress</package>
+                <package>org.netbeans.libs.git.utils</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org.eclipse.jgit-0.11.3.jar</runtime-relative-path>

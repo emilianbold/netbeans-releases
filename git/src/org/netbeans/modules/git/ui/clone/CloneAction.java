@@ -55,7 +55,8 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
-import org.netbeans.libs.git.Utils;
+import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.utils.Utils;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -101,7 +102,7 @@ public class CloneAction extends GitAction {
         CloneWizard wiz = new CloneWizard(cloneFromPath);
         if (wiz.show()) {
             
-            final String remoteUri = wiz.getRemoteUri();
+            final GitURI remoteUri = wiz.getRemoteURI();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
             List<? extends GitBranch> branches = wiz.getBranches();
@@ -118,7 +119,7 @@ public class CloneAction extends GitAction {
                     try {
                         GitClient client = getClient();
                         client.init(this);
-                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri, refSpecs, this);
+                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, this);
                         log(updates);
                         
                         if(isCanceled()) {
