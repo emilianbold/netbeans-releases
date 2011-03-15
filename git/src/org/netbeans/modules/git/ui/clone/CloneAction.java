@@ -66,7 +66,6 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
-import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
