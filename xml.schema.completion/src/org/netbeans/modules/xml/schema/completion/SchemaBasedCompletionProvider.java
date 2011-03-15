@@ -73,6 +73,9 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
         BaseDocument doc = Utilities.getDocument(component);
         if(doc == null)
             return 0;
+        if ( typedText ==null || typedText.trim().length() ==0 ){
+            return 0;
+        }
         XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
         if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion(doc)) {
             return 0;
