@@ -45,15 +45,20 @@ package org.netbeans.modules.git.ui.repository.remote;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,6 +66,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.util.ChangeSupport;
@@ -70,7 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class RemoteRepository implements DocumentListener, ActionListener {
+public class RemoteRepository implements DocumentListener, ActionListener, ItemListener {
     private boolean valid;
     private Message msg;
 
@@ -129,13 +135,8 @@ public class RemoteRepository implements DocumentListener, ActionListener {
         };
         
         attachListeners();
-        initUrlComboValues();
+        initUrlComboValues(forPath);
         setFieldsVisibility();
-        
-        if(forPath != null) {
-            ((JTextComponent)panel.urlComboBox.getEditor().getEditorComponent()).setText(forPath);
-        }
-        
         validateFields();
     }
     
@@ -169,6 +170,10 @@ public class RemoteRepository implements DocumentListener, ActionListener {
         }
     }
     
+    public void store() {
+        GitModuleConfig.getDefault().insertRecentGitURI(getURI(), panel.savePasswordCheckBox.isSelected());
+    }
+    
     public void removeChangeListener(ChangeListener listener) {
         support.removeChangeListener(listener);
     }
@@ -184,6 +189,7 @@ public class RemoteRepository implements DocumentListener, ActionListener {
         ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);        
         panel.userPasswordField.getDocument().addDocumentListener(this);
         panel.userTextField.getDocument().addDocumentListener(this);
+        panel.urlComboBox.addItemListener(this);
     }
 
     @Override
@@ -211,6 +217,11 @@ public class RemoteRepository implements DocumentListener, ActionListener {
         } else if(ae.getSource() == panel.proxySettingsButton) {
             onProxyConfiguration();
         }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent ie) {
+    
     }
 
     private void validateFields () {
@@ -270,14 +281,40 @@ public class RemoteRepository implements DocumentListener, ActionListener {
         });
     }
 
-    private void initUrlComboValues() {
-        String[] protocols = new String[Scheme.values().length];
-        int i = 0;
-        for (Scheme s : Scheme.values()) {
-            protocols[i++] = s.toString() + (s == Scheme.FILE ?  ":///" : "://");
-        }
-        DefaultComboBoxModel model = new DefaultComboBoxModel(protocols);
-        panel.urlComboBox.setModel(model);
+    private void initUrlComboValues(final String forPath) {
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                panel.urlComboBox.setEnabled(false);
+                try {
+                    final DefaultComboBoxModel model = new DefaultComboBoxModel();
+                    
+                    try {
+                        List<GitURI> guris = GitModuleConfig.getDefault().getRecentUrls();
+                        for (GitURI gitURI : guris) {
+                            model.addElement(gitURI.toString());
+                        }
+                    } catch (Throwable t) {
+                        Git.LOG.log(Level.WARNING, null, t);
+                    }
+                    
+                    for (Scheme s : Scheme.values()) {
+                        model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            panel.urlComboBox.setModel(model);
+                            if (forPath != null) {
+                                ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).setText(forPath);
+                            }
+                            setFieldsVisibility();
+                            validateFields();
+                        }
+                    });
+                } finally {
+                    panel.urlComboBox.setEnabled(true);
+                }
+            }
+        });
     }
 
     private void onBrowse() {
