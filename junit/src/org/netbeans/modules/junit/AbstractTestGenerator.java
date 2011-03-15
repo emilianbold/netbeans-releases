@@ -2134,8 +2134,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             if (annotation.equals("javax.ejb.LocalBean"))   // NOI18N
                 return true;
         }
-        // check if method is declared by @Remote, @Local interface
-        if (getEjbInterfaceDeclaringMethod(srcMethod, srcClass.getInterfaces()) != null) {
+        // check if the class has empty implements clause or given method is declared by @Remote, @Local interface
+        if (srcClass.getInterfaces().isEmpty()
+                || getEjbInterfaceDeclaringMethod(srcMethod, srcClass.getInterfaces()) != null) {
             return true;
         }
         return false;
