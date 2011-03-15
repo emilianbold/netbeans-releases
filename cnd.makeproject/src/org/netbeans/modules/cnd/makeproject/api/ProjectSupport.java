@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -149,7 +150,12 @@ public class ProjectSupport {
             case REL:
                 return CndPathUtilitities.toRelativePath(base, path);
             case ABS:
-                return CndPathUtilitities.toAbsolutePath(base, path);
+                try {
+                    return CndFileUtils.getCanonicalPath(path);
+                } catch (IOException e) {
+                    e.printStackTrace(System.err);
+                    return path.getPath();
+                }
             default:
                 throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
         }

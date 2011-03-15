@@ -95,10 +95,13 @@ import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -132,6 +135,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * For any other project they are the same
      */
     private final FileObject baseDirFO;
+    private final FileSystem baseDirFS;
     private final FileObject projectDirFO;
     
     private boolean modified = false;
@@ -158,6 +162,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Parameters.notNull("projectDirFO", projectDirFO);
         Parameters.notNull("baseDirFO", baseDirFO);
         this.baseDirFO = baseDirFO;
+        try {
+            baseDirFS = baseDirFO.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException("Exception when getting file system for project folder object", ex); //NOI18N
+        }
         this.projectDirFO = projectDirFO;
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
@@ -1089,10 +1098,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * Don't add if root is subdir of existing root
      */
     public void addSourceRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
         String canonicalPath = null;
         try {
-            canonicalPath = new File(absPath).getCanonicalPath();
+            canonicalPath = FileSystemProvider.getCanonicalPath(baseDirFS, absPath);
         } catch (IOException ioe) {
             canonicalPath = null;
         }
