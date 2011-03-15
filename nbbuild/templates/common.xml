@@ -546,6 +546,7 @@ made subject to such option by the copyright holder.
                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
                 <classpath refid="test.@{test.type}.cp"/>
                 <compilerarg line="${javac.compilerargs}"/>
+                <processorpath refid="test.@{test.type}.cp"/>
             </nb-javac>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
@@ -584,6 +585,7 @@ made subject to such option by the copyright holder.
                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
                     <classpath refid="test.@{test.type}.cp"/>
                     <compilerarg line="${javac.compilerargs}"/>
+                    <processorpath refid="test.@{test.type}.cp"/>
                 </nb-javac>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
