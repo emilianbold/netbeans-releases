@@ -176,6 +176,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private String sourceEncoding = null;
     private boolean isOpenHookDone = false;
     private AtomicBoolean isDeleted = new AtomicBoolean(false);
+    private AtomicBoolean isDeleting = new AtomicBoolean(false);
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
@@ -1155,6 +1156,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         isDeleted.set(true);
     }
 
+    void setDeleting(boolean value) {
+        LOGGER.log(Level.FINE, "set deleting MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        isDeleting.set(value);
+    }
+
     private synchronized void onProjectClosed() {
         LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         helper.removeAntProjectListener(this);
@@ -1172,15 +1178,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     public synchronized void save() {
-        if (!isDeleted.get()) {
+        if (!isDeleted.get() && !isDeleting.get()) {
             if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
                 projectDescriptorProvider.getConfigurationDescriptor().save();
             }
         }
-    }
-
-    public synchronized void markDeleted() {
-        isDeleted.compareAndSet(false, true);
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {

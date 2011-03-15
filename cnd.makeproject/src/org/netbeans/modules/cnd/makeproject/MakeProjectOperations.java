@@ -176,7 +176,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoving() throws IOException {
         LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.markDeleted();
+        project.setDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
