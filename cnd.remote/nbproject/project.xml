@@ -346,6 +346,7 @@
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
