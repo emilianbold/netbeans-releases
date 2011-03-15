@@ -95,6 +95,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
                 moduledependenciesproperty="module.dependencies"
                 moduleclasspathproperty="module.classpath"
                 publicpackagejardir="${public.package.jar.dir}"
+                moduleprocessorclasspathproperty="module.processor.classpath"
                 modulerunclasspathproperty="module.run.classpath"
                 commitmailproperty="commit.mail"
                 classpathextensionsproperty="class.path.extensions">
@@ -307,10 +308,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
 
     <target name="javadoc" depends="build-init,-javadoc-init">
-        <path id="javadoc.classpath">
-            <path refid="cp"/>
-            <path path="${module.run.classpath}"/><!-- XXX #157320: JDK 5 bug workaround -->
-        </path>
+        <path id="javadoc.classpath" refid="processor.cp"/> <!-- #157320 -->
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
@@ -646,7 +644,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         </condition>
 
         <path id="sigtest.class.path.ref">
-            <path path="${module.run.classpath}"/>
+            <path path="${module.run.classpath}"/> <!-- XXX or module.processor.classpath? -->
             <path path="${cp.extra}"/>
             <path path="${cluster}/${module.jar}"/>
         </path>
@@ -715,7 +713,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>
 
         <path id="findbugs.class.path.ref">
-            <path path="${module.run.classpath}"/>
+            <path path="${module.run.classpath}"/> <!-- XXX or module.processor.classpath? -->
             <path path="${cp.extra}"/>
             <path path="${cluster}/${module.jar}"/>
         </path>
