@@ -120,7 +120,12 @@ public class RemoteRepository implements DocumentListener, ActionListener {
             panel.userPasswordField,
             panel.savePasswordCheckBox,
             panel.directoryBrowseButton,
-            panel.proxySettingsButton
+            panel.proxySettingsButton,
+            panel.repositoryLabel,
+            panel.userLabel,
+            panel.passwordLabel,
+            panel.tipLabel,
+            panel.leaveBlankLabel,
         };
         
         attachListeners();

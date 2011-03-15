@@ -195,6 +195,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                 @Override
                 public void run () {
                     setEnabled(true);
+                    enableFields();
                 }
             });
         }
