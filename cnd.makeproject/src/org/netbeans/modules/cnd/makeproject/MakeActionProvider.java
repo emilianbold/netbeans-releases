@@ -257,6 +257,9 @@ public final class MakeActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
+            // it's better to set deleted flag right here, otherwise we can start saving the project
+            // #196501 - "Error synchronizing project to <login>@<host> null"
+            project.setDeleted(); 
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }
