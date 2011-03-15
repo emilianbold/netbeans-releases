@@ -121,5 +121,20 @@ public class GitURI {
     public String getHost() {
         return uri.getHost();
     }
+
+    @Override
+    public String toString() {
+        return uri.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return uri.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return uri.hashCode();
+    }
     
 }
