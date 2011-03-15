@@ -182,6 +182,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 }                
             }
         }
+        // this is a solution for issue #188107
+        // The method is defined that returns type 'object'. 
+        if(retval.isEmpty() && returnType.equals("object") && getInScope() instanceof ClassScope) {
+            retval.add((TypeScope)getInScope());
+        }
         return retval;
     }
 
