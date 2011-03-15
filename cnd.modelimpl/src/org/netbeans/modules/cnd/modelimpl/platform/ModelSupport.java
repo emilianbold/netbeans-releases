@@ -146,6 +146,9 @@ public class ModelSupport implements PropertyChangeListener {
         modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
 
+        synchronized (openedProjects) {
+            closed = false;
+        }
         if (!CndUtils.isStandalone()) {
             openedProjects.clear();
             if (TRACE_STARTUP) {
@@ -186,9 +189,9 @@ public class ModelSupport implements PropertyChangeListener {
         ModelImpl model = theModel;
         if (model != null) {
             synchronized (openedProjects) {
-                model.shutdown();
                 closed = true;
             }
+            model.shutdown();
         }
     }
 
