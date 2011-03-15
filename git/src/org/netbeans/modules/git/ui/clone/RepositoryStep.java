@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -77,10 +78,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     
     private Map<String, GitBranch> remoteBranches;
     private final RepositoryStepPanel panel;
-    private final Repository repository;
+    private final RemoteRepository repository;
 
     public RepositoryStep (String forPath) {
-        repository = new Repository(forPath);
+        repository = new RemoteRepository(forPath);
         repository.addChangeListener(this);
         this.panel = new RepositoryStepPanel(repository.getPanel());
         validateRepository();
@@ -106,7 +107,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             }    
         } finally {
             support = null;
-            repository.enableFields(true);
+            repository.setEnabled(true);
         }
     }
 
@@ -136,7 +137,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     public void prepareValidation () {
-        repository.enableFields(false);
+        repository.setEnabled(false);
     }    
     
     public void cancelBackgroundTasks () {
@@ -180,7 +181,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
         @Override
         public void setEnabled(boolean editable) {
-            repository.enableFields(editable);
+            repository.setEnabled(editable);
         }        
     };
 

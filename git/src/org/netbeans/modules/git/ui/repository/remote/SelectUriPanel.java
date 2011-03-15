@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,8 +58,9 @@ import org.openide.util.NbBundle;
 public class SelectUriPanel extends javax.swing.JPanel {
 
     /** Creates new form SelectUriPanel */
-    public SelectUriPanel() {
+    SelectUriPanel(JPanel panel) {
         initComponents();
+        repositoryPanel.add(panel);
         setName(NbBundle.getMessage(SelectUriPanel.class, "LBL_SelectUriPanel.name")); //NOI18N
     }
 
@@ -83,25 +85,21 @@ public class SelectUriPanel extends javax.swing.JPanel {
 
         cmbConfiguredRepositories.setToolTipText(org.openide.util.NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.cmbConfiguredRepositories.TTtext")); // NOI18N
 
-        txtRemoteUri.setText(org.openide.util.NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.txtRemoteUri.text")); // NOI18N
+        repositoryPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(repositoryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(cmbConfiguredRepositories, 0, 312, Short.MAX_VALUE))
-                            .addComponent(rbConfiguredUri)
-                            .addComponent(rbCreateNew)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(txtRemoteUri, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)))
+                        .addGap(21, 21, 21)
+                        .addComponent(cmbConfiguredRepositories, 0, 431, Short.MAX_VALUE))
+                    .addComponent(rbConfiguredUri)
+                    .addComponent(rbCreateNew))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -113,9 +111,9 @@ public class SelectUriPanel extends javax.swing.JPanel {
                 .addComponent(cmbConfiguredRepositories, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(rbCreateNew)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtRemoteUri, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(repositoryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -125,7 +123,7 @@ public class SelectUriPanel extends javax.swing.JPanel {
     final javax.swing.JComboBox cmbConfiguredRepositories = new javax.swing.JComboBox();
     final javax.swing.JRadioButton rbConfiguredUri = new javax.swing.JRadioButton();
     final javax.swing.JRadioButton rbCreateNew = new javax.swing.JRadioButton();
-    final javax.swing.JTextField txtRemoteUri = new javax.swing.JTextField();
+    final javax.swing.JPanel repositoryPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
 
 }
