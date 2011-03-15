@@ -161,7 +161,7 @@ made subject to such option by the copyright holder.
             <pathelement path="${cp.extra}"/>
         </path>
         <path id="processor.cp">
-            <pathelement path="${module.run.classpath}"/>
+            <pathelement path="${module.processor.classpath}"/>
             <pathelement path="${cp.extra}"/>
         </path>
         <!-- Unlike ${module.classpath}, this does not use publicPackageJarDir, since processors need not be in public packages. -->

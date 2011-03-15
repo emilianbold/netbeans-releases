@@ -213,13 +213,19 @@ public final class ParseProjectXml extends Task {
         moduleClassPathProperty = s;
     }
 
+    private String moduleProcessorClassPathProperty;
+    /**
+     * Set the property to set the computed module processor class path to,
+     * based on the transitive closure of compile-time dependencies.
+     */
+    public void setModuleProcessorClassPathProperty(String s) {
+        moduleProcessorClassPathProperty = s;
+    }
+
     private String moduleRunClassPathProperty;
     /**
      * Set the property to set the computed module runtime class path to.
-     * Currently identical to the regular class path with the exception
-     * that original JARs are used, never public-package-only JARs.
-     * XXX In the future should however reflect &lt;run-dependency/&gt;
-     * rather than &lt;compile-dependency/&gt; 
+     * This uses the transitive closure of runtime dependencies.
      */
     public void setModuleRunClassPathProperty(String s) {
         moduleRunClassPathProperty = s;
@@ -480,11 +486,15 @@ public final class ParseProjectXml extends Task {
                 define(codeNameBaseSlashesProperty, cnb.replace('.', '/'));
             }
             if (moduleClassPathProperty != null) {
-                String cp = computeClasspath(cnb, pDoc, modules, translatedDeps, false);
+                String cp = computeClasspath(cnb, modules, translatedDeps, false, false);
                 define(moduleClassPathProperty, cp);
             }
+            if (moduleProcessorClassPathProperty != null) {
+                String cp = computeClasspath(cnb, modules, translatedDeps, false, true);
+                define(moduleProcessorClassPathProperty, cp);
+            }
             if (moduleRunClassPathProperty != null) {
-                String cp = computeClasspath(cnb, pDoc, modules, translatedDeps, true);
+                String cp = computeClasspath(cnb, modules, translatedDeps, true, true);
                 define(moduleRunClassPathProperty, cp);
             }
             if (commitMailProperty != null) {
@@ -947,14 +957,13 @@ public final class ParseProjectXml extends Task {
         }
     }
 
-    private String computeClasspath(String myCNB, Document pDoc, ModuleListParser modules, Dep[] deps, boolean runtime)
-            throws BuildException, IOException, SAXException {
-        StringBuffer cp = new StringBuffer();
+    private String computeClasspath(String myCNB, ModuleListParser modules, Dep[] deps, boolean runtime, boolean recursive) throws BuildException, IOException, SAXException {
+        StringBuilder cp = new StringBuilder();
         Path clusterPathS = (Path) getProject().getReference("cluster.path.id");
         Set<File> clusterPath = null;
         if (clusterPathS != null) {
             clusterPath = new HashSet<File>();
-            for (Iterator it = clusterPathS.iterator(); it.hasNext();) {
+            for (Iterator<?> it = clusterPathS.iterator(); it.hasNext();) {
                 File oneCluster = ((FileResource) it.next()).getFile();
                 clusterPath.add(oneCluster);
             }
@@ -972,9 +981,8 @@ public final class ParseProjectXml extends Task {
 
             List<File> additions = new ArrayList<File>();
             additions.add(depJar);
-            if (runtime) {
-                Set<String> skipCnb = new HashSet<String>();
-                addRecursiveDeps(additions, modules, cnb, clusterPath, excludedModules, skipCnb);
+            if (recursive) {
+                addRecursiveDeps(additions, modules, cnb, clusterPath, excludedModules, new HashSet<String>(), runtime);
             }
             
             // #52354: look for <class-path-extension>s in dependent modules.
@@ -1004,7 +1012,7 @@ public final class ParseProjectXml extends Task {
                     log("The module " + cnb + " has been deprecated", Project.MSG_WARN);
                 }
 
-                if (!dep.impl && /* #71807 */ dep.run && !runtime) {
+                if (!dep.impl && /* #71807 */ dep.run && !recursive && !runtime) {
                     String friends = attr.getValue("OpenIDE-Module-Friends");
                     if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCNB)) {
                         throw new BuildException("The module " + myCNB + " is not a friend of " + depJar, getLocation());
@@ -1040,29 +1048,39 @@ public final class ParseProjectXml extends Task {
     }
     
     private void addRecursiveDeps(List<File> additions, ModuleListParser modules, String cnb, 
-            Set<File> clusterPath, Set<String> excludedModules, Set<String> skipCnb) {
+            Set<File> clusterPath, Set<String> excludedModules, Set<String> skipCnb, boolean runtime) {
         if (!skipCnb.add(cnb)) {
             return;
         }
         log("Processing for recursive deps: " + cnb, Project.MSG_DEBUG);
-        for (String nextModule : modules.findByCodeNameBase(cnb).getRuntimeDependencies()) {
+        ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
+        if (entry == null) {
+            log("No entry for " + cnb, Project.MSG_WARN);
+            return;
+        }
+        String[] deps;
+        if (runtime) {
+            deps = entry.getRuntimeDependencies();
+        } else {
+            // XXX not quite right as we want <compile-dependency/> rather than <build-prerequisite/>, but probably close enough?
+            deps = entry.getBuildPrerequisites();
+            if (deps == null) {
+                // XXX for binary entries we have no record of what is a compile vs. a runtime dependency
+                deps = entry.getRuntimeDependencies();
+            }
+        }
+        for (String nextModule : deps) {
             log("  Added dep: " + nextModule, Project.MSG_DEBUG);
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
-
             if (!additions.contains(depJar)) {
                 additions.add(depJar);
             }
-            
-            ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
-            if (entry != null) {
-                for (File f : entry.getClassPathExtensions()) {
-                    if (!additions.contains(f)) {
-                        additions.add(f);
-                    }
+            for (File f : entry.getClassPathExtensions()) {
+                if (!additions.contains(f)) {
+                    additions.add(f);
                 }
             }
-            
-            addRecursiveDeps(additions, modules, nextModule, clusterPath, excludedModules, skipCnb);
+            addRecursiveDeps(additions, modules, nextModule, clusterPath, excludedModules, skipCnb, runtime);
         }
     }
 
@@ -1086,7 +1104,7 @@ public final class ParseProjectXml extends Task {
             }
             String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
                     " against because it is part of the cluster " +
-                    clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
+                    jar.getParentFile().getParentFile() + " which is not part of cluster.path in your suite configuration.\n\n" +
                     "Cluster.path is: " + clusterPath;
             throw new BuildException(msg, getLocation());
         }
