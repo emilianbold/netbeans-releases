@@ -479,12 +479,6 @@ made subject to such option by the copyright holder.
                     <pathelement path="${test.@{test.type}.run.cp.extra}"/>
                     <pathelement path="${test.@{test.type}.cp.extra}"/>
                 </path>
-                <path id="test.@{test.type}.processor.cp">
-                    <path refid="processor.cp"/>
-                    <pathelement location="${cluster}/${module.jar}"/>
-                    <pathelement path="${test.@{test.type}.runtime.cp}"/>
-                    <pathelement path="${test.@{test.type}.cp.extra}"/>
-                </path>
                 <!-- path reference used in both compiler and executor -->
                 <propertyset id="test.@{test.type}.properties">
                     <propertyset>
@@ -552,7 +546,6 @@ made subject to such option by the copyright holder.
                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
                 <classpath refid="test.@{test.type}.cp"/>
                 <compilerarg line="${javac.compilerargs}"/>
-                <processorpath refid="test.@{test.type}.processor.cp"/>
             </nb-javac>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
@@ -591,7 +584,6 @@ made subject to such option by the copyright holder.
                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
                     <classpath refid="test.@{test.type}.cp"/>
                     <compilerarg line="${javac.compilerargs}"/>
-                    <processorpath refid="test.@{test.type}.processor.cp"/>
                 </nb-javac>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
