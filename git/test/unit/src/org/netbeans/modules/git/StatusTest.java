@@ -60,6 +60,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -67,6 +68,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -75,6 +77,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -783,9 +786,59 @@ public class StatusTest extends AbstractGitTestCase {
         }
     }
 
-    // TODO add more tests when exclusions are supported
-    // TODO test conflicts
+    /**
+     * It seems that cache.listFiles and cache.containsFiles called getStatus also on folders. Because folders are usually up-to-date (git does not track them),
+     * this results in unnecessary call to getOwner, ignore logic or sharability.
+     */
+    public void testSkipFoldersBug196702 () throws Exception {
+        final File f1 = new File(repositoryLocation, "1");
+        final File f2 = new File(f1, "2");
+        final File f3 = new File(f2, "3");
+        f3.mkdirs();
+        File f = new File(f3, "f");
+        f.createNewFile();
+        
+        FileStatusCache cache = getCache();
+        cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(f1)));
+        Logger log = Logger.getLogger("org.netbeans.modules.git.status.cache");
+        final boolean[] flags = new boolean[1];
+        log.addHandler(new Handler() {
+            @Override
+            public void publish (LogRecord record) {
+                if (record.getMessage().startsWith("getCachedStatus for file {0}:")) {
+                    if (Arrays.asList(f1, f2, f3).contains((File) record.getParameters()[0])) {
+                        flags[0] = true;
+                    }
+                }
+            }
 
+            @Override
+            public void flush () { }
+
+            @Override
+            public void close () throws SecurityException { }
+        });
+        
+        Collection<File> newFiles = Arrays.asList(cache.listFiles(new File[] { f1 }, EnumSet.of(FileInformation.Status.NEW_INDEX_WORKING_TREE)));
+        assertEquals(Arrays.asList(f), newFiles);
+        assertFalse(flags[0]);
+        flags[0] = false;
+        assertTrue(cache.containsFiles(Collections.singleton(f1), EnumSet.of(FileInformation.Status.NEW_INDEX_WORKING_TREE), true));
+        assertFalse(flags[0]);
+        assertFalse(cache.containsFiles(Collections.singleton(f1), EnumSet.of(FileInformation.Status.MODIFIED_INDEX_WORKING_TREE), true));
+        assertFalse(flags[0]);
+        
+        // test we do not break anything with the bugfix: ignored files/folders should be recognized even without getStatus call
+        SystemAction.get(IgnoreAction.class).performAction(VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(f1)) }));
+        flags[0] = false;
+        Collection<File> ignoredFiles = Arrays.asList(cache.listFiles(new File[] { f1 }, EnumSet.of(FileInformation.Status.NOTVERSIONED_EXCLUDED)));
+        assertEquals(Arrays.asList(f1), ignoredFiles);
+        assertFalse(flags[0]);
+        flags[0] = false;
+        assertTrue(cache.containsFiles(Collections.singleton(f1), EnumSet.of(FileInformation.Status.NOTVERSIONED_EXCLUDED), true));
+        assertFalse(flags[0]);
+    }
+    
     private void assertSameStatus(Set<File> files, EnumSet<Status> status) {
         for (File f : files) {
             assertEquals(status, getCache().getStatus(f).getStatus());

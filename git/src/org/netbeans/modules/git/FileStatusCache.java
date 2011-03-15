@@ -588,7 +588,7 @@ public class FileStatusCache {
             }
         }
         for (File root : indexRoots) {
-            FileInformation fi = getStatus(root);
+            FileInformation fi = getInfo(root);
             if (fi != null && fi.containsStatus(includeStatus) && (addExcluded || !GitModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))) {
                 return true;
             }
@@ -605,7 +605,7 @@ public class FileStatusCache {
             if(recursively) {
                 ret.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, recursively));
             }
-            FileInformation fi = getStatus(root);
+            FileInformation fi = getInfo(root);
             if (fi != null && !fi.containsStatus(includeStatus)) {
                 continue;
             }
