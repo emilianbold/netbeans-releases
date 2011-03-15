@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -183,6 +184,14 @@ class CloneWizard  implements ChangeListener {
             if (current() == repositoryStep) {
                 Map<String, GitBranch> branches = repositoryStep.getBranches();
                 fetchBranchesStep.fillRemoteBranches(branches.values());
+                
+                Git.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        GitURI guri = repositoryStep.getURI();
+                        repositoryStep.store();
+                    }
+                });
+                
             } else if (current() == fetchBranchesStep) {
                 cloneDestinationStep.setBranches(fetchBranchesStep.getSelectedBranches());
             }

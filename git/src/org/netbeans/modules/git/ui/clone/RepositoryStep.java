@@ -155,6 +155,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         setValid(repository.isValid(), repository.getMessage());
     }
 
+    void store() {
+        repository.store();
+    }
+
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
         private final GitURI uri;
 
