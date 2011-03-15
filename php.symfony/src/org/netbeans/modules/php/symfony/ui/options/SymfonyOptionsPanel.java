@@ -93,7 +93,7 @@ public class SymfonyOptionsPanel extends JPanel {
         initComponents();
 
         // not set in Design because of windows (panel too wide then)
-        symfonyScriptUsageLabel.setText(NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyUsage", SymfonyScript.SCRIPT_NAME_LONG));
+        symfonyScriptUsageLabel.setText(NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyUsage", SymfonyScript.SCRIPT_NAME));
         errorLabel.setText(" "); // NOI18N
 
         symfonyTextField.getDocument().addDocumentListener(new DocumentListener() {
