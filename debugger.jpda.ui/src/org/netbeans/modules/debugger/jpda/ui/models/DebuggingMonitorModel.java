@@ -251,12 +251,16 @@ NodeActionsProviderFilter, TableModel, Constants {
             }*/
             if (o instanceof OwnedMonitors) {
                 OwnedMonitors om = (OwnedMonitors) o;
-                Object[] fo = new Object [to - from];
+                Object[] array;
                 if (om.monitors != null) {
-                    System.arraycopy (om.monitors, from, fo, 0, to - from);
+                    array = om.monitors;
                 } else {
-                    System.arraycopy (om.variables, from, fo, 0, to - from);
+                    array = om.variables;
                 }
+                from = Math.min(from, array.length);
+                to = Math.max(to, array.length);
+                Object[] fo = new Object[to - from];
+                System.arraycopy(array, from, fo, 0, to - from);
                 return fo;
             }
             if (o instanceof Monitor) {
