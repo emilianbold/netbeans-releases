@@ -62,6 +62,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -119,6 +120,7 @@ public class XMLCompletionProvider implements CompletionProvider {
                 return;
             }
             
+            resultSet.setWaitText(NbBundle.getMessage(XMLCompletionProvider.class, "MSG_loading_dtd"));
             List<CompletionItem> items = QUERY.query(component, caretOffset, support);
             if(items != null) resultSet.addAllItems(items);
             resultSet.finish();
