@@ -110,44 +110,54 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         generator.makeProject();
     }
 
+    @Override
+    public Applicable isApplicable(Map<String, Object> map) {
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+        return isApplicableImpl(descriptor);
+    }
+
     public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor) {
         Progress progress = new MyProgress();
         progress.start(0);
         try {
-            List<String> errors = new  ArrayList<String>();
-            DiscoveryExtensionInterface.Applicable applicable;
-            applicable = isApplicableExecLog(descriptor);
-            if (applicable.isApplicable()){
-                return applicable;
-            }
-            applicable = isApplicableDwarfExecutable(descriptor);
-            if (applicable.isApplicable()){
-                return applicable;
-            }
-            if (applicable.getErrors() != null) {
-                errors.addAll(applicable.getErrors());
-            }
-            applicable = isApplicableMakeLog(descriptor);
-            if (applicable.isApplicable()){
-                return applicable;
-            }
-            if (applicable.getErrors() != null) {
-                errors.addAll(applicable.getErrors());
-            }
-            applicable = isApplicableDwarfFolder(descriptor);
-            if (applicable.isApplicable()){
-                return applicable;
-            }
-            if (applicable.getErrors() != null) {
-                errors.addAll(applicable.getErrors());
-            }
-            if (!errors.isEmpty()) {
-                return ApplicableImpl.getNotApplicable(errors);
-            } else {
-                return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NoExecutable_NoBaseFolder"))); // NOI18N
-            }
+            return isApplicableImpl(descriptor);
         } finally {
             progress.done();
+        }
+    }
+
+    public DiscoveryExtensionInterface.Applicable isApplicableImpl(DiscoveryDescriptor descriptor) {
+        List<String> errors = new  ArrayList<String>();
+        DiscoveryExtensionInterface.Applicable applicable;
+        applicable = isApplicableExecLog(descriptor);
+        if (applicable.isApplicable()){
+            return applicable;
+        }
+        applicable = isApplicableDwarfExecutable(descriptor);
+        if (applicable.isApplicable()){
+            return applicable;
+        }
+        if (applicable.getErrors() != null) {
+            errors.addAll(applicable.getErrors());
+        }
+        applicable = isApplicableMakeLog(descriptor);
+        if (applicable.isApplicable()){
+            return applicable;
+        }
+        if (applicable.getErrors() != null) {
+            errors.addAll(applicable.getErrors());
+        }
+        applicable = isApplicableDwarfFolder(descriptor);
+        if (applicable.isApplicable()){
+            return applicable;
+        }
+        if (applicable.getErrors() != null) {
+            errors.addAll(applicable.getErrors());
+        }
+        if (!errors.isEmpty()) {
+            return ApplicableImpl.getNotApplicable(errors);
+        } else {
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NoExecutable_NoBaseFolder"))); // NOI18N
         }
     }
     

@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
  * @author Alexander Simon
  */
 public interface DiscoveryExtensionInterface extends IteratorExtension {
+    Applicable isApplicable(Map<String,Object> map);
+
     boolean canApply(Map<String,Object> map, Project project);
 
     void apply(Map<String,Object> map, Project project) throws IOException;
