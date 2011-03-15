@@ -199,7 +199,7 @@ public class ModelSupport implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
             if (TRACE_STARTUP) {
-                System.out.println("Model support event:" + evt.getPropertyName());
+                System.out.println("Model support event:" + evt.getPropertyName() + " postponeParse=" + postponeParse);
             }
             if (evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECTS)) {
                 if (!postponeParse) {
@@ -215,10 +215,10 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private void openProjects() {
-        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
-            return;
-        }
         Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
+        if (TRACE_STARTUP) {
+            System.out.println("Model support: openProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
+        }
         synchronized (openedProjects) {
             if (closed) {
                 return;
@@ -355,9 +355,6 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
-                    if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
-                        return;
-                    }
                     NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
                     // enable by default
                     boolean enableModel = (settings == null) ? true : settings.isCodeAssistanceEnabled();
