@@ -42,16 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.git.ui.clone;
+package org.netbeans.modules.git.ui.repository.remote;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositoryPanel extends javax.swing.JPanel {
+public class RemoteRepositoryPanel extends javax.swing.JPanel {
 
     /** Creates new form RepositoryPanel */
-    public RepositoryPanel() {
+    public RemoteRepositoryPanel() {
         initComponents();
     }
 
@@ -73,13 +73,14 @@ public class RepositoryPanel extends javax.swing.JPanel {
         setName(bundle.getString("BK2018")); // NOI18N
         setVerifyInputWhenFocusTarget(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(titleLabel, bundle.getString("BK0001")); // NOI18N
+        java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("org/netbeans/modules/git/ui/repository/remote/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(titleLabel, bundle1.getString("BK0001")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(leaveBlankLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0005")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(leaveBlankLabel, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0005")); // NOI18N
 
         passwordLabel.setLabelFor(userPasswordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0004")); // NOI18N
-        passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_Password")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0004")); // NOI18N
+        passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "TT_Password")); // NOI18N
 
         userPasswordField.setColumns(8);
         userPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
@@ -87,8 +88,8 @@ public class RepositoryPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(tipLabel, "-"); // NOI18N
         tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
 
-        org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006")); // NOI18N
-        proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_ProxyDialog")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0006")); // NOI18N
+        proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_ProxyDialog")); // NOI18N
         proxySettingsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 proxySettingsButtonActionPerformed(evt);
@@ -99,14 +100,14 @@ public class RepositoryPanel extends javax.swing.JPanel {
         userTextField.setMinimumSize(new java.awt.Dimension(11, 22));
 
         userLabel.setLabelFor(userTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003")); // NOI18N
-        userLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_UserName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0003")); // NOI18N
+        userLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "TT_UserName")); // NOI18N
 
         jLabel2.setLabelFor(urlComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0002")); // NOI18N
 
         savePasswordCheckBox.setMnemonic('v');
-        org.openide.awt.Mnemonics.setLocalizedText(savePasswordCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0007")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(savePasswordCheckBox, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0007")); // NOI18N
 
         urlComboBox.setEditable(true);
         java.awt.Component editorComp = urlComboBox.getEditor().getEditorComponent();
@@ -114,7 +115,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
             ((javax.swing.JTextField) editorComp).setColumns(35);
         }
 
-        org.openide.awt.Mnemonics.setLocalizedText(directoryBrowseButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "directoryBrowseButton.Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(directoryBrowseButton, org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "directoryBrowseButton.Name")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -129,7 +130,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
                     .addComponent(passwordLabel))
                 .addGap(38, 38, 38)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tipLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                    .addComponent(tipLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
                     .addComponent(savePasswordCheckBox)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -139,7 +140,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
                         .addComponent(leaveBlankLabel)
                         .addGap(0, 0, 0))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(urlComboBox, 0, 252, Short.MAX_VALUE)
+                        .addComponent(urlComboBox, 0, 238, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(directoryBrowseButton))))
         );
@@ -172,9 +173,9 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 .addComponent(proxySettingsButton))
         );
 
-        titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
+        titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
         titleLabel.getAccessibleContext().setAccessibleParent(this);
-        leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_InfoLabel")); // NOI18N
+        leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_InfoLabel")); // NOI18N
         leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
         passwordLabel.getAccessibleContext().setAccessibleParent(this);
         userPasswordField.getAccessibleContext().setAccessibleParent(this);
@@ -182,14 +183,14 @@ public class RepositoryPanel extends javax.swing.JPanel {
         userTextField.getAccessibleContext().setAccessibleParent(this);
         userLabel.getAccessibleContext().setAccessibleParent(this);
         jLabel2.getAccessibleContext().setAccessibleParent(this);
-        savePasswordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0011")); // NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RepositoryURL")); // NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
+        savePasswordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "BK0011")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSN_RepositoryURL")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleParent(this);
-        directoryBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_BrowseFolder")); // NOI18N
-        directoryBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_BrowseFolder")); // NOI18N
+        directoryBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSN_BrowseFolder")); // NOI18N
+        directoryBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_BrowseFolder")); // NOI18N
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxySettingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxySettingsButtonActionPerformed

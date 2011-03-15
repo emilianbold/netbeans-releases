@@ -40,7 +40,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.clone;
+package org.netbeans.modules.git.ui.repository.remote;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class Repository implements DocumentListener, ActionListener {
+public class RemoteRepository implements DocumentListener, ActionListener {
     private boolean valid;
     private Message msg;
 
@@ -105,15 +105,15 @@ public class Repository implements DocumentListener, ActionListener {
         }
     };
     
-    private final RepositoryPanel panel;
+    private final RemoteRepositoryPanel panel;
     private final JComponent[] inputFields;
 
-    Repository() {
+    RemoteRepository() {
         this(null);
     }
     
-    public Repository(String forPath) {
-        this.panel = new RepositoryPanel();
+    public RemoteRepository(String forPath) {
+        this.panel = new RemoteRepositoryPanel();
         this.inputFields = new JComponent[] {
             panel.urlComboBox,
             panel.userTextField,
@@ -134,16 +134,34 @@ public class Repository implements DocumentListener, ActionListener {
         validateFields();
     }
     
-    JPanel getPanel() {
+    public JPanel getPanel() {
         return panel;
     }
     
-    boolean isValid() {
+    public boolean isValid() {
         return valid;
     }
     
-    Message getMessage() {
+    public Message getMessage() {
         return msg;
+    }
+    
+    public GitURI getURI() {
+        String uriString = (String) panel.urlComboBox.getEditor().getItem();        
+        if(uriString != null && !uriString.isEmpty()) {
+            try {
+                return new GitURI(uriString);
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.INFO, uriString, ex);
+            }
+        }
+        return null;
+    }    
+    
+    public void setEnabled (boolean enabled) {
+        for (JComponent inputField : inputFields) {
+            inputField.setEnabled(enabled);
+        }
     }
     
     public void removeChangeListener(ChangeListener listener) {
@@ -189,12 +207,6 @@ public class Repository implements DocumentListener, ActionListener {
             onProxyConfiguration();
         }
     }
-    
-    void enableFields (boolean enabled) {
-        for (JComponent inputField : inputFields) {
-            inputField.setEnabled(enabled);
-        }
-    }
 
     private void validateFields () {
         boolean oldValid = valid;
@@ -205,7 +217,7 @@ public class Repository implements DocumentListener, ActionListener {
             GitURI uri = getURI();
             if(uri == null) {
                 valid = false;
-                msg = new Message(NbBundle.getMessage(Repository.class, "MSG_EMPTY_URI_ERROR"), true);
+                msg = new Message(NbBundle.getMessage(RemoteRepository.class, "MSG_EMPTY_URI_ERROR"), true);
             } else {
                 // XXX check suported protocols
             }
@@ -253,18 +265,6 @@ public class Repository implements DocumentListener, ActionListener {
         });
     }
 
-    GitURI getURI() {
-        String uriString = (String) panel.urlComboBox.getEditor().getItem();        
-        if(uriString != null && !uriString.isEmpty()) {
-            try {
-                return new GitURI(uriString);
-            } catch (URISyntaxException ex) {
-                Git.LOG.log(Level.INFO, uriString, ex);
-    }
-        }
-        return null;
-    }
-    
     private void initUrlComboValues() {
         String[] protocols = new String[Scheme.values().length];
         int i = 0;
@@ -288,9 +288,9 @@ public class Repository implements DocumentListener, ActionListener {
         } catch (URISyntaxException ex) {
             //
         }
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Descritpion"), //NOI18N
+        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.FileChooser.Descritpion"), //NOI18N
                 file);
-        fileChooser.setDialogTitle(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
+        fileChooser.setDialogTitle(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(panel, null);
