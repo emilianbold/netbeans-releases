@@ -1081,6 +1081,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="contrib"/>
       </dirset>
     </subant>
+    <delete>
+      <fileset dir="nbproject">
+        <include name="private/scan-cache-*"/>
+      </fileset>
+    </delete>
   </target>
   <target name="-do-hg-clean">
     <echo>Cleaning untracked files in ${basedir}...</echo>
