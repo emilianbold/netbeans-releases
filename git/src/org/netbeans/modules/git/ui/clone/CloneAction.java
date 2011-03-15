@@ -44,6 +44,8 @@ package org.netbeans.modules.git.ui.clone;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.utils.GitURI;
@@ -128,6 +131,8 @@ public class CloneAction extends GitAction {
                         if(isCanceled()) {
                             return;
                         }
+
+                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), this);
                         
                         client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
                         client.checkoutRevision(branch.getName(), true, this);
@@ -185,5 +190,36 @@ public class CloneAction extends GitAction {
         }
         // open project selection
         ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+    }    
+    
+    private static class CloneRemoteConfig implements GitRemoteConfig {
+        private String remoteName;
+        private GitURI remoteUri;
+        private List<String> refSpecs;
+        public CloneRemoteConfig(String remoteName, GitURI remoteUri, List<String> refSpecs) {
+            this.remoteName = remoteName;
+            this.remoteUri = remoteUri;
+            this.refSpecs = refSpecs;
+        }
+        @Override
+        public String getRemoteName() {
+            return remoteName;
+        }
+        @Override
+        public List<String> getUris() {
+            return Arrays.asList(remoteUri.toPrivateString());
+        }
+        @Override
+        public List<String> getPushUris() {
+            return Collections.emptyList();
+        }
+        @Override
+        public List<String> getFetchRefSpecs() {
+            return refSpecs;
+        }
+        @Override
+        public List<String> getPushRefSpecs() {
+            return Collections.emptyList();
+        }
     }    
 }
