@@ -71,6 +71,9 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.spi.model.UIDProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
@@ -727,7 +730,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
         PersistentUtils.writeStrings(qname, output);
         PersistentUtils.writeSpecializationParameters(instantiationParams, output);
-        UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
+        
+        CsmUID<?> uid = this.classifierUID;
+        if(!UIDProviderIml.isPersistable(uid)) {
+            uid = null;
+        }
+        UIDObjectFactory.getDefaultFactory().writeUID(uid, output);
     }
 
     public TypeImpl(DataInput input) throws IOException {
