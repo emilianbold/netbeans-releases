@@ -62,8 +62,23 @@ public class GitURI {
         return u;
     }
     
-    public GitURI(String uri) throws URISyntaxException {
-        this.uri = new URIish(uri);
+    public GitURI(String uriString) throws URISyntaxException {
+        this.uri = new URIish(uriString);
+        
+        // WORKAROUND:
+        // new URIish("https://foo.bar").getHost() returns null
+        // new URIish("https://foo.bar").getPath() returns foo.bar
+        // it should work instead like
+        // new URIish("https://foo.bar/").getHost() returns foo.bar
+        // new URIish("https://foo.bar/").getPath() returns null
+        String scheme = uri.getScheme();
+        if(scheme != null && 
+           !scheme.startsWith("file:") && 
+           uri.getHost() == null && 
+           !uriString.endsWith("/")) 
+        {
+            uri = new URIish(uriString + "/");
+        }
     }
 
     public String toPrivateString() {
