@@ -989,11 +989,14 @@ public final class FileUtil extends Object {
      * Converts a disk file to a matching file object.
      * This is the inverse operation of {@link #toFile}.
      * <p class="nonnormative">
-     * If you are running with the MasterFS module enabled, that will guarantee
-     * that this method never returns null for a file which exists on disk.
+     * If you are running with {@code org.netbeans.modules.masterfs} enabled,
+     * this method should never return null for a file which exists on disk.
+     * For example, to make this method work in unit tests in an Ant-based module project,
+     * right-click Unit Test Libraries, Add Unit Test Dependency, check Show Non-API Modules, select Master Filesystem.
+     * (Also right-click the new Master Filesystem node, Edit, uncheck Include in Compile Classpath.)
      * </p>
      * @param file a disk file (may or may not exist). This file
-     * must be {@link #normalizeFile normalized}.
+     * must be {@linkplain #normalizeFile normalized}.
      * @return a corresponding file object, or null if the file does not exist
      *         or there is no {@link URLMapper} available to convert it
      * @since 4.29
