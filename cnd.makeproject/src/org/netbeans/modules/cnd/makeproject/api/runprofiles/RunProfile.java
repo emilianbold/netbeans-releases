@@ -519,7 +519,7 @@ public final class RunProfile implements ConfigurationAuxObject {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         }
         
-        if (makeConfiguration != null && makeConfiguration.getFileSystemHost().isLocal()) {
+        if (makeConfiguration == null || makeConfiguration.getFileSystemHost().isLocal()) {
             // TODO:fullRemote while cleaning up, remove the entire "if" branch - the "else" one should work in any case
             // It's hight resistance mode now, that's why I'm leaving "local/classic remote" branch as it was - VK
             // convert to canonical path
