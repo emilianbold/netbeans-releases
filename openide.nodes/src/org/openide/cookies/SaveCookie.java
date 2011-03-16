@@ -47,7 +47,8 @@ import org.netbeans.api.actions.Savable;
 import org.openide.nodes.Node;
 
 
-/** The cookie for the save operation.
+/** The cookie for the save operation. Since 7.21 it implements
+* {@link Savable}.
 *
 * @author Dafe Simonek
 */
