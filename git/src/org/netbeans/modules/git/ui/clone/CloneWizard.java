@@ -184,10 +184,9 @@ class CloneWizard  implements ChangeListener {
             if (current() == repositoryStep) {
                 Map<String, GitBranch> branches = repositoryStep.getBranches();
                 fetchBranchesStep.fillRemoteBranches(branches.values());
-                
                 Git.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
                     public void run() {
-                        GitURI guri = repositoryStep.getURI();
                         repositoryStep.store();
                     }
                 });
