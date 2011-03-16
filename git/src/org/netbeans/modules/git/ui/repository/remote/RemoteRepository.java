@@ -149,7 +149,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public GitURI getURI() {
-        String uriString = (String) panel.urlComboBox.getEditor().getItem();        
+        String uriString = getURIString();        
         if(uriString != null && !uriString.isEmpty()) {
             try {
                 return new GitURI(uriString);
@@ -178,6 +178,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         support.addChangeListener(listener);
     }
     
+    private String getURIString() {
+        String uriString = (String) panel.urlComboBox.getEditor().getItem();
+        return uriString;
+    }
+    
     private void attachListeners () {
         panel.proxySettingsButton.addActionListener(this);
         panel.directoryBrowseButton.addActionListener(this);
@@ -190,20 +195,25 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     @Override
     public void insertUpdate(DocumentEvent de) {
+        if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
+        findComboItem();
     }
 
     @Override
     public void removeUpdate(DocumentEvent de) {
+        if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
     }
 
     @Override
     public void changedUpdate(DocumentEvent de) {
+        if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
+        findComboItem();
     }
 
     @Override
@@ -277,8 +287,41 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         });
     }
 
+    private boolean ignoreComboEvents = false;
+    private void findComboItem() {
+        final String uriString = getURIString();        
+        if(uriString == null || uriString.isEmpty()) {
+            return;
+        }
+        DefaultComboBoxModel model = (DefaultComboBoxModel)panel.urlComboBox.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            final String item = (String) model.getElementAt(i);
+            if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
+                final int start = uriString.length();
+                final int end = item.length();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ignoreComboEvents = true;
+                        try {
+                            JTextComponent txt = (JTextComponent)panel.urlComboBox.getEditor().getEditorComponent();
+                            txt.setText(item);
+                            txt.setCaretPosition(start);
+                            txt.setSelectionStart(start);
+                            txt.setSelectionEnd(end);
+                        } finally {
+                            ignoreComboEvents = false;
+                        }
+                    }
+                });
+                return;
+            }
+        }
+    }
+    
     private void initUrlComboValues(final String forPath) {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 panel.urlComboBox.setEnabled(false);
                 try {
