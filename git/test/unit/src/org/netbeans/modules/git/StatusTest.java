@@ -839,6 +839,23 @@ public class StatusTest extends AbstractGitTestCase {
         assertFalse(flags[0]);
     }
     
+    /**
+     * When cache.listFiles is called and cache.refresh has not yet been called, listFiles returns also the root folder. That's wrong and causes bug #196176.
+     */
+    public void testExcludeFoldersFromListFiles () throws Exception {
+        final File f1 = new File(repositoryLocation, "1");
+        final File f2 = new File(f1, "2");
+        final File f3 = new File(f2, "3");
+        f3.mkdirs();
+        File f = new File(f3, "f");
+        f.createNewFile();
+        add(f);
+        commit(f);
+        FileStatusCache cache = getCache();
+        Collection<File> newFiles = Arrays.asList(cache.listFiles(new File[] { f1 }, EnumSet.of(FileInformation.Status.MODIFIED_INDEX_WORKING_TREE)));
+        assertEquals(0, newFiles.size());
+    }
+    
     private void assertSameStatus(Set<File> files, EnumSet<Status> status) {
         for (File f : files) {
             assertEquals(status, getCache().getStatus(f).getStatus());

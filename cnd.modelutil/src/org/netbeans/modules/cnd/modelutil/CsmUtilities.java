@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
@@ -99,6 +101,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
@@ -780,31 +783,42 @@ public class CsmUtilities {
                         if (pane != null) {
                             //editor already opened, so just select
                             opened = true;
+                            selectElementInPane(pane, element, !opened);
                         } else {
-                            // editor not yet opened
-                            // XXX: vv159170 commented out the ollowing code, because on the time
-                            // of firing even no chance to get opened panes yet...
-//                            ec.addPropertyChangeListener(new PropertyChangeListener() {
-//                                public void propertyChange(PropertyChangeEvent evt) {
-//                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-//                                        final JEditorPane[] panes = ec.getOpenedPanes();
-//                                        if (panes != null && panes.length > 0) {
-//                                            selectElementInPane(panes[0], element, true);
-//                                        }
-//                                        ec.removePropertyChangeListener(this);
-//                                    }
-//                                }
-//                            });
+                            // editor not yet opened, attach listener and open from there
+                            ec.addPropertyChangeListener(new PropertyChangeListenerImpl(ec, element));
                             opened = false;
                             ec.open();
-                            // we have to get panes here instead of in listener using getOpenedPanes which is synchronious
-                            JEditorPane[] panes = ec.getOpenedPanes();
-                            if (panes != null && panes.length > 0) {
-                                pane = panes[0];
+                        }
+                    }
+
+                    class PropertyChangeListenerImpl implements PropertyChangeListener, Runnable {
+
+                        private final Observable ec;
+                        private final PointOrOffsetable element;
+
+                        public PropertyChangeListenerImpl(Observable ec, PointOrOffsetable element) {
+                            this.ec = ec;
+                            this.element = element;
+                        }
+
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                ec.removePropertyChangeListener(this);
+                                // it's strange, but ec.getOpenedPanes() still returns null at this time
+                                // evt.getNewValue is null as well
+                                // so redirect once more when pane is really opened
+                                SwingUtilities.invokeLater(this);
                             }
                         }
-                        if (pane != null) {
-                            selectElementInPane(pane, element, !opened);
+
+                        @Override
+                        public void run() {
+                            final JEditorPane[] panes = ec.getOpenedPanes();
+                            if (panes != null && panes.length > 0) {
+                                selectElementInPane(panes[0], element, false);
+                            }
                         }
                     }
                 });
