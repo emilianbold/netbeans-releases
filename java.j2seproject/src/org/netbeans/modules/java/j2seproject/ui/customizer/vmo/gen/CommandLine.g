@@ -263,11 +263,16 @@ switchOption
 		{VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':')}?=> t=TEXT {index = $t.getText().indexOf(':'); if (index > 0) {name=$t.getText().substring(0,index); value = (index+1) == $t.getText().length() ? "" : $t.getText().substring(index+1);} else {name=$t.getText();} } -> { index < 0 ? new SwitchNode($t) : new ParametrizedNode($t, name, ":", value)} |
 		{input.LT(1).getText().startsWith(XSHARE+':')}?=> t=TEXT -> {new SwitchNode($t)} |
 		{input.LT(1).getText().startsWith(XCJNI+':')}?=> t=TEXT	  -> {new SwitchNode($t)} |
-		{input.LT(1).getText().charAt(0) == 'D'}?=> t=TEXT '=' t2=TEXT    -> {new UserPropertyNode($t, $t2, $t.pos)} |
+		{input.LT(1).getText().charAt(0) == 'D'}?=> t=TEXT '=' eText    -> {new UserPropertyNode($t, $eText.text, $t.pos)} |
 		{isParamOption(input.LT(1).getText())}?=> t=TEXT {index = $t.getText().indexOf(':'); if (index > 0) {name=$t.getText().substring(0,index); value = (index+1) == $t.getText().length() ? "" : $t.getText().substring(index+1);}} -> {new ParametrizedNode($t, name, ":", value)} |
 		{memOptions.matcher(input.LT(1).getText()).matches()}?=> t=TEXT	  -> {new ParametrizedNode($t, 3)} |
-		{CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText())}?=> t=TEXT WS t2=TEXT -> {new ParametrizedNode($t, " ", $t2, false)} |
+		{CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText())}?=> t=TEXT WS eText -> {new ParametrizedNode($t, " ", $eText.text, false)} |
 		t=TEXT -> {new UnrecognizedOption($t)};
+		
+eText	:	
+		'\'' TEXT '\''
+	|	'"' TEXT  '"'
+	|	    TEXT;
 	
 nonSwitchOption
 	:	t=TEXT -> {new UnknownOption($t)};
