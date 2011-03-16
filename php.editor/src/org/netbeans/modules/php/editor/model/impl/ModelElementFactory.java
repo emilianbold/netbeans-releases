@@ -73,6 +73,9 @@ class ModelElementFactory {
 
     static ClassScopeImpl create(ClassDeclarationInfo nodeInfo, ModelBuilder context) {
         Scope currentScope = context.getCurrentScope();
+        if (currentScope == null) {
+            currentScope = context.getFileScope();
+        }
         if (currentScope instanceof FunctionScope) {
             currentScope = currentScope.getInScope();
         }

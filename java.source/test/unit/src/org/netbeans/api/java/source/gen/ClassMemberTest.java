@@ -91,6 +91,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("testAddFieldWithDoc1"));
 //        suite.addTest(new ClassMemberTest("testAddFieldWithDoc2"));
 //        suite.addTest(new ClassMemberTest("test111024"));
+//        suite.addTest(new ClassMemberTest("test196053a"));
+//        suite.addTest(new ClassMemberTest("test196053b"));
         return suite;
     }
 
@@ -595,7 +597,6 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
-            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -1545,6 +1546,77 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void test196053a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private @Deprecated java.util.List<? super String> b;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public java.util.List<? super String> b;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(var.getModifiers(), make.Modifiers(EnumSet.of(Modifier.PUBLIC)));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test196053b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    @Deprecated private java.util.List<? super String> b;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public java.util.List<? super String> c;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(var.getModifiers(), make.Modifiers(EnumSet.of(Modifier.PUBLIC)));
+                workingCopy.rewrite(var, make.setLabel(var, "c"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

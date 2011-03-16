@@ -450,8 +450,9 @@ public final class HQLEditorTopComponent extends TopComponent {
     }
 
     public void setResult(HQLResult result, ClassLoader ccl) {
+        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ccl);
-        if (result.getExceptions().size() == 0) {
+        if (result.getExceptions().isEmpty()) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
             StringBuilder strBuffer = new StringBuilder();
@@ -517,7 +518,7 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         runHQLButton.setEnabled(true);
         ph.finish();
-
+        Thread.currentThread().setContextClassLoader(oldClassLoader);
     }
 
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {

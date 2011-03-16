@@ -75,9 +75,9 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
     private DialogDescriptor dd;
     private boolean revisionValid = true;
     private boolean nameValid;
+    private boolean branchNameRecommended = true;
     private String branchName;
     private final Map<String, GitBranch> branches;
-    private boolean previouslySelected;
     private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
 
     public CheckoutRevision (File repository, RepositoryInfo info, String initialRevision) {
@@ -132,15 +132,22 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
 
     private void validate () {
         boolean flag = revisionValid;
-        if (revisionValid && panel.cbCheckoutAsNewBranch.isSelected() && !nameValid) {
-            if (panel.branchNameField.getText().isEmpty()) {
-                setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchNameEmpty")); //NOI18N
-            } else {
-                setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchExists")); //NOI18N
-            }
-            flag = false;
-        }
+        boolean messageSet = false;
         if (flag) {
+            if (panel.cbCheckoutAsNewBranch.isSelected() && !nameValid) {
+                if (panel.branchNameField.getText().isEmpty()) {
+                    setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchNameEmpty")); //NOI18N
+                } else {
+                    setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchExists")); //NOI18N
+                }
+                flag = false;
+                messageSet = true;
+            } else if (!panel.cbCheckoutAsNewBranch.isSelected() && branchNameRecommended) {
+                setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.warningDetachedHead")); //NOI18N
+                messageSet = true;
+            }
+        }
+        if (!messageSet) {
             setErrorMessage(null);
         }
         okButton.setEnabled(flag);
@@ -182,20 +189,11 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
         if (rev.startsWith(GitUtils.PREFIX_R_HEADS)) {
             rev = rev.substring(GitUtils.PREFIX_R_HEADS.length());
         }
-        boolean enabled = panel.cbCheckoutAsNewBranch.isEnabled();
         GitBranch b = branches.get(rev);
-        panel.cbCheckoutAsNewBranch.setEnabled(b != null && !b.isRemote());
-        if (panel.cbCheckoutAsNewBranch.isEnabled()) {
-            if (!enabled) {
-                panel.cbCheckoutAsNewBranch.setSelected(previouslySelected);
-            }
-            previouslySelected = panel.cbCheckoutAsNewBranch.isSelected();
+        if (b != null && !b.isRemote()) {
+            branchNameRecommended = false;
         } else {
-            previouslySelected = panel.cbCheckoutAsNewBranch.isSelected();
-            panel.cbCheckoutAsNewBranch.setSelected(true);
-        }
-        if (enabled != panel.cbCheckoutAsNewBranch.isEnabled()) {
-            actionPerformed(new ActionEvent(panel.cbCheckoutAsNewBranch, ActionEvent.ACTION_PERFORMED, null));
+            branchNameRecommended = true;
         }
         validate();
     }

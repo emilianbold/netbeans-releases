@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject.State;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject.Step;
-import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
+import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Notification;

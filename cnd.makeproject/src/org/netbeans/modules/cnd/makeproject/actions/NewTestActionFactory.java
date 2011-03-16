@@ -320,12 +320,16 @@ public final class NewTestActionFactory {
         private Collection<Action> createActions(Project project, FileObject fo) {
             ArrayList<Action> actions = new ArrayList<Action>();
             FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
-            if (testFiles.isFolder()) {
-                for (FileObject test : testFiles.getChildren()) {
-                    if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
-                        String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
-                        if (checkMimeType(mimeTypes, fo.getMIMEType())) {
-                            actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+            // Bug 195897
+            // Templates/testFiles could be deleted
+            if (testFiles != null) {
+                if (testFiles.isFolder()) {
+                    for (FileObject test : testFiles.getChildren()) {
+                        if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
+                            String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
+                            if (checkMimeType(mimeTypes, fo.getMIMEType())) {
+                                actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+                            }
                         }
                     }
                 }

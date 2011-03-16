@@ -1,6 +1,0 @@
-Code completion result for source line:
-puts b.down|case
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     downcase                                   String
-METHOD     downcase!                                  String
-CALL       puts(obj)                                  Kernel

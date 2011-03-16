@@ -156,14 +156,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 try {
                     mdl.sync();
                 } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, null, ex);
                 }
             }
             t = t.getModel().getProject();
         }
         //ordered by appearance in pom schema..
         POMQNames names = parent.getPOMQNames();
-        checkChildString(names.MODELVERSION, NbBundle.getMessage(POMModelVisitor.class, "MODEL_VERSION"), t != null ? t.getModelVersion() : null);
+        try {
+            checkChildString(names.MODELVERSION, NbBundle.getMessage(POMModelVisitor.class, "MODEL_VERSION"), t != null ? t.getModelVersion() : null);
+        } catch (IllegalStateException x) {
+            LOG.log(Level.WARNING, "#190041: invalid model: {0}", x.toString());
+            return;
+        }
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
         if (count == 0 && t != null && t.getPackaging() != null) {

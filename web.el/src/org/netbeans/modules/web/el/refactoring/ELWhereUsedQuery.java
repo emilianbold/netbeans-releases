@@ -50,7 +50,6 @@ import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,12 +57,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -80,13 +78,11 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELIndex;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
-import org.netbeans.modules.web.el.ELParser;
 import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.ELVariableResolvers;
-import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Finds usages of managed beans in Expression Language.
@@ -96,9 +92,9 @@ import org.openide.util.Lookup;
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(ELWhereUsedQuery.class.getName());
-    protected CompilationInfo info;
-    protected ELTypeUtilities typeUtilities;
 
+    protected RefactoringSessionContext refactoringContext;
+    
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
     }
@@ -109,19 +105,28 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         if (handle == null) {
             return null;
         }
-        this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
-        this.typeUtilities = ELTypeUtilities.create(refactoring.getContext().lookup(ClasspathInfo.class));
-        Element element = resolveElement(handle);
-        if (element == null) {
-            LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
-            return null;
-        }
-        if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
-                && element instanceof ExecutableElement) {
-            return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
-        }
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
-            return handleClass(refactoringElementsBag, handle, element);
+        CompilationInfo info = RefactoringUtil.getCompilationInfo(handle, refactoring);
+        ELTypeUtilities typeUtilities = ELTypeUtilities.create(info.getFileObject(), refactoring.getContext().lookup(ClasspathInfo.class));
+        
+        this.refactoringContext = new RefactoringSessionContext(info, typeUtilities);
+        try {
+            Element element = resolveElement(handle);
+            if (element == null) {
+                LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
+                return null;
+            }
+            if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
+                    && element instanceof ExecutableElement) {
+                return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
+            }
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
+                return handleClass(refactoringElementsBag, handle, element);
+            }
+        } finally {
+            //do not hold the instancies wrapped in the context object since
+            //they can be pretty big and the livecycle of this refactoring plugin
+            //can be pretty long.
+            refactoringContext.dispose(); 
         }
         return null;
     }
@@ -172,59 +177,36 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         // logic: first try to find all properties for which can resolve the type directly,
         // then search for occurrences in variables
         for (ELElement each : getMatchingElements(result)) {
+            //use the Node's original offset since at least the JsfELVariableResolver uses the html snapshot embedded
+            //offsets. Since the html is the top level for facelets it will match.
+            List<VariableInfo> variables = ELVariableResolvers.getVariables(each.getSnapshot(), each.getOriginalOffset().getStart()); 
+
+            //finds all EL AST Node-s representing the refactored property
+            //the code tries to resolves the base object either as a bean or as a property
             List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(),
                     targetType,
-                    each.getParserResult().getFileObject());
+                    each.getSnapshot().getSource().getFileObject(),
+                    variables);            
+            
             addElements(each, matchingNodes, refactoringElementsBag);
-            handleVariableReferences(each, targetType, refactoringElementsBag);
+            
         }
         
         return null;
     }
 
-    private void handleVariableReferences(ELElement elElement, Element targetType, RefactoringElementsBag refactoringElementsBag) {
-        final List<Node> matchingNodes = new ArrayList<Node>();
-        elElement.getNode().accept(new NodeVisitor() {
-
-            @Override
-            public void visit(Node node) throws ELException {
-                if (node instanceof AstPropertySuffix || node instanceof AstMethodSuffix) {
-                    matchingNodes.add(node);
-                }
-            }
-        });
-
-        for (ELVariableResolver resolver : getResolvers()) {
-            for (Node n : matchingNodes) {
-                String expression = resolver.getReferredExpression(elElement.getParserResult().getSnapshot(),
-                        elElement.getOriginalOffset().getStart() + n.startOffset());
-                if (expression != null) {
-                    Node expressionNode = ELParser.parse(expression);
-                    if (refersToType(expressionNode, 
-                            targetType.getEnclosingElement().asType(),
-                            elElement.getParserResult().getFileObject())) {
-                        addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
-                    }
-                }
-            }
-        }
-    }
-
-    private Collection<? extends ELVariableResolver> getResolvers() {
-        return Lookup.getDefault().lookupAll(ELVariableResolver.class);
-    }
-
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         for (Node property : matchingNodes) {
             WhereUsedQueryElement wuqe =
-                    new WhereUsedQueryElement(elem.getParserResult().getFileObject(), property.getImage(), elem, property, getParserResult(elem.getParserResult().getFileObject()));
+                    new WhereUsedQueryElement(elem.getSnapshot().getSource().getFileObject(), property.getImage(), elem, property, getParserResult(elem.getSnapshot().getSource().getFileObject()));
             refactoringElementsBag.add(refactoring, wuqe);
         }
     }
 
     private List<Node> findMatchingPropertyNodes(Node root,
             final ExecutableElement targetMethod,
-            final FileObject context) {
+            final FileObject context,
+            final List<VariableInfo> variables) {
 
         final List<Node> result = new ArrayList<Node>();
         final TypeMirror targetType = targetMethod.getEnclosingElement().asType();
@@ -234,11 +216,37 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
-                    if (beanClass == null) {
-                        return;
+                    String astIdent = node.getImage();
+                    
+                    //try to resolve the identifier as a bean class
+                    String beanClass = ELVariableResolvers.findBeanClass(astIdent, context);
+                    
+                    TypeElement fmbType = null;
+                    if (beanClass != null) {
+                        //found corresponding bean class
+                        fmbType = refactoringContext.getInfo().getElements().getTypeElement(beanClass);                        
+                    } else {
+                        //no bean found, try to resolve as a variable
+                        VariableInfo var = findVariable(astIdent, variables);
+                        
+                        if(var != null) {
+                            //looks like the identifier represents a variable
+                            if(var.clazz != null) {
+                                //resolved variable
+                                beanClass = var.clazz;
+                            } else {
+                                //unresolved, we need to resolve the corresponding expression
+                                //to get the type
+                                fmbType = (TypeElement)refactoringContext.getUtilities().getReferredType(var, context);
+                            }
+                        }
+                    } 
+                    
+                    if(fmbType == null) {
+                        //no such element found on the classpath
+                        return ;
                     }
-                    TypeElement fmbType = info.getElements().getTypeElement(beanClass);
+                    
                     TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
@@ -248,7 +256,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         if (enclosing == null) {
                             break;
                         }
-                        if (info.getTypes().isSameType(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
+                        if (isSameTypeOrSupertype(targetType, enclosing) && refactoringContext.getUtilities().isSameMethod(child, targetMethod)) {
                             TypeMirror matching = getTypeForProperty(child, enclosing);
                             if (matching != null) {
                                 result.add(child);
@@ -263,52 +271,44 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         });
         return result;
     }
-
-    /**
-     * Returns true if {@code root} resolves to an expression that refers to the given
-     * {@code targetType}.
-     * @param root
-     * @param targetType
-     * @return
-     */
-    private boolean refersToType(Node root, final TypeMirror targetType, final FileObject context) {
-
-        final boolean[] result = new boolean[1];
-        root.accept(new NodeVisitor() {
-
-            @Override
-            public void visit(Node node) throws ELException {
-                if (node instanceof AstIdentifier) {
-                    Node parent = node.jjtGetParent();
-                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
-                    if (beanClass == null) {
-                        return;
-                    }
-                    TypeElement fmbType = info.getElements().getTypeElement(beanClass);
-                    TypeMirror enclosing = fmbType.asType();
-                    Node current = parent;
-                    for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
-                        current = parent.jjtGetChild(i);
-                        if (current instanceof AstPropertySuffix || current instanceof AstMethodSuffix) {
-                            enclosing = getTypeForProperty(current, enclosing);
-                        }
-                    }
-                    //XXX: works just for generic collections, i.e. the assumption is 
-                    // that variables refer to collections, which is not always the case
-                    if (enclosing instanceof DeclaredType) {
-                        List<? extends TypeMirror> typeArguments = ((DeclaredType) enclosing).getTypeArguments();
-                        for (TypeMirror arg : typeArguments) {
-                            if (info.getTypes().isSubtype(arg, targetType)) {
-                                result[0] = true;
-                                return;
-                            }
-                        }
-                    }
-                }
+    
+    private boolean isSameTypeOrSupertype(TypeMirror tm1, TypeMirror tm2) {
+        DeclaredType declaredTm2 = (DeclaredType)tm2;
+        List<Element> all = refactoringContext.getUtilities().getSuperTypesFor(declaredTm2.asElement());
+        for(Element e : all) {
+            TypeMirror tm = e.asType();
+            if(isSameType(tm1, tm)) {
+                return true;
             }
-        });
-
-        return result[0];
+        }
+        return false;
+    }
+    
+    //marekf: a bad fix for an issue I do not know the right solution for
+    private boolean isSameType(TypeMirror tm1, TypeMirror tm2) {
+        if(refactoringContext.getInfo().getTypes().isSameType(tm1, tm2)) {
+            return true;
+        } else {
+            //XXX this must be resolved properly ??? I cannot spot any difference 
+            //between two types which supposedly 
+            //represents the same type but Types.isSameType() claims they do not.
+            //It looks like the mirrors are obtained from different JavaSource contexts.
+            if(tm1.getKind() == TypeKind.DECLARED && tm2.getKind() == TypeKind.DECLARED) {
+                return ((DeclaredType)tm1).asElement().getSimpleName().
+                        contentEquals((((DeclaredType)tm2).asElement().getSimpleName()));
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    private VariableInfo findVariable(String varName, List<VariableInfo> variables) {
+        for(VariableInfo var : variables) {
+            if(var.name.equals(varName)) {
+                return var;
+            }
+        }
+        return null;
     }
 
     private List<Node> findMatchingIdentifierNodes(Node root, final String identifierName) {
@@ -335,21 +335,24 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      */
     private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
         String name = property.getImage();
-        List<? extends Element> enclosedElements = info.getTypes().asElement(enclosing).getEnclosedElements();
-        for (Element each : ElementFilter.methodsIn(enclosedElements)) {
-            // we're only interested in public methods
-            // XXX: should probably include public fields too
-            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            ExecutableElement methodElem = (ExecutableElement) each;
-            String methodName = methodElem.getSimpleName().toString();
+        Element el = refactoringContext.getInfo().getTypes().asElement(enclosing);
+        for(Element element : refactoringContext.getUtilities().getSuperTypesFor(el)) {
+            List<? extends Element> enclosedElements = element.getEnclosedElements();
+            for (Element each : ElementFilter.methodsIn(enclosedElements)) {
+                // we're only interested in public methods
+                // XXX: should probably include public fields too
+                if (!each.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                ExecutableElement methodElem = (ExecutableElement) each;
+                String methodName = methodElem.getSimpleName().toString();
 
-            if (typeUtilities.isSameMethod(property, methodElem)) {
-                return typeUtilities.getReturnType(methodElem);
+                if (refactoringContext.getUtilities().isSameMethod(property, methodElem)) {
+                    return refactoringContext.getUtilities().getReturnType(methodElem);
 
-            } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                return typeUtilities.getReturnType(methodElem);
+                } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+                    return refactoringContext.getUtilities().getReturnType(methodElem);
+                }
             }
         }
         return null;
@@ -376,4 +379,41 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return result;
 
     }
+    
+    protected class RefactoringSessionContext {
+        
+        private CompilationInfo info;
+        private ELTypeUtilities utilities;
+        private boolean active;
+
+        public RefactoringSessionContext(CompilationInfo info, ELTypeUtilities utilities) {
+            this.info = info;
+            this.utilities = utilities;
+            this.active = true;
+        }
+
+        public CompilationInfo getInfo() {
+            checkActive();
+            return info;
+        }
+
+        public ELTypeUtilities getUtilities() {
+            checkActive();
+            return utilities;
+        }
+        
+        protected void dispose() {
+            info = null;
+            utilities = null;
+            active = false;
+        }
+        
+        private void checkActive() {
+            if(!active) {
+                throw new IllegalStateException("already disposed");//NOI18N
+            }
+        }
+        
+    }
+    
 }

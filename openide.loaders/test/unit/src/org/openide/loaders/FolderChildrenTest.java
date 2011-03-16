@@ -693,6 +693,32 @@ public class FolderChildrenTest extends NbTestCase {
 
         assertNodes( arr, new String[] { "A" } );
     }
+    
+    public void testRenameHiddenEntry() throws Exception {
+        FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "two");
+        List<FileObject> arr = new ArrayList<FileObject>();
+        final int FILES = 2;
+        for (int i = 0; i < FILES; i++) {
+            arr.add(FileUtil.createData(folder, "" + i + ".dat"));
+        }
+        DataFolder df = DataFolder.findFolder(folder);
+
+        VisQ visq = new VisQ();
+
+        FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(df.createNodeChildren(visq))));
+        Node[] one = fn.getChildren().getNodes(true);
+        assertEquals("One node", 1, one.length);
+        assertEquals("0.dat", one[0].getName());
+        
+        FileObject first = folder.getFileObject("1.dat");
+        assertNotNull("First found", first);
+        FileLock lock = first.lock();
+        first.rename(lock, "2", "dat");
+        lock.releaseLock();
+        
+        Node[] two = fn.getChildren().getNodes(true);
+        assertEquals("Two are now visible", 2, two.length);
+    }
 
     public void testALotOfHiddenEntries() throws Exception {
         FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "aLotOf");

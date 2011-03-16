@@ -86,13 +86,13 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -387,13 +387,7 @@ public class CsmUtilities {
     }
 
     public static boolean isAnyNativeProjectOpened() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i].getLookup().lookup(NativeProject.class) != null) {
-                return true;
-            }
-        }
-        return false;
+        return !NativeProjectRegistry.getDefault().getOpenProjects().isEmpty();
     }
     
     public static boolean isCsmSuitable(FileObject fo) {
@@ -402,7 +396,7 @@ public class CsmUtilities {
         return CndPathUtilitities.isPathAbsolute(fo.getPath());
     }
 
-    public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
+    public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
@@ -413,7 +407,7 @@ public class CsmUtilities {
                     for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
                         if (csmProject != null) {
-                            CsmFile file = csmProject.findFile(item, snapShot);
+                            CsmFile file = csmProject.findFile(item, waitParsing, snapShot);
                             if (file != null) {
                                 if (item.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                     saFiles.add(file);
@@ -430,7 +424,7 @@ public class CsmUtilities {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
                         String normPath = fo.getPath();
-                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, waitParsing, snapShot);
                         if (csmFile != null) {
                             files.add(csmFile);
                         }
@@ -445,10 +439,14 @@ public class CsmUtilities {
                             if (platformProject == null) {
                                 CndUtils.assertTrueInConsole(false, "null platform project for FILE " + csmFile + " from PROJECT " + csmProject); // NOI18N
                             } else if (!csmProject.isValid()) {
-                                CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                                if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
+                                    CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                                }
                             } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                 if (i == 0 && files.size() > 1) {
-                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                    if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
+                                        CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                    }
                                 } else {
 //                                    System.err.printf("STANDALONE FILE TO BE USED %s\n", csmFile); // NOI18N
                                 }
@@ -469,17 +467,9 @@ public class CsmUtilities {
         }
         return new CsmFile[0];
     }
-
-    public static CsmFile[] getCsmFiles(FileObject fo, boolean snapShot) {
-        try {
-            return getCsmFiles(DataObject.find(fo), snapShot);
-        } catch (DataObjectNotFoundException ex) {
-            return new CsmFile[0];
-        }
-    }
-
+    
     public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing, boolean snapShot) {
-        CsmFile[] files = getCsmFiles(dobj, snapShot);
+        CsmFile[] files = getCsmFiles(dobj, waitParsing, snapShot);
         if (files == null || files.length == 0) {
             return null;
         } else {

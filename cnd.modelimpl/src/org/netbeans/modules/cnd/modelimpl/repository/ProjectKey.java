@@ -56,8 +56,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * A key for CsmProject objects
  */
 
-/*package*/
-final class ProjectKey extends ProjectNameBasedKey {    
+/*package*/ final class ProjectKey extends ProjectNameBasedKey {    
     
     ProjectKey(CharSequence projectUniqueName) {
 	super(projectUniqueName);

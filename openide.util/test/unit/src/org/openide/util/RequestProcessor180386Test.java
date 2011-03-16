@@ -1163,35 +1163,6 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertFalse (r.interrupted);
     }
 
-    @RandomlyFails // NB-Core-Build #4158: !f.cancelled
-    public void testCancelDoesInterruptIfRequestProcessorSpecifiesItEvenIfFalsePassedToFutureDotCancel() throws Exception {
-        RequestProcessor rp = new RequestProcessor ("X", 3, true, true);
-        final CountDownLatch releaseForRun = new CountDownLatch(1);
-        final CountDownLatch enterLatch = new CountDownLatch(1);
-        final CountDownLatch exitLatch = new CountDownLatch(1);
-        class R implements Runnable {
-            volatile boolean interrupted;
-            @Override
-            public void run() {
-                enterLatch.countDown();
-                try {
-                    releaseForRun.await();
-                } catch (InterruptedException ex) {
-                    interrupted = true;
-                }
-                interrupted |= Thread.interrupted();
-                exitLatch.countDown();
-            }
-        }
-        R r = new R();
-        Future<?> f = rp.submit(r);
-        enterLatch.await();
-        f.cancel(false);
-        assertTrue (f.isCancelled());
-        exitLatch.await();
-        assertTrue (r.interrupted);
-    }
-    
     public void testSubmittedTasksExecutedBeforeShutdown() throws InterruptedException {
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch executedLatch = new CountDownLatch(2);

@@ -56,6 +56,7 @@ import org.openide.util.HelpCtx;
         this.data = data;
     }
 
+    @Override
     public CreateHostVisualPanel1 getComponent() {
         if (component == null) {
             component = new CreateHostVisualPanel1(data, this);
@@ -63,13 +64,17 @@ import org.openide.util.HelpCtx;
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewRemoteDevelopmentHostWizardP1");
     }
 
+    @Override
     public boolean isValid() {
         if (getComponent().getHostname().length() > 0) {
-            return getComponent().getPort() != null;
+            if (getComponent().getPort() != null) {
+                return !data.isManagingUser() || getComponent().getUser().length()>0;
+            }
         }
         return false;
     }
@@ -78,25 +83,33 @@ import org.openide.util.HelpCtx;
     // change support
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // settings
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent().init();
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
+        if (data.isManagingUser()) {
+            data.setUserName(getComponent().getUser());
+        }
         data.setHostName(getComponent().getHostname());
         data.setPort(getComponent().getPort());
     }

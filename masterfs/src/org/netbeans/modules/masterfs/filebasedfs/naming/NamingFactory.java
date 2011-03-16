@@ -46,9 +46,10 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
@@ -101,9 +102,9 @@ public final class NamingFactory {
         }
         return childName;
     }
-
+    
     public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
-        final List<FileNaming> all = new ArrayList<FileNaming>();
+        final Collection<FileNaming> all = new LinkedHashSet<FileNaming>();
         
         FileNaming newNaming = fNaming.rename(newName, handler);
         boolean retVal = newNaming != fNaming;
@@ -115,18 +116,22 @@ public final class NamingFactory {
         }
     }
 
-    private static void renameChildren(FileNaming root, List<FileNaming> all) {
+    private static void renameChildren(FileNaming root, Collection<FileNaming> all) {
         assert Thread.holdsLock(NamingFactory.class);
+        Collection<FileNaming> not = new HashSet<FileNaming>(names.length);
         for (int i = 0; i < names.length; i++) {
             NameRef value = names[i];
             while (value != null) {
                 FileNaming fN = value.get();
+                LinkedList<FileNaming> above = new LinkedList<FileNaming>();
                 for (FileNaming up = fN;;) {
-                    if (up == null) {
+                    if (up == null || not.contains(up)) {
+                        not.addAll(above);
                         break;
                     }
-                    if (root.equals(up)) {
-                        all.add(fN);
+                    above.addFirst(up);
+                    if (root.equals(up) || all.contains(up)) {
+                        all.addAll(above);
                         break;
                     }
                     up = up.getParent();

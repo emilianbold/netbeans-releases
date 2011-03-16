@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.web.core.syntax.deprecated;
 
-import org.netbeans.modules.web.core.syntax.deprecated.JspMultiSyntax;
-import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.editor.Syntax;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
+import org.netbeans.modules.web.core.api.JspColoringData;
 
 /** Handles syntax coloring for JSP 1.1. This involves handling custom tags.
  * This class relies on an external source of data, which provides information

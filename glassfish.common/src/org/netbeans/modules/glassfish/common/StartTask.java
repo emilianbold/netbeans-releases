@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import java.awt.Dialog;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -68,6 +69,7 @@ import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
@@ -91,6 +93,7 @@ public class StartTask extends BasicTask<OperationState> {
     private List<Recognizer> recognizers;
     private FileObject jdkHome = null;
     private List<String> jvmArgs = null;
+    static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
 
     /**
      * 
@@ -230,7 +233,7 @@ public class StartTask extends BasicTask<OperationState> {
                 if (GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
                     try {
                         debugPort = Integer.parseInt(ip.get(GlassfishModule.DEBUG_PORT));
-                        if (debugPort < 1 || debugPort > 65535) {
+                        if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
                             support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
                             debugPort = 9009;
                             Logger.getLogger("glassfish").log(Level.INFO, "converted debug port to 9009 for {0}", instanceName);
@@ -356,7 +359,7 @@ public class StartTask extends BasicTask<OperationState> {
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
-                "MSG_START_SERVER_FAILED2", instanceName); // NOI18N
+                "MSG_START_SERVER_FAILED2", instanceName,host,port+""); // NOI18N
     }
 
     private String[] createEnvironment() {
@@ -544,7 +547,7 @@ public class StartTask extends BasicTask<OperationState> {
                     int t = 0;
                     if (null != debugPortString && debugPortString.trim().length() > 0) {
                         t = Integer.parseInt(debugPortString);
-                        if(t < 0 || t > 65535) {
+                        if(t < LOWEST_USER_PORT || t > 65535) {
                             throw new NumberFormatException();
                         }
                     }
@@ -557,19 +560,20 @@ public class StartTask extends BasicTask<OperationState> {
                                 support.getDomainsRoot() + 
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
-                        int debugPort = 9009;
-                        // calculate the port and save it.
-                        ServerSocket t = null;
-                        try {
-                            t = new ServerSocket(0);
-                            debugPort = t.getLocalPort();
-                            debugPortString = Integer.toString(debugPort);
-                        } finally {
-                            if (null != t) {
-                                t.close();
-                            }
-                        }
+                        debugPortString = selectDebugPort();
                     }
+                    DialogDescriptor note =
+                            new DialogDescriptor(
+                            NbBundle.getMessage(StartTask.class,"MSG_SELECTED_PORT", debugPortString),
+                            NbBundle.getMessage(StartTask.class,"TITLE_MESSAGE"),
+                            false,
+                            new Object[] { DialogDescriptor.OK_OPTION },
+                            DialogDescriptor.OK_OPTION,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
+                    Dialog d = DialogDisplayer.getDefault().createDialog(note);
+                    d.setVisible(true);
                 } 
                 support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
                 argumentBuf.append(" -Xdebug -Xrunjdwp:transport="); // NOI18N
@@ -578,14 +582,35 @@ public class StartTask extends BasicTask<OperationState> {
                 argumentBuf.append(debugPortString);
                 argumentBuf.append(",server=y,suspend=n"); // NOI18N
             }
-        } catch (NumberFormatException nfe) {
-            throw new ProcessCreationException(nfe,
-                    "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         } catch (IOException ioe) {
             throw new ProcessCreationException(ioe,
                     "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         }
         return argumentBuf;
+    }
+
+    private String selectDebugPort() throws IOException {
+        int debugPort = 9009;
+        ServerSocket t = null;
+        try {
+            // try to use the 'standard port'
+            t = new ServerSocket(debugPort);
+            return Integer.toString(debugPort);
+        } catch (IOException ex) {
+            // log this... but don't panic
+            Logger.getLogger("glassfish").fine("9009 is in use... going random");
+        } finally {
+            if (null != t) try { t.close(); } catch (IOException ioe) {}
+        }
+        try {
+            // try to find a different port... if this fails,
+            //    it is a great time to panic.
+            t = new ServerSocket(0);
+            debugPort = t.getLocalPort();
+            return Integer.toString(debugPort);
+        } finally {
+            if (null != t) try { t.close(); } catch (IOException ioe) {}
+        }
     }
     
     private StringBuilder appendSystemVars(Map<String, String> argMap, StringBuilder argumentBuf) {

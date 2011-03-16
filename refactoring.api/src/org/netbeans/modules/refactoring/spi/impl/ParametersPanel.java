@@ -522,8 +522,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            placeErrorPanel(problem);
-                            dialog.setVisible(true);
+                            if (dialog!=null) {
+                                placeErrorPanel(problem);
+                                dialog.setVisible(true);
+                            }
                         }
                     });
                 } else {

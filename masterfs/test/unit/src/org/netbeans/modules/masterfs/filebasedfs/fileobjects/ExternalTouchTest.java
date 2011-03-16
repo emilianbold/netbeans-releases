@@ -57,6 +57,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 public class ExternalTouchTest extends NbTestCase {
@@ -131,6 +132,28 @@ public class ExternalTouchTest extends NbTestCase {
         assertEquals("Change notified", 1, listener.cnt);
         assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
         assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
+    }
+    public void testFindResourceDoesNotRefresh() throws Exception {
+        FileObject fileObject1 = testFolder.createData("fileObject1");
+        FileObject[] arr = testFolder.getChildren();
+        assertEquals("One child", 1, arr.length);
+        assertEquals("Right child", fileObject1, arr[0]);
+        
+        File testFile = FileUtil.toFile(testFolder);
+        assertNotNull("Folder File found", testFile);
+        final String path = testFolder.getPath() + "/file1.txt";
+        final FileSystem fs = testFolder.getFileSystem();
+        
+        File newCh = new File(testFile, "file1.txt");
+        newCh.createNewFile();
+        
+        FileObject fromResource = fs.findResource(path);
+        FileObject fromToFO = FileUtil.toFileObject(newCh);
+        FileObject fromSndResource = fs.findResource(path);
+        
+        assertNotNull("toFileObject does refresh", fromToFO);
+        assertNull("fromResource does not refresh", fromResource);
+        assertEquals("after refresh the result reflects reality", fromToFO, fromSndResource);
     }
     public void testNewChildNoticed() throws Exception {
         FileObject fileObject1 = testFolder.createData("fileObject1");

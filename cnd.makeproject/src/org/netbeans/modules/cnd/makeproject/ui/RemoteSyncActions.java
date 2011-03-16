@@ -59,7 +59,6 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -267,7 +266,7 @@ class RemoteSyncActions {
         @Override
         protected Worker createWorker(final Project project, final ExecutionEnvironment execEnv) {
             return new Worker() {
-                private final PathMap pathMap = HostInfoProvider.getMapper(execEnv);
+                private final PathMap pathMap = RemoteSyncSupport.getPathMap(execEnv, project);
                 @Override
                 public void process(File file, Writer err) throws PathMapperException, InterruptedException, ExecutionException, IOException {
                     String remotePath = pathMap.getRemotePath(file.getAbsolutePath(), false);

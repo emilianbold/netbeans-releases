@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -88,7 +88,6 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -1066,13 +1065,19 @@ public class LogViewMgr {
     static public void displayOutput(Map<String,String> properties, Lookup lookup) {
         String uri = properties.get(GlassfishModule.URL_ATTR);
         if (null != uri && (uri.contains("gfv3ee6wc") || uri.contains("localhost"))) {
-            LogViewMgr mgr = LogViewMgr.getInstance(uri);
-            List<Recognizer> recognizers = new ArrayList<Recognizer>();
-            if (null != lookup) {
-                recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+            try {
+                InputStream is = getServerLogStream(properties);
+                LogViewMgr mgr = LogViewMgr.getInstance(uri);
+                List<Recognizer> recognizers = new ArrayList<Recognizer>();
+                if (null != lookup) {
+                    recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+                }
+                mgr.ensureActiveReader(recognizers, is);
+                mgr.selectIO(true);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,
+                        "WARN_UNREADABLE_LOG_STREAM", uri),ioe);
             }
-            mgr.ensureActiveReader(recognizers, getServerLogStream(properties));
-            mgr.selectIO(true);
         }
     }
 
@@ -1092,7 +1097,7 @@ public class LogViewMgr {
 
     private static final Map<String,PipedInputStream> remoteInputStreams = new HashMap<String,PipedInputStream>();
 
-    static private InputStream getServerLogStream(Map<String, String> ip) {
+    static private InputStream getServerLogStream(Map<String, String> ip) throws IOException {
         InputStream result = null;
         String domainsFolder = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
@@ -1124,7 +1129,9 @@ public class LogViewMgr {
                         RequestProcessor RLRRP = new RequestProcessor("Remote log reader for "+ key);
                         RLRRP.post(new FetchLogEntries(pos,ip));
                     } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                        // close the output stream, since the is did not create
+                        try { pos.close(); } catch (IOException ex) {}
+                        throw ioe;
                     }
                 }
             }
@@ -1177,11 +1184,11 @@ public class LogViewMgr {
                     }
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } finally {
             }
         }

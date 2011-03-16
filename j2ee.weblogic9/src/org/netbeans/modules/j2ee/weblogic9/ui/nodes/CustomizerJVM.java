@@ -48,22 +48,19 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.Vendor;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,9 +70,12 @@ import org.openide.util.NbBundle;
 class CustomizerJVM extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 3411155308004602121L;
+
+    private final WLJpa2SwitchSupport support;
     
     CustomizerJVM(WLDeploymentManager manager) {
         this.manager = manager;
+        this.support = new WLJpa2SwitchSupport(manager);
         initComponents();
         
         initValues();
@@ -237,9 +237,9 @@ class CustomizerJVM extends javax.swing.JPanel {
                         .addGap(8, 8, 8)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                             .addComponent(vmOptionsSampleLabel)
                             .addComponent(memoryOptionsCommentLabel))))
                 .addContainerGap())
@@ -267,7 +267,7 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(memoryOptionsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
         );

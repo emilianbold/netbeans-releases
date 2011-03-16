@@ -66,24 +66,36 @@ import org.openide.util.CharSequences;
 public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
     private final CharSequence name;
     private final boolean system;
+    private final boolean recursive;
     
     private CsmUID<CsmFile> includeFileUID;
     
-    private IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
+    private IncludeImpl(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
         this.name = FileNameCache.getManager().getString(name);
         this.system = system;
+        this.recursive = recursive;
         this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
         assert (includeFileUID != null || includeFile == null) : "got " + includeFileUID + " for " + includeFile;
     }
 
-    public static IncludeImpl create(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
-        return new IncludeImpl(name, system, includeFile, containingFile, inclPos);
+    public static IncludeImpl create(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
+        return new IncludeImpl(name, system, recursive, includeFile, containingFile, inclPos);
     }
     
     @Override
     public CsmFile getIncludeFile() {
         return _getIncludeFile();
+    }
+
+    @Override
+    public IncludeState getIncludeState() {
+        if (recursive) {
+            return IncludeState.Recursive;
+        } if (getIncludeFile() == null) {
+            return IncludeState.Fail;
+        }
+        return IncludeState.Success;
     }
 
     @Override
@@ -178,6 +190,7 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
         output.writeBoolean(this.system);
+        output.writeBoolean(this.recursive);
         UIDObjectFactory.getDefaultFactory().writeUID(this.includeFileUID, output);
     }
 
@@ -186,6 +199,7 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         this.name = PersistentUtils.readUTF(input, FileNameCache.getManager());
         assert this.name != null;
         this.system = input.readBoolean();
+        this.recursive = input.readBoolean();
         this.includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }    
+    }
 }

@@ -21,6 +21,7 @@
       <itemPath>readme.txt</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
   <defaultConf>1</defaultConf>
   <confs>
     <conf name="FastBuild" type="1">

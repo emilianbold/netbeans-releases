@@ -250,6 +250,9 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
             } else { // Not tabable view
                 majorSpan = view.getPreferredSpan(majorAxis);
             }
+            if (view instanceof NewlineView) {
+                visualUpdate.markNewLineViewChanged();
+            }
             // Below gap => do not use visualGapLength
             view.setRawVisualOffset(visualOffset);
             visualOffset += majorSpan;
@@ -379,7 +382,10 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                     visualUpdate.markWidthChanged();
                     repaintBounds.width = EXTEND_TO_END;
                 } else {
-                    if (visualUpdate.isTabsChanged()) {
+                    if (visualUpdate.isNewLineViewChanged()) {
+                        //newline view paints not only its span, but also the remainder of the given row:
+                        repaintBounds.width = EXTEND_TO_END;
+                    } else if (visualUpdate.isTabsChanged()) {
                         // Can happen even without total children span change.
                         // Repaint till end.
                         repaintBounds.width = getMajorAxisChildrenSpan(boxView) - visualUpdate.visualOffset;

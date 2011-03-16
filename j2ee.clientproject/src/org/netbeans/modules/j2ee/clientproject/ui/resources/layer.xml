@@ -243,10 +243,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenServerActionFactory.instance"/>
                     <attr name="position" intvalue="2700"/>
                 </file>
-                <!--<file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenDataSourceActionFactory.shadow">
+                <file name="org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenDataSourceActionFactory.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-j2ee-common-project-ui-AbstractLogicalViewProvider-brokenDataSourceActionFactory.instance"/>
                     <attr name="position" intvalue="2800"/>
-                </file>-->
+                </file>
                 <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
                     <attr name="position" intvalue="2900"/>

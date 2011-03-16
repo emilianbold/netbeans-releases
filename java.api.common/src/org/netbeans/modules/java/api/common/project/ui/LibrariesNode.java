@@ -768,7 +768,7 @@ public final class LibrariesNode extends AbstractNode {
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, filePaths[i]);
                     FileObject fo = FileUtil.toFileObject(fl);
-                    assert fo != null : fl;
+                    assert fo != null || !fl.canRead(): fl;
                     if (fo != null && fileFilter.accept(fl)) {
                         URI u;
                         boolean isArchiveFile = FileUtil.isArchiveFile(fo);

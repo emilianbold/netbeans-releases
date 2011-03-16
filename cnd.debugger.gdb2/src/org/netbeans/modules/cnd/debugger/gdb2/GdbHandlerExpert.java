@@ -334,14 +334,18 @@ public class GdbHandlerExpert implements HandlerExpert {
 	if (threadValue != null) {
 	    String threadString = threadValue.asConst().value();
 	    breakpoint.setThread(threadString);
-	}
+	} else {
+            breakpoint.setThread(null);
+        }
 
 	// condition
 	MIValue condValue = props.valueOf("cond");		// NOI18N
 	if (condValue != null) {
 	    String condString = condValue.asConst().value();
 	    breakpoint.setCondition(condString);
-	}
+	} else {
+            breakpoint.setCondition(null);
+        }
 
 	// action
 	Action action = Action.STOP;
@@ -412,8 +416,13 @@ public class GdbHandlerExpert implements HandlerExpert {
         } else {
             lineString = lineValue.asConst().value();
         }
-	int line = Integer.parseInt(lineString);
-	return line;
+        
+        try {
+            return Integer.parseInt(lineString);
+        } catch (NumberFormatException numberFormatException) {
+            //do nothing
+        }
+	return 0;
     }
 
     private static long getAddr(MITList props) {
@@ -445,40 +454,43 @@ public class GdbHandlerExpert implements HandlerExpert {
 
 	} else if (template instanceof FunctionBreakpoint) {
 	    FunctionBreakpoint fb = (FunctionBreakpoint) breakpoint;
-
-	    MIValue funcValue = props.valueOf("func"); // NOI18N
-	    String funcString;
-	    if (funcValue != null) {
-		funcString = funcValue.asConst().value();
-	    } else {
-		// We'll get an 'at' instead of a 'func' if there's 
-		// no src debugging information at the given function.
-		MIValue atValue = props.valueOf("at"); // NOI18N
-		if (atValue != null) {
-		    funcString = atValue.asConst().value();
-
-		    // usually of the form 
-		    // "<strdup+4>"
-		    // (but sometimes of the form "strdup@plt")
-
-		    // clean out <
-		    if (funcString.startsWith("<")) // NOI18N
-			funcString = funcString.substring(1);
-
-		    // clean out >
-		    int gtx = funcString.indexOf('>');
-		    if (gtx != -1)
-			funcString = funcString.substring(0, gtx);
-
-		    // clean out +4
-		    int plx = funcString.indexOf('+');
-		    if (plx != -1)
-			funcString = funcString.substring(0, plx);
-
-		} else {
-		    funcString = "";
-		}
-	    }
+            
+            // All of this does not work for gdb, see IZ 195311
+//	    MIValue funcValue = props.valueOf("func"); // NOI18N
+//	    String funcString;
+//	    if (funcValue != null) {
+//		funcString = funcValue.asConst().value();
+//            } else {
+//		// We'll get an 'at' instead of a 'func' if there's 
+//		// no src debugging information at the given function.
+//		MIValue atValue = props.valueOf("at"); // NOI18N
+//		if (atValue != null) {
+//		    funcString = atValue.asConst().value();
+//
+//		    // usually of the form 
+//		    // "<strdup+4>"
+//		    // (but sometimes of the form "strdup@plt")
+//
+//		    // clean out <
+//		    if (funcString.startsWith("<")) // NOI18N
+//			funcString = funcString.substring(1);
+//
+//		    // clean out >
+//		    int gtx = funcString.indexOf('>');
+//		    if (gtx != -1)
+//			funcString = funcString.substring(0, gtx);
+//
+//		    // clean out +4
+//		    int plx = funcString.indexOf('+');
+//		    if (plx != -1)
+//			funcString = funcString.substring(0, plx);
+//
+//		} else {
+//		    funcString = ((FunctionBreakpoint)template).getFunction();
+//		}
+//	    }
+            
+            String funcString = ((FunctionBreakpoint)template).getFunction();
 
 	    fb.setFunction(funcString);
 
@@ -501,7 +513,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	MITList props = bkptValue.asTuple();
 
 	int line = getLine(props);
-	String fileName = getFileName(props, template);
+        String fileName = (line != 0) ? getFileName(props, template) : null;
 	long addr = getAddr(props);
 	// TMP if (line != 0 && fileName != null)
 	{

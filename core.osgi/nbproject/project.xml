@@ -6,6 +6,11 @@
             <code-name-base>org.netbeans.core.osgi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.core.startup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

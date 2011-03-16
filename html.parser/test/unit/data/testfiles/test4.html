@@ -1,0 +1,2000 @@
+
+<!DOCTYPE html> 
+ 
+ 
+<html id="html" xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en" lang="en"> 
+ 
+<head> 
+<!-- --> 
+<meta name="verify-v1" content="3spH49VqOil2F+GS6S2M9KDUSXxrVf8q1fS5OgSwsSk=" /> 
+ 
+    <meta http-equiv="Content-Type"
+          content="text/html;charset=utf-8" /> 
+ 
+    <title> 
+    
+      ČVUT v Praze
+  &ndash;
+     Welcome to CTU
+      
+       
+    </title> 
+ 
+    
+        
+            <base href="http://www.cvut.cz/en/welcome" /> 
+        
+    
+ 
+    <meta name="generator" content="Plone - http://plone.org" /> 
+ 
+ 
+    <!-- Plone ECMAScripts --> 
+ 
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"> 
+</script> 
+<script type="text/javascript"> 
+_uacct = "UA-79221-5";
+urchinTracker();
+</script> 
+ 
+ 
+    
+        
+            
+                
+                
+                <script type="text/javascript"><!--  
+/* ----- register_function.js ----- */
+/* Essential javascripts, used a lot. 
+ * These should be placed inline
+ * We have to be certain they are loaded before anything that uses them 
+ */
+ 
+// check for ie5 mac
+var bugRiddenCrashPronePieceOfJunk = (
+    navigator.userAgent.indexOf('MSIE 5') != -1
+    &&
+    navigator.userAgent.indexOf('Mac') != -1
+)
+ 
+// check for W3CDOM compatibility
+var W3CDOM = (!bugRiddenCrashPronePieceOfJunk &&
+               document.getElementsByTagName &&
+               document.createElement);
+ 
+// cross browser function for registering event handlers
+function registerEventListener(elem, event, func) {
+    if (elem.addEventListener) {
+        elem.addEventListener(event, func, false);
+        return true;
+    } else if (elem.attachEvent) {
+        var result = elem.attachEvent("on"+event, func);
+        return result;
+    }
+    // maybe we could implement something with an array
+    return false;
+}
+ 
+// cross browser function for unregistering event handlers
+function unRegisterEventListener(elem, event, func) {
+    if (elem.removeEventListener) {
+        elem.removeEventListener(event, func, false);
+        return true;
+    } else if (elem.detachEvent) {
+        var result = elem.detachEvent("on"+event, func);
+        return result;
+    }
+    // maybe we could implement something with an array
+    return false;
+}
+ 
+function registerPloneFunction(func) {
+    // registers a function to fire onload.
+    registerEventListener(window, "load", func);
+}
+ 
+function unRegisterPloneFunction(func) {
+    // unregisters a function so it does not fire onload.
+    unRegisterEventListener(window, "load", func);
+}
+ 
+function getContentArea() {
+    // returns our content area element
+    if (W3CDOM) {
+        var node = document.getElementById('region-content');
+        if (!node) {
+            node = document.getElementById('content');
+        }
+        return node;
+    }
+} 
+ 
+ 
+                     // --></script> 
+                
+            
+            
+                <script type="text/javascript"
+                        src="http://www.cvut.cz/portal_javascripts/ploneScripts5626.js"> 
+                </script> 
+                
+            
+            
+                
+                
+                <script type="text/javascript"><!--  
+/* ----- sarissa.js ----- */
+/*****************************************************************************
+ *
+ * Sarissa XML library version 0.9.6
+ * Copyright (c) 2003 Manos Batsis, 
+ * mailto: mbatsis at users full stop sourceforge full stop net
+ * This software is distributed under the Kupu License. See
+ * LICENSE.txt for license text. See the Sarissa homepage at
+ * http://sarissa.sourceforge.net for more information.
+ *
+ *****************************************************************************
+ 
+ * ====================================================================
+ * About
+ * ====================================================================
+ * Sarissa cross browser XML library 
+ * @version 0.9.6
+ * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+ *
+ * Sarissa is an ECMAScript library acting as a cross-browser wrapper for native XML APIs.
+ * The library supports Gecko based browsers like Mozilla and Firefox,
+ * Internet Explorer (5.5+ with MSXML3.0+) and, last but not least, KHTML based browsers like
+ * Konqueror and Safari.
+ *
+ */
+/**
+ * <p>Sarissa is a utility class. Provides static methods for DOMDocument and 
+ * XMLHTTP objects, DOM Node serializatrion to XML strings and other goodies.</p>
+ * @constructor
+ */
+function Sarissa(){};
+/** @private */
+Sarissa.PARSED_OK = "Document contains no parsing errors";
+/**
+ * Tells you whether transformNode and transformNodeToObject are available. This functionality
+ * is contained in sarissa_ieemu_xslt.js and is deprecated. If you want to control XSLT transformations
+ * use the XSLTProcessor
+ * @deprecated
+ * @type boolean
+ */
+Sarissa.IS_ENABLED_TRANSFORM_NODE = false;
+/**
+ * tells you whether XMLHttpRequest (or equivalent) is available
+ * @type boolean
+ */
+Sarissa.IS_ENABLED_XMLHTTP = false;
+/**
+ * tells you whether selectNodes/selectSingleNode is available
+ * @type boolean
+ */
+Sarissa.IS_ENABLED_SELECT_NODES = false;
+var _sarissa_iNsCounter = 0;
+var _SARISSA_IEPREFIX4XSLPARAM = "";
+var _SARISSA_HAS_DOM_IMPLEMENTATION = document.implementation && true;
+var _SARISSA_HAS_DOM_CREATE_DOCUMENT = _SARISSA_HAS_DOM_IMPLEMENTATION && document.implementation.createDocument;
+var _SARISSA_HAS_DOM_FEATURE = _SARISSA_HAS_DOM_IMPLEMENTATION && document.implementation.hasFeature;
+var _SARISSA_IS_MOZ = _SARISSA_HAS_DOM_CREATE_DOCUMENT && _SARISSA_HAS_DOM_FEATURE;
+var _SARISSA_IS_SAFARI = navigator.userAgent.toLowerCase().indexOf("applewebkit") != -1;
+var _SARISSA_IS_IE = document.all && window.ActiveXObject && navigator.userAgent.toLowerCase().indexOf("msie") > -1  && navigator.userAgent.toLowerCase().indexOf("opera") == -1;
+ 
+if(!window.Node || !window.Node.ELEMENT_NODE){
+    var Node = {ELEMENT_NODE: 1, ATTRIBUTE_NODE: 2, TEXT_NODE: 3, CDATA_SECTION_NODE: 4, ENTITY_REFERENCE_NODE: 5,  ENTITY_NODE: 6, PROCESSING_INSTRUCTION_NODE: 7, COMMENT_NODE: 8, DOCUMENT_NODE: 9, DOCUMENT_TYPE_NODE: 10, DOCUMENT_FRAGMENT_NODE: 11, NOTATION_NODE: 12};
+};
+ 
+// IE initialization
+if(_SARISSA_IS_IE){
+    // for XSLT parameter names, prefix needed by IE
+    _SARISSA_IEPREFIX4XSLPARAM = "xsl:";
+    // used to store the most recent ProgID available out of the above
+    var _SARISSA_DOM_PROGID = "";
+    var _SARISSA_XMLHTTP_PROGID = "";
+    /**
+     * Called when the Sarissa_xx.js file is parsed, to pick most recent
+     * ProgIDs for IE, then gets destroyed.
+     * @param idList an array of MSXML PROGIDs from which the most recent will be picked for a given object
+     * @param enabledList an array of arrays where each array has two items; the index of the PROGID for which a certain feature is enabled
+     */
+    pickRecentProgID = function (idList, enabledList){
+        // found progID flag
+        var bFound = false;
+        for(var i=0; i < idList.length && !bFound; i++){
+            try{
+                var oDoc = new ActiveXObject(idList[i]);
+                o2Store = idList[i];
+                bFound = true;
+                for(var j=0;j<enabledList.length;j++)
+                    if(i <= enabledList[j][1])
+                        Sarissa["IS_ENABLED_"+enabledList[j][0]] = true;
+            }catch (objException){
+                // trap; try next progID
+            };
+        };
+        if (!bFound)
+            throw "Could not retreive a valid progID of Class: " + idList[idList.length-1]+". (original exception: "+e+")";
+        idList = null;
+        return o2Store;
+    };
+    // pick best available MSXML progIDs
+    _SARISSA_DOM_PROGID = pickRecentProgID(["Msxml2.DOMDocument.5.0", "Msxml2.DOMDocument.4.0", "Msxml2.DOMDocument.3.0", "MSXML2.DOMDocument", "MSXML.DOMDocument", "Microsoft.XMLDOM"], [["SELECT_NODES", 2],["TRANSFORM_NODE", 2]]);
+    _SARISSA_XMLHTTP_PROGID = pickRecentProgID(["Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"], [["XMLHTTP", 4]]);
+    _SARISSA_THREADEDDOM_PROGID = pickRecentProgID(["Msxml2.FreeThreadedDOMDocument.5.0", "MSXML2.FreeThreadedDOMDocument.4.0", "MSXML2.FreeThreadedDOMDocument.3.0"]);
+    _SARISSA_XSLTEMPLATE_PROGID = pickRecentProgID(["Msxml2.XSLTemplate.5.0", "Msxml2.XSLTemplate.4.0", "MSXML2.XSLTemplate.3.0"], [["XSLTPROC", 2]]);
+    // we dont need this anymore
+    pickRecentProgID = null;
+    //============================================
+    // Factory methods (IE)
+    //============================================
+    // see non-IE version
+    Sarissa.getDomDocument = function(sUri, sName){
+        var oDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
+        // if a root tag name was provided, we need to load it in the DOM
+        // object
+        if (sName){
+            // if needed, create an artifical namespace prefix the way Moz
+            // does
+            if (sUri){
+                oDoc.loadXML("<a" + _sarissa_iNsCounter + ":" + sName + " xmlns:a" + _sarissa_iNsCounter + "=\"" + sUri + "\" />");
+                // don't use the same prefix again
+                ++_sarissa_iNsCounter;
+            }
+            else
+                oDoc.loadXML("<" + sName + "/>");
+        };
+        return oDoc;
+    };
+    // see non-IE version   
+    Sarissa.getParseErrorText = function (oDoc) {
+        var parseErrorText = Sarissa.PARSED_OK;
+        if(oDoc.parseError != 0){
+            parseErrorText = "XML Parsing Error: " + oDoc.parseError.reason + 
+                "\nLocation: " + oDoc.parseError.url + 
+                "\nLine Number " + oDoc.parseError.line + ", Column " + 
+                oDoc.parseError.linepos + 
+                ":\n" + oDoc.parseError.srcText +
+                "\n";
+            for(var i = 0;  i < oDoc.parseError.linepos;i++){
+                parseErrorText += "-";
+            };
+            parseErrorText +=  "^\n";
+        };
+        return parseErrorText;
+    };
+    // see non-IE version
+    Sarissa.setXpathNamespaces = function(oDoc, sNsSet) {
+        oDoc.setProperty("SelectionLanguage", "XPath");
+        oDoc.setProperty("SelectionNamespaces", sNsSet);
+    };   
+    /**
+     * Basic implementation of Mozilla's XSLTProcessor for IE. 
+     * Reuses the same XSLT stylesheet for multiple transforms
+     * @constructor
+     */
+    XSLTProcessor = function(){
+        this.template = new ActiveXObject(_SARISSA_XSLTEMPLATE_PROGID);
+        this.processor = null;
+    };
+    /**
+     * Impoprts the given XSLT DOM and compiles it to a reusable transform
+     * @argument xslDoc The XSLT DOMDocument to import
+     */
+    XSLTProcessor.prototype.importStylesheet = function(xslDoc){
+        // convert stylesheet to free threaded
+        var converted = new ActiveXObject(_SARISSA_THREADEDDOM_PROGID); 
+        converted.loadXML(xslDoc.xml);
+        this.template.stylesheet = converted;
+        this.processor = this.template.createProcessor();
+        // (re)set default param values
+        this.paramsSet = new Array();
+    };
+    /**
+     * Transform the given XML DOM
+     * @argument sourceDoc The XML DOMDocument to transform
+     * @return The transformation result as a DOM Document
+     */
+    XSLTProcessor.prototype.transformToDocument = function(sourceDoc){
+        this.processor.input = sourceDoc;
+        var outDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
+        this.processor.output = outDoc; 
+        this.processor.transform();
+        return outDoc;
+    };
+    /**
+     * Not sure if this works in IE. Maybe this will allow non-well-formed
+     * transformation results (i.e. with no single root element)
+     * @argument sourceDoc The XML DOMDocument to transform
+     * @return The transformation result as a DOM Fragment
+     */
+    XSLTProcessor.prototype.transformToFragment = function(sourceDoc, ownerDocument){
+        return this.transformToDocument(sourceDoc);
+    };
+    /**
+     * Set global XSLT parameter of the imported stylesheet
+     * @argument nsURI The parameter namespace URI
+     * @argument name The parameter base name
+     * @argument value The new parameter value
+     */
+    XSLTProcessor.prototype.setParameter = function(nsURI, name, value){
+        /* nsURI is optional but cannot be null */
+        if(nsURI){
+            this.processor.addParameter(name, value, nsURI);
+        }else{
+            this.processor.addParameter(name, value);
+        };
+        /* update updated params for getParameter */
+        if(!this.paramsSet[""+nsURI]){
+            this.paramsSet[""+nsURI] = new Array();
+        };
+        this.paramsSet[""+nsURI][name] = value;
+    };
+    /**
+     * Gets a parameter if previously set by setParameter. Returns null
+     * otherwise
+     * @argument name The parameter base name
+     * @argument value The new parameter value
+     * @return The parameter value if reviously set by setParameter, null otherwise
+     */
+    XSLTProcessor.prototype.getParameter = function(nsURI, name){
+        if(this.paramsSet[""+nsURI] && this.paramsSet[""+nsURI][name])
+            return this.paramsSet[""+nsURI][name];
+        else
+            return null;
+    };
+}
+else{ /* end IE initialization, try to deal with real browsers now ;-) */
+   if(_SARISSA_HAS_DOM_CREATE_DOCUMENT){
+        if(window.XMLDocument){
+            /**
+            * <p>Emulate IE's onreadystatechange attribute</p>
+            */
+            XMLDocument.prototype.onreadystatechange = null;
+            /**
+            * <p>Emulates IE's readyState property, which always gives an integer from 0 to 4:</p>
+            * <ul><li>1 == LOADING,</li>
+            * <li>2 == LOADED,</li>
+            * <li>3 == INTERACTIVE,</li>
+            * <li>4 == COMPLETED</li></ul>
+            */
+            XMLDocument.prototype.readyState = 0;
+            /**
+            * <p>Emulate IE's parseError attribute</p>
+            */
+            XMLDocument.prototype.parseError = 0;
+ 
+            // NOTE: setting async to false will only work with documents
+            // called over HTTP (meaning a server), not the local file system,
+            // unless you are using Moz 1.4+.
+            // BTW the try>catch block is for 1.4; I haven't found a way to check if
+            // the property is implemented without
+            // causing an error and I dont want to use user agent stuff for that...
+            var _SARISSA_SYNC_NON_IMPLEMENTED = false;
+            try{
+                /**
+                * <p>Emulates IE's async property for Moz versions prior to 1.4.
+                * It controls whether loading of remote XML files works
+                * synchronously or asynchronously.</p>
+                */
+                XMLDocument.prototype.async = true;
+                _SARISSA_SYNC_NON_IMPLEMENTED = true;
+            }catch(e){/* trap */};
+            /**
+            * <p>Keeps a handle to the original load() method. Internal use and only
+            * if Mozilla version is lower than 1.4</p>
+            * @private
+            */
+            XMLDocument.prototype._sarissa_load = XMLDocument.prototype.load;
+ 
+            /**
+            * <p>Overrides the original load method to provide synchronous loading for
+            * Mozilla versions prior to 1.4, using an XMLHttpRequest object (if
+            * async is set to false)</p>
+            * @returns the DOM Object as it was before the load() call (may be  empty)
+            */
+            XMLDocument.prototype.load = function(sURI) {
+                var oDoc = document.implementation.createDocument("", "", null);
+                Sarissa.copyChildNodes(this, oDoc);
+                this.parseError = 0;
+                Sarissa.__setReadyState__(this, 1);
+                try {
+                    if(this.async == false && _SARISSA_SYNC_NON_IMPLEMENTED) {
+                        var tmp = new XMLHttpRequest();
+                        tmp.open("GET", sURI, false);
+                        tmp.send(null);
+                        Sarissa.__setReadyState__(this, 2);
+                        Sarissa.copyChildNodes(tmp.responseXML, this);
+                        Sarissa.__setReadyState__(this, 3);
+                    }
+                    else {
+                        this._sarissa_load(sURI);
+                    };
+                }
+                catch (objException) {
+                    this.parseError = -1;
+                }
+                finally {
+                    if(this.async == false){
+                        Sarissa.__handleLoad__(this);
+                    };
+                };
+                return oDoc;
+            };
+        };//if(window.XMLDocument)
+ 
+        /**
+         * <p>Ensures the document was loaded correctly, otherwise sets the
+         * parseError to -1 to indicate something went wrong. Internal use</p>
+         * @private
+         */
+        Sarissa.__handleLoad__ = function(oDoc){
+            if (!oDoc.documentElement || oDoc.documentElement.tagName == "parsererror")
+                oDoc.parseError = -1;
+            Sarissa.__setReadyState__(oDoc, 4);
+        };
+        
+        /**
+        * <p>Attached by an event handler to the load event. Internal use.</p>
+        * @private
+        */
+        _sarissa_XMLDocument_onload = function(){
+            Sarissa.__handleLoad__(this);
+        };
+        
+        /**
+         * <p>Sets the readyState property of the given DOM Document object.
+         * Internal use.</p>
+         * @private
+         * @argument oDoc the DOM Document object to fire the
+         *          readystatechange event
+         * @argument iReadyState the number to change the readystate property to
+         */
+        Sarissa.__setReadyState__ = function(oDoc, iReadyState){
+            oDoc.readyState = iReadyState;
+            if (oDoc.onreadystatechange != null && typeof oDoc.onreadystatechange == "function")
+                oDoc.onreadystatechange();
+        };
+        /**
+        * <p>Factory method to obtain a new DOM Document object</p>
+        * @argument sUri the namespace of the root node (if any)
+        * @argument sUri the local name of the root node (if any)
+        * @returns a new DOM Document
+        */
+        Sarissa.getDomDocument = function(sUri, sName){
+            var oDoc = document.implementation.createDocument(sUri?sUri:"", sName?sName:"", null);
+            oDoc.addEventListener("load", _sarissa_XMLDocument_onload, false);
+            return oDoc;
+        };        
+    };//if(_SARISSA_HAS_DOM_CREATE_DOCUMENT)
+};
+//==========================================
+// Common stuff
+//==========================================
+if(!window.DOMParser){
+    /** 
+    * DOMParser is a utility class, used to construct DOMDocuments from XML strings
+    * @constructor
+    */
+    DOMParser = function() {
+    };
+    /** 
+    * Construct a new DOM Document from the given XMLstring
+    * @param sXml the given XML string
+    * @param contentType the content type of the document the given string represents (one of text/xml, application/xml, application/xhtml+xml). 
+    * @return a new DOM Document from the given XML string
+    */
+    DOMParser.prototype.parseFromString = function(sXml, contentType){
+        var doc = Sarissa.getDomDocument();
+        doc.loadXML(sXml);
+        return doc;
+    };
+    
+};
+ 
+if(window.XMLHttpRequest){
+    Sarissa.IS_ENABLED_XMLHTTP = true;
+}
+else if(_SARISSA_IS_IE){
+    /**
+     * Emulate XMLHttpRequest
+     * @constructor
+     */
+    XMLHttpRequest = function() {
+        return new ActiveXObject(_SARISSA_XMLHTTP_PROGID);
+    };
+    Sarissa.IS_ENABLED_XMLHTTP = true;
+};
+ 
+if(!window.document.importNode && _SARISSA_IS_IE){
+    try{
+        /**
+        * Implements importNode for the current window document in IE using innerHTML.
+        * Testing showed that DOM was multiple times slower than innerHTML for this,
+        * sorry folks. If you encounter trouble (who knows what IE does behind innerHTML)
+        * please gimme a call.
+        * @param oNode the Node to import
+        * @param bChildren whether to include the children of oNode
+        * @returns the imported node for further use
+        */
+        window.document.importNode = function(oNode, bChildren){
+            var importNode = document.createElement("div");
+            if(bChildren)
+                importNode.innerHTML = Sarissa.serialize(oNode);
+            else
+                importNode.innerHTML = Sarissa.serialize(oNode.cloneNode(false));
+            return importNode.firstChild;
+        };
+        }catch(e){};
+};
+if(!Sarissa.getParseErrorText){
+    /**
+     * <p>Returns a human readable description of the parsing error. Usefull
+     * for debugging. Tip: append the returned error string in a &lt;pre&gt;
+     * element if you want to render it.</p>
+     * <p>Many thanks to Christian Stocker for the initial patch.</p>
+     * @argument oDoc The target DOM document
+     * @returns The parsing error description of the target Document in
+     *          human readable form (preformated text)
+     */
+    Sarissa.getParseErrorText = function (oDoc){
+        var parseErrorText = Sarissa.PARSED_OK;
+        if(oDoc.parseError != 0){
+            /*moz*/
+            if(oDoc.documentElement.tagName == "parsererror"){
+                parseErrorText = oDoc.documentElement.firstChild.data;
+                parseErrorText += "\n" +  oDoc.documentElement.firstChild.nextSibling.firstChild.data;
+            }/*konq*/
+            else if(oDoc.documentElement.tagName == "html"){
+                parseErrorText = Sarissa.getText(oDoc.documentElement.getElementsByTagName("h1")[0], false) + "\n";
+                parseErrorText += Sarissa.getText(oDoc.documentElement.getElementsByTagName("body")[0], false) + "\n";
+                parseErrorText += Sarissa.getText(oDoc.documentElement.getElementsByTagName("pre")[0], false);
+            };
+        };
+        return parseErrorText;
+    };
+};
+Sarissa.getText = function(oNode, deep){
+    var s = "";
+    var nodes = oNode.childNodes;
+    for(var i=0; i < nodes.length; i++){
+        var node = nodes[i];
+        var nodeType = node.nodeType;
+        if(nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE){
+            s += node.data;
+        }
+        else if(deep == true
+                    && (nodeType == Node.ELEMENT_NODE
+                        || nodeType == Node.DOCUMENT_NODE
+                        || nodeType == Node.DOCUMENT_FRAGMENT_NODE)){
+            s += Sarissa.getText(node, true);
+        };
+    };
+    return s;
+};
+if(window.XMLSerializer){
+    /**
+     * <p>Factory method to obtain the serialization of a DOM Node</p>
+     * @returns the serialized Node as an XML string
+     */
+    Sarissa.serialize = function(oDoc){
+        return (new XMLSerializer()).serializeToString(oDoc);
+    };
+}else{
+    if((Sarissa.getDomDocument("","foo", null)).xml){
+        // see non-IE version
+        Sarissa.serialize = function(oDoc) {
+            // TODO: check for HTML document and return innerHTML instead
+            return oDoc.xml;
+        };
+        /**
+         * Utility class to serialize DOM Node objects to XML strings
+         * @constructor
+         */
+        XMLSerializer = function(){};
+        /**
+         * Serialize the given DOM Node to an XML string
+         * @param oNode the DOM Node to serialize
+         */
+        XMLSerializer.prototype.serializeToString = function(oNode) {
+            return oNode.xml;
+        };
+    };
+};
+ 
+/**
+ * strips tags from a markup string
+ */
+Sarissa.stripTags = function (s) {
+    return s.replace(/<[^>]+>/g,"");
+};
+/**
+ * <p>Deletes all child nodes of the given node</p>
+ * @argument oNode the Node to empty
+ */
+Sarissa.clearChildNodes = function(oNode) {
+    while(oNode.hasChildNodes()){
+        oNode.removeChild(oNode.firstChild);
+    };
+};
+/**
+ * <p> Copies the childNodes of nodeFrom to nodeTo</p>
+ * <p> <b>Note:</b> The second object's original content is deleted before 
+ * the copy operation, unless you supply a true third parameter</p>
+ * @argument nodeFrom the Node to copy the childNodes from
+ * @argument nodeTo the Node to copy the childNodes to
+ * @argument bPreserveExisting whether to preserve the original content of nodeTo, default is false
+ */
+Sarissa.copyChildNodes = function(nodeFrom, nodeTo, bPreserveExisting) {
+    if(!bPreserveExisting){
+        Sarissa.clearChildNodes(nodeTo);
+    };
+    var ownerDoc = nodeTo.nodeType == Node.DOCUMENT_NODE ? nodeTo : nodeTo.ownerDocument;
+    var nodes = nodeFrom.childNodes;
+    if(ownerDoc.importNode && (!_SARISSA_IS_IE)) {
+        for(var i=0;i < nodes.length;i++) {
+            nodeTo.appendChild(ownerDoc.importNode(nodes[i], true));
+        };
+    }
+    else{
+        for(var i=0;i < nodes.length;i++) {
+            nodeTo.appendChild(nodes[i].cloneNode(true));
+        };
+    };
+};
+ 
+/**
+ * <p> Moves the childNodes of nodeFrom to nodeTo</p>
+ * <p> <b>Note:</b> The second object's original content is deleted before 
+ * the move operation, unless you supply a true third parameter</p>
+ * @argument nodeFrom the Node to copy the childNodes from
+ * @argument nodeTo the Node to copy the childNodes to
+ * @argument bPreserveExisting whether to preserve the original content of nodeTo, default is false
+ */
+Sarissa.moveChildNodes = function(nodeFrom, nodeTo, bPreserveExisting) {
+    if(!bPreserveExisting){
+        Sarissa.clearChildNodes(nodeTo);
+    };
+    
+    var nodes = nodeFrom.childNodes;
+    // if within the same doc, just move, else copy and delete
+    if(nodeFrom.ownerDocument == nodeTo.ownerDocument){
+        nodeTo.appendChild(nodes[i]);
+    }else{
+        var ownerDoc = nodeTo.nodeType == Node.DOCUMENT_NODE ? nodeTo : nodeTo.ownerDocument;
+         if(ownerDoc.importNode && (!_SARISSA_IS_IE)) {
+            for(var i=0;i < nodes.length;i++) {
+                nodeTo.appendChild(ownerDoc.importNode(nodes[i], true));
+            };
+        }
+        else{
+            for(var i=0;i < nodes.length;i++) {
+                nodeTo.appendChild(nodes[i].cloneNode(true));
+            };
+        };
+        Sarissa.clearChildNodes(nodeFrom);
+    };
+    
+};
+ 
+/** 
+ * <p>Serialize any object to an XML string. All properties are serialized using the property name
+ * as the XML element name. Array elements are rendered as <code>array-item</code> elements, 
+ * using their index/key as the value of the <code>key</code> attribute.</p>
+ * @argument anyObject the object to serialize
+ * @argument objectName a name for that object
+ * @return the XML serializationj of the given object as a string
+ */
+Sarissa.xmlize = function(anyObject, objectName, indentSpace){
+    indentSpace = indentSpace?indentSpace:'';
+    var s = indentSpace  + '<' + objectName + '>';
+    var isLeaf = false;
+    if(!(anyObject instanceof Object) || anyObject instanceof Number || anyObject instanceof String 
+        || anyObject instanceof Boolean || anyObject instanceof Date){
+        s += Sarissa.escape(""+anyObject);
+        isLeaf = true;
+    }else{
+        s += "\n";
+        var itemKey = '';
+        var isArrayItem = anyObject instanceof Array;
+        for(var name in anyObject){
+            s += Sarissa.xmlize(anyObject[name], (isArrayItem?"array-item key=\""+name+"\"":name), indentSpace + "   ");
+        };
+        s += indentSpace;
+    };
+    return s += (objectName.indexOf(' ')!=-1?"</array-item>\n":"</" + objectName + ">\n");
+};
+ 
+/** 
+ * Escape the given string chacters that correspond to the five predefined XML entities
+ * @param sXml the string to escape
+ */
+Sarissa.escape = function(sXml){
+    return sXml.replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+};
+ 
+/** 
+ * Unescape the given string. This turns the occurences of the predefined XML 
+ * entities to become the characters they represent correspond to the five predefined XML entities
+ * @param sXml the string to unescape
+ */
+Sarissa.unescape = function(sXml){
+    return sXml.replace(/&apos;/g,"'")
+        .replace(/&quot;/g,"\"")
+        .replace(/&gt;/g,">")
+        .replace(/&lt;/g,"<")
+        .replace(/&amp;/g,"&");
+};
+//   EOF
+ 
+ 
+                     // --></script> 
+                
+            
+            
+                <script type="text/javascript"
+                        src="http://www.cvut.cz/portal_javascripts/ploneScripts3878.js"> 
+                </script> 
+                
+            
+        
+    
+    
+        
+            
+                
+                    <link rel="stylesheet" type="text/css"
+                          href="http://www.cvut.cz/portal_css/ploneStyles3767.css"
+                          title="default style" /> 
+                    
+                    
+                
+            
+            
+                
+                    <link rel="stylesheet" type="text/css"
+                          media="screen"
+                          href="http://www.cvut.cz/portal_css/ploneStyles1270.css"
+                          title="default style" /> 
+                    
+                    
+                
+            
+            
+                
+                    
+                    
+                        <style type="text/css"
+    media="screen"><!-- @import url(http://www.cvut.cz/portal_css/columns.css); --></style> 
+                    
+                    
+                
+            
+            
+                
+                    <link rel="stylesheet" type="text/css"
+                          media="screen"
+                          href="http://www.cvut.cz/portal_css/pod.css" /> 
+                    
+                    
+                
+            
+            
+                
+                    <link rel="stylesheet" type="text/css"
+                          media="screen"
+                          href="http://www.cvut.cz/portal_css/ploneStyles6155.css" /> 
+                    
+                    
+                
+            
+            
+                
+                    <link rel="alternate stylesheet"
+                          type="text/css" media="screen"
+                          href="http://www.cvut.cz/portal_css/print2.css"
+                          title="text only" /> 
+                    
+                    
+                
+            
+            
+                
+                    <link rel="stylesheet" type="text/css"
+                          media="all"
+                          href="http://www.cvut.cz/portal_css/rssfeed.css" /> 
+                    
+                    
+                
+            
+            
+                
+                    
+                    
+                        <style type="text/css"><!-- @import url(http://www.cvut.cz/portal_css/kupucontentstyles.css); --></style> 
+                    
+                    
+                
+            
+        
+    
+ 
+ 
+    <link rel="shortcut icon" type="image/x-icon"
+          href="http://www.cvut.cz/favicon.ico" /> 
+ 
+ 
+    <link rel="home" href="http://www.cvut.cz"
+          title="Front page" /> 
+    <link rel="search" title="Search this site"
+          href="http://www.cvut.cz/search_form" /> 
+    <link rel="author" title="Author information"
+          href="http://www.cvut.cz/author/krikavla" /> 
+    <link rel="contents" href="http://www.cvut.cz/sitemap"
+          title="Site Map" /> 
+    
+    
+ 
+    
+ 
+    <link rel="alternate" href="http://www.cvut.cz/news/RSS"
+          title="Novinky" type="application/rss+xml" /> 
+    
+ 
+    <link rel="up" href="http://www.cvut.cz"
+          title="Up one level" /> 
+ 
+    
+ 
+    <!-- Disable IE6 image toolbar --> 
+    <meta http-equiv="imagetoolbar" content="no" /> 
+ 
+    
+      <!-- A slot where you can insert CSS in the header from a template --> 
+        
+    
+ 
+    
+ 
+    
+    
+    
+    
+    
+ 
+ 
+    
+      <!-- A slot where you can insert elements in the header from a template --> 
+    
+ 
+    
+      <!-- A slot where you can insert javascript in the header from a template --> 
+        
+    
+ 
+  </head> 
+ 
+<body class=""> 
+ 
+<div id="page_frame"> 
+ 
+  <div id="portal-top"> 
+ 
+    <a href="#documentContent" class="hiddenStructure"
+       accesskey="2">Skip to content.</a> 
+ 
+    <a class="hiddenStructure" accesskey="6"
+       href="http://www.cvut.cz/en#portlet-navigation-tree">Skip to navigation</a> 
+ 
+    <div class="up_header"> 
+<!--          <form action="search" style="display:inline;"> -->	
+<!-- JM
+                <div class="left">
+                    <tal:block tal:condition="isAnon|nothing">
+                        <a href="javascript:setActiveStyleSheet('text only', 1);"
+                           i18n:translate="Text_Version">Text Only</a> &middot;
+                    </tal:block>
+                        <a href="javascript:setActiveStyleSheet('default style', 1);"
+                           i18n:translate="Blue_Version">Blue Style</a>
+                </div>
+--> 
+                <div class="right"> 
+                                <a href="/sitemap">Sitemap</a> 
+                                &nbsp;&nbsp;|&nbsp;&nbsp;
+ 
+                             <a id="id_people"
+    href="https://usermap.cvut.cz/index.pl?lang=en"
+    title="People and Departments"> 
+                            <span>People and Departments
+                            </span> 
+                             </a> 
+ 
+                                &nbsp;&nbsp;|&nbsp;&nbsp;
+                                <a href="/login_form">Edit</a> 
+                                
+                                
+                                &nbsp;&nbsp;|&nbsp;&nbsp;
+                                Site Search &nbsp;
+ 
+<!--                                <input style="font-size: x-small;" name="SearchableText" type="text" />
+                                <input class="topSearchButton" type="image" src="images/search3.gif" value="&gt;&gt;" />
+ 
+                                <input class="topSearchButton" type="submit" value=">>" title="Search" />
+--> 
+<!-- Google CSE Search Box Begins  --> 
+<form action="google_search" id="searchbox_006596953731591418645:bf8frp0pywk" style="display:inline;"> 
+  <input type="hidden" name="cx" value="006596953731591418645:bf8frp0pywk" /> 
+  <input type="hidden" name="cof" value="FORID:11" /> 
+  <input type="text" name="q" size="20" /> 
+<!--  <input type="submit" name="sa" value="Search" /> --> 
+  <input class="topSearchButton" type="image" src="images/search3.gif" name="sa" value="Submit" alt="Submit" /> 
+ 
+</form> 
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=searchbox_006596953731591418645%3Abf8frp0pywk"></script> 
+<!-- Google CSE Search Box Ends --> 
+ 
+<!-- prepinani jazyku - add JM --> 
+&nbsp;&nbsp;&nbsp;<a class="reci" href="/en?set_language=en">english</a>&nbsp;|&nbsp;<a class="reci" href="/cs?set_language=cs">&#269;esky</a> 
+<!-- end --> 
+ 
+                </div> 
+<!--          </form> --> 
+ 
+       
+ </div> 
+ 
+    <div class="header"> 
+  
+<div class="left"> 
+<a accesskey="1" href="http://www.cvut.cz/en"> 
+<img src="images/logo_cvut.png" alt="Logo CVUT" /> 
+</a> 
+<h1> 
+                      CZECH TECHNICAL UNIVERSITY <br /> IN PRAGUE
+</h1> 
+</div> 
+<div class="right"></div> 
+</div> 
+ 
+    <div class="down_header" id="portal-breadcrumbs"> 
+                <div class="left"> 
+ 
+<a href="http://www.cvut.cz/en">Home Page</a> <!-- JM nastaveni HomePage na zalozku Home --> 
+ 
+  
+        
+ 
+   <span class="en"> 
+              
+        <span class="breadcrumbSeparator">&rarr;</span>   
+ 
+        
+   
+            <span>Home</span> 
+    </span> 
+         
+ 
+</div> 
+<!--  JM: presunuto do global_siteactions
+<div class="right">
+<a href="/en?set_language=en">english</a> | <a href="/cs?set_language=cs">česky</a>
+</div>
+--> 
+ 
+</div> 
+ 
+ 
+    <div class="pod_odkazy"> 
+    <div id="portal-globalnav2"> 
+        
+          <div id="incomers" class="plain"> 
+            <div class="pod_border"> 
+            <a href="http://www.cvut.cz/incomers"
+               class="odkaz"
+               title="Information for incoming students"> 
+                 <img class="sipka_odkaz" src="images/sipka.gif" /> 
+		 <span class="odkaz_nazev_horni">For</span> 
+                 <span class="odkaz_nazev_dolni">Incomers</span> 
+                 <span class="odkaz_text"> 
+                   <br /> 
+                   
+                 </span> 
+            </a> 
+            </div> 
+          </div> 
+        
+        
+          <div id="current-students" class="plain"> 
+            <div class="pod_border"> 
+            <a href="http://www.cvut.cz/current-students"
+               class="odkaz"
+               title="Information for current students"> 
+                 <img class="sipka_odkaz" src="images/sipka.gif" /> 
+		 <span class="odkaz_nazev_horni">Current</span> 
+                 <span class="odkaz_nazev_dolni">Students</span> 
+                 <span class="odkaz_text"> 
+                   <br /> 
+                   
+                 </span> 
+            </a> 
+            </div> 
+          </div> 
+        
+        
+          <div id="medias" class="plain"> 
+            <div class="pod_border"> 
+            <a href="http://www.cvut.cz/media-and-public"
+               class="odkaz"
+               title="Information for media, specialists and the public"> 
+                 <img class="sipka_odkaz" src="images/sipka.gif" /> 
+		 <span class="odkaz_nazev_horni">Media, Specialists and the</span> 
+                 <span class="odkaz_nazev_dolni">Public</span> 
+                 <span class="odkaz_text"> 
+                   <br /> 
+                   
+                 </span> 
+            </a> 
+            </div> 
+          </div> 
+        
+        
+          
+        
+        
+          
+        
+        
+          
+        
+        
+          <div id="homepage" class="selected"> 
+            <div class="pod_border"> 
+            <a href="http://www.cvut.cz/en" class="odkaz"
+               title=""> 
+                 <img class="sipka_odkaz" src="images/sipka.gif" /> 
+		 <span class="odkaz_nazev_horni"></span> 
+                 <span class="odkaz_nazev_dolni">Home</span> 
+                 <span class="odkaz_text"> 
+                   <br /> 
+                   
+                 </span> 
+            </a> 
+            </div> 
+          </div> 
+        
+        
+          
+        
+    </div> 
+</div> 
+ 
+  </div> 
+ 
+ 
+<!-- The wrapper div. It contains the three columns. --> 
+<div id="portal-columns"
+     class="visualColumnHideNone mainpage"> 
+ 
+        <!-- start of the left (by default at least) column --> 
+        <div id="first"> 
+            <div class="visualPadding"> 
+                
+                    
+ 
+    
+        
+ 
+        
+            
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            
+       
+ 
+<div class="menu" id="portlet-navigation-tree2"> 
+   
+            
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/bodies" title=""> 
+            <span>Academic Bodies</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/faculties" title=""> 
+            <span>Faculties</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/institutes" title=""> 
+            <span>Higher Education Institutes</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/parts" title=""> 
+            <span>Other Constituent Parts</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/facilities" title=""> 
+            <span>Service Facilities</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/gallery" title=""> 
+            <span>Photo Gallery</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/history" title=""> 
+            <span>History</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+ 
+ 
+ 
+    
+ 
+ 
+<div class="polozka"> 
+ 
+        
+ 
+ 
+ 
+ 
+ 
+     
+        <a href="http://www.cvut.cz/en/ects-ds"
+           title="European Credit Transfer System/Diploma Supplement"> 
+            <span>ECTS/Diploma Supplement</span> 
+						
+</a> 
+ 
+ 
+ 
+    
+        
+   </div> 
+   
+ 
+    
+ 
+    
+ 
+ 
+ 
+    
+ 
+ 
+ 
+ 
+    
+ 
+ 
+        
+    
+    
+ 
+ 
+ 
+ 
+</div> 
+ 
+ 
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            <div> 
+ 
+  <div class="portlet_partners"> 
+ 
+    <div class="partner"> 
+    <a href="http://www.isc.cvut.cz" target="_blank"><img class="logo" src="images/logo_isc.gif" alt="International Student Club" /></a> 
+    </div> 
+<div class="partner"> 
+    <a href="http://www.cvut.cz/en/facilities/ph/ap"><img class="logo" src="images/btn_ap" alt="Acta Polytechnica" style="width: 120px; height: 60px; border: 1px solid #000000;" /></a> 
+    </div>   
+ 
+    <div class="partner"> 
+    <a href="http://www.czech.cz/en/" target="_blank"><img class="logo" src="images/logo_czech.gif" alt="Czech Republic" /></a> 
+    </div> 
+    
+    <div class="partner"> 
+    <a href="http://europa.eu/" target="_blank"><img class="logo" src="images/logo_eu.gif" alt="Gateway to the EU" /></a> 
+    </div> 
+ 
+<div class="partner"> 
+   <a href="http://www.suryaschool.org/?lang=2" target="_blank"><img class="logo" src="images/logo_ssh" alt="Sun School in the Himalayas" /></a> 
+   </div>   
+ 
+<div class="partner"> 
+   <a href="http://www.cartech.cvut.cz/en/" target="_blank"><img class="logo" src="images/logo_cartech.gif" alt="Formula Student" /></a> 
+   </div> 
+ 
+    <br /> 
+     <div class="lefttext"></div> 
+  </div> 
+ 
+</div> 
+        
+ 
+        
+ 
+        
+    
+ 
+                
+                &nbsp;
+            </div> 
+        </div> 
+        <!-- end of the left (by default at least) column --> 
+ 
+ 
+        <!-- start of main content block --> 
+ 
+        <div id="second"> 
+<!--
+<div class="border">
+--> 
+          
+            <div id="content" class=""> 
+ 
+                
+ 
+                <div class="documentContent" id="region-content"> 
+ 
+                    <a name="documentContent"></a> 
+ 
+                    
+ 
+                    
+ 
+                    <div> 
+    
+        
+ 
+            
+ 
+             
+ 
+                				
+ 
+                
+                                        
+                        
+ 
+        <div class="documentActions"> 
+    
+ 
+    <h5 class="hiddenStructure">Document Actions</h5> 
+ 
+    <ul> 
+    
+        <li> 
+            <a href="http://www.cvut.cz/en/welcome/sendto_form"> 
+ 
+                <img src="http://www.cvut.cz/mail_icon.gif"
+                     alt="Send this page to somebody"
+                     title="Send this page to somebody" /> 
+            </a> 
+        </li> 
+    
+    
+        <li> 
+            <a href="javascript:this.print();"> 
+ 
+                <img src="http://www.cvut.cz/print_icon.gif"
+                     alt="Print this page"
+                     title="Print this page" /> 
+            </a> 
+        </li> 
+    
+ 
+    </ul> 
+    
+ 
+    <!--
+    <tal:lang tal:condition="exists: here/global_languageselector">
+      <metal:lang use-macro="here/global_languageselector/macros/language">
+      Language selector
+      </metal:lang>
+    </tal:lang>
+    --> 
+ 
+</div> 
+ 
+        <h1 class="documentFirstHeading">Welcome to CTU</h1> 
+    
+        
+    
+        
+    
+        <div class="plain"> 
+            <div class="udalost"><div class="obr"><img class="image-left" src="resolveuid/c398b145ffd9fe350315f1958d8f855a" alt="Orientation Week" /><br /></div><div class="popis"><div class="nadpis"><a href="http://isc.cvut.cz/?q=en/node/16" target="_self">Orientation Week - autumn 2010</a>  </div><div class="datum">09.09.2010<br /></div><div class="text">The International Student Club is organizing an Orientation Week for 444 new 
+exchange students, beginning on September 9th. All exchange students are advised 
+to participate, in order to settle in before classes begin on September 16th. <br /></div></div></div>
+
+<div class="udalost"><div class="obr"><img class="image-left" src="resolveuid/ac26515764ec6df03afef8140732fc96" alt="Conference on IP" /><br /></div><div class="popis"><div class="nadpis"><a href="http://www.cebbis.eu/conference/index.html" target="_self">Prague Summer Conference on IP &amp; Innovation</a> </div><div class="datum">13.-14.09.2010 at the National Technical Library <br /></div><div class="text">CTU in Prague, the Industrial Property Office of the Czech Republic and the British Embassy in Prague are organising the Prague Summer Conference on IP &amp; Innovation, the opening conference of the Central European Branch Based Innovation Support Project, under the auspices of the rector of CTU in Prague.<br /><a href="http://www.cebbis.eu/conference/programme.html" target="_self">Programme and registration</a><br />Free of charge for participants from CTU in Prague. <br /></div></div></div>
+
+<div class="udalost"><div class="obr"><img class="image-left" src="resolveuid/b3219b88b1704bd67f64f98900d6a4fe" alt="Klaus" height="90" width="120" /><br /></div><div class="popis"><div class="nadpis">President of the Republic to meet students </div><div class="datum">23.02.2010 
+</div><div class="text">On Tuesday, February 23rd, the president of the Czech Republic, Václav Klaus, visited the Prague 6 city district. His visit included the National Technical Library, on the Dejvice campus of CTU. At 3 p.m., in the Balling Hall on the ground floor of the library, the president met and had a discussion with students of the universities based in Prague 6. <br /></div></div></div>
+
+<div class="udalost"><div class="obr"><a title="International Student Club welcomed new international students" href="resolveuid/114d7e6d99056f3281d5d06c192c2589" target="_self"><img class="image-left" src="resolveuid/1321311a75bdec2eb5d4dcc5a57da037" alt="Orientation week 2010" height="120" width="120" /></a><br /></div><div class="popis"><div class="nadpis"><b><b><a title="International Student Club welcomed new international students" href="resolveuid/114d7e6d99056f3281d5d06c192c2589" target="_self">International Student Club welcomes new international students</a></b></b></div><div class="datum">8.-14.2.2010</div><div class="text">Every year, the Czech Technical University hosts exchange students from all round the world, and this term is no exception. There are 215 newly-arrived exchange students for the summer semester, and they were all welcomed in Prague by the Orientation Week that is traditionally organized by the International Student Club and the CTU International Office.<br /> <br class="clr" /></div></div><div><div class="udalost"><div class="obr"><img class="image-left" src="resolveuid/cc2886b546ac9770258d358685b81ddf" alt="Scrivener" height="120" width="120" /><br /></div><div class="popis"><div class="nadpis"><b><a title="Prof. Karen Scrivener – first ever female honorary doctor of CTU in Prague" href="resolveuid/b36bcd52675e04889e2ec214182c73bf" target="_self"><b>Prof. Karen Scrivener – first ever female honorary doctor of CTU in Prague</b></a></b></div><div class="datum">19.01.2010</div><div class="text">At a ceremony at the Bethlehem Chapel on January 19th, 2010, a doctorate honoris causa was awarded to Prof. Karen Scrivener, from the Swiss Federal Institute of Technology in Lausanne. Prof. Scrivener is the director and the driving force behind Nanocem, a large consortium that brings together researchers and companies interested in fundamental research on the nanoscience of cement and concrete. <br class="clr" /></div></div><div><div class="udalost"><div class="obr"><img class="image-left" src="resolveuid/753e6b5258fe52ddadfa8a8ee1da5025" alt="Kaiser" height="120" width="120" /><br /></div><div class="popis"><div class="nadpis"><b><a title="Prof Hans Kaiser awarded an honorary doctorate" href="resolveuid/464cfb38e8364f84ef7e12b1dcf575e7" target="_self"><b>Prof. Hans Kaiser awarded an honorary doctorate</b></a></b></div><div class="datum">19.01.2010</div><div class="text">At a ceremony at the Bethlehem Chapel on January 19th, 2010 a doctorate honoris causa was awarded to Prof. Hans Kaiser. In addition to his distinguished work as an applied mathematician at the Vienna University of Technology, Prof Kaiser has worked extensively in establishing international study opportunities, lifelong learning, teacher education, and European and international dimension to university education in engineering. <br class="clr" /></div></div><div><div class="vice"><p><a title="Archive" href="resolveuid/5611e7d5e7b2d13789f4d1e54ae276d3" target="_self">Archive of events »</a></p></div></div></div></div></div></div></div><div></div><div></div> 
+        </div> 
+ 
+ 
+        <div id="relatedItems"> 
+    
+</div> 
+    
+    
+                    
+<!-- prilohove soubory --> 
+                    
+                        <div id="relatedItems"> 
+    
+        
+            
+        
+    
+</div> 
+                          
+<!-- prilohove soubory --> 
+                				
+ 
+ 
+ 
+                								
+                
+                
+         
+               
+           
+           
+           
+           
+                
+</div> 
+ 
+                    
+                        <div class="discussion"> 
+    
+        
+            
+            
+ 
+        
+    
+</div> 
+                    
+ 
+                </div> 
+ 
+            </div> 
+          
+<!--
+</div>
+--> 
+        </div> 
+ 
+    <!-- end of main content block --> 
+ 
+ 
+ 
+ 
+    <!-- start of right (by default at least) column --> 
+    <!--
+    <div id="third"
+         tal:condition="slots_mapping/right"
+         metal:define-slot="column_two_slot">
+      --> 
+    <div id="third"> 
+        
+        <div class="visualPadding"> 
+            
+                
+ 
+    
+        
+ 
+        
+            <div class="hlavicka"> 
+ 
+</div> 
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            <div> 
+  <div class="novinky" id="portlet-news"> 
+<h2>&nbsp;
+     News
+         
+     <a href="http://www.cvut.cz/news-folder/RSS"> 
+        <img src="rss.gif" alt="rss" /> 
+     </a> 
+ 
+  </h2> 
+ 
+  <div class="posuvnik"> 
+ 
+<!-- JM: zmena formatu vypisovani --> 
+<!--
+    <tal:newsitems repeat="obj results">
+    <div class="novinka">
+    <div class="vice">
+          <a href="" 
+             tal:attributes="href obj/getURL"
+             i18n:translate="More">
+               More
+          </a>
+        </div>
+ 
+        <div class="datum" tal:content="python:here.toLocalizedTime(obj.Date)">May 5</div>
+        <div tal:replace="obj/pretty_title_or_id" class="detail">
+          Plone 2.1 announced!
+        </div>
+				
+      </div>
+  </tal:newsitems>
+--> 
+<!-- nove: -->	
+<div class="novinka"> 
+    <div class="novinka_odd"> 
+        <a href="http://www.cvut.cz/novinky/vysla-prazska-technika-6-2010"> 	
+        <div class="datum"> 9 Dec 2010</div> 
+        Vyšla Pražská technika 6/2010
+        </a> 
+      </div> 
+  </div> 
+<div class="novinka"> 
+    <div class="novinka_even"> 
+        <a href="http://www.cvut.cz/news-folder/new-grading-scale"> 	
+        <div class="datum">29 May 2006</div> 
+        ECTS Grading Scale
+        </a> 
+      </div> 
+  </div> 
+<div class="novinka"> 
+    <div class="novinka_odd"> 
+        <a href="http://www.cvut.cz/news-folder/print-and-copy-system-tina"> 	
+        <div class="datum">29 May 2006</div> 
+        TINA print and copy system
+        </a> 
+      </div> 
+  </div> 
+<div class="novinka"> 
+    <div class="novinka_even"> 
+        <a href="http://www.cvut.cz/news-folder/commemorative-silver-coin-gernstner"> 	
+        <div class="datum">19 Apr 2006</div> 
+        Commemorative silver coins
+        </a> 
+      </div> 
+  </div> 
+<!-- konec noveho --> 
+   <div class="vice"> 
+         <a href="http://www.cvut.cz/novinky"><vice>see more</vice>&nbsp;&raquo;</a>           
+         
+   </div> 
+  </div> 
+</div> 
+</div> 
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            
+        
+ 
+        
+ 
+        
+    
+    
+        
+ 
+        
+            <div> 
+ 
+ 
+  
+   <div class="studeni"> 
+                                
+   <h2>&nbsp;
+  <!-- <img class="sipka" src="images/sipka.gif" alt="&gt;" /> --> 
+         Events
+   <a href="http://akce.cvut.cz/?node=rss2&amp;group=0"> 
+        <img src="rss.gif" alt="rss" /> 
+     </a>    
+   </h2> 
+ 
+  
+   
+      <div class="rssbox"> 
+ 
+ 
+<!-- JM
+	    <div tal:repeat="row rows">
+	       <div class="content"
+			tal:define="oddrow repeat/row/odd"
+			tal:attributes="class python:test(oddrow, 'content_even', 'content_odd')">
+            			<span style="display: none" tal:condition="python: row.get('date') or nothing" tal:content="python: here.toPortalTime(row['date'])" />
+			<a href="#"  tal:attributes="href row/link" tal:content="row/title"/>&nbsp;
+			<span tal:condition="python: verbose and row.get('description') or nothing" tal:replace="structure row/description" /> 
+	      </div>
+	    </div>
+--> 
+ 
+<!-- JM add --> 
+	    <div> 
+               <div class="content_odd"> 
+               <a href="http://akce.cvut.cz/?node=cal_item&amp;idevent=1581&amp;lang=cz"> 
+                
+                 <ikar> 
+                   <div class="detail">NETWORKING ACADEMY GAMES 2011</div> 
+                 </ikar> 
+ 
+               </a>   
+              </div>        
+	    </div> 
+	    <div> 
+               <div class="content_even"> 
+               <a href="http://akce.cvut.cz/?node=cal_item&amp;idevent=1588&amp;lang=cz"> 
+                
+                 <ikar> 
+                   <div class="detail">InstallFest 2011</div> 
+                 </ikar> 
+ 
+               </a>   
+              </div>        
+	    </div> 
+	    <div> 
+               <div class="content_odd"> 
+               <a href="http://akce.cvut.cz/?node=cal_item&amp;idevent=1439&amp;lang=cz"> 
+                
+                 <ikar> 
+                   <div class="detail">2011 IEEE Workshop on Merging Fields of Computational Intelligence and Sensor Technology</div> 
+                 </ikar> 
+ 
+               </a>   
+              </div>        
+	    </div> 
+	    <div> 
+               <div class="content_even"> 
+               <a href="http://akce.cvut.cz/?node=cal_item&amp;idevent=1481&amp;lang=cz"> 
+                
+                 <ikar> 
+                   <div class="detail">Poster 2011</div> 
+                 </ikar> 
+ 
+               </a>   
+              </div>        
+	    </div> 
+<!-- JM --> 
+            <div class="vice"> 
+                   <a href="sinList?synmap=Events"><vice>see more</vice>&nbsp;&raquo;</a>           
+            </div> 
+        </div> 
+ 
+    
+ 
+ 
+ <!--**JM test**
+ <tal:block tal:define="m string:Akce; 
+                          verbose python: 0;
+                          max_size python: 10">
+      <div metal:use-macro="here/sin_tool/macros/Akce"/>
+    </tal:block>
+--> 
+ 
+    </div> 
+ 
+<div class="zdroj">source: <a href="https://akce.cvut.cz/?node=calendar&amp;lang=en">akce.cvut.cz</a></div>   <!-- JM --> 
+ 
+</div> 
+        
+ 
+        
+ 
+        
+    
+ 
+            
+            &nbsp;
+        </div> 
+        
+    </div> 
+    <!-- end of the right (by default at least) column --> 
+ 
+</div> 
+<!-- end column wrapper --> 
+ 
+ 
+<div id="cvut-footer" class="footer"> 
+                <div class="left"> 
+                        Copyright &copy; 2005-2006 CTU<br /> 
+                        Zikova 4, 166 36, Prague 6, Phone: +420 224 35 1111, +420 234 35 1111, Czech Republic 
+                </div> 
+                <div class="right"> 
+        
+ 
+    
+        
+ 
+        <span>Responsible for information: </span> 
+        
+ 
+        <br /> 
+ 
+        <span> 
+           Last modified:
+        </span> 
+ 
+         3 Sep 2010
+ 
+ 
+        
+ 
+        
+ 
+        
+ 
+        
+ 
+    
+, <a href="mailto:webmaster@cvut.cz?subject=www-cvut-cz">Administrator</a> 
+                </div> 
+</div> 
+ 
+</div> 
+</body> 
+</html> 

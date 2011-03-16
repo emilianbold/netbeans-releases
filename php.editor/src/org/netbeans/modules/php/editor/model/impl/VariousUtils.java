@@ -89,11 +89,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -198,17 +200,12 @@ public class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind() == PHPDocTag.Type.PARAM) {
-                    String parts[] = tag.getValue().trim().split("\\s+", 3); //NOI18N
-
-                    if (parts.length > 1) {
-                        String[] typeNames = parts[0].split("\\|", 2);
-                        List<QualifiedName> types = new ArrayList<QualifiedName>();
-                        for (String tName : typeNames) {
-                            types.add(QualifiedName.create(tName));
-                        }
-                        String name = parts[1].split("\\s+", 2)[0];
-                        retval.put(name, types);
+                    List<QualifiedName> types = new ArrayList<QualifiedName>();
+                    PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag)tag;
+                    for(PHPDocTypeNode type : paramTag.getTypes()) {
+                        types.add(QualifiedName.create(type.getValue()));
                     }
+                    retval.put(paramTag.getVariable().getValue(), types);
                 }
             }
         }

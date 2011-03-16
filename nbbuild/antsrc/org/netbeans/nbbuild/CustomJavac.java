@@ -45,7 +45,9 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
@@ -73,8 +75,11 @@ public class CustomJavac extends Javac {
         usingExplicitIncludes = true;
     }
 
+    private File generatedClassesDir;
+
     @Override
     public void execute() throws BuildException {
+        generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
         if (!usingExplicitIncludes) {
             cleanUpStaleClasses();
         }
@@ -88,7 +93,6 @@ public class CustomJavac extends Javac {
             createCompilerArg().setPath(processorPath);
         }
         createCompilerArg().setValue("-implicit:class");
-        File generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
         if (generatedClassesDir.isDirectory() || generatedClassesDir.mkdirs()) {
             createCompilerArg().setValue("-s");
             createCompilerArg().setFile(generatedClassesDir);
@@ -114,10 +118,12 @@ public class CustomJavac extends Javac {
         if (!d.isDirectory()) {
             return;
         }
-        String[] _sources = getSrcdir().list();
-        File[] sources = new File[_sources.length];
-        for (int i = 0; i < _sources.length; i++) {
-            sources[i] = new File(_sources[i]);
+        List<File> sources = new ArrayList<File>();
+        for (String s : getSrcdir().list()) {
+            sources.add(new File(s));
+        }
+        if (generatedClassesDir.isDirectory()) {
+            sources.add(generatedClassesDir);
         }
         FileSet classes = new FileSet();
         classes.setDir(d);

@@ -50,7 +50,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
@@ -140,7 +139,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public boolean isValid() {
-        return CsmBaseUtilities.isValid(getContainingFile());
+        return CsmBaseUtilities.isValid(getContainingFileImpl(false));
     }
 
     protected TemplateDescriptor createTemplateDescriptor(AST node, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {

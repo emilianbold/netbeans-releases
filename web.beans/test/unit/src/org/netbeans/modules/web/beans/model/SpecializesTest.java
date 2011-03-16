@@ -49,9 +49,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -59,9 +56,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -213,8 +208,6 @@ public class SpecializesTest extends CommonTestCase {
                 "public class Three extends Two {}" );
         
         inform("start merged specializes test");
-        
-        
         
         TestWebBeansModelImpl modelImpl = createModelImpl();
         final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();

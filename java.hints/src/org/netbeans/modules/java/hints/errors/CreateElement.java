@@ -187,7 +187,7 @@ public final class CreateElement implements ErrorRule<Void> {
             path = path.getParentPath();
         }
 
-        if (parent == null || parent.getLeaf() == errorPath.getLeaf() || firstClass == null)
+        if (parent == null || parent.getLeaf() == errorPath.getLeaf())
             return Collections.<Fix>emptyList();
 
         Element e = info.getTrees().getElement(errorPath);
@@ -208,25 +208,29 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
         String simpleName = name.toString();
-        TypeElement source = (TypeElement) info.getTrees().getElement(firstClass);
-        TypeElement target = null;
+        final TypeElement source = firstClass != null ? (TypeElement) info.getTrees().getElement(firstClass) : null;
+        Element target = null;
         boolean wasMemberSelect = false;
 
         if (errorPath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
             TreePath exp = new TreePath(errorPath, ((MemberSelectTree) errorPath.getLeaf()).getExpression());
             TypeMirror targetType = info.getTrees().getTypeMirror(exp);
 
-            if (targetType != null && targetType.getKind() == TypeKind.DECLARED) {
-                Element expElement = info.getTrees().getElement(exp);
+            if (targetType != null) {
+                if (targetType.getKind() == TypeKind.DECLARED) {
+                    Element expElement = info.getTrees().getElement(exp);
 
-                if (isClassLikeElement(expElement)) {
-                    modifiers.add(Modifier.STATIC);
-                }
+                    if (isClassLikeElement(expElement)) {
+                        modifiers.add(Modifier.STATIC);
+                    }
 
-                Element targetElement = info.getTypes().asElement(targetType);
+                    Element targetElement = info.getTypes().asElement(targetType);
 
-                if (isClassLikeElement(targetElement)) {
-                    target = (TypeElement) targetElement;
+                    if (isClassLikeElement(targetElement)) {
+                        target = (TypeElement) targetElement;
+                    }
+                } else if (targetType.getKind() == TypeKind.PACKAGE) {
+                    target = info.getTrees().getElement(exp);
                 }
             }
 
@@ -234,7 +238,7 @@ public final class CreateElement implements ErrorRule<Void> {
         } else {
 	    Element enclosingElement = e.getEnclosingElement();
 	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) //unresolved element inside annot.
-			target = (TypeElement) enclosingElement;
+			target = enclosingElement;
 	    else
 
 		if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) {
@@ -267,7 +271,10 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
 
-        modifiers.addAll(getAccessModifiers(info, source, target));
+        if (target instanceof TypeElement)
+            modifiers.addAll(getAccessModifiers(info, source, (TypeElement) target));
+        else
+            modifiers.add(Modifier.PUBLIC);
 
         List<Fix> result = new ArrayList<Fix>();
 
@@ -281,7 +288,7 @@ public final class CreateElement implements ErrorRule<Void> {
             if (types == null || types.isEmpty()) {
                 return Collections.<Fix>emptyList();
             }
-            result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types));
+            result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, (TypeElement) target, simpleName, mit.getArguments(), types));
         }
 
         Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
@@ -290,9 +297,14 @@ public final class CreateElement implements ErrorRule<Void> {
         List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
 
+        if (target.getKind() == ElementKind.PACKAGE) {
+            result.addAll(prepareCreateOuterClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType != null ? classType : ElementKind.CLASS, numTypeParameters[0]));
+            return result;
+        }
+        
         //XXX: should reasonably consider all the found type candidates, not only the one:
         final TypeMirror type = types != null && !types.isEmpty() && types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
-        TypeElement outermostTypeElement = info.getElementUtilities().outermostTypeElement(source);
+        TypeElement outermostTypeElement = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
 
         if (newClass != null) {
             NewClassTree nct = (NewClassTree) newClass.getLeaf();
@@ -308,7 +320,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 }
 
                 if (wasMemberSelect) {
-                    return prepareCreateInnerClassFix(info, newClass, target, modifiers, simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments);
+                    return prepareCreateInnerClassFix(info, newClass, (TypeElement) target, modifiers, simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments);
                 } else {
 		    List<Fix> currentResult = new LinkedList<Fix>();
 
@@ -332,7 +344,7 @@ public final class CreateElement implements ErrorRule<Void> {
         //field like or class (type):
         if (classType != null) {
             if (wasMemberSelect) {
-                result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
+                 result.addAll(prepareCreateInnerClassFix(info, null, (TypeElement) target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {
                 result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
                 if (!baseType || outermostTypeElement != source)
@@ -355,13 +367,13 @@ public final class CreateElement implements ErrorRule<Void> {
             fixTypes.remove(ElementKind.FIELD);
         }
 
-        if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
+        if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable((TypeElement) target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
             Element enclosingElement = e.getEnclosingElement();
             if (enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
 //                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
                 FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
-                    result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList(), targetFile));
+                    result.add(new CreateMethodFix(info, simpleName, modifiers, (TypeElement) target, type, types, Collections.<String>emptyList(), targetFile));
                 }
 
                 return result;
@@ -370,16 +382,16 @@ public final class CreateElement implements ErrorRule<Void> {
                 if (targetFile != null) {
                     if (target.getKind() == ElementKind.ENUM) {
                         if (source.equals(target)) {
-                            result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                            result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         } else {
-                            result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
+                            result.add(new CreateEnumConstant(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         }
                     } else {
                         if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
                             modifiers.add(Modifier.FINAL);
                         }
                         if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
-                            result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                            result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         }
                     }
                 }
@@ -433,7 +445,7 @@ public final class CreateElement implements ErrorRule<Void> {
         return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB(), targetFile));
     }
 
-    private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, TypeElement source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
+    private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, Element source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
@@ -447,8 +459,7 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
 
-        TypeElement outer = info.getElementUtilities().outermostTypeElement(source);
-        PackageElement packageElement = (PackageElement) outer.getEnclosingElement();
+        PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
 
         return Collections.<Fix>singletonList(new CreateOuterClassFix(info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters));
     }
@@ -524,14 +535,21 @@ public final class CreateElement implements ErrorRule<Void> {
             return EnumSet.of(Modifier.PUBLIC);
         }
 
-        TypeElement outterMostSource = info.getElementUtilities().outermostTypeElement(source);
+        TypeElement outterMostSource = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
         TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
 
-        if (outterMostSource.equals(outterMostTarget)) {
+        if (outterMostTarget.equals(outterMostSource)) {
             return EnumSet.of(Modifier.PRIVATE);
         }
 
-        Element sourcePackage = outterMostSource.getEnclosingElement();
+        Element sourcePackage;
+
+        if (outterMostSource != null) {
+            sourcePackage = outterMostSource.getEnclosingElement();
+        } else {
+            sourcePackage = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), info.getCompilationUnit().getPackageName()));
+        }
+
         Element targetPackage = outterMostTarget.getEnclosingElement();
 
         if (sourcePackage.equals(targetPackage)) {

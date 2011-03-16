@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.2.0-M6/eclipselink-2.2.0-M6.pom</resource>
+        <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.2.0/eclipselink-2.2.0.pom</resource>
         <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/javax.persistence/2.0.3/javax.persistence-2.0.3.pom</resource>
     </volume>
 </library>

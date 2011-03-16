@@ -294,25 +294,37 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         return makeProject;
     }
 
-    /** To be called only before opening project! Please do NOT make it protected since this will lead to errors */
     private void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {
         File nbproject = new File(projectDir, "nbproject");
         assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
-        File confFile = new File(nbproject, "configurations.xml");
-        assertTrue(confFile.exists());
+        File publicConfFile = new File(nbproject, "configurations.xml");
+        assertTrue(publicConfFile.exists());
+        File privateConfFile = new File(new File(nbproject, "private"), "configurations.xml");
+        boolean changed = changeProjectHostImpl(publicConfFile, env);
+        if (privateConfFile.exists()) {
+            changed |= changeProjectHostImpl(privateConfFile, env);
+        }
+        assertTrue("Can not change development host for " + projectDir.getAbsolutePath(), changed);
+    }
+    
+    private boolean changeProjectHostImpl(File confFile, ExecutionEnvironment env) throws Exception {
         String text = readFile(confFile);
         String openTag = "<developmentServer>";
         String closeTag = "</developmentServer>";
         int start = text.indexOf(openTag);
         start += openTag.length();
-        assertTrue(start >= 0);
-        int end = text.indexOf(closeTag);
-        assertTrue(end >= 0);
-        StringBuilder newText = new StringBuilder();
-        newText.append(text.substring(0, start));
-        newText.append(ExecutionEnvironmentFactory.toUniqueID(env));
-        newText.append(text.substring(end));
-        writeFile(confFile, newText);
+        if(start >= 0) {
+            int end = text.indexOf(closeTag);
+            if (end >= 0) {
+                StringBuilder newText = new StringBuilder();
+                newText.append(text.substring(0, start));
+                newText.append(ExecutionEnvironmentFactory.toUniqueID(env));
+                newText.append(text.substring(end));
+                writeFile(confFile, newText);
+            }
+            return true;
+        }
+        return false;
     }
 
     protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDirBase, int count) throws Exception {

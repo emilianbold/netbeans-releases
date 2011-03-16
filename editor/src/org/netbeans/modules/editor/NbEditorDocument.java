@@ -97,9 +97,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     /** Map of [Annotation, AnnotationDesc] */
     private HashMap annoMap;
 
-    // #39718 hotfix
-    private WeakHashMap annoBlackList;
-
     /**
      * Creates a new document.
      * 
@@ -127,7 +124,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
         
         annoMap = new HashMap(20);
-        annoBlackList = new WeakHashMap();
 
         // Fill in the indentEngine property
         putProperty(INDENT_ENGINE, new BaseDocument.PropertyEvaluator() {
@@ -212,38 +208,24 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
      * the whole line will be annotated
      * @param annotation annotation which is attached to this text */
     public void addAnnotation(Position startPos, int length, Annotation annotation) {
-        Integer count = (Integer)annoBlackList.get(annotation);
-        if (count != null) {
-            // #39718 hotfix - test whether the annotation was already removed; if so, just remove it from the black list and return
-            if (count.intValue() == -1) {
-                annoBlackList.remove(annotation);
-                return;
-            } else if (count.intValue() < -1) {
-                annoBlackList.put(annotation, new Integer(count.intValue() + 1));
-                return;
-            }
-        }
-        // partial fix of #33165 - read-locking of the document added
-        // BTW should only be invoked in EQ - see NbDocument.addAnnotation()
-        readLock();
+        readLock(); // Ensure read-locking (if not aqcquired by caller)
         try {
-            // Recreate annotation's position to make sure it's in this doc at a valid offset
+            // Make sure the annotation's position is inside the document
             int docLen = getLength();
             int offset = startPos.getOffset();
-            offset = Math.min(offset, docLen);
-            try {
-                startPos = createPosition(offset);
-            } catch (BadLocationException e) {
-                startPos = null; // should never happen
+            assert (offset >= 0) : "offset=" + offset + " < 0"; // NOI18N
+            if (offset > docLen) {
+                try {
+                    startPos = createPosition(offset);
+                } catch (BadLocationException e) {
+                    throw new IllegalStateException("Cannot create position at offset=" + offset + // NOI18N
+                            ", docLen=" + docLen, e); // NOI18N
+                }
             }
             
             AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
             if (a != null) { // already added before
-                // #39718 hotfix - remove the original annotation descriptor and put the annotation on the black list
-                a.detachListeners();
-                getAnnotations().removeAnnotation(a);
-                annoMap.remove(annotation);
-                annoBlackList.put(annotation, new Integer(count != null ? count.intValue() + 1 : 1));
+                throw new IllegalStateException("Annotation already added: " + a); // NOI18N
             }
             if (annotation.getAnnotationType() != null) {
                 a = new AnnotationDescDelegate(this, startPos, length, annotation);
@@ -259,30 +241,15 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
      * @param annotation annotation which is going to be removed */
     public void removeAnnotation(Annotation annotation) {
         if (annotation == null) { // issue 14803
-            return; // can't do more as the rest of stacktrace is in openide and ant
-        }
-
-        Integer count = (Integer)annoBlackList.get(annotation);
-        if (count != null) {
-            // #39718 hotfix - test whether the annotation was already removed; if so, just remove it from the black list and return
-            if (count.intValue() == 1) {
-                annoBlackList.remove(annotation);
-                return;
-            } else if (count.intValue() > 1) {
-                annoBlackList.put(annotation, new Integer(count.intValue() - 1));
-                return;
-            }
+            throw new IllegalStateException("Trying to remove null annotation."); // NOI18N
         }
         // partial fix of #33165 - read-locking of the document added
-        // BTW should only be invoked in EQ - see NbDocument.removeAnnotation()
         readLock();
         try {
             if (annotation.getAnnotationType() != null) {
                 AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
                 if (a == null) { // not added yet
-                    // #39718 hotfix - put the annotation on the black list and return
-                    annoBlackList.put(annotation, new Integer(count != null ? count.intValue() - 1 : -1));
-                    return;
+                    throw new IllegalStateException("Annotation not added: " + a);
                 }
                 a.detachListeners();
                 getAnnotations().removeAnnotation(a);

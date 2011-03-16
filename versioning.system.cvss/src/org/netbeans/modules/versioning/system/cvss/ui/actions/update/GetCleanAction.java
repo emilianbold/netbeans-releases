@@ -51,7 +51,6 @@ import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,6 +64,7 @@ import java.util.logging.Logger;
 import java.util.*;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.openide.LifecycleManager;
 
 /**
  * Revert modifications action.
@@ -204,6 +204,9 @@ public class GetCleanAction extends AbstractSystemAction {
                         FileLock lock = null;
                         try {
                             in = new FileInputStream(cleanFile);
+                            if (target.isLocked()) {
+                                LifecycleManager.getDefault().saveAll();
+                            }
                             lock = target.lock();
                             out = target.getOutputStream(lock);
                             copyStream(in, out);

@@ -345,6 +345,10 @@ public final class SharableLibrariesUtils {
         
         private void updateReference(File oldFile, String key, boolean main, FileObject dir) {
             FileObject src = FileUtil.toFileObject(oldFile);
+            if (src == null) {
+                assert !oldFile.exists() : "The file: " + oldFile.getAbsolutePath() + " exists but FileObject cannot be found.";    //NOI18N
+                return;
+            }
             FileObject newFile;
             try {
                 //TODO it could actually already exist..

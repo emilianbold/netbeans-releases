@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.glassfish.common;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,13 +72,13 @@ public class AdminAuthenticator extends java.net.Authenticator {
 
     @Override
     protected java.net.PasswordAuthentication getPasswordAuthentication() {
-        Logger.getLogger("glassfish").log(Level.FINER, "AdminAuthenticator.getPasswordAuthentication() with prompt " + this.getRequestingPrompt()); //NOI18N
+        Logger.getLogger("glassfish").log(Level.FINER, "AdminAuthenticator.getPasswordAuthentication() with prompt {0}", this.getRequestingPrompt()); //NOI18N
 
         String title = getRequestingPrompt();
         // if the request is coming from a proxy and the IDE has proxy auth values
         // send them straight back...
         if (RequestorType.PROXY == getRequestorType() && ProxySettings.useAuthentication()) {
-            Logger.getLogger("glassfish").log(Level.FINER, "Username set to " + ProxySettings.getAuthenticationUsername() + " while request " + this.getRequestingURL()); //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINER, "Username set to {0} while request {1}", new Object[]{ProxySettings.getAuthenticationUsername(), this.getRequestingURL()}); //NOI18N
             return new java.net.PasswordAuthentication(ProxySettings.getAuthenticationUsername(), ProxySettings.getAuthenticationPassword());
         } else {
             // if we haven't been called in the last three seconds...
@@ -127,7 +129,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
                 } // fi time check...
             }
 
-        Logger.getLogger("glassfish").log(Level.WARNING, "No authentication set while requesting " + this.getRequestingURL()); //NOI18N
+        Logger.getLogger("glassfish").log(Level.WARNING, "No authentication set while requesting {0}", this.getRequestingURL()); //NOI18N
         return null;
     }
 
@@ -188,8 +190,11 @@ public class AdminAuthenticator extends java.net.Authenticator {
             mainPanel.add(jLabel1, gridBagConstraints1);
 
             usernameField = new javax.swing.JTextField();
-            usernameField.setMinimumSize(new java.awt.Dimension(70, 20));
-            usernameField.setPreferredSize(new java.awt.Dimension(70, 20));
+            Font f = usernameField.getFont();
+            FontMetrics fm = usernameField.getFontMetrics(f);
+            int unFH = (fm.getHeight()*150)/100;
+            usernameField.setMinimumSize(new java.awt.Dimension(70, unFH));
+            usernameField.setPreferredSize(new java.awt.Dimension(70, unFH));
             jLabel1.setLabelFor(usernameField);
 
             gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -210,8 +215,8 @@ public class AdminAuthenticator extends java.net.Authenticator {
             mainPanel.add(jLabel2, gridBagConstraints1);
 
             passwordField = new javax.swing.JPasswordField();
-            passwordField.setMinimumSize(new java.awt.Dimension(70, 20));
-            passwordField.setPreferredSize(new java.awt.Dimension(70, 20));
+            passwordField.setMinimumSize(new java.awt.Dimension(70, unFH));
+            passwordField.setPreferredSize(new java.awt.Dimension(70, unFH));
             jLabel2.setLabelFor(passwordField);
 
             gridBagConstraints1 = new java.awt.GridBagConstraints();
