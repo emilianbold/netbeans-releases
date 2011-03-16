@@ -96,7 +96,7 @@ public class StartTask extends BasicTask<OperationState> {
     static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
 
     /**
-     * 
+     *
      * @param support common support object for the server instance being started
      * @param recognizers output recognizers to pass to log processors, if any
      * @param stateListener state monitor to track start progress
@@ -105,7 +105,7 @@ public class StartTask extends BasicTask<OperationState> {
             OperationStateListener... stateListener) {
         this(support, recognizers, null, null, stateListener);
     }
-    
+
     /**
      *
      * @param support common support object for the server instance being started
@@ -135,7 +135,7 @@ public class StartTask extends BasicTask<OperationState> {
         this.jdkHome = jdkRoot;
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
     }
-    
+
     private static String [] removeEscapes(String [] args) {
         for(int i = 0; i < args.length; i++) {
             args[i] = args[i].replace("\\\"", ""); // NOI18N
@@ -144,7 +144,7 @@ public class StartTask extends BasicTask<OperationState> {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public OperationState call() {
@@ -155,13 +155,13 @@ public class StartTask extends BasicTask<OperationState> {
 
         final String host;
         final int port;
-        
+
         host = ip.get(GlassfishModule.HOSTNAME_ATTR);
         if(host == null || host.length() == 0) {
-            return fireOperationStateChanged(OperationState.FAILED, 
+            return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_NOHOST", instanceName); //NOI18N
         }
-               
+
         Process serverProcess;
         try {
             port = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
@@ -272,7 +272,10 @@ public class StartTask extends BasicTask<OperationState> {
                 return fireOperationStateChanged(result,
                         "MSG_START_SERVER_OCCUPIED_PORT", instanceName); //NOI18N
             }
-
+            if (upgradeFailed()) {
+                return fireOperationStateChanged(OperationState.FAILED,
+                        "MSG_DOMAIN_UPGRADE_FAILED", instanceName); //NOI18N
+            }
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
             Logger.getLogger("glassfish").log(Level.INFO, ip.get(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
@@ -288,9 +291,9 @@ public class StartTask extends BasicTask<OperationState> {
                     ex.getLocalizedMessage());
         }
 
-        fireOperationStateChanged(OperationState.RUNNING, 
+        fireOperationStateChanged(OperationState.RUNNING,
                 "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
-        
+
         // create a logger to the server's output stream so that a user
         // can observe the progress
         LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
@@ -319,11 +322,12 @@ public class StartTask extends BasicTask<OperationState> {
                 if (!support.isReady(true,30,TimeUnit.SECONDS)) {
                     state = OperationState.FAILED;
                     messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
+                    serverProcess.destroy();
                     logger.stopReaders();
                 }
                 return fireOperationStateChanged(state, messageKey, instanceName);
             }
-            
+
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
                 // try to sync the states after the profiler attaches
@@ -342,7 +346,7 @@ public class StartTask extends BasicTask<OperationState> {
                             @Override
                             public void run() {
                                     support.refresh();
-                                                    
+
                             }
 
                         });
@@ -352,7 +356,7 @@ public class StartTask extends BasicTask<OperationState> {
                         "MSG_SERVER_STARTED", instanceName); // NOI18N
             }
         }
-        
+
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
         Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: {0} after {1}", new Object[]{serverProcess, System.currentTimeMillis() - start});
@@ -394,7 +398,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
         return envp.toArray(new String[envp.size()]);
     }
-    
+
     private void appendSystemEnvVar(List<String> envp, String key) {
         String value = ip.get(key);
         if(value != null && value.length() > 0) {
@@ -420,7 +424,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
         return retVal;
     }
-    
+
     private String getJdkHome() {
         String result;
         if (null != jdkHome) {
@@ -433,8 +437,8 @@ public class StartTask extends BasicTask<OperationState> {
         }
         return result;
     }
-    
-    private NbProcessDescriptor createProcessDescriptor() throws ProcessCreationException { 
+
+    private NbProcessDescriptor createProcessDescriptor() throws ProcessCreationException {
         String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
                 File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
         if (Utilities.isWindows()) {
@@ -460,7 +464,7 @@ public class StartTask extends BasicTask<OperationState> {
         if (!readJvmArgs(domainDir, optList, argMap, propMap)) {
             throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_DOMAIN_FNF"); // NOI18N
         }
-        
+
         if (null != jvmArgs) {
             optList.addAll(jvmArgs);
         }
@@ -483,7 +487,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
         argumentBuf.append(" --domain ").append(getDomainName()); // NOI18N
         argumentBuf.append(" --domaindir ").append(Util.quote(domainDir.getAbsolutePath())); // NOI18N
-        
+
         String arguments = argumentBuf.toString();
         Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: {0} {1}", new Object[]{startScript, arguments}); // NOI18N
         return new NbProcessDescriptor(startScript, arguments);
@@ -557,7 +561,7 @@ public class StartTask extends BasicTask<OperationState> {
                     if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
                         debugPortString = Integer.toString(
                                 Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
-                                support.getDomainsRoot() + 
+                                support.getDomainsRoot() +
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
                         debugPortString = selectDebugPort();
@@ -574,7 +578,7 @@ public class StartTask extends BasicTask<OperationState> {
                             null);
                     Dialog d = DialogDisplayer.getDefault().createDialog(note);
                     d.setVisible(true);
-                } 
+                }
                 support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
                 argumentBuf.append(" -Xdebug -Xrunjdwp:transport="); // NOI18N
                 argumentBuf.append(debugTransport);
@@ -612,7 +616,7 @@ public class StartTask extends BasicTask<OperationState> {
             if (null != t) try { t.close(); } catch (IOException ioe) {}
         }
     }
-    
+
     private StringBuilder appendSystemVars(Map<String, String> argMap, StringBuilder argumentBuf) {
         appendSystemVar(argumentBuf, GlassfishModule.JRUBY_HOME, ip.get(GlassfishModule.JRUBY_HOME));
         appendSystemVar(argumentBuf, GlassfishModule.COMET_FLAG, ip.get(GlassfishModule.COMET_FLAG));
@@ -642,14 +646,14 @@ public class StartTask extends BasicTask<OperationState> {
 
         argMap.remove(GlassfishModule.JRUBY_HOME);
         argMap.remove(GlassfishModule.COMET_FLAG);
-        
+
         for(Map.Entry<String, String> entry: argMap.entrySet()) {
             appendSystemVar(argumentBuf, entry.getKey(), entry.getValue());
         }
-        
+
         return argumentBuf;
-    }    
-    
+    }
+
     private StringBuilder appendSystemVar(StringBuilder argumentBuf, String key, String value) {
         if(value != null && value.length() > 0) {
             argumentBuf.append(" -D"); // NOI18N
@@ -659,7 +663,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
         return argumentBuf;
     }
-    
+
     private Process createProcess() throws ProcessCreationException {
         Process process = null;
         NbProcessDescriptor pd = createProcessDescriptor();
@@ -672,15 +676,15 @@ public class StartTask extends BasicTask<OperationState> {
         }
         return process;
     }
-    
+
     private File getDomainFolder() {
         return new File(support.getDomainsRoot()+ File.separatorChar + getDomainName());
     }
-    
+
     private String getDomainName() {
         return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
     }
-    
+
     private boolean readJvmArgs(File domainRoot, List<String> optList,
             Map<String, String> argMap, Map<String, String> propMap) {
         Map<String, String> varMap = new HashMap<String, String>();
@@ -735,4 +739,70 @@ public class StartTask extends BasicTask<OperationState> {
         return javadb;
     }
 
+    private boolean upgradeFailed() {
+        // get server install version
+        File glassfishDir = new File(support.getGlassfishRoot());
+        int installVersion = ServerDetails.getVersionFromInstallDirectory(glassfishDir);
+
+        if (installVersion < 0) return false;  // no upgrade attempted, so it DID NOT fail.
+
+        // get domain.xml 'version'
+        File domainXmlFile = new File(getDomainFolder(), "config" + File.separator + "domain.xml"); // NOI18N
+        int domainVersion = ServerDetails.getVersionFromDomainXml(domainXmlFile);
+
+        if (domainVersion < 0) return false;  // no upgrade attempted, so it DID NOT fail.
+
+        if (domainVersion < installVersion) {
+            return executeUpgradeProcess() != 0;
+        }
+        return false;
+    }
+
+    private int executeUpgradeProcess() {
+        int retVal = -1;
+        File asadmin = findFirstExecutableFile(new File(support.getGlassfishRoot()), "asadmin", "bin");
+        if (null == asadmin)
+            return retVal;
+        NbProcessDescriptor upgrader = new NbProcessDescriptor(asadmin.getAbsolutePath(),
+                    "start-domain --upgrade --domaindir "+Util.quote(support.getDomainsRoot())+" "+  // NOI18N
+                    support.getDomainName());
+        try {
+            Process p = upgrader.exec();
+            p.waitFor();
+            retVal = p.exitValue();
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, upgrader.toString(), ex); // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, upgrader.toString(), ex); // NOI18N
+        }
+        return retVal;
+    }
+
+    // TODO : refactor and remove 'similar' methods post 7.0
+    private File findFirstExecutableFile(File installRoot, String executableName, String... directories) {
+        File result = null;
+        if (installRoot != null && installRoot.exists()) {
+            for (String dir : directories) {
+                File updateCenterBin = new File(installRoot, dir); // NOI18N
+                if (updateCenterBin.exists()) {
+                    if (Utilities.isWindows()) {
+                        File launcherPath = new File(updateCenterBin, executableName + ".exe"); // NOI18N
+                        if (launcherPath.exists()) {
+                            result = launcherPath;
+                        } else {
+                            launcherPath = new File(updateCenterBin, executableName + ".bat"); // NOI18N
+                            result = (launcherPath.exists()) ? launcherPath : null;
+                        }
+                    } else {
+                        File launcherPath = new File(updateCenterBin, executableName); // NOI18N
+                        result = (launcherPath.exists()) ? launcherPath : null;
+                    }
+                    if (null != result) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
 }
