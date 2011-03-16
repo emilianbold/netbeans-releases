@@ -50,7 +50,9 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
@@ -85,7 +87,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),           // NOI18N
         FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
         FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
-        SSH("ssh", "ssh://[user@]host.xz[:port]/path/to/repo.git/"),            // NOI18N    
+        SSH("ssh", "ssh://host.xz[:port]/path/to/repo.git/"),                   // NOI18N    
         GIT("git", "git://host.xz[:port]/path/to/repo.git/"),                   // NOI18N
         RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");                    // NOI18N
         
@@ -167,12 +169,26 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public void store() {
-        final GitURI guri = getURI();
+        GitURI guri = getURI();
+        assert guri != null;
+        if(guri == null) {
+            return;
+        }
+        
         final boolean isSelected = panel.savePasswordCheckBox.isSelected();
+        if(isSelected) {
+            guri = guri.setUser(panel.userTextField.getText());
+            guri = guri.setPass(new String(panel.userPasswordField.getPassword()));
+        } else {
+            guri = guri.setUser(null);
+            guri = guri.setPass(null);
+        }
+        final GitURI fguri = guri;
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                GitModuleConfig.getDefault().insertRecentGitURI(guri, isSelected);
+                GitModuleConfig.getDefault().insertRecentGitURI(fguri, isSelected);
+                recentGuris.put(fguri.toString(), fguri);
             }
         });
     }
@@ -195,8 +211,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         panel.directoryBrowseButton.addActionListener(this);
         panel.urlComboBox.addActionListener(this);
         ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);        
-        panel.userPasswordField.getDocument().addDocumentListener(this);
-        panel.userTextField.getDocument().addDocumentListener(this);
         panel.urlComboBox.addItemListener(this);
     }
 
@@ -234,7 +248,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     @Override
     public void itemStateChanged(ItemEvent ie) {
-    
+        GitURI guri = getURI();
+        if(guri != null) {
+            populateFields(recentGuris.get(guri.toString()));
+        }
     }
 
     private void validateFields () {
@@ -316,16 +333,48 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                             txt.setCaretPosition(start);
                             txt.setSelectionStart(start);
                             txt.setSelectionEnd(end);
+                            
+                            setFieldsVisibility();
+                            
+                            GitURI guri = recentGuris.get(item);
+                            populateFields(guri);
+                            
                         } finally {
                             ignoreComboEvents = false;
                         }
                     }
                 });
                 return;
+            } else {
+                
             }
         }
     }
     
+    private void populateFields(GitURI guri) {
+        if(guri == null) return;
+
+        boolean hasUser = false;
+        boolean hasPass = false;
+        String user = guri.getUser();
+        if(user != null && !user.isEmpty()) {
+            panel.userTextField.setText(guri.getUser());
+            hasUser = true;
+        } else {
+            panel.userTextField.setText("");
+        }
+        panel.userTextField.setText(guri.getUser());
+        String pass = guri.getPass();
+        if(pass != null && !pass.isEmpty()) {
+            panel.userPasswordField.setText(guri.getPass());
+            hasPass = true;
+        } else {
+            panel.userPasswordField.setText("");            // NOI18N
+        }
+        panel.savePasswordCheckBox.setSelected(hasUser || hasPass);
+    }
+    
+    private Map<String, GitURI> recentGuris = new HashMap<String, GitURI>();
     private void initUrlComboValues(final String forPath) {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
@@ -337,7 +386,12 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     try {
                         List<GitURI> guris = GitModuleConfig.getDefault().getRecentUrls();
                         for (GitURI gitURI : guris) {
-                            model.addElement(gitURI.toString());
+
+                            // strip user/psswd
+                            GitURI g = new GitURI(gitURI.toString()).setPass(null).setUser(null);
+                            model.addElement(g.toString());
+                            
+                            recentGuris.put(g.toString(), gitURI);
                         }
                     } catch (Throwable t) {
                         Git.LOG.log(Level.WARNING, null, t);
