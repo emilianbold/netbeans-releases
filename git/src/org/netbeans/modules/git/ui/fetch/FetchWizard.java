@@ -180,12 +180,7 @@ class FetchWizard  implements ChangeListener {
                 if (remoteBranches != null) {
                     fetchBranchesStep.fillRemoteBranches(remoteBranches);
                 }
-                Git.getInstance().getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        selectUriStep.storeURI();
-                    }
-                });
+                selectUriStep.storeURI();
             }
             super.nextPanel();
         }

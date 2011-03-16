@@ -167,7 +167,14 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public void store() {
-        GitModuleConfig.getDefault().insertRecentGitURI(getURI(), panel.savePasswordCheckBox.isSelected());
+        final GitURI guri = getURI();
+        final boolean isSelected = panel.savePasswordCheckBox.isSelected();
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                GitModuleConfig.getDefault().insertRecentGitURI(guri, isSelected);
+            }
+        });
     }
     
     public void removeChangeListener(ChangeListener listener) {
