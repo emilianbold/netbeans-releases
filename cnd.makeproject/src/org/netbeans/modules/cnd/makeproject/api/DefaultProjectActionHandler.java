@@ -134,7 +134,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             assert false;
         }
 
-        final String runDirectory = pae.getProfile().getRunDirectory(); // it's local so far
+        final String runDirectory = RemoteFileUtil.normalizeAbsolutePath(pae.getProfile().getRunDirectory(), pae.getProject());
         final MakeConfiguration conf = pae.getConfiguration();
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();

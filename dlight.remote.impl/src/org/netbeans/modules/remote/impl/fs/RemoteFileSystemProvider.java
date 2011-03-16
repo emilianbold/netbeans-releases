@@ -158,7 +158,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
         RemoteLogger.assertTrueInConsole(env.isRemote(), getClass().getSimpleName() + ".getCanonicalPath is called for LOCAL env: " + env); //NOI18N
         FileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(absPath);        
-        return (fo == null) ? null : getCanonicalFileObject(fo).getPath();
+        return (fo == null) ? absPath : getCanonicalFileObject(fo).getPath();
     }
     
     @Override

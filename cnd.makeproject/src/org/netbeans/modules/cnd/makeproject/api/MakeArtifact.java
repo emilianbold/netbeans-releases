@@ -110,6 +110,8 @@ public class MakeArtifact {
             cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
         } else {
             if (makeConfiguration.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                // this method should be used for any remote mode.
+                // "if" is written just in case to lower risk in high resistance mode
                 workingDirectory = pd.getBaseDir();
             } else {
                 workingDirectory = projectLocation;
