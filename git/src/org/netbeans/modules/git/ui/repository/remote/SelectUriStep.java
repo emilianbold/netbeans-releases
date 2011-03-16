@@ -43,12 +43,14 @@
 package org.netbeans.modules.git.ui.repository.remote;
 
 import java.awt.EventQueue;
+import java.awt.event.ItemEvent;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -74,7 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class SelectUriStep extends AbstractWizardPanel implements ActionListener, DocumentListener, ChangeListener, AsynchronousValidatingPanel<WizardDescriptor> {
+public class SelectUriStep extends AbstractWizardPanel implements ActionListener, ItemListener, ChangeListener, AsynchronousValidatingPanel<WizardDescriptor> {
 
     private final Map<String, GitRemoteConfig> remotes;
     private final SelectUriPanel panel;
@@ -92,7 +94,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         this.inputFields = new JComponent[] {
             panel.cmbConfiguredRepositories,
             panel.rbConfiguredUri,
-            panel.rbCreateNew
+            panel.rbCreateNew,
+            panel.lblRemoteNames,
+            panel.cmbRemoteNames
         };
         fillPanel();
         attachListeners();
@@ -116,12 +120,14 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.cmbConfiguredRepositories.setSelectedIndex(0);
         }
         panel.rbConfiguredUri.setSelected(!panel.rbCreateNew.isSelected());
+        panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(remotes.keySet().toArray()));
     }
 
     private void attachListeners () {
         panel.rbCreateNew.addActionListener(this);
         panel.rbConfiguredUri.addActionListener(this);
         panel.cmbConfiguredRepositories.addActionListener(this);
+        panel.cmbRemoteNames.addItemListener(this);
         repository.addChangeListener(this);
     }
 
@@ -134,22 +140,15 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     }
 
     @Override
-    public void insertUpdate (DocumentEvent e) {
+    public void itemStateChanged (ItemEvent e) {
         validateBeforeNext();
-    }
-
-    @Override
-    public void removeUpdate (DocumentEvent e) {
-        validateBeforeNext();
-    }
-
-    @Override
-    public void changedUpdate (DocumentEvent e) {
     }
 
     private void enableFields () {
         repository.setEnabled(panel.rbCreateNew.isSelected());
         panel.cmbConfiguredRepositories.setEnabled(panel.rbConfiguredUri.isSelected());
+        panel.cmbRemoteNames.setEnabled(panel.rbCreateNew.isSelected());
+        panel.lblRemoteNames.setEnabled(panel.rbCreateNew.isSelected());
     }
 
     @Override
@@ -164,11 +163,10 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         } else if (panel.rbCreateNew.isSelected()) {
             valid = repository.isValid();
             msg = repository.getMessage();
-//            String remoteUri = uri != null ? uri.toString().trim() : "";        // NOI18N
-//            if (remoteUri.isEmpty()) {
-//                valid = false;
-//                msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteUri"), false); //NOI18N
-//            }
+            if (valid && panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty()) {
+                valid = false;
+                msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteName"), false); //NOI18N
+            }
         }
         setValid(valid, msg);
         if (valid && !EventQueue.isDispatchThread()) {
@@ -188,17 +186,17 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             };
             supp.start(Git.getInstance().getRequestProcessor(repositoryFile), repositoryFile, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
             if (message[0] != null) {
-                setValid(false, message[0]);
+                setValid(true, message[0]);
             }
-            //enable input
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run () {
-                    setEnabled(true);
-                    enableFields();
-                }
-            });
         }
+        //enable input
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                setEnabled(true);
+                enableFields();
+            }
+        });
     }
 
     @Override
@@ -222,10 +220,12 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         return selectedUri;
     }
 
-    public String getSelectedRemote () {
-        String selectedRemote = null;
+    public GitRemoteConfig getSelectedRemote () {
+        GitRemoteConfig selectedRemote = null;
         if (panel.rbConfiguredUri.isSelected()) {
-            selectedRemote = ((RemoteUri) panel.cmbConfiguredRepositories.getSelectedItem()).remoteName;
+            selectedRemote = remotes.get(((RemoteUri) panel.cmbConfiguredRepositories.getSelectedItem()).remoteName);
+        } else {
+            selectedRemote = RemoteConfig.createUpdatableRemote(repositoryFile, (String) panel.cmbRemoteNames.getSelectedItem());
         }
         return selectedRemote;
     }

@@ -53,7 +53,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
 import org.netbeans.modules.git.ui.repository.remote.SelectUriStep;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
@@ -168,12 +167,8 @@ class FetchWizard  implements ChangeListener {
         public synchronized void nextPanel () {
             if (current() == selectUriStep) {
                 String selectedUri = selectUriStep.getSelectedUri();
-                String selectedRemote = selectUriStep.getSelectedRemote();
+                GitRemoteConfig remote = selectUriStep.getSelectedRemote();
                 Map<String, GitBranch> remoteBranches = selectUriStep.getRemoteBranches();
-                GitRemoteConfig remote = remotes.get(selectedRemote);
-                if (remote == null) {
-                    remote = RemoteConfig.createUpdatableRemote(repository, ORIGIN);
-                }
                 fetchBranchesStep.setRemote(remote);
                 fetchBranchesStep.setFetchUri(selectedUri, false);
                 if (remoteBranches != null) {
