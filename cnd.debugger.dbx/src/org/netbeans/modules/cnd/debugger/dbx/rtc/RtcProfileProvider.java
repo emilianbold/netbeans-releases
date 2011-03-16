@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.NativeDebuggerAuxObjectFactory;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
@@ -68,7 +69,7 @@ public class RtcProfileProvider implements NativeDebuggerAuxObjectFactory {
      * Creates an instance of the auxiliary information object
      */
 
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
+    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
 	return new RtcProfile(baseDir, pcs);
     }
 

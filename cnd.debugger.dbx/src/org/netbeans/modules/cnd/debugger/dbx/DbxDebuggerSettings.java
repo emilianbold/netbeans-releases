@@ -74,7 +74,7 @@ public final class DbxDebuggerSettings implements DebuggerSettings {
 
         final String dummyBaseDir = "<dummyBaseDir>";	// NOI18N
 
-        runProfile = new RunProfile(dummyBaseDir, PlatformTypes.PLATFORM_NONE);
+        runProfile = new RunProfile(dummyBaseDir, PlatformTypes.PLATFORM_NONE, null);
         rtcProfile = new RtcProfile(dummyBaseDir);
         dbgProfile = new DbxProfile();
     }
