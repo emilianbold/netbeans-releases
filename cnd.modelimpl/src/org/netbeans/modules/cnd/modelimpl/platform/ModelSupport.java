@@ -62,6 +62,7 @@ import org.netbeans.api.project.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -145,6 +146,9 @@ public class ModelSupport implements PropertyChangeListener {
         modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
 
+        synchronized (openedProjects) {
+            closed = false;
+        }
         if (!CndUtils.isStandalone()) {
             openedProjects.clear();
             if (TRACE_STARTUP) {
@@ -178,11 +182,15 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    private volatile boolean closed = false;
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
         modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
+            synchronized (openedProjects) {
+                closed = true;
+            }
             model.shutdown();
         }
     }
@@ -191,7 +199,7 @@ public class ModelSupport implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
             if (TRACE_STARTUP) {
-                System.out.println("Model support event:" + evt.getPropertyName());
+                System.out.println("Model support event:" + evt.getPropertyName() + " postponeParse=" + postponeParse);
             }
             if (evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECTS)) {
                 if (!postponeParse) {
@@ -208,7 +216,13 @@ public class ModelSupport implements PropertyChangeListener {
 
     private void openProjects() {
         Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
+        if (TRACE_STARTUP) {
+            System.out.println("Model support: openProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
+        }
         synchronized (openedProjects) {
+            if (closed) {
+                return;
+            }
             if (TRACE_STARTUP) {
                 System.out.println("Model support: openProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
             }
@@ -387,7 +401,7 @@ public class ModelSupport implements PropertyChangeListener {
             Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
         }
         ModelImpl model = theModel;
-        if (model == null) {
+        if (model == null || model.getState() != CsmModelState.ON) {
             return;
         }
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
