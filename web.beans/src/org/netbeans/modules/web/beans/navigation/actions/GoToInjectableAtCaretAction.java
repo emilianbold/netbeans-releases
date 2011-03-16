@@ -140,7 +140,7 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
             StatusDisplayer.getDefault().setStatusText(e.getMessage(),
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         }
-        final Result result = model.getInjectable(var, null);
+        final Result result = model.lookupInjectables(var, null);
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,

@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,44 +40,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
+package org.netbeans.modules.web.beans.impl.model;
 
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.web.beans.api.model.Result;
-
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
  * @author ads
  *
  */
-abstract class BaseResult implements Result {
+public class MultiLookupStrategy extends SingleResultLookupStrategy {
     
-    BaseResult( VariableElement element , TypeMirror type ){
-        myElement = element;
-        myType = type;
-    }
-
-
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariable()
+     * @see org.netbeans.modules.web.beans.impl.model.ResultLookupStrategy#getType(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, javax.lang.model.type.DeclaredType, javax.lang.model.element.VariableElement)
      */
     @Override
-    public VariableElement getVariable() {
-        return myElement;
+    public TypeMirror getType( WebBeansModelImplementation model, 
+            DeclaredType parent, VariableElement element ) 
+    {
+        return ParameterInjectionPointLogic.getParameterType( 
+                model.getHelper().getCompilationController(), element , parent , 
+                FieldInjectionPointLogic.INSTANCE_INTERFACE);
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariableType()
+     * @see org.netbeans.modules.web.beans.impl.model.ResultLookupStrategy#getType(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, javax.lang.model.type.TypeMirror)
      */
     @Override
-    public TypeMirror getVariableType() {
-        return myType;
+    public TypeMirror getType( WebBeansModelImplementation model,
+            TypeMirror typeMirror ) {
+        return ParameterInjectionPointLogic.getParameterType( 
+                typeMirror , FieldInjectionPointLogic.INSTANCE_INTERFACE );
     }
     
-    private final VariableElement myElement;
-    private final TypeMirror myType;
-
+    @Override
+    protected Result filterEnabled( Result result, 
+            WebBeansModelImplementation model)
+    {
+        if ( result instanceof ResultImpl ){
+            EnableBeansFilter filter = new EnableBeansFilter((ResultImpl)result,
+                    model , true );
+            return filter.filter();
+        }
+        return result;
+    }
 }

@@ -76,6 +76,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         initAnnotations();
@@ -283,6 +284,99 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({ANNOTATION_TYPE}) "+          
                 "public @interface Stereotype  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/NormalScope.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+          
+                "public @interface NormalScope  {" +
+                " boolean passivating() default faslse ; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/inject/Scope.java",
+                "package javax.inject; " +
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+          
+                "public @interface Scope  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/ApplicationScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface ApplicationScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/ConversationScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope(passivating=true) "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface ConversationScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/Dependent.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "import javax.inject.Scope; "+
+                "@Retention(RUNTIME) "+
+                "@Scope "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface Dependent  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/RequestScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface RequestScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/SessionScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope(passivating=true) "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface SessionScoped  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Typed.java",
                 "package javax.enterprise.inject; " +

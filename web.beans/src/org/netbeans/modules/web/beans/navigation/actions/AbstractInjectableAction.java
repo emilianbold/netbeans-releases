@@ -115,6 +115,7 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
         try {
             metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
 
+                @Override
                 public Void run( WebBeansModel model ) throws Exception {
                     modelAcessAction(model, metaModel, variableAtCaret, component, 
                             fileObject);

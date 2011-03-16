@@ -76,12 +76,23 @@ public interface Result {
          */
         INJECTABLE_RESOLVED,
         /**
-         * No eligible for injection element found at all or only disabled
-         * beans are found. It could be represented by Error only ( nothing found
+         * - No eligible for injection element found at all 
+         * - Only disabled beans are found
+         * - Ambiguous dependencies result   
+         * It could be represented by Error only ( nothing found
          * at all ) or Error, ResolutionResult and ApplicableResult with 
          * information about probable eligible for injection elements. 
          */
         RESOLUTION_ERROR,
+        /**
+         * This kind is like INJECTABLE_RESOLVED but it can contain 
+         * several eligible for injection elements from very beginning.
+         * It is used when multiple eligible for injection elements are
+         * valid result. F.e. it is normal to find a number elements 
+         * via programmatic lookup .   
+         * It is represented at least by ApplicableResult and ResolutionResult.
+         */
+        INJECTABLES_RESOLVED,
     }
     
     /**

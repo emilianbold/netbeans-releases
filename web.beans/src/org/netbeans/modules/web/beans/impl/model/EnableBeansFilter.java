@@ -54,6 +54,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -64,6 +65,7 @@ import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.impl.model.results.ErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.InjectableResultImpl;
+import org.netbeans.modules.web.beans.impl.model.results.InjectablesResultImpl;
 import org.netbeans.modules.web.beans.impl.model.results.ResolutionErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.openide.util.NbBundle;
@@ -75,12 +77,14 @@ import org.openide.util.NbBundle;
  */
 class EnableBeansFilter {
     
-    EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model )
+    EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model ,
+            boolean programmatic )
     {
         myResult = result;
         myHelper = model.getHelper();
         myBeansModel = model.getBeansModel();
         myModel = model;
+        isProgrammatic = programmatic;
     }
     
     Result filter(){
@@ -169,9 +173,14 @@ class EnableBeansFilter {
         }
         
         enabledTypes.addAll( enabledProductions);
-        String message =NbBundle.getMessage(EnableBeansFilter.class, 
-                "ERR_UnresolvedAmbiguousDependency");               // NOI81N
-        return new ResolutionErrorImpl( getResult() , message, enabledTypes);
+        if ( isProgrammatic ){
+            return new InjectablesResultImpl(getResult() , enabledTypes );
+        }
+        else {
+            String message = NbBundle.getMessage(EnableBeansFilter.class,
+                    "ERR_UnresolvedAmbiguousDependency"); // NOI81N
+            return new ResolutionErrorImpl(getResult(), message, enabledTypes);
+        }
     }
     
     /*
@@ -238,7 +247,7 @@ class EnableBeansFilter {
         Set<Element> result = new HashSet<Element>( elements );
         while( types.size() != 0 ) {
             TypeElement typeElement = (TypeElement)types.remove();
-            if ( typeElement.getKind() != ElementKind.CLASS){
+            if ( checkClass( typeElement )){
                 result.remove( typeElement );
                 continue;
             }
@@ -246,6 +255,28 @@ class EnableBeansFilter {
             checkSpecializes(typeElement, types, result ,  elements );
         }
         return result;
+    }
+    
+    private boolean checkClass( TypeElement element ){
+        if ( element.getKind() != ElementKind.CLASS ){
+            return false;
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        
+        Element enclosing = element.getEnclosingElement();
+        if ( !( enclosing instanceof PackageElement) ){
+            /*
+             * If class is inner class then it should be static.
+             */
+            if ( !modifiers.contains( Modifier.STATIC ) ){
+                return false;
+            }
+        }
+        if ( modifiers.contains( Modifier.ABSTRACT )){
+            List<? extends AnnotationMirror> allAnnotations = getHelper().
+                getCompilationController().getElements().getAllAnnotationMirrors(element);
+            //getHelper().hasAnnotation(allAnnotations, WebBeansModelProviderImpl.DEC);
+        }
     }
 
     private void checkProxyability( TypeElement typeElement,
@@ -389,4 +420,5 @@ class EnableBeansFilter {
     private final AnnotationModelHelper myHelper;
     private final BeansModel myBeansModel;
     private WebBeansModelImplementation myModel;
+    private boolean isProgrammatic;
 }

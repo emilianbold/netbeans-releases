@@ -53,6 +53,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 
@@ -63,8 +64,6 @@ import org.netbeans.modules.web.beans.api.model.Result;
  */
 public interface WebBeansModelProvider {
 
-    Result getInjectable( VariableElement element , DeclaredType parentType);
-    
     Result lookupInjectables( VariableElement element , DeclaredType parentType);
     
     boolean isDynamicInjectionPoint( VariableElement element );
@@ -88,5 +87,7 @@ public interface WebBeansModelProvider {
     CompilationController getCompilationController();
 
     TypeMirror resolveType( String fqn);
+
+    String getScope( Element element ) throws CdiException;
 
 }

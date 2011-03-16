@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,60 +62,32 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Ar
  * @author ads
  *
  */
-class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
+class ScopeChecker extends RuntimeAnnotationChecker {
     
-    private static final String QUALIFIER_TYPE_ANNOTATION=
-        "javax.inject.Qualifier";                               // NOI18N
+    String SCOPE = "javax.inject.Scope";                            // NOI18N
     
-    QualifierChecker(){
-        this( false );
+    String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";   // NOI18N
+    
+    static ScopeChecker get(){
+        return new ScopeChecker();
     }
-    
-    QualifierChecker( boolean event ){
-        isEvent = event;
-    }
-    
-    static QualifierChecker get() {
-        // could be changed to cached ThreadLocal access
-        return new QualifierChecker();
-    }
-    
-    static QualifierChecker get(boolean event) {
-        // could be changed to cached ThreadLocal access
-        return new QualifierChecker(event);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.Checker#check()
-     */
-    @Override
-    public boolean check() {
-        if ( BUILT_IN_QUALIFIERS.contains( getElement().getQualifiedName().toString())){
-            return true;
-        }
-        else {
-            return super.check();
-        }
-    }
-    
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return QUALIFIER_TYPE_ANNOTATION;
-    }
-    
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
      */
     @Override
     protected Logger getLogger() {
-        return FieldInjectionPointLogic.LOGGER;
+        return ParameterInjectionPointLogic.LOGGER;
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
+     */
+    @Override
+    protected String getAnnotation() {
+        return SCOPE;
+    }
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#checkTarget(java.util.Map)
      */
@@ -142,50 +113,17 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
                 } , null);
         
         parser.parse( types.get(Target.class.getCanonicalName() ));
-        if ( isEvent ){
-            boolean hasFieldParameterTarget = elementTypes.contains(
-                    ElementType.FIELD.toString()) &&
-                        elementTypes.contains(ElementType.PARAMETER.toString());
-            if ( !hasFieldParameterTarget){
-                hasRequiredTarget = false;
-            }
-            else {
-                hasRequiredTarget = elementTypes.contains( 
-                        ElementType.METHOD.toString()) &&
-                                elementTypes.contains( ElementType.TYPE.toString());
-            }
-            if (!hasRequiredTarget) {
-                getLogger().log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        "declared as Qualifier but has wrong target values." +
-                        " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}" +
-                        " or {FIELD, PARAMETER}");// NOI18N
-            }
+        hasRequiredTarget = elementTypes.contains( 
+                ElementType.METHOD.toString()) &&
+                    elementTypes.contains(ElementType.FIELD.toString()) &&
+                        elementTypes.contains( ElementType.TYPE.toString());
+        if (!hasRequiredTarget) {
+            getLogger().log(Level.WARNING,
+                    "Annotation "+getElement().getQualifiedName()+
+                    "declared as Scope but has wrong target values." +
+                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
         }
-        else {
-            hasRequiredTarget = elementTypes.contains( 
-                    ElementType.METHOD.toString()) &&
-                        elementTypes.contains(ElementType.FIELD.toString()) &&
-                            elementTypes.contains(ElementType.PARAMETER.toString())&&
-                                elementTypes.contains( ElementType.TYPE.toString());
-            if (!hasRequiredTarget) {
-                getLogger().log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        "declared as Qualifier but has wrong target values." +
-                        " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}");// NOI18N
-            }
-        }
-        
         return hasRequiredTarget;
     }
-    private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();
-    
-    static {
-        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.ANY_QUALIFIER_ANNOTATION);
-        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.NEW_QUALIFIER_ANNOTATION);
-        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION);
-        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.NAMED_QUALIFIER_ANNOTATION);
-    }
 
-    private boolean isEvent;
 }

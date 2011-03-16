@@ -395,7 +395,7 @@ public class DisabledBeansTest extends CommonTestCase {
      */
     private void checkVarious1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -432,7 +432,7 @@ public class DisabledBeansTest extends CommonTestCase {
      */
     private void checkVarious2( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -494,7 +494,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkSpecializes3( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -564,7 +564,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkSpecializes2( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -620,7 +620,7 @@ public class DisabledBeansTest extends CommonTestCase {
 
     private void checkSpecializes1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
 
         assertNotNull(result);
 
@@ -684,7 +684,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkAlternative2( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -746,7 +746,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkAlternative1( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         

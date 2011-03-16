@@ -143,6 +143,7 @@ public class AnyTest extends CommonTestCase {
         
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
+            @Override
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.TestClass" );
                 Element clazz = ((DeclaredType)mirror).asElement();

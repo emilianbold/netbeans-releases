@@ -116,6 +116,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
+    @Override
     public ResultKind getKind() {
         return null;
     } 
@@ -123,6 +124,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
      */
+    @Override
     public List<AnnotationMirror> getAllStereotypes( Element element ) {
         return WebBeansModelProviderImpl.getAllStereotypes(element, getHelper());
     }
@@ -130,6 +132,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
      */
+    @Override
     public List<AnnotationMirror> getStereotypes( Element element ) {
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
         List<? extends AnnotationMirror> annotationMirrors = 
@@ -150,6 +153,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#isAlternative(javax.lang.model.element.Element)
      */
+    @Override
     public boolean isAlternative( Element element ) {
         if (hasAlternative(element)){
             return true;
@@ -163,6 +167,10 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
         return false;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.ResolutionResult#hasAlternative(javax.lang.model.element.Element)
+     */
+    @Override
     public boolean hasAlternative( Element element ){
         List<? extends AnnotationMirror> annotations = getController().
             getElements().getAllAnnotationMirrors(element);
