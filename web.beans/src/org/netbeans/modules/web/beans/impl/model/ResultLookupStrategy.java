@@ -41,44 +41,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
+package org.netbeans.modules.web.beans.impl.model;
 
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.web.beans.api.model.Result;
-
 
 
 /**
  * @author ads
  *
  */
-abstract class BaseResult implements Result {
+public interface ResultLookupStrategy {
     
-    BaseResult( VariableElement element , TypeMirror type ){
-        myElement = element;
-        myType = type;
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariable()
-     */
-    @Override
-    public VariableElement getVariable() {
-        return myElement;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariableType()
-     */
-    @Override
-    public TypeMirror getVariableType() {
-        return myType;
-    }
+    ResultLookupStrategy SINGLE_LOOKUP_STRATEGY = new SingleResultLookupStrategy();
     
-    private final VariableElement myElement;
-    private final TypeMirror myType;
+    ResultLookupStrategy MULTI_LOOKUP_STRATEGY = new MultiLookupStrategy();
 
+    Result getResult(WebBeansModelImplementation model, Result result );
+    
+    TypeMirror getType( WebBeansModelImplementation model,
+            DeclaredType parent, VariableElement element);
+    
+    TypeMirror getType(  WebBeansModelImplementation model, TypeMirror typeMirror );
+    
 }

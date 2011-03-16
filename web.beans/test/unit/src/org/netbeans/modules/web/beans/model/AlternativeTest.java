@@ -635,7 +635,7 @@ public class AlternativeTest extends CommonTestCase {
     }
     
     protected void checkMixed1( VariableElement element, WebBeansModel model ) {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -690,7 +690,7 @@ public class AlternativeTest extends CommonTestCase {
     }
     
     protected void checkMixed2( VariableElement element, WebBeansModel model ) {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -720,7 +720,7 @@ public class AlternativeTest extends CommonTestCase {
     protected void checkProduction1( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -750,7 +750,7 @@ public class AlternativeTest extends CommonTestCase {
     protected void checkProduction2( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -807,7 +807,7 @@ public class AlternativeTest extends CommonTestCase {
     protected void checkProduction3( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -836,7 +836,7 @@ public class AlternativeTest extends CommonTestCase {
     protected void checkProduction4( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -863,7 +863,7 @@ public class AlternativeTest extends CommonTestCase {
 
     private void check2( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -933,7 +933,7 @@ public class AlternativeTest extends CommonTestCase {
     
     private void check1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -989,7 +989,7 @@ public class AlternativeTest extends CommonTestCase {
     
     private void check3( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -1045,7 +1045,7 @@ public class AlternativeTest extends CommonTestCase {
     
     private void checkEnabled1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -1080,7 +1080,7 @@ public class AlternativeTest extends CommonTestCase {
     
     private void checkEnabled2( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
@@ -1142,7 +1142,7 @@ public class AlternativeTest extends CommonTestCase {
     
     private void checkEnabled3( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        Result result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         

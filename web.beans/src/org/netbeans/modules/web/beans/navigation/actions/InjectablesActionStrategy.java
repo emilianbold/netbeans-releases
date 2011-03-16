@@ -106,7 +106,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model, 
                 subject);
-        final Result result = model.getInjectable(var, null);
+        final Result result = model.lookupInjectables(var, null);
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
@@ -133,6 +133,8 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
+                
+                @Override
                 public void run() {
                     WebBeansActionHelper.showInjectablesDialog(metaModel, 
                             null , subject ,uiModel , name );

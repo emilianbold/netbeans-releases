@@ -82,7 +82,7 @@ public abstract class RuntimeAnnotationChecker {
                 Target.class.getCanonicalName());
 
         if (!hasAnnotation) {
-            // this is not qualifier , just return false
+            // this is not subject annotation , just return false
             return false;
         }
 

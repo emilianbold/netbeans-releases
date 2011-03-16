@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.web.beans.impl.model.results;
 
-import java.util.Collections;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -51,46 +50,35 @@ import javax.lang.model.element.Element;
 import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
 import org.netbeans.modules.web.beans.api.model.Result.Error;
 import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
+import org.netbeans.modules.web.beans.api.model.Result.ResultKind;
 
 
 /**
  * @author ads
  *
  */
-public class ResolutionErrorImpl extends ResultImpl implements Error,
+public class ResolutionErrorImpl extends InjectablesResultImpl implements Error,
         ResolutionResult, ApplicableResult
 {
     
     public ResolutionErrorImpl( ResultImpl origin, String message , 
             Set<Element> enabledBeans)
     {
-        super(origin.getVariable(), origin.getVariableType(), 
-                origin.getTypeElements(), origin.getAllProductions(), 
-                origin.getHelper());
+        super( origin , enabledBeans );
         myMessage = message;
-        myEnabled = enabledBeans;
     }
 
     public ResolutionErrorImpl( ResultImpl origin, String message ) {
-        super(origin.getVariable(), origin.getVariableType(), 
-                origin.getTypeElements(), origin.getAllProductions(), 
-                origin.getHelper());
+        super( origin );
         myMessage = message;
-        myEnabled =Collections.emptySet();
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
      */
+    @Override
     public String getMessage() {
         return myMessage;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result.ApplicableResult#isDisabled(javax.lang.model.element.Element)
-     */
-    public boolean isDisabled( Element element ) {
-        return !myEnabled.contains( element );
     }
     
     /* (non-Javadoc)
@@ -100,7 +88,7 @@ public class ResolutionErrorImpl extends ResultImpl implements Error,
     public ResultKind getKind() {
         return ResultKind.RESOLUTION_ERROR;
     }
-
+    
     private final String myMessage;
-    private final Set<Element> myEnabled;
+
 }

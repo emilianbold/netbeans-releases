@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,42 +42,56 @@
  */
 package org.netbeans.modules.web.beans.impl.model.results;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import java.util.Collections;
+import java.util.Set;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import javax.lang.model.element.Element;
 
+import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
+import org.netbeans.modules.web.beans.api.model.Result.Error;
+import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
+import org.netbeans.modules.web.beans.api.model.Result.ResultKind;
 
 
 /**
  * @author ads
  *
  */
-abstract class BaseResult implements Result {
+public class InjectablesResultImpl extends ResultImpl implements 
+        ResolutionResult, ApplicableResult
+{
     
-    BaseResult( VariableElement element , TypeMirror type ){
-        myElement = element;
-        myType = type;
+    public InjectablesResultImpl( ResultImpl origin, Set<Element> enabledBeans)
+    {
+        super(origin.getVariable(), origin.getVariableType(), 
+                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getHelper());
+        myEnabled = enabledBeans;
+    }
+
+    public InjectablesResultImpl( ResultImpl origin ) {
+        super(origin.getVariable(), origin.getVariableType(), 
+                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getHelper());
+        myEnabled =Collections.emptySet();
     }
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariable()
+     * @see org.netbeans.modules.web.beans.api.model.Result.ApplicableResult#isDisabled(javax.lang.model.element.Element)
      */
     @Override
-    public VariableElement getVariable() {
-        return myElement;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariableType()
-     */
-    @Override
-    public TypeMirror getVariableType() {
-        return myType;
+    public boolean isDisabled( Element element ) {
+        return !myEnabled.contains( element );
     }
     
-    private final VariableElement myElement;
-    private final TypeMirror myType;
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.results.ResultImpl#getKind()
+     */
+    @Override
+    public ResultKind getKind() {
+        return ResultKind.INJECTABLES_RESOLVED;
+    }
 
+    private final Set<Element> myEnabled;
 }

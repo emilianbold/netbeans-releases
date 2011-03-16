@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,44 +40,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
-
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.web.beans.api.model.Result;
-
+package org.netbeans.modules.web.beans.impl.model;
 
 
 /**
  * @author ads
  *
  */
-abstract class BaseResult implements Result {
+class NormalScope extends ScopeChecker {
     
-    BaseResult( VariableElement element , TypeMirror type ){
-        myElement = element;
-        myType = type;
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariable()
-     */
-    @Override
-    public VariableElement getVariable() {
-        return myElement;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getVariableType()
-     */
-    @Override
-    public TypeMirror getVariableType() {
-        return myType;
+    static NormalScope get(){
+        return  new NormalScope();
     }
     
-    private final VariableElement myElement;
-    private final TypeMirror myType;
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.ScopeChecker#getAnnotation()
+     */
+    @Override
+    protected String getAnnotation() {
+        return NORMAL_SCOPE;
+    }
 
 }

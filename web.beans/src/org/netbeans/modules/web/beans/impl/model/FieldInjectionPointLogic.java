@@ -86,7 +86,6 @@ abstract class FieldInjectionPointLogic {
     static final String NAMED_QUALIFIER_ANNOTATION = 
                        "javax.inject.Named";                        // NOI18N
 
-    
     static final String INJECT_ANNOTATION = 
                         "javax.inject.Inject";                      // NOI18N
     
@@ -111,7 +110,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     protected Result findVariableInjectable( VariableElement element, 
-            DeclaredType parentType )
+            DeclaredType parentType , ResultLookupStrategy strategy )
     {
         DeclaredType parent = parentType;
         try {
@@ -125,9 +124,9 @@ abstract class FieldInjectionPointLogic {
                              type!= null? type.toString(): null));
         }
         
-        TypeMirror type = getModel().getHelper().getCompilationController().
-            getTypes().asMemberOf(parent, element );
-        return getResult( doFindVariableInjectable(element, type,  true) );
+        TypeMirror elementType = strategy.getType(getModel(), parent , element );
+        Result result  = doFindVariableInjectable(element, elementType, true);
+        return strategy.getResult( getModel() , result );
     }
     
     protected DeclaredType getParent( Element element , DeclaredType parentType) 
@@ -147,39 +146,6 @@ abstract class FieldInjectionPointLogic {
             }
         }
         return parent;
-    }
-    
-    protected Result getResult( Result result  )
-    {
-        /*
-         * Simple filtering related to production elements types.
-         * F.e. there could be injection point with String type.
-         * String is unproxyable type ( it is final ) so it cannot 
-         * be used as injectable type. Only appropriate production element
-         * is valid injectable. But String will be found as result of previous
-         * procedure. So it should be removed.      
-         */
-        filterBeans( result );
-        
-        result = filterEnabled(result );
-        
-        return result;
-    }
-    
-    protected void filterBeans( Result result) {
-        if ( result instanceof ResultImpl ){
-            BeansFilter filter = BeansFilter.get();
-            filter.filter(((ResultImpl)result).getTypeElements() );
-        }
-    }
-    
-    protected Result filterEnabled( Result result){
-        if ( result instanceof ResultImpl ){
-            EnableBeansFilter filter = new EnableBeansFilter((ResultImpl)result,
-                    getModel());
-            return filter.filter();
-        }
-        return result;
     }
     
     protected Result doFindVariableInjectable( VariableElement element,
@@ -566,6 +532,7 @@ abstract class FieldInjectionPointLogic {
                     PRODUCER_ANNOTATION, 
                     EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
+                        @Override
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
                         {
@@ -701,6 +668,7 @@ abstract class FieldInjectionPointLogic {
                     annotationFQN, 
                     EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
+                        @Override
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
                                 {

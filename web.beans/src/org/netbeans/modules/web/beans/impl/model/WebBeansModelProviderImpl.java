@@ -99,29 +99,20 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return getModel().getHelper().resolveType( fqn );
     }
 
-    public Result getInjectable(VariableElement element, DeclaredType parentType) 
-    {
-        /* 
-         * Element could be injection point. One need first if all to check this.  
-         */
-        Element parent = element.getEnclosingElement();
-        
-        if ( parent instanceof TypeElement){
-            return findVariableInjectable(element, parentType );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
+     */
+    @Override
+    public Result lookupInjectables(VariableElement element, DeclaredType parentType)  {
+        TypeMirror type = getParameterType(element, null, INSTANCE_INTERFACE);
+        if ( type != null ){
+            return lookupInjectables(element, parentType , 
+                    ResultLookupStrategy.MULTI_LOOKUP_STRATEGY);
         }
-        else if ( parent instanceof ExecutableElement ){
-            // Probably injected field in method. One need to check method.
-            /*
-             * There are two cases where parameter is injected :
-             * 1) Method has some annotation which require from 
-             * parameters to be injection points.
-             * 2) Method is disposer method. In this case injectable
-             * is producer corresponding method.
-             */
-            return findParameterInjectable(element, parentType );
+        else {
+            return lookupInjectables(element, parentType , 
+                ResultLookupStrategy.SINGLE_LOOKUP_STRATEGY );
         }
-        
-        return null;
     }
     
     /* (non-Javadoc)
@@ -145,28 +136,7 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return false;
     }
 
-    private boolean isMethodParameterInjection( VariableElement element,
-            ExecutableElement parent )
-            throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
-    {
-        List<? extends AnnotationMirror> annotations = 
-            getModel().getHelper().getCompilationController().getElements().
-            getAllAnnotationMirrors(parent);
-        if (isDisposeParameter( element, parent, annotations)){
-            return true;
-        }
-        /*
-         * Parameter with @Observes annotation is not plain injection point. 
-         */
-        boolean hasObserves = AnnotationObjectProvider.hasAnnotation(element, 
-                OBSERVES_ANNOTATION, getModel().getHelper());
-        if ( !hasObserves && isObservesParameter(element, parent, annotations)){
-            return true;
-        }
-        return getModel().getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||
-            getModel().getHelper().hasAnnotation(annotations, PRODUCER_ANNOTATION);
-    }
-
+    @Override
     public List<AnnotationMirror> getQualifiers(Element element) {
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
         List<? extends AnnotationMirror> annotations = getModel().getHelper().
@@ -290,6 +260,54 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return result;
     }
     
+    protected Result lookupInjectables( VariableElement element,
+            DeclaredType parentType , ResultLookupStrategy strategy)
+    {
+        /* 
+         * Element could be injection point. One need first if all to check this.  
+         */
+        Element parent = element.getEnclosingElement();
+        
+        if ( parent instanceof TypeElement){
+            return findVariableInjectable(element, parentType , strategy);
+        }
+        else if ( parent instanceof ExecutableElement ){
+            // Probably injected field in method. One need to check method.
+            /*
+             * There are two cases where parameter is injected :
+             * 1) Method has some annotation which require from 
+             * parameters to be injection points.
+             * 2) Method is disposer method. In this case injectable
+             * is producer corresponding method.
+             */
+            return findParameterInjectable(element, parentType, strategy);
+        }
+        
+        return null;
+    }
+    
+    private boolean isMethodParameterInjection( VariableElement element,
+            ExecutableElement parent )
+            throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
+    {
+        List<? extends AnnotationMirror> annotations = 
+            getModel().getHelper().getCompilationController().getElements().
+            getAllAnnotationMirrors(parent);
+        if (isDisposeParameter( element, parent, annotations)){
+            return true;
+        }
+        /*
+         * Parameter with @Observes annotation is not plain injection point. 
+         */
+        boolean hasObserves = AnnotationObjectProvider.hasAnnotation(element, 
+                OBSERVES_ANNOTATION, getModel().getHelper());
+        if ( !hasObserves && isObservesParameter(element, parent, annotations)){
+            return true;
+        }
+        return getModel().getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||
+            getModel().getHelper().hasAnnotation(annotations, PRODUCER_ANNOTATION);
+    }
+    
     private void setCachedResult( List<Element> list) {
         myNamedElement = new ArrayList<ElementHandle<? extends Element>>( list.size());
         for( Element element : list ){
@@ -314,22 +332,27 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         helper.getClasspathInfo().getClassIndex().addClassIndexListener( 
             new ClassIndexListener(){
             
+                @Override
                 public void typesAdded(final TypesEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void typesRemoved(final TypesEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void typesChanged(final TypesEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void rootsAdded(RootsEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void rootsRemoved(RootsEvent event) {
                     setDirty();
                 }

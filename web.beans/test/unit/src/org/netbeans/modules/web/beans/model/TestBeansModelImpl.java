@@ -81,6 +81,7 @@ class TestBeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getAlternativeClasses()
      */
+    @Override
     public Set<String> getAlternativeClasses() {
         Set<String> result = new HashSet<String>();
         for( BeanClass clazz : getAlternativeElement(BeanClass.class)){
@@ -92,6 +93,7 @@ class TestBeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getAlternativeStereotypes()
      */
+    @Override
     public Set<String> getAlternativeStereotypes() {
         Set<String> result = new HashSet<String>();
         for( Stereotype stereotype : getAlternativeElement(Stereotype.class)){
@@ -119,6 +121,7 @@ class TestBeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getDecoratorClasses()
      */
+    @Override
     public Set<String> getDecoratorClasses() {
         // method is not used in these tests
         assert false;
@@ -128,6 +131,7 @@ class TestBeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getIntercetorClasses()
      */
+    @Override
     public Set<String> getInterceptorClasses() {
         // method is not used in these tests
         assert false;

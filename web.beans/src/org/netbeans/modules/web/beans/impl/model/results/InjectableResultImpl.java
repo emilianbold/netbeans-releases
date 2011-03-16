@@ -73,6 +73,7 @@ public class InjectableResultImpl extends ResultImpl implements InjectableResult
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getElement()
      */
+    @Override
     public Element getElement() {
         return myInjectable;
     }
@@ -80,6 +81,7 @@ public class InjectableResultImpl extends ResultImpl implements InjectableResult
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.ApplicableResult#isDisabled(javax.lang.model.element.Element)
      */
+    @Override
     public boolean isDisabled( Element element ) {
         return !myEnabled.contains( element );
     }
