@@ -43,6 +43,11 @@ package org.netbeans.modules.php.smarty.editor;
 
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.openide.cookies.EditCookie;
@@ -97,6 +102,20 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
     public void saveDocument() throws IOException {
         super.saveDocument();
         TplEditorSupport.this.getDataObject().setModified(false);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+        final Charset c = Charset.forName("UTF-8");
+        final Writer w = new OutputStreamWriter(stream, c);
+        try {
+            kit.write(w, doc, 0, doc.getLength());
+        } finally {
+            w.close();
+        }
     }
 
     @Override
