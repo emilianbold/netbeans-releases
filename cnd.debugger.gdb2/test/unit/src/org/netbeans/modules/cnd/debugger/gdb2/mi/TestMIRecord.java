@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.debugger.gdb2;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 /**
- *
+ * For testing purpose
  * @author Egor Ushakov
  */
-public class GdbUnitTest extends TestSuite {
+public class TestMIRecord extends MIRecord {
+
+    @Override
+    public void setCommand(MICommand command) {
+        super.setCommand(command);
+    }
     
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
-    }
-
 }
