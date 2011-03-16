@@ -606,7 +606,7 @@ public class FileStatusCache {
                 ret.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, recursively));
             }
             FileInformation fi = getInfo(root);
-            if (fi != null && !fi.containsStatus(includeStatus)) {
+            if (fi == null || !fi.containsStatus(includeStatus)) {
                 continue;
             }
             ret.add(root);
