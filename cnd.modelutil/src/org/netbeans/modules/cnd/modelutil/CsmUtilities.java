@@ -88,6 +88,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -438,10 +439,14 @@ public class CsmUtilities {
                             if (platformProject == null) {
                                 CndUtils.assertTrueInConsole(false, "null platform project for FILE " + csmFile + " from PROJECT " + csmProject); // NOI18N
                             } else if (!csmProject.isValid()) {
-                                CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                                if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
+                                    CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                                }
                             } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                 if (i == 0 && files.size() > 1) {
-                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                    if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
+                                        CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                    }
                                 } else {
 //                                    System.err.printf("STANDALONE FILE TO BE USED %s\n", csmFile); // NOI18N
                                 }

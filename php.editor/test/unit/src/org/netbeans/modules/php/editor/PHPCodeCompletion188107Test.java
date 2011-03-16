@@ -42,55 +42,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.schema.completion;
+package org.netbeans.modules.php.editor;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.windows.TopComponent;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Samaresh (Samaresh.Panda@Sun.Com)
+ * @author Petr Pisl
  */
-public class SchemaBasedCompletionProvider implements CompletionProvider {
-    
-    /**
-     * Creates a new instance of SchemaBasedCompletionProvider
-     */
-    public SchemaBasedCompletionProvider() {
+public class PHPCodeCompletion188107Test extends PHPTestBase {
+
+    public PHPCodeCompletion188107Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test188107/MyTable.php", "$this->^", false);
     }
     
-    public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        BaseDocument doc = Utilities.getDocument(component);
-	if ( typedText ==null || typedText.trim().length() ==0 ){
-            return 0;
-        }
-        if(doc == null)
-            return 0;
-        XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
-        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion(doc)) {
-            return 0;
-        }
-        
-        return COMPLETION_QUERY_TYPE;
-    }
-        
-    public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            return new AsyncCompletionTask(new CompletionQuery(CompletionUtil.getPrimaryFile()), component);
-        }
-        
-        return null;
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/test188107/MyTable.php", "$this->db->^", false);
     }
     
-        
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test188107/MyTable.php", "$this->db->select('Baf')->^", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test188107"))
+            })
+        );
+    }
 }

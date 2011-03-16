@@ -40,6 +40,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>

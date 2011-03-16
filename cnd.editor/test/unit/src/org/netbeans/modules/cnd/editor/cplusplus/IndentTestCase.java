@@ -1271,4 +1271,46 @@ public class IndentTestCase extends EditorBase {
                 "#endif\n"
                 );
     }
+
+    public void testIZ_196567() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "struct list_head {\n" +
+            "    struct list_head *prev, *next;\n" +
+            "};\n" +
+            "\n" +
+            "int foo(int a, int b) {\n" +
+            "}\n" +
+            "\n" +
+            "int boo(int a, |int b) {\n" +
+            "}\n");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:196567 Text editor fails to honor indentation rules in certain cases.",
+            "struct list_head {\n" +
+            "    struct list_head *prev, *next;\n" +
+            "};\n" +
+            "\n" +
+            "int foo(int a, int b) {\n" +
+            "}\n" +
+            "\n" +
+            "int boo(int a, \n"+
+            "        int b) {\n" +
+            "}\n");
+    }
+    
+    public void testIZ_196567_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "struct list_head foo(int a, int b){\n" +
+            "    list_head ret,|int b;\n" +
+            "    return ret;\n" +
+            "}\n");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:196567 Text editor fails to honor indentation rules in certain cases.",
+            "struct list_head foo(int a, int b){\n" +
+            "    list_head ret,\n" +
+            "            int b;\n" +
+            "    return ret;\n" +
+            "}\n");
+    }
 }
