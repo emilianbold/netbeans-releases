@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
-package org.netbeans.modules.cnd.debugger.gdb2;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import java.util.Collection;
 
 /**
- *
+ * For testing purpose
  * @author Egor Ushakov
  */
-public class GdbUnitTest extends TestSuite {
-    
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
+public class TestMICommand extends MICommand {
+    public TestMICommand(int routingToken, String command) {
+        super(routingToken, command);
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    @Override
+    protected void onDone(MIRecord record) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    protected void onError(MIRecord record) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void onExit(MIRecord record) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void onOther(MIRecord record) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void onRunning(MIRecord record) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void onStopped(MIRecord record) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void onUserInteraction(MIUserInteraction ui) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void recordConsoleStream(Collection<String> data) {
+        super.recordConsoleStream(data);
+    }
 }
