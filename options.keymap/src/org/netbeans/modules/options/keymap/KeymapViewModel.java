@@ -216,25 +216,27 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         }
 
         getDataVector().removeAllElements();
-        for (String category : getCategories().get("")) {
-            for (Object o : getItems(category)) {
-                if (o instanceof ShortcutAction) {
-                    ShortcutAction sca = (ShortcutAction) o;
-                    String[] shortcuts = getShortcuts(sca);
-                    String displayName = sca.getDisplayName();
-//                    System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
-                    if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
-                        if (shortcuts.length == 0)
-                            addRow(new Object[]{new ActionHolder(sca, false), "", category}); // NOI18N
-                        else
-                            for (int i = 0; i < shortcuts.length; i++) {
-                                String shortcut = shortcuts[i];
-//                                String shownDisplayName = i == 0 ? displayName : displayName + " (alternative shortcut)";
-                                addRow(new Object[]{
-                                            i == 0 ? new ActionHolder(sca, false) : new ActionHolder(sca, true),
-                                            shortcut, category,
-                                        });
-                            }
+        for (String categorySet : getCategories().keySet()) {
+            for (String category : getCategories().get(categorySet)) {
+                for (Object o : getItems(category)) {
+                    if (o instanceof ShortcutAction) {
+                        ShortcutAction sca = (ShortcutAction) o;
+                        String[] shortcuts = getShortcuts(sca);
+                        String displayName = sca.getDisplayName();
+//                        System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
+                        if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
+                            if (shortcuts.length == 0)
+                                addRow(new Object[]{new ActionHolder(sca, false), "", category}); // NOI18N
+                            else
+                                for (int i = 0; i < shortcuts.length; i++) {
+                                    String shortcut = shortcuts[i];
+//                                    String shownDisplayName = i == 0 ? displayName : displayName + " (alternative shortcut)";
+                                    addRow(new Object[]{
+                                                i == 0 ? new ActionHolder(sca, false) : new ActionHolder(sca, true),
+                                                shortcut, category,
+                                            });
+                                }
+                        }
                     }
                 }
             }
