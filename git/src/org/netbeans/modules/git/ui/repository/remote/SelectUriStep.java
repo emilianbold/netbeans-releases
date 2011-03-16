@@ -256,6 +256,12 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     public void stateChanged(ChangeEvent ce) {
         validateBeforeNext();
     }
+
+    public void storeURI() {
+        if (panel.rbCreateNew.isSelected()) {
+            repository.store();
+        }
+    }
     
     private static class RemoteUri implements Comparable<RemoteUri> {
         private final String label;
