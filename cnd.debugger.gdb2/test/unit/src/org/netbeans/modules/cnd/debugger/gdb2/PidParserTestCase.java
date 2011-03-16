@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.debugger.gdb2;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import java.util.Collections;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.TestMICommand;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.TestMIRecord;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbUnitTest extends TestSuite {
+public class PidParserTestCase extends TestCase {
+
+    public PidParserTestCase() {
+    }
     
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
+    private static MIRecord createRecord(String consoleStream) {
+        TestMICommand cmd = new TestMICommand(0, "Test command");
+        cmd.recordConsoleStream(Collections.singletonList(consoleStream));
+        TestMIRecord res  = new TestMIRecord();
+        res.setCommand(cmd);
+        return res;
     }
-
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    
+    @Test
+    public void testPidParsing() {
+        MIRecord res = createRecord("process 12345 flags:\n");
+        assertEquals(12345, GdbDebuggerImpl.extractPid1(res));
     }
-
+    
+    @Test
+    public void test196768() {
+        MIRecord res = createRecord("Current language:  auto\nThe current source language is \"auto; currently asm\".\nprocess 12345\ncmdline = '/home/irad/private/work/edgeci-lib/reuters-analyser/trunk/projects/hotspot_tester/build_linux/source/hotspot_tester'\ncwd = '/home/irad/private/work/edgeci-lib/reuters-analyser/trunk/projects/hotspot_tester'\nexe = '/home/irad/private/work/edgeci-lib/reuters-analyser/trunk/projects/hotspot_tester/build_linux/source/hotspot_tester'\n");
+        assertEquals(12345, GdbDebuggerImpl.extractPid1(res));
+    }
 }
