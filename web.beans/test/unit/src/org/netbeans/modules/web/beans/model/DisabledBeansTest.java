@@ -330,7 +330,9 @@ public class DisabledBeansTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.ApplicationScoped; "+
                 "@Binding1 "+
+                "@ApplicationScoped "+
                 "public final class Two implements Iface {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",

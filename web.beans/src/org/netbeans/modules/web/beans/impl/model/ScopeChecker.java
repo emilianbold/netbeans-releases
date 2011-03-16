@@ -64,9 +64,9 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Ar
  */
 class ScopeChecker extends RuntimeAnnotationChecker {
     
-    String SCOPE = "javax.inject.Scope";                            // NOI18N
+    static String SCOPE = "javax.inject.Scope";                         // NOI18N
     
-    String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";   // NOI18N
+    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
     
     static ScopeChecker get(){
         return new ScopeChecker();
