@@ -52,13 +52,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,17 +78,16 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private Message msg;
 
     private ChangeSupport support = new ChangeSupport(this);
-    private static final Pattern SCHEME_PATTERN = Pattern.compile("([a-z][a-z0-9+-]+)://"); // NOI18N
 
     private enum Scheme {
-        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),
-        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),
-        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),
-        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),
-        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),
-        SSH("ssh", "ssh://[user@]host.xz[:port]/path/to/repo.git/"),
-        GIT("git", "git://host.xz[:port]/path/to/repo.git/"),
-        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");     
+        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
+        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),             // NOI18N
+        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),           // NOI18N
+        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
+        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
+        SSH("ssh", "ssh://[user@]host.xz[:port]/path/to/repo.git/"),            // NOI18N    
+        GIT("git", "git://host.xz[:port]/path/to/repo.git/"),                   // NOI18N
+        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");                    // NOI18N
         
         private final String name;
         private final String tip;
@@ -233,7 +229,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             GitURI uri = getURI();
             if(uri == null) {
                 valid = false;
-                msg = new Message(NbBundle.getMessage(RemoteRepository.class, "MSG_EMPTY_URI_ERROR"), true);
+                msg = new Message(NbBundle.getMessage(RemoteRepository.class, "MSG_EMPTY_URI_ERROR"), true); // NOI18N
             } else {
                 // XXX check suported protocols
             }
@@ -298,7 +294,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     }
                     
                     for (Scheme s : Scheme.values()) {
-                        model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));
+                        model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));   // NOI18N
                     }
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
