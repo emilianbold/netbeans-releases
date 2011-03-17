@@ -187,7 +187,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                         return false;
                     }
                 } else {
-                    ServerDetails candidate = wizardIterator.isValidInstall(installDir, glassfishDir, wizard);
+                    Object candidate = wizardIterator.isValidInstall(installDir, glassfishDir, wizard);
                     if (null == candidate) {
                         String errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_InstallationInvalid", // NOI18N
                                 FileUtil.normalizeFile(installDir).getPath());
