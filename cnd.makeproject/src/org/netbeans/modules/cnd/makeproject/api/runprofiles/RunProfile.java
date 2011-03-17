@@ -519,7 +519,7 @@ public final class RunProfile implements ConfigurationAuxObject {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         }
         
-        if (makeConfiguration != null && makeConfiguration.getFileSystemHost().isLocal()) {
+        if (makeConfiguration == null || makeConfiguration.getFileSystemHost().isLocal()) {
             // TODO:fullRemote while cleaning up, remove the entire "if" branch - the "else" one should work in any case
             // It's hight resistance mode now, that's why I'm leaving "local/classic remote" branch as it was - VK
             // convert to canonical path
@@ -587,7 +587,14 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Run Command
 
     public boolean isSimpleRunCommand() {
-        return !runCommand.getValue().contains(" "); // NOI18N
+        String rc = runCommand.getValue().trim();
+        if (rc.startsWith("\"${")) { // default..... // NOI18N
+            return true;
+        } else if (rc.startsWith("/bin") || rc.startsWith("sh") || rc.startsWith("bash") || rc.startsWith("csh")) { // NOI18N
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public ComboStringConfiguration getRunCommand() {

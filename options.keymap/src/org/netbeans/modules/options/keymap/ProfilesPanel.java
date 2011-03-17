@@ -286,23 +286,25 @@ public class ProfilesPanel extends javax.swing.JPanel {
             Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
 
             KeymapViewModel kmodel = KeymapPanel.getModel();
-            for (String category : kmodel.getCategories().get("")) {
-                for (Object o : kmodel.getItems(category)) {
-                    if (o instanceof ShortcutAction) {
-                        ShortcutAction sca = (ShortcutAction) o;
-                        String[] shortcuts = kmodel.getShortcuts(sca);
-                        if (shortcuts.length > 0) { //export only actions with at least one SC
-                            String id = sca.getId();
-                            Element actionElement = doc.createElement(ELEM_ACTION);
-                            actionElement.setAttribute(ATTR_ACTION_ID, id);
-                            for (int i = 0; i < shortcuts.length; i++) {
-                                Element shortcutElement = doc.createElement(ELEM_SHORTCUT);
-                                //get portable representation of the ahortcut
-                                String shortcutToStore = shortcutToPortableRepresentation(shortcuts[i]);
-                                shortcutElement.setAttribute(ATTR_SHORTCUT_STRING, shortcutToStore);
-                                actionElement.appendChild(shortcutElement);
+            for (String categorySet : kmodel.getCategories().keySet()) {
+                for (String category : kmodel.getCategories().get(categorySet)) {
+                    for (Object o : kmodel.getItems(category)) {
+                        if (o instanceof ShortcutAction) {
+                            ShortcutAction sca = (ShortcutAction) o;
+                            String[] shortcuts = kmodel.getShortcuts(sca);
+                            if (shortcuts.length > 0) { //export only actions with at least one SC
+                                String id = sca.getId();
+                                Element actionElement = doc.createElement(ELEM_ACTION);
+                                actionElement.setAttribute(ATTR_ACTION_ID, id);
+                                for (int i = 0; i < shortcuts.length; i++) {
+                                    Element shortcutElement = doc.createElement(ELEM_SHORTCUT);
+                                    //get portable representation of the ahortcut
+                                    String shortcutToStore = shortcutToPortableRepresentation(shortcuts[i]);
+                                    shortcutElement.setAttribute(ATTR_SHORTCUT_STRING, shortcutToStore);
+                                    actionElement.appendChild(shortcutElement);
+                                }
+                                root.appendChild(actionElement);
                             }
-                            root.appendChild(actionElement);
                         }
                     }
                 }
