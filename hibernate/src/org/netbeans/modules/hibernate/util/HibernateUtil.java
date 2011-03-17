@@ -69,6 +69,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
+import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -353,9 +354,9 @@ public class HibernateUtil {
     public static FileObject getBuildFO(Project project) {
         FileObject buildFO = null;
         try {
-            BinaryForSourceQuery binaryForSourceQuery = project.getLookup().lookup(BinaryForSourceQuery.class);
+            BinaryForSourceQueryImplementation binaryForSourceQueryImpl = project.getLookup().lookup(BinaryForSourceQueryImplementation.class);
 
-            if (binaryForSourceQuery == null) {
+            if (binaryForSourceQueryImpl == null) {
                 // Web projects do not have this in the lookup.
                 logger.info("BinaryForSourceQueryImpl is null. trying reflection.");
                 // The following is a hack because of #140802.
