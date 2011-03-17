@@ -45,8 +45,10 @@ package org.netbeans.modules.git.ui.repository;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -65,9 +67,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
@@ -90,6 +94,7 @@ import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -282,8 +287,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
     private abstract class RepositoryBrowserNode extends AbstractNode {
-
+        
         protected RepositoryBrowserNode (Children children) {
             this(children, null);
         }
@@ -299,6 +305,54 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         protected Action[] getPopupActions (boolean context) {
             return new Action[0];
+        }
+        
+        protected Image getFolderIcon (int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                img = findIcon("Nb.Explorer.Folder.icon", "Tree.closedIcon"); //NOI18N
+            }
+            if (img == null) {
+                img = super.getIcon(type);
+            }
+            return img;
+        }
+
+        protected Image getOpenedFolderIcon (int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                img = findIcon("Nb.Explorer.Folder.openedIcon", "Tree.openIcon"); //NOI18N
+            }
+            if (img == null) {
+                img = super.getOpenedIcon(type);
+            }
+            return img;
+        }
+
+        private Image findIcon (String key1, String key2) {
+            Image img = cachedIcons.containsKey(key1) ? cachedIcons.get(key1) : null;
+            if (img == null) {
+                img = findIcon(key1);
+                if (img == null) {
+                    img = findIcon(key2);
+                }
+                cachedIcons.put(key1, img);
+            }
+            return img;
+        }
+
+        private Image findIcon (String key) {
+            Object obj = UIManager.get(key);
+            if (obj instanceof Image) {
+                return (Image)obj;
+            }
+
+            if (obj instanceof Icon) {
+                Icon icon = (Icon)obj;
+                return ImageUtilities.icon2Image(icon);
+            }
+
+            return null;
         }
 
     }
@@ -358,6 +412,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public RepositoryNode (final File repository, RepositoryInfo info) {
             super(new RepositoryChildren(), Lookups.fixed(repository));
             this.repository = repository;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/repository.png"); //NOI18N
             if (info == null) {
                 setDisplayName(repository.getName());
                 RP.post(new Runnable () {
@@ -461,6 +516,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         public BranchesTopNode (File repository) {
             super(new BranchesTopChildren(repository));
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branches.png"); //NOI18N
         }
 
         @Override
@@ -621,6 +677,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String getDisplayName () {
             return getName();
         }
+
+        @Override
+        public Image getIcon (int type) {
+            return getFolderIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon (int type) {
+            return getOpenedFolderIcon(type);
+        }
     }
 
     private class BranchesChildren extends Children.Keys<GitBranch> {
@@ -675,6 +741,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
             branchName = branch.getName();
             branchId = branch.getId();
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
             info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
                 @Override
@@ -717,11 +784,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         private void refreshActiveBranch (GitBranch activeBranch) {
             String oldHtmlName = getHtmlDisplayName();
+            boolean oldActive = active;
             if (activeBranch.getName().equals(branchName)) {
                 active = true;
                 this.branchId = activeBranch.getId();
             } else {
                 active = false;
+            }
+            if (active != oldActive) {
+                setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/" + (active ? "active_branch" : "branch") + ".png"); //NOI18N
             }
             String newHtmlName = getHtmlDisplayName();
             if (!oldHtmlName.equals(newHtmlName)) {
@@ -784,6 +855,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         public TagsNode (File repository) {
             super(Children.LEAF);
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tags.png"); //NOI18N
             assert repository != null;
         }
 
@@ -804,6 +876,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         public RemotesNode (File repository) {
             super(new AllRemotesChildren(repository), Lookups.fixed(repository));
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/repository.png"); //NOI18N
         }
 
         @Override
@@ -882,6 +955,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             super(new RemoteChildren(remote), Lookups.fixed(remote, repository));
             this.repository = repository;
             this.remoteName = remote.getRemoteName();
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/remote.png"); //NOI18N
         }
 
         @Override
@@ -963,11 +1037,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             super(Children.LEAF);
             this.uri = uri;
             this.remote = remote;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/" + (uri.push ? "push" : "fetch") + ".png"); //NOI18N
         }
 
         @Override
         public String getName () {
-            return new StringBuilder(uri.push ? "Push" : "Fetch").append(" - ").append(uri.uri).toString();
+            return uri.uri;
         }
 
         @Override
