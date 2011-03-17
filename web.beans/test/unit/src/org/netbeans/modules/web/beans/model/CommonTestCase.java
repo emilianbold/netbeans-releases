@@ -410,11 +410,27 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "public @interface Delegate  {" +
                 "}");
         
+        TestUtilities.copyStringToFileObject(srcFO, "javax/decorator/Decorator.java",
+                "package javax.decorator; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+      
+                "@javax.enterprise.inject.Stereotype "+
+                "public @interface Decorator  {" +
+                "}");
+        
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Instance.java",
                 "package javax.enterprise.inject; " +
                 "public interface Instance<T>  extends java.lang.Iterable<T> {" +
                 " void fire( T event ); "+
                 "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/spi/Extension.java",
+                "package javax.enterprise.inject.spi; " +
+                "public interface Extension  {}");
     }
 
     public final void assertFindParameterResultInjectables(VariableElement element,

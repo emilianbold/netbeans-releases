@@ -65,6 +65,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -95,6 +96,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
@@ -191,6 +193,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
         registerKeyboardAction(
                 new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 close();
             }
@@ -201,9 +204,11 @@ public class InjectablesPanel extends javax.swing.JPanel {
         initListeners();
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 reload();
                 myFilterTextField.requestFocusInWindow();
@@ -211,11 +216,17 @@ public class InjectablesPanel extends javax.swing.JPanel {
         });
     }
 
+    @Override
     public void removeNotify() {
         WebBeansNavigationOptions.setHierarchyDividerLocation(
                 mySplitPane.getDividerLocation());
         myDocPane.setData( null );
         super.removeNotify();
+    }
+    
+    protected void setVisibleScope( boolean visible ){
+        myScope.setVisible(visible);
+        myScopeLabel.setVisible( visible );
     }
     
     // Hack to allow showing of Help window when F1 or HELP key is pressed.
@@ -332,11 +343,13 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
         RequestProcessor.getDefault().post(
             new Runnable() {
+                @Override
                 public void run() {
                     try {
                         myJavaHierarchyModel.update();
                     } finally {
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 leaveBusy();
                                 // expand the tree
@@ -354,6 +367,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private void expandAll() {
         SwingUtilities.invokeLater(
                 new Runnable() {
+            @Override
             public void run() {
                 JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
                 if (rootPane != null) {
@@ -365,6 +379,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
         SwingUtilities.invokeLater(
                 new Runnable() {
+            @Override
             public void run() {
                 try {
                     // expand the tree
@@ -422,6 +437,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 try {
                     getModel().runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
 
+                        @Override
                         public Void run( WebBeansModel model ) throws Exception {
                             Element element = elementHandle.resolve(
                                     model.getCompilationController());
@@ -443,9 +459,11 @@ public class InjectablesPanel extends javax.swing.JPanel {
                                             builder.length() -2 );
                                 }
                                 myInjectableBindings.setText( bindingsString);
+                                setScope(model, element);
                             }
                             return null;
                         }
+
                     });
                 }
                 catch (MetadataModelException e) {
@@ -459,6 +477,33 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 myInjectableBindings.setCaretPosition(0);
                 myInjectableBindings.setToolTipText(((JavaElement)node).getTooltip());
             }
+        }
+    }
+    
+    private void setScope( WebBeansModel model,
+            Element element ) throws CdiException
+    {
+        if ( myScopeLabel.isVisible() ){
+            String scope = model.getScope(element);
+            if ( scope == null ){
+                return ;
+            }
+            String text = "";
+            if ( myShowFQNToggleButton.isSelected() ){
+                text = "@"+scope;   // NOI8N
+            }
+            else {
+                TypeMirror scopeType = model.resolveType( scope);
+                if ( scopeType!= null ){
+                    Element scopeElement = model.getCompilationController().getTypes().
+                        asElement( scopeType );
+                    if ( scopeElement instanceof TypeElement ){
+                        Name name = ((TypeElement)scopeElement).getSimpleName();
+                        text = "@"+name.toString();
+                    }
+                }
+            }
+            myScope.setText(text);
         }
     }
 
@@ -622,12 +667,15 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private void initListeners() {
         myFilterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 selectMatchingRow();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 selectMatchingRow();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 selectMatchingRow();
             }
@@ -637,6 +685,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         registerKeyboardActions();
 
         myCaseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 WebBeansNavigationOptions.setCaseSensitive(
                         myCaseSensitiveFilterCheckBox.isSelected());
@@ -649,6 +698,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
         myJavaHierarchyTree.addMouseListener(
                 new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent me) {
                 Point point = me.getPoint();
                 TreePath treePath = myJavaHierarchyTree.
@@ -666,6 +716,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         );
 
         myJavaHierarchyTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
                 showBindings();
                 showJavaDoc();
@@ -673,6 +724,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         });
 
         myShowFQNToggleButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
                 myJavaHierarchyModel.fireTreeNodesChanged();
@@ -682,12 +734,14 @@ public class InjectablesPanel extends javax.swing.JPanel {
         });
 
         myExpandAllButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         expandAll();
                     }
                 });
 
         myCloseButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         close();
                     }
@@ -696,6 +750,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
     private void registerKeyboardActions() {
         ActionListener listener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 Utils.firstRow(myJavaHierarchyTree);
             }
@@ -710,6 +765,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 JComponent.WHEN_FOCUSED);
 
         listener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 Utils.previousRow(myJavaHierarchyTree);
             }
@@ -723,6 +779,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 JComponent.WHEN_FOCUSED);
 
         listener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 Utils.nextRow(myJavaHierarchyTree);
             }
@@ -736,6 +793,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 JComponent.WHEN_FOCUSED);
 
         listener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 Utils.lastRow(myJavaHierarchyTree);
             }
@@ -755,6 +813,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
         myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 TreePath treePath = myJavaHierarchyTree.getSelectionPath();
                 if (treePath != null) {
@@ -770,6 +829,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
 
         myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         Component view = myDocPane.getViewport().getView();
                         if (view instanceof JEditorPane) {
@@ -790,6 +850,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myFilterTextField.registerKeyboardAction(
                 new ActionListener() {
                     private boolean firstTime = true;
+                    @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         Component view = myDocPane.getViewport().getView();
                         if (view instanceof JEditorPane) {
@@ -814,6 +875,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         
         myJavaHierarchyTree.registerKeyboardAction(
                 new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 TreePath treePath = myJavaHierarchyTree.getLeadSelectionPath();
                 if (treePath != null) {
@@ -855,6 +917,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myTypeLbl = new javax.swing.JLabel();
         myInjectableBindings = new javax.swing.JEditorPane();
         myInjectableBindingLbl = new javax.swing.JLabel();
+        myScopeLabel = new javax.swing.JLabel();
+        myScope = new javax.swing.JEditorPane();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -916,6 +980,12 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myInjectableBindingLbl.setLabelFor(myInjectableBindings);
         org.openide.awt.Mnemonics.setLocalizedText(myInjectableBindingLbl, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LBL_CurrentElementBindings")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(myScopeLabel, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LBL_Scope")); // NOI18N
+
+        myScope.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
+        myScope.setContentType("text/x-java");
+        myScope.setEditable(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -923,14 +993,14 @@ public class InjectablesPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(myFilterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myFilterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                        .add(myFilterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(myCaseSensitiveFilterCheckBox))
-                    .add(mySeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+                    .add(mySeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(myBindingLbl)
@@ -940,15 +1010,18 @@ public class InjectablesPanel extends javax.swing.JPanel {
                             .add(myType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
                             .add(myBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
-                        .add(myFiltersLabel)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(myInjectableBindingLbl)
+                            .add(myScopeLabel)
+                            .add(myFiltersLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myCloseButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(myInjectableBindingLbl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                                .add(70, 70, 70)
+                                .add(myCloseButton))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, myInjectableBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
+                            .add(myScope, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -970,17 +1043,20 @@ public class InjectablesPanel extends javax.swing.JPanel {
                     .add(myFilterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(myCaseSensitiveFilterCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                .add(mySplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(myInjectableBindingLbl)
                     .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(myFiltersLabel)
-                        .add(myCloseButton))
-                    .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myScopeLabel)
+                    .add(myScope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(myCloseButton)
+                    .add(myFiltersLabel))
                 .addContainerGap())
         );
 
@@ -999,6 +1075,10 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myTypeLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Type")); // NOI18N
         myInjectableBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_InjectableBindings")); // NOI18N
         myInjectableBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_InjectableBindnigs")); // NOI18N
+        myScopeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Scope")); // NOI18N
+        myScopeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Scope")); // NOI18N
+        myScope.getAccessibleContext().setAccessibleName(myScopeLabel.getAccessibleContext().getAccessibleName());
+        myScope.getAccessibleContext().setAccessibleDescription(myScopeLabel.getAccessibleContext().getAccessibleDescription());
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1015,6 +1095,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private javax.swing.JEditorPane myInjectableBindings;
     private javax.swing.JTree myJavaHierarchyTree;
     private javax.swing.JScrollPane myJavaHierarchyTreeScrollPane;
+    private javax.swing.JEditorPane myScope;
+    private javax.swing.JLabel myScopeLabel;
     private javax.swing.JSeparator mySeparator;
     private javax.swing.JToggleButton myShowFQNToggleButton;
     private javax.swing.JSplitPane mySplitPane;

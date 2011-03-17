@@ -67,6 +67,7 @@ public class EventsPanel extends InjectablesPanel {
     {
         super(subject, metaModel, model, uiModel);
         initLabels();
+        setVisibleScope( false );
     }
     
     /* (non-Javadoc)

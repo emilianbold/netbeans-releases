@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -297,6 +298,193 @@ public class DisabledBeansTest extends CommonTestCase {
                 assert names.contains("myField1");
                 assert names.contains("myField2");
                 assert names.contains("myField3");
+                return null;
+            }
+        });
+    }
+    
+    public void testNotManagedBeans() throws IOException{
+        createQualifier("Binding1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class One {" +
+                "@Binding1 "+
+                " public class SubClass1 extends One {} "+
+                "@Binding1 "+
+                " public static class SubClass2 extends One {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "@javax.decorator.Decorator "+
+                "public abstract class Two {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public abstract class Three extends Two {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Four.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Four implements javax.enterprise.inject.spi.Extension {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Five.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Five {" +
+                " Five( String arg ) {} "+
+                " public Five() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Six.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Six  extends Five{" +
+                " public Six( int arg ) {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Seven.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "@Binding1 "+
+                "public class Seven extends Five {" +
+                " @Inject "+
+                " public Seven( int arg1, String arg2 ) { } "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class TestClass {" +
+                " @Inject @Binding1 One myField1; "+
+                " @Inject @Binding1 Two myField2; "+
+                " @Inject @Binding1 Four myField3; "+
+                " @Inject @Binding1 Five myField4; "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        Result result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(result.getKind() , 
+                                Result.ResultKind.INJECTABLE_RESOLVED );
+                        assertTrue( result instanceof Result.ApplicableResult);
+                        assertTrue( result instanceof Result.ResolutionResult );  
+                        assertTrue( result instanceof Result.InjectableResult );  
+                        assertEquals(2 , ((Result.ApplicableResult)result).
+                                getTypeElements().size());
+                        Element injectable = ((Result.InjectableResult)result).getElement();
+                        assertTrue( injectable instanceof TypeElement );
+                        Name qualifiedName = ((TypeElement)injectable).getQualifiedName();
+                        assertEquals("Injectable element should be foo.One.SubClass2",
+                                "foo.One.SubClass2", qualifiedName.toString());
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        Result result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(result.getKind() , 
+                                Result.ResultKind.INJECTABLE_RESOLVED );
+                        assertTrue( result instanceof Result.ApplicableResult);
+                        assertTrue( result instanceof Result.ResolutionResult );  
+                        assertEquals(2 , ((Result.ApplicableResult)result).
+                                getTypeElements().size());
+                        Element injectable = ((Result.InjectableResult)result).getElement();
+                        assertTrue( injectable instanceof TypeElement );
+                        Name qualifiedName = ((TypeElement)injectable).getQualifiedName();
+                        assertEquals("Injectable element should be foo.Two",
+                               "foo.Two", qualifiedName.toString());
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField3")){
+                        Result result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(result.getKind() , 
+                                Result.ResultKind.RESOLUTION_ERROR );
+                        assertTrue( result instanceof Result.ApplicableResult);
+                        assertTrue( result instanceof Result.ResolutionResult );  
+                        int size = ((Result.ApplicableResult)result).
+                            getTypeElements().size();
+                        assertEquals("There should be one element which is" +
+                        		" not managed bean", 1 , size);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        Result result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(result.getKind() , 
+                                Result.ResultKind.RESOLUTION_ERROR );
+                        assertTrue( result instanceof Result.ApplicableResult);
+                        assertTrue( result instanceof Result.ResolutionResult );  
+                        assertEquals(3 , ((Result.ApplicableResult)result).
+                                getTypeElements().size());
+                        
+                        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).
+                            getTypeElements();
+                        boolean fiveFound = false;
+                        boolean sixFound = false;
+                        boolean sevenFound = false;
+                        Result.ApplicableResult applicableResult = 
+                            (Result.ApplicableResult)result;
+                        for (TypeElement typeElement : typeElements) {
+                            String name = typeElement.getQualifiedName().toString();
+                            if ( "foo.Five".equals(name)){
+                                assertFalse ( "foo.Five should be enabled",
+                                        applicableResult.isDisabled(typeElement));
+                                fiveFound =true;
+                            }
+                            else if ( "foo.Six".equals(name)){
+                                assertTrue ( "foo.Six should be disabled",
+                                        applicableResult.isDisabled(typeElement));
+                                sixFound =true;
+                            }
+                            else if ( "foo.Seven".equals(name)){
+                                assertFalse ( "foo.Seven should be enabled",
+                                        applicableResult.isDisabled(typeElement));
+                                sevenFound =true;
+                            }
+                        }
+                        assertTrue( "foo.Five should be in the list of eligible " +
+                        		"for injectoin elements", fiveFound );
+                        assertTrue( "foo.Seven should be in the list of eligible " +
+                                "for injectoin elements", sevenFound );
+                        assertTrue( "foo.Six should be in the result", sevenFound );
+                    }
+                }
+                
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                assert names.contains("myField3");
+                assert names.contains("myField4");
                 return null;
             }
         });

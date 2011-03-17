@@ -286,7 +286,7 @@ class EnableBeansFilter {
             getAllAnnotationMirrors(element);
         
         if ( modifiers.contains( Modifier.ABSTRACT ) &&
-                getHelper().hasAnnotation(allAnnotations, DECORATOR ) )
+                !getHelper().hasAnnotation(allAnnotations, DECORATOR ) )
         {
             /*
              * If class is abstract it should be Decorator.
