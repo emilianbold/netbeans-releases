@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:45:30 /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g 2011-03-16 18:45:05
+// $ANTLR 3.3 Nov 30, 2010 12:45:30 /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g 2011-03-17 11:56:36
 
 package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
 import java.util.Queue;
@@ -25,7 +25,9 @@ public class CommandLineLexer extends Lexer {
 
         @Override
         public void recover(final RecognitionException re) {	
-            input.rewind();
+            input.seek(state.tokenStartCharIndex);
+            input.setLine(state.tokenStartLine);
+            input.setCharPositionInLine(state.tokenStartCharPositionInLine);
             state.type = TEXT;
             state.token = null;
             state.channel = Token.DEFAULT_CHANNEL;
@@ -35,7 +37,7 @@ public class CommandLineLexer extends Lexer {
             state.text = null;
             //read upto white space and emmit as TEXT, todo: specail ERROR token should be better
             while (!((input.LA(1)>='\t' && input.LA(1)<='\n')||(input.LA(1)>='\f' && input.LA(1)<='\r')||input.LA(1)==' '||input.LA(1) == EOF)) {                
-                input.seek(input.index()+1);
+                input.consume();
             }
             tokens.add(emit());
         }
@@ -65,8 +67,8 @@ public class CommandLineLexer extends Lexer {
         try {
             int _type = T__7;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:40:6: ( '-' )
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:40:8: '-'
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:42:6: ( '-' )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:42:8: '-'
             {
             match('-'); 
 
@@ -85,8 +87,8 @@ public class CommandLineLexer extends Lexer {
         try {
             int _type = T__8;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:41:6: ( '=' )
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:41:8: '='
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:43:6: ( '=' )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:43:8: '='
             {
             match('='); 
 
@@ -105,8 +107,8 @@ public class CommandLineLexer extends Lexer {
         try {
             int _type = T__9;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:42:6: ( '\\'' )
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:42:8: '\\''
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:44:6: ( '\\'' )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:44:8: '\\''
             {
             match('\''); 
 
@@ -125,8 +127,8 @@ public class CommandLineLexer extends Lexer {
         try {
             int _type = T__10;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:43:7: ( '\"' )
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:43:9: '\"'
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:45:7: ( '\"' )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:45:9: '\"'
             {
             match('\"'); 
 
@@ -145,10 +147,10 @@ public class CommandLineLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:280:4: ( ( ' ' | '\\r' | '\\t' | '\\u000C' | '\\n' )+ )
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:280:6: ( ' ' | '\\r' | '\\t' | '\\u000C' | '\\n' )+
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:282:4: ( ( ' ' | '\\r' | '\\t' | '\\u000C' | '\\n' )+ )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:282:6: ( ' ' | '\\r' | '\\t' | '\\u000C' | '\\n' )+
             {
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:280:6: ( ' ' | '\\r' | '\\t' | '\\u000C' | '\\n' )+
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:282:6: ( ' ' | '\\r' | '\\t' | '\\u000C' | '\\n' )+
             int cnt1=0;
             loop1:
             do {
@@ -202,11 +204,11 @@ public class CommandLineLexer extends Lexer {
         try {
             int _type = TEXT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:282:6: ( LETTER ( LETTER | '-' | ';' | ':' | '{' | '}' )* )
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:282:8: LETTER ( LETTER | '-' | ';' | ':' | '{' | '}' )*
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:284:6: ( LETTER ( LETTER | '-' | ';' | ':' | '{' | '}' )* )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:284:8: LETTER ( LETTER | '-' | ';' | ':' | '{' | '}' )*
             {
             mLETTER(); 
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:282:15: ( LETTER | '-' | ';' | ':' | '{' | '}' )*
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:284:15: ( LETTER | '-' | ';' | ':' | '{' | '}' )*
             loop2:
             do {
                 int alt2=2;
@@ -253,7 +255,7 @@ public class CommandLineLexer extends Lexer {
     // $ANTLR start "LETTER"
     public final void mLETTER() throws RecognitionException {
         try {
-            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:286:5: ( '\\u0021' | '\\u0023' .. '\\u0026' | '\\u002b' | '\\u002e' .. '\\u0039' | '\\u0041' .. '\\u005a' | '\\u005c' | '\\u005f' | '\\u0061' .. '\\u007a' | '\\u007e' | '\\u00c0' .. '\\u00d6' | '\\u00d8' .. '\\u00f6' | '\\u00f8' .. '\\u00ff' | '\\u0100' .. '\\u1fff' | '\\u3040' .. '\\u318f' | '\\u3300' .. '\\u337f' | '\\u3400' .. '\\u3d2d' | '\\u4e00' .. '\\u9fff' | '\\uf900' .. '\\ufaff' )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:288:5: ( '\\u0021' | '\\u0023' .. '\\u0026' | '\\u002b' | '\\u002e' .. '\\u0039' | '\\u0041' .. '\\u005a' | '\\u005c' | '\\u005f' | '\\u0061' .. '\\u007a' | '\\u007e' | '\\u00c0' .. '\\u00d6' | '\\u00d8' .. '\\u00f6' | '\\u00f8' .. '\\u00ff' | '\\u0100' .. '\\u1fff' | '\\u3040' .. '\\u318f' | '\\u3300' .. '\\u337f' | '\\u3400' .. '\\u3d2d' | '\\u4e00' .. '\\u9fff' | '\\uf900' .. '\\ufaff' )
             // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:
             {
             if ( input.LA(1)=='!'||(input.LA(1)>='#' && input.LA(1)<='&')||input.LA(1)=='+'||(input.LA(1)>='.' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='\\'||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z')||input.LA(1)=='~'||(input.LA(1)>='\u00C0' && input.LA(1)<='\u00D6')||(input.LA(1)>='\u00D8' && input.LA(1)<='\u00F6')||(input.LA(1)>='\u00F8' && input.LA(1)<='\u1FFF')||(input.LA(1)>='\u3040' && input.LA(1)<='\u318F')||(input.LA(1)>='\u3300' && input.LA(1)<='\u337F')||(input.LA(1)>='\u3400' && input.LA(1)<='\u3D2D')||(input.LA(1)>='\u4E00' && input.LA(1)<='\u9FFF')||(input.LA(1)>='\uF900' && input.LA(1)<='\uFAFF') ) {
