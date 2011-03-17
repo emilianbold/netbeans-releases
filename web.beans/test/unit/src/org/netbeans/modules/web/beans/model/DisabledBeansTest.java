@@ -303,6 +303,96 @@ public class DisabledBeansTest extends CommonTestCase {
         });
     }
     
+    public void testProxyability() throws IOException{
+        createQualifier("Binding1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public final class One {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.ApplicationScoped; "+
+                "@Binding1 "+
+                "@ApplicationScoped "+
+                "public final class Two extends One {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.SessionScoped; "+
+                "@Binding1 "+
+                "@SessionScoped "+
+                "public class Three extends One {" +
+                " public final void method() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Four.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.RequestScoped; "+
+                "@Binding1 "+
+                "@RequestScoped "+
+                "public class Four extends One {" +
+                " private Four() {}  "+
+                " public Four( int arg ) {}  "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class TestClass {" +
+                " @Inject @Binding1 One myField1; "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        Result result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(Result.ResultKind.INJECTABLE_RESOLVED  ,
+                                result.getKind() );
+                        assertTrue( result instanceof Result.ApplicableResult);
+                        assertTrue( result instanceof Result.ResolutionResult );  
+                        assertTrue( result instanceof Result.InjectableResult );  
+                        assertEquals(4 , ((Result.ApplicableResult)result).
+                                getTypeElements().size());
+                        Element injectable = ((Result.InjectableResult)result).getElement();
+                        assertTrue( injectable instanceof TypeElement );
+                        Name qualifiedName = ((TypeElement)injectable).getQualifiedName();
+                        assertEquals("Injectable element should be foo.One",
+                                "foo.One", qualifiedName.toString());
+                    }
+                }
+                assert names.contains("myField1");
+                return null;
+            }
+        });
+    };
+    
     public void testNotManagedBeans() throws IOException{
         createQualifier("Binding1");
         
@@ -398,8 +488,8 @@ public class DisabledBeansTest extends CommonTestCase {
                     if ( element.getSimpleName().contentEquals("myField1")){
                         Result result = model.lookupInjectables(element, null);
                         assertNotNull( result );
-                        assertEquals(result.getKind() , 
-                                Result.ResultKind.INJECTABLE_RESOLVED );
+                        assertEquals(Result.ResultKind.INJECTABLE_RESOLVED ,
+                                result.getKind() );
                         assertTrue( result instanceof Result.ApplicableResult);
                         assertTrue( result instanceof Result.ResolutionResult );  
                         assertTrue( result instanceof Result.InjectableResult );  
@@ -414,8 +504,8 @@ public class DisabledBeansTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myField2")){
                         Result result = model.lookupInjectables(element, null);
                         assertNotNull( result );
-                        assertEquals(result.getKind() , 
-                                Result.ResultKind.INJECTABLE_RESOLVED );
+                        assertEquals(Result.ResultKind.INJECTABLE_RESOLVED ,
+                            result.getKind() );
                         assertTrue( result instanceof Result.ApplicableResult);
                         assertTrue( result instanceof Result.ResolutionResult );  
                         assertEquals(2 , ((Result.ApplicableResult)result).
@@ -429,8 +519,8 @@ public class DisabledBeansTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myField3")){
                         Result result = model.lookupInjectables(element, null);
                         assertNotNull( result );
-                        assertEquals(result.getKind() , 
-                                Result.ResultKind.RESOLUTION_ERROR );
+                        assertEquals(Result.ResultKind.RESOLUTION_ERROR ,
+                            result.getKind() ) ;
                         assertTrue( result instanceof Result.ApplicableResult);
                         assertTrue( result instanceof Result.ResolutionResult );  
                         int size = ((Result.ApplicableResult)result).
@@ -441,8 +531,8 @@ public class DisabledBeansTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myField2")){
                         Result result = model.lookupInjectables(element, null);
                         assertNotNull( result );
-                        assertEquals(result.getKind() , 
-                                Result.ResultKind.RESOLUTION_ERROR );
+                        assertEquals(Result.ResultKind.RESOLUTION_ERROR ,
+                                result.getKind() );
                         assertTrue( result instanceof Result.ApplicableResult);
                         assertTrue( result instanceof Result.ResolutionResult );  
                         assertEquals(3 , ((Result.ApplicableResult)result).
