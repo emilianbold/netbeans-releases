@@ -130,7 +130,7 @@ public class RepositoryNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return !info.isLocal();
+        return !info.getId().equals("local");
     }
 
     @Override
