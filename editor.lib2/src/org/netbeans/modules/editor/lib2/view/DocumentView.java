@@ -438,9 +438,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     public int getEndOffset() {
         return (endPos != null) ? endPos.getOffset() : super.getEndOffset();
     }
-    
-    Position getEndPos() {
-        return endPos;
+
+    boolean hasExtraBounds() {
+        return (endPos != null); // btw in such case also (startPos != null)
     }
 
     @Override
@@ -1570,11 +1570,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     @Override
     protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
         super.appendViewInfoCore(sb, indent, importantChildIndex);
-        sb.append("; incomingMod=").append(incomingModification);
-        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit);
+        sb.append("; incomingMod=").append(incomingModification); // NOI18N
+        sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit); // NOI18N
+        if (startPos != null) {
+            sb.append("; startPos:").append(startPos.getOffset()); // NOI18N
+        } else {
+            sb.append("; startPos is null"); // NOI18N
+        }
+        if (endPos != null) {
+            sb.append("; endPos:").append(endPos.getOffset()); // NOI18N
+        } else {
+            sb.append("; endPos is null"); // NOI18N
+        }
+        
         if (LOG_SOURCE_TEXT) {
             Document doc = getDocument();
-            sb.append("\nDoc: ").append(ViewUtils.toString(doc));
+            sb.append("\nDoc: ").append(ViewUtils.toString(doc)); // NOI18N
         }
         return sb;
     }
