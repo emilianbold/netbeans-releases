@@ -13,7 +13,7 @@ public class UserPropertyNode extends JavaVMOption<OptionValue<Map.Entry<String,
 
     public UserPropertyNode(Token name, String value, int start) {
         super(name);
-        setName(NAME);
+        setName(name.getText());
         setValue(new OptionValue.StringPair(name.getText(), value));
     }
 
