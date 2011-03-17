@@ -52,6 +52,7 @@ import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -131,7 +132,7 @@ public class RelocateAction extends ContextAction {
         // 1.) it can be only a folder - see isEnabled
         // 2.) even if its a dataobject with more files, we just don't care,
         // the action will affect the whole working copy
-        File root = roots[0];
+        final File root = roots[0];
 
         SVNUrl repositoryUrl = null;
         try {
@@ -187,9 +188,23 @@ public class RelocateAction extends ContextAction {
                 try {
                     client = Subversion.getInstance().getClient(url);
                     client.relocate(url.toString(), newUrl, wc, true);
+                    patchCache();
                 } catch (SVNClientException ex) {
                     annotate(ex);
                 } 
+            }
+
+            private void patchCache () {
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                // refresh status only for status entries already cached
+                File[] files = cache.listFiles(new File[] { root }, FileInformation.STATUS_MANAGED);
+                for (File f : files) {
+                    FileInformation fi = cache.getCachedStatus(f);
+                    if (fi != null && fi.getEntry(null) != null) {
+                        // cache needs to be refreshed
+                        cache.refresh(f, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    }
+                }
             }
         };
         support.start(rp, repositoryUrl, loc.getString("LBL_Relocate_Progress"));
