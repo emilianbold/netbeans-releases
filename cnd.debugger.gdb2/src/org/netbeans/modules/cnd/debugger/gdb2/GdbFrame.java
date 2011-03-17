@@ -159,4 +159,7 @@ public final class GdbFrame extends Frame {
         return debugger.remoteToLocal("Gdb frame", debugger.fmap().engineToWorld(fullname)); //NOI18N
     }
 
+    public String getEngineFullName() {
+        return fullname;
+    }
 }
