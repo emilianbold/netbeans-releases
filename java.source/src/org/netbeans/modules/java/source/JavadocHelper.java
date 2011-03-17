@@ -309,6 +309,9 @@ public class JavadocHelper {
                 final String pkgNameF = pkgName;
                 final String pageNameF = pageName;
                 final CharSequence fragment = buildFragment ? getFragment(element) : null;
+                if (cancel == null) {
+                    return findJavadoc(classFile, pkgName, pageNameF, fragment, allowRemoteJavadoc);
+                }
                 final Future<TextStream> future = RP.submit(new Callable<TextStream>() {
                     @Override
                     public TextStream call() throws Exception {
@@ -317,6 +320,7 @@ public class JavadocHelper {
                 });
                 do {
                     if (cancel != null && cancel.call()) {
+                        future.cancel(false);
                         break;
                     }
                     try {
