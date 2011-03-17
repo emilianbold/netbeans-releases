@@ -60,7 +60,6 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -76,6 +75,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class RelocateAction extends ContextAction {
          
+    @Override
     protected boolean enable(Node[] nodes) {
         if(nodes.length != 1) {
             return false;
@@ -93,6 +93,7 @@ public class RelocateAction extends ContextAction {
         return false;
     }
     
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
@@ -108,10 +109,12 @@ public class RelocateAction extends ContextAction {
         }
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_Relocate_Title";
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         ResourceBundle loc = NbBundle.getBundle(RelocateAction.class);
         
@@ -154,14 +157,17 @@ public class RelocateAction extends ContextAction {
         btnRelocate.setToolTipText(loc.getString("TT_Relocate_Action"));
         
         panel.getNewURL().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 validate(panel, btnRelocate);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 validate(panel, btnRelocate);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 validate(panel, btnRelocate);
             }          
@@ -184,6 +190,7 @@ public class RelocateAction extends ContextAction {
         final SVNUrl url = repositoryUrl;
         SvnProgressSupport support = new SvnProgressSupport() {
             SvnClient client = null;
+            @Override
             protected void perform() {                    
                 try {
                     client = Subversion.getInstance().getClient(url);
