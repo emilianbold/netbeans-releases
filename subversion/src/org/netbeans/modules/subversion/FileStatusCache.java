@@ -1096,30 +1096,6 @@ public class FileStatusCache {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
-    public void setCommand(int command) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logCommandLine(String commandLine) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logMessage(String message) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logError(String message) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logRevision(long revision, String path) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logCompleted(String message) {
-        // boring ISVNNotifyListener event
-    }
-
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
         @Override
         public Set<Entry<File, FileInformation>> entrySet() {
