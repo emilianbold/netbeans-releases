@@ -228,7 +228,7 @@ public class StatusCommand extends GitCommand {
 
                     GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
                     if (stage == 0) {
-                        if (!trackSymLinks && isSymlinkFolder(mHead, mWorking)) {
+                        if (!trackSymLinks && isSymlinkFolder(mHead, mWorking, symlink)) {
                             symLinks.add(status);
                         } else {
                             addStatus(file, status);
@@ -373,9 +373,12 @@ public class StatusCommand extends GitCommand {
         return !symLinks.isEmpty() && path.equals(symLinks.get(0).getRelativePath());
     }
 
-    private boolean isSymlinkFolder (int mHead, int mWorking) {
-        // it seems symlink to a folder has always mWorking set to 0
-        return mWorking == 0 && (mHead & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
+    private boolean isSymlinkFolder (int mHead, int mWorking, boolean isSymlink) {
+        // it seems symlink to a folder comes as two separate tree entries, 
+        // first has always mWorking set to 0 and is a symlink in index and HEAD
+        // the other is identified as a new tree
+        return (mWorking == 0 && (mHead & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK)
+            || (isSymlink && mHead == 0 && (mWorking & FileMode.TYPE_TREE) == FileMode.TYPE_TREE);
     }
 
     private void handleSymlink (List<GitStatus> symLinks, String workTreePath) {
