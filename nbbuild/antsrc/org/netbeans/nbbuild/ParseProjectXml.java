@@ -1180,6 +1180,7 @@ public final class ParseProjectXml extends Task {
 
         private String getTestFolder() {
             ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
+            assert entry.getNetbeansOrgPath() != null;
             String sep = "/";
             
             String cluster = entry.getClusterName(); 
@@ -1403,13 +1404,23 @@ public final class ParseProjectXml extends Task {
        }
    }
 
-    private static String testJarPath(ModuleListParser.Entry entry, String testType) {
-        String sep = File.separator;
-        String cluster = entry.getClusterName();
-        if (cluster == null) {
-            cluster = "cluster";
+    private String testJarPath(ModuleListParser.Entry entry, String testType) {
+        if (entry.getNetbeansOrgPath() != null) {
+            String sep = File.separator;
+            String cluster = entry.getClusterName();
+            if (cluster == null) {
+                cluster = "cluster";
+            }
+            return ParseProjectXml.cachedTestDistLocation + sep + testType + sep + cluster + sep + entry.getCnb().replace('.', '-') + sep + "tests.jar";
+        } else {
+            File src = entry.getSourceLocation();
+            if (src != null) {
+                return new File(src, "build/test/" + testType + "/classes").getAbsolutePath();
+            } else {
+                log("No source location for " + entry + " so cannot use as a test dependency", Project.MSG_VERBOSE);
+                return null;
+            }
         }
-        return ParseProjectXml.cachedTestDistLocation + sep + testType + sep + cluster + sep + entry.getCnb().replace('.', '-') + sep + "tests.jar";
     }
 
     private String computeClassPathExtensions(Document pDoc) {

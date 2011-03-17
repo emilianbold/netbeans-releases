@@ -297,7 +297,10 @@ public final class GitModuleConfig {
             String rcOldString = it.next();
             GitURI guriOld = null;
             try {
-                guriOld = new GitURI(rcOldString);
+                GitURIEntry entry = GitURIEntry.create(rcOldString);
+                if(entry != null) {
+                    guriOld = new GitURI(entry.guriString);
+                }
             } catch (URISyntaxException ex) {
                 Git.LOG.log(Level.WARNING, rcOldString, ex);
             }
@@ -349,9 +352,9 @@ public final class GitModuleConfig {
                 Git.LOG.log(Level.WARNING, guriString, ex);
                 continue;
             }
-            char[] password = entry.savePassword ? KeyringSupport.read(GURI_PASSWORD, guri.toString()) : null;
+            char[] password = KeyringSupport.read(GURI_PASSWORD, guri.toString());
             if(password != null) {
-                guri.setPass(new String(password));
+                guri = guri.setPass(new String(password));
             }
             ret.add(guri);
         }
@@ -363,9 +366,8 @@ public final class GitModuleConfig {
             Runnable outOfAWT = new Runnable() {
                 @Override
                 public void run() {
-                    String url = guri.toString();
                     String passwd = guri.getPass();
-                    KeyringSupport.save(GURI_PASSWORD, url, passwd.toCharArray(), null);
+                    KeyringSupport.save(GURI_PASSWORD, guri.toString(), passwd.toCharArray(), null);
 
                 }
             };

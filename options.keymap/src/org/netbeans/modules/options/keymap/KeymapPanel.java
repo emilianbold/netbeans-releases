@@ -214,15 +214,17 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         if (searchSCField.getText().length() != 0) {
             String searchText = searchSCField.getText();
             getModel().getDataVector().removeAllElements();
-            for (String category : getModel().getCategories().get("")) {
-                for (Object o : getModel().getItems(category)) {
-                    if (o instanceof ShortcutAction) {
-                        ShortcutAction sca = (ShortcutAction) o;
-                        String[] shortcuts = getModel().getShortcuts(sca);
-                        for (int i = 0; i < shortcuts.length; i++) {
-                            String shortcut = shortcuts[i];
-                            if (searched(shortcut, searchText))
-                                getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
+            for (String categorySet : getModel().getCategories().keySet()) {
+                for (String category : getModel().getCategories().get(categorySet)) {
+                    for (Object o : getModel().getItems(category)) {
+                        if (o instanceof ShortcutAction) {
+                            ShortcutAction sca = (ShortcutAction) o;
+                            String[] shortcuts = getModel().getShortcuts(sca);
+                            for (int i = 0; i < shortcuts.length; i++) {
+                                String shortcut = shortcuts[i];
+                                if (searched(shortcut, searchText))
+                                    getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
+                            }
                         }
                     }
                 }

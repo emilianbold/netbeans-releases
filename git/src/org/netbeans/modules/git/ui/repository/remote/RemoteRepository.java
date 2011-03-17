@@ -50,15 +50,14 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,17 +80,16 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private Message msg;
 
     private ChangeSupport support = new ChangeSupport(this);
-    private static final Pattern SCHEME_PATTERN = Pattern.compile("([a-z][a-z0-9+-]+)://"); // NOI18N
 
     private enum Scheme {
-        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),
-        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),
-        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),
-        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),
-        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),
-        SSH("ssh", "ssh://[user@]host.xz[:port]/path/to/repo.git/"),
-        GIT("git", "git://host.xz[:port]/path/to/repo.git/"),
-        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");     
+        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
+        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),             // NOI18N
+        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),           // NOI18N
+        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
+        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
+        SSH("ssh", "ssh://host.xz[:port]/path/to/repo.git/"),                   // NOI18N    
+        GIT("git", "git://host.xz[:port]/path/to/repo.git/"),                   // NOI18N
+        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");                    // NOI18N
         
         private final String name;
         private final String tip;
@@ -153,7 +151,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public GitURI getURI() {
-        String uriString = (String) panel.urlComboBox.getEditor().getItem();        
+        String uriString = getURIString();        
         if(uriString != null && !uriString.isEmpty()) {
             try {
                 return new GitURI(uriString);
@@ -171,7 +169,28 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public void store() {
-        GitModuleConfig.getDefault().insertRecentGitURI(getURI(), panel.savePasswordCheckBox.isSelected());
+        GitURI guri = getURI();
+        assert guri != null;
+        if(guri == null) {
+            return;
+        }
+        
+        final boolean isSelected = panel.savePasswordCheckBox.isSelected();
+        if(isSelected) {
+            guri = guri.setUser(panel.userTextField.getText());
+            guri = guri.setPass(new String(panel.userPasswordField.getPassword()));
+        } else {
+            guri = guri.setUser(null);
+            guri = guri.setPass(null);
+        }
+        final GitURI fguri = guri;
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                GitModuleConfig.getDefault().insertRecentGitURI(fguri, isSelected);
+                recentGuris.put(fguri.toString(), fguri);
+            }
+        });
     }
     
     public void removeChangeListener(ChangeListener listener) {
@@ -182,32 +201,40 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         support.addChangeListener(listener);
     }
     
+    private String getURIString() {
+        String uriString = (String) panel.urlComboBox.getEditor().getItem();
+        return uriString;
+    }
+    
     private void attachListeners () {
         panel.proxySettingsButton.addActionListener(this);
         panel.directoryBrowseButton.addActionListener(this);
         panel.urlComboBox.addActionListener(this);
         ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);        
-        panel.userPasswordField.getDocument().addDocumentListener(this);
-        panel.userTextField.getDocument().addDocumentListener(this);
         panel.urlComboBox.addItemListener(this);
     }
 
     @Override
     public void insertUpdate(DocumentEvent de) {
+        if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
+        findComboItem();
     }
 
     @Override
     public void removeUpdate(DocumentEvent de) {
+        if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
     }
 
     @Override
     public void changedUpdate(DocumentEvent de) {
+        if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
+        findComboItem();
     }
 
     @Override
@@ -221,7 +248,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     @Override
     public void itemStateChanged(ItemEvent ie) {
-    
+        GitURI guri = getURI();
+        if(guri != null) {
+            populateFields(recentGuris.get(guri.toString()));
+        }
     }
 
     private void validateFields () {
@@ -233,7 +263,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             GitURI uri = getURI();
             if(uri == null) {
                 valid = false;
-                msg = new Message(NbBundle.getMessage(RemoteRepository.class, "MSG_EMPTY_URI_ERROR"), true);
+                msg = new Message(NbBundle.getMessage(RemoteRepository.class, "MSG_EMPTY_URI_ERROR"), true); // NOI18N
             } else {
                 // XXX check suported protocols
             }
@@ -281,8 +311,73 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         });
     }
 
+    private boolean ignoreComboEvents = false;
+    private void findComboItem() {
+        final String uriString = getURIString();        
+        if(uriString == null || uriString.isEmpty()) {
+            return;
+        }
+        DefaultComboBoxModel model = (DefaultComboBoxModel)panel.urlComboBox.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            final String item = (String) model.getElementAt(i);
+            if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
+                final int start = uriString.length();
+                final int end = item.length();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ignoreComboEvents = true;
+                        try {
+                            JTextComponent txt = (JTextComponent)panel.urlComboBox.getEditor().getEditorComponent();
+                            txt.setText(item);
+                            txt.setCaretPosition(start);
+                            txt.setSelectionStart(start);
+                            txt.setSelectionEnd(end);
+                            
+                            setFieldsVisibility();
+                            
+                            GitURI guri = recentGuris.get(item);
+                            populateFields(guri);
+                            
+                        } finally {
+                            ignoreComboEvents = false;
+                        }
+                    }
+                });
+                return;
+            } else {
+                
+            }
+        }
+    }
+    
+    private void populateFields(GitURI guri) {
+        if(guri == null) return;
+
+        boolean hasUser = false;
+        boolean hasPass = false;
+        String user = guri.getUser();
+        if(user != null && !user.isEmpty()) {
+            panel.userTextField.setText(guri.getUser());
+            hasUser = true;
+        } else {
+            panel.userTextField.setText("");
+        }
+        panel.userTextField.setText(guri.getUser());
+        String pass = guri.getPass();
+        if(pass != null && !pass.isEmpty()) {
+            panel.userPasswordField.setText(guri.getPass());
+            hasPass = true;
+        } else {
+            panel.userPasswordField.setText("");            // NOI18N
+        }
+        panel.savePasswordCheckBox.setSelected(hasUser || hasPass);
+    }
+    
+    private Map<String, GitURI> recentGuris = new HashMap<String, GitURI>();
     private void initUrlComboValues(final String forPath) {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 panel.urlComboBox.setEnabled(false);
                 try {
@@ -291,14 +386,19 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     try {
                         List<GitURI> guris = GitModuleConfig.getDefault().getRecentUrls();
                         for (GitURI gitURI : guris) {
-                            model.addElement(gitURI.toString());
+
+                            // strip user/psswd
+                            GitURI g = new GitURI(gitURI.toString()).setPass(null).setUser(null);
+                            model.addElement(g.toString());
+                            
+                            recentGuris.put(g.toString(), gitURI);
                         }
                     } catch (Throwable t) {
                         Git.LOG.log(Level.WARNING, null, t);
                     }
                     
                     for (Scheme s : Scheme.values()) {
-                        model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));
+                        model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));   // NOI18N
                     }
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {

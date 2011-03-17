@@ -94,7 +94,8 @@ public class WebAppProxy implements WebApp {
     }
 
     public void setProxyVersion(java.lang.String value) {
-        if ((version==null && value!=null) || !version.equals(value)) {
+        if ((version == null && value != null)
+            || (version != null && value != null && !version.equals(value))) {
             java.beans.PropertyChangeEvent evt =
                 new java.beans.PropertyChangeEvent(this, PROPERTY_VERSION, version, value);
             version=value;

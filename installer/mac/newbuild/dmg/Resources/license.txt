@@ -1,15 +1,18 @@
-NETBEANS IDE 7.0 Beta ("Product")
+NETBEANS IDE 7.0 ("Product")
 
-Please review the complete list of open-source licenses
-governing software  included in the Product. They can be
-found in the THIRDPARTYLICENSE.txt file. Oracle elects to use
-only the GNU Lesser General Public License version 2.1
-(LGPL)/GNU General Public License version 2 (GPL) for any
-software where a choice of LGPL/GPL license versions are
-made available with the language indicating that
-LGPLv2.1/GPLv2 or any later version may be used, or where a
-choice of which version of the LGPL/GPL is applied is
-unspecified.
+Oracle licenses NetBeans IDE under the CDDL v 1.0 (CDDL) or
+GNU General Public License version 2 (GPL), both of which
+are identified below. You may choose either license to govern
+your use of NetBeans IDE only upon the condition that you
+accept all of the terms of either the CDDL or GPL. Read
+the terms carefully. If you are not willing to be bound by
+these terms, do not download or use NetBeans IDE.
+
+Third party technology that may be necessary for use with
+NetBeans IDE is specified in THIRDPARTYLICENSE.txt. Such
+third party technology is licensed to you under the terms
+of the third party technology license agreement specified
+and not under either the CDDL or GPL.
 
 Please review the list of libraries and licenses provided
 for use. This license file contains five distinct licenses.
@@ -423,19 +426,13 @@ Public License instead of this License.
 
 "CLASSPATH" EXCEPTION TO THE GPL VERSION 2
 
-Certain source files distributed by Oracle Corporation.
-are subject to  the following clarification and special
+Certain source files distributed by Oracle America, Inc.
+are subject to the following clarification and special
 exception to the GPL Version 2, but only where Oracle has
 expressly included in the particular source file's header
-the one of the following statements  "Oracle designates 
-this particular file as subject to the "Classpath" 
-exception as provided by Oracle in the License file that 
-accompanied this code." 
-or 
-"Sun designates this particular file as subject to the 
-"Classpath" exception as provided by Sun in the License 
-file that accompanied this code." 
-
+the words: "Oracle designates this particular file as
+subject to the "Classpath" exception as provided by Oracle
+in the License file that accompanied this code."
 
 Linking this library statically or dynamically with other
 modules is making a combined work based on this library.
