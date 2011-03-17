@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
       <!-- XXX do not know how to replace with @Schema2Beans; see issue #178426 for discussion -->
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${netbeans.dest.dir}/ide/modules/org-netbeans-modules-schema2beans.jar" />
 	  </classpath>
 	</taskdef>
   </target>
