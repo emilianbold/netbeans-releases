@@ -442,10 +442,9 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         }
 
         if (force || getAddressLine(curAddress) == -1) {
-            intFileName = null; //frame.getOriginalFullName();
+            intFileName = frame.getEngineFullName();
             resolvedFileName = frame.getFullPath();
-            //if ((intFileName == null || intFileName.length() == 0) && requestMode == RequestMode.FILE) {
-            if ((resolvedFileName == null || resolvedFileName.length() == 0) &&
+            if ((intFileName == null || intFileName.length() == 0) &&
                     (requestMode == RequestMode.FILE_SRC || requestMode == RequestMode.FILE_NO_SRC)) {
                 requestMode = withSource ? RequestMode.ADDRESS_SRC : RequestMode.ADDRESS_NO_SRC;
             }
