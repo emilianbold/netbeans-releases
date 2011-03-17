@@ -166,7 +166,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     
     private void buildViews(ParagraphView paragraphView, int paragraphViewIndex,
         int startOffset, int endOffset,
-        int modOffset, int offsetDelta, boolean createLocalViews)
+        int modOffset, int modLength, boolean createLocalViews)
     {
 //        assert (DocumentUtilities.isReadLocked(documentView.getDocument())) :
 //                "Document NOT READ-LOCKED: " + documentView.getDocument(); // NOI18N
@@ -174,7 +174,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         assert !buildingViews : "Already building views"; // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView,
                 paragraphViewIndex, viewFactories, startOffset, endOffset,
-                modOffset, offsetDelta, createLocalViews
+                modOffset, modLength, createLocalViews
         );
         setBuildingViews(true);
         try {
@@ -316,12 +316,14 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                         rRegion = rRegion.union(doc, firstAddedLineStartOffset, lastAddedLineEndOffset, false);
                     }
                 }
-                int docViewStartOffset = documentView.getStartOffset();
-                int docViewEndOffset = documentView.getEndOffset();
-                rRegion = rRegion.intersection(doc, docViewStartOffset, docViewEndOffset, true);
-                if (rRegion == null) {
-                    // Outside of area covered by document view
-                    return;
+                if (documentView.hasExtraBounds()) {
+                    int docViewStartOffset = documentView.getStartOffset();
+                    int docViewEndOffset = documentView.getEndOffset();
+                    rRegion = rRegion.intersection(doc, docViewStartOffset, docViewEndOffset, true);
+                    if (rRegion == null) {
+                        // Outside of area covered by document view
+                        return;
+                    }
                 }
                 int paragraphViewIndex;
                 ParagraphView paragraphView;
@@ -390,7 +392,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 }
                 if (documentView.getViewCount() == 0) {
                     // It would later fail on paragraphViewIndex == -1
-                    // Even for empty doc there should be 
+                    // Even for empty doc there should be an extra newline at doc end
                     return;
                 }
                 Document doc = documentView.getDocument();
@@ -401,7 +403,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                     EditorViewFactory editorViewFactory = viewFactories[i];
                     editorViewFactory.removeUpdate(evt);
                 }
-
+                
                 // Check if the factories fired any changes
                 OffsetRegion rRegion = fetchRebuildRegion();
 
@@ -414,17 +416,17 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 // Update the region by modification region (in after-mod offsets) i.e. empty region
                 rRegion = OffsetRegion.union(rRegion, doc, removeOffset, removeOffset, false);
                 // rRegion is non-null
-                int docViewStartOffset = documentView.getStartOffset();
-                int docViewOrigEndOffset = documentView.getEndOffset();
-                if (docViewOrigEndOffset >= removeOffset) {
-                    docViewOrigEndOffset += removeLength;
+                
+                if (documentView.hasExtraBounds()) {
+                    int docViewStartOffset = documentView.getStartOffset();
+                    int docViewEndOffset = documentView.getEndOffset();
+                    rRegion = rRegion.intersection(doc, docViewStartOffset, docViewEndOffset, true);
+                    if (rRegion == null) {
+                        // Outside of area covered by document view
+                        return;
+                    }
                 }
-                rRegion = rRegion.intersection(doc, docViewStartOffset, docViewOrigEndOffset, true);
-                if (rRegion == null) {
-                    // Outside of area covered by document view
-                    return;
-                }
-
+                
                 // If line elements were modified the views will be modified too
                 DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
                 Element[] removedLines = null;
@@ -502,7 +504,6 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 // TODO finish
                 documentView.checkIntegrity();
             } finally {
-                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -557,12 +558,14 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         // Do nothing if docView is not active. Once becomes active a full rebuild will be done.
         if (documentView.isActive()) {
             Document doc = documentView.getDocument();
-            int docViewStartOffset = documentView.getStartOffset();
-            int docViewEndOffset = documentView.getEndOffset();
-            region = region.intersection(doc, docViewStartOffset, docViewEndOffset, true);
-            if (region == null) {
-                // Outside of area covered by document view
-                return;
+            if (documentView.hasExtraBounds()) {
+                int docViewStartOffset = documentView.getStartOffset();
+                int docViewEndOffset = documentView.getEndOffset();
+                region = region.intersection(doc, docViewStartOffset, docViewEndOffset, true);
+                if (region == null) {
+                    // Outside of area covered by document view
+                    return;
+                }
             }
             documentView.checkIntegrity();
             int paragraphViewIndex = documentView.getViewIndexFirst(region.startOffset());
