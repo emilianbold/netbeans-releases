@@ -50,6 +50,23 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.context-context">
+        <api name="awt"/>
+        <summary>Context Actions Can Specify Different Default Context</summary>
+        <version major="7" minor="31"/>
+        <date day="20" month="3" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
+        <description>
+            <p>
+                <a href="@org-openide-awt@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+                Action.context</a>, when used from layer accepts <code>"context"</code>
+                attribute.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="77210"/>
+    </change>
     <change id="ActionReference">
         <api name="awt"/>
         <summary>New @ActionReference annotations</summary>
