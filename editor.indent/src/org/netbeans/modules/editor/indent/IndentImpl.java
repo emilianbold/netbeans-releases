@@ -143,7 +143,7 @@ public final class IndentImpl {
                     return;
                 }
                 try {
-                    wait();
+                    indentLock.wait();
                 } catch (InterruptedException e) {
                     throw new Error("Interrupted at acquiring indent-lock");
                 }
@@ -171,7 +171,7 @@ public final class IndentImpl {
                 indentHandler.unlock();
                 indentHandler = null;
                 indentLockThread = null;
-                notifyAll();
+                indentLock.notifyAll();
             } else {
                 indentLockExtraDepth--;
             }
@@ -194,7 +194,7 @@ public final class IndentImpl {
                     return;
                 }
                 try {
-                    wait();
+                    reformatLock.wait();
                 } catch (InterruptedException e) {
                     throw new Error("Interrupted at acquiring reformat-lock");
                 }
@@ -222,7 +222,7 @@ public final class IndentImpl {
                 reformatHandler.unlock();
                 reformatHandler = null;
                 reformatLockThread = null;
-                notifyAll();
+                reformatLock.notifyAll();
             } else {
                 reformatLockExtraDepth--;
             }
