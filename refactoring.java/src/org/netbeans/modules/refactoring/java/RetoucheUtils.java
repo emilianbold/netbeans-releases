@@ -222,7 +222,12 @@ public class RetoucheUtils {
             if (type == null) {
                 // #120577: log info to find out what is going wrong
                 FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
-                throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                if (file == null) {
+                    //Deleted file
+                    continue;
+                } else {
+                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                }
             }
             for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {
