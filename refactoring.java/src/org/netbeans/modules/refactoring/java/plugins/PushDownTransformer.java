@@ -202,7 +202,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                     }
                 }
 
-                if (makeClassAbstract && !njuClass.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+                if (makeClassAbstract && !njuClass.getModifiers().getFlags().contains(Modifier.ABSTRACT) && (njuClass.getKind() != Tree.Kind.INTERFACE)) {
                     // make enclosing class abstract if necessary
                     njuClass = make.Class(RetoucheUtils.makeAbstract(make,
                             njuClass.getModifiers()), njuClass.getSimpleName(),
