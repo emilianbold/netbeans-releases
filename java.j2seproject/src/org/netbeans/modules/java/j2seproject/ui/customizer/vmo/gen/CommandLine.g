@@ -18,7 +18,9 @@ import java.util.LinkedList;
 
     @Override
     public void recover(final RecognitionException re) {	
-        input.rewind();
+        input.seek(state.tokenStartCharIndex);
+        input.setLine(state.tokenStartLine);
+        input.setCharPositionInLine(state.tokenStartCharPositionInLine);
         state.type = TEXT;
         state.token = null;
         state.channel = Token.DEFAULT_CHANNEL;
@@ -28,7 +30,7 @@ import java.util.LinkedList;
         state.text = null;
         //read upto white space and emmit as TEXT, todo: specail ERROR token should be better
         while (!((input.LA(1)>='\t' && input.LA(1)<='\n')||(input.LA(1)>='\f' && input.LA(1)<='\r')||input.LA(1)==' '||input.LA(1) == EOF)) {                
-            input.seek(input.index()+1);
+            input.consume();
         }
         tokens.add(emit());
     }
