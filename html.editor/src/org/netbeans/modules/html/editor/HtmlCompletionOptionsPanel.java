@@ -165,7 +165,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_completionOffersEndTagAfterLtActionPerformed
 
     private void autoPopupCompletionWindowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoPopupCompletionWindowActionPerformed
-        preferences.putBoolean(HTML_COMPLETION_AUTOPOPUP_WINDOW, completionOffersEndTagAfterLt.isSelected());
+        preferences.putBoolean(HTML_COMPLETION_AUTOPOPUP_WINDOW, autoPopupCompletionWindow.isSelected());
     }//GEN-LAST:event_autoPopupCompletionWindowActionPerformed
 
 
