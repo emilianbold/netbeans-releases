@@ -293,6 +293,7 @@ public final class MavenEmbedder {
 
     /**
      * Needed to avoid an NPE in {@link org.sonatype.aether.impl.internal.DefaultArtifactResolver#resolveArtifacts} under some conditions.
+     * (Also {@link org.sonatype.aether.impl.internal.DefaultMetadataResolver#resolve}; wherever a {@link org.sonatype.aether.RepositorySystemSession} is used.)
      * Should be called in the same thread as whatever thread was throwing the NPE.
      */
     public void setUpLegacySupport() {
