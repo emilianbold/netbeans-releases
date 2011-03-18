@@ -45,13 +45,18 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitMergeResult.MergeStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -311,5 +316,23 @@ public class MergeTest extends AbstractGitTestCase {
             // OK
             assertEquals(Arrays.asList(new String[] { f.getName(), f2.getName() }), Arrays.asList(ex.getConflicts()));
         }
+    }
+    
+    public void testMergeBranchNoHeadYet_196837 () throws Exception {
+        StoredConfig cfg = getRemoteRepository().getConfig();
+        cfg.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_BARE, false);
+        cfg.save();
+        File otherRepo = getRemoteRepository().getWorkTree();
+        File original = new File(otherRepo, "f");
+        GitClient clientOtherRepo = getClient(otherRepo);
+        write(original, "initial content");
+        clientOtherRepo.add(new File[] { original }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        clientOtherRepo.commit(new File[] { original }, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        GitClient client = getClient(workDir);
+        Map<String, GitTransportUpdate> updates = client.fetch(otherRepo.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/master:refs/remotes/origin/master" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitMergeResult result = client.merge("origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(MergeStatus.FAST_FORWARD, result.getMergeStatus());
+        assertEquals(Arrays.asList(new String[] { ObjectId.zeroId().getName(), updates.get("origin/master").getNewObjectId() }), Arrays.asList(result.getMergedCommits()));
     }
 }
