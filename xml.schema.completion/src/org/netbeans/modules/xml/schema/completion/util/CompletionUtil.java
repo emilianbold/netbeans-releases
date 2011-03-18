@@ -338,7 +338,7 @@ public class CompletionUtil {
             item = createResultItem(axi, null, context);
             if (item == null)
                 return;
-            if (typedChars == null) {
+            if ((typedChars == null) || (typedChars.trim().isEmpty())) {
                 results.add(item);
             } else if (isResultItemTextStartsWith(item, typedChars)) {
                 results.add(item);
@@ -354,7 +354,7 @@ public class CompletionUtil {
             item = createResultItem(axi, prefix, context);
             if (item == null)
                 continue;
-            if (typedChars == null) {
+            if ((typedChars == null) || (typedChars.trim().isEmpty())) {
                 results.add(item);
             } else if (isResultItemTextStartsWith(item, typedChars)) {
                 results.add(item);

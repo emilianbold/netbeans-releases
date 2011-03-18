@@ -312,6 +312,7 @@ public class CompletionContextImpl extends CompletionContext {
         try {
             if (isTagAttributeRequired(tokenSequence)) {
                 completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                typedChars = token.getImage();
                 pathFromRoot = getPathFromRoot(element);
                 return true;
             }
