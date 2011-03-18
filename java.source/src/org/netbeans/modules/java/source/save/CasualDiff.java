@@ -606,7 +606,7 @@ public class CasualDiff {
             printer.setPrec(old);
         }
         //make sure the ')' is printed:
-        moveFwdToToken(tokenSequence, posHint, JavaTokenId.RPAREN);
+        moveFwdToToken(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), JavaTokenId.RPAREN);
         tokenSequence.moveNext();
         posHint = tokenSequence.offset();
         if (localPointer < posHint)
