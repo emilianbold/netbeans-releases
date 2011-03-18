@@ -3439,7 +3439,7 @@ import org.openide.util.Exceptions;
             if (currentFrame == null) {
                 return;
             }
-            String file = currentFrame.getFullPath();
+            String file = currentFrame.getEngineFullName();
             String line = currentFrame.getLineNo();
 
 	    String cmd = "-data-disassemble"; // NOI18N
@@ -3447,7 +3447,7 @@ import org.openide.util.Exceptions;
 	    if (file != null && line != null && !line.isEmpty()) {
 		// request by line #
 
-		cmd += " -f " + file; // NOI18N
+		cmd += " -f \"" + file + '\"'; // NOI18N
 		cmd += " -l " + line; // NOI18N
 		cmd += " -- " + src; // NOI18N
 

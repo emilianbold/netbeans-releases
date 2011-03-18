@@ -122,8 +122,6 @@ final class ViewBuilder {
 
     private boolean createLocalViews; // Whether children of paragraph views are created
     
-    private static boolean wrongStartOffsetReported; // TODO remove when ISE gets fixed
-    
     /**
      * Construct view builder.
      * @param paragraphView paragraph view in which a first replace will occur.
@@ -148,19 +146,18 @@ final class ViewBuilder {
         this.modLength = modLength;
 
         assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
-        assert (modOffset >= startOffset) : "modOffset=" + modOffset + " < startOffset=" + startOffset; // NOI18N
-        assert (endOffset >= modOffset) : "endOffset=" + endOffset + " < modOffset=" + modOffset; // NOI18N
-        assert (docViewEndOffset >= endOffset) : "docViewEndOffset=" + docViewEndOffset + // NOI18N
-                " < endOffset=" + endOffset; // NOI18N
-        if (modLength > 0) { // For insert endOffset must be >= (modOffset+modLength)
-            assert (endOffset >= modOffset + modLength) : "endOffset=" + endOffset + // NOI18N
-                    " < (modOffset+modLength)=" + (modOffset+modLength); // NOI18N
+        assert (endOffset >= startOffset) : "endOffset=" + endOffset + " < startOffset=" + startOffset; // NOI18N
+        // Since the view hierarchy for fold tooltip may be created for just a portion of document then:
+        // 1. modOffset can be < startOffset
+        // 2. endOffset > docViewEndOffset
+        // 3. startOffset < paragraphView.getStartOffset()
+        if (endOffset > docViewEndOffset) {
+            endOffset = docViewEndOffset; // Bound it to view's end offset
         }
         this.createLocalViews = createLocalViews;
         // When not creating local views the possible passed paragraphView must be recreated
         if (!createLocalViews && paragraphView != null) {
-            int pOffset = paragraphView.getStartOffset();
-            assert (pOffset <= startOffset) : "pOffset=" + pOffset + " > startOffset=" + startOffset; // NOI18N
+            int pOffset = paragraphView.getStartOffset(); // btw can be > startOffset for tooltip preview
             startOffset = pOffset;
             // [TODO] Consider whether endOffset should be extended to pOffset+pView.getLength() or not
             paragraphView = null;
@@ -184,22 +181,9 @@ final class ViewBuilder {
         int beforeModEndOffset = endOffset - modLength;
         if (fReplace != null) {
             int paragraphViewStartOffset = paragraphView.getStartOffset();
-            if ((startOffset < paragraphViewStartOffset) && !wrongStartOffsetReported) {
-                wrongStartOffsetReported = true;
-                throw new IllegalStateException("startOffset=" + startOffset + // NOI18N
-                        " < paragraphViewStartOffset=" + paragraphViewStartOffset + // NOI18N
-                        "\ndocViewEndOffset=" + docViewEndOffset + ", paragraph-views-count=" + documentView.getViewCount() + // NOI18N
-                        "\n" + documentView.toStringDetail()); // NOI18N
-            }                
             EditorView childView = fReplace.childViewAtIndex();
             // Round start offset to child's start offset
-            int childStartOffset = childView.getStartOffset();
-            // Re-check updated startOffset
-            if (childStartOffset > startOffset && !wrongStartOffsetReported) {
-                wrongStartOffsetReported = true;
-                throw new IllegalStateException("childStartOffset=" + childStartOffset + // NOI18N
-                    " > startOffset=" + startOffset + "\ndocumentView:\n" + documentView.toStringDetail());
-            }
+            int childStartOffset = childView.getStartOffset(); // btw can be > startOffset for fold tooltip preview
             startOffset = childStartOffset;
             // Get paragraph end offset in original offset coordinates
             paragraphViewEndOffset = paragraphViewStartOffset + paragraphView.getLength();
@@ -232,10 +216,12 @@ final class ViewBuilder {
                         assert (paragraphView == null) : "paragraphView=" + paragraphView + " != null"; // NOI18N
                         // Remove all paragraphs (skip individual removal of each paragraph in checkRemoveParagraphs())
                         // Current view hierarchy may be obsolete in full rebuild (e.g. after lengthy atomic operation)
+                        // so summing up individual views' lengths could bring invalid results
                         dReplace.removeCount = paragraphCount;
                         viewRemovalFinished = true;
                         matchOffset = paragraphViewEndOffset = docViewEndOffset; // modLength == 0
-                    } else if (modOffset == 0 && modLength > 0) {
+                    } else if (modOffset == 0 && modLength > 0 && documentView.getStartOffset() == 0) {
+                        // Btw insert at offset==0 leaves all positions at offset==0
                         // docView[0].getStartOffset() == 1 in case of undo()
                         paragraphViewEndOffset = 0;
                     } else {
@@ -248,15 +234,20 @@ final class ViewBuilder {
                     dReplace.removeCount++;
                     checkRemoveParagraphs(beforeModEndOffset, false);
                 }
-            } else {
-                viewRemovalFinished = true;
+            } else { // dReplace.index = paragraphCount
+                // For tooltip fold preview in case of removal:
+                // if the docViewEndOffset would be inside <modOffset, modOffset+modLength>
+                // then simple adding pView.getLength() would end up below projection of modOffset+modLength
+                // into original offset space (since there were no views to cover area ending at modOffset+modLength)
+                // so assigning (docViewEndOffset - modLength) corrects such situation.
                 matchOffset = paragraphViewEndOffset = docViewEndOffset - modLength;
+                viewRemovalFinished = true;
             }
         }
         assert (matchOffset >= 0) : "matchOffset=" + matchOffset; // NOI18N
         assert (paragraphViewEndOffset >= 0) : "paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
 
-        // Apply modLength to operate in actual offset coordinates for removals
+        // Apply modLength to operate in actual offset space
         if (modLength != 0) {
             matchOffset += modLength;
             paragraphViewEndOffset += modLength;

@@ -896,6 +896,9 @@ public class IndentSupport {
                     case ENUM:
                     case VIRTUAL:
                     case INLINE:
+                    case _INLINE:
+                    case __INLINE:
+                    case __INLINE__:
                     case LBRACE:
                         return false;
                     case COLON:
