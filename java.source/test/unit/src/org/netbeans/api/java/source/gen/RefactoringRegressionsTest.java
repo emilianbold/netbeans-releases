@@ -629,6 +629,109 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testAnnotatedParameters196719a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t(@SuppressWarnings(\"\") int aa, long bb) {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t(@SuppressWarnings(\"\") int cc, long bb) {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+                VariableTree param = mt.getParameters().get(0);
+
+                workingCopy.rewrite(param, workingCopy.getTreeMaker().setLabel(param, "cc"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAnnotatedParameters196719b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t(@SuppressWarnings(\"\") int aa, long bb) {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void x(@SuppressWarnings(\"\") int aa, long bb) {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(mt, workingCopy.getTreeMaker().setLabel(mt, "x"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAnnotatedParameters196719c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void x() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(mt, workingCopy.getTreeMaker().setLabel(mt, "x"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
