@@ -63,21 +63,26 @@ import org.apache.tools.ant.util.FileUtils;
  * Designed for netbeans.dest dir and test.dist.dir variables 
  */
 public class ShorterPaths extends Task {
-    
-   
-    /** dir is prefix and name is name of varaible
+
+    /** dir is prefix and name is name of variable
+     * <shorterpaths in="inputpropname" out="outpropNames">
+     *     <replacement name="property_name" dir="directory"/>
+     * </shorterpaths>
      */
     public static class Replacement {
-        String name; 
+
+        String name;
         File dir;
         File excluded;
-        
+
         public void setName(String name) {
             this.name = name;
         }
+
         public void setDir(File dir) {
             this.dir = dir;
         }
+
         public void setExcluded(File excluded) {
             this.excluded = excluded;
         }
@@ -88,33 +93,32 @@ public class ShorterPaths extends Task {
         }
     }
     private List<Replacement> replacements = new LinkedList<Replacement>(); // List<Nestme>
+
     public Replacement createReplacement() {
         Replacement r = new Replacement();
         replacements.add(r);
         return r;
     }
-    // Or:
+
     public void addReplacement(Replacement r) {
         replacements.add(r);
     }
-    // <shorterpaths in="inputpropname" out="outpropNames">
-    //     <replacement name="property_name" dir="directory"/>
-    // </shorterpaths>
-    
-     
     private Path in;
+
     public void setIn(Path p) {
         if (in == null) {
             in = p.createPath();
-        }   
+        }
         in.append(p);
     }
-    public Path createIn () {
+
+    public Path createIn() {
         if (in == null) {
             in = new Path(getProject());
         }
         return in;
     }
+
     public void setinRef(Reference r) {
         createIn().setRefid(r);
     }
@@ -125,35 +129,36 @@ public class ShorterPaths extends Task {
     //     </path>
     // </customtask>
     // Etc.
-
     String out;
+
     public void setOut(String out) {
         this.out = out;
     }
-    
     String extraLibs;
+
     public void setExtraLibs(String extraLibs) {
-        this.extraLibs = extraLibs;    
+        this.extraLibs = extraLibs;
     }
     File extraLibsDir;
+
     public void setExtraLibsDir(File extraLibsDir) {
         this.extraLibsDir = extraLibsDir;
     }
-    
     File testProperties;
+
     public void setTestProperties(File testProperties) {
         this.testProperties = testProperties;
-    } 
+    }
 
     @Override
     public void execute() throws BuildException {
         // TODO code here what the task actually does:
         String paths[] = in.list();
-        StringBuffer nbLibBuff = new StringBuffer() ;
+        StringBuffer nbLibBuff = new StringBuffer();
 //        Path nbLibPath = new Path(getProject());
         StringBuffer externalLibBuf = new StringBuffer();
         try {
-            for (int i = 0 ; i < paths.length ; i++) {
+            for (int i = 0; i < paths.length; i++) {
                 String path = paths[i];
                 File file = new File(path);
                 // check if file exists
@@ -162,22 +167,22 @@ public class ShorterPaths extends Task {
                     path = file.getCanonicalPath();
                     simplyPath(path, externalLibBuf, nbLibBuff);
                 } else {
-                    log("Path element "+ file + " doesn't exist.",Project.MSG_VERBOSE);
+                    log("Path element " + file + " doesn't exist.", Project.MSG_VERBOSE);
                 }
-            } 
+            }
             if (out != null) {
-                define(out, nbLibBuff.toString()); 
+                define(out, nbLibBuff.toString());
             }
             if (this.extraLibs != null) {
-                define(extraLibs,externalLibBuf.toString());
+                define(extraLibs, externalLibBuf.toString());
             }
 
             if (testProperties != null) {
                 // create properties file
                 PrintWriter pw = new PrintWriter(testProperties);
-                
+
                 // copy extra unit.test.properties
-                Hashtable properties = getProject().getProperties();  
+                Hashtable properties = getProject().getProperties();
                 StringBuffer outProp = new StringBuffer();
                 for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
                     String name = (String) it.next();
@@ -186,30 +191,30 @@ public class ShorterPaths extends Task {
                             // ignore overring xtest.data.dir, data.zip placed to standard location
                             continue;
                         }
-                       //  
-                       outProp.setLength(0);
-                       StringTokenizer tokenizer = new StringTokenizer(properties.get(name).toString(), ":;");
-                       String nextToken = null;
-                       while (nextToken != null || tokenizer.hasMoreTokens()) {
-                           String token = nextToken ;
-                           nextToken = null;
-                           if (token == null) {
-                               token = tokenizer.nextToken();
-                           }
-                           if (tokenizer.hasMoreTokens()) {
-                               nextToken = tokenizer.nextToken();
-                           }
-                           // check if <disk drive>:\path is property"
-                           String path = token + ":" + nextToken;
-                           if (new File(path).exists()) {
-                               nextToken = null;
-                           } else {
-                               path = token;
-                           }
+                        //  
+                        outProp.setLength(0);
+                        StringTokenizer tokenizer = new StringTokenizer(properties.get(name).toString(), ":;");
+                        String nextToken = null;
+                        while (nextToken != null || tokenizer.hasMoreTokens()) {
+                            String token = nextToken;
+                            nextToken = null;
+                            if (token == null) {
+                                token = tokenizer.nextToken();
+                            }
+                            if (tokenizer.hasMoreTokens()) {
+                                nextToken = tokenizer.nextToken();
+                            }
+                            // check if <disk drive>:\path is property"
+                            String path = token + ":" + nextToken;
+                            if (new File(path).exists()) {
+                                nextToken = null;
+                            } else {
+                                path = token;
+                            }
 
-                           simplyPath(path,externalLibBuf,outProp);
-                       }
-                       pw.println(name.replaceFirst("^test-(unit|qa-functional)-sys-prop\\.", "test-sys-prop.") + "=" + outProp);
+                            simplyPath(path, externalLibBuf, outProp);
+                        }
+                        pw.println(name.replaceFirst("^test-(unit|qa-functional)-sys-prop\\.", "test-sys-prop.") + "=" + outProp);
                     } else if (name.startsWith("test.config")) {
                         pw.println(name + "=" + properties.get(name));
                     }
@@ -220,7 +225,7 @@ public class ShorterPaths extends Task {
             }
         } catch (IOException ex) {
             throw new BuildException(ex);
-        } 
+        }
     }
 
     private void simplyPath(String path, final StringBuffer externalLibBuf, final StringBuffer nbLibBuff) throws IOException {
@@ -229,40 +234,40 @@ public class ShorterPaths extends Task {
         if (file.exists()) {
             // file exists, try to to replace the path with ${a.prop}/relpath
             //
-           path = file.getAbsolutePath();
-           for (Replacement repl: replacements) {
+            path = file.getAbsolutePath();
+            for (Replacement repl : replacements) {
                 String dirCan = repl.dir.getCanonicalPath();
                 if (path.startsWith(dirCan) && (repl.excluded == null || !path.startsWith(repl.excluded.getCanonicalPath()))) {
-                    if (nbLibBuff.length() > 0 ) {
+                    if (nbLibBuff.length() > 0) {
                         nbLibBuff.append(":\\\n");
-                    }  
+                    }
 
-                    nbLibBuff.append("${" + repl.name + "}");
+                    nbLibBuff.append("${").append(repl.name).append("}");
                     // postfix + unify file separators to '/'
-                    nbLibBuff.append(path.substring(dirCan.length()).replace(File.separatorChar,'/'));
+                    nbLibBuff.append(path.substring(dirCan.length()).replace(File.separatorChar, '/'));
                     bAppend = true;
                     break;
-                } 
+                }
             }
             if (!bAppend) {
                 String fName = copyExtraLib(file);
                 if (fName != null) {
-                    if (externalLibBuf.length() > 0 ) {
+                    if (externalLibBuf.length() > 0) {
                         externalLibBuf.append(":\\\n");
                     }
-                   externalLibBuf.append("${extra.test.libs.dir}/" + fName);
+                    externalLibBuf.append("${extra.test.libs.dir}/").append(fName);
                 }
             }
-           
+
         } else {
-            if (nbLibBuff.length() > 0 ) {
+            if (nbLibBuff.length() > 0) {
                 nbLibBuff.append(":\\\n");
-            }  
+            }
             nbLibBuff.append(path);
         }
-            
+
     }
-    
+
     private void define(String prop, String val) {
         log("Setting " + prop + "=" + val, Project.MSG_VERBOSE);
         String old = getProject().getProperty(prop);
@@ -272,7 +277,7 @@ public class ShorterPaths extends Task {
         getProject().setNewProperty(prop, val);
     }
 
-    private String copyExtraLib(File file) throws IOException{
+    private String copyExtraLib(File file) throws IOException {
         if (extraLibsDir == null || !extraLibsDir.isDirectory() || !file.isFile()) {
             return null;
         }
@@ -307,8 +312,4 @@ public class ShorterPaths extends Task {
         }
         return copy.getName();
     }
- 
-    
 }
-
-    

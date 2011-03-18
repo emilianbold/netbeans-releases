@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.nbbuild;
 
 import java.io.BufferedReader;
@@ -56,53 +55,54 @@ import java.util.Properties;
  * @author pzajac
  */
 public class ShorterPathsTest extends TestBase {
-    
+
     public ShorterPathsTest(java.lang.String testName) {
         super(testName);
     }
 
-    public void testShorterPaths () throws Exception {
-      // create test
-      File wd = getWorkDir(); 
-      File modules = new File(wd,"modules");
-      modules.mkdirs();
-      File module = new File(modules,"module.jar");
-      module.createNewFile();
-      File extlib = new File(wd,"extlib.jar");
-      File extraLibsDir = new File (wd,"extralibs");
-      File testProperties = new File (wd,"outtest.properties");
-      extraLibsDir.mkdirs();
-      
-      PrintStream ps = new PrintStream(extlib); 
-      ps.println("content");
-      ps.close();
-      
-      
-      execute ("ShorterPathsTest.xml", new String[] {"-verbose",  
-                                                                                        "-Dtest.ext.lib=" + extlib.getPath(),
-                                                                                        "-Dtest.modules.dir=" + modules.getPath(),
-                                                                                        "-Dextra.test.libs.dir=" + extraLibsDir.getPath(),
-                                                                                        "-Dtest.properties=" + testProperties.getPath(),
-                                                                                        "all"});
-      File extralibCopy = new File(extraLibsDir,"extlib.jar");
-      
-      assertTrue("No extra library has been copied",extralibCopy.exists());
-      BufferedReader reader = new BufferedReader(new FileReader(extralibCopy));
-      assertEquals("Different content in copy of extra library:","content",reader.readLine());
+    public void testShorterPaths() throws Exception {
+        // create test
+        File wd = getWorkDir();
+        File modules = new File(wd, "modules");
+        modules.mkdirs();
+        File module = new File(modules, "module.jar");
+        module.createNewFile();
+        File extlib = new File(wd, "extlib.jar");
+        File extraLibsDir = new File(wd, "extralibs");
+        File testProperties = new File(wd, "outtest.properties");
+        extraLibsDir.mkdirs();
 
-      Properties props = new Properties();
-      FileInputStream propsIs = new FileInputStream(testProperties);
-      props.load(propsIs);
-      propsIs.close();
-      assertEquals("extra.test.libs.dir","${extra.test.libs.dir}/extlib.jar",props.getProperty("extra.test.libs"));
-      assertEquals("test.run.cp", "${nb.root.test.dir}/module.jar", props.getProperty("test.run.cp"));
-      assertEquals("test-sys-prop.prop1", "value1", props.getProperty("test-sys-prop.prop1"));
-      assertEquals("test-sys-prop.prop2", "${nb.root.test.dir}/module.jar", props.getProperty("test-sys-prop.prop2"));
-      assertNull(props.getProperty("test-unit-sys-prop.xtest.data"));       
-      assertEquals("props.size()",4,props.size());
-      
-      
-      // test dist 
-    }    
-    
+        PrintStream ps = new PrintStream(extlib);
+        ps.println("content");
+        ps.close();
+
+
+        execute("ShorterPathsTest.xml", new String[]{
+                    "-verbose",
+                    "-Dtest.ext.lib=" + extlib.getPath(),
+                    "-Dtest.modules.dir=" + modules.getPath(),
+                    "-Dextra.test.libs.dir=" + extraLibsDir.getPath(),
+                    "-Dtest.properties=" + testProperties.getPath(),
+                    "all"
+                });
+        File extralibCopy = new File(extraLibsDir, "extlib.jar");
+
+        assertTrue("No extra library has been copied", extralibCopy.exists());
+        BufferedReader reader = new BufferedReader(new FileReader(extralibCopy));
+        assertEquals("Different content in copy of extra library:", "content", reader.readLine());
+
+        Properties props = new Properties();
+        FileInputStream propsIs = new FileInputStream(testProperties);
+        props.load(propsIs);
+        propsIs.close();
+        assertEquals("extra.test.libs.dir", "${extra.test.libs.dir}/extlib.jar", props.getProperty("extra.test.libs"));
+        assertEquals("test.run.cp", "${nb.root.test.dir}/module.jar", props.getProperty("test.run.cp"));
+        assertEquals("test-sys-prop.prop1", "value1", props.getProperty("test-sys-prop.prop1"));
+        assertEquals("test-sys-prop.prop2", "${nb.root.test.dir}/module.jar", props.getProperty("test-sys-prop.prop2"));
+        assertNull(props.getProperty("test-unit-sys-prop.xtest.data"));
+        assertEquals("props.size()", 4, props.size());
+
+
+        // test dist 
+    }
 }
