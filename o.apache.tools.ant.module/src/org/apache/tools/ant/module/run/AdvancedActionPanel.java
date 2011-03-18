@@ -216,7 +216,6 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         targetLabel = new javax.swing.JLabel();
         targetComboBox = new javax.swing.JComboBox();
@@ -228,14 +227,8 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         verbosityLabel = new javax.swing.JLabel();
         verbosityComboBox = new javax.swing.JComboBox();
 
-        setLayout(new java.awt.GridBagLayout());
-
         targetLabel.setLabelFor(targetComboBox);
         targetLabel.setText("Select target(s) to run:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(targetLabel, gridBagConstraints);
 
         targetComboBox.setEditable(true);
         targetComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "sampleTarget1", "sampleTarget2", "sampleTarget3" }));
@@ -244,41 +237,15 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
                 targetComboBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(targetComboBox, gridBagConstraints);
-        targetComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedActionPanel.class, "ACS_SelectTarget")); // NOI18N
-        targetComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedActionPanel.class, "ACSD_SelectTarget")); // NOI18N
 
         targetDescriptionLabel.setLabelFor(targetDescriptionField);
         targetDescriptionLabel.setText("Target description:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(targetDescriptionLabel, gridBagConstraints);
 
         targetDescriptionField.setEditable(false);
         targetDescriptionField.setText("Sample description here.");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(targetDescriptionField, gridBagConstraints);
-        targetDescriptionField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedActionPanel.class, "ACSD_TargetDescription")); // NOI18N
 
         propertiesLabel.setLabelFor(propertiesPane);
         propertiesLabel.setText("Special Ant properties:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(propertiesLabel, gridBagConstraints);
 
         propertiesScrollPane.setMinimumSize(new java.awt.Dimension(400, 150));
         propertiesScrollPane.setPreferredSize(new java.awt.Dimension(400, 150));
@@ -286,30 +253,58 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         propertiesPane.setContentType("text/x-properties");
         propertiesScrollPane.setViewportView(propertiesPane);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(propertiesScrollPane, gridBagConstraints);
-
         verbosityLabel.setLabelFor(verbosityComboBox);
         verbosityLabel.setText("Verbosity level:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(verbosityLabel, gridBagConstraints);
 
         verbosityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Errors only [SAMPLE]", "Normal [SAMPLE]", "Verbose [SAMPLE]" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(verbosityComboBox, gridBagConstraints);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(verbosityLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(propertiesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(targetDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(targetLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(targetDescriptionField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
+                    .add(targetComboBox, 0, 624, Short.MAX_VALUE)
+                    .add(propertiesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
+                    .add(verbosityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(targetLabel)
+                    .add(targetComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(targetDescriptionLabel)
+                    .add(targetDescriptionField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(propertiesLabel)
+                    .add(propertiesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(verbosityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(6, 6, 6)
+                        .add(verbosityLabel)))
+                .addContainerGap())
+        );
+
+        targetComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedActionPanel.class, "ACS_SelectTarget")); // NOI18N
+        targetComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedActionPanel.class, "ACSD_SelectTarget")); // NOI18N
+        targetDescriptionField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedActionPanel.class, "ACSD_TargetDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void targetComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetComboBoxActionPerformed
