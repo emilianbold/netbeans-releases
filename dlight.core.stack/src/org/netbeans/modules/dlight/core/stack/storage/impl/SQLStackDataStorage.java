@@ -376,8 +376,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     " FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
                     " LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N                    
                     (timeFilter != null ? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
-                    "GROUP BY Func.func_id, Func.func_name,  SourceFiles.source_file, Func.line_number " + // NOI18N
-                    "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+                    " GROUP BY Func.func_id, Func.func_name,  SourceFiles.source_file, Func.line_number,  Func.context_id" + // NOI18N
+                    " ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             if (timeFilter != null) {
                 select.setLong(1, timeToBucketId(timeFilter.getInterval().getStart()));//.getStartMilliSeconds()));
                 select.setLong(2, timeToBucketId(timeFilter.getInterval().getEnd()));//.getEndMilliSeconds()));
