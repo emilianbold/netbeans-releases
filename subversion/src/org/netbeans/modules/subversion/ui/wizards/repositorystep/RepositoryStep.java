@@ -47,8 +47,6 @@ package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -245,9 +243,11 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     SVNRevision revision = rc.getSvnRevision();
                     String[] repositorySegments = repositoryUrl.getPathSegments();
                     String[] selectedSegments = rc.getSvnUrl().getPathSegments();
-                    // logging, remove when #196830 is fixed
-                    if (selectedSegments.length < repositorySegments.length) {
-                        Subversion.LOG.log(Level.SEVERE, "results in #196830, repository: {0}[{1}]; path: {2}[{3}]", new Object[] { repositoryUrl, Arrays.asList(repositorySegments), rc.getSvnUrl(), Arrays.asList(selectedSegments) });
+                    if (selectedSegments.length < repositorySegments.length && rc.getSvnUrl().toString().contains("\\")) { //NOI18N
+                        // WA for bug #196830 with svnkit: the entered url contains backslashes. While javahl does not like backslashes and a warning is reported earlier, svnkit internally 
+                        // translates them into normal slashes and does not complain. However rc.getUrl still returns the url with backslashes
+                        invalidMsg = new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", rc.getUrl()), false); // NOI18N
+                        return;
                     }
                     String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
                     System.arraycopy(selectedSegments, repositorySegments.length,
