@@ -47,6 +47,8 @@ package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -243,6 +245,10 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     SVNRevision revision = rc.getSvnRevision();
                     String[] repositorySegments = repositoryUrl.getPathSegments();
                     String[] selectedSegments = rc.getSvnUrl().getPathSegments();
+                    // logging, remove when #196830 is fixed
+                    if (selectedSegments.length < repositorySegments.length) {
+                        Subversion.LOG.log(Level.SEVERE, "results in #196830, repository: {0}[{1}]; path: {2}[{3}]", new Object[] { repositoryUrl, Arrays.asList(repositorySegments), rc.getSvnUrl(), Arrays.asList(selectedSegments) });
+                    }
                     String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
                     System.arraycopy(selectedSegments, repositorySegments.length,
                                      repositoryFolder, 0,
