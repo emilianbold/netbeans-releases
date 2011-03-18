@@ -99,8 +99,9 @@ public class ShorterPathsTest extends TestBase {
         assertEquals("test.run.cp", "${nb.root.test.dir}/module.jar", props.getProperty("test.run.cp"));
         assertEquals("test-sys-prop.prop1", "value1", props.getProperty("test-sys-prop.prop1"));
         assertEquals("test-sys-prop.prop2", "${nb.root.test.dir}/module.jar", props.getProperty("test-sys-prop.prop2"));
+        assertEquals("test-sys-prop.prop3", "${nb.root.test.dir}/module.jar:${nb.root.test.dir}/not-exists.jar", props.getProperty("test-sys-prop.prop3"));
         assertNull(props.getProperty("test-unit-sys-prop.xtest.data"));
-        assertEquals("props.size()", 4, props.size());
+        assertEquals("props.size()", 5, props.size());
 
 
         // test dist 
