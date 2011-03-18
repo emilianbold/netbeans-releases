@@ -47,8 +47,6 @@ package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
