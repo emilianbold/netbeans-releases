@@ -111,11 +111,13 @@ made subject to such option by the copyright holder.
         <mkdir dir="glassfishjspparser"/>
         <unzip src="${glassfish_location}/glassfish/modules/jsp-impl.jar" dest="glassfishjspparser/"/>
         <unzip src="${glassfish_location}/glassfish/modules/el-impl.jar" dest="glassfishjspparser/"/>
-        <unzip src="${glassfish_location}/glassfish/modules/glassfish-ee-api.jar" dest="glassfishjspparser/"/>
-        <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>
+<!--        <unzip src="${glassfish_location}/glassfish/modules/glassfish-ee-api.jar" dest="glassfishjspparser/"/>-->
+<!--        <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>-->
+        <unzip src="${glassfish_location}/glassfish/modules/jsf-api.jar" dest="glassfishjspparser/"/>
         <delete file="glassfish-jspparser-3.0.jar" />
         <zip  basedir="glassfishjspparser"
-        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class, org/glassfish/jsp/api/**"
+        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class,
+                com/sun/appserv/server/util/PreprocessorUtil.class, org/glassfish/jsp/api/**, javax/faces/**"
             zipfile="./external/glassfish-jspparser-3.0.jar" />
 
         <delete dir="glassfishjspparser" />
@@ -125,6 +127,7 @@ made subject to such option by the copyright holder.
         <unzip src="${glassfish_location}/glassfish/modules/gf-client-module.jar" dest="./servletjspapi/"/>
         <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jar" dest="./servletjspapi/"/>
         <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jar" dest="./servletjspapi/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jstl.jar" dest="./servletjspapi/"/>
 
         <mkdir dir="servletjspapi/resources/dtds" />
         <copy todir="servletjspapi/resources/dtds">
