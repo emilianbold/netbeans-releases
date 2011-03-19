@@ -52,6 +52,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.Exceptions;
 
 /**
  * @author Radek Matous
@@ -189,10 +190,19 @@ public final class NamingFactory {
         NameRef ref = getReference(names[index], file);
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-        if (ignoreCache && cachedElement != null && (
-            cachedElement.isDirectory() != file.isDirectory()
-        )) {
-            cachedElement = null;
+        if (ignoreCache) {
+            if (cachedElement != null && (
+                cachedElement.isDirectory() != file.isDirectory()
+            )) {
+                cachedElement = null;
+            }
+            if (cachedElement != null) {
+                try {
+                    checkCaseSensitivity(cachedElement, file);
+                } catch (IOException ex) {
+                    // OK, give up
+                }
+            }
         }
 
         if (cachedElement != null && Utils.equals(cachedElement.getFile(), file)) {
