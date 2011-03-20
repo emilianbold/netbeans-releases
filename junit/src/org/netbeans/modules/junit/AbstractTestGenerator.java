@@ -2135,11 +2135,36 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 return true;
         }
         // check if the class has empty implements clause or given method is declared by @Remote, @Local interface
-        if (srcClass.getInterfaces().isEmpty()
-                || getEjbInterfaceDeclaringMethod(srcMethod, srcClass.getInterfaces()) != null) {
+        List<? extends TypeMirror> interfaces = srcClass.getInterfaces();
+        if (interfaces.isEmpty()
+                || areAllowedInterfacesForLocalBean(interfaces)
+                || getEjbInterfaceDeclaringMethod(srcMethod, interfaces) != null) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Checks {@code List} of interfaces if are all of them allowed for LocalBean,
+     * means if all interfaces are {@code java.io.Serializable}, {@code java.io.Externalizable} or
+     * from package {@code javax.ejb}
+     * 
+     * @param interfaces {@code List} of interfaces which should be checked
+     * @return {@code true} if all interfaces are allowed for LocalBean, {@code false} otherwise
+     */
+    private static boolean areAllowedInterfacesForLocalBean(List<? extends TypeMirror> interfaces) {
+        for (TypeMirror typeMirror : interfaces) {
+            if (typeMirror instanceof DeclaredType) {
+                TypeElement interfaceElement = (TypeElement) ((DeclaredType) typeMirror).asElement();
+                String interfaceClassName = interfaceElement.getQualifiedName().toString();
+                if (!interfaceClassName.equals("java.io.Serializable")          //NOI18N
+                        && !interfaceClassName.equals("java.io.Externalizable") //NOI18N
+                        && !interfaceClassName.startsWith("javax.ejb.")) {      //NOI18N
+                   return false;
+                }
+            }
+        }
+        return true;
     }
 
     private List<VariableTree> generateEJBLookupCode(TreeMaker maker, TypeElement srcClass, ExecutableElement srcMethod) {
