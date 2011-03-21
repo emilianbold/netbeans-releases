@@ -159,8 +159,8 @@ public class DataGetModifiedTest extends NbTestCase {
 
     private Savable findSavable(String name) {
         Savable savable = null;
-        for (Savable.DisplayName s : Savable.REGISTRY.lookupAll(Savable.DisplayName.class)) {
-            if (s.findDisplayName().equals(name)) {
+        for (Savable s : Savable.REGISTRY.lookupAll(Savable.class)) {
+            if (s.toString().equals(name)) {
                 savable = s;
                 break;
             }

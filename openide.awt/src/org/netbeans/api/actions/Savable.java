@@ -68,12 +68,12 @@ public interface Savable {
      */
     public void save() throws IOException;
 
-    /** Allows a {@link Savable} to specify its human readable name.
-     * This is an additional interface that implementations of {@link Savable}
-     * may implement to represent themselves in various UI elements 
-     * with proper display name.
+    /** Human descriptive, localized name of the savable. It is advised that
+     * all implementations of Savable override the toString method to provide
+     * human readable name.
+     * 
+     * @return human readable name representing the savable
      */
-    public static interface DisplayName extends Savable {
-        public String findDisplayName();
-    }
+    @Override
+    public String toString();
 }

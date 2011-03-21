@@ -1281,14 +1281,6 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         final void add() {
             register();
         }
-
-        @Override
-        public String toString() {
-            return "Savable[" + obj + "]"; // NOI18N
-        }
-        
-        
-        
     }
 
     /** A.N. - profiling shows that MultiLoader.checkFiles() is called too often

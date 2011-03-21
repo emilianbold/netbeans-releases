@@ -53,7 +53,7 @@ import org.openide.util.Lookup.Template;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since XXX
  */
-public abstract class AbstractSavable implements Savable, Savable.DisplayName {
+public abstract class AbstractSavable implements Savable {
     /** Constructor for subclasses. 
      */
     protected AbstractSavable() {
@@ -80,8 +80,7 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
      * represents.
      * @return human readable, localized short string name
      */
-    @Override
-    public abstract String findDisplayName();
+    protected abstract String findDisplayName();
     
     /** To be overriden by subclasses to handle the actual save of 
      * the object.
@@ -133,5 +132,9 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
     protected final void unregister() {
         SavableRegistry.unregister(this);
     }
-    
+
+    @Override
+    public final String toString() {
+        return findDisplayName();
+    }
 }
