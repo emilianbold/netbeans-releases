@@ -431,7 +431,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, !existingPathsChanged), false);
         }
         for (URL rootUrl : includesChanged) {
-            scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, true, false, sourcesForBinaryRoots.contains(rootUrl)), false);
+            scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, false, false, sourcesForBinaryRoots.contains(rootUrl)), false);
         }
     }
 
