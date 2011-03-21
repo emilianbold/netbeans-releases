@@ -45,6 +45,7 @@ import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,7 +152,13 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
         for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
             if (RepositoryPreferences.getInstance().getRepositoryInfoById(rep.getId()) == null) {
-                RepositoryInfo ri = new RepositoryInfo(rep.getId(), RepositoryPreferences.TYPE_NEXUS, rep.getId(), null, rep.getUrl(), null);
+                RepositoryInfo ri;
+                try {
+                    ri = new RepositoryInfo(rep.getId(), RepositoryPreferences.TYPE_NEXUS, rep.getId(), null, rep.getUrl());
+                } catch (URISyntaxException x) {
+                    LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
+                    continue;
+                }
                 RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(ri);
             }
         }

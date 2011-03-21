@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.repository.register;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -347,14 +348,12 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
         }
     }
     
-    public RepositoryInfo getRepositoryInfo(){
-      RepositoryInfo info=new RepositoryInfo(txtRepoId.getText().trim(),
+    public RepositoryInfo getRepositoryInfo() throws URISyntaxException {
+      return new RepositoryInfo(txtRepoId.getText().trim(),
               (String)comType.getSelectedItem(),
               txtRepoName.getText().trim(),
               jraLocal.isSelected()  ? txtRepoPath.getText().trim() : null,
               jraRemote.isSelected() ? txtRepoUrl.getText().trim() : null);
-    
-     return info;
     }
 
     private void validateInfo() {
