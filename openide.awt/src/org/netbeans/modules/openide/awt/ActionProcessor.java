@@ -271,6 +271,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                             continue;
                         } catch (IOException ex) {
                             continue;
+                        } catch (IllegalArgumentException x) {
+                            throw new LayerGenerationException("Problem with " + ar.iconBase() + " (should be resource path with no leading slash)", e);
                         }
                     }
                     if (res == null) {
