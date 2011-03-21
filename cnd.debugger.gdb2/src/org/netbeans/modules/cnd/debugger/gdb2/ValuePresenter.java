@@ -52,10 +52,6 @@ public class ValuePresenter {
 
     private static Presenter[] presenters = new Presenter[]{new StdStringPresenter()};
 
-    public static String getValue(GdbVariable var) {
-        return getValue(var.getType(), var.getAsText());
-    }
-
     public static String getValue(String value) {
         return getValue(null, value);
     }
