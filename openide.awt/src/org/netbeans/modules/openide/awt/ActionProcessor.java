@@ -255,27 +255,19 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     }
                 }
                 if (ar.iconBase().length() > 0) {
-                    FileObject res = null;
+                    boolean found = false;
                     for (StandardLocation l : StandardLocation.values()) {
-                        if (res != null) {
-                            break;
-                        }
                         try {
-                            FileObject fo = processingEnv.getFiler().getResource(l, "", ar.iconBase());
-                            final InputStream is = fo.openInputStream();
-                            if (is != null) {
-                                res = fo;
-                                is.close();
-                            }
-                        } catch (NullPointerException ex) {
-                            continue;
+                            processingEnv.getFiler().getResource(l, "", ar.iconBase());
+                            found = true;
+                            break;
                         } catch (IOException ex) {
                             continue;
                         } catch (IllegalArgumentException x) {
                             throw new LayerGenerationException("Problem with " + ar.iconBase() + " (should be resource path with no leading slash)", e);
                         }
                     }
-                    if (res == null) {
+                    if (!found) {
                         throw new LayerGenerationException(
                             "Cannot find iconBase file at " + ar.iconBase(), e
                         );
