@@ -150,7 +150,7 @@ public final class RepositoryPreferences {
                         try {
                             ri = RepositoryInfo.createRepositoryInfo(fo);
                             infoCache.put(fo, ri);
-                        } catch (IllegalArgumentException x) {
+                        } catch (/*IllegalArgument,URISyntax*/Exception x) {
                             LOG.log(Level.INFO, fo.getPath(), x);
                             try {
                                 fo.delete();
