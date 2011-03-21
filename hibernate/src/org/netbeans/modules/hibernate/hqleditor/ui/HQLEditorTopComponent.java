@@ -486,7 +486,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                     }
 
                 } else {
-                    // Construct the table headers
+                        // Construct the table headers
                     createTableHeaders(tableHeaders, firstObject);
                     for (Object oneObject : result.getQueryResults()) {
                         createTableData(tableData, oneObject);
@@ -522,11 +522,16 @@ public final class HQLEditorTopComponent extends TopComponent {
     }
 
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
-        for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
-            String methodName = m.getName();
-            if (methodName.startsWith("get")) { //NOI18N
-                if (!tableHeaders.contains(methodName)) {
-                    tableHeaders.add(m.getName().substring(3));
+        if(oneObject.getClass().getName().startsWith("java.lang")){//NOI18N
+            //case for Long, String etc
+            tableHeaders.add(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " +(tableHeaders.size()+1));//NOI18N
+        } else {
+            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+                String methodName = m.getName();
+                if (methodName.startsWith("get")) { //NOI18N
+                    if (!tableHeaders.contains(methodName)) {
+                        tableHeaders.add(m.getName().substring(3));
+                    }
                 }
             }
         }
@@ -535,26 +540,31 @@ public final class HQLEditorTopComponent extends TopComponent {
     private void createTableData(Vector<Vector> tableData, Object... rowObject) {
         Vector<Object> oneRow = new Vector<Object>();
         for (Object oneObject : rowObject) {
-            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
-                String methodName = m.getName();
-                if (methodName.startsWith("get")) { //NOI18N
-                    try {
-                        Object methodReturnValue = m.invoke(oneObject, new Object[]{});
-                        if (methodReturnValue == null) {
-                            oneRow.add("NULL"); //NOI18N
-                            continue;
-                        }
-                        if (methodReturnValue instanceof java.util.Collection) {
+            if(oneObject.getClass().getName().startsWith("java.lang")){
+                //case for Long, String etc
+                oneRow.add(oneObject.toString());
+            } else {
+                for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+                    String methodName = m.getName();
+                    if (methodName.startsWith("get")) { //NOI18N
+                        try {
+                            Object methodReturnValue = m.invoke(oneObject, new Object[]{});
+                            if (methodReturnValue == null) {
+                                oneRow.add("NULL"); //NOI18N
+                                continue;
+                            }
+                            if (methodReturnValue instanceof java.util.Collection) {
+                                oneRow.add(methodReturnValue.toString());
+                                continue;
+                            }
                             oneRow.add(methodReturnValue.toString());
-                            continue;
+                        } catch (IllegalAccessException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        } catch (InvocationTargetException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                        oneRow.add(methodReturnValue.toString());
-                    } catch (IllegalAccessException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalArgumentException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InvocationTargetException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
