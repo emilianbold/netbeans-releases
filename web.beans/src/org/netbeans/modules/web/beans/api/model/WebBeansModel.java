@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -269,6 +270,21 @@ public final class WebBeansModel {
      */
     public String getScope( Element element ) throws CdiException {
         return getProvider().getScope( element );
+    }
+    
+    /**
+     * Returns decorators for given type <code>element</code>.
+     * Decorator resolution is described in the 8.3 section of JSR-299 spec:
+     * - element bean should be assignable to the @Delegate injection point according special rules
+     * - decorator should be also enabled in the beans.xml
+     * The latter condition is not checked here. One should ask the
+     * BeansModel ( it is accessed via AbstractModelImplementation ) for
+     * enabled decorators. 
+     * @param element decorated element
+     * @return collection of matched decorators
+     */
+    public Collection<TypeElement> getDecorators( TypeElement element ){
+        return getProvider().getDecorators( element );
     }
     
     public AbstractModelImplementation getModelImplementation(){

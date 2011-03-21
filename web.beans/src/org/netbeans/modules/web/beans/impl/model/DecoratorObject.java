@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,59 +40,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
+package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.web.beans.api.model.CdiException;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
+class DecoratorObject extends PersistentObject implements Refreshable {
 
-    Result lookupInjectables( VariableElement element , DeclaredType parentType);
-    
-    boolean isDynamicInjectionPoint( VariableElement element );
-    
-    boolean isInjectionPoint( VariableElement element ) throws InjectionPointDefinitionError;
-    
-    List<AnnotationMirror> getQualifiers( Element element , boolean all );
+    DecoratorObject( AnnotationModelHelper helper,
+            TypeElement typeElement )
+    {
+        super(helper, typeElement);
+        boolean valid = refresh(typeElement);
+        assert valid;
+    }
 
-    List<Element> getNamedElements( );
-
-    String getName( Element element);
-
-    List<ExecutableElement> getObservers( VariableElement element,
-            DeclaredType parentType);
-
-    List<VariableElement> getEventInjectionPoints( ExecutableElement element,
-            DeclaredType parentType);
-
-    VariableElement getObserverParameter( ExecutableElement element);
-
-    CompilationController getCompilationController();
-
-    TypeMirror resolveType( String fqn);
-
-    String getScope( Element element ) throws CdiException;
-
-    boolean hasImplicitDefaultQualifier( Element element );
-
-    Collection<TypeElement> getDecorators( TypeElement element );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable#refresh(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    public boolean refresh( TypeElement type ) {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        return annotationsByType.get( EnableBeansFilter.DECORATOR) != null ;
+    }
 
 }

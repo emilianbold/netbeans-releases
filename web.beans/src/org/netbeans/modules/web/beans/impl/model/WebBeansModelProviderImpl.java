@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
+public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     
     protected WebBeansModelProviderImpl(WebBeansModelImplementation model){
         super( model );

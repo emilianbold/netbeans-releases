@@ -358,40 +358,15 @@ abstract class FieldInjectionPointLogic {
         filter.filter( elementsWithBindings );
     }
     
-    static Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
-            Element typeElement )
+    protected void filterBindingsByType( VariableElement element, 
+            TypeMirror elementType,Set<TypeElement> typesWithBindings)
     {
-        if (! (typeElement instanceof TypeElement )){
-            return Collections.emptySet();
-        }
-        Set<TypeElement> result = new HashSet<TypeElement>();
-        result.add( (TypeElement) typeElement );
-        
-        Set<TypeElement> toProcess = new HashSet<TypeElement>();
-        toProcess.add((TypeElement) typeElement );
-        while ( toProcess.size() >0 ){
-            TypeElement element = toProcess.iterator().next();
-            toProcess.remove( element );
-            Set<TypeElement> set = doGetImplementors(modelImpl, element );
-            if ( set.size() == 0 ){
-                continue;
-            }
-            result.addAll( set );
-            for (TypeElement impl : set) {
-                toProcess.add(impl);
-            }
-        }
-        return result;
+        TypeBindingFilter filter = TypeBindingFilter.get();
+        filter.init( elementType, element, getModel() );
+        filter.filter( typesWithBindings );
     }
     
-    private Result createResult( VariableElement element, TypeMirror elementType, 
-            Set<TypeElement> types,Map<Element, List<DeclaredType>> productions )
-    {
-        return new ResultImpl(element, elementType, types, productions, 
-                getModel().getHelper() );
-    }
-    
-    private Result handleNewQualifier( VariableElement element,
+    protected ResultImpl handleNewQualifier( VariableElement element,
             TypeMirror elementType,List<AnnotationMirror> quilifierAnnotations)
     {
         AnnotationMirror annotationMirror = quilifierAnnotations.get( 0 );
@@ -431,7 +406,40 @@ abstract class FieldInjectionPointLogic {
         }
         return new ResultImpl(element, elementType, getModel().getHelper());
     }
-
+    
+    static Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
+            Element typeElement )
+    {
+        if (! (typeElement instanceof TypeElement )){
+            return Collections.emptySet();
+        }
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        result.add( (TypeElement) typeElement );
+        
+        Set<TypeElement> toProcess = new HashSet<TypeElement>();
+        toProcess.add((TypeElement) typeElement );
+        while ( toProcess.size() >0 ){
+            TypeElement element = toProcess.iterator().next();
+            toProcess.remove( element );
+            Set<TypeElement> set = doGetImplementors(modelImpl, element );
+            if ( set.size() == 0 ){
+                continue;
+            }
+            result.addAll( set );
+            for (TypeElement impl : set) {
+                toProcess.add(impl);
+            }
+        }
+        return result;
+    }
+    
+    private Result createResult( VariableElement element, TypeMirror elementType, 
+            Set<TypeElement> types,Map<Element, List<DeclaredType>> productions )
+    {
+        return new ResultImpl(element, elementType, types, productions, 
+                getModel().getHelper() );
+    }
+    
     private void inspectHierarchy( Element productionElement,
             TypeElement implementor, Set<Element> specializeElements ,
             WebBeansModelImplementation model )
@@ -605,13 +613,6 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
 
-    private void filterBindingsByType( VariableElement element, 
-            TypeMirror elementType,Set<TypeElement> typesWithBindings)
-    {
-        TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( elementType, element, getModel() );
-        filter.filter( typesWithBindings );
-    }
     /*
      * Method finds production elements which have appropriate binding types.
      */
