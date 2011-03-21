@@ -227,6 +227,13 @@ public class RemoteFileUtil {
                 titleText, buttonText, mode, filters, initialPath, useParent);
     }
 
+    public static JFileChooser createFileChooser(FileSystem fs,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+        return createFileChooser(env, titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
     public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,
             String titleText, String buttonText, int mode, FileFilter[] filters,
             String initialPath, boolean useParent) {
