@@ -502,11 +502,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return res.toArray(new Item[res.size()]);
     }
 
-    public Item findItemByFile(File file) {
-        return findItemByPathImpl(file.getPath());
-    }
-
-    private Item findItemByPathImpl(String path) {
+    public Item findItemByPathSlowly(String path) {
         Collection<Item> coll = projectItems.values();
         Iterator<Item> it = coll.iterator();
         Item canonicalItem = null;
