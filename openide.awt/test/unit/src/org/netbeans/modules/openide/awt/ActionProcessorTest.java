@@ -842,7 +842,8 @@ public class ActionProcessorTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
     }
-    
+
+    /* #196933: will only pass when using JDK 7 javac:
     public void testWrongPointerToIcon() throws IOException {
         clearWorkDir();
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
@@ -867,5 +868,6 @@ public class ActionProcessorTest extends NbTestCase {
             fail("Shall contain warning about does/not/exist.png resource:\n" + os);
         }
     }
+     */
     
 }
