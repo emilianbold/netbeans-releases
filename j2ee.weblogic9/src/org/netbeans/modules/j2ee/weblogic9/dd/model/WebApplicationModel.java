@@ -215,7 +215,7 @@ public final class WebApplicationModel extends BaseDescriptorModel {
     public void setDebug(boolean debug) {
         JspDescriptorType[] desc = getJspDescriptor();
         for (JspDescriptorType type : desc) {
-            type.setKeepgenerated(debug);
+            type.setDebug(debug);
         }
         bean.setJspDescriptor(desc);
     }
