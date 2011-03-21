@@ -59,31 +59,22 @@ import org.openide.util.Lookup.Template;
  * <pre>
 class MySavable extends AbstractSavable {
     private final Object obj;
-
     public MySavable(Object obj) {
         this.obj = obj;
         register();
     }
-
-    @Override
     protected String findDisplayName() {
         return "My name is " + obj.toString(); // get display name somehow
     }
-
-    @Override
     protected void handleSave() throws IOException {
         // save 'obj' somehow
     }
-
-    @Override
     public boolean equals(Object other) {
         if (other instanceof MySavable) {
             return ((MySavable)other).obj.equals(obj);
         }
         return false;
     }
-
-    @Override
     public int hashCode() {
         return obj.hashCode();
     }
