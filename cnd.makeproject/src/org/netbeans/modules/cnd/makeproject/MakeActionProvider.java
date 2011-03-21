@@ -1159,8 +1159,7 @@ public final class MakeActionProvider implements ActionProvider {
             try {
                 DataObject dao = node.getCookie(DataObject.class);
                 if (dao != null) {
-                    File file = CndFileUtils.toFile(dao.getPrimaryFile());
-                    item = getProjectDescriptor().findItemByFile(file);
+                    item = getProjectDescriptor().findItemByPathSlowly(dao.getPrimaryFile().getPath());
                 }
             } catch (NullPointerException ex) {
                 // not found item
