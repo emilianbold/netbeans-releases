@@ -55,7 +55,40 @@ import org.openide.util.Lookup.Template;
  * implementing {@link #findDisplayName()}. In case this object wants 
  * to be visually represented with an icon, it can also implement {@link Icon}
  * interface (and delegate to {@link ImageUtilities#loadImageIcon(java.lang.String, boolean)}
- * result).
+ * result). Here is example of typical implementation:
+ * <pre>
+class MySavable extends AbstractSavable {
+    private final Object obj;
+
+    public MySavable(Object obj) {
+        this.obj = obj;
+        register();
+    }
+
+    @Override
+    protected String findDisplayName() {
+        return "My name is " + obj.toString(); // get display name somehow
+    }
+
+    @Override
+    protected void handleSave() throws IOException {
+        // save 'obj' somehow
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof MySavable) {
+            return ((MySavable)other).obj.equals(obj);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return obj.hashCode();
+    }
+}
+ * </pre>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 7.31
