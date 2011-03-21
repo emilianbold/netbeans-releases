@@ -48,7 +48,7 @@ import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.JBLogWriter;
+import org.netbeans.modules.j2ee.jboss4.ide.JBOutputSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.nodes.JBManagerNode;
 import org.openide.nodes.Node;
@@ -84,19 +84,16 @@ public class OpenServerLogAction extends NodeAction {
                 io.select();
             }
             
-            String instanceName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-            JBLogWriter logWriter = JBLogWriter.getInstance(instanceName);
-            if (logWriter == null) {
-                logWriter = JBLogWriter.createInstance(io, instanceName);
-                String serverDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+            InstanceProperties ip = dm.getInstanceProperties();
+            JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, false);
+            if (outputSupport == null) {
+                outputSupport = JBOutputSupport.getInstance(ip, true);
+                String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
                 String logFileName = serverDir + File.separator + "log" + File.separator + "server.log" ; // NOI18N
                 File logFile = new File(logFileName);
                 if (logFile.exists()) {
-                    logWriter.start(logFile);
-                }
-            }
-            else {
-                logWriter.refresh();
+                    outputSupport.start(io, logFile);
+                }                
             }
         }        
     }

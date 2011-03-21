@@ -51,33 +51,6 @@
         docRoot="deployment-plan"
     ),
     @Schema2Beans(
-        schema="../../resources/weblogic-application.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="weblogic-application"
-    ),
-    @Schema2Beans(
-        schema="../../resources/weblogic-ejb-jar.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="weblogic-ejb-jar"
-    ),
-    @Schema2Beans(
-        schema="../../resources/weblogic-web-app.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="weblogic-web-app"
-    ),
-    @Schema2Beans(
         schema="../../resources/weblogic-jdbc-data-source.xsd",
         schemaType=SchemaType.XML_SCHEMA,
         outputType=OutputType.TRADITIONAL_BASEBEAN,
