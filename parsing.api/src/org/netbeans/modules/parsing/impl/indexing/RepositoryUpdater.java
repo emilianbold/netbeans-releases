@@ -431,7 +431,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, !existingPathsChanged), false);
         }
         for (URL rootUrl : includesChanged) {
-            scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, true, false, sourcesForBinaryRoots.contains(rootUrl)), false);
+            scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, false, false, sourcesForBinaryRoots.contains(rootUrl)), false);
         }
     }
 
@@ -1797,11 +1797,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                         boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
                         boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
-                        boolean allFiles = cifIsChanged || forceReindex || resources == allResources;
+                        boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
                         SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                         for(String mimeType : cifInfo.getMimeTypes()) {
-                            if ((cifIsChanged || forceReindex) && allResources != null && resources != allResources) {
+                            if ((cifIsChanged || forceReindex) && allResources != null && resources.size() != allResources.size()) {
                                 if (allCi == null) {
                                     allCi = new ClusteredIndexables(allResources);
                                 }

@@ -270,7 +270,13 @@ public final class QuerySupport {
                                     LOG.log(Level.WARNING, null, ex);
                                 }
                             }
-                            IndexingManager.getDefault().refreshIndexAndWait(root, list);
+                            //TODO: 7.0 hot fix, replace by API in IndexingManager in dev!
+                            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                                org.netbeans.modules.parsing.impl.event.EventSupport.releaseCompletionCondition();
+                            }
+                            if (!RepositoryUpdater.getDefault().isIndexer()) {
+                                RepositoryUpdater.getDefault().addIndexingJob(root, list, false, true, true, true, false);
+                            }
                         }
                     }
                     final List<IndexResult> result = new LinkedList<IndexResult>();
