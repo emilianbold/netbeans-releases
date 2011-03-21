@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven.indexer.api;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,17 +67,21 @@ public final class RepositoryInfo {
     private final String repositoryUrl;
     private final String indexUpdateUrl;
 
-    public RepositoryInfo(String id, String type, String name, String repositoryPath, String repositoryUrl) {
+    public RepositoryInfo(String id, String type, String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
         this(id, type, name, repositoryPath, repositoryUrl, null);
     }
-    public RepositoryInfo(String id, String type, String name, String repositoryPath,
-            String repositoryUrl, String indexUpdateUrl) {
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    private RepositoryInfo(String id, String type, String name, String repositoryPath,
+            String repositoryUrl, String indexUpdateUrl) throws URISyntaxException {
         this.id = id;
         this.type = type;
         this.name = name;
         this.repositoryPath = repositoryPath;
         if (repositoryUrl != null && !repositoryUrl.endsWith("/")) {
             repositoryUrl += "/";
+        }
+        if (repositoryUrl != null) {
+            new URI(repositoryUrl);
         }
         this.repositoryUrl = repositoryUrl;
         this.indexUpdateUrl = indexUpdateUrl != null ? indexUpdateUrl : repositoryUrl != null ? repositoryUrl + DEFAULT_INDEX_SUFFIX : null;
@@ -84,7 +90,7 @@ public final class RepositoryInfo {
         }
     }
 
-    public static RepositoryInfo createRepositoryInfo(FileObject fo) {
+    public static RepositoryInfo createRepositoryInfo(FileObject fo) throws URISyntaxException {
         String type = (String) fo.getAttribute(RepositoryPreferences.KEY_TYPE);
 //it seems the type can somehow turn null
 //        assert type != null : "No type defined for repository at " + fo.getPath();
