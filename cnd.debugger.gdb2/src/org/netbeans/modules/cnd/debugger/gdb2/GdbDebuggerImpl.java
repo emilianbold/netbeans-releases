@@ -2021,6 +2021,7 @@ import org.openide.util.Exceptions;
             System.out.println("value " + value.toString()); // NOI18N
         }
         String value_string = value.valueOf("value").asConst().value(); // NOI18N
+        value_string = ValuePresenter.getValue(value_string);
         EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
     }
     /* 
@@ -2033,12 +2034,6 @@ import org.openide.util.Exceptions;
 
     public boolean watchError(int rt, Error error) {
         return false;
-    }
-
-    // interface NativeDebugger
-    @Override
-    public WatchVariable[] getWatches() {
-        return watches.toArray(new WatchVariable[watches.size()]);
     }
 
     // interface NativeDebugger
@@ -2064,7 +2059,7 @@ import org.openide.util.Exceptions;
         // see IZ 194721
         // No need to check for duplicates - gdb will create different vars
         GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-        createMIVar(gdbWatch);
+        createMIVar(gdbWatch, true);
         
 	updateMIVar();
 	nativeWatch.setSubWatchFor(gdbWatch, this);
@@ -2150,7 +2145,7 @@ import org.openide.util.Exceptions;
 	    if (w.getMIName() != null)
 		continue;		// we already have a var for this one
 */
-	    createMIVar(w);
+	    createMIVar(w, true);
 	}
     }
 
@@ -2168,17 +2163,45 @@ import org.openide.util.Exceptions;
         }
     }
     
+    private void updateStringValue(final GdbVariable v) {
+        if (!"string".equals(v.getType())) {
+            return;
+        }
+        MiCommandImpl cmd = new MiCommandImpl("-data-evaluate-expression \"" + v.getFullName() + '\"') {
+            @Override
+            protected void onDone(MIRecord record) {
+                updateValue(v, record, false);
+                super.onDone(record);
+            }
+        };
+        cmd.dontReportError();
+        gdb.sendCommand(cmd);
+    }
+    
     public static final String STRUCT_VALUE = "{...}"; // NOI18N
-
-    private void updateValue(GdbVariable v, MIRecord varvalue) {
+    
+    private void updateValue(final GdbVariable v, MIRecord varvalue, boolean pretty) {
         MITList value_results = varvalue.results();
         MIValue miValue = value_results.valueOf("value"); //NOI18N
+        updateValue(v, miValue, pretty);
+    }
+
+    private void updateValue(final GdbVariable v, MIValue miValue, boolean pretty) {
         String value = null;
         if (miValue != null) {
             value = miValue.asConst().value();
         }
         value = processValue(value);
+        if (!pretty) {
+            value = ValuePresenter.getValue(value);
+        }
         v.setAsText(value);
+        
+        // pretty printer for string type
+        if (pretty) {
+            updateStringValue(v);
+            return;
+        }
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
         } else {
@@ -2306,7 +2329,11 @@ import org.openide.util.Exceptions;
 		    GdbWatch w = (GdbWatch) wv;
 		    w.setInScope(Boolean.parseBoolean(in_scope));
 		}
-                evalMIVar(wv);
+                if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
+                    updateValue(wv, updatevar.asTuple().valueOf("value"), true); //NOI18N
+                } else if (in_scope == null || in_scope.equalsIgnoreCase("true")){
+                    evalMIVar(wv);
+                }
             }
         }
     }
@@ -2422,7 +2449,7 @@ import org.openide.util.Exceptions;
 
 
     private void updateMIVar() {
-        String cmdString = "-var-update * "; // NOI18N
+        String cmdString = "-var-update --all-values * "; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -2451,8 +2478,22 @@ import org.openide.util.Exceptions;
                 };
 
         gdb.sendCommand(cmd);
+        
+        // update string values
+        Variable[] list = isShowAutos() ? getAutos() : local_vars;
+        for (Variable var : list) {
+            if (var instanceof GdbVariable) {
+                updateStringValue((GdbVariable)var);
+            }
+        }
+        
+        for (WatchVariable var : getWatches()) {
+            if (var instanceof GdbVariable) {
+                updateStringValue((GdbVariable)var);
+            }
+        }
     }
-
+    
     private void evalMIVar(final GdbVariable v) {
         String mi_name = v.getMIName();
 	// value of mi_name
@@ -2462,7 +2503,7 @@ import org.openide.util.Exceptions;
 
             @Override
                     protected void onDone(MIRecord record) {
-                        updateValue(v, record);
+                        updateValue(v, record, true);
                         finish();
                     }
 
@@ -2516,8 +2557,11 @@ import org.openide.util.Exceptions;
         gdb.sendCommand(cmd);
     }
 
-    private void createMIVar(final GdbVariable v) {
-        String expr = MacroSupport.expandMacro(this, v.getVariableName());
+    private void createMIVar(final GdbVariable v, boolean expandMacros) {
+        String expr = v.getVariableName();
+        if (expandMacros) {
+            expr = MacroSupport.expandMacro(this, v.getVariableName());
+        }
         String cmdString = "-var-create - * " + expr; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
@@ -2526,8 +2570,8 @@ import org.openide.util.Exceptions;
                 protected void onDone(MIRecord record) {
 		    v.setAsText("{...}");// clear any error messages // NOI18N
 		    v.setInScope(true);
-                    updateValue(v, record);
                     interpVar(v, record);
+                    updateValue(v, record, true);
                     finish();
                 }
 
@@ -2584,7 +2628,7 @@ import org.openide.util.Exceptions;
             GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
             if (var == null) {
                 var = new GdbWatch(this, watchUpdater(), auto);
-                createMIVar(var);
+                createMIVar(var, true);
             }
             res.add(var);
         }
@@ -2646,9 +2690,11 @@ import org.openide.util.Exceptions;
             if (gv == null) {
                 new_local_vars[vx] = new GdbVariable(this, localUpdater, null, 
                         var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(new_local_vars[vx]);
+                createMIVar(new_local_vars[vx], false);
             } else {
-		gv.setValue(loc.getValue()); // update value
+                if (loc.isSimple()) {
+                    gv.setValue(loc.getValue()); // update value
+                }
                 new_local_vars[vx] = gv;
             }
         }
@@ -2675,7 +2721,7 @@ import org.openide.util.Exceptions;
             if (gv == null) {
                 new_local_vars[size + vx] = new GdbVariable(this, localUpdater, 
                         null, var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(new_local_vars[size + vx]);
+                createMIVar(new_local_vars[size + vx], false);
             } else {
                 new_local_vars[size + vx] = gv;
             }
