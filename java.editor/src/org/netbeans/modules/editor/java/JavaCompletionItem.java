@@ -3354,7 +3354,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), t);
                         TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, embeddedOffset, endPos);
                         if (ts != null) {
-                            ret[0] = ts.token().id() == JavaTokenId.SEMICOLON ? -1 : ts.offset() + ts.token().length();
+                            if (ts.token().id() == JavaTokenId.SEMICOLON) {
+                                ret[0] = -1;
+                            } else if (ts.moveNext()) {
+                                ret[0] = ts.token().id() == JavaTokenId.LINE_COMMENT || ts.token().id() == JavaTokenId.WHITESPACE && ts.token().text().toString().contains("\n") ? ts.offset() : offset;                                
+                            } else {
+                                ret[0] = ts.offset() + ts.token().length();
+                            }
                         }
                     } else {
                         TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());

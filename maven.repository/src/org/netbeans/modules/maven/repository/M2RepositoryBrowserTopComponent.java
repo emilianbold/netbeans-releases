@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.util.List;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
@@ -57,6 +58,7 @@ import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -241,7 +243,13 @@ private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             });
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (rrui.getButton() == ret) {
-        final  RepositoryInfo info = rrui.getRepositoryInfo();
+        final  RepositoryInfo info;
+        try {
+            info = rrui.getRepositoryInfo();
+        } catch (URISyntaxException x) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
         manager.setRootContext(createRootNode());
         RequestProcessor.getDefault().post(new Runnable() {
