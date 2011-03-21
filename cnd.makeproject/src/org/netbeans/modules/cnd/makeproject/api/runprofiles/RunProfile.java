@@ -586,9 +586,16 @@ public final class RunProfile implements ConfigurationAuxObject {
 
     // Run Command
 
-    public boolean isSimpleRunCommand() {
-        return !runCommand.getValue().contains(" "); // NOI18N
-    }
+public boolean isSimpleRunCommand() {
+        String rc = runCommand.getValue().trim();
+        if (rc.startsWith("\"${")) { // default..... // NOI18N
+            return true;
+        } else if (makeConfiguration != null && makeConfiguration.isLibraryConfiguration()) {
+            return true;
+        } else  {
+            return false;
+        }
+    } 
 
     public ComboStringConfiguration getRunCommand() {
         return runCommand;
