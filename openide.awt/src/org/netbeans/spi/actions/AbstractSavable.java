@@ -58,7 +58,7 @@ import org.openide.util.Lookup.Template;
  * result).
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
- * @since XXX
+ * @since 7.31
  */
 public abstract class AbstractSavable implements Savable {
     /** Constructor for subclasses. 
