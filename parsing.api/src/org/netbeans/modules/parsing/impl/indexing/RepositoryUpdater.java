@@ -1797,11 +1797,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                         boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
                         boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
-                        boolean allFiles = cifIsChanged || forceReindex || resources == allResources;
+                        boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
                         SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                         for(String mimeType : cifInfo.getMimeTypes()) {
-                            if ((cifIsChanged || forceReindex) && allResources != null && resources != allResources) {
+                            if ((cifIsChanged || forceReindex) && allResources != null && resources.size() != allResources.size()) {
                                 if (allCi == null) {
                                     allCi = new ClusteredIndexables(allResources);
                                 }
