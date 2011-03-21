@@ -1766,12 +1766,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	return watch_cmd;
     }
     
-    // interface NativeDebugger
-    @Override
-    public WatchVariable[] getWatches() {
-        return super.getWatches();
-    }
-
     public void newWatch(int rt, GPDbxDisplaySpec spec) {
         DbxWatch dbxWatch = null;
         NativeWatch nativeWatch = null;
