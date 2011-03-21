@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.ejbjar.project.ui.EjbContainerNode;
 import org.netbeans.modules.j2ee.ejbjar.project.ui.ServerResourceNode;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -108,6 +109,10 @@ public final class J2eeProjectView {
     public static Node createServerResourcesNode (Project p) {
         try {
             return new ServerResourceNode(p);
+        } catch (FileStateInvalidException fsie) {
+            // Happens in cases of project deletion or unaccessible sources
+            LOGGER.log(Level.INFO, "Project directory became unavailable.", fsie); //NOI18N
+            return null;
         } catch (DataObjectNotFoundException ex) {
             // Should never happen
             LOGGER.log(Level.WARNING, null, ex);
@@ -118,8 +123,12 @@ public final class J2eeProjectView {
     public static Node createEjbsView(EjbJar ejbModule, Project p){
         try {
             return new EjbContainerNode(ejbModule, p, getEjbNodesFactory());
+        } catch (FileStateInvalidException fsie) {
+            // Happens in cases of project deletion or unaccessible sources
+            LOGGER.log(Level.INFO, "Project directory became unavailable.", fsie); //NOI18N
+            return null;
         } catch (DataObjectNotFoundException ex) {
-            //Should not happen 
+            // Should not happen
             LOGGER.log(Level.WARNING, null, ex);
             return null;
         }
