@@ -2164,10 +2164,10 @@ import org.openide.util.Exceptions;
     }
     
     private void updateStringValue(final GdbVariable v) {
-        if (!"string".equals(v.getType())) {
+        if (!"string".equals(v.getType())) { //NOI18N
             return;
         }
-        MiCommandImpl cmd = new MiCommandImpl("-data-evaluate-expression \"" + v.getFullName() + '\"') {
+        MiCommandImpl cmd = new MiCommandImpl("-data-evaluate-expression \"" + v.getFullName() + '\"') { //NOI18N
             @Override
             protected void onDone(MIRecord record) {
                 updateValue(v, record, false);
@@ -2331,7 +2331,7 @@ import org.openide.util.Exceptions;
 		}
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
                     updateValue(wv, updatevar.asTuple().valueOf("value"), true); //NOI18N
-                } else if (in_scope == null || in_scope.equalsIgnoreCase("true")){
+                } else if (in_scope == null || in_scope.equalsIgnoreCase("true")){  //NOI18N
                     evalMIVar(wv);
                 }
             }
