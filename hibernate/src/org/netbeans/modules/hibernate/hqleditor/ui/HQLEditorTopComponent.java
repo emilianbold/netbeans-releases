@@ -522,7 +522,7 @@ public final class HQLEditorTopComponent extends TopComponent {
     }
 
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
-        if(oneObject.getClass().getName().startsWith("java.lang")){//NOI18N
+        if(oneObject==null || oneObject.getClass().getName().startsWith("java.lang")){//NOI18N
             //case for Long, String etc
             tableHeaders.add(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " +(tableHeaders.size()+1));//NOI18N
         } else {
@@ -540,7 +540,7 @@ public final class HQLEditorTopComponent extends TopComponent {
     private void createTableData(Vector<Vector> tableData, Object... rowObject) {
         Vector<Object> oneRow = new Vector<Object>();
         for (Object oneObject : rowObject) {
-            if(oneObject.getClass().getName().startsWith("java.lang")){
+            if(oneObject==null || oneObject.getClass().getName().startsWith("java.lang")){
                 //case for Long, String etc
                 oneRow.add(oneObject.toString());
             } else {
