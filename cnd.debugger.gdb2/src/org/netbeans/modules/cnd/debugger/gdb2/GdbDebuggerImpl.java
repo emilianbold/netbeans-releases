@@ -2200,8 +2200,8 @@ import org.openide.util.Exceptions;
         // pretty printer for string type
         if (pretty) {
             updateStringValue(v);
-            return;
         }
+        
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
         } else {
