@@ -227,7 +227,8 @@ public final class MakeSources implements Sources, AntProjectListener {
             if (pd != null) {
                 String baseDir = pd.getBaseDir();
                 Set<FileObject> added = new HashSet<FileObject>();
-                ExecutionEnvironment fsEnv = project.getRemoteFileSystemHost();
+                ExecutionEnvironment fsEnv = project.getRemoteFileSystemHost();                
+                sourceRootList.add(baseDir); // add remote project itself to the tail
                 for (String name : sourceRootList) {
                     String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
                     path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
@@ -241,11 +242,6 @@ public final class MakeSources implements Sources, AntProjectListener {
                             added.add(fo);
                         }
                     }
-                }
-                FileObject fo = pd.getBaseDirFileObject();
-                if (!added.contains(fo)) {
-                    sources.addGroup(project, GENERIC, fo, 
-                            NbBundle.getMessage(MakeSources.class, "REMOTE_METADATA_DISPLAY_NAME"));
                 }
             } else {
                 completeSouces.set(false);
