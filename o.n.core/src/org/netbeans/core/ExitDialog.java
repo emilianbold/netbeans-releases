@@ -307,12 +307,9 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         {
             final Savable obj = (Savable)value;
 
-            /*
-            Node node = obj.getNodeDelegate();
-
-            Icon icon = ImageUtilities.image2Icon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
-            super.setIcon(icon);
-*/
+            if (obj instanceof Icon) {
+                super.setIcon((Icon)obj);
+            }
             
             setText(obj.toString());
             if (isSelected){

@@ -43,12 +43,19 @@
 package org.netbeans.spi.actions;
 
 import java.io.IOException;
+import javax.swing.Icon;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.modules.openide.awt.SavableRegistry;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup.Template;
 
 /** Default implementation of {@link Savable} interface and
  * additional contracts, including dealing with {@link Savable#REGISTRY}.
+ * The human presentable name of the object to be saved is provided by
+ * implementing {@link #findDisplayName()}. In case this object wants 
+ * to be visually represented with an icon, it can also implement {@link Icon}
+ * interface (and delegate to {@link ImageUtilities#loadImageIcon(java.lang.String, boolean)}
+ * result).
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since XXX

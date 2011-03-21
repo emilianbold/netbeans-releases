@@ -45,12 +45,15 @@
 package org.openide.loaders;
 
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.beans.*;
 import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.event.*;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
@@ -1240,7 +1243,8 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
     }  // end of ModifiedRegistry inner class
     
-    private static final class DOSavable extends AbstractSavable {
+    private static final class DOSavable extends AbstractSavable 
+    implements Icon {
         final DataObject obj;
 
         public DOSavable(DataObject obj) {
@@ -1280,6 +1284,25 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
         final void add() {
             register();
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            icon().paintIcon(c, g, x, y);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return icon().getIconWidth();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return icon().getIconHeight();
+        }
+        
+        private Icon icon() {
+            return ImageUtilities.image2Icon(obj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
         }
     }
 

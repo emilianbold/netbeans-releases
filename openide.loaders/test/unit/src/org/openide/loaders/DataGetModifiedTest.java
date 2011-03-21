@@ -46,6 +46,7 @@ package org.openide.loaders;
 
 import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import org.openide.filesystems.*;
 import javax.swing.event.ChangeListener;
@@ -145,6 +146,7 @@ public class DataGetModifiedTest extends NbTestCase {
         Savable another = findSavable(name);
         assertNotSame("It is different instance", savable, another);
         assertEquals("But it remains equals", savable, another);
+        assertTrue("DataObject savables provide Icons", another instanceof Icon);
         
         savable.save();
         assertTrue("Calling save on old savable has no impact", do1.isModified());
