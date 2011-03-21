@@ -46,6 +46,7 @@ package org.netbeans.modules.web.beans.impl.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -137,10 +138,10 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
     }
 
     @Override
-    public List<AnnotationMirror> getQualifiers(Element element) {
+    public List<AnnotationMirror> getQualifiers(Element element, boolean all ) {
         final boolean event = getParameterType(element, null, EVENT_INTERFACE) != null;
         
-        final List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        final LinkedHashSet<AnnotationMirror> result = new LinkedHashSet<AnnotationMirror>();
         final AnnotationObjectProvider.AnnotationHandleStrategy strategy = new 
             AnnotationObjectProvider.AnnotationHandleStrategy() {
                 
@@ -155,7 +156,7 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
                 event, strategy);
         boolean isType = element instanceof TypeElement;
         boolean isMethod = element instanceof ExecutableElement;
-        if ( isType || isMethod ){
+        if ( all && ( isType || isMethod ) ){
             AnnotationObjectProvider.SpecializeVisitor visitor = new 
                 AnnotationObjectProvider.SpecializeVisitor() {
                 
@@ -181,11 +182,11 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
                         getModel().getHelper(), visitor);
             }
             else if ( isMethod ){
-                MemberCheckerFilter.visitSpecialized((ExecutableElement)element, 
+                MemberCheckerFilter.visitSpecializes((ExecutableElement)element, 
                         getModel().getHelper(), visitor);
             }
         }
-        return result;
+        return new ArrayList<AnnotationMirror>( result );
     }
     
     /* (non-Javadoc)

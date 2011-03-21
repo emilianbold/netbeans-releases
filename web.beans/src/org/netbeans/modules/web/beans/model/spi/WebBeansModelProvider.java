@@ -70,7 +70,7 @@ public interface WebBeansModelProvider {
     
     boolean isInjectionPoint( VariableElement element ) throws InjectionPointDefinitionError;
     
-    List<AnnotationMirror> getQualifiers( Element element );
+    List<AnnotationMirror> getQualifiers( Element element , boolean all );
 
     List<Element> getNamedElements( );
 

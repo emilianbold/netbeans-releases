@@ -119,7 +119,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         return getSpecialized(productionElement, model.getHelper(), annotationName);
     }
     
-    static void visitSpecialized( ExecutableElement method,
+    static void visitSpecializes( ExecutableElement method,
             AnnotationModelHelper helper  , SpecializeVisitor visitor )
     {
         ExecutableElement current = method;
@@ -173,7 +173,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                 return false;
             }
         };
-        visitSpecialized( productionElement , helper, visitor);
+        visitSpecializes( productionElement , helper, visitor);
         return result[0];
     }
     

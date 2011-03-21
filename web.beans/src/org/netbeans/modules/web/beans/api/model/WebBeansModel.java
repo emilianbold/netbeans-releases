@@ -203,10 +203,11 @@ public final class WebBeansModel {
      * <code>element</code> could be variable ( injection point , producer field ),
      * type element ( bean type with binding ) and production method. 
      * @param element element with qualifiers
+     * @param all if <code>true</code> all annotations ( including inherited by @Specializes ) will be returned
      * @return list of all bindings for <code>element</code>
      */
-    public List<AnnotationMirror> getQualifiers( Element element ){
-        return getProvider().getQualifiers( element );
+    public List<AnnotationMirror> getQualifiers( Element element , boolean all){
+        return getProvider().getQualifiers( element , all );
     }
     
     /**

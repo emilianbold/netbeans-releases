@@ -191,10 +191,12 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
         }
         
         TypeElement superClass = helper.getSuperclass(type);
-        if ( visitor.visit( superClass ) ){
-            return;
+        if ( superClass != null ){
+            if ( visitor.visit( superClass ) ){
+                return;
+            }
+            visitSpecializes(superClass, helper, visitor);
         }
-        visitSpecializes(superClass, helper, visitor);
         
         /* interfaces could not be injectables , but let's inspect them as possible 
          * injectables for notifying user about error if any.

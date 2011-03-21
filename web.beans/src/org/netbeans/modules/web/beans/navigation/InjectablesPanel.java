@@ -452,7 +452,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                             else {
                                 element = getSelectedQualifiedElement( element, model);
                                 List<AnnotationMirror> bindings = 
-                                    model.getQualifiers(element);
+                                    model.getQualifiers(element, true);
                                 StringBuilder builder = new StringBuilder();
                                 
                                 if ( model.hasImplicitDefaultQualifier(element)){
@@ -565,7 +565,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myFqnTypeName = new StringBuilder();
         setInjectableType(typeMirror, model.getCompilationController());
         
-        List<AnnotationMirror> qualifiers = model.getQualifiers( context );
+        List<AnnotationMirror> qualifiers = model.getQualifiers( context , true );
         
         StringBuilder fqnBuilder = new StringBuilder();
         StringBuilder builder = new StringBuilder();
