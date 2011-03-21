@@ -202,11 +202,22 @@ public final class WebBeansModel {
      * Returns all qualifiers for <code>element</code>.
      * <code>element</code> could be variable ( injection point , producer field ),
      * type element ( bean type with binding ) and production method. 
-     * @param element element with bindings
+     * @param element element with qualifiers
      * @return list of all bindings for <code>element</code>
      */
     public List<AnnotationMirror> getQualifiers( Element element ){
         return getProvider().getQualifiers( element );
+    }
+    
+    /**
+     * If <code>element</code> has no declared qualifiers or just @Named 
+     * qualifier then it has implicit @Default qualifier.
+     *  
+     * @param element element with qualifiers
+     * @return true if element has @Default qualifier which is not declared explicitly 
+     */
+    public boolean hasImplicitDefaultQualifier( Element element ){
+        return getProvider().hasImplicitDefaultQualifier( element );
     }
     
     /**

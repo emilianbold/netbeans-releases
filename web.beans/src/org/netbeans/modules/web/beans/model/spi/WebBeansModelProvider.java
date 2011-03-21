@@ -90,4 +90,6 @@ public interface WebBeansModelProvider {
 
     String getScope( Element element ) throws CdiException;
 
+    boolean hasImplicitDefaultQualifier( Element element );
+
 }

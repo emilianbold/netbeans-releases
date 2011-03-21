@@ -115,13 +115,18 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private static final long serialVersionUID = -1643692494954311020L;
 
     public static final Icon FQN_ICON = ImageUtilities.loadImageIcon(
-            "org/netbeans/modules/java/navigation/resources/fqn.gif", false); // NOI18N
+            "org/netbeans/modules/java/navigation/resources/fqn.gif", false);       // NOI18N
 
     public static final Icon EXPAND_ALL_ICON = ImageUtilities.loadImageIcon(
             "org/netbeans/modules/java/navigation/resources/expandall.gif", false); // NOI18N
     
-    private static final String NON_BINDING_MEMBER_ANNOTATION =
-                                            "javax.enterprise.inject.NonBinding";    // NOI18N
+    static final String NON_BINDING_MEMBER_ANNOTATION =
+                                            "javax.enterprise.inject.NonBinding";   // NOI18N
+    
+    static final String DEFAULT = "Default";                                        // NOI18N
+    
+    static final String DEFAULT_QUALIFIER_ANNOTATION = 
+                                    "javax.enterprise.inject."+DEFAULT;             // NOI18N
 
     private static TreeModel pleaseWaitTreeModel;
     static
@@ -449,6 +454,18 @@ public class InjectablesPanel extends javax.swing.JPanel {
                                 List<AnnotationMirror> bindings = 
                                     model.getQualifiers(element);
                                 StringBuilder builder = new StringBuilder();
+                                
+                                if ( model.hasImplicitDefaultQualifier(element)){
+                                    builder.append('@');
+                                    if (myShowFQNToggleButton.isSelected() ){
+                                        builder.append(DEFAULT_QUALIFIER_ANNOTATION);
+                                    }
+                                    else {
+                                        builder.append(DEFAULT);
+                                    }
+                                    builder.append(", ");           // NOI18N
+                                }
+                                
                                 for (AnnotationMirror annotationMirror : bindings) {
                                     appendBinding(annotationMirror, builder,  
                                             myShowFQNToggleButton.isSelected() );
@@ -552,6 +569,15 @@ public class InjectablesPanel extends javax.swing.JPanel {
         
         StringBuilder fqnBuilder = new StringBuilder();
         StringBuilder builder = new StringBuilder();
+        if ( model.hasImplicitDefaultQualifier(element)){
+            fqnBuilder.append('@');
+            builder.append('@');
+            fqnBuilder.append(DEFAULT_QUALIFIER_ANNOTATION);
+            builder.append(DEFAULT);
+            fqnBuilder.append(", ");           // NOI18N
+            builder.append(", ");           // NOI18N
+        }
+        
         for (AnnotationMirror annotationMirror : qualifiers) {
             appendBinding(annotationMirror, fqnBuilder,  true );
             appendBinding(annotationMirror, builder,  false );
@@ -588,7 +614,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         DeclaredType type = mirror.getAnnotationType();
         Element annotation = type.asElement();
         
-        builder.append("@");            // NOI18N
+        builder.append('@');
         String annotationName ;
         if ( isFqn ) {
             annotationName= ( annotation instanceof TypeElement )?

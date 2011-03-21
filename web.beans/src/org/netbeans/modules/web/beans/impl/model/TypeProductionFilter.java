@@ -92,6 +92,7 @@ class TypeProductionFilter extends Filter<Element> {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.Filter#filterElements(java.util.Set)
      */
+    @Override
     void filter( Set<Element> productionElements ){
         if ( filterPrimitives(productionElements ) ){
             fillSimpleResult(productionElements);

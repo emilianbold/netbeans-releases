@@ -270,9 +270,7 @@ abstract class FieldInjectionPointLogic {
     protected boolean isQualifier( TypeElement element, 
             AnnotationModelHelper helper, boolean event )
     {
-        QualifierChecker checker = QualifierChecker.get( event );
-        checker.init( element , helper );
-        return checker.check();
+        return AnnotationObjectProvider.isQualifier(element, helper, event);
     }
     
     protected Set<Element> getChildSpecializes( Element productionElement,
