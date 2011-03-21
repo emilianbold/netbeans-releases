@@ -137,17 +137,13 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
     public void tasksAdded( List<? extends Task> tasks ) {
         if( tasks.isEmpty() )
             return;
-        int startRow = list.indexOf( tasks.get(0) );
-        int endRow = list.indexOf( tasks.get(tasks.size()-1) );
-        fireTableRowsInserted( startRow, endRow );
+        fireTableDataChanged();
     }
 
     public void tasksRemoved( List<? extends Task> tasks ) {
         if( tasks.isEmpty() )
             return;
-        int startRow = list.indexOf( tasks.get(0) );
-        int endRow = list.indexOf( tasks.get(tasks.size()-1) );
-        fireTableRowsDeleted( startRow, endRow );
+        fireTableDataChanged();
     }
 
     public void cleared() {
