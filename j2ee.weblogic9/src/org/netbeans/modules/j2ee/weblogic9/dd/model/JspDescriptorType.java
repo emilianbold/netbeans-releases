@@ -49,5 +49,7 @@ package org.netbeans.modules.j2ee.weblogic9.dd.model;
 public interface JspDescriptorType {
 
     void setKeepgenerated(boolean keep);
+    
+    void setDebug(boolean debug);
 
 }

@@ -40,26 +40,37 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.dd.model;
-
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
 /**
+ * Extends the functionality of {@link FindJSPServlet} by defining
+ * the package name of the compiled JSPs and the prefix of source
+ * path. In order to use it return implementation of this class from
+ * {@link OptionalDeploymentManagerFactory#getFindJSPServlet(javax.enterprise.deploy.spi.DeploymentManager)}.
  *
  * @author Petr Hejl
+ * @since 1.78
  */
-public interface WeblogicWebApp extends CommonDDBean {
+public interface FindJSPServlet2 extends FindJSPServlet {
 
-    String[] getContextRoot();
-
-    void setContextRoot(String[] roots);
-
-    LibraryRefType[] getLibraryRef();
-
-    void setLibraryRef(LibraryRefType[] libraries);
-
-    void setJspDescriptor(JspDescriptorType[] descriptor);
+    /**
+     * Returns the package name of compiled JSPs.
+     * 
+     * @param moduleContextPath the context path
+     * @return package name of compiled JSPs
+     */
+    String getServletBasePackageName(String moduleContextPath);
     
-    JspDescriptorType[] getJspDescriptor();
-
+    /**
+     * Returns the relative source of the JSP reported in class file. For
+     * example the JSP in web root is "index.jsp", but the server compile it as
+     * coming from "jsp_servlet/index.jsp". This method should return
+     * "jsp_servlet/index.jsp".
+     * 
+     * @param moduleContextPath the context path
+     * @param jspRelativePath the relative path of the JSP
+     * @return prefix of the source path reported in class file
+     */
+    String getServletSourcePath(String moduleContextPath, String jspRelativePath);
+    
 }

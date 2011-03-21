@@ -43,12 +43,10 @@
 package org.netbeans.modules.j2ee.weblogic9.dd.model;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
@@ -56,16 +54,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.weblogic9.dd.web1031.FastSwapType;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.NullEntityResolver;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -212,7 +205,34 @@ public final class WebApplicationModel extends BaseDescriptorModel {
     }
     
     public void setKeepJspGenerated(boolean keep) {
-        JspDescriptorType[] jspDescriptor = null;
+        JspDescriptorType[] desc = getJspDescriptor();
+        for (JspDescriptorType type : desc) {
+            type.setKeepgenerated(keep);
+        }
+        bean.setJspDescriptor(desc);
+    }
+    
+    public void setDebug(boolean debug) {
+        JspDescriptorType[] desc = getJspDescriptor();
+        for (JspDescriptorType type : desc) {
+            type.setKeepgenerated(debug);
+        }
+        bean.setJspDescriptor(desc);
+    }
+
+    public void setFastSwap(boolean fast) {
+        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
+            FastSwapType fastSwap = new FastSwapType();
+            fastSwap.setEnabled(fast);
+            ((org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) bean).setFastSwap(fastSwap);
+        }        
+    }
+  
+    private JspDescriptorType[] getJspDescriptor() {
+        JspDescriptorType[] jspDescriptor = bean.getJspDescriptor();
+        if (jspDescriptor != null && jspDescriptor.length > 0) {
+            return jspDescriptor;
+        }
         if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
             jspDescriptor = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.JspDescriptorType[] {
                 new org.netbeans.modules.j2ee.weblogic9.dd.web1031.JspDescriptorType()};
@@ -223,17 +243,8 @@ public final class WebApplicationModel extends BaseDescriptorModel {
             //TODO
             jspDescriptor = new org.netbeans.modules.j2ee.weblogic9.dd.web90.JspDescriptorType[] {
                 new org.netbeans.modules.j2ee.weblogic9.dd.web90.JspDescriptorType()};
-        }        
-        jspDescriptor[0].setKeepgenerated(keep);
-        bean.setJspDescriptor(jspDescriptor);
-    }
-    
-    public void setFastSwap(boolean fast) {
-        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
-            FastSwapType fastSwap = new FastSwapType();
-            fastSwap.setEnabled(fast);
-            ((org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) bean).setFastSwap(fastSwap);
-        }        
+        }
+        return jspDescriptor;
     }
     
     private ServerLibraryDependency getLibrary(LibraryRefType libRef) {

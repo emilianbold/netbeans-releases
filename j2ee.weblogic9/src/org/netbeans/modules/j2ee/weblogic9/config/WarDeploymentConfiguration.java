@@ -304,6 +304,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         WebApplicationModel webApp = WebApplicationModel.generate(serverVersion);
         webApp.setContextRoot("");
         webApp.setKeepJspGenerated(true);
+        webApp.setDebug(true);
         if (!isWebProfile) {
             // TODO not supported by web profile so far
             webApp.setFastSwap(true);
