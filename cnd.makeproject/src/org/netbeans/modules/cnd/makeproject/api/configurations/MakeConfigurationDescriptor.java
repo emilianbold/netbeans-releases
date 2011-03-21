@@ -396,6 +396,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public FileObject getBaseDirFileObject() {
         return baseDirFO;
     }
+    
+    public FileSystem getBaseDirFileSystem() {
+        return baseDirFS;
+    }
 
     public String getProjectDir() {
         return projectDirFO.getPath();
