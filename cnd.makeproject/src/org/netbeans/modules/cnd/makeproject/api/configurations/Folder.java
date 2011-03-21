@@ -844,6 +844,19 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         return null;
     }
+    
+    public Item findItemByAbsolutePath(String path) {
+        if (path == null) {
+            return null;
+        }
+        Item[] anItems = getItemsAsArray();
+        for (int i = 0; i < anItems.length; i++) {
+            if (path.equals(anItems[i].getAbsolutePath())) {
+                return anItems[i];
+            }
+        }
+        return null;
+    }
 
     public Item findItemByName(String name) {
         if (name == null) {
@@ -1167,23 +1180,28 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
-            File file = CndFileUtils.toFile(fileObject);
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N
             }
             //if (true) return;
-            String path = getRootPath() + '/' + file.getName();
+            String path = getRootPath() + '/' + fileObject.getNameExt();
             if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
             }
             // Try item first
-            Item item = findItemByPath(path);
+            Item item;
+            if (CndPathUtilitities.isPathAbsolute(path)) {
+                item = findItemByAbsolutePath(path);
+            } else {
+                item = findItemByPath(path);
+            }
+            
             if (item != null) {
                 removeItemAction(item, false);
                 return;
             }
             // then folder
-            Folder folder = findFolderByName(file.getName());
+            Folder folder = findFolderByName(fileObject.getNameExt());
             if (folder != null) {
                 removeFolderAction(folder, false);
                 return;
