@@ -220,5 +220,10 @@ public interface MultiViewElement {
          * Value should be preferably unique, but need not be.
          */
         public String preferredID();
+
+        /** Position of this element amoung the list of other elements.
+         * @return integer value
+         */
+        public int position() default Integer.MAX_VALUE;
     }
 }
