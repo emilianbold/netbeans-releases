@@ -1841,9 +1841,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     
                     // now process embedding indexers
-                    boolean containsNewIndexers = false;
-                    boolean forceReindex = false;
+                    boolean useAllCi = false;
                     if (allResources != null) {
+                        boolean containsNewIndexers = false;
+                        boolean forceReindex = false;
                         for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 if (indexers.changedEifs != null && indexers.changedEifs.contains(eifInfo)) {
@@ -1853,13 +1854,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 forceReindex = votes.get(eif) == Boolean.FALSE;
                             }
                         }
-                    }
-                    boolean useAllCi = false;
-                    if ((containsNewIndexers||forceReindex) && resources != allResources) {
-                        if (allCi == null) {
-                            allCi = new ClusteredIndexables(allResources);
+                        if ((containsNewIndexers||forceReindex) && resources.size() != allResources.size()) {
+                            if (allCi == null) {
+                                allCi = new ClusteredIndexables(allResources);
+                            }
+                            useAllCi = true;
                         }
-                        useAllCi = true;
+                        final boolean allFiles = containsNewIndexers || forceReindex || allResources.size() == resources.size();
+                        if (allFiles) {
+                            for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
+                                for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
+                                    final EmbeddingIndexerFactory factory = eifInfo.getIndexerFactory();
+                                    final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
+                                    Pair<SourceIndexerFactory,Context> value = contexts.get(key);
+                                    if (value == null) {
+                                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
+                                        value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
+                                        contexts.put(key,value);
+                                    }
+                                    SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
+                                }
+                            }
+                        }
                     }
 
                     for(String mimeType : Util.getAllMimeTypes()) {
