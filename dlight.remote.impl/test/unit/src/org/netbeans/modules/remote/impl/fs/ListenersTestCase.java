@@ -168,10 +168,10 @@ public class ListenersTestCase extends RemoteFileTestBase {
         doTestListeners(false);
     }
            
-    @ForAllEnvironments
-    public void testRecursiveListeners() throws Exception {
-        doTestListeners(true);
-    }
+//    @ForAllEnvironments
+//    public void testRecursiveListeners() throws Exception {
+//        doTestListeners(true);
+//    }
            
     public static Test suite() {
         return RemoteApiTest.createSuite(ListenersTestCase.class);
