@@ -53,6 +53,7 @@ import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -310,5 +311,23 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
         RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
         fs.scheduleRefreshExistent(paths);
-    }    
+    }
+
+    @Override
+    public void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem, "Unexpected file system class: " + fileSystem); // NOI18N
+        FileObject fileObject = fileSystem.findResource(absPath);
+        if (fileObject != null) {
+            fileObject.addRecursiveListener(listener);
+        }
+    }
+
+    @Override
+    public void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem, "Unexpected file system class: " + fileSystem); // NOI18N
+        FileObject fileObject = fileSystem.findResource(absPath);
+        if (fileObject != null) {
+            fileObject.removeRecursiveListener(listener);
+        }
+    }
 }

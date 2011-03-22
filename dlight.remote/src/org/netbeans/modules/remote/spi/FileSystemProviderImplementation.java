@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
@@ -79,4 +80,6 @@ public interface FileSystemProviderImplementation {
     String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException;
     void scheduleRefresh(FileObject fileObject);
     void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths);
+    void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
+    void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
 }
