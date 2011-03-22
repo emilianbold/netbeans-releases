@@ -67,15 +67,15 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
@@ -95,6 +95,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
     private final MakeConfigurationDescriptor configurationDescriptor;
+    private volatile boolean listenerAttached;
     private final String name;
     private String displayName;
     private final Folder parent;
@@ -256,12 +257,21 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void attachListeners() {
+        if (configurationDescriptor == null) {
+            CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
+            return;
+        }
         String rootPath = getRootPath();
-        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(configurationDescriptor.getBaseDirFileSystem());
-        File folderFile = null;
-        if (env.isLocal()) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
-            folderFile = new File(AbsRootPath);
+        if (listenerAttached) {
+            CndUtils.assertTrueInConsole(false, "listeners already attached to " + rootPath);
+            return;
+        }
+        FileSystem fileSystem = configurationDescriptor.getBaseDirFileSystem();
+        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
+        
+        if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+            // TODO: Remove this check: it was keeped just because of code freeze
+            File folderFile = new File(absRootPath);
             if (!folderFile.exists() || !folderFile.isDirectory()) {
                 return;
             }
@@ -274,25 +284,19 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (log.isLoggable(Level.FINER)) {
                 log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
             }
-            if (env.isLocal()) {
-                try {
-                    FileUtil.addRecursiveListener(this, folderFile);
-                    if (log.isLoggable(Level.FINER)) {
-                        log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
-                    }
-                } catch (IllegalArgumentException iae) {
-                    // Can happen if trying to attach twice...
-                    if (log.isLoggable(Level.FINER)) {
-                        log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
-                    }
+            try {
+                FileSystemProvider.addRecursiveListener(this, fileSystem, absRootPath);
+                listenerAttached = true;
+                if (log.isLoggable(Level.FINER)) {
+                    log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
                 }
-                return;
-            } else {
-                FileObject fo = getThisFolder();
-                if (fo != null && fo.isValid()) {
-                    fo.addFileChangeListener(this); // don't use WeakListeners.create to be able to detach
+            } catch (IllegalArgumentException iae) {
+                // Can happen if trying to attach twice...
+                if (log.isLoggable(Level.FINER)) {
+                    log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
                 }
             }
+            return;
         }
 
         // Repeast for all sub folders
@@ -303,26 +307,24 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void detachListener() {
+        if (!listenerAttached) {
+            return;
+        }
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
         }
+
+        if (configurationDescriptor == null) {
+            CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
+            return;
+        }
         
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-        FileObject baseDirFO = null;
-        if (configurationDescriptor != null) {
-            baseDirFO = configurationDescriptor.getBaseDirFileObject();
-            if (baseDirFO != null) {
-                env = FileSystemProvider.getExecutionEnvironment(baseDirFO);
-            }
-        }
-        if (env.isLocal()) {        
-            FileUtil.removeFileChangeListener(this);
-        } else {
-            FileObject fo = getThisFolder();
-            if (fo != null && fo.isValid()) {
-                fo.removeFileChangeListener(this);
-            }
-        }
+        String rootPath = getRootPath();
+        FileSystem fileSystem = configurationDescriptor.getBaseDirFileSystem();
+        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
+
+        FileSystemProvider.removeRecursiveListener(this, fileSystem, absRootPath);
+        listenerAttached = false;
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
             CndFileVisibilityQuery.getDefault().removeChangeListener(this);
