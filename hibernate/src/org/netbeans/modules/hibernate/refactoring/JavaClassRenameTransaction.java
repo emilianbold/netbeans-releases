@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.hibernate.refactoring;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
+import org.netbeans.modules.schema2beans.DDRegistry.ChangeTracer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
@@ -83,6 +86,8 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                     Logger.getLogger(JavaClassRenameTransaction.class.getName()).log(Level.WARNING, "Failed to refactor in {0}, verify if xml document is well formed", mappingFileObject.getPath());//NOI18N
                 }
                 if(hbMapping !=null ) {
+                    HibernateRefactoringUtil.ChangeTracker rewriteTrack = new HibernateRefactoringUtil.ChangeTracker();
+                    hbMapping.addPropertyChangeListener(rewriteTrack);
                     // The class attribute of <import>s
                     renamer.refactoringImports(hbMapping);
 
@@ -98,8 +103,11 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                     // Change all the occurrences in <union-subclass> elements
                     renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
 
-                    outs = mappingFileObject.getOutputStream();
-                    hbMapping.write(outs);
+                    if(rewriteTrack.isChanged()){
+                        outs = mappingFileObject.getOutputStream();
+                        hbMapping.write(outs);
+                    }
+                    hbMapping.removePropertyChangeListener(rewriteTrack);
                 }
             } catch (FileAlreadyLockedException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
