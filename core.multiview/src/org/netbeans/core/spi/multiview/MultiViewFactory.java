@@ -44,15 +44,20 @@
 
 package org.netbeans.core.spi.multiview;
 
+import java.awt.Image;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -163,6 +168,9 @@ public final class MultiViewFactory {
         return new DefaultCloseHandler();
     }
     
+    static MultiViewDescription createMultiViewDescription(Map map) {
+        return new MapMVD(map, null);
+    }
     
     private static final class Blank implements MultiViewElement, Serializable {
         
@@ -308,5 +316,75 @@ public final class MultiViewFactory {
         }
         
     }
-    
+
+    /** default MultiViewDescription */
+    private static final class MapMVD implements MultiViewDescription, ContextAwareDescription {
+        private final Map map;
+        private final Lookup context;
+        public MapMVD(Map map, Lookup context) {
+            this.map = map;
+            this.context = context;
+        }
+        
+        private <T> T get(String attr, Class<T> type) {
+            Object obj = map.get("displayName"); // NOI18N
+            if (obj == null) {
+                throw new NullPointerException(attr + " attribute not specified");
+            }
+            if (type.isInstance(obj)) {
+                return type.cast(obj);
+            }
+            throw new IllegalArgumentException(attr + " not of type " + type + " but " + obj);
+        }
+        
+
+        @Override
+        public int getPersistenceType() {
+            return get("persistenceType", Integer.class);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return get("displayName", String.class);
+        }
+
+        @Override
+        public Image getIcon() {
+            String base = get("iconBase", String.class); // NOI18N
+            return ImageUtilities.loadImage(base, true);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        public String preferredID() {
+            return get("preferredID", String.class); // NOI18N
+        }
+
+        @Override
+        public MultiViewElement createElement() {
+            String name = get("class", String.class); // NOI18N
+            try {
+                ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+                if (cl == null) {
+                    cl = Thread.currentThread().getContextClassLoader();
+                }
+                if (cl == null) {
+                    cl = MultiViewFactory.class.getClassLoader();
+                }
+                Class<?> clazz = Class.forName(name, true, cl);
+                return (MultiViewElement)clazz.newInstance();
+            } catch (Exception ex) {
+                throw new IllegalStateException("Cannot instantiate " + name, ex);
+            }
+        }
+
+        @Override
+        public MultiViewDescription createContextAwareDescription(Lookup context) {
+            return new MapMVD(map, context);
+        }
+    }
 }

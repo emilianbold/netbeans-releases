@@ -44,19 +44,23 @@
 
 package org.netbeans.core.api.multiview;
 
-import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.util.Lookup;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /** Factory class for handling multi views.
  *
  * @author  Dafe Simonek, Milos Kleint
  */
-public final class MultiViews {
+ public final class MultiViews {
 
     /** Factory class, no instances. */
     private MultiViews() {
@@ -77,5 +81,40 @@ public final class MultiViews {
         }
         return null;
     }
-    
+ 
+    /** Factory method to create multiview for a given mime type. The list
+     * of {@link MultiViewElement}s is taken from {@link MimeLookup#getLookup(mimeType)}.
+     * 
+     * @param context lookup representing the object to created for the multiview
+     * @param mimeType the mime type to seek for elements in
+     * @return multiview component
+     * @since 1.22
+     */
+    public static TopComponent createMultiView(String mimeType, Lookup context) {
+        List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
+        for (MultiViewDescription d : MimeLookup.getLookup(mimeType).lookupAll(MultiViewDescription.class)) {
+            if (d instanceof ContextAwareDescription) {
+                d = ((ContextAwareDescription)d).createContextAwareDescription(context);
+            }
+            arr.add(d);
+        }
+        return MultiViewFactory.createMultiView(
+            arr.toArray(new MultiViewDescription[0]), arr.get(0)
+        );
+    }
+
+    /** Factory method to create cloneable multiview for a given mime type. 
+     * The way to obtain individual elements is the same as in 
+     * {@link #createMultiView(java.lang.String, org.openide.util.Lookup)}.
+     * 
+     * @param context lookup representing the object to created for the multiview
+     * @param mimeType the mime type to seek for elements in
+     * @return cloneable multiview component
+     * @since 1.22
+     */
+    public static CloneableTopComponent createCloneableMultiView(
+            String mimeType, Lookup context
+    ) {
+        return null;
+    }
 }
