@@ -184,7 +184,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
             };
         }
         if (todo != null) {
-            EventQueue.invokeLater(todo);
+            LOAD_NODES_RP.post(todo);
         }
     }
 
