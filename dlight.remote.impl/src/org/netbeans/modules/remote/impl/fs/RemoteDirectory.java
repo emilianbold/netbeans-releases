@@ -549,12 +549,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean changed = (newEntries.size() != storage.size());
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
+            List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
             for (DirEntry newEntry : newEntries.values()) {
                 String cacheName;
                 DirEntry oldEntry = storage.getEntry(newEntry.getName());
                 if (oldEntry == null) {
                     changed = true;
                     cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                    if (loaded) {
+                        entriesToFireCreated.add(newEntry);
+                    }
                 } else {
                     if (oldEntry.isSameType(newEntry)) {
                         cacheName = oldEntry.getCache();
@@ -652,12 +656,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (trace) { trace("set lastModified to {0}", storageFile.lastModified()); } // NOI18N
             if (changed) {
                 if (loaded) {
-                    for (DirEntry newEntry : newEntries.values()) {
-                        DirEntry oldEntry = storage.getEntry(newEntry.getName());
-                        if (oldEntry == null) {
-                            RemoteFileObjectBase fo = createFileObject(newEntry);
-                            fireRemoteFileObjectCreated(fo);
-                        }
+                    for (DirEntry entry : entriesToFireCreated) {
+                        RemoteFileObjectBase fo = createFileObject(entry);
+                        fireRemoteFileObjectCreated(fo);
                     }
                 }
                 for (DirEntry entry : entriesToFireChanged) {
