@@ -463,6 +463,10 @@ public class WebAppProxy implements WebApp {
                 removePropertyChangeListener(reindentationListener);
                 webApp.merge(newWebApp, mode);
                 addPropertyChangeListener(reindentationListener);
+            } else if (webApp == null) {
+                removePropertyChangeListener(reindentationListener);
+                setOriginal((WebApp) newWebApp.clone());
+                addPropertyChangeListener(reindentationListener);
             } else {
                 setOriginal((WebApp) newWebApp.clone());
             }
