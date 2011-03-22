@@ -68,6 +68,9 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -92,7 +95,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
-    private MakeConfigurationDescriptor configurationDescriptor;
+    private final MakeConfigurationDescriptor configurationDescriptor;
     private final String name;
     private String displayName;
     private final Folder parent;
@@ -255,11 +258,14 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void attachListeners() {
         String rootPath = getRootPath();
-        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
-        File folderFile = new File(AbsRootPath);
-
-        if (!folderFile.exists() || !folderFile.isDirectory()) {
-            return;
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(configurationDescriptor.getBaseDirFileSystem());
+        File folderFile = null;
+        if (env.isLocal()) {
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+            folderFile = new File(AbsRootPath);
+            if (!folderFile.exists() || !folderFile.isDirectory()) {
+                return;
+            }
         }
 
         if (isDiskFolder() && getRoot() != null) {
@@ -269,18 +275,25 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (log.isLoggable(Level.FINER)) {
                 log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
             }
-            try {
-                FileUtil.addRecursiveListener(this, folderFile);
-                if (log.isLoggable(Level.FINER)) {
-                    log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
+            if (env.isLocal()) {
+                try {
+                    FileUtil.addRecursiveListener(this, folderFile);
+                    if (log.isLoggable(Level.FINER)) {
+                        log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
+                    }
+                } catch (IllegalArgumentException iae) {
+                    // Can happen if trying to attach twice...
+                    if (log.isLoggable(Level.FINER)) {
+                        log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
+                    }
                 }
-            } catch (IllegalArgumentException iae) {
-                // Can happen if trying to attach twice...
-                if (log.isLoggable(Level.FINER)) {
-                    log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
+                return;
+            } else {
+                FileObject fo = getThisFolder();
+                if (fo != null && fo.isValid()) {
+                    fo.addFileChangeListener(this); // don't use WeakListeners.create to be able to detach
                 }
             }
-            return;
         }
 
         // Repeast for all sub folders
@@ -294,7 +307,23 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
         }
-        FileUtil.removeFileChangeListener(this);
+        
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        FileObject baseDirFO = null;
+        if (configurationDescriptor != null) {
+            baseDirFO = configurationDescriptor.getBaseDirFileObject();
+            if (baseDirFO != null) {
+                env = FileSystemProvider.getExecutionEnvironment(baseDirFO);
+            }
+        }
+        if (env.isLocal()) {        
+            FileUtil.removeFileChangeListener(this);
+        } else {
+            FileObject fo = getThisFolder();
+            if (fo != null && fo.isValid()) {
+                fo.removeFileChangeListener(this);
+            }
+        }
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
             CndFileVisibilityQuery.getDefault().removeChangeListener(this);
@@ -360,10 +389,6 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public MakeConfigurationDescriptor getConfigurationDescriptor() {
         return configurationDescriptor;
-    }
-
-    public void setConfigurationDescriptor(MakeConfigurationDescriptor configurationDescriptor) {
-        this.configurationDescriptor = configurationDescriptor;
     }
 
     public boolean isProjectFiles() {
@@ -819,6 +844,19 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         return null;
     }
+    
+    public Item findItemByAbsolutePath(String path) {
+        if (path == null) {
+            return null;
+        }
+        Item[] anItems = getItemsAsArray();
+        for (int i = 0; i < anItems.length; i++) {
+            if (path.equals(anItems[i].getAbsolutePath())) {
+                return anItems[i];
+            }
+        }
+        return null;
+    }
 
     public Item findItemByName(String name) {
         if (name == null) {
@@ -1076,19 +1114,18 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
-            File file = CndFileUtils.toFile(fileObject);
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{file, getPath()}); // NOI18N
+                log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N
             }
             //if (true) return;
-            if (!file.exists() || file.isDirectory()) {
+            if (fileObject == null || ! fileObject.isValid() || fileObject.isFolder()) {
                 return; // FIXUP: error
             }
-            if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
+            if (!FileFilterFactory.getAllSourceFileFilter().accept(fileObject)) {
                 fireChangeEvent(this, false);
                 return;
             }
-            String itemPath = file.getPath();
+            String itemPath = fileObject.getPath();
             itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = new Item(itemPath);
@@ -1143,23 +1180,28 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
-            File file = CndFileUtils.toFile(fileObject);
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N
             }
             //if (true) return;
-            String path = getRootPath() + '/' + file.getName();
+            String path = getRootPath() + '/' + fileObject.getNameExt();
             if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
             }
             // Try item first
-            Item item = findItemByPath(path);
+            Item item;
+            if (CndPathUtilitities.isPathAbsolute(path)) {
+                item = findItemByAbsolutePath(path);
+            } else {
+                item = findItemByPath(path);
+            }
+            
             if (item != null) {
                 removeItemAction(item, false);
                 return;
             }
             // then folder
-            Folder folder = findFolderByName(file.getName());
+            Folder folder = findFolderByName(fileObject.getNameExt());
             if (folder != null) {
                 removeFolderAction(folder, false);
                 return;
