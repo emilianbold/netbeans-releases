@@ -309,7 +309,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     private void fireRemoteFileObjectCreated(RemoteFileObjectBase fo) {
-            FileEvent e = new FileEvent(fo);
+            FileEvent e = new FileEvent(this, fo);
             if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
                 fireFileFolderCreatedEvent(getListeners(), e);
             } else if (fo instanceof RemotePlainFile) {
