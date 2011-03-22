@@ -670,11 +670,15 @@ public final class MarkVector {
                 ? 0
                 : (gapStart + gapLength);
 
-            while (true) {
+            boolean done = false;
+            while (!done) {
                 while (--rawIndex >= bound) {
                     MultiMark mark = markArray[rawIndex];
                     if (mark.rawOffset > offset) {
                         mark.rawOffset -= length;
+                    } else {
+                        done = true;
+                        break;
                     }
                 }
 
@@ -682,8 +686,8 @@ public final class MarkVector {
                     bound = 0;
                     rawIndex = gapStart;
 
-                } else { // update gap bounds and break the loop
-                    break;
+                } else { // all marks processed
+                    done = true;
                 }
             }
             
@@ -693,11 +697,15 @@ public final class MarkVector {
                 ? gapStart
                 : markArrayLength;
 
-            while (true) {
+            boolean done = false;
+            while (!done) {
                 while (rawIndex < bound) {
                     MultiMark mark = markArray[rawIndex];
                     if (mark.rawOffset <= offset) {
                         mark.rawOffset += length;
+                    } else {
+                        done = true;
+                        break;
                     }
                     rawIndex++;
                 }
@@ -706,8 +714,8 @@ public final class MarkVector {
                     bound = markArrayLength;
                     rawIndex += gapLength;
 
-                } else { // update gap bounds and break the loop
-                    break;
+                } else { // all marks processed
+                    done = true;
                 }
             }
             
