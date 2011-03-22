@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -333,6 +334,28 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(env);
+    }
+    
+    public static void addRecursiveListener(FileChangeListener listener,  FileSystem fileSystem, String absPath) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                absPath = provider.normalizeAbsolutePath(absPath, fileSystem);
+                provider.addRecursiveListener(listener, fileSystem, absPath);
+                return;
+            }
+        }
+        noProvidersWarning(fileSystem);
+    }
+
+    public static void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                absPath = provider.normalizeAbsolutePath(absPath, fileSystem);
+                provider.removeRecursiveListener(listener, fileSystem, absPath);
+                return;
+            }
+        }
+        noProvidersWarning(fileSystem);
     }
 
     private static void noProvidersWarning(Object object) {

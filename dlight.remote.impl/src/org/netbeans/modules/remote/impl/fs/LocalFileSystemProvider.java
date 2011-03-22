@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -287,5 +288,16 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             }
         });
     }
-    
+
+    @Override
+    public void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        File file = new File(absPath);
+        FileUtil.addRecursiveListener(listener, file);
+    }
+
+    @Override
+    public void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        File file = new File(absPath);
+        FileUtil.removeFileChangeListener(listener, file);
+    }    
 }
