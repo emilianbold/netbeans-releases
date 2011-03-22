@@ -50,6 +50,8 @@ import java.awt.DefaultKeyboardFocusManager;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,14 +59,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.Actions;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -74,6 +80,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -106,16 +113,20 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     /** Setup component with lookup.
      */
+    @Override
     protected void setUp() {
         top = new TopComponent();
         get = top;
         lookup = top.getLookup();
+        defaultFocusManager.setC(null);
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
     
+    @Override
     protected Level logLevel() {
         return Level.FINER;
     }
@@ -223,7 +234,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         assertEquals("Empty now", res.allItems().size(), 0);
 
         LOG.fine("Changing state to 0x01");
-        arr[0].state(0x01); // enabled open cookie
+        arr[0].state(0x01); // check open cookie
         LOG.fine("Changing state to 0x01 done");
         
         assertEquals("One item", res.allItems().size(), 1);
@@ -505,6 +516,70 @@ public class TopComponentGetLookupTest extends NbTestCase {
         assertTrue("doubleRegistration was there: " + listener.keys2, listener.keys2.contains("doubleRegistration"));
         assertTrue("globalRegistration was there: " + listener.keys2, listener.keys2.contains("globalRegistration"));
         assertTrue("closeWindow was there: " + listener.keys2, listener.keys2.contains("closeWindow"));
+    }
+    
+    public void testActionMapFromFocusedOneButNotOwnButton() {
+        ContextAwareAction a = Actions.callback("find", null, false, "Find", null, false);
+        
+        class Act extends AbstractAction {
+            int cnt;
+            Action check;
+            
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                cnt++;
+            }
+        }
+        Act act1 = new Act();
+        Act act3 = new Act();
+
+        Action action = a;
+        act1.check = action;
+        act3.check = action;
+        final JButton disabled = new JButton();
+        top.add(BorderLayout.CENTER, disabled);
+        final JButton f = new JButton(action);
+        class L implements PropertyChangeListener {
+            private int cnt;
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                assertEquals("enabled", evt.getPropertyName());
+                cnt++;
+            }
+        }
+        L listener = new L();
+        action.addPropertyChangeListener(listener);
+        top.add(BorderLayout.SOUTH, f);
+        defaultFocusManager.setC(top);
+
+        disabled.getActionMap().put("find", act3);
+        top.open();
+        top.requestActive();
+        assertFalse("Disabled by default", action.isEnabled());
+        assertFalse("Button disabled too", f.isEnabled());
+        assertEquals("no change yet", 0, listener.cnt);
+        
+        defaultFocusManager.setC(disabled);
+        
+        assertEquals("One change", 1, listener.cnt);
+        assertTrue("Still enabled", action.isEnabled());
+        assertTrue("Button enabled too", f.isEnabled());
+        
+        f.getModel().addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (f.getModel().isPressed()) {
+                    defaultFocusManager.setC(f);
+                } else {
+                    defaultFocusManager.setC(disabled);
+                }
+            }
+        });
+        f.doClick();
+
+        assertEquals("Not Delegated to act1", 0, act1.cnt);
+        assertEquals("Delegated to act3", 1, act3.cnt);
     }
     
     
