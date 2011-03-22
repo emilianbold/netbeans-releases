@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -1151,11 +1150,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             if (fileObject.isValid()) {
-                File file = CndFileUtils.toFile(fileObject);
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                    log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N
                 }
-                if (!file.exists() || !file.isDirectory()) {
+                if (fileObject != null || !fileObject.isValid() || !fileObject.isFolder()) {
                     // It is possible that short-living temporary folder is created while building project
                     return;
                 }
