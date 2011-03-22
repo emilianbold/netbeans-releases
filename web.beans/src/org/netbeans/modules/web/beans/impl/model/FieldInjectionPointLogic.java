@@ -36,7 +36,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -251,20 +250,9 @@ abstract class FieldInjectionPointLogic {
             filterBindingsByMembers( quilifierAnnotations , productionElements , 
                      Element.class );
         }
-        /*
-         * Elements which are keys in the following map are production fields
-         * or production methods. But ONLY element instances could be not sufficient.
-         * If method is not parameterized ( as member of some generic class )
-         * then one don't need values in this hash. But method could be a
-         * member generic class which is extended by other class with real type
-         * as parameter. In this case method is inherited by child class
-         * and its type mirror should be taken into account. Accessing to 
-         * TypeMirror of element ( which is key ) should be done via Types.asMemberOf()   
-         */
-        Map<Element, List<DeclaredType>> productions = filterProductionByType( 
-                element, elementType, productionElements );
+        filterProductionByType( element, elementType, productionElements );
         
-        return createResult( element, elementType, types , productions );
+        return createResult( element, elementType, types , productionElements );
     }
 
     protected boolean isQualifier( TypeElement element, 
@@ -434,7 +422,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     private Result createResult( VariableElement element, TypeMirror elementType, 
-            Set<TypeElement> types,Map<Element, List<DeclaredType>> productions )
+            Set<TypeElement> types, Set<Element> productions )
     {
         return new ResultImpl(element, elementType, types, productions, 
                 getModel().getHelper() );
@@ -556,14 +544,12 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
 
-    private Map<Element, List<DeclaredType>> filterProductionByType( 
-            VariableElement element, TypeMirror elementType, 
-            Set<Element> productionElements )
+    private void filterProductionByType( VariableElement element, 
+            TypeMirror elementType, Set<Element> productionElements )
     {
         TypeProductionFilter filter = TypeProductionFilter.get( );
         filter.init( elementType, element, getModel());
         filter.filter( productionElements );
-        return filter.getResult();
     }
     
     private void filterBindingsByDefault( Set<TypeElement> assignableTypes ){

@@ -46,13 +46,11 @@ package org.netbeans.modules.web.beans.model;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.beans.api.model.Result;
@@ -475,11 +473,11 @@ public class CommonTestCase extends JavaSourceTestCase {
         assertResultProductions(result, true, injectables);
     }
 
-    public final void assertFindVariableResultAllProductions(VariableElement element,
+    public final void assertFindAllProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
-            String... injectables) {
+            String productionName , String enclosingClass ) {
         Result result = provider.findVariableInjectable(element, null);
-        assertResultAllProductions(result, injectables);
+        assertResultAllProductions(result, productionName , enclosingClass );
     }
 
     public final void assertResultInjectables(Result result, String... injectables) {
@@ -531,23 +529,27 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    public final void assertResultAllProductions(Result result, String... injectables) {
+    public final void assertResultAllProductions(Result result, String productionName , 
+            String enclosingClass) 
+    {
         assertNotNull(result);
         assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
 
-        List<DeclaredType> typeElements = ((ResultImpl) result).getAllProductions().values().iterator().next();
-        if (injectables == null) {
-            assertEquals("no injectables expected, but found: "+typeElements, 0, typeElements.size());
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+        if (productionName == null) {
+            assertEquals("no injectables expected, but found production element", 0, 
+                    productions.size());
         }
-        assertTrue("number of injectables does not match: returned="+typeElements+" expected="+Arrays.asList(injectables), injectables.length == typeElements.size());
-        Set<String> set = new HashSet<String>();
-        for (DeclaredType injactable : typeElements) {
-            set.add(((TypeElement)injactable.asElement()).getQualifiedName().toString());
-        }
-        for (String inj : injectables) {
-            assertTrue("Result of typesafe resolution should contain " + inj
-                    + " class definition in "+set, set.contains(inj));
-        }
+        assertEquals( "Expected just one production element" , 1, productions.size() );
+        Element production = productions.iterator().next();
+        String name = production.getSimpleName().toString();
+        
+        assertEquals("Production element name should be "+productionName,productionName, name);
+        Element parent = production.getEnclosingElement();
+        assertTrue( parent instanceof TypeElement );
+        String parentName = ((TypeElement)parent).getQualifiedName().toString();
+        assertEquals( "Production enclosing class name should be "+enclosingClass,
+                enclosingClass , parentName);
     }
 
 

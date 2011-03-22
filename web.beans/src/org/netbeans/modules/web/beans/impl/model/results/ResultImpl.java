@@ -46,7 +46,6 @@ package org.netbeans.modules.web.beans.impl.model.results;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -74,7 +73,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
 
     public ResultImpl( VariableElement var, TypeMirror elementType ,
             Set<TypeElement> declaredTypes, 
-            Map<Element, List<DeclaredType>> productionElements,
+            Set<Element> productionElements,
             AnnotationModelHelper helper ) 
     {
         super( var, elementType );
@@ -88,7 +87,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     {
         super( var, elementType );
         myDeclaredTypes =Collections.singleton( declaredType );
-        myProductions = Collections.emptyMap();
+        myProductions = Collections.emptySet();
         myHelper = helper;
     }
     
@@ -97,7 +96,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     {
         super( var, elementType );
         myDeclaredTypes =Collections.emptySet();
-        myProductions = Collections.emptyMap();
+        myProductions = Collections.emptySet();
         myHelper = helper;
     }
 
@@ -106,13 +105,9 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     }
     
     public Set<Element> getProductions() {
-        return myProductions.keySet();
-    }
-
-    public Map<Element, List<DeclaredType>>  getAllProductions(){
         return myProductions;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
@@ -186,6 +181,6 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     }
     
     private Set<TypeElement> myDeclaredTypes;
-    private Map<Element, List<DeclaredType>> myProductions;
+    private Set<Element> myProductions;
     private final AnnotationModelHelper myHelper;
 }

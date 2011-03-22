@@ -155,8 +155,6 @@ public interface Result {
         
         public Set<Element> getProductions();
 
-        public Map<Element, List<DeclaredType>>  getAllProductions();
-        
         boolean isDisabled( Element element );
     }
 }

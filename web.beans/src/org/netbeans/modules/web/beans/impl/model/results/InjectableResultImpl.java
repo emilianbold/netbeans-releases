@@ -64,7 +64,7 @@ public class InjectableResultImpl extends ResultImpl implements InjectableResult
             Set<Element> enabledBeans)
     {
         super(origin.getVariable(), origin.getVariableType(), 
-                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getTypeElements(), origin.getProductions(), 
                 origin.getHelper());
         myInjectable = injectable;
         myEnabled = enabledBeans;

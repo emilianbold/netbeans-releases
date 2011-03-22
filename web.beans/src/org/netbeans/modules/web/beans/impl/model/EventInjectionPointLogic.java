@@ -105,9 +105,6 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             return null;
         }
         
-        /*TypeMirror type = impl.getHelper().getCompilationController().
-            getTypes().asMemberOf(parent, element );*/
-        
         TypeMirror type = getParameterType(element, parent, EVENT_INTERFACE);
         
         List<AnnotationMirror> qualifierAnnotations = new LinkedList<AnnotationMirror>();
@@ -163,6 +160,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getObserverParameter(javax.lang.model.element.ExecutableElement)
      */
+    @Override
     public VariableElement getObserverParameter( ExecutableElement element )
     {
         Triple<VariableElement, Integer, Void> result = 
@@ -282,8 +280,8 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             if ( hasAny ){
                 continue;
             }
-            Set<String> requiredQuaifiers = getAnnotationFqns( eventQualifiers );
-            if ( !parameterAnnotations.containsAll( requiredQuaifiers) ){
+            Set<String> requiredQualifiers = getAnnotationFqns( eventQualifiers );
+            if ( !parameterAnnotations.containsAll( requiredQualifiers) ){
                 iterator.remove();
                 continue;
             }
@@ -366,18 +364,6 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         return null;
     }
 
-    private Set<String> getAnnotationFqns( List<? extends AnnotationMirror> annotations )
-    {
-        Set<String> annotationFqns = new HashSet<String>();
-        for (AnnotationMirror annotationMirror : annotations) {
-            DeclaredType annotationType = annotationMirror.getAnnotationType();
-            Element annotationElement = annotationType.asElement();
-            TypeElement annotation = (TypeElement) annotationElement;
-            annotationFqns.add( annotation.getQualifiedName().toString());
-        }
-        return annotationFqns;
-    }
-    
     private void filterParametersByType(
             Map<Element, TypeMirror> parameterTypesMap, TypeMirror type )
     {
@@ -487,6 +473,18 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         return result;
     }
     
+    static Set<String> getAnnotationFqns( List<? extends AnnotationMirror> annotations )
+    {
+        Set<String> annotationFqns = new HashSet<String>();
+        for (AnnotationMirror annotationMirror : annotations) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            Element annotationElement = annotationType.asElement();
+            TypeElement annotation = (TypeElement) annotationElement;
+            annotationFqns.add( annotation.getQualifiedName().toString());
+        }
+        return annotationFqns;
+    }
+    
     private class ObserverTriple extends Triple<ExecutableElement, VariableElement, Integer>{
         
         ObserverTriple( ExecutableElement method, VariableElement parameter, 
@@ -496,7 +494,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         }
     }
     
-    private static class Triple<T,R,S> {
+    static class Triple<T,R,S> {
         Triple( T t , R r , S s){
             myFirst = t;
             mySecond = r;

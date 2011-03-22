@@ -64,14 +64,14 @@ public class InjectablesResultImpl extends ResultImpl implements
     public InjectablesResultImpl( ResultImpl origin, Set<Element> enabledBeans)
     {
         super(origin.getVariable(), origin.getVariableType(), 
-                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getTypeElements(), origin.getProductions(), 
                 origin.getHelper());
         myEnabled = enabledBeans;
     }
 
     public InjectablesResultImpl( ResultImpl origin ) {
         super(origin.getVariable(), origin.getVariableType(), 
-                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getTypeElements(), origin.getProductions(), 
                 origin.getHelper());
         myEnabled =Collections.emptySet();
     }
