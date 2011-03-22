@@ -44,6 +44,8 @@ package org.netbeans.modules.hibernate.refactoring;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -73,26 +75,32 @@ public class JavaClassRenameTransaction extends RenameTransaction {
             OutputStream outs = null;
             try {
                 InputStream is = mappingFileObject.getInputStream();
-                HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-                
-                // The class attribute of <import>s
-                renamer.refactoringImports(hbMapping);
-                
-                // Change all the occurrences in <class> elements
-                renamer.refactoringMyClasses(hbMapping.getMyClass());
-                
-                // Change all the occurrences in <subclass> elements
-                renamer.refactoringSubclasses(hbMapping.getSubclass());
-                
-                // Change all the occurrences in <joined-subclass> elements
-                renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
-                
-                // Change all the occurrences in <union-subclass> elements
-                renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
-                
-                outs = mappingFileObject.getOutputStream();
-                hbMapping.write(outs);
-                
+                HibernateMapping hbMapping = null;
+                try {
+                    hbMapping = HibernateMapping.createGraph(is);
+                } catch (RuntimeException ex) {
+                    //failed to create graph, corrupted mapping file
+                    Logger.getLogger(JavaClassRenameTransaction.class.getName()).log(Level.WARNING, "Failed to refactor in {0}, verify if xml document is well formed", mappingFileObject.getPath());//NOI18N
+                }
+                if(hbMapping !=null ) {
+                    // The class attribute of <import>s
+                    renamer.refactoringImports(hbMapping);
+
+                    // Change all the occurrences in <class> elements
+                    renamer.refactoringMyClasses(hbMapping.getMyClass());
+
+                    // Change all the occurrences in <subclass> elements
+                    renamer.refactoringSubclasses(hbMapping.getSubclass());
+
+                    // Change all the occurrences in <joined-subclass> elements
+                    renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
+
+                    // Change all the occurrences in <union-subclass> elements
+                    renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
+
+                    outs = mappingFileObject.getOutputStream();
+                    hbMapping.write(outs);
+                }
             } catch (FileAlreadyLockedException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } catch (IOException ex) {

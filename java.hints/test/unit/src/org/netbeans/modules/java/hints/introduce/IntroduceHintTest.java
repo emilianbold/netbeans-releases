@@ -1395,6 +1395,53 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 0);
     }
 
+    public void test196683() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public void loop(int a) {\n" +
+                       "        String s= \"\";\n" +
+                       "        while(--a>0) {\n" +
+                       "            |//6\n" +
+                       "            if (a%3 != 0) {\n" +
+                       "                s = s+\"--, \";\n" +
+                       "                return;\n" +
+                       "            }\n" +
+                       "            //7\n" +
+                       "            s = s+a+\", \";\n" +
+                       "            return;\n" +
+                       "            //8|\n" +
+                       "        }\n" +
+                       "        System.err.println(s);\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public void loop(int a) {\n" +
+                       "        String s= \"\";\n" +
+                       "        while(--a>0) {\n" +
+                       "            s = foo(a, s);\n" +
+                       "            return;\n" +
+                       "        }\n" +
+                       "        System.err.println(s);\n" +
+                       "    }\n" +
+                       "    private String foo(int a, String s) {\n" +
+                       "        //6\n" +
+                       "        if (a%3 != 0) {\n" +
+                       "            s = s+\"--, \";\n" +
+                       "            return s;\n" +
+                       "        }\n" +
+                       "        //7\n" +
+                       "        s = s+a+\", \";\n" +
+                       "        return s;\n" +
+                       "        //8\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("foo", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
     public void test193775() throws Exception {
         performCheckFixesTest("package test; import java.util.Collection; import java.util.Map.Entry; public class Test { public void test(|Collection<Entry> e|) {} }");
     }

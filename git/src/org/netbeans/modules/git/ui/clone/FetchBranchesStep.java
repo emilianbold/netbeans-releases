@@ -71,6 +71,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
                 validateBeforeNext();
             }
         });
+        getJComponent().setName(NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranches.remoteBranches")); //NOI18N
     }
     
     @Override
@@ -84,7 +85,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     }
 
     @Override
-    protected JComponent getJComponent () {
+    protected final JComponent getJComponent () {
         return branches.getPanel();
     }
 

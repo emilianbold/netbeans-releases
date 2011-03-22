@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.modules.git.ui.repository.remote.*;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +56,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.utils.WizardStepProgressSupport;
@@ -77,10 +78,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     
     private Map<String, GitBranch> remoteBranches;
     private final RepositoryStepPanel panel;
-    private final Repository repository;
+    private final RemoteRepository repository;
 
     public RepositoryStep (String forPath) {
-        repository = new Repository(forPath);
+        repository = new RemoteRepository(forPath);
         repository.addChangeListener(this);
         this.panel = new RepositoryStepPanel(repository.getPanel());
         validateRepository();
@@ -98,15 +99,15 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             if(!validateRepository()) return;
 
             final File tempRepository = Utils.getTempFolder();
-            String uri = repository.getUriString();
-            if (uri != null && !uri.trim().isEmpty()) {
-                support = new RepositoryStepProgressSupport(panel.progressPanel, repository.getUriString());        
+            GitURI uri = repository.getURI();
+            if (uri != null) {
+                support = new RepositoryStepProgressSupport(panel.progressPanel, uri);        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
             }    
         } finally {
             support = null;
-            repository.enableFields(true);
+            repository.setEnabled(true);
         }
     }
 
@@ -120,8 +121,8 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         return branches;
     }
         
-    public String getUriString() {
-        return repository.getUriString();
+    public GitURI getURI() {
+        return repository.getURI();
     }
 
     @Override
@@ -136,7 +137,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     public void prepareValidation () {
-        repository.enableFields(false);
+        repository.setEnabled(false);
     }    
     
     public void cancelBackgroundTasks () {
@@ -154,10 +155,14 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         setValid(repository.isValid(), repository.getMessage());
     }
 
-    private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
-        private final String uri;
+    void store() {
+        repository.store();
+    }
 
-        public RepositoryStepProgressSupport(JPanel panel, String uri) {
+    private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
+        private final GitURI uri;
+
+        public RepositoryStepProgressSupport(JPanel panel, GitURI uri) {
             super(panel, true);
             this.uri = uri;
         }
@@ -168,10 +173,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 GitClient client = getClient();
                 client.init(this);
                 branches = new HashMap<String, GitBranch>();
-                branches.putAll(client.listRemoteBranches(uri, this));
+                branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
-                setValid(false, new Message(ex.getMessage(), true));
+                setValid(true, new Message(ex.getMessage(), false));
                 return;
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
@@ -180,7 +185,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
         @Override
         public void setEnabled(boolean editable) {
-            repository.enableFields(editable);
+            repository.setEnabled(editable);
         }        
     };
 

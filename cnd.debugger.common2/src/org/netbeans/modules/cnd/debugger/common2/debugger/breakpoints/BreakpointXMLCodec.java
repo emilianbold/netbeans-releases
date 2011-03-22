@@ -44,22 +44,28 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Date;
 
 import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 import org.xml.sax.Attributes;
 import org.netbeans.modules.cnd.api.xml.*;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 
 import org.netbeans.modules.cnd.debugger.common2.values.Enum;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.props.Property;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.EnumProperty;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.openide.filesystems.FileSystem;
 
 class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
 
@@ -82,6 +88,8 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     private static final String TAG_ANNOTATION = "annotation";  // NOI18N
     private static final String ATTR_ANNOTATION_FILE = "file";  // NOI18N
     private static final String ATTR_ANNOTATION_LINE = "line";  // NOI18N
+    
+    private static final String ATTR_ANNOTATION_FS = "fileSystem";  // NOI18N
 
     /**
      * decoder form
@@ -207,10 +215,19 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
 	} else if (element.equals(TAG_ANNOTATION)) {
 	    String file = atts.getValue(ATTR_ANNOTATION_FILE);
 	    String line = atts.getValue(ATTR_ANNOTATION_LINE);
+            String fsUrl = atts.getValue(ATTR_ANNOTATION_FS);
 	    try {
 		int lineNo = Integer.parseInt(line);
+                FileSystem fs = CndFileUtils.getLocalFileSystem();
+                try {
+                    if (fsUrl != null) {
+                        fs = CndFileUtils.urlToFileObject(fsUrl).getFileSystem();
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 		if (currentBreakpoint != null) {
-		    currentBreakpoint.addAnnotation(file, lineNo, 0);
+		    currentBreakpoint.addAnnotation(EditorBridge.getLine(file, lineNo, fs), 0);
 		}
 	    } catch (NumberFormatException x) {
 		ErrorManager.getDefault().annotate(x,
@@ -248,19 +265,34 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
 	DebuggerAnnotation[] annotations = bpt.annotations();
 	if (annotations.length > 0) {
 	    xes.elementOpen(TAG_ANNOTATIONS);
-	    for (int ax = 0; ax < annotations.length; ax++) {
-		DebuggerAnnotation a = annotations[ax];
+	    for (DebuggerAnnotation a : annotations) {
+                ArrayList<AttrValuePair> annotationAttrs = new ArrayList<AttrValuePair>();
 		String fileName = a.getFilename();
-		if (fileName == null)
+		if (fileName == null) {
 		    continue;
+                }
+                annotationAttrs.add(new AttrValuePair(ATTR_ANNOTATION_FILE, fileName));
+                
 		int lineNo = a.getLineNo();
-		if (lineNo == 0)
+		if (lineNo == 0) {
 		    continue;
-		AttrValuePair annotationAttrs[] = new AttrValuePair[] {
-		    new AttrValuePair(ATTR_ANNOTATION_FILE, fileName),
-		    new AttrValuePair(ATTR_ANNOTATION_LINE, "" + lineNo),
-		};
-		xes.element(TAG_ANNOTATION, annotationAttrs);
+                }
+                annotationAttrs.add(new AttrValuePair(ATTR_ANNOTATION_LINE, "" + lineNo));
+                
+                DataObject dObj = EditorBridge.dataObjectForLine(a.getLine());
+                if (dObj != null) {
+                    try {
+                        FileSystem fs = dObj.getPrimaryFile().getFileSystem();
+                        if (!CndFileUtils.isLocalFileSystem(fs)) {
+                            annotationAttrs.add(new AttrValuePair(ATTR_ANNOTATION_FS,
+                                CndFileUtils.fileObjectToUrl(fs.getRoot()).toString()));
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                
+		xes.element(TAG_ANNOTATION, annotationAttrs.toArray(new AttrValuePair[annotationAttrs.size()]));
 	    }
 	    xes.elementClose(TAG_ANNOTATIONS);
 	}

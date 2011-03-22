@@ -597,7 +597,7 @@ public class ActionProviderImpl implements ActionProvider {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
-                return reporter != null && reporter.getReports().size() > 0 ? new ShowProblemsAction(reporter) : null;
+                return reporter != null && reporter.isBroken() ? new ShowProblemsAction(reporter) : null;
             }
         };
     }

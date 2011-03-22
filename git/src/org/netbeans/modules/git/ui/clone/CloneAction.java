@@ -44,6 +44,8 @@ package org.netbeans.modules.git.ui.clone;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,9 +55,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
-import org.netbeans.libs.git.Utils;
+import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.utils.Utils;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -93,7 +97,9 @@ public class CloneAction extends GitAction {
                 FileObject fo = project.getProjectDirectory();
                 File file = FileUtil.toFile(fo);
                 if(file != null) {
-                    cloneFromPath = file.getAbsolutePath();
+                    if(Git.getInstance().isManaged(file) ) {
+                        cloneFromPath = file.getAbsolutePath();
+                    }
                 }
             }
         }
@@ -101,7 +107,7 @@ public class CloneAction extends GitAction {
         CloneWizard wiz = new CloneWizard(cloneFromPath);
         if (wiz.show()) {
             
-            final String remoteUri = wiz.getRemoteUri();
+            final GitURI remoteUri = wiz.getRemoteURI();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
             List<? extends GitBranch> branches = wiz.getBranches();
@@ -118,12 +124,14 @@ public class CloneAction extends GitAction {
                     try {
                         GitClient client = getClient();
                         client.init(this);
-                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri, refSpecs, this);
+                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, this);
                         log(updates);
                         
                         if(isCanceled()) {
                             return;
                         }
+
+                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), this);
                         
                         client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
                         client.checkoutRevision(branch.getName(), true, this);
@@ -181,5 +189,36 @@ public class CloneAction extends GitAction {
         }
         // open project selection
         ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+    }    
+    
+    private static class CloneRemoteConfig implements GitRemoteConfig {
+        private String remoteName;
+        private GitURI remoteUri;
+        private List<String> refSpecs;
+        public CloneRemoteConfig(String remoteName, GitURI remoteUri, List<String> refSpecs) {
+            this.remoteName = remoteName;
+            this.remoteUri = remoteUri;
+            this.refSpecs = refSpecs;
+        }
+        @Override
+        public String getRemoteName() {
+            return remoteName;
+        }
+        @Override
+        public List<String> getUris() {
+            return Arrays.asList(remoteUri.toPrivateString());
+        }
+        @Override
+        public List<String> getPushUris() {
+            return Collections.emptyList();
+        }
+        @Override
+        public List<String> getFetchRefSpecs() {
+            return refSpecs;
+        }
+        @Override
+        public List<String> getPushRefSpecs() {
+            return Collections.emptyList();
+        }
     }    
 }

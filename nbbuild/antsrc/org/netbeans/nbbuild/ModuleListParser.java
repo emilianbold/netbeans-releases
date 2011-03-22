@@ -975,6 +975,7 @@ final class ModuleListParser {
             return buildPrerequisites;
         }
         /** Get runtime dependencies, OpenIDE-Module-Dependencies entry. 
+         * Each entry is a code name base.
          */
         public String[] getRuntimeDependencies() {
             return runtimeDependencies;

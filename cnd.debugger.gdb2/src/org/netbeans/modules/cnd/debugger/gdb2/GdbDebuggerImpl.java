@@ -947,27 +947,26 @@ import org.openide.util.Exceptions;
     /**
      * Handle the oputput of "info proc".
      */
-    private static int extractPid1(MIRecord record) {
+    static int extractPid1(MIRecord record) {
 	StringTokenizer st =
 	    new StringTokenizer(record.command().
 				getConsoleStream());
-	int pid = 0;
-	if (st.hasMoreTokens()) {
-	    st.nextToken();
-	    if (st.hasMoreTokens()) {
+	while (st.hasMoreTokens()) {
+            String str = st.nextToken();
+	    if ("process".equals(str) && st.hasMoreTokens()) { //NOI18N
 		String pidStr = st.nextToken();
                 int pidEnd = 0;
                 while (pidEnd < pidStr.length() && Character.isDigit(pidStr.charAt(pidEnd))) {
                     pidEnd++;
                 }
                 try {
-                    pid = Integer.parseInt(pidStr.substring(0, pidEnd));
+                    return Integer.parseInt(pidStr.substring(0, pidEnd));
                 } catch (Exception e) {
                     Exceptions.printStackTrace(new Exception("Pid parsing error: " + record.command().getConsoleStream(), e)); //NOI18N
                 }
 	    }
 	}
-	return pid;
+	return 0;
     }
 
     /**
@@ -3440,7 +3439,7 @@ import org.openide.util.Exceptions;
             if (currentFrame == null) {
                 return;
             }
-            String file = currentFrame.getFullPath();
+            String file = currentFrame.getEngineFullName();
             String line = currentFrame.getLineNo();
 
 	    String cmd = "-data-disassemble"; // NOI18N
@@ -3448,7 +3447,7 @@ import org.openide.util.Exceptions;
 	    if (file != null && line != null && !line.isEmpty()) {
 		// request by line #
 
-		cmd += " -f " + file; // NOI18N
+		cmd += " -f \"" + file + '\"'; // NOI18N
 		cmd += " -l " + line; // NOI18N
 		cmd += " -- " + src; // NOI18N
 

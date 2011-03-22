@@ -42,8 +42,11 @@
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
+                <friend>com.sun.tools.dlight.storage</friend>
                 <friend>com.sun.tools.dlight.systemwide.threadmap</friend>
                 <friend>com.sun.tools.dlight.systemwide.visualizers</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>

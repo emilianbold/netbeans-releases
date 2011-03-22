@@ -90,6 +90,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -1863,8 +1864,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
 
-                    ReturnTree ret = null;
-                    VariableElement returnAssignTo = null;
+                    Callable<ReturnTree> ret = null;
+                    final VariableElement returnAssignTo;
 
                     if (IntroduceMethodFix.this.returnAssignTo != null) {
                         returnAssignTo = (VariableElement) IntroduceMethodFix.this.returnAssignTo.resolveElement(copy);
@@ -1872,10 +1873,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         if (returnAssignTo == null) {
                             return; //TODO...
                         }
+                    } else {
+                        returnAssignTo = null;
                     }
 
                     if (returnAssignTo != null) {
-                        ret = make.Return(make.Identifier(returnAssignTo.getSimpleName()));
+                        ret = new Callable<ReturnTree>() {
+                            @Override public ReturnTree call() throws Exception {
+                                return make.Return(make.Identifier(returnAssignTo.getSimpleName()));
+                            }
+                        };
                         if (declareVariableForReturnValue) {
                             nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
                             invocation = null;
@@ -1895,15 +1902,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         assert handle != null;
 
-                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN) {
+                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN && returnAssignTo == null) {
                             nueStatements.add(make.Return(invocation));
                         } else {
                             if (ret == null) {
-                                if (exitsFromAllBranches) {
-                                    ret = make.Return(null);
-                                } else {
-                                    ret = make.Return(make.Literal(true));
-                                }
+                                ret = new Callable<ReturnTree>() {
+                                    @Override public ReturnTree call() throws Exception {
+                                        if (exitsFromAllBranches) {
+                                            return make.Return(null);
+                                        } else {
+                                            return make.Return(make.Literal(true));
+                                        }
+                                    }
+                                };
                             }
 
                             for (TreePathHandle h : exists) {
@@ -1913,7 +1924,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                     return ; //TODO...
                                 }
 
-                                copy.rewrite(resolved.getLeaf(), ret);
+                                ReturnTree r = ret.call();
+
+                                GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, false);
+                                GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, true);
+                                
+                                copy.rewrite(resolved.getLeaf(), r);
                             }
 
                             StatementTree branch = null;
@@ -1942,7 +1958,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         invocation = null;
                     } else {
                         if (ret != null) {
-                            methodStatements.add(ret);
+                            methodStatements.add(ret.call());
                         }
                     }
 

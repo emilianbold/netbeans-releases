@@ -50,11 +50,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.JButton;
 import java.util.Locale;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -97,6 +97,7 @@ public class EucJPReadPageTest extends NbTestCase {
     public void testKFranksFile() throws Exception {
         doKFranksFile("index_ja.html");
     }
+    @RandomlyFails // NB-Core-Build #6193: DD.d assigned
     public void testKFranksErrorFile() throws Exception {
         doKFranksFile("error_ja.html");
     }

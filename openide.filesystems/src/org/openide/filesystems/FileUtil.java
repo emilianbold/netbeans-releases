@@ -989,11 +989,14 @@ public final class FileUtil extends Object {
      * Converts a disk file to a matching file object.
      * This is the inverse operation of {@link #toFile}.
      * <p class="nonnormative">
-     * If you are running with the MasterFS module enabled, that will guarantee
-     * that this method never returns null for a file which exists on disk.
+     * If you are running with {@code org.netbeans.modules.masterfs} enabled,
+     * this method should never return null for a file which exists on disk.
+     * For example, to make this method work in unit tests in an Ant-based module project,
+     * right-click Unit Test Libraries, Add Unit Test Dependency, check Show Non-API Modules, select Master Filesystem.
+     * (Also right-click the new Master Filesystem node, Edit, uncheck Include in Compile Classpath.)
      * </p>
      * @param file a disk file (may or may not exist). This file
-     * must be {@link #normalizeFile normalized}.
+     * must be {@linkplain #normalizeFile normalized}.
      * @return a corresponding file object, or null if the file does not exist
      *         or there is no {@link URLMapper} available to convert it
      * @since 4.29
@@ -1966,8 +1969,9 @@ public final class FileUtil extends Object {
             int index = path.indexOf("!/"); //NOI18N
 
             if (index >= 0) {
+                String jarPath = null;
                 try {
-                    String jarPath = path.substring(0, index);
+                    jarPath = path.substring(0, index);
                     if (jarPath.indexOf("file://") > -1 && jarPath.indexOf("file:////") == -1) {  //NOI18N
                         /* Replace because JDK application classloader wrongly recognizes UNC paths. */
                         jarPath = jarPath.replaceFirst("file://", "file:////");  //NOI18N
@@ -1975,7 +1979,8 @@ public final class FileUtil extends Object {
                     return new URL(jarPath);
 
                 } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(mue);
+                    Exceptions.printStackTrace(Exceptions.attachMessage(mue,
+                    "URL: " + url.toExternalForm() +" jarPath: " + jarPath));   //NOI18N
                 }
             }
         }

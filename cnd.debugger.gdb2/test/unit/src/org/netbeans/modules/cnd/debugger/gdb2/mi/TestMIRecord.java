@@ -39,22 +39,17 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git;
-
-import java.text.MessageFormat;
+package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 /**
- *
- * @author Tomas Stupka
+ * For testing purpose
+ * @author Egor Ushakov
  */
-public class Utils {
+public class TestMIRecord extends MIRecord {
 
-    private Utils() { }
-    
-    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
-            
-    public static String getRefSpec(GitBranch branch, String remoteName) {
-        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
+    @Override
+    public void setCommand(MICommand command) {
+        super.setCommand(command);
     }
-        
+    
 }

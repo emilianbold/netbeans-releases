@@ -430,6 +430,39 @@ class LineTranslations {
                 update(l);
                 return ;
             }
+            if (Line.PROP_TEXT.equals(propertyName) && l == evt.getSource()) {
+                String text = l.getText();
+                if (text.trim().length() == 0 && text.indexOf('\n') >= 0) {
+                    // Move the breakpoint 'n' lines down:
+                    DataObject dobj;
+                    synchronized (this) {
+                        line.removePropertyChangeListener(this);
+                        if (dataObject == null) return ;
+                        dobj = dataObject;
+                    }
+                    LineCookie lc = dobj.getCookie (LineCookie.class);
+                    Line newLine;
+                    try {
+                        int lineNumber = l.getLineNumber();
+                        int newLineNumber = lc.getLineSet().getOriginal(lineNumber).getLineNumber();
+                        for (int i = lineNumber + 1; i < newLineNumber; i++) {
+                            if (lc.getLineSet().getCurrent(i).getText().trim().length() != 0) {
+                                newLineNumber = i;
+                                break;
+                            }
+                        }
+                        newLine = lc.getLineSet().getCurrent(newLineNumber);
+                        newLine.addPropertyChangeListener(this);
+                    } catch (IndexOutOfBoundsException ioobex) {
+                        return ;
+                    }
+                    synchronized (this) {
+                        line = newLine;
+                    }
+                    update(newLine);
+                }
+                return ;
+            }
             if (!ul && LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) {
                 DataObject dobj;
                 synchronized (this) {

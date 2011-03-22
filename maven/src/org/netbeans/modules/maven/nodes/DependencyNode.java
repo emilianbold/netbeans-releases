@@ -425,7 +425,9 @@ public class DependencyNode extends AbstractNode {
         return getSourceFile().exists();
     }
 
-    void downloadJavadocSources(MavenEmbedder online, ProgressContributor progress, boolean isjavadoc) {
+    void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
+        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+        online.setUpLegacySupport();
         progress.start(2);
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             progress.finish();
@@ -733,8 +735,6 @@ public class DependencyNode extends AbstractNode {
         public void actionPerformed(ActionEvent evnt) {
             RP.post(new Runnable() {
                 public @Override void run() {
-                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                   
                     ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
                    
                     String label = javadoc ? NbBundle.getMessage(DependencyNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependencyNode.class, "Progress_Source");
@@ -745,9 +745,9 @@ public class DependencyNode extends AbstractNode {
                         ProgressTransferListener.setAggregateHandle(handle);
 
                         if (javadoc && !hasJavadocInRepository()) {
-                            downloadJavadocSources(online, contributor, javadoc);
+                            downloadJavadocSources(contributor, javadoc);
                         } else if (!javadoc && !hasSourceInRepository()) {
-                            downloadJavadocSources(online, contributor, javadoc);
+                            downloadJavadocSources(contributor, javadoc);
                         } else {
                             contributor.finish();
                         }

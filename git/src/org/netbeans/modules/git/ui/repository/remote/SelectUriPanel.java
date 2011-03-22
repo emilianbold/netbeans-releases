@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,8 +58,9 @@ import org.openide.util.NbBundle;
 public class SelectUriPanel extends javax.swing.JPanel {
 
     /** Creates new form SelectUriPanel */
-    public SelectUriPanel() {
+    SelectUriPanel(JPanel panel) {
         initComponents();
+        repositoryPanel.add(panel);
         setName(NbBundle.getMessage(SelectUriPanel.class, "LBL_SelectUriPanel.name")); //NOI18N
     }
 
@@ -83,26 +85,39 @@ public class SelectUriPanel extends javax.swing.JPanel {
 
         cmbConfiguredRepositories.setToolTipText(org.openide.util.NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.cmbConfiguredRepositories.TTtext")); // NOI18N
 
-        txtRemoteUri.setText(org.openide.util.NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.txtRemoteUri.text")); // NOI18N
+        repositoryPanel.setLayout(new java.awt.BorderLayout());
+
+        lblRemoteNames.setLabelFor(cmbRemoteNames);
+        org.openide.awt.Mnemonics.setLocalizedText(lblRemoteNames, org.openide.util.NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.lblRemoteNames.text")); // NOI18N
+        lblRemoteNames.setToolTipText(org.openide.util.NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.jLabel1.TTtext")); // NOI18N
+
+        cmbRemoteNames.setEditable(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(62, 62, 62)
+                .addComponent(cmbConfiguredRepositories, 0, 608, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(cmbConfiguredRepositories, 0, 312, Short.MAX_VALUE))
                             .addComponent(rbConfiguredUri)
-                            .addComponent(rbCreateNew)))
+                            .addComponent(rbCreateNew))
+                        .addGap(0, 0, 0))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(txtRemoteUri, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(repositoryPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblRemoteNames)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cmbRemoteNames, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -113,9 +128,12 @@ public class SelectUriPanel extends javax.swing.JPanel {
                 .addComponent(cmbConfiguredRepositories, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(rbCreateNew)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblRemoteNames)
+                    .addComponent(cmbRemoteNames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtRemoteUri, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(repositoryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -123,9 +141,11 @@ public class SelectUriPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     final javax.swing.JComboBox cmbConfiguredRepositories = new javax.swing.JComboBox();
+    final javax.swing.JComboBox cmbRemoteNames = new javax.swing.JComboBox();
+    final javax.swing.JLabel lblRemoteNames = new javax.swing.JLabel();
     final javax.swing.JRadioButton rbConfiguredUri = new javax.swing.JRadioButton();
     final javax.swing.JRadioButton rbCreateNew = new javax.swing.JRadioButton();
-    final javax.swing.JTextField txtRemoteUri = new javax.swing.JTextField();
+    final javax.swing.JPanel repositoryPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
 
 }

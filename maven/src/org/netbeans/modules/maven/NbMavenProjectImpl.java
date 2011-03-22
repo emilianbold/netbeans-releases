@@ -161,6 +161,8 @@ public final class NbMavenProjectImpl implements Project {
     public static final String PROP_PROJECT = "MavenProject"; //NOI18N
     //TODO remove
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
     private static RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
     private FileObject fileObject;
     private FileObject folderFileObject;
@@ -276,13 +278,13 @@ public final class NbMavenProjectImpl implements Project {
             } else {
                 List<Throwable> exc = res.getExceptions();
                 for (Throwable ex : exc) {
-                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
+                    LOG.log(Level.FINE, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
                 }
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
-            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
+            LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
         }
         return getFallbackProject();
     }
@@ -414,7 +416,7 @@ public final class NbMavenProjectImpl implements Project {
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
-            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
+            LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
             StringWriter wr = new StringWriter();
             PrintWriter pw = new PrintWriter(wr);
             exc.printStackTrace(pw);
@@ -434,10 +436,9 @@ public final class NbMavenProjectImpl implements Project {
                 }
             }
             long endLoading = System.currentTimeMillis();
-            Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
-            logger.fine("Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
-            if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
-                logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
+            LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, getProjectDirectory().getPath()});
+            if (LOG.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
+                LOG.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
         }
         assert newproject != null;
@@ -461,7 +462,7 @@ public final class NbMavenProjectImpl implements Project {
 
     private void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
         for (Throwable e : res.getExceptions()) {
-            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
+            LOG.log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
             String msg = e.getMessage();
             if (e instanceof ArtifactResolutionException) {
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
@@ -476,7 +477,7 @@ public final class NbMavenProjectImpl implements Project {
                 problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"), msg, new RevalidateAction(this)));
             } else {
-                Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
+                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         "Error reading project model", msg, null);
                 problemReporter.addReport(report);

@@ -278,6 +278,30 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
     
+    public void testFewRenames() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+
+        FileLock lock;
+        try {
+            lock = fo1.lock();
+        } catch (IOException iex) {
+            fsAssert(
+                "expected copy will success on writable FS",
+                fs.isReadOnly() || fo1.isReadOnly()
+            );
+            return;
+        }
+        fo1.rename(lock, "Aaa", "java");
+        assertEquals("Name is Aaa", "Aaa", fo1.getName());
+        fo1.rename(lock, "bbb", "java");
+        assertEquals("Name is bbb", "bbb", fo1.getName());
+        fo1.rename(lock, "aaa", "java");
+        assertEquals("Name is lowercase", "aaa", fo1.getName());
+        lock.releaseLock();
+    }
+    
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
     public void  testCopy()  {
         checkSetUp();

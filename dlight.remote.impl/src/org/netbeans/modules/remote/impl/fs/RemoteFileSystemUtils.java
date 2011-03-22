@@ -51,7 +51,6 @@ import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import javax.imageio.IIOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -262,7 +261,7 @@ public class RemoteFileSystemUtils {
         int level = 0;
         while (fileObject instanceof RemoteLinkBase) {
             if (++level > MAXSYMLINKS) {
-                throw new IIOException("Number of symbolic links encountered during path name traversal exceeds MAXSYMLINKS"); //NOI18N
+                throw new IOException("Number of symbolic links encountered during path name traversal exceeds MAXSYMLINKS"); //NOI18N
             }
             FileObject delegate = ((RemoteLinkBase) fileObject).getDelegate();
             if (delegate == null) {

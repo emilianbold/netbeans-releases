@@ -269,6 +269,10 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
                 assert jarRootURL != null;
                 FileObject root = URLMapper.findFileObject(jarRootURL);
+                if (root == null) {
+                    LOG.warning("#195341: no FO for " + jarRootURL);
+                    return null;
+                }
                 ModuleEntry me = dep.getModule();
                 String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
                 Icon icon = getLibrariesIcon();
