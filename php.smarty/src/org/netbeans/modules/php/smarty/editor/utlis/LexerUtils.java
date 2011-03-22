@@ -57,10 +57,7 @@ public class LexerUtils {
     }
 
     public static final boolean isWS(int character) {
-        if (Character.isWhitespace(character)) {
-            return true;
-        }
-        return false;
+        return Character.isWhitespace(character);
     }
 
     public static final void relexerOpenedTpls() {

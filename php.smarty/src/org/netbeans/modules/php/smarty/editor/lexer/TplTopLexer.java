@@ -334,9 +334,9 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     break;
 
                 case IN_LITERAL:
-                    if (isSmartyOpenDelimiter(text)) {
+                   if (isSmartyOpenDelimiterWithFinalizingChar(text)) {
                         state = State.OPEN_DELIMITER;
-                        input.backup(openDelimiterLength);
+                        input.backup(openDelimiterLength + 1);
                         if (input.readLength() > 0) {
                             return TplTopTokenId.T_HTML;
                         }
@@ -401,6 +401,10 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             return CharSequenceUtilities.endsWith(text, metadata.getOpenDelimiter());
         }
 
+        private boolean isSmartyOpenDelimiterWithFinalizingChar(CharSequence text) {
+            return CharSequenceUtilities.endsWith(text, metadata.getOpenDelimiter() + "/");
+        }
+
         private boolean isSmartyCloseDelimiter(CharSequence text) {
             return CharSequenceUtilities.endsWith(text, metadata.getCloseDelimiter());
         }
@@ -414,13 +418,14 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         }
 
         private String readNextWord(int lastChar) {
-            String word = Character.toString((char)lastChar);
+            StringBuilder sb = new StringBuilder();
+            sb.append((char)lastChar);
             int c;
             while (!LexerUtils.isWS(c = input.read()) && c != LexerInput.EOF) {
-                word += Character.toString((char)c);
+                sb.append((char)c);
             }
             input.backup(1);
-            return word;
+            return sb.toString();
         }
     }
 }
