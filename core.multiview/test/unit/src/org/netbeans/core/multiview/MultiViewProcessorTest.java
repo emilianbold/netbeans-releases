@@ -44,12 +44,15 @@ package org.netbeans.core.multiview;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
@@ -68,6 +71,13 @@ public class MultiViewProcessorTest extends NbTestCase {
         super(n);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        MVE.closeState = null;
+        CloseH.globalElements = null;
+        CloseH.retValue = null;
+    }
+
     public void testMultiViewsCreate() {
         TopComponent mvc = MultiViews.createMultiView("text/figaro", Lookup.EMPTY);
         assertNotNull("MultiViewComponent created", mvc);
@@ -79,6 +89,13 @@ public class MultiViewProcessorTest extends NbTestCase {
         MultiViewPerspective[] arr = handler.getPerspectives();
         assertEquals("One perspetive found", 1, arr.length);
         assertEquals("Figaro", arr[0].getDisplayName());
+
+        CloseH.retValue = true;
+        MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", null, null);
+        assertTrue("Closed OK", mvc.close());
+        assertNotNull(CloseH.globalElements);
+        assertEquals("One handle", 1, CloseH.globalElements.length);
+        assertEquals("states are the same", MVE.closeState, CloseH.globalElements[0]);
     }
 
     public void testCloneableMultiViewsCreate() {
@@ -129,6 +146,21 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
     }
 
+    @MimeRegistration(mimeType="text/figaro", service=CloseOperationHandler.class)
+    public static class CloseH implements CloseOperationHandler {
+        static CloseOperationState[] globalElements;
+        static Boolean retValue;
+        @Override
+        public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            assertNull("globalElement not specified yet", globalElements);
+            assertNotNull("We know what to return", retValue);
+            boolean r = retValue;
+            retValue = null;
+            globalElements = elements;
+            return r;
+        }
+    }
+
     @MultiViewElement.Registration(
         displayName="org.netbeans.core.multiview.TestBundle#FIGARO",
         iconBase="none",
@@ -137,6 +169,8 @@ public class MultiViewProcessorTest extends NbTestCase {
         preferredID="figaro"
     )
     public static class MVE extends JPanel implements MultiViewElement {
+        static CloseOperationState closeState;
+        
         private JPanel toolbar = new JPanel();
         
         public MVE() {
@@ -197,6 +231,9 @@ public class MultiViewProcessorTest extends NbTestCase {
 
         @Override
         public CloseOperationState canCloseElement() {
+            if (closeState != null) {
+                return closeState;
+            }
             return CloseOperationState.STATE_OK;
         }
     } // end of MVE

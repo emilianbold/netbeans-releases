@@ -50,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.util.Lookup;
@@ -92,14 +93,16 @@ import org.openide.windows.TopComponent;
      */
     public static TopComponent createMultiView(String mimeType, Lookup context) {
         List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
-        for (MultiViewDescription d : MimeLookup.getLookup(mimeType).lookupAll(MultiViewDescription.class)) {
+        final Lookup lkp = MimeLookup.getLookup(mimeType);
+        for (MultiViewDescription d : lkp.lookupAll(MultiViewDescription.class)) {
             if (d instanceof ContextAwareDescription) {
                 d = ((ContextAwareDescription)d).createContextAwareDescription(context);
             }
             arr.add(d);
         }
         return MultiViewFactory.createMultiView(
-            arr.toArray(new MultiViewDescription[0]), arr.get(0)
+            arr.toArray(new MultiViewDescription[0]), arr.get(0), 
+            lkp.lookup(CloseOperationHandler.class)
         );
     }
 
@@ -116,14 +119,16 @@ import org.openide.windows.TopComponent;
             String mimeType, Lookup context
     ) {
         List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
-        for (MultiViewDescription d : MimeLookup.getLookup(mimeType).lookupAll(MultiViewDescription.class)) {
+        final Lookup lkp = MimeLookup.getLookup(mimeType);
+        for (MultiViewDescription d : lkp.lookupAll(MultiViewDescription.class)) {
             if (d instanceof ContextAwareDescription) {
                 d = ((ContextAwareDescription)d).createContextAwareDescription(context);
             }
             arr.add(d);
         }
         return MultiViewFactory.createCloneableMultiView(
-            arr.toArray(new MultiViewDescription[0]), arr.get(0)
+            arr.toArray(new MultiViewDescription[0]), arr.get(0),
+            lkp.lookup(CloseOperationHandler.class)
         );
     }
 }
