@@ -101,7 +101,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
                 f.stringvalue("instanceClass", MultiViewDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
-                f.stringvalue("displayName", mvr.displayName());
+                f.bundlevalue("displayName", mvr.displayName());
                 f.stringvalue("iconBase", mvr.iconBase());
                 f.stringvalue("preferredID", mvr.preferredID());
                 f.intvalue("persistenceType", mvr.persistenceType());

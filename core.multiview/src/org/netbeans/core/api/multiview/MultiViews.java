@@ -115,6 +115,15 @@ import org.openide.windows.TopComponent;
     public static CloneableTopComponent createCloneableMultiView(
             String mimeType, Lookup context
     ) {
-        return null;
+        List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
+        for (MultiViewDescription d : MimeLookup.getLookup(mimeType).lookupAll(MultiViewDescription.class)) {
+            if (d instanceof ContextAwareDescription) {
+                d = ((ContextAwareDescription)d).createContextAwareDescription(context);
+            }
+            arr.add(d);
+        }
+        return MultiViewFactory.createCloneableMultiView(
+            arr.toArray(new MultiViewDescription[0]), arr.get(0)
+        );
     }
 }

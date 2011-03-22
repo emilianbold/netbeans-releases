@@ -55,6 +55,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -80,6 +81,32 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertEquals("Figaro", arr[0].getDisplayName());
     }
 
+    public void testCloneableMultiViewsCreate() {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        
+        CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", lookup);
+        assertNotNull("MultiViewComponent created", cmv);
+// XXX        TopComponent mvc = cmv.cloneTopComponent();
+        TopComponent mvc = cmv;
+        
+        assertNotNull("MultiViewComponent cloned", mvc);
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
+        assertNotNull("Handler found", handler);
+        MultiViewPerspective[] arr = handler.getPerspectives();
+        assertEquals("One perspetive found", 1, arr.length);
+        assertEquals("Contextual", arr[0].getDisplayName());
+        
+        mvc.open();
+        mvc.requestActive();
+        mvc.requestVisible();
+        
+        handler.requestActive(arr[0]);
+        assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
+        ic.add(1);
+        assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+    }
+
     public void testMultiViewsContextCreate() {
         InstanceContent ic = new InstanceContent();
         Lookup lookup = new AbstractLookup(ic);
@@ -103,13 +130,15 @@ public class MultiViewProcessorTest extends NbTestCase {
     }
 
     @MultiViewElement.Registration(
-        displayName="Figaro",
+        displayName="org.netbeans.core.multiview.TestBundle#FIGARO",
         iconBase="none",
         mimeType="text/figaro",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="figaro"
     )
     public static class MVE extends JPanel implements MultiViewElement {
+        private JPanel toolbar = new JPanel();
+        
         public MVE() {
         }
         
@@ -120,7 +149,7 @@ public class MultiViewProcessorTest extends NbTestCase {
 
         @Override
         public JComponent getToolbarRepresentation() {
-            return null;
+            return toolbar;
         }
 
         @Override
