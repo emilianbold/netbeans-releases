@@ -318,13 +318,16 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 Set<String> names = new HashSet<String>();
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
+                    // Productions are not inherited by child classes.
                     if ( element.getSimpleName().contentEquals("myField1")){
                         assertFindVariableResultInjectables(element, provider);
-                        assertFindVariableResultAllProductions(element, provider, "foo.Generic", "foo.Generic1");
+                        assertFindAllProductions(element, provider, "getClass",
+                                "foo.Generic" );
                     }
                     if ( element.getSimpleName().contentEquals("myField2")){
                         assertFindVariableResultInjectables(element, provider);
-                        assertFindVariableResultAllProductions(element, provider, "foo.Generic", "foo.Generic1");
+                        assertFindAllProductions(element, provider,
+                                "myList", "foo.Generic");
                     }
                 }
 

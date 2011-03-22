@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -79,6 +80,7 @@ public class DelegateAssignabilityTest extends CommonTestCase {
                 "import javax.decorator.Delegate; "+
                 "public class SimpleTest extends Two {"+
                 " @Inject @Delegate @Binding One myField; "+
+                " @Inject void initMethod(@Delegate @Binding One param) {} " +
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
@@ -90,7 +92,7 @@ public class DelegateAssignabilityTest extends CommonTestCase {
                 "package foo; " +
                 "public class Two extends One {}");
         
-        inform("start parametrizied delegate types tests");
+        inform("start delegate types tests");
         
         TestWebBeansModelImpl modelImpl = createModelImpl();
         final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
@@ -108,17 +110,27 @@ public class DelegateAssignabilityTest extends CommonTestCase {
                     if (element instanceof VariableElement) {
                         injectionPoints.add( (VariableElement)element );
                     }
+                    else if ( element instanceof ExecutableElement && 
+                            element.getSimpleName().contentEquals("initMethod")){
+                        injectionPoints.add(
+                                ((ExecutableElement)element).getParameters().get(0));
+                    }
                 }
-                boolean test = false;
+                Set<String> names = new HashSet<String>();
                 for( VariableElement element : injectionPoints ){
+                    names.add(element.getSimpleName().toString());
                     if ( element.getSimpleName().contentEquals("myField")){
-                        test = true;
                         assertFindVariableResultInjectables(element, provider, "foo.One");
                         assertFindVariableResultProductions(element, provider);
                     }
+                    else if ( element.getSimpleName().contentEquals("param")){
+                        assertFindParameterResultInjectables(element, provider, "foo.One");
+                        assertFindParameterResultProductions(element, provider);
+                    }
                 }
                 
-                assertTrue( test);
+                assertTrue( names.contains("myField"));
+                assertTrue( names.contains("param"));
                 return null;
             }
         });
