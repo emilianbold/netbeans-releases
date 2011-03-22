@@ -57,6 +57,7 @@ import javax.swing.JPanel;
 import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.netbeans.core.multiview.SourceCheckDescription;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -319,7 +320,8 @@ public final class MultiViewFactory {
     }
 
     /** default MultiViewDescription */
-    private static final class MapMVD implements MultiViewDescription, ContextAwareDescription {
+    private static final class MapMVD implements
+    MultiViewDescription, ContextAwareDescription , SourceCheckDescription {
         private final Map map;
         private final Lookup context;
         public MapMVD(Map map, Lookup context) {
@@ -392,6 +394,11 @@ public final class MultiViewFactory {
         @Override
         public MultiViewDescription createContextAwareDescription(Lookup context) {
             return new MapMVD(map, context);
+        }
+
+        @Override
+        public boolean isSourceView() {
+            return Boolean.TRUE.equals(map.get("sourceview")); // NOI18N
         }
     }
 }

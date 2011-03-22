@@ -86,6 +86,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         if (roundEnv.processingOver()) {
             return false;
         }
+        TypeMirror pane = processingEnv.getElementUtils().getTypeElement("org.openide.text.CloneableEditorSupport.Pane").asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(MultiViewElement.Registration.class)) {
             MultiViewElement.Registration mvr = e.getAnnotation(MultiViewElement.Registration.class);
             if (mvr.mimeType().length == 0) {
@@ -108,6 +109,9 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 f.position(mvr.position());
                 if (binAndMethodNames[1] != null) {
                     f.stringvalue("method", binAndMethodNames[1]);
+                }
+                if (processingEnv.getTypeUtils().isAssignable(e.asType(), pane)) {
+                    f.boolvalue("sourceview", true);
                 }
                 f.write();
             }

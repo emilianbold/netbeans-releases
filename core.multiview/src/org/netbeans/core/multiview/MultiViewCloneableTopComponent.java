@@ -251,7 +251,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         
         MultiViewDescription[] descs = peer.model.getDescriptions();
         for (MultiViewDescription desc : descs) {
-            if (desc instanceof SourceViewMarker) {
+            if (isSourceView(desc)) {
                 el = peer.model.getElementForDescription(desc);
                 if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
                     return el;
@@ -324,7 +324,17 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
             MultiViewElementCallback call = peer.getModel().getCallbackForElement(paneEl);
             call.requestVisible();
         }
-    }    
+    }
+
+    static boolean isSourceView(MultiViewDescription desc) {
+        if (desc instanceof SourceViewMarker) {
+            return true;
+        }
+        if (desc instanceof SourceCheckDescription) {
+            return ((SourceCheckDescription)desc).isSourceView();
+        }
+        return false;
+    }
     
     
     /**

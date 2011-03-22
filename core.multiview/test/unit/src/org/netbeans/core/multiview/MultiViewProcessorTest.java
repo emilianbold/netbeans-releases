@@ -43,18 +43,22 @@ package org.netbeans.core.multiview;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.UndoRedo;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -122,6 +126,34 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
         ic.add(1);
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+    }
+    
+    public void testNotSourceView() {
+        int cnt = 0;
+        for (MultiViewDescription d : MimeLookup.getLookup("text/context").lookupAll(MultiViewDescription.class)) {
+            cnt++;
+            assertFalse(
+                "No view in text/context has source element",
+                MultiViewCloneableTopComponent.isSourceView(d)
+            );
+        }
+        if (cnt == 0) {
+            fail("There shall be at least one description");
+        }
+    }
+
+    public void testIsSourceView() {
+        int cnt = 0;
+        for (MultiViewDescription d : MimeLookup.getLookup("text/plain").lookupAll(MultiViewDescription.class)) {
+            cnt++;
+            assertTrue(
+                "All views in text/plain have source element: " + d,
+                MultiViewCloneableTopComponent.isSourceView(d)
+            );
+        }
+        if (cnt == 0) {
+            fail("There shall be at least one description");
+        }
     }
 
     public void testMultiViewsContextCreate() {
@@ -256,5 +288,33 @@ public class MultiViewProcessorTest extends NbTestCase {
             return context;
         }
     } // end of CntxMVE
-    
+
+    @MultiViewElement.Registration(
+        displayName="Source",
+        iconBase="none",
+        mimeType="text/plain",
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID="source"
+    )
+    public static class SourceMVC extends MVE implements CloneableEditorSupport.Pane {
+        @Override
+        public JEditorPane getEditorPane() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public CloneableTopComponent getComponent() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void updateName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void ensureVisible() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
 }
