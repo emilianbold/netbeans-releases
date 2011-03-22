@@ -68,16 +68,38 @@ public class MultiViewProcessorTest extends NbTestCase {
     }
 
     public void testMultiViewsCreate() {
-        InstanceContent ic = new InstanceContent();
-        Lookup lookup = new AbstractLookup(ic);
-        
-        TopComponent mvc = MultiViews.createMultiView("text/figaro", lookup);
+        TopComponent mvc = MultiViews.createMultiView("text/figaro", Lookup.EMPTY);
         assertNotNull("MultiViewComponent created", mvc);
+        mvc.open();
+        mvc.requestActive();
+        
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
         assertNotNull("Handler found", handler);
         MultiViewPerspective[] arr = handler.getPerspectives();
         assertEquals("One perspetive found", 1, arr.length);
         assertEquals("Figaro", arr[0].getDisplayName());
+    }
+
+    public void testMultiViewsContextCreate() {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        
+        TopComponent mvc = MultiViews.createMultiView("text/context", lookup);
+        assertNotNull("MultiViewComponent created", mvc);
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
+        assertNotNull("Handler found", handler);
+        MultiViewPerspective[] arr = handler.getPerspectives();
+        assertEquals("One perspetive found", 1, arr.length);
+        assertEquals("Contextual", arr[0].getDisplayName());
+        
+        mvc.open();
+        mvc.requestActive();
+        mvc.requestVisible();
+        
+        handler.requestActive(arr[0]);
+        assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
+        ic.add(1);
+        assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
     }
 
     @MultiViewElement.Registration(
@@ -87,7 +109,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="figaro"
     )
-    public static final class MVE extends JPanel implements MultiViewElement {
+    public static class MVE extends JPanel implements MultiViewElement {
         public MVE() {
         }
         
@@ -149,4 +171,24 @@ public class MultiViewProcessorTest extends NbTestCase {
             return CloseOperationState.STATE_OK;
         }
     } // end of MVE
+    
+    @MultiViewElement.Registration(
+        displayName="Contextual",
+        iconBase="none",
+        mimeType="text/context",
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID="context"
+    )
+    public static class CntxMVE extends MVE {
+        private Lookup context;
+        public CntxMVE(Lookup context) {
+            this.context = context;
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return context;
+        }
+    } // end of CntxMVE
+    
 }

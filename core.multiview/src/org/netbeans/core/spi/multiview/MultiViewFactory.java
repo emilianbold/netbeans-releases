@@ -46,6 +46,7 @@ package org.netbeans.core.spi.multiview;
 
 import java.awt.Image;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -327,7 +328,7 @@ public final class MultiViewFactory {
         }
         
         private <T> T get(String attr, Class<T> type) {
-            Object obj = map.get("displayName"); // NOI18N
+            Object obj = map.get(attr); // NOI18N
             if (obj == null) {
                 throw new NullPointerException(attr + " attribute not specified");
             }
@@ -376,7 +377,13 @@ public final class MultiViewFactory {
                     cl = MultiViewFactory.class.getClassLoader();
                 }
                 Class<?> clazz = Class.forName(name, true, cl);
-                return (MultiViewElement)clazz.newInstance();
+                try {
+                    Constructor<?> defC = clazz.getConstructor();
+                    return (MultiViewElement)defC.newInstance();
+                } catch (Exception ex) {
+                    Constructor<?> lookupC = clazz.getConstructor(Lookup.class);
+                    return (MultiViewElement)lookupC.newInstance(context);
+                }
             } catch (Exception ex) {
                 throw new IllegalStateException("Cannot instantiate " + name, ex);
             }
