@@ -64,6 +64,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -86,7 +87,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         if (roundEnv.processingOver()) {
             return false;
         }
-        TypeMirror pane = processingEnv.getElementUtils().getTypeElement("org.openide.text.CloneableEditorSupport.Pane").asType();
+        TypeMirror pane = processingEnv.getElementUtils().getTypeElement(CloneableEditorSupport.Pane.class.getCanonicalName()).asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(MultiViewElement.Registration.class)) {
             MultiViewElement.Registration mvr = e.getAnnotation(MultiViewElement.Registration.class);
             if (mvr.mimeType().length == 0) {
