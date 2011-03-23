@@ -50,6 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -131,16 +132,22 @@ public class ListenersTestCase extends RemoteFileTestBase {
 //        FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
 //    }
 
-    @ForAllEnvironments
-    public void testListeners() throws Exception {
+    private void doTestListeners(boolean recursive) throws Exception {
         String baseDir = mkTemp(true);
         try {            
             Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
             FileObject baseDirFO = getFileObject(baseDir);
-            baseDirFO.addFileChangeListener(new FCL("baseDir", evMap));
+            FCL fcl = new FCL("baseDir", evMap);
+            if (recursive) {
+                FileSystemProvider.addRecursiveListener(fcl, fs, baseDir);
+            } else {
+                baseDirFO.addFileChangeListener(fcl);
+            }
             FileObject childFO = baseDirFO.createData("child_file_1");
             FileObject subdirFO = baseDirFO.createFolder("child_folder");
-            subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), evMap));
+            if (!recursive) {
+                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), evMap));
+            }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
             FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
@@ -155,6 +162,16 @@ public class ListenersTestCase extends RemoteFileTestBase {
             }
         }
     }
+    
+    @ForAllEnvironments
+    public void testListeners() throws Exception {
+        doTestListeners(false);
+    }
+           
+//    @ForAllEnvironments
+//    public void testRecursiveListeners() throws Exception {
+//        doTestListeners(true);
+//    }
            
     public static Test suite() {
         return RemoteApiTest.createSuite(ListenersTestCase.class);
