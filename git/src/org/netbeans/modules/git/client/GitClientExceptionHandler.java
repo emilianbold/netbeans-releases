@@ -44,7 +44,10 @@ package org.netbeans.modules.git.client;
 
 import java.util.logging.Level;
 import javax.swing.JButton;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -54,6 +57,30 @@ import org.openide.util.NbBundle;
  * @author ondra
  */
 public class GitClientExceptionHandler {
+    private final boolean handleAuthenticationIssues;
+    private final GitClient client;
+
+    public GitClientExceptionHandler (GitClient client, boolean handleAuthenticationIssues) {
+        this.client = client;
+        this.handleAuthenticationIssues = handleAuthenticationIssues;
+    }
+
+    boolean handleException (Exception ex) {
+        boolean handled = false;
+        if (handleAuthenticationIssues && ex instanceof GitException.AuthorizationException) {
+            return handleException((GitException.AuthorizationException) ex);
+        }
+        return handled;
+    }
+    
+    private boolean handleException (GitException.AuthorizationException ex) {
+        boolean confirmed = false;
+        if (RemoteRepository.updateFor(ex.getRepositoryUrl())) {
+            client.setCallback(new CredentialsCallback());
+            confirmed = true;
+        }
+        return confirmed;
+    }
 
     public static void notifyException (Exception ex, boolean annotate) {
         if(isCancelledAction(ex)) {
