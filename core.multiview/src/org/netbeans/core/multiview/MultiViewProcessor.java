@@ -100,7 +100,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
             for (String type : mvr.mimeType()) {
                 LayerBuilder.File f = layer(e).file("Editors/" + type + '/' + fileBaseName + ".instance");
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
-                f.stringvalue("instanceClass", MultiViewDescription.class.getName());
+                f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
                 f.bundlevalue("displayName", mvr.displayName());
                 f.stringvalue("iconBase", mvr.iconBase());

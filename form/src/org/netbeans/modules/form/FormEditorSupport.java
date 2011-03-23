@@ -752,7 +752,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
 //        MultiViewDescription[] descs = new MultiViewDescription[] {
 //            new JavaDesc(formDataObject), new FormDesc(formDataObject) };
         
-        CloneableTopComponent mvtc = MultiViews.createCloneableMultiView("text/x-form", getDataObject().getLookup());
+        CloneableTopComponent mvtc = MultiViews.createCloneableMultiView("text/x-form", getDataObject());
         /*
                 MultiViewFactory.createCloneableMultiView(
                 descs,

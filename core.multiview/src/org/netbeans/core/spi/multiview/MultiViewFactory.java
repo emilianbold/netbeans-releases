@@ -392,7 +392,7 @@ public final class MultiViewFactory {
         }
 
         @Override
-        public MultiViewDescription createContextAwareDescription(Lookup context) {
+        public ContextAwareDescription createContextAwareDescription(Lookup context) {
             return new MapMVD(map, context);
         }
 

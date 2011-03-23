@@ -44,6 +44,7 @@
 
 package org.netbeans.core.api.multiview;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -85,18 +86,25 @@ import org.openide.windows.TopComponent;
  
     /** Factory method to create multiview for a given mime type. The list
      * of {@link MultiViewElement}s is taken from {@link MimeLookup#getLookup(mimeType)}.
+     * The <code>context</code> parameter has to be Serializable, so the top component
+     * can be persisted and later, when deserialized, it can again recreate the 
+     * {@link Lookup}. Suitable candidate for an object that implements both
+     * {@link Serializable} as well as {@link Lookup.Provider} is 
+     * <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>.
      * 
-     * @param context lookup representing the object to created for the multiview
+     * @param context lookup provider representing the object to displayed in the multiview
      * @param mimeType the mime type to seek for elements in
      * @return multiview component
      * @since 1.22
      */
-    public static TopComponent createMultiView(String mimeType, Lookup context) {
+    public static <T extends Serializable & Lookup.Provider> TopComponent createMultiView(
+        String mimeType, T context
+    ) {
         List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
         final Lookup lkp = MimeLookup.getLookup(mimeType);
-        for (MultiViewDescription d : lkp.lookupAll(MultiViewDescription.class)) {
+        for (ContextAwareDescription d : lkp.lookupAll(ContextAwareDescription.class)) {
             if (d instanceof ContextAwareDescription) {
-                d = ((ContextAwareDescription)d).createContextAwareDescription(context);
+                d = d.createContextAwareDescription(context.getLookup());
             }
             arr.add(d);
         }
@@ -110,19 +118,19 @@ import org.openide.windows.TopComponent;
      * The way to obtain individual elements is the same as in 
      * {@link #createMultiView(java.lang.String, org.openide.util.Lookup)}.
      * 
-     * @param context lookup representing the object to created for the multiview
+     * @param context lookup representing the object to be displayed in the multiview
      * @param mimeType the mime type to seek for elements in
      * @return cloneable multiview component
      * @since 1.22
      */
-    public static CloneableTopComponent createCloneableMultiView(
-            String mimeType, Lookup context
+    public static <T extends Serializable & Lookup.Provider> CloneableTopComponent createCloneableMultiView(
+            String mimeType, T context
     ) {
         List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
         final Lookup lkp = MimeLookup.getLookup(mimeType);
-        for (MultiViewDescription d : lkp.lookupAll(MultiViewDescription.class)) {
+        for (ContextAwareDescription d : lkp.lookupAll(ContextAwareDescription.class)) {
             if (d instanceof ContextAwareDescription) {
-                d = ((ContextAwareDescription)d).createContextAwareDescription(context);
+                d = d.createContextAwareDescription(context.getLookup());
             }
             arr.add(d);
         }

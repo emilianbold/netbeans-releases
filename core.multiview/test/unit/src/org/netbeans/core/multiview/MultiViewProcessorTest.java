@@ -41,6 +41,9 @@
  */
 package org.netbeans.core.multiview;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -83,7 +86,7 @@ public class MultiViewProcessorTest extends NbTestCase {
     }
 
     public void testMultiViewsCreate() {
-        TopComponent mvc = MultiViews.createMultiView("text/figaro", Lookup.EMPTY);
+        TopComponent mvc = MultiViews.createMultiView("text/figaro", new LP(Lookup.EMPTY));
         assertNotNull("MultiViewComponent created", mvc);
         mvc.open();
         mvc.requestActive();
@@ -106,7 +109,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         Lookup lookup = new AbstractLookup(ic);
         
-        CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", lookup);
+        CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
         assertNotNull("MultiViewComponent created", cmv);
         TopComponent mvc = cmv.cloneTopComponent();
         
@@ -159,7 +162,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         Lookup lookup = new AbstractLookup(ic);
         
-        TopComponent mvc = MultiViews.createMultiView("text/context", lookup);
+        TopComponent mvc = MultiViews.createMultiView("text/context", new LP(lookup));
         assertNotNull("MultiViewComponent created", mvc);
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
         assertNotNull("Handler found", handler);
@@ -314,6 +317,23 @@ public class MultiViewProcessorTest extends NbTestCase {
         @Override
         public void ensureVisible() {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    
+    private static class LP implements Lookup.Provider, Serializable {
+        private static final Map<Integer,Lookup> map = new HashMap<Integer, Lookup>();
+        
+        private final int cnt;
+        public LP(Lookup lkp) {
+            synchronized (map) {
+                cnt = map.size() + 1;
+                map.put(cnt, lkp);
+            }
+        }
+        
+        @Override
+        public Lookup getLookup() {
+            return map.get(cnt);
         }
     }
 }

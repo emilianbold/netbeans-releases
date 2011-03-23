@@ -48,6 +48,6 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface ContextAwareDescription {
-    public MultiViewDescription createContextAwareDescription(Lookup context);
+public interface ContextAwareDescription extends MultiViewDescription {
+    public ContextAwareDescription createContextAwareDescription(Lookup context);
 }
