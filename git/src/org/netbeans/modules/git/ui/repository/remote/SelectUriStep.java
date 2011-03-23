@@ -60,8 +60,6 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -155,6 +153,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     protected final void validateBeforeNext () {
         boolean valid = true;
         Message msg = null;
+        final boolean newRepositorySpecification = panel.rbCreateNew.isSelected();
         if (panel.rbConfiguredUri.isSelected()) {
             if (panel.cmbConfiguredRepositories.getSelectedIndex() == -1) {
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptySelection"), false); //NOI18N
@@ -176,7 +175,13 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                 protected void perform () {
                     String uri = getSelectedUri();
                     try {
-                        GitClient client = getClient();
+                        GitClient client;
+                        if (newRepositorySpecification) {
+                            repository.store();
+                            client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
+                        } else {
+                            client = getClient();
+                        }
                         remoteBranches = client.listRemoteBranches(uri, this);
                     } catch (GitException ex) {
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
