@@ -146,12 +146,12 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             }
             FileObject childFO = baseDirFO.createData("child_file_1");
             FileObject subdirFO = baseDirFO.createFolder("child_folder");
-            if (!recursive) {
-                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out));
-            }
-            FileObject grandChildFO = subdirFO.createData("grand_child_file");
-            FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
-            FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
+//            if (!recursive) {
+//                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out));
+//            }
+//            FileObject grandChildFO = subdirFO.createData("grand_child_file");
+//            FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
+//            FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
         } finally {
             out.close();
         }
