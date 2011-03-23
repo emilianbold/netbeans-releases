@@ -135,6 +135,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "setRemote")); //NOI18N - updates remotes
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
+    private boolean handleAuthenticationIssues = true;
 
     public GitClientInvocationHandler (GitClient client, File repositoryRoot) {
         this.client = client;
@@ -183,6 +184,17 @@ public class GitClientInvocationHandler implements InvocationHandler {
                     }
                     try {
                         return invokeClientMethod(method, args);
+                    } catch (InvocationTargetException ex) {
+                        Throwable err = ex.getCause();
+                        if (err instanceof Exception) {
+                            if ((progressSupport == null || !progressSupport.isCanceled()) && new GitClientExceptionHandler(client, handleAuthenticationIssues).handleException((Exception) err)) {
+                                return this.call();
+                            } else {
+                                throw (Exception) err;
+                            }
+                        } else {
+                            throw ex;
+                        }
                     } finally {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[]{method.getName(), repositoryRoot.getAbsolutePath(), System.currentTimeMillis() - t}); //NOI18N
@@ -247,5 +259,9 @@ public class GitClientInvocationHandler implements InvocationHandler {
 
     public void setProgressSupport (GitProgressSupport progressSupport) {
         this.progressSupport = progressSupport;
+    }
+
+    public void setHandleAuthenticationIssues (boolean handleAuthenticationIssues) {
+        this.handleAuthenticationIssues = handleAuthenticationIssues;
     }
 }

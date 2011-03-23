@@ -44,13 +44,11 @@ package org.netbeans.modules.git;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -59,7 +57,6 @@ import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -291,7 +288,13 @@ public final class GitModuleConfig {
         assert !EventQueue.isDispatchThread();
                 
         Preferences prefs = getPreferences();
-
+        GitURI noCredentialsUri;
+        try {
+            noCredentialsUri = new GitURI(guri.toPrivateString()).setUser(null);
+        } catch (URISyntaxException ex) {
+            Git.LOG.log(Level.WARNING, guri.toPrivateString(), ex);
+            return;
+        }
         List<String> urlValues = Utils.getStringList(prefs, RECENT_GURI);
         for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
             String rcOldString = it.next();
@@ -304,7 +307,7 @@ public final class GitModuleConfig {
             } catch (URISyntaxException ex) {
                 Git.LOG.log(Level.WARNING, rcOldString, ex);
             }
-            if(guri.equals(guriOld)) {
+            if(noCredentialsUri.toString().equals(guriOld.toString())) {
                 Utils.removeFromArray(prefs, RECENT_GURI, rcOldString);
             }
         }
@@ -313,9 +316,9 @@ public final class GitModuleConfig {
             storeCredentials(guri);
         }
         
-        String guriString = guri.toString();
+        String guriString = noCredentialsUri.toString();
         if (!"".equals(guriString)) {                                           //NOI18N
-            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, savePassword).toString() , -1);
+            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), savePassword).toString() , -1);
         }
     }    
 
@@ -347,7 +350,7 @@ public final class GitModuleConfig {
             GitURIEntry entry = GitURIEntry.create(guriString);
             GitURI guri;
             try {
-                guri = new GitURI(entry.guriString);
+                guri = new GitURI(entry.guriString).setUser(entry.username);
             } catch (URISyntaxException ex) {
                 Git.LOG.log(Level.WARNING, guriString, ex);
                 continue;
@@ -359,6 +362,41 @@ public final class GitModuleConfig {
             ret.add(guri);
         }
         return ret;
+    }
+    
+    public GitURI getRecentUri (String uriString) {
+        assert !EventQueue.isDispatchThread();
+        GitURI retval = null;
+        String username = null;
+        try {
+            GitURI uri = new GitURI(uriString);
+            username = uri.getUser();
+            uriString = uri.setUser(null).toPrivateString();
+        } catch (URISyntaxException ex) {
+            //
+        }
+        Preferences prefs = getPreferences();
+        List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
+        for (String guriString : urls) {
+            GitURIEntry entry = GitURIEntry.create(guriString);
+            GitURI storedUri;
+            try {
+                storedUri = new GitURI(entry.guriString);
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.WARNING, guriString, ex);
+                continue;
+            }
+            if (uriString.equals(storedUri.toString()) && (username == null || entry.username == null || username.equals(entry.username))) {
+                storedUri = storedUri.setUser(entry.username);
+                char[] password = KeyringSupport.read(GURI_PASSWORD, storedUri.toString());
+                if(password != null) {
+                    storedUri = storedUri.setPass(new String(password));
+                }
+                retval = storedUri;
+                break;
+            }
+        }
+        return retval;
     }
 
     private void storeCredentials (final GitURI guri) {
@@ -384,16 +422,18 @@ public final class GitModuleConfig {
         final String guriString;
         final boolean savePassword;
         private String stringValue;
+        private final String username;
         static GitURIEntry create(String entryString) {
             String[] s = entryString.split(DELIMITER);
-            assert s.length == 2;
+            assert s.length == 2 || s.length == 3;
             if(s.length < 2) {
                 return null;
             }
-            return new GitURIEntry(s[0], Boolean.parseBoolean(s[1]));
+            return s.length == 2 ? new GitURIEntry(s[0], null, Boolean.parseBoolean(s[1])) : new GitURIEntry(s[0], s[1], Boolean.parseBoolean(s[2]));
         }
-        GitURIEntry(String guriString, boolean savePassword) {
+        GitURIEntry(String guriString, String username, boolean savePassword) {
             this.guriString = guriString;
+            this.username = username;
             this.savePassword = savePassword;
         }
         @Override
@@ -401,6 +441,8 @@ public final class GitModuleConfig {
             if(stringValue == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(guriString);
+                sb.append(DELIMITER);
+                sb.append(username);
                 sb.append(DELIMITER);
                 sb.append(savePassword);
                 stringValue = sb.toString();
