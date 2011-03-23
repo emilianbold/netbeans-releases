@@ -369,7 +369,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             }
             String expression = ir.getValue(Fields.EXPRESSION);
             for (ELElement element : parserResultHolder.parserResult.getElements()) {
-                if (expression.equals(element.getExpression())) {
+                if (expression.equals(element.getExpression().getPreprocessedExpression())) {
                     if (!result.contains(element)) {
                         result.add(element);
                     }

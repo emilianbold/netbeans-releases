@@ -16,11 +16,11 @@ public final class ELElement {
     private final Node node;
     private final OffsetRange embeddedOffset;
     private final ELException error;
-    private final String expression;
+    private final ELPreprocessor expression;
     private final Snapshot snapshot;
     private final OffsetRange originalOffset;
 
-    private ELElement(Node node, ELException error, String expression, OffsetRange embeddedOffset, Snapshot snapshot) {
+    private ELElement(Node node, ELException error, ELPreprocessor expression, OffsetRange embeddedOffset, Snapshot snapshot) {
         assert node == null || error == null;
         this.node = node;
         this.embeddedOffset = embeddedOffset;
@@ -33,11 +33,11 @@ public final class ELElement {
         this.originalOffset = new OffsetRange(origStart, origEnd);
     }
 
-    static ELElement valid(Node node, String expression, OffsetRange embeddedOffset, Snapshot snapshot) {
+    static ELElement valid(Node node, ELPreprocessor expression, OffsetRange embeddedOffset, Snapshot snapshot) {
         return new ELElement(node, null, expression, embeddedOffset, snapshot);
     }
 
-    static ELElement error(ELException error, String expression, OffsetRange embeddedOffset, Snapshot snapshot) {
+    static ELElement error(ELException error, ELPreprocessor expression, OffsetRange embeddedOffset, Snapshot snapshot) {
         return new ELElement(null, error, expression, embeddedOffset, snapshot);
     }
 
@@ -50,7 +50,7 @@ public final class ELElement {
      * @param expression
      * @return a copy of this but with the given {@code node} and {@code expression}.
      */
-    public ELElement makeValidCopy(Node node, String expression) {
+    public ELElement makeValidCopy(Node node, ELPreprocessor expression) {
         assert !isValid();
         return valid(node, expression, embeddedOffset, snapshot);
     }
@@ -87,8 +87,8 @@ public final class ELElement {
      * @return
      */
     public OffsetRange getOriginalOffset(Node node) {
-        int start = originalOffset.getStart() + node.startOffset();
-        int end = start + (node.endOffset() - node.startOffset());
+        int start = originalOffset.getStart() + expression.getOriginalOffset(node.startOffset());
+        int end = originalOffset.getStart() + expression.getOriginalOffset(node.endOffset());
         return new OffsetRange(start, end);
     }
 
@@ -100,7 +100,7 @@ public final class ELElement {
         return error;
     }
 
-    public String getExpression() {
+    public ELPreprocessor getExpression() {
         return expression;
     }
 
@@ -118,9 +118,10 @@ public final class ELElement {
         getNode().accept(new NodeVisitor() {
             @Override
             public void visit(Node node) throws ELException {
-                int nodeLength = node.endOffset() - node.startOffset();
-                if (originalOffset.getStart() + node.startOffset() <= offset
-                        && originalOffset.getStart() + node.startOffset() + nodeLength > offset) {
+                int nodeFrom = expression.getOriginalOffset(node.startOffset());
+                int nodeTo = expression.getOriginalOffset(node.endOffset());
+                if (originalOffset.getStart() + nodeFrom <= offset
+                        && originalOffset.getStart() + nodeTo > offset) {
                     result[0] = node;
                 }
 
