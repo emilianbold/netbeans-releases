@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import junit.framework.Test;
-import org.junit.Ignore;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -141,7 +140,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             String prefix = baseDirFO.getPath();
             FCL fcl = new FCL("baseDir", prefix, out);
             if (recursive) {
-                FileSystemProvider.addRecursiveListener(fcl, fs, baseDirFO.getPath());
+                FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {
                 baseDirFO.addFileChangeListener(fcl);
             }
@@ -213,7 +212,6 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
         doTestListeners1(false);
     }
 
-    //@Ignore
     @ForAllEnvironments
     public void testRecursiveListeners() throws Throwable {                
         doTestListeners1(true);
