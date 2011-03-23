@@ -229,12 +229,16 @@ public final class MultiViewPeer  {
         jc.setOpaque(false);
         tabs.setInnerToolBar(jc);
         tabs.setToolbarBarVisible(isToolbarVisible());
-        editorSettingsPreferences.addPreferenceChangeListener(editorSettingsListener);
+        if (editorSettingsPreferences != null) {
+            editorSettingsPreferences.addPreferenceChangeListener(editorSettingsListener);
+        }
     }
     
     void peerComponentHidden() {
         model.getActiveElement().componentHidden();
-        editorSettingsPreferences.removePreferenceChangeListener(editorSettingsListener);
+        if (editorSettingsPreferences != null) {
+            editorSettingsPreferences.removePreferenceChangeListener(editorSettingsListener);
+        }
     }
     
     void peerComponentDeactivated() {
