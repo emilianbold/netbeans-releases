@@ -174,7 +174,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     protected void postDeleteChild(FileObject child) {
         try {
-            DirectoryStorage ds = refreshDirectoryStorage(); // it will fire events itself
+            DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt()); // it will fire events itself
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
@@ -212,15 +212,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (res.isOK()) {
             try {
-                refreshImpl();
-                FileObject fo = getFileObject(name);
+                refreshDirectoryStorage(name);
+                RemoteFileObjectBase fo = getFileObject(name);
                 if (fo == null) {
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
-                }
-                if (directory) {
-                    fireFileFolderCreatedEvent(getListeners(), new FileEvent(fo));
-                } else {
-                    fireFileDataCreatedEvent(getListeners(), new FileEvent(fo));
                 }
                 return fo;
             } catch (ConnectException ex) {
@@ -392,7 +387,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(false);
+            return getDirectoryStorageImpl(false, null);
         } finally {
             if (trace) {
                 trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -400,11 +395,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private DirectoryStorage refreshDirectoryStorage() throws
+    private DirectoryStorage refreshDirectoryStorage(String expectedName) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(true);
+            return getDirectoryStorageImpl(true, expectedName);
         } finally {
             if (trace) {
                 trace("refreshDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -412,7 +407,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    private DirectoryStorage getDirectoryStorageImpl(boolean force) throws
+    private DirectoryStorage getDirectoryStorageImpl(boolean force, String expectedName) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (force && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -556,7 +551,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (oldEntry == null) {
                     changed = true;
                     cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
-                    if (loaded) {
+                    if (loaded || newEntry.getName().equals(expectedName)) {
                         entriesToFireCreated.add(newEntry);
                     }
                 } else {
@@ -655,11 +650,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             storageFile.setLastModified(System.currentTimeMillis());
             if (trace) { trace("set lastModified to {0}", storageFile.lastModified()); } // NOI18N
             if (changed) {
-                if (loaded) {
-                    for (DirEntry entry : entriesToFireCreated) {
-                        RemoteFileObjectBase fo = createFileObject(entry);
-                        fireRemoteFileObjectCreated(fo);
-                    }
+                for (DirEntry entry : entriesToFireCreated) {
+                    RemoteFileObjectBase fo = createFileObject(entry);
+                    fireRemoteFileObjectCreated(fo);
                 }
                 for (DirEntry entry : entriesToFireChanged) {
                     RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
@@ -795,7 +788,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        refreshDirectoryStorage();
+        refreshDirectoryStorage(null);
         for (RemoteFileObjectBase child : getExistentChildren()) {
             child.refreshImpl();
         }
