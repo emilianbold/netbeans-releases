@@ -25,6 +25,7 @@ package org.netbeans.modules.html.validation;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -367,7 +368,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 for (int j = 0; j < urls1.length; j++) {
                     String url = urls1[j];
                     if (schemaMap.get(url) == null && !isCheckerUrl(url)) {
-                        Schema sch = schemaByUrl(url, er, pMap);
+                        Schema sch = proxySchemaByUrl(url, er, pMap);
                         schemaMap.put(url, sch);
 //                        progress.progress(10);
                     }
@@ -1067,7 +1068,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         if (i > -1) {
             Schema rv = preloadedSchemas[i];
             if (options.contains(WrapProperty.ATTRIBUTE_OWNER)) {
-                if (rv instanceof CheckerSchema) {
+                if(rv instanceof ProxySchema && ((ProxySchema)rv).getWrappedSchema() instanceof CheckerSchema) {
                     errorHandler.error(new SAXParseException(
                             "A non-schema checker cannot be used as an attribute schema.",
                             null, url, -1, -1));
@@ -1080,6 +1081,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
         }
 
+        //this code line should not normally be encountered since the necessary
+        //schemas have been preloaded
+        LOGGER.log(Level.INFO, "Going to create a non preloaded Schema for {0}", url); //NOI18N
+        
         TypedInputSource schemaInput = (TypedInputSource) entityResolver.resolveEntity(
                 null, url);
         SchemaReader sr = null;
@@ -1092,6 +1097,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return sch;
     }
 
+    private static Schema proxySchemaByUrl(String uri, EntityResolver resolver, PropertyMap pMap) {
+        return new ProxySchema(uri, resolver, pMap);
+    }
+    
     /**
      * @param url
      * @return
@@ -1545,4 +1554,63 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
         return tlen - point;
     }
+    
+    /**
+     * A Schema instance delegate, the delegated instance if softly reachable so it should 
+     * not be GCed so often. If the delegate is GCed a new instance is recreated.
+     */
+    private static class ProxySchema implements Schema {
+    
+        private String uri;
+        private EntityResolver resolver;
+        private PropertyMap pMap;
+        
+        private SoftReference<Schema> delegateWeakRef;
+        
+        private ProxySchema(String uri, EntityResolver resolver, PropertyMap pMap) {
+            this.uri = uri;
+            this.resolver = resolver;
+            this.pMap = pMap;
+        }
+
+        //exposing just because of some instanceof test used in the code
+        private Schema getWrappedSchema() throws SAXException, IOException, IncorrectSchemaException {
+            return getSchemaDelegate();
+        }
+        
+        public Validator createValidator(PropertyMap pm) {
+            try {
+                return getSchemaDelegate().createValidator(pm);
+            } catch (Exception ex) { //SAXException, IOException, IncorrectSchemaException
+                LOGGER.log(Level.INFO, "Cannot create schema delegate", ex); //NOI18N
+            }
+            return null;
+        }
+
+        public PropertyMap getProperties() {
+            try {
+                return getSchemaDelegate().getProperties();
+            } catch (Exception ex) { //SAXException, IOException, IncorrectSchemaException
+                LOGGER.log(Level.INFO, "Cannot create schema delegate", ex); //NOI18N
+            }
+            return null;
+        }
+        
+        private synchronized Schema getSchemaDelegate() throws SAXException, IOException, IncorrectSchemaException {
+            Schema delegate = delegateWeakRef != null ? delegateWeakRef.get() : null;
+            if(delegate == null) {
+                long a = System.currentTimeMillis();
+                delegate = schemaByUrl(uri, resolver, pMap);
+                long b = System.currentTimeMillis();
+                delegateWeakRef = new SoftReference<Schema>(delegate);
+                LOGGER.log(Level.FINE, "Created new Schema instance for {0} in {1}ms.", new Object[]{uri, (b-a)});
+            } else {
+                LOGGER.log(Level.FINE, "Using cached Schema instance for {0}", uri);
+            }
+            return delegate;
+        }
+        
+        
+    }
+    
 }
