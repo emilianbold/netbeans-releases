@@ -100,7 +100,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             Provider project = nativeProject.getProject();
             if (project instanceof Project) {
                 if (!fs.equals(RemoteFileUtil.getProjectSourceFileSystem((Project) project))) {
-                    return null;
+                    continue;
                 }
                 ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
                 if (provider != null && provider.gotDescriptor()) {
