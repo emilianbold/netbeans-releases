@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>jsp-compilation</name>
+    <name>jsp-compilation-syscp</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/web/core/Bundle</localizing-bundle>
     <volume>
@@ -54,10 +54,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.apache.tools.ant.module/ant/lib/ant.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.servletjspapi/modules/ext/servlet3.0-jsp2.2-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.jspparser/modules/ext/glassfish-jspparser-3.0.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.jspparser/modules/ext/jsf-2_0/jsf-api.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.jspparser/modules/ext/jstl.jar!/</resource>
-<!--        <resource>jar:nbinst://org.netbeans.libs.glassfish_logging/modules/ext/glassfish-logging-2.0.jar!/</resource>-->
-<!--        <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>-->
-        <resource>jar:nbinst://org.apache.tools.ant.module/ant/lib/ant-launcher.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jspparser/modules/ext/standard.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jspparser/modules/ext/jsf-2_0/jsf-impl.jar!/</resource>
     </volume>
 </library>
