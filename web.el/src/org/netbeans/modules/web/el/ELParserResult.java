@@ -75,13 +75,13 @@ public final class ELParserResult extends ParserResult {
         this.file = fo;
     }
 
-    public ELElement addValidElement(Node node, String expression, OffsetRange embeddedOffset) {
+    public ELElement addValidElement(Node node, ELPreprocessor expression, OffsetRange embeddedOffset) {
         ELElement element = ELElement.valid(node, expression, embeddedOffset, getSnapshot());
         add(element);
         return element;
     }
 
-    public ELElement addErrorElement(ELException error, String expression, OffsetRange embeddedOffset) {
+    public ELElement addErrorElement(ELException error, ELPreprocessor expression, OffsetRange embeddedOffset) {
         ELElement element = ELElement.error(error, expression, embeddedOffset, getSnapshot());
         add(element);
         return element;

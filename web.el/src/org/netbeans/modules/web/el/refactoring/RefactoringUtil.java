@@ -190,12 +190,11 @@ public final class RefactoringUtil {
     }
 
     static PositionRef[] getPostionRefs(ELElement elem, Node targetNode) {
-        int startOffset = elem.getOriginalOffset().getStart() + targetNode.startOffset();
-        int endOffset = startOffset + targetNode.getImage().length();
+        OffsetRange nodeRange = elem.getOriginalOffset(targetNode);
 
         CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getSnapshot().getSource().getFileObject());
-        PositionRef start = editor.createPositionRef(startOffset, Bias.Forward);
-        PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
+        PositionRef start = editor.createPositionRef(nodeRange.getStart(), Bias.Forward);
+        PositionRef end = editor.createPositionRef(nodeRange.getEnd(), Bias.Backward);
 
         return new PositionRef[]{start, end};
     }
