@@ -101,6 +101,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             final File tempRepository = Utils.getTempFolder();
             GitURI uri = repository.getURI();
             if (uri != null) {
+                repository.store();
                 support = new RepositoryStepProgressSupport(panel.progressPanel, uri);        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
@@ -170,7 +171,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         @Override
         public void perform() {
             try {
-                GitClient client = getClient();
+                GitClient client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
                 client.init(this);
                 branches = new HashMap<String, GitBranch>();
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));

@@ -159,7 +159,7 @@ public class ResetWindowsAction implements ActionListener {
                 }
                 ModeImpl editorMode = (ModeImpl) wm.findMode("editor"); //NOI18N
                 //re-open editor windows that were opened before the reset
-                for( int i=0; i<editors.length; i++ ) {
+                for( int i=0; i<editors.length && null != editorMode; i++ ) {
                     editorMode.addOpenedTopComponentNoNotify(editors[i]);
                 }
                 SwingUtilities.invokeLater( new Runnable() {

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,6 +59,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -68,6 +70,8 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -80,6 +84,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private Message msg;
 
     private ChangeSupport support = new ChangeSupport(this);
+    private final boolean urlFixed;
 
     private enum Scheme {
         FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
@@ -111,13 +116,15 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     
     private final RemoteRepositoryPanel panel;
     private final JComponent[] inputFields;
-
-    RemoteRepository() {
-        this(null);
-    }
     
     public RemoteRepository(String forPath) {
+        this(forPath, false);
+    }
+    
+    private RemoteRepository(String forPath, boolean fixedUrl) {
+        assert !fixedUrl || forPath != null && !forPath.trim().isEmpty();
         this.panel = new RemoteRepositoryPanel();
+        this.urlFixed = fixedUrl;
         this.inputFields = new JComponent[] {
             panel.urlComboBox,
             panel.userTextField,
@@ -184,13 +191,18 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             guri = guri.setPass(null);
         }
         final GitURI fguri = guri;
-        Git.getInstance().getRequestProcessor().post(new Runnable() {
+        Runnable outOfAWT = new Runnable() {
             @Override
             public void run() {
                 GitModuleConfig.getDefault().insertRecentGitURI(fguri, isSelected);
                 recentGuris.put(fguri.toString(), fguri);
             }
-        });
+        };
+        if (EventQueue.isDispatchThread()) {
+            Git.getInstance().getRequestProcessor().post(outOfAWT);
+        } else {
+            outOfAWT.run();
+        }
     }
     
     public void removeChangeListener(ChangeListener listener) {
@@ -254,6 +266,26 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
     }
 
+    public static boolean updateFor (String url) {
+        boolean retval = false;
+        final RemoteRepository repository = new RemoteRepository(url, true);
+        final DialogDescriptor dd = new DialogDescriptor(repository.getPanel(), NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel_Title")); //NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        repository.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged (ChangeEvent e) {
+                dd.setValid(repository.isValid());
+            }
+        });
+        dd.setValid(repository.isValid());
+        dialog.setVisible(true);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            repository.store();
+            retval = true;
+        }
+        return retval;
+    }
+
     private void validateFields () {
         boolean oldValid = valid;
         try {
@@ -296,6 +328,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 }
                 if(isFile) {
                     panel.tipLabel.setText(Scheme.FILE.getTip());
+                }
+                if (urlFixed) {
+                    panel.tipLabel.setText(null);
                 }
                 
                 panel.directoryBrowseButton.setVisible(isFile);
@@ -401,6 +436,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));   // NOI18N
                     }
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             panel.urlComboBox.setModel(model);
                             if (forPath != null) {
@@ -411,7 +447,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         }
                     });
                 } finally {
-                    panel.urlComboBox.setEnabled(true);
+                    if (!urlFixed) {
+                        panel.urlComboBox.setEnabled(true);
+                    }
                 }
             }
         });
