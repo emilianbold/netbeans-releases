@@ -90,7 +90,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         for (Element e : roundEnv.getElementsAnnotatedWith(MultiViewElement.Registration.class)) {
             MultiViewElement.Registration mvr = e.getAnnotation(MultiViewElement.Registration.class);
             if (mvr.mimeType().length == 0) {
-                throw new LayerGenerationException("You must specify either mimeType", e);
+                throw new LayerGenerationException("You must specify mimeType", e);
             }
             String[] binAndMethodNames = findDefinition(e);
             String fileBaseName = binAndMethodNames[0].replace('.', '-');
