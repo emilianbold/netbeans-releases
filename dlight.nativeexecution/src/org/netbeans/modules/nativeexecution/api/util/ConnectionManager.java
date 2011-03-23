@@ -84,7 +84,7 @@ public final class ConnectionManager {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     // Actual sessions pools. One per host
-    private static final HashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new HashMap<ExecutionEnvironment, JSchChannelsSupport>();
+    private static final ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport>();
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
     private static final Object channelsSupportLock = new Object();
     private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
@@ -215,11 +215,8 @@ public final class ConnectionManager {
         if (execEnv.isLocal()) {
             return true;
         }
-
-        synchronized (channelsSupportLock) {
-            return channelsSupport.containsKey(execEnv)
-                    && channelsSupport.get(execEnv).isConnected();
-        }
+        JSchChannelsSupport support = channelsSupport.get(execEnv); // it's a ConcurrentHashMap => no lock is needed
+        return (support != null) && support.isConnected();
     }
 
     private static final int RETRY_MAX = 10;
