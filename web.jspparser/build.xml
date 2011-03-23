@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
                 compress="${build.package.compress}"/>
     </target>
 
-    <property name="glassfish_location" value="C:\Programs\Java\glassfish-3.1-b41"/>
+     
     <target name="create-jars-from-glassfish">
         <!-- the latest binary generated on Aug 24, 2010 is based on GlassFish 3.0.1, 
              plus the following patch in addition (because of the following JSP engine bug: 
@@ -111,13 +111,11 @@ made subject to such option by the copyright holder.
         <mkdir dir="glassfishjspparser"/>
         <unzip src="${glassfish_location}/glassfish/modules/jsp-impl.jar" dest="glassfishjspparser/"/>
         <unzip src="${glassfish_location}/glassfish/modules/el-impl.jar" dest="glassfishjspparser/"/>
-<!--        <unzip src="${glassfish_location}/glassfish/modules/glassfish-ee-api.jar" dest="glassfishjspparser/"/>-->
-<!--        <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>-->
-<!--        <unzip src="${glassfish_location}/glassfish/modules/jsf-api.jar" dest="glassfishjspparser/"/>-->
-        <delete file="./external/glassfish-jspparser-3.0.jar" />
+        <unzip src="${glassfish_location}/glassfish/modules/glassfish-ee-api.jar" dest="glassfishjspparser/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>
+        <delete file="glassfish-jspparser-3.0.jar" />
         <zip  basedir="glassfishjspparser"
-        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class,
-                com/sun/appserv/server/util/PreprocessorUtil.class, org/glassfish/jsp/api/**"
+        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class, org/glassfish/jsp/api/**"
             zipfile="./external/glassfish-jspparser-3.0.jar" />
 
         <delete dir="glassfishjspparser" />
@@ -127,7 +125,6 @@ made subject to such option by the copyright holder.
         <unzip src="${glassfish_location}/glassfish/modules/gf-client-module.jar" dest="./servletjspapi/"/>
         <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jar" dest="./servletjspapi/"/>
         <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jar" dest="./servletjspapi/"/>
-<!--        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jstl.jar" dest="./servletjspapi/"/>-->
 
         <mkdir dir="servletjspapi/resources/dtds" />
         <copy todir="servletjspapi/resources/dtds">

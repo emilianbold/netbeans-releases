@@ -776,14 +776,6 @@ public final class WebProject implements Project {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-                lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compilation-syscp");
-                if (lib == null) {
-                    try {
-                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compilation-syscp")); // NOI18N
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
             }
         });
     }
