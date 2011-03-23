@@ -108,8 +108,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         
         CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", lookup);
         assertNotNull("MultiViewComponent created", cmv);
-// XXX        TopComponent mvc = cmv.cloneTopComponent();
-        TopComponent mvc = cmv;
+        TopComponent mvc = cmv.cloneTopComponent();
         
         assertNotNull("MultiViewComponent cloned", mvc);
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);

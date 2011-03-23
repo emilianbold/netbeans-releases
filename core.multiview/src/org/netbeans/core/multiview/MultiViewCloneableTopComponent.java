@@ -183,8 +183,14 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     protected String preferredID() {
         return peer.preferredID();
     }
-    
-    
+
+    @Override
+    protected CloneableTopComponent createClonedObject() {
+        MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
+        tc.setMultiViewDescriptions(peer.model.getDescriptions(), peer.model.getActiveDescription());;
+        tc.setCloseOperationHandler(peer.closeHandler);
+        return tc;
+    }
     
     /** Serialize this top component.
     * Subclasses wishing to store state must call the super method, then write to the stream.
