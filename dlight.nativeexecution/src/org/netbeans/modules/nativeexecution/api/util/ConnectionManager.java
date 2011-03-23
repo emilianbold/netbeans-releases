@@ -86,6 +86,7 @@ public final class ConnectionManager {
     // Actual sessions pools. One per host
     private static final HashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new HashMap<ExecutionEnvironment, JSchChannelsSupport>();
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
+    private static final Object channelsSupportLock = new Object();
     private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
     // Instance of the ConnectionManager
     private static final ConnectionManager instance = new ConnectionManager();
@@ -215,7 +216,7 @@ public final class ConnectionManager {
             return true;
         }
 
-        synchronized (channelsSupport) {
+        synchronized (channelsSupportLock) {
             return channelsSupport.containsKey(execEnv)
                     && channelsSupport.get(execEnv).isConnected();
         }
@@ -300,7 +301,7 @@ public final class ConnectionManager {
             JSchChannelsSupport cs = connectionTask.getResult();
 
             if (cs != null) {
-                synchronized (channelsSupport) {
+                synchronized (channelsSupportLock) {
                     channelsSupport.put(env, cs);
                 }
             } else {
@@ -365,7 +366,7 @@ public final class ConnectionManager {
     }
 
     private void reconnect(ExecutionEnvironment env) throws IOException {
-        synchronized (channelsSupport) {
+        synchronized (channelsSupportLock) {
             if (channelsSupport.containsKey(env)) {
                 try {
                     channelsSupport.get(env).reconnect(env);
@@ -382,7 +383,7 @@ public final class ConnectionManager {
     }
 
     private void disconnectImpl(final ExecutionEnvironment env) {
-        synchronized (channelsSupport) {
+        synchronized (channelsSupportLock) {
             if (channelsSupport.containsKey(env)) {
                 JSchChannelsSupport cs = channelsSupport.remove(env);
                 cs.disconnect();
@@ -393,7 +394,7 @@ public final class ConnectionManager {
 
     private static void shutdown() {
         log.fine("Shutting down Connection Manager");
-        synchronized (channelsSupport) {
+        synchronized (channelsSupportLock) {
             for (JSchChannelsSupport cs : channelsSupport.values()) {
                 cs.disconnect();
             }
@@ -467,7 +468,7 @@ public final class ConnectionManager {
 
         @Override
         public Channel openAndAcquireChannel(ExecutionEnvironment env, String type, boolean waitIfNoAvailable) throws InterruptedException, JSchException, IOException {
-            synchronized (channelsSupport) {
+            synchronized (channelsSupportLock) {
                 if (channelsSupport.containsKey(env)) {
                     JSchChannelsSupport cs = channelsSupport.get(env);
                     return cs.acquireChannel(type, waitIfNoAvailable);
@@ -481,7 +482,7 @@ public final class ConnectionManager {
         public void closeAndReleaseChannel(final ExecutionEnvironment env, final Channel channel) throws JSchException {
             JSchChannelsSupport cs = null;
 
-            synchronized (channelsSupport) {
+            synchronized (channelsSupportLock) {
                 if (channelsSupport.containsKey(env)) {
                     cs = channelsSupport.get(env);
                 }
