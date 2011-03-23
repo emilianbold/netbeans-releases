@@ -213,15 +213,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (res.isOK()) {
             try {
                 refreshImpl();
-                FileObject fo = getFileObject(name);
+                RemoteFileObjectBase fo = getFileObject(name);
                 if (fo == null) {
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
                 }
-                if (directory) {
-                    fireFileFolderCreatedEvent(getListeners(), new FileEvent(fo));
-                } else {
-                    fireFileDataCreatedEvent(getListeners(), new FileEvent(fo));
-                }
+                fireRemoteFileObjectCreated(fo);
                 return fo;
             } catch (ConnectException ex) {
                 throw new IOException("Can not create " + path + ": not connected", ex); // NOI18N
