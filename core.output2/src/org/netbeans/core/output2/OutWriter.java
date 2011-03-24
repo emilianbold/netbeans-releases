@@ -50,6 +50,7 @@ import org.openide.windows.OutputListener;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -176,6 +177,8 @@ class OutWriter extends PrintWriter {
         int start = -1;
         try {
             start = getStorage().write(bb);
+        } catch (ClosedByInterruptException cbiex) {
+            onWriteException();
         } catch (java.nio.channels.AsynchronousCloseException ace) {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write

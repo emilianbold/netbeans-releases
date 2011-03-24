@@ -50,8 +50,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.watcher.Watcher;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 
 public class TestUtils {
     private static final Logger LOG = Logger.getLogger(TestUtils.class.getName());
@@ -109,4 +113,13 @@ public class TestUtils {
         LOG.info("end of file objects");
     }
 
+    public static Runnable findSlowRefresh(FileObject fo) throws FileStateInvalidException {
+        Object r = fo.getFileSystem().getRoot().getAttribute("refreshSlow");
+        Assert.assertNotNull("Runnable for refreshSlow found", r);
+        Assert.assertEquals("Right class", RefreshSlow.class, r.getClass());
+        RefreshSlow rs = (RefreshSlow)r;
+        Assert.assertTrue("Can only be used when proper property is set", Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable"));
+        Assert.assertFalse("Watcher is really disabled", Watcher.isEnabled());
+        return rs;
+    }
 }

@@ -274,7 +274,7 @@ public class ShorterPaths extends Task {
         }
         for (Replacement repl : replacements) {
             String dirCan = repl.dir.getCanonicalPath();
-            if (path.startsWith(dirCan) && (repl.excluded == null || !path.startsWith(repl.excluded.getCanonicalPath()))) {
+            if (path.startsWith(dirCan)) {
                 pathsBuff.append("${").append(repl.name).append("}");
                 // postfix + unify file separators to '/'
                 pathsBuff.append(path.substring(dirCan.length()).replace(File.separatorChar, '/'));

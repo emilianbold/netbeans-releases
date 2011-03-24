@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -505,6 +506,7 @@ public final class WLPluginProperties {
         return instFolders.isEmpty() ? null : FileUtil.toFile(
                 instFolders.iterator().next()).getAbsolutePath();
     }
+
     /**
      * Returns map of JDK configuration which is used for starting server
      */
@@ -840,21 +842,44 @@ public final class WLPluginProperties {
         return true;
     }
 
-    public static enum Vendor {
+    public static final class JvmVendor {
 
-        ORACLE("Oracle"), // NOI18N
+        public static final JvmVendor ORACLE = new JvmVendor("Oracle", // NOI18N
+                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmJRockit"));
 
-        SUN("Sun"); // NOI18N
+        public static final JvmVendor SUN = new JvmVendor("Sun", // NOI18N
+                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmHotSpot"));
+        
+        public static final JvmVendor DEFAULT = new JvmVendor("", // NOI18N
+                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmDefault"));
 
         private final String name;
+        
+        private final String displayName;
 
-        Vendor(String name ){
+        private JvmVendor(String name, String displayName) {
             this.name = name;
+            this.displayName = displayName;
+        }
+
+        public String toPropertiesString() {
+            return name;
         }
 
         @Override
         public String toString() {
-            return name;
+            return displayName;
+        }
+
+        public static JvmVendor fromPropertiesString(String value) {
+            if (ORACLE.toPropertiesString().equals(value)) {
+                return ORACLE;
+            } else if (SUN.toPropertiesString().equals(value)) {
+                return SUN;
+            } else if (value == null || value.trim().length() == 0) {
+                return DEFAULT;
+            }
+            return new JvmVendor(value, value);
         }
     }
 }
