@@ -133,9 +133,9 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                             }
                         });
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
-                        LOG.log(Level.FINE, "Checking out branch: {0}", revision); //NOI18N
+                        LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
                         try {
-                            client.checkoutBranch(revision, true, this);
+                            client.checkoutRevision(revision, true, this);
                         } catch (GitException.CheckoutConflictException ex) {
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
@@ -182,7 +182,7 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                         LOG.log(Level.FINE, "Cleanup new files"); //NOI18N
                         client.clean(conflicts, this);
                         LOG.log(Level.FINE, "Checking out branch: {0}, second shot", revision); //NOI18N
-                        client.checkoutBranch(revision, true, this);
+                        client.checkoutRevision(revision, true, this);
                         notifiedFiles.addAll(Arrays.asList(conflicts));
                     } else if (o == review) {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N

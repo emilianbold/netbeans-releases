@@ -1229,7 +1229,8 @@ public final class TextRegionManager {
                     case ENTER:
                         if (!manager.enterAction()) {
                             Action original = (Action)getValue(ORIGINAL_ACTION_PROPERTY);
-                            original.actionPerformed(evt);
+                            if (original != null)
+                                original.actionPerformed(evt);
                         }
                         break;
                 }

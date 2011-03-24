@@ -152,7 +152,7 @@ public class DependencyNode extends AbstractNode {
     private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
 
-    private static final RequestProcessor RP = new RequestProcessor("DependencyNode",1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
 
     public static Children createChildren(Artifact art, boolean longLiving) {
         assert art != null;
@@ -425,7 +425,9 @@ public class DependencyNode extends AbstractNode {
         return getSourceFile().exists();
     }
 
-    void downloadJavadocSources(MavenEmbedder online, ProgressContributor progress, boolean isjavadoc) {
+    void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
+        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+        online.setUpLegacySupport();
         progress.start(2);
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             progress.finish();
@@ -731,11 +733,8 @@ public class DependencyNode extends AbstractNode {
         
         @Override
         public void actionPerformed(ActionEvent evnt) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                   
+            RP.post(new Runnable() {
+                public @Override void run() {
                     ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
                    
                     String label = javadoc ? NbBundle.getMessage(DependencyNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependencyNode.class, "Progress_Source");
@@ -746,9 +745,9 @@ public class DependencyNode extends AbstractNode {
                         ProgressTransferListener.setAggregateHandle(handle);
 
                         if (javadoc && !hasJavadocInRepository()) {
-                            downloadJavadocSources(online, contributor, javadoc);
+                            downloadJavadocSources(contributor, javadoc);
                         } else if (!javadoc && !hasSourceInRepository()) {
-                            downloadJavadocSources(online, contributor, javadoc);
+                            downloadJavadocSources(contributor, javadoc);
                         } else {
                             contributor.finish();
                         }

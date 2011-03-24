@@ -138,14 +138,15 @@ public class ComponentUsagesChecker extends HintsProvider {
                             //check the component attributes
                             Tag tag = component.getTag();
                             if (tag != null) {
-                                //#Bug 176807 fix -  Composite component w/o interface and implementation is ignored
-                                //do not do any check on a composite component w/o any interface attributes
-                                if(component instanceof CompositeComponent) {
-                                    if(!tag.hasNonGenenericAttributes()) {
-                                        return ;
-                                    }
+                                //Check wheter the tag has some non-generic (e.g. explicitly declared) attributes
+                                if(!tag.hasNonGenenericAttributes()) {
+                                    //There aren't any declared attributes so we cannot do any attributes checks
+                                    //since facelets allows to not to declare the attributes in the descriptor, but
+                                    //use it in the facelets page. The engine then simply sets all the found 
+                                    //attributes to the component without knowing if the component knows them or not.
+                                    return ;
                                 }
-
+                                
                                 //1. check required attributes
                                 Collection<Attribute> attrs = tag.getAttributes();
                                 for (Attribute attr : attrs) {

@@ -65,6 +65,11 @@ public class RequestProcessorTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 30000;
+    }
+
+    @Override
     protected void setUp () throws Exception {
         super.setUp();
         

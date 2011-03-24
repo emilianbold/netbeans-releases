@@ -82,6 +82,22 @@ public final class RemoteSyncSupport {
         return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
     }
 
+    /** 
+     * For the case we know environment for sure, but project can be null -
+     * instead of repeating in client construct like
+     * pathMap = (project == null) ? HostInfoProvider.getMapper(execEnv) : RemoteSyncSupport.getPathMap(project);
+     */
+    public static PathMap getPathMap(ExecutionEnvironment env, Project project) {
+        PathMap pathMap = null;
+        if (project != null) {
+            pathMap = getPathMap(project);
+        }
+        if (pathMap == null) {
+            pathMap = HostInfoProvider.getMapper(env);
+        }
+        return pathMap;
+    }
+
     public static PathMap getPathMap(Project project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         CndUtils.assertNotNull(remoteProject, "null RemoteProject"); //NOI18N

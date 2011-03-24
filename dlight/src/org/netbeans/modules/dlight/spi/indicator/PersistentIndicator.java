@@ -43,6 +43,7 @@
 package org.netbeans.modules.dlight.spi.indicator;
 
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -78,6 +79,19 @@ public abstract class PersistentIndicator<T extends IndicatorConfiguration> exte
      * @return <code>true</code> on success, <code>false</code> on failure
      */
     public abstract boolean loadState(DataStorage storage);
+
+    /**
+     * Tells indicator to load its state from given storage. Storage must be
+     * of required type and must contain required tables filled with indicator
+     * state. aux objects can be used to specify re-creation criteria and is 
+     * implementation dependent
+     *
+     * @param storage  storage containing previously saved indicator state
+     * @param aux  map of objects that can be used by implementation to do 
+     * correct indicator re-creation
+     * @return <code>true</code> on success, <code>false</code> on failure
+     */
+    public abstract boolean loadState(DataStorage storage, Map<String, Object> aux);
 
     /**
      * Tells indicator to save its state to given storage. Storage must be

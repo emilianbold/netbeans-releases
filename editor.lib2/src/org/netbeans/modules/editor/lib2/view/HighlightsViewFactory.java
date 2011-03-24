@@ -47,7 +47,6 @@ package org.netbeans.modules.editor.lib2.view;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
@@ -60,7 +59,6 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -77,70 +75,24 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.stack=true
-    private static final boolean dumpHighlightChangeStack =
-            Boolean.getBoolean(HighlightsViewFactory.class.getName() + ".stack");
-
-    private static final RequestProcessor RP = 
-            new RequestProcessor("Highlights-Coalescing", 1, false, false); // NOI18N
-
-//    private static final boolean SYNC_HIGHLIGHTS = 
-//            Boolean.getBoolean("org.netbeans.editor.sync.highlights"); //NOI18N
-
     private final HighlightsContainer highlightsContainer;
 
     private CharSequence docText;
     private Element lineElementRoot;
 
     private int lineIndex;
-    private int newLineOffset;
+
+    private int lineEndOffset;
 
     private HighlightsSequence highlightsSequence;
     private int highlightStartOffset;
     private int highlightEndOffset;
     private AttributeSet highlightAttributes;
 
-    private final Object dirtyRegionLock = new String("dirty-region-lock"); //NOI18N
-    private int dirtyReqionStartOffset = Integer.MAX_VALUE;
-    private int dirtyReqionEndOffset = Integer.MIN_VALUE;
-
     private int usageCount = 0; // Avoid nested use of the factory
-
-    private final RequestProcessor.Task dirtyRegionTask = RP.create(new Runnable() {
-        private boolean insideRender = false;
-        public @Override void run() {
-            if (true || SwingUtilities.isEventDispatchThread()) {
-                if (insideRender) {
-                    int[] region = getAndClearDirtyRegion();
-                    if (region != null) {
-                        if (LOG.isLoggable(Level.FINER)) {
-                            LOG.fine("coallesced-event: <" + region[0] + ',' + region[1] + ">\n"); // NOI18N
-                        }
-                        fireEvent(Collections.singletonList(createChange(region[0], region[1])));
-                    }
-                } else {
-                    insideRender = true;
-                    try {
-                        Document doc = textComponent().getDocument();
-                        doc.render(this);
-                    } finally {
-                        insideRender = false;
-                    }
-                }
-            } else {
-                try {
-                    // Must be invoke-later since 
-                    SwingUtilities.invokeLater(this);
-                } catch (Exception ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-            }
-        }
-    });
 
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
-
         highlightsContainer = HighlightingManager.getInstance().getHighlights(component, null);
         highlightsContainer.addHighlightsChangeListener(WeakListeners.create(HighlightsChangeListener.class, this, highlightsContainer));
     }
@@ -151,12 +103,11 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             throw new IllegalStateException("Race condition: usageCount = " + usageCount); // NOI18N
         }
         usageCount++;
-        Document doc = textComponent().getDocument();
-        docText = DocumentUtilities.getText(doc);
-        lineElementRoot = doc.getDefaultRootElement();
+        docText = DocumentUtilities.getText(document());
+        lineElementRoot = document().getDefaultRootElement();
         assert (lineElementRoot != null) : "lineElementRoot is null."; // NOI18N
         lineIndex = lineElementRoot.getElementIndex(startOffset);
-        newLineOffset = lineElementRoot.getElement(lineIndex).getEndOffset() - 1;
+        lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();
         highlightEndOffset = Integer.MIN_VALUE; // Makes the highlightsSequence to be inited
     }
 
@@ -170,23 +121,25 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     @Override
     public EditorView createView(int startOffset, int limitOffset) {
         updateHighlight(startOffset);
-        updateNewLineOffset(startOffset);
-        if (startOffset == newLineOffset) {
+        updateLineEndOffset(startOffset);
+        if (startOffset == lineEndOffset - 1) {
             return new NewlineView(startOffset, (startOffset >= highlightStartOffset) &&
                     (startOffset + 1 <= highlightEndOffset) ? highlightAttributes : null);
         } else if (startOffset < highlightStartOffset) { // Before highlight
-            int endOffset = Math.min(Math.min(highlightStartOffset, limitOffset), newLineOffset);
+            int endOffset = Math.min(Math.min(highlightStartOffset, limitOffset), lineEndOffset - 1);
+            // Prevent exception thrown from createHighlightsView() when
+            // startOffset=1, newLineOffset=0 => endOffset=0, highlight: <2147483647,2147483647>, docText.length()=1
             return createHighlightsView(startOffset, endOffset - startOffset, null);
         } else { // Inside highlight
-            int endOffset = Math.min(Math.min(highlightEndOffset, limitOffset), newLineOffset);
+            int endOffset = Math.min(Math.min(highlightEndOffset, limitOffset), lineEndOffset - 1);
             return createHighlightsView(startOffset, endOffset - startOffset, highlightAttributes);
         }
     }
 
     @Override
     public int viewEndOffset(int startOffset, int limitOffset) {
-        updateNewLineOffset(startOffset);
-        return Math.min(newLineOffset + 1, limitOffset);
+        updateLineEndOffset(startOffset);
+        return Math.min(lineEndOffset, limitOffset);
     }
 
     private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
@@ -194,7 +147,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             throw new IllegalStateException("startOffset=" + startOffset // NOI18N
                     + ", length=" + length + ", highlight: <" + highlightStartOffset // NOI18N
                     + "," + highlightEndOffset // NOI18N
-                    + ">, newLineOffset=" + newLineOffset + ", docText.length()=" + docText.length()); // NOI18N
+                    + ">, lineEndOffset=" + lineEndOffset + ", docText.length()=" + docText.length()); // NOI18N
         }
         boolean tabs = (docText.charAt(startOffset) == '\t'); //NOI18N
         for (int i = 1; i < length; i++) {
@@ -208,50 +161,51 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 : new HighlightsView(startOffset, length, attrs);
     }
 
-    private void updateHighlight(int offset) {
-        while (highlightEndOffset <= offset) {
-            fetchNextHighlight(offset);
-        }
-    }
-
-    private void updateNewLineOffset(int offset) {
+    private void updateLineEndOffset(int offset) {
         if (usageCount != 1) {
             throw new IllegalStateException("Missing factory restart: usageCount=" + usageCount);
         }
-        while (newLineOffset < offset && lineIndex + 1 < lineElementRoot.getElementCount()) {
+        while (lineEndOffset <= offset) { // && lineIndex + 1 < lineElementRoot.getElementCount()) {
             lineIndex++;
-            newLineOffset = lineElementRoot.getElement(lineIndex).getEndOffset() - 1;
+            Element line = lineElementRoot.getElement(lineIndex);
+            lineEndOffset = line.getEndOffset();
         }
     }
 
-    private void fetchNextHighlight(int offset) {
-        if (highlightsSequence == null && highlightEndOffset == Integer.MIN_VALUE) { // HS not yet created
-            highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
-        }
-        while (highlightsSequence != null) {
-            while (highlightsSequence instanceof HighlightsSequenceEx && ((HighlightsSequenceEx) highlightsSequence).isStale()) {
+    private void updateHighlight(int offset) {
+        if (offset >= highlightEndOffset) { // Covers case when highlightEndOffset==Integer.MIN_VALUE at begining
+            if (highlightsSequence == null && highlightEndOffset == Integer.MIN_VALUE) { // HS not yet created
                 highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
             }
-
-            if (highlightsSequence.moveNext()) {
-                highlightStartOffset = highlightsSequence.getStartOffset();
-                highlightEndOffset = highlightsSequence.getEndOffset();
-                highlightAttributes = highlightsSequence.getAttributes();
-                offset = highlightEndOffset;
-
-                if (highlightStartOffset < highlightEndOffset) {
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + "> " // NOI18N
-                            + ViewUtils.toString(highlightAttributes) + "\n"); //NOI18N
-                    }
-                    // great, we have a proper highlight now
-                    break;
+            while (highlightsSequence != null) {
+                while (highlightsSequence instanceof HighlightsSequenceEx && ((HighlightsSequenceEx) highlightsSequence).isStale()) {
+                    highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
                 }
-            } else {
-                highlightsSequence = null;
-                highlightAttributes = null;
-                highlightStartOffset = Integer.MAX_VALUE;
-                highlightEndOffset = Integer.MAX_VALUE;
+
+                if (highlightsSequence.moveNext()) {
+                    highlightStartOffset = highlightsSequence.getStartOffset();
+                    highlightEndOffset = highlightsSequence.getEndOffset();
+                    highlightAttributes = highlightsSequence.getAttributes();
+
+                    if (highlightStartOffset < highlightEndOffset) {
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + "> " // NOI18N
+                                + ViewUtils.toString(highlightAttributes) + "\n"); //NOI18N
+                        }
+                        if (offset < highlightEndOffset) {
+                            break;
+                        }
+                    } else { // Invalid highlight -> Fetch next
+                        if (highlightStartOffset > highlightEndOffset) {
+                            LOG.info("Invalid highlight: <" + highlightStartOffset + "," + highlightEndOffset + ">\n"); // NOI18N
+                        }
+                    }
+                } else {
+                    highlightsSequence = null;
+                    highlightAttributes = null;
+                    highlightStartOffset = Integer.MAX_VALUE;
+                    highlightEndOffset = Integer.MAX_VALUE; // Marks end of highlights traversal (together with highlightsSequence==null)
+                }
             }
         }
     }
@@ -261,7 +215,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         docText = null;
         lineElementRoot = null;
         lineIndex = -1;
-        newLineOffset = -1;
+        lineEndOffset = -1;
         highlightsSequence = null;
         highlightStartOffset = Integer.MAX_VALUE;
         highlightEndOffset = Integer.MAX_VALUE;
@@ -286,42 +240,20 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(HighlightsChangeEvent event) {
-        final int startOffset = event.getStartOffset();
-        final int endOffset = event.getEndOffset();
-
+        int startOffset = event.getStartOffset();
+        int endOffset = event.getEndOffset();
+        int docTextLength = document().getLength() + 1;
+        assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
+        assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
+        startOffset = Math.min(startOffset, docTextLength);
+        endOffset = Math.min(endOffset, docTextLength);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINER, "highlightChanged: event:<{0}{1}{2}>, thread:{3}\n", //NOI18N
                     new Object[] {startOffset, ',', endOffset, Thread.currentThread()}); // NOI18N
-            if (dumpHighlightChangeStack) {
-                LOG.log(Level.INFO, "Highlight Change Thread Dump for <" + // NOI18N
-                        startOffset + "," + endOffset + ">", new Exception()); // NOI18N
-            }
         }
 
-        if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
-            // Coalesce highglihts events by reposting to RP and then to EDT
-            extendDirtyRegion(startOffset, endOffset);
-            dirtyRegionTask.schedule(0);
-        }
-    }
-
-    private void extendDirtyRegion(int startOffset, int endOffset) {
-        synchronized (dirtyRegionLock) {
-            dirtyReqionStartOffset = Math.min(dirtyReqionStartOffset, startOffset);
-            dirtyReqionEndOffset = Math.max(dirtyReqionEndOffset, endOffset);
-        }
-    }
-    
-    private int[] getAndClearDirtyRegion() {
-        synchronized (dirtyRegionLock) {
-            if (dirtyReqionStartOffset == Integer.MAX_VALUE || dirtyReqionEndOffset == Integer.MIN_VALUE) {
-                return null;
-            } else {
-                int [] region = new int[] { dirtyReqionStartOffset, dirtyReqionEndOffset };
-                dirtyReqionStartOffset = Integer.MAX_VALUE;
-                dirtyReqionEndOffset = Integer.MIN_VALUE;
-                return region;
-            }
+        if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
+            fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
         }
     }
 

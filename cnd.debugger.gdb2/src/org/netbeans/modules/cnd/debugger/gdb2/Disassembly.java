@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -132,9 +131,9 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
 
     private boolean cancelled = false;
 
-    private static enum RequestMode {FILE, ADDRESS, NONE};
+    private static enum RequestMode {FILE_SRC, FILE_NO_SRC, ADDRESS_SRC, ADDRESS_NO_SRC, NONE};
 
-    private RequestMode requestMode = RequestMode.FILE;
+    private RequestMode requestMode = RequestMode.FILE_SRC;
     
     private final BreakpointModel breakpointModel;
     
@@ -240,7 +239,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                         //String path = debugger.getRunDirectory();
                         String fileStr = readValue(FILE_HEADER, msg, combinedPos);
                         if (resolvedFileName != null && CndPathUtilitities.getBaseName(resolvedFileName).equals(fileStr)) {
-                            FileObject src_fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(resolvedFileName));
+                            FileObject src_fo = EditorBridge.findFileObject(resolvedFileName, debugger);
                             if (src_fo != null && src_fo.isValid()) {
                                 try {
                                     String lineText = DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText();
@@ -391,7 +390,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
     private final List<DebuggerAnnotation> annotations = new ArrayList<DebuggerAnnotation>();
     
     private void updateAnnotations(boolean open) {
-        debugger.annotateDis(false);
+        debugger.annotateDis(open);
         for (DebuggerAnnotation debuggerAnnotation : annotations) {
             debuggerAnnotation.detach();
         }
@@ -437,27 +436,35 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         }
 
         if (!curAddress.equals(address)) {
-            requestMode = RequestMode.FILE;
-        }
-
-        if (requestMode == RequestMode.NONE) {
+            requestMode = withSource ? RequestMode.FILE_SRC : RequestMode.FILE_NO_SRC;
+        } else if (requestMode == RequestMode.NONE) {
             return;
         }
 
         if (force || getAddressLine(curAddress) == -1) {
-            intFileName = null; //frame.getOriginalFullName();
+            intFileName = frame.getEngineFullName();
             resolvedFileName = frame.getFullPath();
-            if ((intFileName == null || intFileName.length() == 0) && requestMode == RequestMode.FILE) {
-                requestMode = RequestMode.ADDRESS;
+            if ((intFileName == null || intFileName.length() == 0) &&
+                    (requestMode == RequestMode.FILE_SRC || requestMode == RequestMode.FILE_NO_SRC)) {
+                requestMode = withSource ? RequestMode.ADDRESS_SRC : RequestMode.ADDRESS_NO_SRC;
             }
             switch (requestMode) {
-                case FILE:
-                    //debugger.getGdbProxy().data_disassemble(intFileName, frame.getLineNo(), withSource);
-                    debugger.disController().requestDis();
-                    requestMode = RequestMode.ADDRESS;
+                case FILE_SRC:
+                    debugger.disController().requestDis(withSource);
+                    requestMode = RequestMode.FILE_NO_SRC;
                     break;
-                case ADDRESS:
-                    debugger.disController().requestDis();
+                case FILE_NO_SRC:
+                    //debugger.getGdbProxy().data_disassemble(intFileName, frame.getLineNo(), withSource);
+                    debugger.disController().requestDis(withSource);
+                    requestMode = RequestMode.ADDRESS_SRC;
+                    break;
+                case ADDRESS_SRC:
+                    debugger.disController().requestDis("$pc", 100, withSource); //NOI18N
+                    //debugger.getGdbProxy().data_disassemble(1000, withSource);
+                    requestMode = RequestMode.ADDRESS_NO_SRC;
+                    break;
+                case ADDRESS_NO_SRC:
+                    debugger.disController().requestDis("$pc", 100, withSource); //NOI18N
                     //debugger.getGdbProxy().data_disassemble(1000, withSource);
                     requestMode = RequestMode.NONE;
                     break;
@@ -541,7 +548,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         synchronized (lines) {
             for (Line line : lines) {
                 try {
-                    if (Long.decode(line.address) == address) {
+                    if (Address.parseAddr(line.address) == address) {
                         return line.idx;
                     }
                 } catch (NumberFormatException e) {
@@ -593,7 +600,11 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         @Override
         public String toString() {
             //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
-            return function + "+" + offset + ": " + instruction; // NOI18N
+            if (!function.isEmpty()) {
+                return function + "+" + offset + ": " + instruction; // NOI18N
+            } else {
+                return address + ": " + instruction; // NOI18N
+            }
         }
     }
     

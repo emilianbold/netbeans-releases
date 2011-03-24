@@ -45,12 +45,15 @@ package org.netbeans.modules.git.ui.repository;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -64,28 +67,34 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
+import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -116,6 +125,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_BRANCHES_LOCAL,
         DISPLAY_BRANCHES_REMOTE,
         DISPLAY_COMMIT_IDS,
+        DISPLAY_REMOTES,
         DISPLAY_REVISIONS,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
@@ -277,8 +287,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
     private abstract class RepositoryBrowserNode extends AbstractNode {
-
+        
         protected RepositoryBrowserNode (Children children) {
             this(children, null);
         }
@@ -294,6 +305,54 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         protected Action[] getPopupActions (boolean context) {
             return new Action[0];
+        }
+        
+        protected Image getFolderIcon (int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                img = findIcon("Nb.Explorer.Folder.icon", "Tree.closedIcon"); //NOI18N
+            }
+            if (img == null) {
+                img = super.getIcon(type);
+            }
+            return img;
+        }
+
+        protected Image getOpenedFolderIcon (int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                img = findIcon("Nb.Explorer.Folder.openedIcon", "Tree.openIcon"); //NOI18N
+            }
+            if (img == null) {
+                img = super.getOpenedIcon(type);
+            }
+            return img;
+        }
+
+        private Image findIcon (String key1, String key2) {
+            Image img = cachedIcons.containsKey(key1) ? cachedIcons.get(key1) : null;
+            if (img == null) {
+                img = findIcon(key1);
+                if (img == null) {
+                    img = findIcon(key2);
+                }
+                cachedIcons.put(key1, img);
+            }
+            return img;
+        }
+
+        private Image findIcon (String key) {
+            Object obj = UIManager.get(key);
+            if (obj instanceof Image) {
+                return (Image)obj;
+            }
+
+            if (obj instanceof Icon) {
+                Icon icon = (Icon)obj;
+                return ImageUtilities.icon2Image(icon);
+            }
+
+            return null;
         }
 
     }
@@ -351,8 +410,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final File repository;
 
         public RepositoryNode (final File repository, RepositoryInfo info) {
-            super(new RepositoryChildren());
+            super(new RepositoryChildren(), Lookups.fixed(repository));
             this.repository = repository;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/repository.png"); //NOI18N
             if (info == null) {
                 setDisplayName(repository.getName());
                 RP.post(new Runnable () {
@@ -376,8 +436,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (branch != null) {
                 branchLabel = branch.getName();
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
-                    // not on a branch, show also commit id
-                    branchLabel += " " + branch.getId(); // NOI18N
+                    branchLabel = branch.getId();
+                    if (branchLabel.length() > 10) {
+                        branchLabel = branchLabel.substring(0, 10) + "..."; //NOI18N
+                    }
                 }
             }
             GitRepositoryState repositoryState = info.getRepositoryState();
@@ -404,6 +466,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public File getRepository() {
             return repository;
         }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            return new Action[] {
+                SystemAction.get(FetchAction.class)
+            };
+        }
     }
 
     private class RepositoryChildren extends Children.Keys<AbstractNode> {
@@ -421,6 +490,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
                 if (options.contains(Option.DISPLAY_TAGS)) {
                     keys.add(new TagsNode(((RepositoryNode) getNode()).getRepository()));
+                }
+                if (options.contains(Option.DISPLAY_REMOTES)) {
+                    keys.add(new RemotesNode(((RepositoryNode) getNode()).getRepository()));
                 }
                 setKeys(keys);
             }
@@ -444,6 +516,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         public BranchesTopNode (File repository) {
             super(new BranchesTopChildren(repository));
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branches.png"); //NOI18N
         }
 
         @Override
@@ -604,6 +677,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String getDisplayName () {
             return getName();
         }
+
+        @Override
+        public Image getIcon (int type) {
+            return getFolderIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon (int type) {
+            return getOpenedFolderIcon(type);
+        }
     }
 
     private class BranchesChildren extends Children.Keys<GitBranch> {
@@ -658,6 +741,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
             branchName = branch.getName();
             branchId = branch.getId();
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
             info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
                 @Override
@@ -700,11 +784,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         private void refreshActiveBranch (GitBranch activeBranch) {
             String oldHtmlName = getHtmlDisplayName();
+            boolean oldActive = active;
             if (activeBranch.getName().equals(branchName)) {
                 active = true;
                 this.branchId = activeBranch.getId();
             } else {
                 active = false;
+            }
+            if (active != oldActive) {
+                setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/" + (active ? "active_branch" : "branch") + ".png"); //NOI18N
             }
             String newHtmlName = getHtmlDisplayName();
             if (!oldHtmlName.equals(newHtmlName)) {
@@ -767,6 +855,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         public TagsNode (File repository) {
             super(Children.LEAF);
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tags.png"); //NOI18N
             assert repository != null;
         }
 
@@ -782,6 +871,199 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="remotes">
+    private class RemotesNode extends RepositoryBrowserNode {
+
+        public RemotesNode (File repository) {
+            super(new AllRemotesChildren(repository), Lookups.fixed(repository));
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/repository.png"); //NOI18N
+        }
+
+        @Override
+        public String getDisplayName () {
+            return getName();
+        }
+
+        @Override
+        public String getName () {
+            return NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemotesNode.name"); //NOI18N
+        }
+    }
+
+    private class AllRemotesChildren extends Children.Keys<GitRemoteConfig> implements PropertyChangeListener {
+        private final File repository;
+        private boolean refreshing;
+
+        private AllRemotesChildren (File repository) {
+            this.repository = repository;
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+        }
+
+        @Override
+        protected void addNotify () {
+            super.addNotify();
+            refreshRemotes();
+        }
+
+        private void refreshRemotes () {
+            new GitProgressSupport.NoOutputLogging() {
+                @Override
+                protected void perform () {
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    refreshing = true;
+                    try {
+                        info.refreshRemotes();
+                        java.util.Map<String, GitRemoteConfig> remotes = info.getRemotes();
+                        if (!isCanceled()) {
+                            refreshRemotes(remotes);
+                        }
+                    } finally {
+                        refreshing = false;
+                    }
+                }
+            }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingRemotes")); //NOI18N
+        }
+        
+        private void refreshRemotes (java.util.Map<String, GitRemoteConfig> remotes) {
+            setKeys(remotes.values());
+        }
+
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            if (!refreshing && RepositoryInfo.PROPERTY_REMOTES.equals(evt.getPropertyName())) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        refreshRemotes((java.util.Map<String, GitRemoteConfig>) evt.getNewValue());
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected Node[] createNodes (GitRemoteConfig key) {
+            return new Node[] { new RemoteNode(repository, key) };
+        }
+    }
+
+    private class RemoteNode extends RepositoryBrowserNode {
+        private final String remoteName;
+        private final File repository;
+
+        public RemoteNode (File repository, GitRemoteConfig remote) {
+            super(new RemoteChildren(remote), Lookups.fixed(remote, repository));
+            this.repository = repository;
+            this.remoteName = remote.getRemoteName();
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/remote.png"); //NOI18N
+        }
+
+        @Override
+        public String getName () {
+            return remoteName;
+        }
+        
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    FetchAction action = SystemAction.get(FetchAction.class);
+                    action.fetch(repository, getLookup().lookup(GitRemoteConfig.class));
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    new RemoveRemoteConfig().removeRemote(repository, remoteName);
+                }
+            });
+            return actions.toArray(new Action[actions.size()]);
+        }
+    }
+
+    private class RemoteUri {
+        final String uri;
+        final boolean push;
+
+        public RemoteUri (String url, boolean push) {
+            this.uri = url;
+            this.push = push;
+        }
+    }
+    
+    private class RemoteChildren extends Children.Keys<RemoteUri> {
+        private final GitRemoteConfig remote;
+        
+        public RemoteChildren (GitRemoteConfig remote) {
+            this.remote = remote;
+        }
+
+        @Override
+        protected void addNotify () {
+            super.addNotify();
+            ArrayList<RemoteUri> urls = new ArrayList<RemoteUri>(remote.getPushUris().size() + remote.getUris().size());
+            for (String s : remote.getUris()) {
+                urls.add(new RemoteUri(s, false));
+            }
+            if (remote.getPushUris().isEmpty() && !remote.getUris().isEmpty()) {
+                urls.add(new RemoteUri(remote.getUris().get(0), true));
+            } else {
+                for (String s : remote.getPushUris()) {
+                    urls.add(new RemoteUri(s, true));
+                }
+            }
+            Collections.sort(urls, new Comparator<RemoteUri>() {
+                @Override
+                public int compare (RemoteUri o1, RemoteUri o2) {
+                    return o1.uri.compareTo(o2.uri);
+                }
+            });
+            setKeys(urls);
+        }
+        
+        @Override
+        protected Node[] createNodes (RemoteUri key) {
+            return new Node[] { new RemoteUriNode(key, remote) };
+        }
+    }
+    
+    private class RemoteUriNode extends RepositoryBrowserNode {
+        private final RemoteUri uri;
+        private final GitRemoteConfig remote;
+
+        public RemoteUriNode (RemoteUri uri, GitRemoteConfig remote) {
+            super(Children.LEAF);
+            this.uri = uri;
+            this.remote = remote;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/" + (uri.push ? "push" : "fetch") + ".png"); //NOI18N
+        }
+
+        @Override
+        public String getName () {
+            return uri.uri;
+        }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            if (uri.push) {
+                // push action
+            } else {
+                actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        FetchAction action = SystemAction.get(FetchAction.class);
+                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs());
+                    }
+                });
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+    }
+    //</editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

@@ -159,7 +159,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         Parameters.notNull("file", file);
 
         for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
                 return FileType.INTERNAL;
             }
         }

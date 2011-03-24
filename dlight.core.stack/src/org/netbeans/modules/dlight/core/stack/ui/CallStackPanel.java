@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.awt.BorderLayout;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -63,7 +62,7 @@ public final class CallStackPanel extends JPanel implements ExplorerManager.Prov
         treeView.setRootVisible(isRootVisible);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(treeView);
-        manager.setRootContext(new StackRootNode(lineInfo, rootName, stack, false));//NOI18N
+        manager.setRootContext(new StackRootNode(lineInfo, rootName, stack, false, null));//NOI18N
     }
 
     

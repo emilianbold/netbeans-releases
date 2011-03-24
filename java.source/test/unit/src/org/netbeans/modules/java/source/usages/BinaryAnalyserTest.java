@@ -98,7 +98,7 @@ public class BinaryAnalyserTest extends NbTestCase {
                     }
                     @Override
                     public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
-                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
+                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(false),true);
                     }
                     @Override
                     public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {

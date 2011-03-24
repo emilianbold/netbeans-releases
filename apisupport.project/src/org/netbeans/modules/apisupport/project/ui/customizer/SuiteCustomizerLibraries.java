@@ -1417,8 +1417,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private static final class SuiteModule extends AbstractUniverseModule {
         private final NbModuleProject project;
         private final Set<Dependency> dependencies;
-        public SuiteModule(NbModuleProject project) {
-            super(ManifestManager.getInstance(project.getManifest(), false));
+        public SuiteModule(NbModuleProject project, ManifestManager mm) {
+            super(mm);
             this.project = project;
             dependencies = new HashSet<Dependency>();
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
@@ -1490,7 +1490,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             Set<NbModuleProject> suiteModules, Set<ModuleEntry> extraBinaryModules) throws IOException {
         Set<UniverseModule> universeModules = new LinkedHashSet<UniverseModule>();
         for (NbModuleProject p : suiteModules) {
-            universeModules.add(new SuiteModule(p));
+            ManifestManager mm = ManifestManager.getInstance(p.getManifest(), false);
+            if (mm != null) {
+                universeModules.add(new SuiteModule(p, mm));
+            }
         }
         for (ModuleEntry e : platformModules) {
             universeModules.add(new PlatformModule(e));

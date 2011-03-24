@@ -48,12 +48,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.apache.tools.ant.Project;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -236,4 +238,71 @@ public class MakeNBMTest extends TestBase {
         
         return where;
     }
+
+    public void testOmitExternalFiles() throws Exception { // #195041
+        Project p = new Project();
+        p.init();
+        MakeNBM task = new MakeNBM();
+        task.setProject(p);
+        clearWorkDir();
+        File w = getWorkDir();
+        File cluster = new File(w, "cluster");
+        task.setProductDir(cluster);
+        File modules = new File(cluster, "modules");
+        if (!modules.mkdirs()) {
+            throw new IOException();
+        }
+        Manifest mani = new Manifest();
+        mani.getMainAttributes().putValue("Manifest-Version", "1.0");
+        mani.getMainAttributes().putValue("OpenIDE-Module", "mod");
+        OutputStream os = new FileOutputStream(new File(modules, "mod.jar"));
+        try {
+            JarOutputStream jos = new JarOutputStream(os, mani);
+            jos.finish();
+            jos.close();
+        } finally {
+            os.close();
+        }
+        task.setModule("modules/mod.jar");
+        File nbm = new File(w, "mod.nbm");
+        task.setFile(nbm);
+        File stuff = new File(cluster, "stuff");
+        if (!stuff.mkdir()) {
+            throw new IOException();
+        }
+        os = new FileOutputStream(new File(stuff, "illegal"));
+        try {
+            os.write("actual content".getBytes());
+        } finally {
+            os.close();
+        }
+        os = new FileOutputStream(new File(stuff, "illegal.external"));
+        try {
+            os.write("URL:http://nowhere.net/illegal\n".getBytes());
+        } finally {
+            os.close();
+        }
+        File tracking = new File(cluster, "update_tracking");
+        if (!tracking.mkdir()) {
+            throw new IOException();
+        }
+        os = new FileOutputStream(new File(tracking, "mod.xml"));
+        try {
+            os.write("<module codename='mod'><module_version><file name='modules/mod.jar'/><file name='stuff/illegal'/><file name='stuff/illegal.external'/></module_version></module>".getBytes());
+        } finally {
+            os.close();
+        }
+        task.execute();
+        assertTrue(nbm.isFile());
+        JarFile jf = new JarFile(nbm);
+        try {
+            JarEntry entry = jf.getJarEntry("netbeans/stuff/illegal.external");
+            assertNotNull(entry);
+            assertEquals(31, entry.getSize());
+            assertNull(jf.getEntry("netbeans/stuff/illegal"));
+        } finally {
+            jf.close();
+        }
+    }
+
 }

@@ -102,7 +102,7 @@ public class JGitMergeResult implements GitMergeResult {
         ObjectId[] mergedObjectIds = result.getMergedCommits();
         String[] commits = new String[mergedObjectIds.length];
         for (int i = 0; i < mergedObjectIds.length; ++i) {
-            commits[i] = mergedObjectIds[i].getName();
+            commits[i] = ObjectId.toString(mergedObjectIds[i]);
         }
         return commits;
     }

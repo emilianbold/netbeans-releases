@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -62,8 +61,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
@@ -148,7 +150,12 @@ public class ProjectSupport {
             case REL:
                 return CndPathUtilitities.toRelativePath(base, path);
             case ABS:
-                return CndPathUtilitities.toAbsolutePath(base, path);
+                try {
+                    return CndFileUtils.getCanonicalPath(path);
+                } catch (IOException e) {
+                    e.printStackTrace(System.err);
+                    return path.getPath();
+                }
             default:
                 throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
         }
@@ -188,9 +195,20 @@ public class ProjectSupport {
         if (execEnv.isRemote()) {
             if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
-                return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+                return mapper.getRemotePath(localDir, false);
             } else {
-                return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
+                CndUtils.assertAbsolutePathInConsole(localDir);
+                if (CndPathUtilitities.isPathAbsolute(localDir)) {
+                    return localDir;
+                } else {
+                    RemoteProject remoteProject = pae.getProject().getLookup().lookup(RemoteProject.class);
+                    CndUtils.assertNotNullInConsole(pae, localDir);
+                    if (remoteProject != null) {
+                        localDir = remoteProject.getSourceBaseDir() + '/' + localDir;
+                        localDir = FileSystemProvider.normalizeAbsolutePath(localDir, execEnv);
+                        return localDir;
+                    }
+                }
             }
         }
         return localDir;

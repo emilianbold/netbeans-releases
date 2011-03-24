@@ -221,25 +221,27 @@ public class CommandRunner extends BasicTask<OperationState> {
      * @return String array of names of deployed applications.
      */
     public Map<String, List<AppDesc>> getApplications(String container) {
+        CommandRunner inner = new CommandRunner(isReallyRunning, cf, ip, new OperationStateListener() {
+
+            @Override
+            public void operationStateChanged(OperationState newState, String message) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        });
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
             Map<String, List<String>> apps = Collections.emptyMap();
             Commands.ListComponentsCommand cmd = new Commands.ListComponentsCommand(container);
-            serverCmd = cmd;
-            Future<OperationState> task = executor().submit(this);
-            OperationState state = task.get();
+            OperationState state = inner.execute(cmd).get();
             if (state == OperationState.COMPLETED) {
                 apps = cmd.getApplicationMap();
             }
             ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*");
-            serverCmd = getCmd;
-            task = executor().submit(this);
-            state = task.get();
+            state = inner.execute(getCmd).get();
             if (state == OperationState.COMPLETED) {
                 ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.server.application-ref.*");
-                serverCmd = getRefs;
-                task = executor().submit(this);
-                state = task.get();
+                state = inner.execute(getRefs).get();
                 if (OperationState.COMPLETED == state) {
                     result = processApplications(apps, getCmd.getData(),getRefs.getData());
                 }
@@ -279,6 +281,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                 }
                 if (path.startsWith("file:")) {  // NOI18N
                     path = path.substring(5);
+                    path = (new File(path)).getAbsolutePath();
                 }
 
                 String enabledKey = "servers.server.server.application-ref."+name+".enabled";

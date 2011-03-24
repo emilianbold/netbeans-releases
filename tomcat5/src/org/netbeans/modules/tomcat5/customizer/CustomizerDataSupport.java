@@ -342,6 +342,11 @@ public class CustomizerDataSupport {
         });
     }
     
+
+    public boolean isTomcat70() {
+        return tm.isTomcat70();
+    }
+
     /** Update the jvm model */
     public void loadJvmModel() {
         JavaPlatformManager jpm = JavaPlatformManager.getDefault();

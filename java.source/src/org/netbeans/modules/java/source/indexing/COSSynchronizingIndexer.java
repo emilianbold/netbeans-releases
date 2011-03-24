@@ -95,7 +95,9 @@ public class COSSynchronizingIndexer extends CustomIndexer {
         try {
             File sourceRootFile = new File(context.getRootURI().toURI());
 
-            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), sourceRootFile, Collections.<File>emptyList(), updated, true);
+            if (!context.checkForEditorModifications()) { // #187514, see also #152222 and JavaCustomIndexer
+                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), sourceRootFile, Collections.<File>emptyList(), updated, true);
+            }
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         }

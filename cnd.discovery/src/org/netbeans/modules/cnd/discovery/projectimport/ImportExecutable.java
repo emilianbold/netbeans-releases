@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applic
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -199,7 +199,8 @@ public class ImportExecutable implements PropertyChangeListener {
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams.setOpenFlag(false)
                  .setConfiguration(conf)
-                 .setImportantFiles(Collections.<String>singletonList(binaryPath).iterator());
+                 .setImportantFiles(Collections.<String>singletonList(binaryPath).iterator())
+                 .setMakefileName(""); //NOI18N
         Boolean trueSourceRoot = (Boolean) map.get(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT);
         if (trueSourceRoot != null && trueSourceRoot.booleanValue()) {
             List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();

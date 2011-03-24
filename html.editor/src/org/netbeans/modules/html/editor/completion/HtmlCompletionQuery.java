@@ -121,7 +121,11 @@ public class HtmlCompletionQuery extends UserTask {
             return;
         }
         final Snapshot snapshot = parserResult.getSnapshot();
-        final Document doc = snapshot.getSource().getDocument(false);
+        final Document doc = snapshot.getSource().getDocument(true);
+        if(doc == null) {
+            return ; //this still may happen under some circumstances (deleted file, UserQuestionException etc.)
+        }
+        
         doc.render(new Runnable() {
 
             @Override

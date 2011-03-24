@@ -46,7 +46,6 @@ package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -57,16 +56,13 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Start action starts the server in the normal mode.
  *
  * @author sherold
  */
-public class StartAction extends NodeAction {
+public class StartAction extends ControlAction {
     
     public String getName() {
         return NbBundle.getMessage(StartAction.class, "LBL_Start");
@@ -101,7 +97,7 @@ public class StartAction extends NodeAction {
         if (si != null) {
             si.setServerState(ServerInstance.STATE_WAITING);
 
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     String title = NbBundle.getMessage(StartAction.class, "LBL_Starting", si.getDisplayName());
                     ProgressUI progressUI = new ProgressUI(title, false);

@@ -179,17 +179,17 @@ public class StringBuilderAppendTest extends TestBase {
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
-                       "        sb.append(\"a\" + d);\n" +
+                       "        sb.append(\"a\" + CONST);\n" +
                        "    }\n" +
                        "    private static String CONST = \"d\";\n" +
                        "}\n",
-                       "4:18-4:25:verifier:String concatenation in StringBuffer.append",
+                       "4:18-4:29:verifier:String concatenation in StringBuffer.append",
                        "FixImpl",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    private void test(int a, int b) {\n" +
                         "        StringBuffer sb = new StringBuffer();\n" +
-                        "        sb.append(\"a\").append(d);\n" +
+                        "        sb.append(\"a\").append(CONST);\n" +
                         "    }\n" +
                         "    private static String CONST = \"d\";\n" +
                         "}\n").replaceAll("[ \n\t]+", " "));

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
-import java.lang.String;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
@@ -59,9 +58,9 @@ public interface Controller {
     public void goToSource();
 
     // ask for disassembly for current visiting location
-    public void requestDis();
+    public void requestDis(boolean withSource);
 
     // ask for disassembly for the specified range (raw ... no srclines)
-    public void requestDis(String start, int count);
+    public void requestDis(String start, int count, boolean withSource);
 
 }

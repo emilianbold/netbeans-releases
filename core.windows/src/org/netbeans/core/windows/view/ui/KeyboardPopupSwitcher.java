@@ -174,7 +174,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             kev.consume();
             return true;
         }
-        if (kev.getKeyCode() == KeyEvent.VK_CONTROL && KeyboardPopupSwitcher.isAlive()) {
+        if (kev.getKeyCode() == releaseKey && KeyboardPopupSwitcher.isAlive()) {
             KeyboardPopupSwitcher.processInterruption(kev);
             return true;
         }

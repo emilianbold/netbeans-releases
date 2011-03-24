@@ -66,6 +66,7 @@ import java.util.WeakHashMap;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.netbeans.modules.websvc.api.wseditor.WSEditorProviderRegistry;
@@ -102,6 +103,18 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
     }
     
     private void openEditor() {
+        try {
+            doOpenEditor();
+        }
+        catch( InvalidDataException ex ){
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    ex.getLocalizedMessage(), 
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify( descriptor );
+        }
+    }
+    
+    private void doOpenEditor() throws InvalidDataException {
         final JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
         final Cursor origCursor = mainWin.getGlassPane().getCursor();
         mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

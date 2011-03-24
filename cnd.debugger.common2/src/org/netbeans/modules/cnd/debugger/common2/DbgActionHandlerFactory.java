@@ -58,7 +58,9 @@ public class DbgActionHandlerFactory implements ProjectActionHandlerFactory {
     @Override
     public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
         if (type != ProjectActionEvent.PredefinedType.DEBUG &&
-            type != ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
+            type != ProjectActionEvent.PredefinedType.DEBUG_STEPINTO &&
+            type != ProjectActionEvent.PredefinedType.DEBUG_TEST &&
+            type != ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
             return false;
         }
         if (conf instanceof MakeConfiguration) {

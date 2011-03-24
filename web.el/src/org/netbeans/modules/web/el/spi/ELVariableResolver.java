@@ -45,6 +45,7 @@ package org.netbeans.modules.web.el.spi;
 import java.util.List;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 public interface ELVariableResolver {
 
@@ -65,13 +66,13 @@ public interface ELVariableResolver {
      */
     String getBeanClass(String beanName, FileObject context);
 
-    /**
-     * Gets the expression referred by the variable at the given {@code offset}.
-     * @param snapshot
-     * @param offset
-     * @return the referred expression or {@code null}.
-     */
-    String getReferredExpression(Snapshot snapshot, int offset);
+//    /**
+//     * Gets the expression referred by the variable at the given {@code offset}.
+//     * @param snapshot
+//     * @param offset
+//     * @return the referred expression or {@code null}.
+//     */
+//    String getReferredExpression(Snapshot snapshot, int offset);
 
     /**
      * Gets the names of managed beans and variables.
@@ -94,16 +95,42 @@ public interface ELVariableResolver {
      * @param context
      * @return a list of bean infos; never {@code null}.
      */
-    List<VariableInfo> getBeansInScope(String scope, FileObject context);
+    List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot);
 
+    List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot);
+
+    
     public static final class VariableInfo {
 
         public final String name;
         public final String clazz;
+        public final String expression;
 
-        public VariableInfo(String name, String clazz) {
+        public static VariableInfo createResolvedVariable(String name, String clazz) {
+            Parameters.notNull("name", name); //NOI18N
+            Parameters.notNull("clazz", clazz); //NOI18N
+            
+            return new VariableInfo(name, clazz, null);
+        }
+        
+        public static VariableInfo createUnresolvedVariable(String name, String expression) {
+            Parameters.notNull("name", name); //NOI18N
+            Parameters.notNull("expression", expression); //NOI18N
+
+            return new VariableInfo(name, null, expression);
+        }
+
+        public static VariableInfo createVariable(String name) {
+            Parameters.notNull("name", name); //NOI18N
+
+            return new VariableInfo(name, null, null);
+        }
+
+        private VariableInfo(String name, String clazz, String expression) {
             this.name = name;
             this.clazz = clazz;
+            this.expression = expression;
         }
+        
     }
 }

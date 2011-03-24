@@ -189,6 +189,60 @@ public class FileObjectCrawlerTest extends NbTestCase {
         assertCollectedFiles("All files in " + root + " should be deleted", crawler3.getDeletedResources());
     }
 
+    public void testAllFilesIndexing() throws Exception {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/pckg1/file1.txt",
+                "org/pckg1/pckg2/file1.txt",
+                "org/pckg1/pckg2/file2.txt",
+                "org/pckg2/"
+        };
+        populateFolderStructure(root, paths);
+
+        //First scan with timestamps enabled (project open)
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR);
+        assertCollectedFiles("Wrong all files collected", crawler1.getAllResources(), paths);
+        assertTrue(crawler1.getAllResources() != crawler1.getResources());
+        assertEquals(crawler1.getAllResources().size(), crawler1.getResources().size());
+        assertCollectedFiles("Wrong files collected", crawler1.getResources(), paths);
+        crawler1.storeTimestamps();
+
+        //Second scan with timestamps enabled (project reopen)
+        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR);
+        assertCollectedFiles("Wrong all files collected", crawler2.getAllResources(), paths);
+        assertTrue(crawler2.getAllResources() != crawler2.getResources());
+        assertEquals(0, crawler2.getResources().size());
+        crawler2.storeTimestamps();
+
+        //Rescan of root with force == false
+        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR);
+        assertCollectedFiles("Wrong all files collected", crawler3.getAllResources(), paths);
+        assertTrue(crawler3.getAllResources() != crawler3.getResources());
+        assertEquals(0, crawler3.getResources().size());
+        crawler3.storeTimestamps();
+
+        //Rescan of root with force == true
+        FileObjectCrawler crawler4 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("Wrong all files collected", crawler4.getAllResources(), paths);
+        assertTrue(crawler4.getAllResources() == crawler4.getResources());
+        crawler4.storeTimestamps();
+
+        //Rescan of specified files (no timestamps)
+        final FileObject rootFo = FileUtil.toFileObject(root);
+        final FileObject expFile1 = rootFo.getFileObject("org/pckg1/pckg2/file1.txt");
+        final FileObject expFile2 = rootFo.getFileObject("org/pckg1/pckg2/file2.txt");
+        FileObjectCrawler crawler5 = new FileObjectCrawler(rootFo, new FileObject[] {expFile1, expFile2}, false, null, CR);
+        assertNull(crawler5.getAllResources());
+        assertCollectedFiles("Wrong files collected", crawler5.getResources(), new String[] {"org/pckg1/pckg2/file1.txt","org/pckg1/pckg2/file2.txt"});
+        crawler5.storeTimestamps();
+
+        //Rescan of specified files with timestamps
+        FileObjectCrawler crawler6 = new FileObjectCrawler(rootFo, new FileObject[] {expFile1, expFile2}, true, null, CR);
+        assertNull(crawler6.getAllResources());
+        assertEquals(0, crawler6.getResources().size());
+        crawler6.storeTimestamps();
+    }
+
     protected void assertCollectedFiles(String message, Collection<IndexableImpl> resources, String... expectedPaths) throws IOException {
         Set<String> collectedPaths = new HashSet<String>();
         for(IndexableImpl ii : resources) {

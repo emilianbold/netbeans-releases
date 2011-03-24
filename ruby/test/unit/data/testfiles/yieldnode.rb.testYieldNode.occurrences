@@ -1,2 +1,0 @@
-                |>MARK_OCCURRENCES:yield |>MARK_OCCURRENCES:component.first<|
-                |>MARK_OCCURRENCES:raise<| Cyclic.new("topological sort failed: #{component.inspect}")

@@ -94,7 +94,7 @@ public class IOPack {
     }
 
     public static TermComponent makeConsole(int flags) {
-	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.getDefault(), flags);
+	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.findInstance(), flags);
     }
 
     public String[] getIOFiles() {
@@ -131,8 +131,10 @@ public class IOPack {
         InputOutput io = ndi.getInputOutput();
         IOPack res;
         final ExecutionEnvironment exEnv = executor.getExecutionEnvironment();
-
-        if (DebuggerManager.isStandalone()) {
+        
+        if (ndi.isClone()) { // follow fork clone
+            res = new IOPack(console, exEnv, false);
+        } else if (DebuggerManager.isStandalone()) {
             TermComponent pio;
             if (remote || Utilities.isWindows()) {
                 pio = PioPack.makePio(0);

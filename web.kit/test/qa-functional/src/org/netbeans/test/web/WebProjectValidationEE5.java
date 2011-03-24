@@ -71,7 +71,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationEE5.class);
-        conf = addServerTests(Server.GLASSFISH_V3, conf,
+        conf = addServerTests(Server.GLASSFISH, conf,
               "testPreconditions", "testNewWebProject", "testRedeployProject",
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",

@@ -104,6 +104,9 @@ public final class StandardLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern CWD_LEAVE = Pattern.compile(".*Leaving directory [`'\"]?([^`'\"]+)(['\"]|$|\\.\\.\\.$)"); // NOI18N
+
+    /** Hack for #194151. */
+    public static final String USING_STANDARD_REDIRECTOR = "USING_STANDARD_REDIRECTOR";
     
     /**
      * Data stored in the session.
@@ -407,6 +410,7 @@ public final class StandardLogger extends AntLogger {
             }
         }
         if ("java".equals(event.getTaskName()) &&
+                event.getProperty(USING_STANDARD_REDIRECTOR) == null &&
                 (event.getLogLevel() == AntEvent.LOG_WARN || event.getLogLevel() == AntEvent.LOG_INFO)) {
             // stdout and stderr is printed directly for java
             return;

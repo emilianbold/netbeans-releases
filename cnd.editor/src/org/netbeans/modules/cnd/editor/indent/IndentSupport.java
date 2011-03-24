@@ -633,41 +633,46 @@ public class IndentSupport {
      */
     protected TokenItem findClassifier(TokenItem visibilityToken) {
         int braceDepth = 1; // depth of the braces - need one more left
-        TokenItem classifierToken = visibilityToken;
+        TokenItem previous = visibilityToken;
         while (true) {
-            classifierToken = findStatement(classifierToken);
-            if (classifierToken == null) {
-                return null;
-            }
-
-            TokenId classifierTokenID = classifierToken.getTokenID();
-            if(classifierTokenID instanceof CppTokenId) {
-                switch ((CppTokenId)classifierTokenID) {
-                    case LBRACE:
-                        if (--braceDepth < 0) {
-                            return null; // no corresponding right brace
-                        }
-                        if (braceDepth == 0){
-                            while ((classifierToken = classifierToken.getPrevious()) != null) {
-                                classifierTokenID = classifierToken.getTokenID();
-                                if(classifierTokenID instanceof CppTokenId) {
-                                    switch ((CppTokenId)classifierTokenID) {
-                                        case CLASS:
-                                        case STRUCT:
-                                        case ENUM:
-                                        case UNION:
+            TokenId previousID = previous.getTokenID();
+            switch ((CppTokenId)previousID) {
+                case LBRACE:
+                    if (--braceDepth < 0) {
+                        return null; // no corresponding right brace
+                    }
+                    if (braceDepth == 0){
+                        TokenItem classifierToken = findStatementStart(previous);
+                        if (classifierToken != null) {
+                            if (classifierToken.getTokenID() == CppTokenId.CLASS ||
+                                classifierToken.getTokenID() == CppTokenId.STRUCT ||
+                                classifierToken.getTokenID() == CppTokenId.UNION) {
+                                TokenItem next = previous;
+                                while(true) {
+                                    TokenId nextID = next.getTokenID();
+                                    switch ((CppTokenId)nextID) {
+                                        case LPAREN:
+                                            return null;
+                                        case LBRACE:
                                             return classifierToken;
                                     }
+                                    next = next.getNext();
                                 }
                             }
+                        }
+                        if (classifierToken == null) {
                             return null;
                         }
-                        break;
+                    }
+                    break;
 
-                    case RBRACE:
-                        braceDepth++;
-                        break;
-                }
+                case RBRACE:
+                    braceDepth++;
+                    break;
+            }
+            previous = previous.getPrevious();
+            if (previous == null) {
+                return null;
             }
         }
     }
@@ -728,7 +733,17 @@ public class IndentSupport {
                     if (startItem.getTokenID() == CppTokenId.CLASS ||
                         startItem.getTokenID() == CppTokenId.STRUCT ||
                         startItem.getTokenID() == CppTokenId.UNION) {
-                        return true;
+                        TokenItem next = startItem;
+                        while(true) {
+                            TokenId nextID = next.getTokenID();
+                            switch ((CppTokenId)nextID) {
+                                case LPAREN:
+                                    return false;
+                                case LBRACE:
+                                    return true;
+                            }
+                            next = next.getNext();
+                        }
                     }
                 }
             } else if (itm != null && itm.getTokenID() == CppTokenId.SEMICOLON) {
@@ -881,6 +896,9 @@ public class IndentSupport {
                     case ENUM:
                     case VIRTUAL:
                     case INLINE:
+                    case _INLINE:
+                    case __INLINE:
+                    case __INLINE__:
                     case LBRACE:
                         return false;
                     case COLON:
