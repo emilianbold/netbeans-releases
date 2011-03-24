@@ -1363,8 +1363,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
         GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[]{cp});
         handler.await();
+        assertNotNull(ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
         assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        handler.reset();
         GlobalPathRegistry.getDefault().unregister(SOURCES, new ClassPath[]{cp});
+        handler.await();
         assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
 
