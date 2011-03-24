@@ -651,7 +651,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // fire all event under lock
             if (changed) {
                 for (FileObject deleted : filesToFireDeleted) {
-                    fireFileDeletedEvent(getListeners(), new FileEvent(deleted));
+                    fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
