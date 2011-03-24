@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -67,6 +68,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -88,6 +91,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class AutoUpdate extends Task {
     private List<Modules> modules = new ArrayList<Modules>();
     private FileSet nbmSet;
+    private File download;
     private File dir;
     private File cluster;
     private URL catalog;
@@ -112,6 +116,10 @@ public class AutoUpdate extends Task {
     public void setToDir(File dir) {
         this.cluster = dir;
     }
+    
+    public void setDownloadDir(File dir) {
+        this.download = dir;
+    }
 
     /** Forces rewrite even the version of a module is not newer */
     public void setForce(boolean force) {
@@ -126,8 +134,14 @@ public class AutoUpdate extends Task {
 
     @Override
     public void execute() throws BuildException {
+        boolean downloadOnly = false;
         if ((dir != null) == (cluster != null)) {
-            throw new BuildException("Specify either todir or installdir");
+            if (dir == null && cluster == null && download != null) {
+                log("Going to download NBMs only to " + download);
+                downloadOnly = true;
+            } else {
+                throw new BuildException("Specify either todir or installdir");
+            }
         }
         Map<String, ModuleItem> units;
         if (catalog != null) {
@@ -194,7 +208,7 @@ public class AutoUpdate extends Task {
             boolean delete = false;
             File lastM = null;
             try {
-                if (uu.getURL().getProtocol().equals("file")) {
+                if (download == null && uu.getURL().getProtocol().equals("file")) {
                     try {
                         tmp = new File(uu.getURL().toURI());
                     } catch (URISyntaxException ex) {
@@ -206,9 +220,20 @@ public class AutoUpdate extends Task {
                 }
                 final String dash = uu.getCodeName().replace('.', '-');
                 if (tmp == null) {
-                    tmp = File.createTempFile(dash, ".nbm");
-                    tmp.deleteOnExit();
-                    delete = true;
+                    if (download != null) {
+                        tmp = new File(download, dash + ".nbm");
+                        String v = readVersion(tmp);
+                        if (v != null && !uu.isNewerThan(v)) {
+                            log("Version " + v + " of " + tmp + " is up to date", Project.MSG_VERBOSE);
+                            if (!force) {
+                                continue;
+                            }
+                        }
+                    } else {
+                        tmp = File.createTempFile(dash, ".nbm");
+                        tmp.deleteOnExit();
+                        delete = true;
+                    }
                     Get get = new Get();
                     get.setProject(getProject());
                     get.setTaskName("get:" + uu.getCodeName());
@@ -216,6 +241,9 @@ public class AutoUpdate extends Task {
                     get.setDest(tmp);
                     get.setVerbose(true);
                     get.execute();
+                }
+                if (downloadOnly) {
+                    continue;
                 }
 
                 File whereTo = dir != null ? new File(dir, uu.targetcluster) : cluster;
@@ -446,6 +474,24 @@ public class AutoUpdate extends Task {
             }
         }
         return all;
+    }
+    
+    private String readVersion(File nbm) {
+        try {
+            URL u = new URL("jar:" + nbm.toURI() + "!/Info/info.xml");
+            XPathFactory f = XPathFactory.newInstance();
+            final InputStream s = u.openStream();
+            InputSource is = new InputSource(s);
+            String res = f.newXPath().evaluate("module/manifest/@OpenIDE-Module-Specification-Version", is);
+            if (res.length() == 0) {
+                throw new IOException("Not found tag OpenIDE-Module-Specification-Version!");
+            }
+            s.close();
+            return res;
+        } catch (Exception ex) {
+            log("Cannot parse Info/info.xml from " + nbm, ex, Project.MSG_INFO);
+            return null;
+        }
     }
 
     private void parseVersion(final File config, final Map<String,List<String>> toAdd) throws Exception {

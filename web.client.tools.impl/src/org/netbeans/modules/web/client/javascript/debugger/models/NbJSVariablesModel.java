@@ -116,19 +116,26 @@ public class NbJSVariablesModel implements TreeModel, ExtendedNodeModel,
 
 		if (parent == ROOT) {
 		    if (selectedFrame != null) {
-		        return new Object[] {
-		                selectedFrame.getScope(),
-		                selectedFrame.getThis()
-		                };
+                        JSProperty thisProp = selectedFrame.getThis();
+                        if (thisProp != null) {
+                            return new Object[] {
+                                    selectedFrame.getScope(),
+                                    thisProp
+                                    };
+                        } else {
+                            return new Object[] {
+                                    selectedFrame.getScope()
+                                    };
+                        }
 		    }
 		    return EMPTY_OBJECT_ARRAY; 
 		} else if (parent instanceof JSProperty) {
 			JSProperty property = (JSProperty) parent;
 			JSValue value = property.getValue();
 			if (value instanceof JSObject) {
-				final JSObject object = (JSObject) value;
-				JSProperty[] properties  = object.getProperties();
-                return properties;
+                            final JSObject object = (JSObject) value;
+                            JSProperty[] properties  = object.getProperties();
+                            return properties;
 			}
 			return EMPTY_OBJECT_ARRAY;
 		} else {

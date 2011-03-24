@@ -353,19 +353,26 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
     public final void sendCaretToPos(int startPos, int endPos, boolean select) {
         inSendCaretToLine = true;
-        getCaret().setVisible(true);
-        getCaret().setSelectionVisible(true);
-        if (select) {
-            scrollTo(endPos);
-            getCaret().setDot(endPos);
-            getCaret().moveDot(startPos);
-            textView.repaint();
-        } else {
-            getCaret().setDot(startPos);
+        try {
+            getCaret().setVisible(true);
+            getCaret().setSelectionVisible(true);
+            if (select) {
+                scrollTo(endPos);
+                getCaret().setDot(endPos);
+                getCaret().moveDot(startPos);
+                textView.repaint();
+            } else {
+                getCaret().setDot(startPos);
+            }
+        } catch (Error sie) {
+            if (sie.getClass().getName().equals("javax.swing.text.StateInvariantError")) {
+                Exceptions.attachMessage(sie, "sendCaretToPos("+startPos+", "+endPos+", "+select+"), caret = "+getCaret()+", highlighter = "+textView.getHighlighter()+", document length = "+textView.getDocument().getLength());
+            }
+            Exceptions.printStackTrace(sie);
+        } finally {
+            locked = false;
+            inSendCaretToLine = false;
         }
-
-        locked = false;
-        inSendCaretToLine = false;
     }
 
     private boolean inSendCaretToLine = false;
@@ -376,23 +383,31 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             idx = lastLine;
         }
         inSendCaretToLine = true;
-        getCaret().setVisible(true);
-        getCaret().setSelectionVisible(true);
-        Element el = textView.getDocument().getDefaultRootElement().getElement(idx);
-        int position = el.getStartOffset();
-        if (select) {
-            getCaret().setDot(el.getEndOffset() - 1);
-            getCaret().moveDot(position);
-            textView.repaint();
-        } else {
-            getCaret().setDot(position);
-        }
+        try {
+            getCaret().setVisible(true);
+            getCaret().setSelectionVisible(true);
+            Element el = textView.getDocument().getDefaultRootElement().getElement(idx);
+            int position = el.getStartOffset();
+            if (select) {
+                getCaret().setDot(el.getEndOffset() - 1);
+                getCaret().moveDot(position);
+                textView.repaint();
+            } else {
+                getCaret().setDot(position);
+            }
 
-        if (!scrollToLine(idx + 3) && isScrollLocked()) {
-            lineToScroll = idx + 3;
+            if (!scrollToLine(idx + 3) && isScrollLocked()) {
+                lineToScroll = idx + 3;
+            }
+        } catch (Error sie) {
+            if (sie.getClass().getName().equals("javax.swing.text.StateInvariantError")) {
+                Exceptions.attachMessage(sie, "sendCaretToLine("+idx+", "+select+"), caret = "+getCaret()+", highlighter = "+textView.getHighlighter()+", document length = "+textView.getDocument().getLength());
+            }
+            Exceptions.printStackTrace(sie);
+        } finally {
+            locked = false;
+            inSendCaretToLine = false;
         }
-        locked = false;
-        inSendCaretToLine = false;
         return true;
     }
 
