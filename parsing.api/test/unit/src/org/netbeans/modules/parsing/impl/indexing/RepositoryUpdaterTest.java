@@ -138,7 +138,7 @@ import org.openide.util.Exceptions;
  */
 public class RepositoryUpdaterTest extends NbTestCase {
 
-    private static final int TIME = 5000000;
+    private static final int TIME = 5000;
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
@@ -1341,36 +1341,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(Collections.<URL>emptyList(), peers);        
                
     }
-    
-    /**
-     * Does not unregister refreshedRoot -> may affect other test
-     * @throws Exception 
-     */
-    public void testIndexManagerRefreshIndexListensOnChanges() throws Exception {
-        final File _wd = this.getWorkDir();
-        final FileObject wd = FileUtil.toFileObject(_wd);
-        final FileObject refreshedRoot = wd.createFolder("refreshedRoot");
-        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
-        assertNotNull(refreshedRoot);
-        assertFalse (ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
-        IndexingManager.getDefault().refreshIndexAndWait(refreshedRoot.getURL(), Collections.<URL>emptyList());
-        assertSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        //Register the root => EMPTY_DEPS changes to regular deps
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
-        final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
-        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[]{cp});
-        handler.await();
-        assertNotNull(ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        handler.reset();
-        GlobalPathRegistry.getDefault().unregister(SOURCES, new ClassPath[]{cp});
-        handler.await();
-        assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
-    }
-
+        
     public void testCheckAllFiles() throws Exception {
         RepositoryUpdater ru = RepositoryUpdater.getDefault();
         assertEquals(0, ru.getScannedBinaries().size());
@@ -1535,6 +1506,40 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull(state);
         assertFalse(state.first);
         assertTrue(state.second);        
+    }
+
+    /**
+     * Test that unknown source roots are registered in the scannedRoots2Dependencies with EMPTY_DEPS
+     * and when the unknown root registers it's changed to regular dependencies.
+     * When the root is unregistered it's removed from scannedRoots2Dependencies
+     *
+     * The test was also extended to test Issue 196985. Unknown root which becomes known was lost
+     * @throws Exception
+     */
+    public void testIndexManagerRefreshIndexListensOnChanges_And_Issue196985() throws Exception {
+        final File _wd = this.getWorkDir();
+        final FileObject wd = FileUtil.toFileObject(_wd);
+        final FileObject refreshedRoot = wd.createFolder("refreshedRoot");
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertNotNull(refreshedRoot);
+        assertFalse (ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
+        IndexingManager.getDefault().refreshIndexAndWait(refreshedRoot.getURL(), Collections.<URL>emptyList());
+        assertSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        //Register the root => EMPTY_DEPS changes to regular deps
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
+        handler.reset(RepositoryUpdaterTest.TestHandler.Type.ROOTS_WORK_FINISHED);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        handler.await();
+        assertNotNull(ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        handler.reset(RepositoryUpdaterTest.TestHandler.Type.ROOTS_WORK_FINISHED);
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp});
+        handler.await();
+        assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
 
     public static class TestHandler extends Handler {
