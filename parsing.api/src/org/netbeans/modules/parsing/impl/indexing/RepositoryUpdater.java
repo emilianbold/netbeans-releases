@@ -1227,6 +1227,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         if (ctx.useInitialState) {
             final List<URL> deps = ctx.initialRoots2Deps.get(rootURL);
+            //If already scanned ignore
+            //If deps == EMPTY_DEPS needs to be rescanned (keep it in oldRoots,
+            //it will be removed from scannedRoots2Dependencies and readded from
+            //scannedRoots
             if (deps != null && deps != EMPTY_DEPS) {
                 ctx.oldRoots.remove(rootURL);
                 return true;
@@ -3096,6 +3100,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
 
             final List<URL> missingRoots = new LinkedList<URL>();
+            scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
             for(URL root : depCtx.scannedRoots) {
                 List<URL> deps = depCtx.newRoots2Deps.get(root);
                 if (deps == null) {
@@ -3114,8 +3119,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 log.append("Restarted: ");
                 log.append(restarted);
                 LOGGER.info(log.toString());
-            }
-            scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
+            }            
             scannedRoots2Peers.keySet().removeAll(depCtx.oldRoots);
             scannedRoots2Peers.putAll(depCtx.newRoots2Peers);
             
