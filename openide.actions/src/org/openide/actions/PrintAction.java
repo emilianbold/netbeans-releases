@@ -71,8 +71,6 @@ public class PrintAction extends CookieAction {
 
             if (pc != null) {
                 pc.print();
-            }
-        }
     }
 
     protected boolean asynchronous() {
