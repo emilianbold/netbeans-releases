@@ -56,21 +56,9 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class RefreshSlowTest extends  NbTestCase {
-
     public RefreshSlowTest(String n) {
         super(n);
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
     }
-
-    public static Runnable findSlowRefresh(FileObject fo) throws FileStateInvalidException {
-        Object r = fo.getFileSystem().getRoot().getAttribute("refreshSlow");
-        assertNotNull("Runnable for refreshSlow found", r);
-        assertEquals("Right class", RefreshSlow.class, r.getClass());
-        RefreshSlow rs = (RefreshSlow)r;
-        rs.setIgnoreRecursiveListener(false);
-        return rs;
-    }
-
 
     public void testByDefaultTheRefreshIgnoresRecListeners() throws IOException {
         File d = new File(new File(getWorkDir(), "dir"), "subdir");
