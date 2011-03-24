@@ -310,7 +310,7 @@ public class J2eeTestCase extends JellyTestCase {
 
     public static enum Server {
 
-        TOMCAT, GLASSFISH, GLASSFISH_V3, JBOSS, ANY
+        TOMCAT, GLASSFISH, JBOSS, ANY
     }
 
     /**
