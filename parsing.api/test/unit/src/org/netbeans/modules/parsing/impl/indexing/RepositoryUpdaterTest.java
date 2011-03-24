@@ -138,7 +138,7 @@ import org.openide.util.Exceptions;
  */
 public class RepositoryUpdaterTest extends NbTestCase {
 
-    private static final int TIME = 5000000;
+    private static final int TIME = 5000;
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
