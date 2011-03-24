@@ -85,7 +85,7 @@ public class JEE6RestCStubsTest extends RestCStubsTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6RestCStubsTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6RestCStubsTest.class),
                 "testWizard", //NOI18N
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
