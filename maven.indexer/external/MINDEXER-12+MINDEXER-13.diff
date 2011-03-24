@@ -1,0 +1,75 @@
+# See: https://netbeans.org/bugzilla/show_bug.cgi?id=197039
+diff --git a/indexer-core/pom.xml b/indexer-core/pom.xml
+index f71a834..2e72f2e 100644
+--- a/indexer-core/pom.xml
++++ b/indexer-core/pom.xml
+@@ -27,6 +27,7 @@ under the License.
+   </parent>
+ 
+   <artifactId>indexer-core</artifactId>
++  <version>4.0.0.MINDEXER-12+MINDEXER-13</version>
+ 
+   <name>Maven :: Indexer Core</name>
+ 
+@@ -45,7 +46,7 @@ under the License.
+     <dependency>
+       <groupId>org.apache.maven.indexer</groupId>
+       <artifactId>indexer-artifact</artifactId>
+-      <version>${project.version}</version>
++      <version>4.0.0</version>
+     </dependency>
+ 
+     <!-- Plexus -->
+@@ -315,5 +316,4 @@ under the License.
+       </plugins>
+     </pluginManagement>
+   </build>
+-
+ </project>
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/updater/DefaultIndexUpdater.java b/indexer-core/src/main/java/org/apache/maven/index/updater/DefaultIndexUpdater.java
+index e7ba273..2b601f9 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/updater/DefaultIndexUpdater.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/updater/DefaultIndexUpdater.java
+@@ -872,7 +872,15 @@ public class DefaultIndexUpdater
+         catch ( IOException ex )
+         {
+             // try to look for legacy index transfer format
+-            return target.setIndexFile( source, IndexingContext.INDEX_FILE_PREFIX + ".zip" );
++            try
++            {
++                return target.setIndexFile( source, IndexingContext.INDEX_FILE_PREFIX + ".zip" );
++            }
++            catch ( IOException ex2 )
++            {
++                getLogger().error( "Fallback to *.zip also failed: " + ex2 ); // do not bother with stack trace
++                throw ex; // original exception more likely to be interesting
++            }
+         }
+     }
+ 
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java b/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java
+index 2ec8d6d..1bfcbae 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java
+@@ -49,8 +49,19 @@ public class IndexDataReader
+         throws IOException
+     {
+         BufferedInputStream bis = new BufferedInputStream( is, 1024 * 8 );
+-        GZIPInputStream gis = new GZIPInputStream( bis, 2 * 1024 );
+-        this.dis = new DataInputStream( gis );
++        bis.mark(2);
++        InputStream data;
++        if ( bis.read() == 0x1f && bis.read() == 0x8b ) // GZIPInputStream.GZIP_MAGIC
++        {
++            bis.reset();
++            data = new GZIPInputStream( bis, 2 * 1024 );
++        }
++        else // LightweightHttpWagon may have performed automatic decompression
++        {
++            bis.reset();
++            data = bis;
++        }
++        this.dis = new DataInputStream( data );
+     }
+ 
+     public IndexDataReadResult readIndex( IndexWriter w, IndexingContext context )
