@@ -107,7 +107,7 @@ public final class ELIndexer extends EmbeddingIndexer {
                 if (each.isValid()) {
                     IndexDocument doc = support.createDocument(parserResult.getFileObject());
                     documents.add(doc);
-                    doc.addPair(Fields.EXPRESSION, each.getExpression(), true, true);
+                    doc.addPair(Fields.EXPRESSION, each.getExpression().getPreprocessedExpression(), true, true);
                     each.getNode().accept(this);
                     support.addDocument(doc);
                 }

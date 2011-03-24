@@ -198,7 +198,7 @@ public class LogViewMgr {
         return logViewMgr;
     }
     
-    public void ensureActiveReader(List<Recognizer> recognizers, InputStream serverLog) {
+    public void ensureActiveReader(List<Recognizer> recognizers, InputStream serverLog, Map<String,String> properties) {
         synchronized (readers) {
             boolean activeReader = false;
             for(WeakReference<LoggerRunnable> ref: readers) {
@@ -210,7 +210,7 @@ public class LogViewMgr {
             }
 
             if(!activeReader && serverLog != null) {
-                readInputStreams(recognizers, serverLog instanceof FileInputStream, serverLog);
+                readInputStreams(recognizers, serverLog instanceof FileInputStream, properties, serverLog);
             }
         }
     }
@@ -222,13 +222,14 @@ public class LogViewMgr {
      *
      * @param inputStreams InputStreams to read
      */
-    public void readInputStreams(List<Recognizer> recognizers, boolean fromFile, InputStream... inputStreams) {
+    public void readInputStreams(List<Recognizer> recognizers, boolean fromFile,
+            Map<String,String> properties, InputStream... inputStreams) {
         synchronized (readers) {
             stopReaders();
 
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile);
+                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile, properties);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 Thread t = new Thread(logger);
                 t.setDaemon(true);
@@ -447,15 +448,18 @@ public class LogViewMgr {
     private class LoggerRunnable implements Runnable {
 
         private final List<Recognizer> recognizers;
-        private final InputStream inputStream;
+        private InputStream inputStream;
         private final boolean ignoreEof;
         private volatile boolean shutdown;
+        private final Map<String, String> properties;
         
-        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, boolean ignoreEof) {
+        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, 
+                boolean ignoreEof, Map<String,String> properties) {
             this.recognizers = recognizers;
             this.inputStream = inputStream;
             this.ignoreEof = ignoreEof;
             this.shutdown = false;
+            this.properties = properties;
         }
 
         public void stop() {
@@ -487,6 +491,7 @@ public class LogViewMgr {
 
                 while(!shutdown && len != -1) {
                     if(ignoreEof) {
+                        reader = followLogRotation(reader);
                         // For file streams, only read if there is something there.
                         while(!shutdown && reader.ready()) {
                             String text = filter.process((char) reader.read());
@@ -568,6 +573,42 @@ public class LogViewMgr {
                 io.getErr().close();
                 io.getOut().close();
             }
+        }
+
+        private synchronized BufferedReader followLogRotation(BufferedReader reader) {
+            BufferedReader retVal = reader;
+            if (null != properties) {
+                InputStream is = null;
+                String dir = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+                if (null == dir) {
+                    // this log cannot rotate... it isn't based on a file
+                    return retVal;
+                }
+                try {
+                  is  = getServerLogStream(properties);
+                  if (inputStream instanceof FileInputStream && is instanceof FileInputStream) {
+                      FileInputStream fis = (FileInputStream) is;
+                      long newSize = fis.getChannel().size();
+                      long oldSize = ((FileInputStream) inputStream).getChannel().size();
+                      if (oldSize != newSize) {
+                          retVal = new BufferedReader(new InputStreamReader(is));
+                          try {inputStream.close();} catch (IOException ioe) {
+                            Logger.getLogger("glassfish").log(Level.INFO, "closing the old inputstream", ioe); // NOI18N
+                          }
+                          inputStream = is;
+                      }
+                  }
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, null, ioe); // NOI18N
+                } finally {
+                    if (null != is && !(is == inputStream)) {
+                        try {is.close();} catch (IOException ioe) {
+                            Logger.getLogger("glassfish").log(Level.INFO, "closing the duplicate inputstream", ioe); // NOI18N
+                        }
+                    }
+                }
+            }
+            return retVal;
         }
     }
 
@@ -1072,7 +1113,7 @@ public class LogViewMgr {
                 if (null != lookup) {
                     recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
                 }
-                mgr.ensureActiveReader(recognizers, is);
+                mgr.ensureActiveReader(recognizers, is,properties);
                 mgr.selectIO(true);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,

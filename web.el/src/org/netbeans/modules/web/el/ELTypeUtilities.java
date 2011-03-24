@@ -480,7 +480,8 @@ public final class ELTypeUtilities {
                 for(ELVariableResolver.VariableInfo vi : vis) {
                     if(identifier.getImage().equals(vi.name)) {
                         try {
-                            Node expressionNode = ELParser.parse(vi.expression);
+                            ELPreprocessor elp = new ELPreprocessor(vi.expression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+                            Node expressionNode = ELParser.parse(elp);
                             if (expressionNode != null) {
                                 setResult(getReferredType(expressionNode, element.getSnapshot().getSource().getFileObject(), info));
                                 return ;
@@ -525,7 +526,8 @@ public final class ELTypeUtilities {
         //unresolved variable
         assert vi.expression != null;
         try {
-            Node expressionNode = ELParser.parse(vi.expression);
+            ELPreprocessor elp = new ELPreprocessor(vi.expression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+            Node expressionNode = ELParser.parse(elp);
             if (expressionNode != null) {
                 return getReferredType(expressionNode, context, info);
             }

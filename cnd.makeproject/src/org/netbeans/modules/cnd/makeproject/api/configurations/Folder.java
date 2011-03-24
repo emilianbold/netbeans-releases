@@ -1155,7 +1155,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{fileObject, getPath()}); // NOI18N
                 }
-                if (fileObject != null || !fileObject.isValid() || !fileObject.isFolder()) {
+                if (fileObject == null || !fileObject.isValid() || !fileObject.isFolder()) {
                     // It is possible that short-living temporary folder is created while building project
                     return;
                 }
