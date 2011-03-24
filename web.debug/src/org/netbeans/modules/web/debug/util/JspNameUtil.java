@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.debug.util;
 
 import java.util.Vector;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 
 /** Various utilities copied over from org.apache.jasper.JspUtil.
  */
@@ -177,17 +178,22 @@ public class JspNameUtil {
         return false;
     }
 
-    public static String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
-        return getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
+    public static String getServletResourcePath(JSPServletFinder finder, String moduleContextPath, String jspResourcePath) {
+        return getServletPackageName(finder, jspResourcePath).replace('.', '/') + '/' +
             getServletClassName(jspResourcePath) + ".java";
     }
 
-    private static String getServletPackageName(String jspUri) {
+    private static String getServletPackageName(JSPServletFinder finder, String jspUri) {
         String dPackageName = getDerivedPackageName(jspUri);
-        if (dPackageName.length() == 0) {
-            return JSP_PACKAGE_NAME;
+        String basePackage = finder.getServletBasePackageName();
+        if (basePackage == null) {
+            basePackage = JSP_PACKAGE_NAME;
         }
-        return JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
+        if (dPackageName.length() == 0) {
+            return basePackage;
+        }
+        
+        return basePackage + '.' + getDerivedPackageName(jspUri);
     }
     
     private static String getDerivedPackageName(String jspUri) {
