@@ -652,6 +652,7 @@ public class SvnClientExceptionHandler {
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
                msg.contains("user canceled dialog") ||                                      // NOI18N
+               msg.contains("mkactivity request failed on") ||                              // NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 
