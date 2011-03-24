@@ -2,7 +2,7 @@
 
 if test ! -e /space/hudsonserver/master 
 then
-if [ -n $mobility_enabled ]
+if [ -n "$mobility_enabled" ]
 then
 
 rm -rf $WORKSPACE/mobility
