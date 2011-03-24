@@ -67,6 +67,39 @@ public class AutoUpdateTest extends TestBase {
         super(name);
     }
 
+    public void testJustDownloadNBMs() throws Exception {
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+        assertTrue("NBM file created", nbm.isFile());
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        execute(
+            "autoupdate.xml", "-verbose", "-Ddir=" + nbm.getParent(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target,
+            "mirror"
+        );
+        
+        File[] arr = target.listFiles();
+        assertEquals("One item in the array:\n" + getStdOut(), 1, arr.length);
+        assertEquals("It is the NBM file", nbm.getName(), arr[0].getName());
+        assertEquals("Length is the same", nbm.length(), arr[0].length());
+        
+        execute(
+            "autoupdate.xml", "-verbose", "-Ddir=" + nbm.getParent(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target,
+            "mirror"
+        );
+
+        if (getStdOut().contains("get:org.netbeans.api.annotations.common")) {
+            fail("No download when latest version present:\n" + getStdOut());
+        }
+        
+    }
     public void testDirectlySpecifiedNBMs() throws Exception {
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",

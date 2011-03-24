@@ -60,7 +60,7 @@ public class JEE6AppClientWsValidation extends AppClientWsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6AppClientWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6AppClientWsValidation.class),
                 "testCreateWsClient",
                 "testCallWsOperationInJavaMainClass",
                 "testCallWsOperationInJavaClass",

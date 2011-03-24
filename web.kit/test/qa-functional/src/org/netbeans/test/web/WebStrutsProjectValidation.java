@@ -80,7 +80,7 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebStrutsProjectValidation.class);
-        conf = addServerTests(Server.GLASSFISH_V3, conf,
+        conf = addServerTests(Server.GLASSFISH, conf,
         "testPreconditions", "testNewStrutsWebProject", "testRedeployProject", 
                 "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
