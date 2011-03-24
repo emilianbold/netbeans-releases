@@ -60,14 +60,21 @@ public class KeyringSupport {
      * Saves password for a key constructed from keyPrefix and key
      * @param keyPrefix key prefix for each versioning system
      * @param key will be hashed and used with keyPrefix as a key for the keyring
-     * @param password password, value will be nulled
+     * @param password password, value will be nulled. If <code>null</code> the old record will be permanently deleted
      * @param description can be null
      */
     public static void save (String keyPrefix, String key, char[] password, String description) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "Saving password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+        if (password == null) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Deleting password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+            }
+            Keyring.delete(getKeyringKey(keyPrefix, key));
+        } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Saving password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+            }
+            Keyring.save(getKeyringKey(keyPrefix, key), password, description);
         }
-        Keyring.save(getKeyringKey(keyPrefix, key), password, description);
     }
 
     /**

@@ -183,13 +183,8 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         
         final boolean isSelected = panel.savePasswordCheckBox.isSelected();
-        if(isSelected) {
-            guri = guri.setUser(panel.userTextField.getText());
-            guri = guri.setPass(new String(panel.userPasswordField.getPassword()));
-        } else {
-            guri = guri.setUser(null);
-            guri = guri.setPass(null);
-        }
+        guri = guri.setUser(panel.userTextField.getText().isEmpty() ? null : panel.userTextField.getText())
+                .setPass(new String(panel.userPasswordField.getPassword()));
         final GitURI fguri = guri;
         Runnable outOfAWT = new Runnable() {
             @Override
