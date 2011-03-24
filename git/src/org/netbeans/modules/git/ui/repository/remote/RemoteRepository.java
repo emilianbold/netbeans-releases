@@ -226,7 +226,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
-        findComboItem();
+        findComboItem(false);
     }
 
     @Override
@@ -241,7 +241,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         if(ignoreComboEvents) return;
         validateFields();
         setFieldsVisibility();
-        findComboItem();
+        findComboItem(false);
     }
 
     @Override
@@ -272,7 +272,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 dd.setValid(repository.isValid());
             }
         });
-        dd.setValid(repository.isValid());
+        if (repository.isValid()) {
+            dd.setValid(true);
+        }
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             repository.store();
@@ -342,7 +344,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
 
     private boolean ignoreComboEvents = false;
-    private void findComboItem() {
+    private void findComboItem(boolean selectAll) {
         final String uriString = getURIString();        
         if(uriString == null || uriString.isEmpty()) {
             return;
@@ -351,18 +353,14 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         for (int i = 0; i < model.getSize(); i++) {
             final String item = (String) model.getElementAt(i);
             if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
-                final int start = uriString.length();
+                final int start = selectAll ? 0 : uriString.length();
                 final int end = item.length();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         ignoreComboEvents = true;
                         try {
-                            JTextComponent txt = (JTextComponent)panel.urlComboBox.getEditor().getEditorComponent();
-                            txt.setText(item);
-                            txt.setCaretPosition(start);
-                            txt.setSelectionStart(start);
-                            txt.setSelectionEnd(end);
+                            setComboText(item, start, end);
                             
                             setFieldsVisibility();
                             
@@ -379,6 +377,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 
             }
         }
+    }
+
+    private void setComboText (String item, int start, int end) {
+        JTextComponent txt = (JTextComponent)panel.urlComboBox.getEditor().getEditorComponent();
+        txt.setText(item);
+        txt.setCaretPosition(end);
+        txt.moveCaretPosition(start);
     }
     
     private void populateFields(GitURI guri) {
@@ -433,10 +438,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            ignoreComboEvents = true;
                             panel.urlComboBox.setModel(model);
                             if (forPath != null) {
-                                ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).setText(forPath);
+                                setComboText(forPath, 0, forPath.length());
                             }
+                            ignoreComboEvents = false;
+                            findComboItem(true);
                             setFieldsVisibility();
                             validateFields();
                         }
