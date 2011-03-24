@@ -58,6 +58,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
@@ -128,8 +129,19 @@ class JBStopRunnable implements Runnable {
         }
         
         JBProperties properties = dm.getProperties();
-        StringBuilder credentialsParams = new StringBuilder(32);
-        credentialsParams.append(" -u ").append(properties.getUsername()).append(" -p ").append(properties.getPassword()); // NOI18N
+        StringBuilder additionalParams = new StringBuilder(32);
+        int jnpPort = JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));  
+        if (dm.getProperties().getServerVersion().compareTo(JBPluginUtils.JBOSS_6_0_0) < 0) {
+            additionalParams.append(" -s jnp://localhost:").append(jnpPort); // NOI18N
+        } else {
+            // FIXME changed for JBoss 6
+            // see http://community.jboss.org/message/546904
+            // and http://community.jboss.org/wiki/StartStopJBoss
+        }
+        
+        additionalParams.append(" -u ").append(properties.getUsername()); // NOI18N
+        additionalParams.append(" -p ").append(properties.getPassword()); // NOI18N
+        
         // Currently there is a problem stopping JBoss when Profiler agent is loaded.
         // As a workaround for now, --halt parameter has to be used for stopping the server.
 //        NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ?
@@ -138,7 +150,8 @@ class JBStopRunnable implements Runnable {
 
         /* 2008-09-10 The usage of --halt doesn't solve the problem on Windows; it even creates another problem
                         of NB Profiler not being notified about the fact that the server was stopped */
-        NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams); // NOI18N
+        NbProcessDescriptor pd = new NbProcessDescriptor(
+                serverStopFileName, "--shutdown " + additionalParams); // NOI18N
 
         Process stoppingProcess = null;
         try {
