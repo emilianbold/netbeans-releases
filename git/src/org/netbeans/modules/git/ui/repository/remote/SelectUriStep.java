@@ -68,6 +68,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -98,8 +99,13 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         };
         fillPanel();
         attachListeners();
-        enableFields();
-        validateBeforeNext();
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                enableFields();
+                validateBeforeNext();
+            }
+        });
     }
     
     private void fillPanel () {
@@ -193,15 +199,15 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             if (message[0] != null) {
                 setValid(true, message[0]);
             }
+            //enable input
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    setEnabled(true);
+                    enableFields();
+                }
+            });
         }
-        //enable input
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run () {
-                setEnabled(true);
-                enableFields();
-            }
-        });
     }
 
     @Override
