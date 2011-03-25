@@ -98,6 +98,9 @@ public class AutoUpdateTest extends TestBase {
         if (getStdOut().contains("get:org.netbeans.api.annotations.common")) {
             fail("No download when latest version present:\n" + getStdOut());
         }
+        if (getStdOut().contains("is not present")) {
+            fail("Don't say it is not present:\n" + getStdOut());
+        }
         
     }
     public void testDirectlySpecifiedNBMs() throws Exception {
