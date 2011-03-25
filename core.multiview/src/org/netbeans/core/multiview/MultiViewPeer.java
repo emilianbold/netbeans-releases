@@ -52,6 +52,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,6 +102,9 @@ public final class MultiViewPeer  {
     static final String MULTIVIEW_ID = "MultiView-"; //NOI18N
 
     private static final String TOOLBAR_VISIBLE_PROP = /* org.netbeans.api.editor.settings.SimpleValueNames.TOOLBAR_VISIBLE_PROP */ "toolbarVisible"; // NOI18N
+
+    private Lookup.Provider context;
+    private String mimeType;
     
     MultiViewModel model;
     TabsComponent tabs;
@@ -132,10 +136,29 @@ public final class MultiViewPeer  {
         delegateUndoRedo = new DelegateUndoRedo();
     }
     
- 
+    /** @param context context needs to be also serializable */
+    public void setMimeLookup(String mimeType, Lookup.Provider context) {
+        this.context = context;
+        this.mimeType = mimeType;
+        
+        List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
+        final Lookup lkp = MimeLookup.getLookup(mimeType);
+        for (ContextAwareDescription d : lkp.lookupAll(ContextAwareDescription.class)) {
+            d = d.createContextAwareDescription(context.getLookup());
+            arr.add(d);
+        }
+        if (model != null) {
+            model.removeElementSelectionListener(selListener);
+        }
+        model = new MultiViewModel(arr.toArray(new MultiViewDescription[0]), arr.get(0), factory);
+        model.addElementSelectionListener(selListener);
+        tabs.setModel(model);
+        closeHandler = lkp.lookup(CloseOperationHandler.class);
+    }
     
     
     public void setMultiViewDescriptions(MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
+        assert context == null;
         if (model != null) {
             model.removeElementSelectionListener(selListener);
         }
@@ -145,6 +168,7 @@ public final class MultiViewPeer  {
     }
     
     public void setCloseOperationHandler(CloseOperationHandler handler) {
+        assert context == null;
         closeHandler = handler;
     }
     
@@ -386,7 +410,7 @@ public final class MultiViewPeer  {
         MultiViewDescription[] descs = model.getDescriptions();
         int type = TopComponent.PERSISTENCE_NEVER;
         for (int i = 0; i < descs.length; i++) {
-            if (!(descs[i] instanceof Serializable)) {
+            if (context == null && !(descs[i] instanceof Serializable)) {
                 Logger.getLogger(MultiViewTopComponent.class.getName()).warning(
                         "The MultiviewDescription instance " + descs[i].getClass() + " is not serializable. Cannot persist TopComponent.");
                 type = TopComponent.PERSISTENCE_NEVER;
@@ -425,20 +449,32 @@ public final class MultiViewPeer  {
     * @param out the stream to serialize to
     */
     void peerWriteExternal (ObjectOutput out) throws IOException {
-        if (closeHandler != null) {
-            if (closeHandler instanceof Serializable) {
-                out.writeObject(closeHandler);
-            } else {
-                //TODO some warning to the SPI programmer
-                Logger.getAnonymousLogger().info(
-                       "The CloseOperationHandler isn not serializable. MultiView component id=" + preferredID());
+        boolean fromMime;
+        if (context != null) {
+            out.writeObject(mimeType);
+            out.writeObject(context);
+            fromMime = true;
+        } else {
+            if (closeHandler != null) {
+                if (closeHandler instanceof Serializable) {
+                    out.writeObject(closeHandler);
+                } else {
+                    //TODO some warning to the SPI programmer
+                    Logger.getAnonymousLogger().info(
+                           "The CloseOperationHandler isn not serializable. MultiView component id=" + preferredID());
+                }
             }
+            fromMime = false;
         }
         MultiViewDescription[] descs = model.getDescriptions();
         MultiViewDescription curr = model.getActiveDescription();
         int currIndex = 0;
         for (int i = 0; i < descs.length; i++) {
-            out.writeObject(descs[i]);
+            if (!fromMime) {
+                out.writeObject(descs[i]);
+            } else {
+                out.writeObject(descs[i].preferredID());
+            }
             if (descs[i].getPersistenceType() != TopComponent.PERSISTENCE_NEVER) {
                 // only those requeTopsted and previously created elements are serialized.
                 MultiViewElement elem = model.getElementForDescription(descs[i], false);
@@ -464,13 +500,32 @@ public final class MultiViewPeer  {
         int current = 0;
         CloseOperationHandler close = null;
         try {
+            int counting = 0;
+            MultiViewDescription lastDescription = null;
             while (true) {
                 Object obj = in.readObject();
+                if ((obj instanceof String) && counting++ == 0) {
+                    Lookup.Provider lp = (Lookup.Provider)in.readObject();
+                    setMimeLookup((String)obj, lp);
+                    descList.addAll(Arrays.asList(model.getDescriptions()));
+                    continue;
+                }
                 if (obj instanceof MultiViewDescription) {
-                    descList.add((MultiViewDescription)obj);
+                    lastDescription = (MultiViewDescription)obj;
+                    descList.add(lastDescription);
+                }
+                else if (obj instanceof String) {
+                    for (MultiViewDescription md : descList) {
+                        if (md.preferredID().equals(obj)) {
+                            lastDescription = md;
+                            break;
+                        }
+                    }
                 }
                 else if (obj instanceof MultiViewElement) {
-                    map.put(descList.get(descList.size() - 1), (MultiViewElement)obj);
+                    assert lastDescription != null;
+                    map.put(lastDescription, (MultiViewElement)obj);
+                    lastDescription = null;
                 }
                 else if (obj instanceof Integer)  {
                     Integer integ = (Integer)obj;
@@ -482,12 +537,14 @@ public final class MultiViewPeer  {
                 }
             }
         } catch (IOException exc) {
-            //#121119 try preventing model corruption when deserialization of client code fails.
-            if (close == null) {
+                //#121119 try preventing model corruption when deserialization of client code fails.
+            if (context == null) {
+                if (close == null) {
                     //TODO some warning to the SPI programmer
-                close = SpiAccessor.DEFAULT.createDefaultCloseHandler();
+                    close = SpiAccessor.DEFAULT.createDefaultCloseHandler();
+                }
+                setCloseOperationHandler(close);
             }
-            setCloseOperationHandler(close);
             if (descList.size() > 0) {
                 MultiViewDescription[] descs = new MultiViewDescription[descList.size()];
                 descs = descList.toArray(descs);
@@ -501,19 +558,20 @@ public final class MultiViewPeer  {
             
             throw exc;
         }
-        if (close == null) {
-                //TODO some warning to the SPI programmer
-            close = SpiAccessor.DEFAULT.createDefaultCloseHandler();
+        if (context == null) {
+            if (close == null) {
+                    //TODO some warning to the SPI programmer
+                close = SpiAccessor.DEFAULT.createDefaultCloseHandler();
+            }
+            setCloseOperationHandler(close);
         }
-        setCloseOperationHandler(close);
         // now that we've read everything, we should set it correctly.
         MultiViewDescription[] descs = new MultiViewDescription[descList.size()];
         descs = descList.toArray(descs);
         MultiViewDescription currDesc = descs[current];
         setDeserializedMultiViewDescriptions(descs, currDesc, map);
     }    
-    
-    
+
     private Action[] getDefaultTCActions() {
         //TODO for each suppoerted peer have one entry..
         if (peer instanceof MultiViewTopComponent) {

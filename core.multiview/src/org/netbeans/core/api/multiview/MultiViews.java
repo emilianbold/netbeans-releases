@@ -100,18 +100,9 @@ import org.openide.windows.TopComponent;
     public static <T extends Serializable & Lookup.Provider> TopComponent createMultiView(
         String mimeType, T context
     ) {
-        List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
-        final Lookup lkp = MimeLookup.getLookup(mimeType);
-        for (ContextAwareDescription d : lkp.lookupAll(ContextAwareDescription.class)) {
-            if (d instanceof ContextAwareDescription) {
-                d = d.createContextAwareDescription(context.getLookup());
-            }
-            arr.add(d);
-        }
-        return MultiViewFactory.createMultiView(
-            arr.toArray(new MultiViewDescription[0]), arr.get(0), 
-            lkp.lookup(CloseOperationHandler.class)
-        );
+        MultiViewTopComponent tc = new MultiViewTopComponent();
+        tc.setMimeLookup(mimeType, context);
+        return tc;
     }
 
     /** Factory method to create cloneable multiview for a given mime type. 
@@ -126,17 +117,8 @@ import org.openide.windows.TopComponent;
     public static <T extends Serializable & Lookup.Provider> CloneableTopComponent createCloneableMultiView(
             String mimeType, T context
     ) {
-        List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
-        final Lookup lkp = MimeLookup.getLookup(mimeType);
-        for (ContextAwareDescription d : lkp.lookupAll(ContextAwareDescription.class)) {
-            if (d instanceof ContextAwareDescription) {
-                d = d.createContextAwareDescription(context.getLookup());
-            }
-            arr.add(d);
-        }
-        return MultiViewFactory.createCloneableMultiView(
-            arr.toArray(new MultiViewDescription[0]), arr.get(0),
-            lkp.lookup(CloseOperationHandler.class)
-        );
+        MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
+        tc.setMimeLookup(mimeType, context);
+        return tc;
     }
 }

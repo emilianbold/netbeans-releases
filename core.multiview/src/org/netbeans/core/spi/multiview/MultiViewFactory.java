@@ -380,11 +380,11 @@ public final class MultiViewFactory {
                 }
                 Class<?> clazz = Class.forName(name, true, cl);
                 try {
-                    Constructor<?> defC = clazz.getConstructor();
-                    return (MultiViewElement)defC.newInstance();
-                } catch (Exception ex) {
                     Constructor<?> lookupC = clazz.getConstructor(Lookup.class);
                     return (MultiViewElement)lookupC.newInstance(context);
+                } catch (Exception ex) {
+                    Constructor<?> defC = clazz.getConstructor();
+                    return (MultiViewElement)defC.newInstance();
                 }
             } catch (Exception ex) {
                 throw new IllegalStateException("Cannot instantiate " + name, ex);

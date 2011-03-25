@@ -44,6 +44,7 @@ package org.netbeans.core.multiview;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -59,10 +60,12 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableTopComponent;
@@ -112,7 +115,27 @@ public class MultiViewProcessorTest extends NbTestCase {
         CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
         assertNotNull("MultiViewComponent created", cmv);
         TopComponent mvc = cmv.cloneTopComponent();
+        doCheck(mvc, ic);
+    }
+
+    public void testCloneableMultiViewsSerialize() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
         
+        CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
+        CharSequence log = Log.enable("org.netbeans.core.multiview", Level.WARNING);
+        int res = cmv.getPersistenceType();
+        if (log.length() > 0) {
+            fail("There should be no warnings to compute getPersistenceType():\n" + log);
+        }
+        assertEquals("Always", TopComponent.PERSISTENCE_ALWAYS, res);
+        assertNotNull("MultiViewComponent created", cmv);
+        NbMarshalledObject mar = new NbMarshalledObject(cmv);
+        TopComponent mvc = (TopComponent) mar.get();
+        doCheck(mvc, ic);
+    }
+    
+    private void doCheck(TopComponent mvc, InstanceContent ic) {
         assertNotNull("MultiViewComponent cloned", mvc);
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
         assertNotNull("Handler found", handler);
@@ -276,13 +299,15 @@ public class MultiViewProcessorTest extends NbTestCase {
         displayName="Contextual",
         iconBase="none",
         mimeType="text/context",
-        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
     )
     public static class CntxMVE extends MVE {
         private Lookup context;
         public CntxMVE(Lookup context) {
             this.context = context;
+        }
+        public CntxMVE() {
         }
 
         @Override

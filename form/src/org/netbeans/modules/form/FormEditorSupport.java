@@ -1094,9 +1094,12 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         private transient MultiViewElementCallback multiViewObserver;
         
+        JavaEditorTopComponent() {
+            super();
+        }
+        
         public JavaEditorTopComponent(Lookup context) {
             super(context.lookup(DataEditorSupport.class));
-            
             FormEditorSupport javaEditor = context.lookup(FormEditorSupport.class);
             DataObject dataObject = context.lookup(DataObject.class);
             if (javaEditor != null) {
@@ -1109,7 +1112,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                 }
             }
         }
-        
+         
         @Override
         public JComponent getToolbarRepresentation() {
             if (toolbar == null) {

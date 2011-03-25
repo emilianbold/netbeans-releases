@@ -58,7 +58,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.filesystems.annotations.LayerBuilder;
@@ -142,10 +141,6 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                         continue CONSTRUCTOR;
                     }
                 }
-                constructorCount++;
-            }
-            if (constructorCount != 1) {
-                throw new LayerGenerationException("Must have exactly one public constructor optionally taking Lookup", e);
             }
             if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
                 throw new LayerGenerationException("Class must be public", e);
