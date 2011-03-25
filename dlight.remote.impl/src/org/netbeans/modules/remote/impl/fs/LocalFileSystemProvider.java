@@ -298,6 +298,6 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
         File file = new File(absPath);
-        FileUtil.removeFileChangeListener(listener, file);
+        FileUtil.removeRecursiveListener(listener, file);
     }    
 }
