@@ -152,7 +152,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
         File file = FileUtil.toFile(fileObject);
-        RemoteLogger.assertTrue(file != null, "null file"); //NOI18N
+        RemoteLogger.assertTrueInConsole(file != null, "null file for fileObject " + fileObject); //NOI18N
         if (file == null) {
             return fileObject;
         } else {
@@ -161,7 +161,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
                 return fileObject;
             } else {
                 FileObject canonicalFileObject = FileUtil.toFileObject(canonicalFile);
-                RemoteLogger.assertTrue(canonicalFileObject != null, "null canonical file"); //NOI18N
+                RemoteLogger.assertTrueInConsole(canonicalFileObject != null, "null canonical file object for file " + canonicalFile); //NOI18N
                 return (canonicalFileObject == null) ? fileObject : canonicalFileObject;
             }
         }
