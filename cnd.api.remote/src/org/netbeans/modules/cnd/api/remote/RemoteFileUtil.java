@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
@@ -101,7 +102,12 @@ public class RemoteFileUtil {
         FileObject result = FileSystemProvider.getFileObject(baseFileObject, relativeOrAbsolutePath);
         if (result == null) {
             String absRootPath = CndPathUtilitities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
-            result = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+            try {
+                result = InvalidFileObjectSupport.getInvalidFileObject(baseFileObject.getFileSystem(), absRootPath);
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                result = InvalidFileObjectSupport.getInvalidFileObject(InvalidFileObjectSupport.getDummyFileSystem(), absRootPath);
+            }
         }
         return result;
     }

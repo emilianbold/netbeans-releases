@@ -95,6 +95,14 @@ public class CredentialsCallback implements GitClientCallback {
     
     private void getCredentials (String uri) {
         GitURI guri = GitModuleConfig.getDefault().getRecentUri(uri);
+        if (guri == null) {
+            if (uri.endsWith("/")) {
+                uri = uri.substring(0, uri.length() - 1);
+            } else {
+                uri = uri + "/";
+            }
+            guri = GitModuleConfig.getDefault().getRecentUri(uri);
+        }
         if (guri != null) {
             username = guri.getUser();
             password = guri.getPass() == null ? null : guri.getPass().toCharArray();
