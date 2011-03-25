@@ -1572,16 +1572,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification); // NOI18N
         sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit); // NOI18N
-        if (startPos != null) {
-            sb.append("; startPos:").append(startPos.getOffset()); // NOI18N
+        sb.append("; extraBounds:<");
+        if (hasExtraBounds()) {
+            assert (endPos != null) : "endPos is null"; // NOI18N
+            sb.append(startPos.getOffset());
+            sb.append(",").append(endPos.getOffset()); // NOI18N
         } else {
-            sb.append("; startPos is null"); // NOI18N
+            sb.append("NONE"); // NOI18N
         }
-        if (endPos != null) {
-            sb.append("; endPos:").append(endPos.getOffset()); // NOI18N
-        } else {
-            sb.append("; endPos is null"); // NOI18N
-        }
+        sb.append('>');
         
         if (LOG_SOURCE_TEXT) {
             Document doc = getDocument();
