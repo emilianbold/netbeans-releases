@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -82,7 +81,7 @@ class DirectoryReaderSftp implements DirectoryReader {
         }
     }
 
-    public void readDirectory() throws IOException, InterruptedException, CancellationException, ExecutionException {
+    public void readDirectory() throws InterruptedException, CancellationException, ExecutionException {
         Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
         StatInfo[] infos = res.get();
         List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);

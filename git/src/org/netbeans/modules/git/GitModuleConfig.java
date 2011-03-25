@@ -47,6 +47,7 @@ import java.awt.EventQueue;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -281,16 +282,18 @@ public final class GitModuleConfig {
         getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
     }
     
-    public void insertRecentGitURI(GitURI guri, boolean savePassword) {
+    private final HashMap<String, GitURI> cachedUris = new HashMap<String, GitURI>(5);
+    public void insertRecentGitURI(GitURI guri, boolean saveCredentials) {
         if(guri == null) {
             return;
         }
         assert !EventQueue.isDispatchThread();
                 
         Preferences prefs = getPreferences();
-        GitURI noCredentialsUri;
+        String guriString;
         try {
-            noCredentialsUri = new GitURI(guri.toPrivateString()).setUser(null);
+            // we need to compare all uris with the one without username or password
+            guriString = new GitURI(guri.toString()).setUser(null).setPass(null).toString();
         } catch (URISyntaxException ex) {
             Git.LOG.log(Level.WARNING, guri.toPrivateString(), ex);
             return;
@@ -307,38 +310,26 @@ public final class GitModuleConfig {
             } catch (URISyntaxException ex) {
                 Git.LOG.log(Level.WARNING, rcOldString, ex);
             }
-            if(noCredentialsUri.toString().equals(guriOld.toString())) {
+            if(guriString.equals(guriOld.toString())) {
                 Utils.removeFromArray(prefs, RECENT_GURI, rcOldString);
             }
         }
         
-        if(savePassword) {
+        if(saveCredentials && guri.getPass() != null) {
+            // keep permanently and remove from cache
             storeCredentials(guri);
+            cachedUris.remove(guriString);
+        } else {
+            // remove from perm storage, we should not keep it forever
+            deleteCredentials(guri);
+            // but keep until end of session
+            cachedUris.put(guriString, guri);
         }
         
-        String guriString = noCredentialsUri.toString();
         if (!"".equals(guriString)) {                                           //NOI18N
-            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), savePassword).toString() , -1);
+            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), saveCredentials).toString() , -1);
         }
     }    
-
-//    public void setRecentUrls(List<GitURI> recentGuris, handle save password) {
-//        assert !EventQueue.isDispatchThread();
-//        
-//        List<String> urls = new ArrayList<String>(recentGuris.size());
-//        
-//        int idx = 0;
-//        for (Iterator<GitURI> it = recentGuris.iterator(); it.hasNext();) {
-//            idx++;
-//            GitURI guri = it.next();
-//            storeCredentials(guri);
-//            String guriString = guri.toString();
-//            if (!"".equals(guriString)) {                                       //NOI18N
-//                urls.add(guriString);
-//            }
-//        }
-//        Utils.put( getPreferences(), RECENT_GURI, urls);
-//    }
     
     public List<GitURI> getRecentUrls() {
         assert !EventQueue.isDispatchThread();
@@ -348,16 +339,19 @@ public final class GitModuleConfig {
         List<GitURI> ret = new ArrayList<GitURI>(urls.size());
         for (String guriString : urls) {
             GitURIEntry entry = GitURIEntry.create(guriString);
-            GitURI guri;
-            try {
-                guri = new GitURI(entry.guriString).setUser(entry.username);
-            } catch (URISyntaxException ex) {
-                Git.LOG.log(Level.WARNING, guriString, ex);
-                continue;
-            }
-            char[] password = KeyringSupport.read(GURI_PASSWORD, guri.toString());
-            if(password != null) {
-                guri = guri.setPass(new String(password));
+            // before we contact keyring, check the cache:
+            GitURI guri = cachedUris.get(entry.guriString);
+            if (guri == null) {
+                try {
+                    guri = new GitURI(entry.guriString).setUser(entry.username);
+                } catch (URISyntaxException ex) {
+                    Git.LOG.log(Level.WARNING, guriString, ex);
+                    continue;
+                }
+                char[] password = KeyringSupport.read(GURI_PASSWORD, guri.toString());
+                if(password != null) {
+                    guri = guri.setPass(new String(password));
+                }
             }
             ret.add(guri);
         }
@@ -371,10 +365,17 @@ public final class GitModuleConfig {
         try {
             GitURI uri = new GitURI(uriString);
             username = uri.getUser();
-            uriString = uri.setUser(null).toPrivateString();
+            uriString = uri.setUser(null).setPass(null).toString();
         } catch (URISyntaxException ex) {
             //
         }
+        
+        // before we contact keyring, check the cache:
+        GitURI cachedUri = cachedUris.get(uriString);
+        if (cachedUri != null && (username == null || cachedUri.getUser() == null || username.equals(cachedUri.getUser()))) {
+            return cachedUri;
+        }
+        
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
         for (String guriString : urls) {
@@ -400,27 +401,20 @@ public final class GitModuleConfig {
     }
 
     private void storeCredentials (final GitURI guri) {
-        if ((guri.getPass() != null)) {
-            Runnable outOfAWT = new Runnable() {
-                @Override
-                public void run() {
-                    String passwd = guri.getPass();
-                    KeyringSupport.save(GURI_PASSWORD, guri.toString(), passwd.toCharArray(), null);
-
-                }
-            };
-            // keyring should be called only in a background thread
-            if (EventQueue.isDispatchThread()) {
-                Git.getInstance().getRequestProcessor().post(outOfAWT);
-            } else {
-                outOfAWT.run();
-            }
-        }
+        assert guri.getPass() != null;
+        assert !EventQueue.isDispatchThread();
+        String passwd = guri.getPass();
+        KeyringSupport.save(GURI_PASSWORD, guri.toString(), passwd.toCharArray(), null);
+    }
+    
+    private void deleteCredentials (final GitURI guri) {
+        assert !EventQueue.isDispatchThread();
+        KeyringSupport.save(GURI_PASSWORD, guri.toString(), null, null);
     }
     
     private static class GitURIEntry {
         final String guriString;
-        final boolean savePassword;
+        private final boolean saveCredentials;
         private String stringValue;
         private final String username;
         static GitURIEntry create(String entryString) {
@@ -431,10 +425,10 @@ public final class GitModuleConfig {
             }
             return s.length == 2 ? new GitURIEntry(s[0], null, Boolean.parseBoolean(s[1])) : new GitURIEntry(s[0], s[1], Boolean.parseBoolean(s[2]));
         }
-        GitURIEntry(String guriString, String username, boolean savePassword) {
+        GitURIEntry(String guriString, String username, boolean saveCredentials) {
             this.guriString = guriString;
-            this.username = username;
-            this.savePassword = savePassword;
+            this.username = username == null ? "" : username; //NOI18N
+            this.saveCredentials = saveCredentials;
         }
         @Override
         public String toString() {
@@ -442,9 +436,9 @@ public final class GitModuleConfig {
                 StringBuilder sb = new StringBuilder();
                 sb.append(guriString);
                 sb.append(DELIMITER);
-                sb.append(username);
+                sb.append(saveCredentials ? username : ""); //NOI18N
                 sb.append(DELIMITER);
-                sb.append(savePassword);
+                sb.append(saveCredentials);
                 stringValue = sb.toString();
             }
             return stringValue;

@@ -119,8 +119,17 @@ public class CreateLicenseSummary extends Task {
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
                 pw.println("DO NOT TRANSLATE OR LOCALIZE.");
                 pw.println();
+                pw.println("********************************************************************************");
+                pw.println("Oracle elects to use only the GNU Lesser General Public License version 2.1");
+                pw.println("(LGPL) for any software where a choice of LGPL/GPL license versions are made");
+                pw.println("available with the language indicating that LGPLv2.1/GPLv2 or any later version");
+                pw.println("may be used, or where a choice of which version of the LGPL/GPL is applied is");
+                pw.println("unspecified.");
+                pw.println("********************************************************************************");
+                pw.println();
+
                 Set<String> licenseNames = new TreeSet<String>();
-                pw.printf("%-60s %10s %-40s %s\n", "NAME", "SIZE", "SHA-1 HASH", "LICENSE");
+                pw.printf("%-60s %s\n", "THIRDPARTY COMPONENT FILE", "LICENSE");
                 for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
                     String binary = entry.getKey();
                     File f = new File(build, binary.replace('/', File.separatorChar));
@@ -137,13 +146,13 @@ public class CreateLicenseSummary extends Task {
                         is.close();
                     }
                     Map<String,String> headers = entry.getValue();
-                    pw.printf("%-60s %10d %040X %s\n", binary, f.length(), new BigInteger(1, digest.digest()), getMaybeMissing(headers, "License"));
+                    pw.printf("%-60s %s\n", binary, getMaybeMissing(headers, "License"));
                     String license = headers.get("License");
                     if (license != null) {
                         licenseNames.add(license);
                     }
                 }
-                String[] otherHeaders = {"Name", "Version", "Description", "OSR", "Origin"};
+                String[] otherHeaders = {"Name", "Version", "Description", "Origin"};
                 Map<Map<String,String>,Set<String>> licenseHeaders2Binaries = new LinkedHashMap<Map<String,String>,Set<String>>();
                 for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
                     Map<String,String> headers = new HashMap<String,String>(entry.getValue());
@@ -157,11 +166,12 @@ public class CreateLicenseSummary extends Task {
                 }
                 for (Map.Entry<Map<String,String>,Set<String>> entry : licenseHeaders2Binaries.entrySet()) {
                     pw.println();
-                    for (String binary : entry.getValue()) {
-                        pw.println(binary);
-                    }
                     for (String header : otherHeaders) {
                         pw.printf("%s: %s\n", header, getMaybeMissing(entry.getKey(), header));
+                    }
+                    pw.println ("Files:");
+                    for (String binary : entry.getValue()) {
+                        pw.println(binary);
                     }
                 }
                 File licenses = new File(new File(nball, "nbbuild"), "licenses");
@@ -174,7 +184,11 @@ public class CreateLicenseSummary extends Task {
                         continue;
                     }
                     pw.println();
-                    pw.println("=========== " + licenseName + " ===========");
+                    pw.println();
+                    pw.println("===");
+                    pw.println("======");
+                    pw.println("========================= " + licenseName + " =========================");
+                    pw.println();
                     InputStream is = new FileInputStream(license);
                     try {
                         BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));

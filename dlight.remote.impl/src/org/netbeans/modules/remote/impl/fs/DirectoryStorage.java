@@ -58,16 +58,16 @@ import java.util.Map;
  * Keeps information about all files that reside in the directory
  * @author Vladimir Kvashin
  */
-public class DirectoryStorage {
+public final class DirectoryStorage {
 
     private final Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
-    private final File file;
+    private final File cacheFile;
     private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
     /* Incompatible version to discard */
     private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
 
     public DirectoryStorage(File file) {
-        this.file = file;
+        this.cacheFile = file;
     }
 
     /**
@@ -84,26 +84,26 @@ public class DirectoryStorage {
         synchronized (DirectoryStorage.this) {
             BufferedReader br = null;
             try {
-                br = new BufferedReader(new FileReader(file));
+                br = new BufferedReader(new FileReader(cacheFile));
                 // check version
                 String line = br.readLine();
                 String prefix = "VERSION="; // NOI18N
                 if (line == null || ! line.startsWith(prefix)) {
-                    throw new FormatException("Wrong file format " + file.getAbsolutePath() + " line " + line, false); //NOI18N)
+                    throw new FormatException("Wrong file format " + cacheFile.getAbsolutePath() + " line " + line, false); //NOI18N)
                 }
                 int version;
                 try {
                     version = Integer.parseInt(line.substring(prefix.length()));
                 } catch (NumberFormatException nfe) {
-                    throw new FormatException("wrong version format " + file.getAbsolutePath(), nfe); // NOI18N
+                    throw new FormatException("wrong version format " + cacheFile.getAbsolutePath(), nfe); // NOI18N
                 }
                 if (version > VERSION) {
                     throw new FormatException("directory cache file version " + version +  //NNOI18N
-                            " not supported: " + file.getAbsolutePath(), true); //NOI18N
+                            " not supported: " + cacheFile.getAbsolutePath(), true); //NOI18N
                 }
                 if (version < ODD_VERSION) {
                     throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
-                            ' ' + file.getAbsolutePath(), true); //NOI18N
+                            ' ' + cacheFile.getAbsolutePath(), true); //NOI18N
                 }
                 while ((line = br.readLine()) != null) {
                     if (line.length() == 0) {
@@ -122,8 +122,8 @@ public class DirectoryStorage {
     }
 
     public void touch() throws IOException {
-        if (file.exists()) {
-            file.setLastModified(System.currentTimeMillis());
+        if (cacheFile.exists()) {
+            cacheFile.setLastModified(System.currentTimeMillis());
         } else {
             store();
         }
@@ -133,7 +133,7 @@ public class DirectoryStorage {
         BufferedWriter wr = null;
         synchronized (this) {
             try {
-                wr = new BufferedWriter(new FileWriter(file));
+                wr = new BufferedWriter(new FileWriter(cacheFile));
                 wr.write("VERSION=" + VERSION + "\n"); //NOI18N
                 for (DirEntry entry : entries.values()) {
                     wr.write(entry.toExternalForm());
@@ -191,7 +191,7 @@ public class DirectoryStorage {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DirectoryStorage"); // NOI18N
-        sb.append(" file=").append(file.getAbsolutePath()); // NOI18N
+        sb.append(" file=").append(cacheFile.getAbsolutePath()); // NOI18N
         sb.append(" entries.size()=").append(entries.size()).append("\n"); // NOI18N
         int cnt = 0;
         for (DirEntry entry : entries.values()) {

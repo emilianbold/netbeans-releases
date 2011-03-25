@@ -212,13 +212,8 @@ public class CndPathUtilitities {
                     return fo.getPath();
                 }                        
             } else {
-                try {
-                    FileSystem fs = base.getFileSystem();
-                    return base.getPath() + CndFileUtils.getFileSeparatorChar(fs) + path;
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return base.getPath() + '/' + path;
-                }
+                // getPath always return "/" => use / as delim as well
+                return base.getPath() + '/' + path;
             }
         }
     }

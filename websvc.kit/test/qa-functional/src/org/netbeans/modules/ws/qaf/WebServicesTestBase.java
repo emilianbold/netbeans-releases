@@ -872,7 +872,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             case GLASSFISH:
                 return getServerNode(Server.GLASSFISH);
             case GLASSFISH_V3:
-                return getServerNode(Server.GLASSFISH_V3);
+                return getServerNode(Server.GLASSFISH);
             case JBOSS:
                 return getServerNode(Server.JBOSS);
             case TOMCAT:
