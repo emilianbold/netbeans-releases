@@ -88,6 +88,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.index.AbstractSearchRequest;
 import org.apache.maven.index.ArtifactAvailablility;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactContextProducer;
@@ -419,7 +420,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
-        
+
         int MAX_MAX_CLAUSE = 2048;  // conservative maximum for too general queries, like "c:*class*"
         
         Query q = fsr.getQuery();
@@ -433,35 +434,42 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }
-        
-        FlatSearchResponse response = null;
+
+        fsr.setResultHitLimit(AbstractSearchRequest.UNDEFINED_HIT_LIMIT + 1); // if ==1000 then may return exactly 1000 hits when there are more!
         int oldMax = BooleanQuery.getMaxClauseCount();
         try {
-            BooleanQuery.TooManyClauses tooManyC = null;
-            for (int i = oldMax; i <= MAX_MAX_CLAUSE; i*=2) {
+            int max = oldMax;
+            while (true) {
+                FlatSearchResponse response;
                 try {
-                    BooleanQuery.setMaxClauseCount(i);
+                    BooleanQuery.setMaxClauseCount(max);
                     response = searcher.searchFlatPaged(fsr, contexts);
+                    if (response.isHitLimitExceeded()) {
+                        int limit = fsr.getResultHitLimit();
+                        LOGGER.log(Level.FINE, "#197036: passed on {0} clauses processing {1} but encountered hit limit of {2}", new Object[] {max, q, limit});
+                        fsr.setResultHitLimit(limit * 2);
+                        continue;
+                    }
+                    LOGGER.log(Level.FINE, "passed on {0} clauses processing {1} with {2} hits", new Object[] {max, q, response.getTotalHits()});
+                    return response;
                 } catch (BooleanQuery.TooManyClauses exc) {
-                    tooManyC = exc;
-                    response = null;
-                    LOGGER.finest("TooManyClause on " + i + " clauses"); //NOI18N
+                    LOGGER.log(Level.FINE, "TooManyClauses on {0} clauses processing {1}", new Object[] {max, q});
+                    max *= 2;
+                    if (max > MAX_MAX_CLAUSE) {
+                        if (shouldThrow) {
+                            throw exc;
+                        } else {
+                            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, q});
+                            return null;
+                        }
+                    } else {
+                        continue;
+                    }
                 }
-                if (response != null) {
-                    LOGGER.finest("OK, passed on " + i + " clauses"); //NOI18N
-                    break;
-                }
-            }
-            if (response == null && shouldThrow) {
-                throw tooManyC;
             }
         } finally {
             BooleanQuery.setMaxClauseCount(oldMax);
         }
-        if (response == null) {
-            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, fsr.getQuery()});
-        }
-        return response;
     }
 
 

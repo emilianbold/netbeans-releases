@@ -60,9 +60,9 @@ public class MvnJEE6Suite extends J2eeTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                addServerTests(Server.GLASSFISH_V3,
-                addServerTests(Server.GLASSFISH_V3,
-                addServerTests(Server.GLASSFISH_V3, NbModuleSuite.emptyConfiguration(), JEE6MvnFromDBTest.class,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), JEE6MvnFromDBTest.class,
                     "testFromDB",
                     "testRun",
                     "testUndeploy"

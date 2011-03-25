@@ -110,7 +110,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         return fileSystem.getExecutionEnvironment();
     }
 
-    protected File getCache() {
+    /**
+     * local cache of this FileObject (for directory - local dir, for file - local file with content)
+     * @return 
+     */
+    protected final File getCache() {
         return cache;
     }
 
