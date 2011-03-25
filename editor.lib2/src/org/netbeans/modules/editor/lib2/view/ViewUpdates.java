@@ -268,7 +268,8 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
             mutex.lock();
             documentView.checkDocumentLockedIfLogging();
             try {
-                if (!documentView.isUpdatable()) {
+                // If the documentView has extra bounds do no view updates to improve stability
+                if (!documentView.isUpdatable() || documentView.hasExtraBounds()) {
                     return;
                 }
                 if (documentView.getViewCount() == 0) {
@@ -387,7 +388,8 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
             mutex.lock();
             documentView.checkDocumentLockedIfLogging();
             try {
-                if (!documentView.isUpdatable()) {
+                // If the documentView has extra bounds do no view updates to improve stability
+                if (!documentView.isUpdatable() || documentView.hasExtraBounds()) {
                     return;
                 }
                 if (documentView.getViewCount() == 0) {
