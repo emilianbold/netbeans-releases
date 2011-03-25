@@ -54,6 +54,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
+import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodsNode;
@@ -69,6 +71,8 @@ public class JavaMethodNode extends MethodNode {
     private SourceCodeSelection signature;
     private Set<Modifier> modifiers;
 
+    private static MethodNameFormatterFactory formatterFactory = MethodNameFormatterFactory.getDefault(new DefaultMethodNameFormatter(DefaultMethodNameFormatter.VERBOSITY_METHOD));
+    
     public JavaMethodNode(ClasspathInfo cpInfo, final ExecutableElement method, MethodsNode parent) {
         super(method.getSimpleName().toString(), parent);
         this.cpInfo = cpInfo;
@@ -94,6 +98,7 @@ public class JavaMethodNode extends MethodNode {
         if (signatureString[0] != null) {
             signature = new SourceCodeSelection(ElementUtilities.getBinaryName(getEnclosingClass(method)),
                     method.getSimpleName().toString(), signatureString[0]);
+            updateDisplayName(formatterFactory.getFormatter().formatMethodName(signature).toFormatted());
             modifiers = new HashSet<Modifier>();
 
             for (javax.lang.model.element.Modifier modifier : method.getModifiers()) {
