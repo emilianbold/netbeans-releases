@@ -2263,15 +2263,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         @Override
-        protected void index(Iterable<? extends Indexable> files, Context context) {            
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            contextState.put(context.getRootURI(),Pair.<Boolean,Boolean>of(context.isAllFilesIndexing(),context.checkForEditorModifications()));
             for (Indexable i : files) {
                 indexCounter++;
                 if (expectedIndex.remove(i.getURL())) {
                     //System.out.println("FooIndexer.index: " + i.getURL());
                     indexFilesLatch.countDown();
                 }
-            }
-            contextState.put(context.getRootURI(),Pair.<Boolean,Boolean>of(context.isAllFilesIndexing(),context.checkForEditorModifications()));
+            }            
             if (callBack != null) {
                 callBack.run();
                 callBack = null;
