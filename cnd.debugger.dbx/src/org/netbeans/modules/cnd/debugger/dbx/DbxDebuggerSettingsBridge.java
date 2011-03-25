@@ -251,7 +251,13 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	    boolean found = runDirectory.startsWith("//~") || runDirectory.startsWith("//."); // NOI18N
 	    if (found)
 		runDirectory = runDirectory.substring(2); // skip "//"
-	    dbx().sendCommand(0, 0, "cd " + runDirectory); //NOI18N
+	    if (runDirectory != null) {
+		// CR 7024148, 6767862
+		// quote run dir
+		runDirectory = "\"" + runDirectory; //NOI18N
+		runDirectory += "\"";//NOI18N
+		dbx().sendCommand(0, 0, "cd " + runDirectory); //NOI18N
+	    }
 	}
     }
 

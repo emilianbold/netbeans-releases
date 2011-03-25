@@ -1048,15 +1048,22 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	// Similar to DbxDebuggerSettingsBridge.applyRunDirectory()
 	String runDirectory = profileBridge().getCurrentSettings().runProfile().getRunDirectory();
 	runDirectory = localToRemote("applyRunDirectory1", runDirectory); // NOI18N
-	// CR 6983742, 7009459
-	boolean found = runDirectory.startsWith("//~"); // NOI18N
+	// CR 6983742, 7009459, 7024153
+	boolean found = runDirectory.startsWith("//~") || runDirectory.startsWith("//."); // NOI18N
 	if (found)
 	    runDirectory = runDirectory.substring(2); // skip "//"
-	if (runDirectory != null)
+	if (runDirectory != null) {
+	    // CR 7024148, 6767862
+	    // quote run dir
+	    runDirectory = "\"" + runDirectory; //NOI18N
+	    runDirectory += "\""; //NOI18N
 	    dbx.sendCommand(0, 0, "cd " + runDirectory); //NOI18N
+	}
 
-	// don't need to pathmap program because IDE already gives it to
-	// us in a mapped state
+	if (program != null && !program.isEmpty()) {
+	    program = "\"" + program; //NOI18N
+	    program += "\""; //NOI18N
+	}
         String cmd = "debug " + program + " " + image;	// NOI18N
         dbx.sendCommand(0, 0, cmd);
     }
