@@ -54,10 +54,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.math.BigInteger;
-import java.nio.channels.FileChannel;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -129,22 +125,9 @@ public class CreateLicenseSummary extends Task {
                 pw.println();
 
                 Set<String> licenseNames = new TreeSet<String>();
-                pw.printf("%-60s %s\n", "THIRDPARTY COMPONENT FILE", "LICENSE");
+                pw.printf("%-60s %s\n", "THIRD-PARTY COMPONENT FILE", "LICENSE");
                 for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
                     String binary = entry.getKey();
-                    File f = new File(build, binary.replace('/', File.separatorChar));
-                    MessageDigest digest;
-                    try {
-                        digest = MessageDigest.getInstance("SHA-1");
-                    } catch (NoSuchAlgorithmException x) {
-                        throw new BuildException(x, getLocation());
-                    }
-                    FileInputStream is = new FileInputStream(f);
-                    try {
-                        digest.update(is.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, f.length()));
-                    } finally {
-                        is.close();
-                    }
                     Map<String,String> headers = entry.getValue();
                     pw.printf("%-60s %s\n", binary, getMaybeMissing(headers, "License"));
                     String license = headers.get("License");
@@ -196,11 +179,13 @@ public class CreateLicenseSummary extends Task {
                         while ((line = r.readLine()) != null) {
                             pw.println(line);
                         }
+                        r.close();
                     } finally {
                         is.close();
                     }
                 }
                 pw.flush();
+                pw.close();
             } finally {
                 os.close();
             }
@@ -292,6 +277,7 @@ public class CreateLicenseSummary extends Task {
                         headers.put(m.group(1), m.group(2));
                     }
                 }
+                r.close();
             } finally {
                 is.close();
             }
@@ -346,7 +332,7 @@ public class CreateLicenseSummary extends Task {
                                 }
                             }
                             if (!ignored) {
-                                testBinariesAreUnique.append("\n" + otherPath + " and " + path + " are identical");
+                                testBinariesAreUnique.append('\n').append(otherPath).append(" and ").append(path).append(" are identical");
                             }
                         }
                     }
