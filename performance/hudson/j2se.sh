@@ -3,7 +3,7 @@
 if test ! -e /space/hudsonserver/master 
 then
 
-if [ -n $j2se_enabled ] 
+if [ -n "$j2se_enabled" ] 
 then
 
 cd $performance/j2se
