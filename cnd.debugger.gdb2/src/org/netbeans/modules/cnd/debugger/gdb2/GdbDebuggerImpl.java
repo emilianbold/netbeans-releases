@@ -2605,7 +2605,7 @@ import org.openide.util.Exceptions;
             get_locals = true;
             if ((state().isProcess || state().isCore) && !state().isRunning) {
                 // have frame args already
-                getMILocals(false); // from current frame
+                getMILocals(true); // from current frame
             }
         } else {
             get_locals = false;
