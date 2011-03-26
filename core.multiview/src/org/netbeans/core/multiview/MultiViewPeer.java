@@ -639,14 +639,20 @@ public final class MultiViewPeer  {
     public void updateName() {
         // is called before setMultiViewDescriptions() need to check for null.
         if (model != null) {
-            MultiViewElement el = model.getActiveElement();
-            if (el.getVisualRepresentation() instanceof Pane) {
-                Pane pane = (Pane)el.getVisualRepresentation();
-                pane.updateName();
-                peer.setDisplayName(pane.getComponent().getDisplayName());
+            for (MultiViewDescription mvd : model.getDescriptions()) {
+                MultiViewElement el = model.getElementForDescription(
+                    mvd, MultiViewCloneableTopComponent.isSourceView(mvd)
+                );
+                if (el == null) {
+                    continue;
+                }
+                if (el.getVisualRepresentation() instanceof Pane) {
+                    Pane pane = (Pane)el.getVisualRepresentation();
+                    pane.updateName();
+                    peer.setDisplayName(pane.getComponent().getDisplayName());
+                }
             }
         }
-        //TODO
     }
     
     public Lookup getLookup() {
