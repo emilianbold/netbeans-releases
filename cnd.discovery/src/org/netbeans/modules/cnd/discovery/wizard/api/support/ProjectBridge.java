@@ -82,7 +82,7 @@ import org.openide.util.Utilities;
  */
 public class ProjectBridge {
     private String baseFolder;
-    private MakeConfigurationDescriptor makeConfigurationDescriptor;
+    private final MakeConfigurationDescriptor makeConfigurationDescriptor;
     private Project project;
     private Set<Project> resultSet = new HashSet<Project>();
     private Map<String,Item> canonicalItems;
@@ -94,6 +94,8 @@ public class ProjectBridge {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
             makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        } else {
+            makeConfigurationDescriptor = null;
         }
     }
 

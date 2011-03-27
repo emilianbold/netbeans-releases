@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb2;
+package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.beans.Customizer;
 
-public final class GdbLocal {
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+import org.netbeans.spi.debugger.ui.Controller;
+
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class NativeBreakpointCustomizer extends JPanel implements Customizer, Controller {
     
-    private String name;
-    private String type;
-    private String value;
-    private boolean simple;
-
-    public GdbLocal(MIValue localvar) {
-	MIValue namev = localvar.asTuple().valueOf("name"); // NOI18N
-	if (namev != null)
-	    name = namev.asConst().value();
-	else
-	    name = "";
-	MIValue typev = localvar.asTuple().valueOf("type"); // NOI18N
-	if (typev != null)
-	    type = typev.asConst().value();
-	else
-	    type = "";
-	MIValue valuev = localvar.asTuple().valueOf("value"); // NOI18N
-	if (valuev != null) {
-	    value = valuev.asConst().value();
-	    simple = true;
-	} else {
-	    value = GdbDebuggerImpl.STRUCT_VALUE;
-	    simple = false;
+    private JComponent c;
+    
+    public void setObject(Object bean) {
+        if (!(bean instanceof NativeBreakpoint)) {
+            throw new IllegalArgumentException(bean.toString());
         }
+        init((NativeBreakpoint) bean);
+    }
+    
+    private void init(NativeBreakpoint b) {
+        c = b.getBreakpointType().getCustomizer(b.makeEditableCopy());
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        add(c, gbc);
     }
 
-    public String getName() {
-	return name;
+    public boolean ok() {
+        return ((ControllerProvider) c).getController().ok();
     }
 
-    public String getType() {
-	return type;
+    public boolean cancel() {
+        return ((ControllerProvider) c).getController().cancel();
     }
 
-    public String getValue() {
-	return value;
-    }
-
-    public void setValue(String value) {
-	this.value = value;
-    }
-
-    public boolean isSimple() {
-        return simple;
-    }
 }

@@ -119,8 +119,9 @@ public class DbgActionHandler implements ProjectActionHandler {
         // We can't use the clone becasue of dbxgui and and we can't use the original because of on windows we want to use a modified PATH.
         // We need to figure out a better solution but this should work for now (with no regressions)
         // See IZ 195975
+        // Same for MacOS, see IZ 196921
         int platform = ((MakeConfiguration) configuration).getDevelopmentHost().getBuildPlatform();
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS || platform == PlatformTypes.PLATFORM_MACOSX) {
             profile = pae.getProfile(); // Use clone on windows because of modified PATH
         } else {
             profile = configuration.getProfile(); // Don't use clone on Solaris/Linux beacuse of interaction with dbxgui. Dbxgui sets values with for instance runargs xxx ...

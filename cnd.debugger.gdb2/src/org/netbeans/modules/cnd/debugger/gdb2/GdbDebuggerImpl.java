@@ -2605,7 +2605,7 @@ import org.openide.util.Exceptions;
             get_locals = true;
             if ((state().isProcess || state().isCore) && !state().isRunning) {
                 // have frame args already
-                getMILocals(false); // from current frame
+                getMILocals(true); // from current frame
             }
         } else {
             get_locals = false;
@@ -2659,13 +2659,13 @@ import org.openide.util.Exceptions;
         int size = locals_list.size();
         int local_count = size;
 
-        MITList param_list = null;
+        List<GdbLocal> param_list = null;
         int params_count = 0;
 
         // paramaters
         GdbFrame cf = getCurrentFrame();
         if (cf != null) {
-            param_list = cf.getMIArgs();
+            param_list = cf.getArgsList();
             if (param_list != null) {
                 params_count = param_list.size();
             }
@@ -2701,8 +2701,7 @@ import org.openide.util.Exceptions;
 
         // iterate through frame arguments list
         for (int vx = 0; vx < params_count; vx++) {
-            MIValue param = (MIValue) param_list.get(vx);
-            GdbLocal loc = new GdbLocal(param);
+            GdbLocal loc = param_list.get(vx);
             GdbVariable gv = null;
 	    String var_name = loc.getName();
 	    String var_value = loc.getValue();
@@ -4282,6 +4281,10 @@ import org.openide.util.Exceptions;
 
             @Override
                     protected void onDone(MIRecord record) {
+                        GdbFrame currentFrame = getCurrentFrame();
+                        if (currentFrame != null) {
+                            currentFrame.varUpdated(var.getFullName(), value);
+                        }
                         updateMIVar();
                         finish();
                     }
