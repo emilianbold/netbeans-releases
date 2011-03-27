@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -40,36 +40,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.spi;
+package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
-import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
+import org.netbeans.spi.debugger.ui.Controller;
 
 /**
- *
- * @author lahvac
+ * Copied from JPDA implementation
+ * @author Martin Entlicher
  */
-public class MatcherUtilities {
+public interface ControllerProvider {
 
-    public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern) {
-        return matches(ctx, variable, pattern, false);
-    }
-
-    //fillInVariables is a hack to allow declarative hint debugging
-    public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, boolean fillInVariables) {
-        Scope s = Utilities.constructScope(ctx.getInfo(), Collections.<String, TypeMirror>emptyMap());
-        Tree  patternTree = Utilities.parseAndAttribute(ctx.getInfo(), pattern, s);
-        TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTree);
-        
-        return CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variable, true, ctx, fillInVariables, null, new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN);
-    }
-
+    public Controller getController();
+    
 }

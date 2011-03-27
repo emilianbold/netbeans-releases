@@ -103,7 +103,14 @@ public class RemoteFileUtil {
         if (result == null) {
             String absRootPath = CndPathUtilitities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
             try {
-                result = InvalidFileObjectSupport.getInvalidFileObject(baseFileObject.getFileSystem(), absRootPath);
+                // XXX:fullRemote we use old logic for local and new for remote
+                // but remote approach for local gives #197093 -  Exception: null file
+                final FileSystem fs = baseFileObject.getFileSystem();
+                if (CndFileUtils.isLocalFileSystem(fs)) {
+                    result = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+                } else {
+                    result = InvalidFileObjectSupport.getInvalidFileObject(fs, absRootPath);
+                }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
                 result = InvalidFileObjectSupport.getInvalidFileObject(InvalidFileObjectSupport.getDummyFileSystem(), absRootPath);

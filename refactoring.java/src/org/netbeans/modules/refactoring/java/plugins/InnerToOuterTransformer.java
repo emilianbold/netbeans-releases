@@ -110,7 +110,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
             if (!workingCopy.getTypes().isSubtype(inner.asType(), workingCopy.getElementUtilities().enclosingTypeElement(current).asType())) {
                 IdentifierTree m;
-                if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC)) {
+                if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC) || current.getKind().isClass() ||  current.getKind().isInterface() ) {
                     m = make.Identifier(outer.getSimpleName().toString() + "." + node.getName().toString()); // NOI18N
                 } else {
                     m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N

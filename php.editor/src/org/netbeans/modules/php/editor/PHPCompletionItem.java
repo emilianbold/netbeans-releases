@@ -256,11 +256,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && (ifq.getIn() == null || ifq.getIn().isEmpty())
+                    boolean fncOrConstFromDefaultNamespace = (((ifq instanceof FunctionElement) || (ifq instanceof ConstantElement)) 
+                            && (ifq.getIn() == null || ifq.getIn().isEmpty())
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
                     final boolean isUnqualified = ifq.isAliased() &&
                             (ifq instanceof AliasedElement) && ((AliasedElement)ifq).isNameAliased();
-                    if (!fncFromDefaultNamespace && !isUnqualified) {
+                    if (!fncOrConstFromDefaultNamespace && !isUnqualified) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());

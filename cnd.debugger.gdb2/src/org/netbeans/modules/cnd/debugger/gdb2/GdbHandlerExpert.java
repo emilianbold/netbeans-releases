@@ -265,7 +265,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 			   NativeBreakpoint template) {
 	NativeBreakpointType type = null;
 
-	type = (NativeBreakpointType) template.getBreakpointType();
+	type = template.getBreakpointType();
 
 	NativeBreakpoint newBreakpoint = null;
 	if (type != null)

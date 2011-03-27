@@ -255,8 +255,10 @@ final class ViewBuilder {
         
         assert (matchOffset >= 0) : "matchOffset=" + matchOffset; // NOI18N
         assert (paragraphViewEndOffset >= 0) : "paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
-        assert (matchOffset <= docViewEndOffset) : "matchOffset=" + matchOffset + // NOI18N
-                " > docViewEndOffset=" + docViewEndOffset; // NOI18N
+        if (matchOffset > docViewEndOffset) {
+            throw new IllegalStateException("matchOffset=" + matchOffset + // NOI18N
+                " > docViewEndOffset=" + docViewEndOffset);
+        }
 
         this.prevViewEndOffset = startOffset;
 

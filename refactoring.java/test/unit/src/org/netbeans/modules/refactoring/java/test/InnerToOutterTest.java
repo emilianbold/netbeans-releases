@@ -57,6 +57,15 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public InnerToOutterTest(String name) {
         super(name);
     }
+    
+    public void test196955() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { class B { } class F { B b; } }"));
+        performInnerToOuterTest(true);
+        verifyContent(src,
+                      new File("t/F.java", "package t; class F { A.B b; A outer; F(A outer) { this.outer = outer; } } "),
+                      new File("t/A.java", "package t; public class A { class B { } }"));
+    }
 
     public void test178451() throws Exception {
         writeFilesAndWaitForScan(src,
