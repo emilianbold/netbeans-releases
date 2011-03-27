@@ -55,6 +55,10 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
                 </file>
 
+                <file name="org-netbeans-modules-php-smarty-editor-indent-TplIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
@@ -97,6 +101,10 @@
                     <file name="SeparatorBeforeCut.instance">
                         <attr intvalue="1200" name="position"/>
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+
+                    <file name="format">
+                        <attr intvalue="750" name="position"/>
                     </file>
 
                     <file name="SeparatorAfterFormat.instance">
