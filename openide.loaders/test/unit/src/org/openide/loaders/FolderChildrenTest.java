@@ -77,7 +77,6 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -445,6 +444,7 @@ public class FolderChildrenTest extends NbTestCase {
     public void testChildrenListenToFilesystemByABadea () throws Exception {
         doChildrenListenToFilesystem (false);
     }
+    @RandomlyFails // NB-Core-Build #6258: FolderChildren doesn't contain /hudson/workdir/jobs/NB-Core-Build/workspace/openide.loaders/build/test/unit/work/o.o.l.F/cltfbab-1/workFolder/C.txt expected:<1> but was:<0>
     public void testChildrenListenToFileByABadea () throws Exception {
         doChildrenListenToFilesystem (true);
     }
