@@ -275,7 +275,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     /*package*/ void setAttribute(RemoteFileObjectBase file, String attrName, Object value) {
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
-            File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
+            File attr = getAttrFile(parent);
             Properties table = readProperties(attr);
             String translatedAttributeName = translateAttributeName(file, attrName);
             String encodedValue = encodeValue(value);
@@ -302,6 +302,11 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
+    private File getAttrFile(RemoteFileObjectBase parent) {
+        File attr = new File(parent.getCache(), ATTRIBUTES_FILE_NAME);
+        return attr;
+    }
+
     /*package*/ Object getAttribute(RemoteFileObjectBase file, String attrName) {
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
@@ -316,7 +321,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
                 return null;
             }
-            File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
+            File attr = getAttrFile(parent);
             Properties table = readProperties(attr);
             return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
         }
@@ -326,7 +331,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     /*package*/ Enumeration<String> getAttributes(RemoteFileObjectBase file) {
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
-            File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
+            File attr = getAttrFile(parent);
             Properties table = readProperties(attr);
             List<String> res = new ArrayList<String>();
             Enumeration<Object> keys = table.keys();

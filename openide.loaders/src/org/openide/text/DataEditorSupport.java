@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.CharConversionException;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -445,26 +446,23 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     private static boolean checkIfCharsetCanDecodeFile(FileObject fo, Charset charset) {
         try {
-            int BUF_SIZE = 1024;
+            int BUF_SIZE = 1024*4;
 
             BufferedInputStream input = new BufferedInputStream(fo.getInputStream(), BUF_SIZE);
             try {
                 CharsetDecoder decoder = charset.newDecoder();
                 decoder.reset();
-                byte[] buffer = new byte[BUF_SIZE];
-                int len = input.read(buffer);
-                if (len > 0) {
-                    try {
-                        decoder.decode(ByteBuffer.wrap(buffer, 0, len));
-                    } catch (CharacterCodingException e) {
-                        ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
-                        return false;
-                    } catch (IllegalStateException e) {
-                        if (!e.getMessage().contains("CODING_END")) {
-                            ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
-                            return false;
-                        }
-                    }
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), decoder), BUF_SIZE);
+                    char[] buf = new char[BUF_SIZE];
+                    while (reader.read(buf) > 0) {}
+                    reader.close();
+                } catch (CharacterCodingException e) {
+                    ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
+                    return false;
+                } catch (IllegalStateException e) {
+                    ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
+                    return false;
                 }
             } finally {
                 input.close();

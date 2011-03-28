@@ -268,13 +268,13 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
     }
 
-    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
+    protected void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
     }
 
     @Override
     public void refresh(boolean expected) {
         try {
-            refreshImpl();
+            refreshImpl(true);
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex);
         } catch (IOException ex) {
