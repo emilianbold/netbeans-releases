@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * @author Egor Ushakov
@@ -64,23 +67,42 @@ public class ValuePresenter {
         }
         return value;
     }
-
+    
+    public static boolean acceptsType(String type) {
+        for (Presenter vp : presenters) {
+            if (vp.acceptsType(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static interface Presenter {
+        boolean acceptsType(String type);
         boolean accepts(String type, String value);
         String present(String type, String value);
     }
 
     private static class StdStringPresenter implements Presenter {
         private static final String VALUE_PREFIX = "_M_p"; // NOI18N
-        private static final String TYPE_NAME = "string"; // NOI18N
-        private static final String TYPE_NAME2 = "string &"; // NOI18N
+        private static final Set<String> TYPES = new HashSet<String>();
+        static {
+            TYPES.add("string"); // NOI18N
+            TYPES.add("string &"); // NOI18N
+            TYPES.add("std::string"); // NOI18N
+            TYPES.add("std::string &"); // NOI18N
+        }
 
+        public boolean acceptsType(String type) {
+            return TYPES.contains(type);
+        }
+        
         public boolean accepts(String type, String value) {
             // if type is not provided - try to check value
             if (type == null) {
                 return checkValue(value);
             }
-            return (TYPE_NAME.equals(type) || TYPE_NAME2.equals(type)) && value != null && value.contains(VALUE_PREFIX);
+            return acceptsType(type) && value != null && value.contains(VALUE_PREFIX);
         }
 
         // checks if value is of string type

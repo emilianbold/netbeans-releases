@@ -2164,7 +2164,7 @@ import org.openide.util.Exceptions;
     }
     
     private void updateStringValue(final GdbVariable v) {
-        if (!"string".equals(v.getType())) { //NOI18N
+        if (!ValuePresenter.acceptsType(v.getType())) { //NOI18N
             return;
         }
         MiCommandImpl cmd = new MiCommandImpl("-data-evaluate-expression \"" + v.getFullName() + '\"') { //NOI18N
