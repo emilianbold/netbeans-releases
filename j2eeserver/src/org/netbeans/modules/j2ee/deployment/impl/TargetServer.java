@@ -74,6 +74,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -255,11 +256,19 @@ public class TargetServer {
         return acd;
     }
 
-    private File initialDistribute(Target target, ProgressUI ui) {
+    private File initialDistribute(Target target, ProgressUI ui) throws ServerException {
         InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, target);
         try {
             ui.setProgressObject(sfd);
-            return sfd.distribute();
+            File ret = sfd.distribute();
+
+            if (sfd.getDeploymentStatus().isFailed()) {
+                String msg = NbBundle.getMessage(TargetServer.class, "MSG_DeployFailed",
+                        sfd.getDeploymentStatus().getMessage());
+                throw new ServerException(msg);
+            }
+
+            return ret;
         } finally {
             ui.setProgressObject(null);
         }

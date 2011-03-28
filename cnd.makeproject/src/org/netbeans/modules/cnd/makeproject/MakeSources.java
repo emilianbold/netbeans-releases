@@ -174,6 +174,8 @@ public final class MakeSources implements Sources, AntProjectListener {
             completeSouces.set(false);
             List<String> absSourceRoots = getAbsoluteSourceRootsFromProjectXML();
             if (absSourceRoots != null) {
+                // mark source info as valid (got it from project.xml directly)
+                completeSouces.set(true);
                 sourceRootList = new LinkedHashSet<String>();
                 sourceRootList.addAll(absSourceRoots);
             }
@@ -182,6 +184,8 @@ public final class MakeSources implements Sources, AntProjectListener {
             sourceRootList = new LinkedHashSet<String>();
             MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor(true);
             if (pd != null) {
+                // mark source info as valid
+                completeSouces.set(true);
                 // Add external folders to sources.
                 if (pd.getVersion() < 41) {
                     Item[] projectItems = pd.getProjectItems();
@@ -231,7 +235,7 @@ public final class MakeSources implements Sources, AntProjectListener {
         }
         if (project.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
             FileObjectBasedSources sources = new FileObjectBasedSources();
-            MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor(true);            
+            MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor(true);
             if (pd != null) {
                 String baseDir = pd.getBaseDir();
                 Set<FileObject> added = new HashSet<FileObject>();
