@@ -184,7 +184,8 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) { // See 193227
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory() && // See 193227
+                CndFileUtils.isLocalFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem())) { // See 196885 
             File ioFile = FileUtil.toFile(file);
             if (ioFile.isDirectory()) {
                 return;
