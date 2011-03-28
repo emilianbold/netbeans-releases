@@ -55,7 +55,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -189,8 +188,10 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         }
 
         folderPanel = Templates.createSimpleTargetChooser(project, sourceGroups);
+        WizardDescriptor.Panel firstPanel = new JSFValidationPanel(
+                Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel));
 
-        panels = new WizardDescriptor.Panel[] { folderPanel };
+        panels = new WizardDescriptor.Panel[] { firstPanel };
 
         // Creating steps.
         Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
