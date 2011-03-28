@@ -167,11 +167,17 @@ public class RefreshManager {
             RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
         }        
         synchronized (queueLock) {
-            queue.addAll(toTheHead ? 0 : queue.size(), fileObjects);
-            set.addAll(fileObjects);
+            for (RemoteFileObjectBase fo : fileObjects) {
+                if (set.contains(fo)) {
+                    queue.remove(fo);
+                } else {
+                    set.add(fo);
+                }
+                queue.add(toTheHead ? 0 : queue.size(), fo);
+            }
         }
         updateTask.schedule(0);
-    }    
+    }
     
     private static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
