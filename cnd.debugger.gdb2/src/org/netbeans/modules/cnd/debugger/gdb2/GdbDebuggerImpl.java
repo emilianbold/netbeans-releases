@@ -2164,7 +2164,7 @@ import org.openide.util.Exceptions;
     }
     
     private void updateStringValue(final GdbVariable v) {
-        if (!"string".equals(v.getType())) { //NOI18N
+        if (!ValuePresenter.acceptsType(v.getType())) { //NOI18N
             return;
         }
         MiCommandImpl cmd = new MiCommandImpl("-data-evaluate-expression \"" + v.getFullName() + '\"') { //NOI18N
@@ -2562,7 +2562,7 @@ import org.openide.util.Exceptions;
         if (expandMacros) {
             expr = MacroSupport.expandMacro(this, v.getVariableName());
         }
-        String cmdString = "-var-create - * " + expr; // NOI18N
+        String cmdString = "-var-create - @ " + expr; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
