@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -393,7 +393,7 @@ public final class DeployOnSaveManager {
                 }
             }
 
-            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+            DeploymentTarget deploymentTarget = new DeploymentTarget(provider, null);
             TargetServer server = new TargetServer(deploymentTarget);
 
             DeploymentState state;
