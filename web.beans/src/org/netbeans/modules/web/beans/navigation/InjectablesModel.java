@@ -152,7 +152,7 @@ public final class InjectablesModel extends DefaultTreeModel
         super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), 
                 null, null);
     }
-
+    
     private void update( final List<ElementHandle<TypeElement>> typeHandles ,
             final Map<ElementHandle<?>,ElementHandle<TypeElement>> 
             productions ) 

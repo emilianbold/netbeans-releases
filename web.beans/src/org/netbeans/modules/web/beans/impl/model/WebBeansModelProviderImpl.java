@@ -464,23 +464,28 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     
     private static void doGetStereotypes( Element element , 
             List<AnnotationMirror> result ,Set<Element>  foundStereotypesElement,
-            StereotypeChecker checker , AnnotationModelHelper helper ) 
+            final StereotypeChecker checker , AnnotationModelHelper helper ) 
     {
-        List<? extends AnnotationMirror> annotationMirrors = helper.
-            getCompilationController().getElements().getAllAnnotationMirrors( element );
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            TypeElement annotationElement = (TypeElement)annotationMirror.
-                getAnnotationType().asElement();
-            if ( foundStereotypesElement.contains( annotationElement)){
-                continue;
+        TransitiveAnnotationHandler handler = new TransitiveAnnotationHandler(){
+
+            @Override
+            public boolean proceed( Element annotatedElement,
+                    TypeElement element , boolean isTargetAnnotation) 
+            {
+                return isTargetAnnotation;
             }
-            if ( isStereotype( annotationElement, checker ) ){
-                foundStereotypesElement.add( annotationElement );
-                result.add(annotationMirror);
-                doGetStereotypes(annotationElement, result, 
-                        foundStereotypesElement, checker , helper);
+            
+            /* (non-Javadoc)
+             * @see org.netbeans.modules.web.beans.impl.model.DecoratorInterceptorLogic.TransitiveAnnotationHandler#isTargetAnotation(javax.lang.model.element.TypeElement)
+             */
+            @Override
+            public boolean isTargetAnotation( TypeElement element ) {
+                return isStereotype( element, checker );
             }
-        }
+            
+        };
+        transitiveVisitAnnotatedElements(element, result, foundStereotypesElement, 
+                helper, handler);
     }
     
     private String getNamedName( Element element, AnnotationMirror namedAnnotation )

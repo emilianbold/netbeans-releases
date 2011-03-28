@@ -40,60 +40,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.navigation;
+package org.netbeans.modules.web.beans.impl.model;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.swing.JLabel;
+import java.util.List;
+import java.util.Map;
 
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable;
 
 
 /**
  * @author ads
  *
  */
-public class EventsPanel extends InjectablesPanel {
-
-    private static final long serialVersionUID = -965978443984786734L;
-
-    public EventsPanel( Object[] subject, 
-            MetadataModel<WebBeansModel> metaModel , WebBeansModel model , 
-            EventsModel uiModel )
-    {
-        super(subject, metaModel, model, uiModel);
-        initLabels();
-    }
+class InterceptorObject extends PersistentObject implements Refreshable {
     
+    static final String INTERCEPTOR = "javax.interceptor.Interceptor";  // NOI18N
+
+    InterceptorObject( AnnotationModelHelper helper,
+            TypeElement typeElement )
+    {
+        super(helper, typeElement);
+        boolean valid = refresh(typeElement);
+        assert valid;
+    }
+
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#getSubjectElement(org.netbeans.api.java.source.ElementHandle, org.netbeans.modules.web.beans.api.model.WebBeansModel)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable#refresh(javax.lang.model.element.TypeElement)
      */
     @Override
-    protected Element getSubjectElement( Element context, WebBeansModel model )
-    {
-        ExecutableElement method = (ExecutableElement)context;
-        return model.getObserverParameter( method );
+    public boolean refresh( TypeElement type ) {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        return annotationsByType.get( INTERCEPTOR ) != null ;
     }
 
-    private void initLabels() {
-        JLabel typeLabel = getTypeLabel();
-        Mnemonics.setLocalizedText(typeLabel,NbBundle.getMessage( 
-                ObserversPanel.class, "LBL_ObservedEventType") );       // NOI18N
-        typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSN_ObservedEventType"));       // NOI18N
-        typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSD_ObservedEventType"));       // NOI18N
-        
-        JLabel qualifiersLabel= getInjectionQualifiersLabel();
-        Mnemonics.setLocalizedText(qualifiersLabel,NbBundle.getMessage( 
-                ObserversPanel.class, "LBL_ObservedEventQualifiers") );  // NOI18N
-        qualifiersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSN_ObservedEventQualifiers"));  // NOI18N
-        qualifiersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSD_ObservedEventQualifiers"));  // NOI18N
-    }
 }

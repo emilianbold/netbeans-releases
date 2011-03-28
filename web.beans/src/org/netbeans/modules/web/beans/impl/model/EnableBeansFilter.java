@@ -84,6 +84,8 @@ class EnableBeansFilter {
     
     static final String EXTENSION = "javax.enterprise.inject.spi.Extension";// NOI18N
     
+    static String SCOPE = "javax.inject.Scope";                             // NOI18N
+    
     EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model ,
             boolean programmatic )
     {
@@ -328,8 +330,8 @@ class EnableBeansFilter {
             LinkedList<Element> types , Set<Element> elements)
     {
         try {
-            String scope = ParameterInjectionPointLogic.getScope(typeElement, 
-                    getWebBeansModel());
+            String scope = ResultImpl.getScope(typeElement, 
+                    getWebBeansModel().getHelper());
             Elements elementsUtil = getHelper().getCompilationController().
                 getElements();
             TypeElement scopeElement = elementsUtil.getTypeElement(scope);
@@ -338,7 +340,7 @@ class EnableBeansFilter {
              * scope is a pseudo-scope such as @Dependent.
              */
             if ( getHelper().hasAnnotation( elementsUtil.getAllAnnotationMirrors( 
-                    scopeElement), ScopeChecker.SCOPE) )
+                    scopeElement), SCOPE) )
             {
                 return;
             }

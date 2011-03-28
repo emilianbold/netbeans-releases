@@ -50,7 +50,6 @@ import javax.lang.model.element.Element;
 import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
 import org.netbeans.modules.web.beans.api.model.Result.Error;
 import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
-import org.netbeans.modules.web.beans.api.model.Result.ResultKind;
 
 
 /**

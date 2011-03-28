@@ -126,6 +126,22 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "public @interface "+name+"  {} ");
     }
     
+    protected void createInterceptorBinding(String name ) throws IOException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/"+name+".java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, TYPE}) "+
+                "public @interface "+name+"  {} ");
+    }
+    
     /**
      * This method should be changed to loading jar which injection annotations
      * into classpath.   
@@ -219,8 +235,8 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({METHOD, FIELD }) "+          
                 "public @interface Produces  {}");
         
-        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Nonbinding.java",
-                "package javax.enterprise.inject; " +
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/util/Nonbinding.java",
+                "package javax.enterprise.util; " +
                 "import static java.lang.annotation.ElementType.METHOD; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import java.lang.annotation.*; "+
@@ -429,6 +445,28 @@ public class CommonTestCase extends JavaSourceTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/spi/Extension.java",
                 "package javax.enterprise.inject.spi; " +
                 "public interface Extension  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/interceptor/InterceptorBinding.java",
+                "package javax.interceptor; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+      
+                "public @interface InterceptorBinding  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/interceptor/Interceptor.java",
+                "package javax.interceptor; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+      
+                "public @interface Interceptor  {" +
+                "}");
     }
 
     public final void assertFindParameterResultInjectables(VariableElement element,

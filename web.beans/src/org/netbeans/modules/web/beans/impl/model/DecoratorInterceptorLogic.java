@@ -52,6 +52,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -60,6 +61,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
@@ -84,14 +86,105 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
         Collection<TypeElement> result = new ArrayList<TypeElement>( decorators.size());
         for (DecoratorObject decoratorObject : decorators) {
             TypeElement decorator = decoratorObject.getTypeElement();
-            if ( isDecorator( decorator , element )){
+            if ( isDecoratorFor( decorator , element )){
                 result.add( decorator );
             }
         }
         return result;
     }
-
-    private boolean isDecorator( TypeElement decorator, TypeElement element ) {
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInterceptedElements(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    public Collection<Element> getInterceptedElements( TypeElement element ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInterceptorBindings(javax.lang.model.element.Element)
+     */
+    @Override
+    public Collection<AnnotationMirror> getInterceptorBindings( Element element ){
+        final InterceptorBindingChecker interceptorChecker = new InterceptorBindingChecker(
+                getModel().getHelper() );
+        final StereotypeChecker stereotypeChecker = new StereotypeChecker( 
+                getModel().getHelper());
+        TransitiveAnnotationHandler handler = new IntereptorBindingHandler(
+                interceptorChecker, stereotypeChecker);
+        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        Set<Element> foundInterceptorBindings = new HashSet<Element>(); 
+        transitiveVisitAnnotatedElements(element, result, foundInterceptorBindings, 
+                getModel().getHelper(), handler);
+        
+        if ( element.getKind() == ElementKind.METHOD ){
+            TypeElement enclosedClass = getCompilationController().
+                getElementUtilities().enclosingTypeElement(element);
+            Collection<AnnotationMirror> classBindings = getInterceptorBindings( 
+                    enclosedClass );
+            result.addAll( classBindings );
+        }
+        return result;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInterceptors(javax.lang.model.element.Element)
+     */
+    @Override
+    public Collection<TypeElement> getInterceptors( Element element ) {
+        Collection<InterceptorObject> interceptors = getModel().
+            getInterceptorsManager().getObjects();
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        
+        Collection<AnnotationMirror> elementBindings = getInterceptorBindings(element);
+        Set<String> elementBindingsFqns = getAnnotationFqns(elementBindings);
+        
+        for (InterceptorObject interceptor : interceptors) {
+            TypeElement typeElement = interceptor.getTypeElement();
+            if ( hasInterceptorBindings( typeElement , elementBindingsFqns )){
+                result.add(typeElement);
+            }
+        }
+        filterBindingsByMembers(elementBindings, result, TypeElement.class);
+        return result;
+    }
+    
+    static void transitiveVisitAnnotatedElements( Element element,
+            List<AnnotationMirror> result, Set<Element> foundElements,
+            AnnotationModelHelper helper, TransitiveAnnotationHandler handler )
+    {
+        List<? extends AnnotationMirror> annotationMirrors = helper
+                .getCompilationController().getElements().getAllAnnotationMirrors(element);
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            TypeElement annotationElement = (TypeElement) annotationMirror
+                    .getAnnotationType().asElement();
+            if (foundElements.contains(annotationElement)) {
+                continue;
+            }
+            foundElements.add(annotationElement);
+            boolean isTargetAnnotation = handler.isTargetAnotation(annotationElement);
+            if ( isTargetAnnotation ){
+                result.add(annotationMirror);
+            }
+            if (handler.proceed(element, annotationElement, isTargetAnnotation)) {
+                transitiveVisitAnnotatedElements(annotationElement, result,
+                        foundElements, helper, handler );
+            }
+        }
+    }
+    
+    private boolean hasInterceptorBindings( TypeElement typeElement, 
+            Set<String> elementBindings) 
+    {
+        Collection<AnnotationMirror> requiredBindings = getInterceptorBindings( typeElement );
+        Set<String> requiredInterceptorFqns = getAnnotationFqns( requiredBindings );
+        
+        // element should contain all interceptor binding declared for Interceptor
+        return elementBindings.containsAll(requiredInterceptorFqns) ;
+    }
+    
+    private boolean isDecoratorFor( TypeElement decorator, TypeElement element ) {
         /*
          * Tripple is used to get delegate Element and its TypeMirror.
          * If @Delegate injection point should be declared in each Decorator
@@ -261,6 +354,66 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
         }
         requiredAnnotationFqns.remove(DEFAULT_QUALIFIER_ANNOTATION);
         return elementAnnotationFqns.containsAll(requiredAnnotationFqns);
+    }
+    
+    private static final class IntereptorBindingHandler implements
+            TransitiveAnnotationHandler
+    {
+
+        private IntereptorBindingHandler(
+                InterceptorBindingChecker interceptorChecker,
+                StereotypeChecker stereotypeChecker )
+        {
+            this.interceptorChecker = interceptorChecker;
+            this.stereotypeChecker = stereotypeChecker;
+        }
+
+        @Override
+        public boolean proceed( Element annotatedElement,
+                TypeElement element , boolean isTargetAnnotation) 
+        {
+            /*
+             * proceed until annotation is either interceptor binding or stereotype 
+             */
+            if ( isTargetAnnotation ){
+                return true;
+            }
+            
+            stereotypeChecker.init(element);
+            boolean isStereotype = stereotypeChecker.check();
+            stereotypeChecker.clean();
+            
+            if ( isStereotype && 
+                    annotatedElement.getKind() == ElementKind.ANNOTATION_TYPE )
+            {
+                /*
+                 * only stereotypes are transitive : interceptor binding
+                 * annotated by stereotype doesn't have interceptor bindings 
+                 * of stereotype  
+                 */
+                stereotypeChecker.init((TypeElement)annotatedElement);
+                isStereotype = stereotypeChecker.check();
+                stereotypeChecker.clean();
+            }
+            return isStereotype;
+        }
+
+        @Override
+        public boolean isTargetAnotation( TypeElement element ) {
+            interceptorChecker.init(element);
+            boolean isInterceptor = interceptorChecker.check();
+            interceptorChecker.clean();
+            return isInterceptor;
+        }
+        
+        private final InterceptorBindingChecker interceptorChecker;
+        private final StereotypeChecker stereotypeChecker;
+    }
+
+    interface TransitiveAnnotationHandler {
+        boolean proceed(Element annotatedElement, TypeElement element, 
+                boolean isTargerAnnotation );
+        boolean isTargetAnotation(TypeElement element );
     }
 
 }

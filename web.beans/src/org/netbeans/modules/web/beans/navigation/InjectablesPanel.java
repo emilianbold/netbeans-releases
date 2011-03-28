@@ -97,6 +97,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.api.model.CdiException;
+import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
@@ -139,10 +141,24 @@ public class InjectablesPanel extends javax.swing.JPanel {
     
     public InjectablesPanel(final Object[] subject, 
             MetadataModel<WebBeansModel> metaModel, final WebBeansModel model,
-            JavaHierarchyModel treeModel ) 
+            JavaHierarchyModel treeModel  ) 
+    {
+        this( subject , metaModel, model , treeModel , null );
+    }
+    
+    public InjectablesPanel(final Object[] subject, 
+            MetadataModel<WebBeansModel> metaModel, final WebBeansModel model,
+            JavaHierarchyModel treeModel , Result result ) 
     {
         myJavaHierarchyModel = treeModel;
         initComponents();
+        
+        if ( result instanceof Result.ResolutionResult ){
+            myResult = (Result.ResolutionResult)result;
+        }
+        else {
+            setVisibleScope(false);            
+        }
 
         // disable filtering for now: list of injectables will be always short
         mySeparator.setVisible(false);
@@ -500,8 +516,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private void setScope( WebBeansModel model,
             Element element ) throws CdiException
     {
-        if ( myScopeLabel.isVisible() ){
-            String scope = model.getScope(element);
+        if ( getResult() != null  ){
+            String scope = getResult().getScope(element);
             if ( scope == null ){
                 return ;
             }
@@ -916,6 +932,10 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 JComponent.WHEN_FOCUSED);
 
     }
+    
+    private ResolutionResult getResult() {
+        return myResult;
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -1142,4 +1162,6 @@ public class InjectablesPanel extends javax.swing.JPanel {
     private MetadataModel<WebBeansModel> myModel;
     
     private Component myLastFocusedComponent;
+    
+    private Result.ResolutionResult myResult;
 }

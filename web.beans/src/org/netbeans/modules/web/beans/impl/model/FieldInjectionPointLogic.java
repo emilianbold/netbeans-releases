@@ -338,7 +338,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     protected <T extends Element> void filterBindingsByMembers(
-            List<AnnotationMirror> bindingAnnotations,
+            Collection<AnnotationMirror> bindingAnnotations,
             Set<T> elementsWithBindings,  Class<T> clazz)
     {
         MemberBindingFilter<T> filter = MemberBindingFilter.get( clazz );

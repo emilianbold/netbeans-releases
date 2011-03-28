@@ -408,7 +408,8 @@ public class WebBeansActionHelper {
     
     static void showInjectablesDialog( MetadataModel<WebBeansModel> metamodel,
             WebBeansModel model, Object[] subject, 
-            InjectablesModel uiModel , String name ) 
+            InjectablesModel uiModel , String name , 
+            org.netbeans.modules.web.beans.api.model.Result result ) 
     {
         subject[2] = InspectActionId.INJECTABLES;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
@@ -418,7 +419,7 @@ public class WebBeansActionHelper {
                 "TITLE_Injectables" , name );//NOI18N
         dialog.setTitle( title );
         dialog.setContentPane( new InjectablesPanel(subject, metamodel, model,
-                uiModel ));
+                uiModel, result ));
         dialog.setVisible( true );
     }
     

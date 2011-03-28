@@ -87,6 +87,7 @@ public class ModelTest extends CommonTestCase {
                 "import javax.enterprise.inject.*; "+
                 "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
+                "import javax.enterprise.util.*; "+
                 "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
@@ -355,6 +356,7 @@ public class ModelTest extends CommonTestCase {
                 "import javax.enterprise.inject.*; "+
                 "import java.lang.annotation.*; "+
                 "import javax.inject.*; "+
+                "import javax.enterprise.util.*; "+
                 "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+

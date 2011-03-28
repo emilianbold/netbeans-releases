@@ -129,7 +129,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
         final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showInjectablesDialog(metaModel, model, 
-                    subject , uiModel , name );
+                    subject , uiModel , name , result );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
@@ -137,7 +137,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
                 @Override
                 public void run() {
                     WebBeansActionHelper.showInjectablesDialog(metaModel, 
-                            null , subject ,uiModel , name );
+                            null , subject ,uiModel , name , result);
                 }
             });
         }

@@ -50,9 +50,11 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -89,7 +91,7 @@ public class ScopeTest extends CommonTestCase {
                 "public class SubClass extends ChildClass{ " +
                 "}" );
         
-        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        final TestWebBeansModelImpl modelImpl = createModelImpl(true );
         MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
@@ -97,15 +99,15 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.SuperClass" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.SessionScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.SessionScoped");
                 
                 mirror = model.resolveType( "foo.ChildClass" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 mirror = model.resolveType( "foo.SubClass" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 return null;
             }
@@ -119,7 +121,7 @@ public class ScopeTest extends CommonTestCase {
                 "package foo; " +
                 "public class Clazz  { " +
                 "}" );
-        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        final TestWebBeansModelImpl modelImpl = createModelImpl(true );
         MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
@@ -127,7 +129,7 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Clazz" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.Dependent");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.Dependent");
                 return null;
             }
         });
@@ -170,7 +172,7 @@ public class ScopeTest extends CommonTestCase {
                 "public class Class3 extends Class2 { " +
                 "}" );
         
-        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        final TestWebBeansModelImpl modelImpl = createModelImpl(true );
         MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
@@ -178,15 +180,15 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Class1" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.SessionScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.SessionScoped");
                 
                 mirror = model.resolveType( "foo.Class2" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 mirror = model.resolveType( "foo.Class3" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
                 return null;
             }
         });
@@ -215,7 +217,7 @@ public class ScopeTest extends CommonTestCase {
                 "@CustomScope "+
                 "public class Clazz  { " +
                 "}" );
-        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        final TestWebBeansModelImpl modelImpl = createModelImpl(true );
         MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
@@ -223,7 +225,7 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Clazz" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "foo.CustomScope");
+                checkScope(modelImpl, clazz, "foo.CustomScope");
                 return null;
             }
         });
@@ -297,7 +299,7 @@ public class ScopeTest extends CommonTestCase {
                 "}" );
         
         
-        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        final TestWebBeansModelImpl modelImpl = createModelImpl(true );
         MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
@@ -305,17 +307,20 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Class1" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.SessionScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.SessionScoped");
                 
                 mirror = model.resolveType( "foo.Class3" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 mirror = model.resolveType( "foo.Class2" );
                 clazz = ((DeclaredType)mirror).asElement();
                 boolean exception = false;
+                
+                AnnotationModelHelper helper = modelImpl.getHelper();
+                ResultImpl result = new ResultImpl(null, null, helper);
                 try {
-                    model.getScope(clazz);
+                    result.getScope(clazz);
                 }
                 catch(CdiException e ){
                     exception = true;
@@ -328,10 +333,12 @@ public class ScopeTest extends CommonTestCase {
         });
     }
 
-    private void checkScope(WebBeansModel model , Element element, 
+    private void checkScope(TestWebBeansModelImpl model , Element element, 
             String fqn ){
         try {
-            String scope = model.getScope(element);
+            AnnotationModelHelper helper = model.getHelper();
+            ResultImpl result = new ResultImpl(null, null, helper);
+            String scope = result.getScope(element);
             assertEquals("Not expected scope type", fqn, scope);
         }
         catch ( CdiException e ){

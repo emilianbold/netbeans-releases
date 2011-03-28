@@ -264,15 +264,6 @@ public final class WebBeansModel {
     }
     
     /**
-     * Returns Scope FQN for the specified <code>element</code>.
-     * @param element element which scope needs to be got
-     * @return scope of the element
-     */
-    public String getScope( Element element ) throws CdiException {
-        return getProvider().getScope( element );
-    }
-    
-    /**
      * Returns decorators for given type <code>element</code>.
      * Decorator resolution is described in the 8.3 section of JSR-299 spec:
      * - element bean should be assignable to the @Delegate injection point according special rules
@@ -285,6 +276,41 @@ public final class WebBeansModel {
      */
     public Collection<TypeElement> getDecorators( TypeElement element ){
         return getProvider().getDecorators( element );
+    }
+    
+    /**
+     * Lookup interceptors ( classes annotated with @Interceptor ) which 
+     * are resolved for <code>element</code>.
+     * The <code>element</code> could be Class definition ( TypeElment ) 
+     * or method ( ExecutableElement ).
+     * Interceptors could be applied to the methods only but class 
+     * could also have interceptor bindings so this method could be 
+     * useful for classes also. 
+     * @param element type element or method element
+     * @return resolved interceptors  
+     */
+    public Collection<TypeElement> getInterceptors( Element element ){
+        return getProvider().getInterceptors( element );
+    }
+    
+    /**
+     * Find elements which are intercepted by <code>element</code>.
+     * <code>element</code> should be an interceptor.
+     * This method is inverse operation for method {@link #getInterceptors(Element)}. 
+     * @param element
+     * @return
+     */
+    public Collection<Element> getInterceptedElements( TypeElement element ){
+        return getProvider().getInterceptedElements( element );
+    }
+    
+    /**
+     * Returns interceptor bindings declared for <code>element</code>. 
+     * @param element element annotated with interceptor bindings
+     * @return interceptor bindings 
+     */
+    public Collection<AnnotationMirror> getInterceptorBindings( Element element ){
+        return getProvider().getInterceptorBindings(element);
     }
     
     public AbstractModelImplementation getModelImplementation(){

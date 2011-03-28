@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.impl.model.results;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -54,35 +53,42 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker;
 
 
 /**
  * @author ads
  *
  */
-public class StereotypeChecker extends RuntimeAnnotationChecker {
+class ScopeChecker extends RuntimeAnnotationChecker {
     
-    static final String STEREOTYPE = "javax.enterprise.inject.Stereotype";  //NOI18N
+    static String SCOPE = "javax.inject.Scope";                         // NOI18N
     
-    public StereotypeChecker(AnnotationModelHelper helper ){
-        init(null, helper);
-    }
+    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
     
-    public void init( TypeElement element) {
-        assert getElement() == null;
-        super.init(element, getHelper());
+    static ScopeChecker get(){
+        return new ScopeChecker();
     }
 
-
-    public void clean(){
-        init( null , getHelper() );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
+     */
+    @Override
+    protected Logger getLogger() {
+        return Logger.getLogger(ScopeChecker.class.getName());
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
+     */
+    @Override
+    protected String getAnnotation() {
+        return SCOPE;
+    }
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#checkTarget(java.util.Map)
      */
@@ -108,48 +114,17 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
                 } , null);
         
         parser.parse( types.get(Target.class.getCanonicalName() ));
-        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()) &&
-                        elementTypes.contains( ElementType.TYPE.toString())
-                        && elementTypes.size() == 3)
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 2 && 
-                elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()))
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 1 ){
-            hasRequiredTarget = elementTypes.contains( ElementType.METHOD.toString()) ||
-                    elementTypes.contains( ElementType.FIELD.toString()) ||
-                            elementTypes.contains( ElementType.TYPE.toString());
-        }
-        else {
+        hasRequiredTarget = elementTypes.contains( 
+                ElementType.METHOD.toString()) &&
+                    elementTypes.contains(ElementType.FIELD.toString()) &&
+                        elementTypes.contains( ElementType.TYPE.toString());
+        if (!hasRequiredTarget) {
             getLogger().log(Level.WARNING,
                     "Annotation "+getElement().getQualifiedName()+
-                    "declared as Qualifier but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE} or" +
-                    "{METHOD, FIELD} or TYPE or METHOD or FIELD");// NOI18N
+                    "declared as Scope but has wrong target values." +
+                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
         }
         return hasRequiredTarget;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return STEREOTYPE;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
-     */
-    @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(StereotypeChecker.class.getName());
-    }
-    
 }

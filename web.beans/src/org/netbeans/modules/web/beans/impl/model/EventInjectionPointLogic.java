@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -473,7 +474,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         return result;
     }
     
-    static Set<String> getAnnotationFqns( List<? extends AnnotationMirror> annotations )
+    static Set<String> getAnnotationFqns( Collection<? extends AnnotationMirror> annotations )
     {
         Set<String> annotationFqns = new HashSet<String>();
         for (AnnotationMirror annotationMirror : annotations) {

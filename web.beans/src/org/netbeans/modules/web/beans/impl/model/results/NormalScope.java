@@ -40,60 +40,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.navigation;
+package org.netbeans.modules.web.beans.impl.model.results;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.swing.JLabel;
-
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class EventsPanel extends InjectablesPanel {
-
-    private static final long serialVersionUID = -965978443984786734L;
-
-    public EventsPanel( Object[] subject, 
-            MetadataModel<WebBeansModel> metaModel , WebBeansModel model , 
-            EventsModel uiModel )
-    {
-        super(subject, metaModel, model, uiModel);
-        initLabels();
+class NormalScope extends ScopeChecker {
+    
+    static NormalScope get(){
+        return  new NormalScope();
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#getSubjectElement(org.netbeans.api.java.source.ElementHandle, org.netbeans.modules.web.beans.api.model.WebBeansModel)
+     * @see org.netbeans.modules.web.beans.impl.model.ScopeChecker#getAnnotation()
      */
     @Override
-    protected Element getSubjectElement( Element context, WebBeansModel model )
-    {
-        ExecutableElement method = (ExecutableElement)context;
-        return model.getObserverParameter( method );
+    protected String getAnnotation() {
+        return NORMAL_SCOPE;
     }
 
-    private void initLabels() {
-        JLabel typeLabel = getTypeLabel();
-        Mnemonics.setLocalizedText(typeLabel,NbBundle.getMessage( 
-                ObserversPanel.class, "LBL_ObservedEventType") );       // NOI18N
-        typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSN_ObservedEventType"));       // NOI18N
-        typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSD_ObservedEventType"));       // NOI18N
-        
-        JLabel qualifiersLabel= getInjectionQualifiersLabel();
-        Mnemonics.setLocalizedText(qualifiersLabel,NbBundle.getMessage( 
-                ObserversPanel.class, "LBL_ObservedEventQualifiers") );  // NOI18N
-        qualifiersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSN_ObservedEventQualifiers"));  // NOI18N
-        qualifiersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
-                ObserversPanel.class, "ACSD_ObservedEventQualifiers"));  // NOI18N
-    }
 }

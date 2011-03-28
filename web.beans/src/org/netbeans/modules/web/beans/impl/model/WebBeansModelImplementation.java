@@ -196,6 +196,14 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return myDecoratorsManager;
     }
     
+    PersistentObjectManager<InterceptorObject> getInterceptorsManager(){
+        if ( myInterceptorsManager == null ){
+            myInterceptorsManager = getHelper().createPersistentObjectManager( 
+                    new InterceptorObjectProvider( getHelper()));
+        }
+        return myInterceptorsManager;
+    }
+    
     Set<String> adjustStereotypesManagers(){
         Set<String> stereotypes = getStereotypedManagers().keySet();
         Collection<NamedStereotype> namedStereotypes = getNamedStereotypesManager().
@@ -226,6 +234,7 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     private Map<String,PersistentObjectManager<BindingQualifier>> myManagers;
     private PersistentObjectManager<NamedStereotype> myStereotypesManager;
     private PersistentObjectManager<DecoratorObject> myDecoratorsManager;
+    private PersistentObjectManager<InterceptorObject> myInterceptorsManager;
     private Map<String,PersistentObjectManager<StereotypedObject>> myStereotypedManagers; 
     private AnnotationModelHelper myHelper;
 }

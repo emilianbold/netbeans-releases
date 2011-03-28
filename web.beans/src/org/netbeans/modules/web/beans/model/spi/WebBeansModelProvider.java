@@ -55,7 +55,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 
@@ -90,10 +89,14 @@ public interface WebBeansModelProvider {
 
     TypeMirror resolveType( String fqn);
 
-    String getScope( Element element ) throws CdiException;
-
     boolean hasImplicitDefaultQualifier( Element element );
 
     Collection<TypeElement> getDecorators( TypeElement element );
+
+    Collection<TypeElement> getInterceptors( Element element );
+
+    Collection<Element> getInterceptedElements( TypeElement element );
+
+    Collection<AnnotationMirror> getInterceptorBindings( Element element );
 
 }

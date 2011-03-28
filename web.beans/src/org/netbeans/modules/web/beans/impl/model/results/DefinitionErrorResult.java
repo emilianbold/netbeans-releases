@@ -65,6 +65,7 @@ public class DefinitionErrorResult extends BaseResult implements Result.Error {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
      */
+    @Override
     public String getMessage(){
         return myMessage;
     }
@@ -72,6 +73,7 @@ public class DefinitionErrorResult extends BaseResult implements Result.Error {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
+    @Override
     public ResultKind getKind() {
         return ResultKind.DEFINITION_ERROR;
     }

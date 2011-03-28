@@ -44,14 +44,12 @@
 package org.netbeans.modules.web.beans.api.model;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 
@@ -129,6 +127,13 @@ public interface Result {
         List<AnnotationMirror> getAllStereotypes( Element element );
         
         List<AnnotationMirror> getStereotypes( Element element );
+        
+        /**
+         * Returns Scope FQN for the specified <code>element</code>.
+         * @param element element which scope needs to be got
+         * @return scope of the element
+         */
+        public String getScope( Element element ) throws CdiException;
         
         boolean hasAlternative( Element element );
     }
