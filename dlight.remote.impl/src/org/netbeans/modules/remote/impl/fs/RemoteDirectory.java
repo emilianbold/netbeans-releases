@@ -334,8 +334,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return fo;
     }
 
-    private RemoteFileObjectBase[] getExistentChildren() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        DirectoryStorage storage = getDirectoryStorage(null);
+    private RemoteFileObjectBase[] getExistentChildren(DirectoryStorage storage) {
         List<DirEntry> entries = storage.list();
         List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
         for (DirEntry entry : entries) {
@@ -471,6 +470,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         
         if (fromMemOrDiskCache && !forceRefresh) {
+            try {
+                DirectoryStorage load = DirectoryStorage.load(storageFile);
+                if (load != null && storage.size() != load.size()) {
+                    int i = 0;
+                }
+            } catch (IOException iOException) {
+                int i = 0;
+            } catch (FormatException formatException) {
+                int i = 0;
+            }
             RemoteLogger.assertTrue(storage != null);
             if (trace) { trace("returning cached storage"); } // NOI18N
             return storage;
@@ -789,10 +798,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        refreshDirectoryStorage(null);
-        for (RemoteFileObjectBase child : getExistentChildren()) {
-            child.refreshImpl();
+    protected void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null);
+        if (recursive) {
+            for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
+                child.refreshImpl(true);
+            }
         }
     }
     
