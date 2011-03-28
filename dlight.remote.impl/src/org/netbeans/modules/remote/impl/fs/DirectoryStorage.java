@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public final class DirectoryStorage {
 
-    private final Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
+    private final Map<String, DirEntry> entries;
     private final File cacheFile;
     private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
     /* Incompatible version to discard */
@@ -68,8 +68,17 @@ public final class DirectoryStorage {
 
     public DirectoryStorage(File file) {
         this.cacheFile = file;
+        entries = new HashMap<String, DirEntry>();
     }
 
+    public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
+        this.cacheFile = file;
+        this.entries = new HashMap<String, DirEntry>();
+        for (DirEntry entry : newEntries) {
+            entries.put(entry.getName(), entry);
+        }
+    }
+    
     /**
      * Format is:
      *      name cache access user group size "timestamp" link
@@ -158,15 +167,6 @@ public final class DirectoryStorage {
     public  DirEntry removeEntry(String fileName) {
         synchronized (this) {
             return entries.remove(fileName);
-        }
-    }
-
-    void setEntries(Collection<DirEntry> newEntries) {
-        synchronized (this) {
-            this.entries.clear();
-            for (DirEntry entry : newEntries) {
-                entries.put(entry.getName(), entry);
-            }
         }
     }
 
