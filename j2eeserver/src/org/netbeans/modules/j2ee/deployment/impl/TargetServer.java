@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.FileUtil;
 
@@ -613,7 +614,7 @@ public class TargetServer {
             ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
             try {
                 ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
-            } catch (TimedOutException e) {
+            } catch (TimeoutException e) {
                 // undeployment failed, try to continue anyway
             }
         }
@@ -725,7 +726,7 @@ public class TargetServer {
         ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
         try {
             ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             // undeployment failed, try to continue anyway
             LOGGER.log(Level.INFO, "Undeploy timeouted");
         }
@@ -934,7 +935,7 @@ public class TargetServer {
                 }
             }
             return completed;
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             throw new ServerException(NbBundle.getMessage(TargetServer.class, "MSG_DeploymentTimeoutExceeded"));
         }
     }
