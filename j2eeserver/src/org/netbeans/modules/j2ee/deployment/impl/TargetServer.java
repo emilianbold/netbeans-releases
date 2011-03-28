@@ -61,7 +61,6 @@ import javax.enterprise.deploy.shared.ModuleType;
 
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
@@ -81,7 +80,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
@@ -629,7 +628,7 @@ public class TargetServer {
                 File dir = initialDistribute(targetz[0], ui);
                 if (lincremental instanceof IncrementalDeployment2) {
                     DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                            deployable, dir, null, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                            deployable, dir, null, dtarget.getModuleProvider().getRequiredLibraries(), null);
                     po = ((IncrementalDeployment2) lincremental).initialDeploy(targetz[0], deployment);
                 } else {
                     po = lincremental.initialDeploy(targetz[0], deployable, cfg, dir);
@@ -645,7 +644,7 @@ public class TargetServer {
                 DeploymentManager dm = instance.getDeploymentManager();
                 if (dm instanceof DeploymentManager2) {
                     DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                            dtarget.getModule(), getApplication(), plan, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                            dtarget.getModule(), getApplication(), plan, dtarget.getModuleProvider().getRequiredLibraries(), null);
                     po = ((DeploymentManager2)dm).distribute(targetz, deployment);
                 } else {
                     po = dm.distribute(targetz, getApplication(), plan);
@@ -665,7 +664,7 @@ public class TargetServer {
                     ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
                     if (lincremental instanceof IncrementalDeployment2) {
                         DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                                deployable, null, null, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), acd);
+                                deployable, null, null, dtarget.getModuleProvider().getRequiredLibraries(), acd);
                         po = ((IncrementalDeployment2) lincremental).incrementalDeploy(redeployTargetModules[0].delegate(), deployment);
                     } else {
                         po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
@@ -685,7 +684,7 @@ public class TargetServer {
                 DeploymentManager dm = instance.getDeploymentManager();
                 if (dm instanceof DeploymentManager2) {
                     DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                            dtarget.getModule(), getApplication(), plan, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                            dtarget.getModule(), getApplication(), plan, dtarget.getModuleProvider().getRequiredLibraries(), null);
                     po = ((DeploymentManager2)dm).redeploy(tmids, deployment);
                 } else {
                     po = dm.redeploy(tmids, getApplication(), plan);
