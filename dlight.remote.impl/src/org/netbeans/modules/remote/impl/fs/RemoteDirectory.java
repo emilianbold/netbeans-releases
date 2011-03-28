@@ -470,16 +470,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         
         if (fromMemOrDiskCache && !forceRefresh) {
-            try {
-                DirectoryStorage load = DirectoryStorage.load(storageFile);
-                if (load != null && storage.size() != load.size()) {
-                    int i = 0;
-                }
-            } catch (IOException iOException) {
-                int i = 0;
-            } catch (FormatException formatException) {
-                int i = 0;
-            }
             RemoteLogger.assertTrue(storage != null);
             if (trace) { trace("returning cached storage"); } // NOI18N
             return storage;
@@ -532,6 +522,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     // valid cache can not be available
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
+                } else {
+                    if (problem instanceof IOException) {
+                        throw (IOException) problem;
+                    } else if (problem instanceof ExecutionException) {
+                        throw (ExecutionException) problem;
+                    } else {
+                        RemoteLogger.assertTrueInConsole(false, "Unexpected exception class: " + problem.getClass().getName()); //NOI18N
+                    }
                 }
             }
             getFileSystem().incrementDirSyncCount();
