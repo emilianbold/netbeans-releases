@@ -522,6 +522,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     // valid cache can not be available
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
+                } else {
+                    if (problem instanceof IOException) {
+                        throw (IOException) problem;
+                    } else if (problem instanceof ExecutionException) {
+                        throw (ExecutionException) problem;
+                    } else {
+                        RemoteLogger.assertTrueInConsole(false, "Unexpected exception class: " + problem.getClass().getName()); //NOI18N
+                    }
                 }
             }
             getFileSystem().incrementDirSyncCount();
