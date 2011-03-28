@@ -79,6 +79,12 @@ public final class DirectoryStorage {
         }
     }
     
+    static DirectoryStorage load(File storageFile) throws IOException, FormatException {
+        DirectoryStorage out = new DirectoryStorage(storageFile);
+        out.load();
+        return out;
+    }
+
     /**
      * Format is:
      *      name cache access user group size "timestamp" link
@@ -89,7 +95,7 @@ public final class DirectoryStorage {
      *      access and timestamp is as in ls output on remote system
      * @throws IOException
      */
-    public void load() throws IOException, FormatException {
+    private void load() throws IOException, FormatException {
         synchronized (DirectoryStorage.this) {
             BufferedReader br = null;
             try {
