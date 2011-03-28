@@ -392,7 +392,6 @@ public final class NbMavenProject {
     public void triggerSourceJavadocDownload(final boolean javadoc) {
         NONBINARYRP.post(new Runnable() {
             public void run() {
-                MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                 Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 ProgressContributor[] contribs = new ProgressContributor[arts.size()];
                 for (int i = 0; i < arts.size(); i++) {
@@ -406,7 +405,7 @@ public final class NbMavenProject {
                     ProgressTransferListener.setAggregateHandle(handle);
                     int index = 0;
                     for (Artifact a : arts) {
-                        downloadOneJavadocSources(online, contribs[index], project, a, javadoc);
+                        downloadOneJavadocSources(contribs[index], project, a, javadoc);
                         index++;
                     }
                 } catch (ThreadDeath d) { // download interrupted
@@ -420,8 +419,10 @@ public final class NbMavenProject {
     }
 
 
-    private static void downloadOneJavadocSources(MavenEmbedder online, ProgressContributor progress,
+    private static void downloadOneJavadocSources(ProgressContributor progress,
                                                NbMavenProjectImpl project, Artifact art, boolean isjavadoc) {
+        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+        online.setUpLegacySupport();
         progress.start(2);
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             progress.finish();
