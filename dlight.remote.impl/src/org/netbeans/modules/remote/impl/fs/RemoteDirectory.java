@@ -484,18 +484,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (trace) { trace("waiting for lock"); } // NOI18N
         writeLock.lock();
         try {
-            if (!forceRefresh) {
-                // it means we didn't have any storage
-                RemoteLogger.assertFalse(fromMemOrDiskCache);
+            if (!fromMemOrDiskCache) {
                 // in case another writer thread already synchronized content while we were waiting for lock
+                // even in refresh mode, we need this content, otherwise we'll generate events twice
                 synchronized (refLock) {
                     DirectoryStorage s = storageRef.get();
                     if (s != null) {
                         if (trace) { trace("got storage from mem cache after waiting on writeLock: {0} expectedName={1}", getPath(), expectedName); } // NOI18N
-                        return s;
+                        if (forceRefresh) {
+                            storage = s;
+                        } else {
+                            return s;
+                        }
                     }
                 }
-            }
+            }            
             if (!getCache().exists()) {
                 getCache().mkdirs();
                 if (!getCache().exists()) {
@@ -636,7 +639,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                     }
                 }
-                storage.setEntries(newEntries.values());
+                storage = new DirectoryStorage(storageFile, newEntries.values());
                 storage.store();
             } else {
                 storage.touch();
