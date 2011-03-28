@@ -678,7 +678,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
     }
 
-    private static final Set<Object> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Object>();
+    private static final Set<Marker> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Marker>();
 
     //report REs only once per ide session and use lower log levels for known issues
     private void reportRuntimeExceptionOnce(RuntimeException e) {
@@ -696,20 +696,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             hash = 21 * hash + sw.toString().hashCode();
         }
 
-        final int fhash = hash;
-        Object marker = new Object() {
-
-            @Override
-            public boolean equals(Object o) {
-                return o.hashCode() == hashCode();
-            }
-
-            @Override
-            public int hashCode() {
-                return fhash;
-            }
-
-        };
+        Marker marker = new Marker(hash);
         if(REPORTED_RUNTIME_EXCEPTIONS.add(marker)) {
             Level level = isKnownProblem(e) ? Level.FINE : Level.INFO;
             LOGGER.log(level, getDocumentInternalErrorMsg(), e);
@@ -1610,6 +1597,27 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             return delegate;
         }
         
+        
+    }
+    
+    private static final class Marker {
+        
+        private final int hashCode;
+
+        public Marker(int hashCode) {
+            this.hashCode = hashCode;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            return o.hashCode() == hashCode();
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
         
     }
     
