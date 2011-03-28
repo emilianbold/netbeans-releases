@@ -51,8 +51,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Keeps information about all files that reside in the directory
@@ -61,8 +63,10 @@ import java.util.Map;
 public final class DirectoryStorage {
 
     private final Map<String, DirEntry> entries;
+    /** known inexistent files in the case of r/o directory - see #196841 - remote FS doesn't work if any part of path to file does not have read permission */
+    private final Set<String> dummies = new HashSet<String>();
     private final File cacheFile;
-    private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
+    private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
     /* Incompatible version to discard */
     private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
 
@@ -72,10 +76,17 @@ public final class DirectoryStorage {
     }
 
     public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
+        this(file, newEntries, null);
+    }
+
+    public DirectoryStorage(File file, Collection<DirEntry> newEntries, Collection<String> newDummies) {
         this.cacheFile = file;
         this.entries = new HashMap<String, DirEntry>();
         for (DirEntry entry : newEntries) {
             entries.put(entry.getName(), entry);
+        }
+        if (newDummies != null) {
+            dummies.addAll(newDummies);
         }
     }
     
@@ -120,6 +131,25 @@ public final class DirectoryStorage {
                     throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
                             ' ' + cacheFile.getAbsolutePath(), true); //NOI18N
                 }
+                line = br.readLine();
+                prefix = "dummies="; // NOI18N
+                if (line == null || ! line.startsWith(prefix)) {
+                    throw new FormatException("Wrong file format " + cacheFile.getAbsolutePath() + " line " + line, false); //NOI18N)
+                }
+                int dummiesCount;
+                try {
+                    dummiesCount = Integer.parseInt(line.substring(prefix.length()));
+                } catch (NumberFormatException nfe) {
+                    throw new FormatException("wrong dummies count format " + cacheFile.getAbsolutePath(), nfe); // NOI18N
+                }
+                for (int i = 0; i < dummiesCount; i++) {
+                    line = br.readLine();
+                    if (line == null) {
+                        throw new FormatException("premature end of file " + cacheFile.getAbsolutePath(), false); // NOI18N
+                    } else {
+                        dummies.add(line);
+                    }
+                }
                 while ((line = br.readLine()) != null) {
                     if (line.length() == 0) {
                         continue; // just in case, ignore empty lines
@@ -144,12 +174,23 @@ public final class DirectoryStorage {
         }
     }
     
+    public boolean isKnown(String fileName) {
+        synchronized (this) {
+            return entries.containsKey(fileName) || dummies.contains(fileName);
+        }
+    }
+    
     public void store() throws IOException {
         BufferedWriter wr = null;
         synchronized (this) {
             try {
                 wr = new BufferedWriter(new FileWriter(cacheFile));
                 wr.write("VERSION=" + VERSION + "\n"); //NOI18N
+                wr.write("dummies=" + dummies.size() + '\n'); //NOI18N
+                for (String dummy: dummies) {
+                    wr.write(dummy);
+                    wr.write('\n');
+                }
                 for (DirEntry entry : entries.values()) {
                     wr.write(entry.toExternalForm());
                     wr.write('\n');
@@ -191,6 +232,12 @@ public final class DirectoryStorage {
     /*package*/ void testAddEntry(DirEntry entry) {
         synchronized (this) {
             entries.put(entry.getName(), entry);
+        }
+    }
+    
+    /*package*/ void testAddDummy(String dummy) {
+        synchronized (this) {
+            dummies.add(dummy);
         }
     }
 
