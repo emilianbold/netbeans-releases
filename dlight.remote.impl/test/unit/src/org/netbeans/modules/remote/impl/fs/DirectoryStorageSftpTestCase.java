@@ -92,8 +92,7 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
             DirEntry entry1 = new DirEntrySftp(statInfo, cacheName);
             ds1.testAddEntry(entry1);
             ds1.store();
-            DirectoryStorage ds2 = new DirectoryStorage(file);
-            ds2.load();
+            DirectoryStorage ds2 = DirectoryStorage.load(file);
             DirEntry entry2 = ds2.getEntry(entry1.getName());
             assertNotNull("No entry restored for " + entry1.getName(), entry2);
             

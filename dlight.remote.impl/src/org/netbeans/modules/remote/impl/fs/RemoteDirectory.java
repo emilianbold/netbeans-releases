@@ -435,7 +435,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 try {
                     readLock.lock();       
                     try {
-                        storage.load();
+                        storage = DirectoryStorage.load(storageFile);
                         fromMemOrDiskCache = true;
                         // try to keep loaded cache in memory
                         synchronized (refLock) {
