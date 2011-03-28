@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -117,17 +116,7 @@ public class ProjectSupport {
         ap.invokeCustomAction(projectDescriptor, conf, customProjectActionHandler);
     }
 
-    public static MakeProjectOptions.PathMode getPathMode(RemoteProject.Mode remoteMode) {
-        return (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
-    }
-
     public static MakeProjectOptions.PathMode getPathMode(Project project) {
-        if (project instanceof MakeProject) {
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                return MakeProjectOptions.PathMode.ABS;
-            }
-        }
         return MakeProjectOptions.getPathMode();
     }
 
