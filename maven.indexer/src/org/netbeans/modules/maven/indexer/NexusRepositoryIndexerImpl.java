@@ -548,6 +548,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             //handle index not found
         } catch (ComponentLookupException x) {
             LOGGER.log(Level.INFO, "could not find protocol handler for " + repo.getRepositoryUrl(), x);
+        } catch (RuntimeException x) {
+            LOGGER.log(Level.WARNING, "could not index " + repo.getId(), x);
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
