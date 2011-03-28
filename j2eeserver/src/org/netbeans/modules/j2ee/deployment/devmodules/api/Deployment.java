@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -133,7 +133,7 @@ public final class Deployment {
 
     public String deploy (J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         
-        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, clientModuleUrl);
+        DeploymentTarget deploymentTarget = new DeploymentTarget(jmp, clientModuleUrl);
         TargetModule[] modules = null;
         final J2eeModule module = deploymentTarget.getModule();
 
@@ -225,7 +225,7 @@ public final class Deployment {
      * @since 1.52
      */
     public void undeploy(J2eeModuleProvider jmp, boolean startServer, Logger logger) throws DeploymentException {
-        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, null);
+        DeploymentTarget deploymentTarget = new DeploymentTarget(jmp, null);
         final J2eeModule module = deploymentTarget.getModule();
 
         String title = NbBundle.getMessage(Deployment.class, "LBL_Undeploying", jmp.getDeploymentName());

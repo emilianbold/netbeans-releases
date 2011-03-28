@@ -343,7 +343,10 @@ public final class GitModuleConfig {
             GitURI guri = cachedUris.get(entry.guriString);
             if (guri == null) {
                 try {
-                    guri = new GitURI(entry.guriString).setUser(entry.username);
+                    guri = new GitURI(entry.guriString);
+                    if (!entry.username.isEmpty()) {
+                        guri = guri.setUser(entry.username);
+                    }
                 } catch (URISyntaxException ex) {
                     Git.LOG.log(Level.WARNING, guriString, ex);
                     continue;
@@ -388,7 +391,9 @@ public final class GitModuleConfig {
                 continue;
             }
             if (uriString.equals(storedUri.toString()) && (username == null || entry.username == null || username.equals(entry.username))) {
-                storedUri = storedUri.setUser(entry.username);
+                if (!entry.username.isEmpty()) {
+                    storedUri = storedUri.setUser(entry.username);
+                }
                 char[] password = KeyringSupport.read(GURI_PASSWORD, storedUri.toString());
                 if(password != null) {
                     storedUri = storedUri.setPass(new String(password));
