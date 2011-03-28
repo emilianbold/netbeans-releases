@@ -83,11 +83,11 @@ import org.w3c.dom.Node;
 public final class MakeSources implements Sources, AntProjectListener {
 
     private static final String GENERIC = "generic"; // NOI18N
-    private MakeProject project;
-    private AntProjectHelper helper;
+    private final MakeProject project;
+    private final AntProjectHelper helper;
 
     public MakeSources(MakeProject project, AntProjectHelper helper) {
-        this.project = project;
+        this.project = project;        
         this.helper = helper;
         helper.addAntProjectListener(MakeSources.this);
         changeSupport = new ChangeSupport(this);
@@ -105,7 +105,7 @@ public final class MakeSources implements Sources, AntProjectListener {
         long curEvent;
         synchronized (this) {
             srcs = delegate;
-            curEvent = eventID++;
+            curEvent = ++eventID;
         }
 
         AtomicBoolean completeSouces = new AtomicBoolean(true);
@@ -122,7 +122,7 @@ public final class MakeSources implements Sources, AntProjectListener {
         return sg;
     }
 
-    public List<String> getSourceRootsFromProjectXML() {
+    private List<String> getSourceRootsFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
         if (data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT).getLength() > 0) {
             List<String> list = new ArrayList<String>();
@@ -143,14 +143,22 @@ public final class MakeSources implements Sources, AntProjectListener {
         return null;
     }
 
-    public List<String> getAbsoluteSourceRootsFromProjectXML() {
-        String baseDir = FileUtil.toFile(helper.getProjectDirectory()).getPath();
+    private List<String> getAbsoluteSourceRootsFromProjectXML() {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         List<String> sourceRoots = getSourceRootsFromProjectXML();
         List<String> absSourceRoots = null;
         if (sourceRoots != null) {
             absSourceRoots = new ArrayList<String>();
             for (String sRoot : sourceRoots) {
-                String absSRoot = CndPathUtilitities.toAbsolutePath(baseDir, sRoot);
+                String absSRoot;
+                if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                    absSRoot = remoteProject.resolveRelativeRemotePath(sRoot);
+                } else {
+                    // TODO: Cleanup, leave the above branch since it should work in any remote mode;
+                    // this "if" is just to be sure we don't break local or ordinary remote
+                    String baseDir = FileUtil.toFile(helper.getProjectDirectory()).getPath();        
+                    absSRoot = CndPathUtilitities.toAbsolutePath(baseDir, sRoot);
+                }
                 absSourceRoots.add(absSRoot);
             }
         }
