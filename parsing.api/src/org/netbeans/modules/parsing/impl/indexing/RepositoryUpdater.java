@@ -2154,7 +2154,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
          */
         protected abstract boolean getDone();
 
-        protected boolean isCancelledBy(Work newWork) {
+        protected boolean isCancelledBy(Work newWork, Collection<? super Work> follow) {
             return false;
         }
 
@@ -2204,12 +2204,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.externalCancel.set(cancelled);
         }
 
-        public final void cancelBy(Work newWork) {
-            if (isCancelledBy(newWork)) {
+        public final boolean cancelBy(Work newWork, final Collection<? super Work> follow) {
+            if (isCancelledBy(newWork, follow)) {
                 LOGGER.log(Level.FINE, "{0} cancelled by {1}", new Object [] { this, newWork }); //NOI18N
                 cancelled.set(true);
                 finished.set(true); // work cancelled by other work is by default finished
+                return true;
             }
+            return false;
         }
 
         public final boolean isFinished() {
@@ -2473,6 +2475,26 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
         }
 
+        @Override
+        public  boolean absorb(Work newWork) {
+            if (newWork instanceof RefreshCifIndices && cifInfos.equals(((RefreshCifIndices)newWork).cifInfos)) {
+                LOGGER.log(Level.FINE, "Absorbing {0}", newWork); //NOI18N
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
+            boolean b = (newWork instanceof RootsWork);
+            if (b) {
+                follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots));
+                LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
+            }
+            return b;
+        }
+
         protected @Override boolean getDone() {
             switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
@@ -2480,7 +2502,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // XXX: this only happens when the IDE is shutting down
                     return true;
                 }
-
+                if (isCancelled()) {
+                    return false;
+                }
                 this.updateProgress(root, true);
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
@@ -2581,12 +2605,35 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
         }
 
+        @Override
+        protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
+            boolean b = (newWork instanceof RootsWork);
+            if (b) {
+                follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots));
+                LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
+            }
+            return b;
+        }
+
+        @Override
+        public  boolean absorb(Work newWork) {
+            if (newWork instanceof RefreshEifIndices && eifInfos.equals(((RefreshEifIndices)newWork).eifInfos)) {
+                LOGGER.log(Level.FINE, "Absorbing {0}", newWork); //NOI18N
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         protected @Override boolean getDone() {
             switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getShuttdownRequest().isRaised()) {
                     // XXX: this only happens when the IDE is shutting down
                     return true;
+                }
+                if (isCancelled()) {
+                    return false;
                 }
 
                 this.updateProgress(root, true);
@@ -3160,7 +3207,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return finished;
         }
 
-        protected @Override boolean isCancelledBy(Work newWork) {
+        protected @Override boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork) && useInitialState;
             if (b && LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Cancelling " + this + ", because of " + newWork); //NOI18N
@@ -3576,25 +3623,39 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
 
                     if (!enforceWork) {
+                        boolean canceled = false;
+                        final List<Work> follow = new ArrayList<Work>(1);
                         if (workInProgress != null) {
-                            workInProgress.cancelBy(work);
+                            if (workInProgress.cancelBy(work,follow)) {
+                                canceled = true;
+                            }
                         }
 
                         // coalesce ordinary jobs
-                        boolean absorbed = false;
+                        Work absorbedBy = null;
                         if (!wait) {
                             for(Work w : todo) {
                                 if (w.absorb(work)) {
-                                    absorbed = true;
+                                    absorbedBy = w;
                                     break;
                                 }
                             }
                         }
 
-                        if (!absorbed) {
+                        if (absorbedBy == null) {
                             LOGGER.log(Level.FINE, "Scheduling {0}", work); //NOI18N
-                            todo.add(work);
+                            if (canceled) {
+                                todo.add(0, work);
+                                todo.addAll(1,follow);
+                            } else {
+                                todo.add(work);
+                            }
                         } else {
+                            if (canceled) {
+                                todo.remove(absorbedBy);
+                                todo.add(0, absorbedBy);
+                                todo.addAll(1,follow);
+                            }
                             LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
                         }
 

@@ -1073,7 +1073,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 Collections.singleton(root2),
                 new RepositoryUpdater.FSRefreshInterceptor());
-        assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2));
+        assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2, new ArrayList<RepositoryUpdater.Work>()));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
         }
     }

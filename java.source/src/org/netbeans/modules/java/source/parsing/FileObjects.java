@@ -547,6 +547,7 @@ public class FileObjects {
     }
     
     public static String getRelativePath (final String packageName, final String relativeName) {
+        if (packageName.isEmpty()) return relativeName;
         StringBuilder relativePath = new StringBuilder ();
         relativePath.append(packageName.replace('.','/'));
         relativePath.append('/');
