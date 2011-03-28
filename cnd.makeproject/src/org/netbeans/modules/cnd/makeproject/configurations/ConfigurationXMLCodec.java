@@ -900,19 +900,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         }
     }
 
-    private String toAbsoluteRemotePath(String path) {
-        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            path = remoteProject.resolveRelativeRemotePath(path);
-            path = RemoteFileUtil.normalizeAbsolutePath(path, remoteProject.getSourceFileSystemHost());
-        }
-        return path;
-    }
-
     private Item createItem(String path) {
         Project project = projectDescriptor.getProject();
         FileObject projectDirFO = project.getProjectDirectory();
         if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            path = toAbsoluteRemotePath(path);
             if (FileSystemProvider.isAbsolute(path)) {
                 FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
                 if (itemFO == null) {
@@ -932,7 +923,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (relativeOffset != null && path.startsWith("..")) { // NOI18N
             path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
-        return toAbsoluteRemotePath(path);
+        return path;
     }
 
     private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {

@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public final class DirectoryStorage {
 
-    private final Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
+    private final Map<String, DirEntry> entries;
     private final File cacheFile;
     private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
     /* Incompatible version to discard */
@@ -68,6 +68,21 @@ public final class DirectoryStorage {
 
     public DirectoryStorage(File file) {
         this.cacheFile = file;
+        entries = new HashMap<String, DirEntry>();
+    }
+
+    public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
+        this.cacheFile = file;
+        this.entries = new HashMap<String, DirEntry>();
+        for (DirEntry entry : newEntries) {
+            entries.put(entry.getName(), entry);
+        }
+    }
+    
+    static DirectoryStorage load(File storageFile) throws IOException, FormatException {
+        DirectoryStorage out = new DirectoryStorage(storageFile);
+        out.load();
+        return out;
     }
 
     /**
@@ -80,7 +95,7 @@ public final class DirectoryStorage {
      *      access and timestamp is as in ls output on remote system
      * @throws IOException
      */
-    public void load() throws IOException, FormatException {
+    private void load() throws IOException, FormatException {
         synchronized (DirectoryStorage.this) {
             BufferedReader br = null;
             try {
@@ -158,15 +173,6 @@ public final class DirectoryStorage {
     public  DirEntry removeEntry(String fileName) {
         synchronized (this) {
             return entries.remove(fileName);
-        }
-    }
-
-    void setEntries(Collection<DirEntry> newEntries) {
-        synchronized (this) {
-            this.entries.clear();
-            for (DirEntry entry : newEntries) {
-                entries.put(entry.getName(), entry);
-            }
         }
     }
 
