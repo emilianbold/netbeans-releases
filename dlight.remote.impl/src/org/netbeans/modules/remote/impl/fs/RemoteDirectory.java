@@ -435,7 +435,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 try {
                     readLock.lock();       
                     try {
-                        storage.load();
+                        storage = DirectoryStorage.load(storageFile);
                         fromMemOrDiskCache = true;
                         // try to keep loaded cache in memory
                         synchronized (refLock) {
@@ -484,21 +484,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (trace) { trace("waiting for lock"); } // NOI18N
         writeLock.lock();
         try {
-            if (!fromMemOrDiskCache) {
-                // in case another writer thread already synchronized content while we were waiting for lock
-                // even in refresh mode, we need this content, otherwise we'll generate events twice
-                synchronized (refLock) {
-                    DirectoryStorage s = storageRef.get();
-                    if (s != null) {
-                        if (trace) { trace("got storage from mem cache after waiting on writeLock: {0} expectedName={1}", getPath(), expectedName); } // NOI18N
-                        if (forceRefresh) {
-                            storage = s;
-                        } else {
-                            return s;
-                        }
+            // in case another writer thread already synchronized content while we were waiting for lock
+            // even in refresh mode, we need this content, otherwise we'll generate events twice
+            synchronized (refLock) {
+                DirectoryStorage s = storageRef.get();
+                if (s != null) {
+                    if (trace) { trace("got storage from mem cache after waiting on writeLock: {0} expectedName={1}", getPath(), expectedName); } // NOI18N
+                    if (forceRefresh) {
+                        storage = s;
+                    } else {
+                        return s;
                     }
                 }
-            }            
+            }
             if (!getCache().exists()) {
                 getCache().mkdirs();
                 if (!getCache().exists()) {

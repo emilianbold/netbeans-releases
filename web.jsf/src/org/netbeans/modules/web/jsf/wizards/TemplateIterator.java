@@ -251,7 +251,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         
         templatePanel = new TemplatePanel(wiz);
         // creates simple wizard panel with bottom panel
-        WizardDescriptor.Panel firstPanel = new ValidationPanel(
+        WizardDescriptor.Panel firstPanel = new JSFValidationPanel(
                 Templates.createSimpleTargetChooser(project,sourceGroups,templatePanel));
         JComponent c = (JComponent)firstPanel.getComponent();
         Dimension d  = c.getPreferredSize();
@@ -278,32 +278,5 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
-    }
-
-    /**
-     * A panel which checks that the target project has a valid server set
-     * otherwise it warn user about that fact.
-     */
-    private class ValidationPanel extends DelegatingWizardDescriptorPanel {
-
-        private ValidationPanel(WizardDescriptor.Panel delegate) {
-            super(delegate);
-        }
-
-        @Override
-        public boolean isValid() {
-            Project project = getProject();
-            WizardDescriptor wizardDescriptor = getWizardDescriptor();
-
-            if (super.isValid()) {
-                // check thatthis project has a valid target server
-                if (!Util.isValidServerInstance(project)) {
-                    wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                            NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
-                }
-                return true;
-            }
-            return false;
-        }
     }
 }

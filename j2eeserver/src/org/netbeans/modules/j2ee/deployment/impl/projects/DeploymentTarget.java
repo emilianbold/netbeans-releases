@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -74,14 +73,14 @@ import org.openide.util.NbBundle;
  * @author George FinKlang
  * @author Petr Hejl
  */
-public final class DeploymentTargetImpl implements DeploymentTarget {
+public final class DeploymentTarget {
     
     private final J2eeModuleProvider moduleProvider;
     private final String clientName;
     private ServerString server;
     private TargetModule[] targetModules;
     
-    public DeploymentTargetImpl(J2eeModuleProvider moduleProvider, String clientName) {
+    public DeploymentTarget(J2eeModuleProvider moduleProvider, String clientName) {
         this.moduleProvider = moduleProvider;
         this.clientName = clientName;
     }
@@ -260,7 +259,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             String instanceID = moduleProvider.getServerInstanceID ();
             ServerInstance inst = ServerRegistry.getInstance ().getServerInstance (instanceID);
             if (inst == null) {
-                throw new RuntimeException(NbBundle.getMessage(DeploymentTargetImpl.class, "MSG_TargetServerNotFound",instanceID));
+                throw new RuntimeException(NbBundle.getMessage(DeploymentTarget.class, "MSG_TargetServerNotFound",instanceID));
             }
             server = new ServerString(inst);
         }

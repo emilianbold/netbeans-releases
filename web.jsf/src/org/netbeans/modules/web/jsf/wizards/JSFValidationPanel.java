@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,15 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.deployment.impl;
+
+package org.netbeans.modules.web.jsf.wizards;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
- * This exception is thrown when some long running task for example starting
- * of server times out.
- * 
- * @author sherold
+ * A panel which extends {@code DelegatingWizardDescriptorPanel} and is used for
+ * further validations of JavaServer Faces New File wizards.
+ *
+ * @author Martin Fousek
  */
-public class TimedOutException extends Exception {
-    
+public class JSFValidationPanel extends DelegatingWizardDescriptorPanel {
+
+    public JSFValidationPanel(WizardDescriptor.Panel delegate) {
+        super(delegate);
+    }
+
+    @Override
+    public boolean isValid() {
+        Project project = getProject();
+        WizardDescriptor wizardDescriptor = getWizardDescriptor();
+
+        if (super.isValid()) {
+            // check that this project has a valid target server
+            if (!Util.isValidServerInstance(project)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                        NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
+            }
+            return true;
+        }
+        return false;
+    }
 }
