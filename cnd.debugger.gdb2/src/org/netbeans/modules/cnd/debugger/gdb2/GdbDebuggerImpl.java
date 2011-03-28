@@ -2562,7 +2562,7 @@ import org.openide.util.Exceptions;
         if (expandMacros) {
             expr = MacroSupport.expandMacro(this, v.getVariableName());
         }
-        String cmdString = "-var-create - * " + expr; // NOI18N
+        String cmdString = "-var-create - @ " + expr; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
