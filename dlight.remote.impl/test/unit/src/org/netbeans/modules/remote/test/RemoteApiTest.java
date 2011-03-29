@@ -54,6 +54,7 @@ import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
 import org.netbeans.modules.remote.impl.fs.ListenersParityTestCase;
 import org.netbeans.modules.remote.impl.fs.ListenersTestCase;
 import org.netbeans.modules.remote.impl.fs.NormalizationTestCase;
+import org.netbeans.modules.remote.impl.fs.ReadOnlyDirTestCase;
 import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
@@ -84,6 +85,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            ListenersTestCase.class,
            NormalizationTestCase.class,
            ListenersParityTestCase.class,
+           ReadOnlyDirTestCase.class,
            RemoteFileSystemOffilneTestCase.class);
     }
 
