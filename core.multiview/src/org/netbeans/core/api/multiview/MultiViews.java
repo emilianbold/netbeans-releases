@@ -45,15 +45,9 @@
 package org.netbeans.core.api.multiview;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
-import org.netbeans.core.spi.multiview.CloseOperationHandler;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
