@@ -154,7 +154,7 @@ public class ElementJavadoc {
      */
     public String getText() {
         try {
-            return content.get();
+            return content != null ? content.get() : null;
         } catch (InterruptedException ex) {
             return null;
         } catch (ExecutionException ex) {
