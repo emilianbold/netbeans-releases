@@ -935,7 +935,9 @@ made subject to such option by the copyright holder.
     <target name="-testuserdir-delete-init" depends="files-init">
         <property name="test.user.dir" location="${build.dir}/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
-        <available property="app.running" file="${test.user.dir.lock}"/>
+        <condition property="app.running">
+            <islocked file="${test.user.dir.lock}"/>
+        </condition> 
     </target>
     <target name="-testuserdir-delete-ok" depends="-testuserdir-delete-init" unless="app.running">
         <delete dir="${test.user.dir}"/>
