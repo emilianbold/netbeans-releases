@@ -153,11 +153,6 @@ public class LibrariesTest extends JellyTestCase {
         set.add("jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/xsdlib.jar!/");
         librariesUrls.put("jaxrpc16", set);
         set = new TreeSet<String>();
-        set.add("jar:nbinst:///docs/javaee6-doc-api.zip!/");
-        set.add("jar:nbinst:///modules/ext/toplink/toplink-essentials-agent.jar!/");
-        set.add("jar:nbinst:///modules/ext/toplink/toplink-essentials.jar!/");
-        librariesUrls.put("toplink", set);
-        set = new TreeSet<String>();
         set.add("jar:nbinst://org.netbeans.modules.form/modules/ext/AbsoluteLayout.jar!/");
         librariesUrls.put("absolutelayout", set);
         set = new TreeSet<String>();
