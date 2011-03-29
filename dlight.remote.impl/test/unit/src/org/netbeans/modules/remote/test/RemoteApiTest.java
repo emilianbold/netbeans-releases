@@ -49,12 +49,12 @@ import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
 import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
 import org.netbeans.modules.remote.impl.fs.CreateDataAndFolderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorageLsTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageSftpTestCase;
 import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
 import org.netbeans.modules.remote.impl.fs.ListenersParityTestCase;
 import org.netbeans.modules.remote.impl.fs.ListenersTestCase;
 import org.netbeans.modules.remote.impl.fs.NormalizationTestCase;
+import org.netbeans.modules.remote.impl.fs.ReadOnlyDirTestCase;
 import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
@@ -77,7 +77,6 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            RemoteURLTestCase.class,
            EscapeWindowsNameTestCase.class,
            CaseSensivityTestCase.class,
-           DirectoryStorageLsTestCase.class,
            DirectoryStorageSftpTestCase.class,
            DirectoryReaderTestCase.class,
            RefreshTestCase.class,
@@ -86,6 +85,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            ListenersTestCase.class,
            NormalizationTestCase.class,
            ListenersParityTestCase.class,
+           ReadOnlyDirTestCase.class,
            RemoteFileSystemOffilneTestCase.class);
     }
 
