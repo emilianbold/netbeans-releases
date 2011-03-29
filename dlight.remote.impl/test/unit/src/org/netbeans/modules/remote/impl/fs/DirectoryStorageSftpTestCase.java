@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -58,25 +59,9 @@ import org.netbeans.modules.remote.test.RemoteApiTest;
  */
 public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
 
-    private boolean oldLsViaSftp;
-    
     public DirectoryStorageSftpTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        oldLsViaSftp = RemoteDirectory.getLsViaSftp();
-        RemoteDirectory.testSetLsViaSftp(true);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        RemoteDirectory.testSetLsViaSftp(oldLsViaSftp);
-    }
-    
            
     @ForAllEnvironments
     public void testDirectoryStorageSftp() throws Exception {
@@ -87,31 +72,36 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
             assertNotNull(res);
             StatInfo statInfo = res.get();
             
-            DirectoryStorage ds1 = new DirectoryStorage(file);
             final String cacheName = "name.cache";
             DirEntry entry1 = new DirEntrySftp(statInfo, cacheName);
-            ds1.testAddEntry(entry1);
+            final String name = statInfo.getName();
+            final String access = statInfo.getAccessAsString();
+            final long size = statInfo.getSize();
+            final String link = statInfo.getLinkTarget();
             String dummy = "inexistent_file";
-            ds1.testAddDummy(dummy);
+            DirEntry dummyEntry = new DirEntryInvalid(dummy);
+            DirectoryStorage ds1 = new DirectoryStorage(file, Arrays.asList(entry1, dummyEntry));
             ds1.store();
             DirectoryStorage ds2 = DirectoryStorage.load(file);
             DirEntry entry2 = ds2.getEntry(entry1.getName());
             assertNotNull("No entry restored for " + entry1.getName(), entry2);
-            
-            assertEquals("Name", entry1.getName(), entry2.getName());
-            assertEquals("Cache", entry1.getCache(), entry2.getCache());
-            assertEquals("Access", entry1.getAccessAsString(), entry2.getAccessAsString());
-            assertEquals("Size", entry1.getSize(), entry2.getSize());
-            assertTrue("Timestamps differ", entry1.isSameLastModified(entry2));
-            assertEquals("Link", entry1.getLinkTarget(), entry2.getLinkTarget());
-            assertTrue(ds2.isKnown(dummy));
-            assertFalse(ds2.isKnown("abrakadabra"));
-            assertTrue(ds2.isKnown(entry2.getName()));
+            assertEquals("Name", name, entry2.getName());
+            assertTrue(entry2.isValid());
+            assertEquals("Cache", cacheName, entry2.getCache());
+            assertEquals("Access", access, entry2.getAccessAsString());
+//            assertEquals("User", user, entry2.getUser());
+//            assertEquals("Group", group, entry2.getGroup());
+            assertEquals("Size", size, entry2.getSize());
+            assertEquals("Timestamp", entry1.getLastModified(), entry2.getLastModified());
+            assertEquals("Link", link, entry2.getLinkTarget());
+            DirEntry dummyEntry2 = ds2.getEntry(dummy);
+            assertNotNull(dummyEntry2);
+            assertFalse(dummyEntry2.isValid());
         } finally {
             file.delete();
-        }
+        }        
     }
-
+    
     public static Test suite() {
         return RemoteApiTest.createSuite(DirectoryStorageSftpTestCase.class);
     }

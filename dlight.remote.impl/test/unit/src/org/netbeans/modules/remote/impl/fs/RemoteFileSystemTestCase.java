@@ -229,6 +229,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             runScript("cd " + tempDir + "\n" +
                 "echo \"123\" > " + lpt + "\n" +
                 "echo \"123\" > " + withColon + "\n");
+            tempDirFO.refresh();
             FileObject lptFO = tempDirFO.getFileObject(lpt);
             assertNotNull("Null file object for " + lpt, lptFO);
             FileObject colonFO = tempDirFO.getFileObject(withColon);

@@ -74,6 +74,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -133,11 +134,15 @@ public class Reindenter implements IndentTask {
             for (Region region : regions) {
                 HashSet<Integer> linesToAddStar = new HashSet<Integer>();
                 LinkedList<Integer> startOffsets = getStartOffsets(region);
-                Iterator<Integer> it = startOffsets.iterator();
-                int startOffset = it.hasNext() ? it.next() : region.getStartOffset();
-                int endOffset = -1;
-                while (endOffset < region.getEndOffset()) {
-                    endOffset = it.hasNext() ? it.next() : region.getEndOffset();
+                for(ListIterator<Integer> it = startOffsets.listIterator(); it.hasNext();) {
+                    int startOffset = it.next();
+                    int endOffset;
+                    if(it.hasNext()) {
+                        endOffset = it.next();
+                        it.previous();
+                    } else {
+                        endOffset = region.getEndOffset();
+                    }
                     String blockCommentLine = null;
                     int delta = 0;
                     if (cs.addLeadingStarInComment() && ((delta = ts.move(startOffset)) > 0 && ts.moveNext() || ts.movePrevious())
@@ -157,10 +162,9 @@ public class Reindenter implements IndentTask {
                     if (blockCommentLine != null && !blockCommentLine.startsWith("*")) { //NOI18N
                         linesToAddStar.add(startOffset);
                     }
-                    startOffset = endOffset;
                 }
                 while (!startOffsets.isEmpty()) {
-                    startOffset = startOffsets.removeLast();
+                    int startOffset = startOffsets.removeLast();
                     Integer newIndent = newIndents.get(startOffset);
                     if (linesToAddStar.contains(startOffset)) {
                         context.modifyIndent(startOffset, 0);

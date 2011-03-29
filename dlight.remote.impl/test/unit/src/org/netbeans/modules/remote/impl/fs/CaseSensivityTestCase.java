@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import junit.framework.Test;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -65,6 +66,7 @@ public class CaseSensivityTestCase extends RemoteFileTestBase {
     public void testCaseSensitiveDir() throws Exception {
         String tmpDir = mkTemp(true);
         try {
+            FileObject tmpDirParentFO = getFileObject(PathUtilities.getDirName(tmpDir));
             String upperDir = tmpDir + "/CC";
             String lowerDir = tmpDir + "/cc";
             String upperFile = upperDir + "/file.dat";
@@ -76,6 +78,7 @@ public class CaseSensivityTestCase extends RemoteFileTestBase {
             File file = File.createTempFile("rfs-test", ".dat");
             upload(file, lowerFile);
             upload(file, upperFile);
+            tmpDirParentFO.refresh();
             FileObject lowerDirFO = getFileObject(lowerDir);
             FileObject upperDirFO = getFileObject(upperDir);
             assertNotSame("Directory file objects should differ", lowerDirFO, upperDirFO);

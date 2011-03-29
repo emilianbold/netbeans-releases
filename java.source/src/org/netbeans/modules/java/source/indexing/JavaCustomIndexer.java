@@ -539,7 +539,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    static void addAptGenerated(final Context context, JavaParsingContext javaContext, final String sourceRelative, final Set<CompileTuple> aptGenerated) throws IOException {
+    static boolean addAptGenerated(final Context context, JavaParsingContext javaContext, final String sourceRelative, final Set<CompileTuple> aptGenerated) throws IOException {
+        boolean ret = false;
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
         if (aptFolder.exists()) {
             final FileObject root = FileUtil.toFileObject(aptFolder);
@@ -554,7 +555,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
                             InferableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
-                            aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
+                            ret |= aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
                         }
                     }
                 } catch (IOException ioe) {
@@ -563,6 +564,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
             }
         }
+        return ret;
     }
 
     static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
