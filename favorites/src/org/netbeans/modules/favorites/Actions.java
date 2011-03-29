@@ -74,7 +74,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.WindowManager;
 
@@ -88,7 +87,6 @@ public final class Actions extends Object {
     private static File currentDir = null;
 
     private static final Logger LOG = Logger.getLogger(Actions.class.getName());
-    static final RequestProcessor RP = new RequestProcessor("Favorites Actions", 1); //NOI18N
 
     private Actions () {
         // noinstances
@@ -128,7 +126,7 @@ public final class Actions extends Object {
         @Override
         protected void performAction(final Node[] activatedNodes) {
             final Tab proj = Tab.findDefault();
-            RP.post(new Runnable() {
+            Tab.RP.post(new Runnable() {
                 @Override
                 public void run() {
                     proj.doSelectNode(activatedNodes[0].getCookie(DataObject.class));
@@ -323,7 +321,7 @@ public final class Actions extends Object {
                             toShadows.add(obj);
                     }
                 }
-                RP.post(new Runnable () {
+                Tab.RP.post(new Runnable () {
                     @Override
                     public void run() {
                         addToFavorites(toShadows);

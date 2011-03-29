@@ -86,7 +86,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
     private static boolean LS_VIA_SFTP = ! Boolean.getBoolean("remote.parse.ls");
 
-    private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);;
+    private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);
     private static final class RefLock {}
     private final Object refLock = new RefLock();    
 
@@ -523,7 +523,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
                 } else {
-                    if (problem instanceof IOException) {
+                    if (isFileNotFoundException(problem)) {
+                        synchronized (refLock) {
+                            storageRef = new SoftReference<DirectoryStorage>(null);
+                        }
+                    }
+                    if (problem instanceof IOException) { 
                         throw (IOException) problem;
                     } else if (problem instanceof ExecutionException) {
                         throw (ExecutionException) problem;
@@ -678,6 +683,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return storage;
     }
 
+    private boolean isFileNotFoundException(Throwable ex) {
+        while (ex != null) {
+            if (ex instanceof FileNotFoundException) {
+                return true;
+            }
+            ex = ex.getCause();
+        }
+        return false;
+    }
+    
     InputStream _getInputStream(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();

@@ -47,6 +47,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Writer;
@@ -200,6 +201,16 @@ class SftpSupport {
         return channel;
     }
 
+    private static SftpException decorateSftpException(SftpException e, String path) {
+        if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+            FileNotFoundException fnfe = (path == null) ?  
+                    new FileNotFoundException(e.getMessage()) : new FileNotFoundException(path);
+            return new SftpException(e.id, e.getMessage(), fnfe);
+        } else {
+            return e;
+        }
+    }
+
     private abstract class Worker implements Callable<Integer> {
 
         protected final Writer error;
@@ -326,6 +337,8 @@ class SftpSupport {
                 if (mask >= 0) {
                     cftp.chmod(mask, dstFileName);
                 }
+            } catch (SftpException e) {
+                throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
             }
@@ -348,7 +361,7 @@ class SftpSupport {
                     return;
                 } catch (SftpException e) {
                     if (attempt > PUT_RETRY_COUNT) {
-                        throw e;
+                        throw decorateSftpException(e, dstFileName);
                     } else {
                         String message = String.format("Error on attempt %d to copy %s to %s:%s :\n", // NOI18N
                                 attempt, srcFileName, execEnv, dstFileName);
@@ -385,6 +398,8 @@ class SftpSupport {
             ChannelSftp cftp = getChannel();
             try {
                 cftp.get(srcFileName, dstFileName);
+            } catch (SftpException e) {
+                throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
             }
@@ -456,6 +471,8 @@ class SftpSupport {
                     baseName = path.substring(slashPos + 1);
                 }
                 result = createStatInfo(dirName, baseName, attrs, cftp);
+            } catch (SftpException e) {
+                throw decorateSftpException(e, path);
             } finally {
                 releaseChannel(cftp);
             }
@@ -495,6 +512,8 @@ class SftpSupport {
                         result.add(createStatInfo(path, name, attrs, cftp));
                     }
                 }            
+            } catch (SftpException e) {
+                throw decorateSftpException(e, path);
             } finally {
                 releaseChannel(cftp);
             }
@@ -512,7 +531,11 @@ class SftpSupport {
         if (attrs.isLink()) {
             String path = dirName + '/' + baseName;
             LOG.log(Level.FINE, "performing readlink {0}", path);
-            linkTarget = cftp.readlink(path);
+            try {
+                linkTarget = cftp.readlink(path);
+            } catch (SftpException e) {
+                throw decorateSftpException(e, path);
+            }
         }
         Date lastModified = new Date(attrs.getMTime()*1000L);
         StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.getSize(), 

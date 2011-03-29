@@ -91,6 +91,8 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
             final String cacheName = "name.cache";
             DirEntry entry1 = new DirEntrySftp(statInfo, cacheName);
             ds1.testAddEntry(entry1);
+            String dummy = "inexistent_file";
+            ds1.testAddDummy(dummy);
             ds1.store();
             DirectoryStorage ds2 = DirectoryStorage.load(file);
             DirEntry entry2 = ds2.getEntry(entry1.getName());
@@ -102,7 +104,9 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
             assertEquals("Size", entry1.getSize(), entry2.getSize());
             assertTrue("Timestamps differ", entry1.isSameLastModified(entry2));
             assertEquals("Link", entry1.getLinkTarget(), entry2.getLinkTarget());
-            
+            assertTrue(ds2.isKnown(dummy));
+            assertFalse(ds2.isKnown("abrakadabra"));
+            assertTrue(ds2.isKnown(entry2.getName()));
         } finally {
             file.delete();
         }
