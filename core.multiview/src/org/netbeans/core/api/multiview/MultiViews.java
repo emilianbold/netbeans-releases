@@ -48,6 +48,7 @@ import java.io.Serializable;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -63,7 +64,7 @@ import org.openide.windows.TopComponent;
     }
 
     /**
-     * For advanced manupulation with Multiview component, the handler can be requested
+     * For advanced manipulation with Multiview component, the handler can be requested
      * @return handle that one can use for manipulation with multiview component.
      */
     public static MultiViewHandler findMultiViewHandler(TopComponent tc) {
@@ -105,7 +106,7 @@ import org.openide.windows.TopComponent;
      * 
      * @param context lookup representing the object to be displayed in the multiview
      * @param mimeType the mime type to seek for elements in
-     * @return cloneable multiview component
+     * @return cloneable multiview component also implementing {@link Pane} interface
      * @since 1.22
      */
     public static <T extends Serializable & Lookup.Provider> CloneableTopComponent createCloneableMultiView(
