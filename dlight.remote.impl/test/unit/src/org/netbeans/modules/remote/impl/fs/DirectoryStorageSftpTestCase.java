@@ -59,25 +59,9 @@ import org.netbeans.modules.remote.test.RemoteApiTest;
  */
 public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
 
-    private boolean oldLsViaSftp;
-    
     public DirectoryStorageSftpTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        oldLsViaSftp = RemoteDirectory.getLsViaSftp();
-        RemoteDirectory.testSetLsViaSftp(true);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        RemoteDirectory.testSetLsViaSftp(oldLsViaSftp);
-    }
-    
            
     @ForAllEnvironments
     public void testDirectoryStorageSftp() throws Exception {
