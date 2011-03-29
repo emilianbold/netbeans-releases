@@ -161,7 +161,7 @@ public class MakefileConfiguration {
         if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             return getBuildCommandWorkingDirValue();
         } else {
-            String wd = getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+            String wd = getMakeConfiguration().getSourceBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
             // Normalize            
             wd = FileSystemProvider.normalizeAbsolutePath(wd, getSourceExecutionEnvironment());
             return wd;
