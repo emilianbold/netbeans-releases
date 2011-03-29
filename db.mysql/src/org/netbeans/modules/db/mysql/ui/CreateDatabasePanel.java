@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -145,6 +145,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private void setProgress(final boolean start) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 comboDatabaseName.setEnabled(!start);
                 okButton.setEnabled(okButton.isEnabled() && !start);
@@ -172,6 +173,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         ActionListener listener = new ActionListener() {
             Task task;
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource().equals(okButton)) {
                     if (task != null && !task.isFinished()) {
@@ -182,6 +184,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     startProgress();
 
                     task = RequestProcessor.getDefault().create(new Runnable() {
+                        @Override
                         public void run() {
                             createDatabase();
                             if (isGrantAccess()) {
@@ -191,6 +194,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     });
 
                     task.addTaskListener(new TaskListener() {
+                        @Override
                         public void taskFinished(org.openide.util.Task task) {
                             stopProgress();
                             dialog.dispose();
@@ -396,6 +400,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
             new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent event) {
                 // Get the actual key.  apparently getItem() doesn't return the current
                 // string typed until *after* this event finishes :(
@@ -411,9 +416,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 validatePanel(dbname);
             }
 
+            @Override
             public void keyPressed(KeyEvent event) {
             }
 
+            @Override
             public void keyReleased(KeyEvent event) {
                 // Get the actual key.  apparently getItem() doesn't return the current
                 // string typed until *after* this event finishes :(
@@ -583,6 +590,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         private String selected = null;
 
+        @Override
         public void setSelectedItem(Object item) {
             selected = (String)item;
         }
@@ -591,6 +599,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             return selected != null && selected.startsWith(SAMPLE_PREFIX);
         }
 
+        @Override
         public Object getSelectedItem() {
             if (isSelectedSample()) {
                 // trim off the "Sample database: " string
@@ -602,10 +611,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public int getSize() {
             return sampleNames.size();
         }
 
+        @Override
         public Object getElementAt(int index) {
             if (index < 0) {
                 return null;
@@ -613,23 +624,22 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             return SAMPLE_PREFIX + sampleNames.get(index).toString();
         }
 
+        @Override
         public void addListDataListener(ListDataListener listener) {
         }
 
+        @Override
         public void removeListDataListener(ListDataListener listener) {
         }
                 
     }
     
     private static class UsersComboModel implements ComboBoxModel {
-        private final DatabaseServer server;
 
         private List<DatabaseUser> users= new ArrayList<DatabaseUser>();
         private DatabaseUser selected;
 
         public UsersComboModel(DatabaseServer server) throws DatabaseException {
-            this.server = server;
-                        
             try {
                 users.addAll(server.getUsers());
                 
@@ -662,6 +672,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void setSelectedItem(Object item) {
             if (item == null || item.toString().trim().length() == 0) {
                 return;
@@ -672,21 +683,26 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public Object getSelectedItem() {
             return selected;
         }
 
+        @Override
         public int getSize() {
             return users.size();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return users.get(index);
         }
 
+        @Override
         public void addListDataListener(ListDataListener arg0) {
         }
 
+        @Override
         public void removeListDataListener(ListDataListener arg0) {
         }
 
