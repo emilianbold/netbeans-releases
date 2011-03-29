@@ -50,7 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author Vladimir Kvashin
  */
 public interface DirEntry {
-
+    
     String getName();
 
     long getSize();
@@ -79,4 +79,6 @@ public interface DirEntry {
     void setCache(String cache);
 
     String toExternalForm();
+    
+    boolean isValid();    
 }
