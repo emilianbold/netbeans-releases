@@ -51,9 +51,11 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -223,14 +225,109 @@ public class InterceptorBindingsTest extends CommonTestCase {
         });
     }
     
-    private void checkInterceptorBindings( WebBeansModel model , 
-            String typeElement, String... annotationFqns) 
+    public void testMethodInterceptorBindings() throws IOException{
+        
+        createInterceptorBinding("IBinding1");
+        createInterceptorBinding("IBinding2");
+        createInterceptorBinding("IBinding3");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+  
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                "@IBinding2 "+
+                "public @interface Stereotype1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+  
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                "@Stereotype1 "+
+                "public @interface Stereotype2 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "@IBinding1 "+
+                "public class One {" +
+                " void @IBinding3 method1(){} "+
+                " void @Stereotype2 method2(){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "@Stereotype2 "+
+                "public class Two {" +
+                " void @IBinding1 method(){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "public class Three {" +
+                " void @IBinding1 method(){} "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                checkMethodInterceptorBindings(model, "foo.One", "method1", 
+                        "foo.IBinding1","foo.IBinding3");
+                
+                checkMethodInterceptorBindings(model, "foo.One", "method2", 
+                        "foo.IBinding1","foo.IBinding2");
+                
+                checkMethodInterceptorBindings(model, "foo.Two", "method", 
+                        "foo.IBinding1","foo.IBinding2");
+                
+                checkMethodInterceptorBindings(model, "foo.Three", "method", 
+                        "foo.IBinding1");
+                return null;
+            }
+
+        });
+    }
+    
+    private void checkMethodInterceptorBindings( WebBeansModel model , 
+            String typeElement, String methodName, String... annotationFqns) 
     {
         TypeMirror mirror = model.resolveType( typeElement );
         Element clazz = ((DeclaredType)mirror).asElement();
+        List<ExecutableElement> methods = ElementFilter.methodsIn( 
+                clazz.getEnclosedElements());
+        ExecutableElement element = null;
+        for (ExecutableElement method : methods) {
+            String name = method.getSimpleName().toString();
+            if ( name.equals( methodName)){
+                element = method;
+                break;
+            }
+        }
         
+        assertNotNull( element );
+        checkInterceptorBindings(model, element, annotationFqns);
+    }
+
+    private void checkInterceptorBindings( WebBeansModel model, Element element,
+            String... annotationFqns )
+    {
         Collection<AnnotationMirror> interceptorBindings = 
-            model.getInterceptorBindings(clazz);
+            model.getInterceptorBindings(element);
         
         Set<String> fqns = getIBindingFqns(interceptorBindings);
         
@@ -255,6 +352,15 @@ public class InterceptorBindingsTest extends CommonTestCase {
             }
             assertFalse( "Interceptor bindings  "+builder+" are found but not expected", true);
         }
+    }
+        
+    private void checkInterceptorBindings( WebBeansModel model , 
+            String typeElement, String... annotationFqns) 
+    {
+        TypeMirror mirror = model.resolveType( typeElement );
+        Element clazz = ((DeclaredType)mirror).asElement();
+        
+        checkInterceptorBindings(model, clazz, annotationFqns);
     }
 
     private Set<String> getIBindingFqns(
