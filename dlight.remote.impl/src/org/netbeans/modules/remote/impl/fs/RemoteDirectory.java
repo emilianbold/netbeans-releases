@@ -502,8 +502,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     throw new IOException("Can not create cache directory " + getCache()); // NOI18N
                 }
             }
-            DirectoryReader directoryReader = getLsViaSftp() ? 
-                    new DirectoryReaderSftp(getExecutionEnvironment(), getPath()) : new DirectoryReaderLs(getExecutionEnvironment(), getPath());
+            DirectoryReader directoryReader = new DirectoryReaderSftp(getExecutionEnvironment(), getPath());
             if (trace) { trace("synchronizing"); } // NOI18N
             Exception problem = null;
             try {
@@ -868,13 +867,5 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return childEntry.getLastModified();
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
-    }
-    
-    /*package*/ static boolean getLsViaSftp() {
-        return LS_VIA_SFTP;
-    }
-    
-    /*package*/ static void testSetLsViaSftp(boolean value) {
-        LS_VIA_SFTP = value;
     }
 }

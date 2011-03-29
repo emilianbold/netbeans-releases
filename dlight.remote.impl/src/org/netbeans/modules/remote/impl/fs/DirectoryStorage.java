@@ -82,9 +82,9 @@ public class DirectoryStorage {
     
     private final Map<String, DirEntry> entries;
     private final File cacheFile;
-    private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
+    private static final int VERSION = 4;
     /* Incompatible version to discard */
-    private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
+    private static final int ODD_VERSION = 4;
 
     public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
         this.cacheFile = file;
@@ -143,8 +143,7 @@ public class DirectoryStorage {
                 if (line.length() == 0) {
                     continue; // just in case, ignore empty lines
                 }
-                DirEntry entry = RemoteDirectory.getLsViaSftp() ? 
-                        DirEntrySftp.fromExternalForm(line) : DirEntryLs.fromExternalForm(line);
+                DirEntry entry = DirEntrySftp.fromExternalForm(line);
                 loadedEntries.add(entry);
             }
             return new DirectoryStorage(storageFile, loadedEntries);
