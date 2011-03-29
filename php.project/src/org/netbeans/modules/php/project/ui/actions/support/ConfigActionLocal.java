@@ -346,7 +346,8 @@ class ConfigActionLocal extends ConfigAction {
                 debuggedFile,
                 false,
                 ProjectPropertiesSupport.getDebugPathMapping(project),
-                ProjectPropertiesSupport.getDebugProxy(project));
+                ProjectPropertiesSupport.getDebugProxy(project),
+                ProjectPropertiesSupport.getEncoding(project));
         dbgStarter.start(project, initDebuggingCallable, props);
     }
 
