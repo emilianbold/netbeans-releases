@@ -92,7 +92,8 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
             if (mvr.mimeType().length == 0) {
                 throw new LayerGenerationException("You must specify mimeType", e);
             }
-            String[] binAndMethodNames = findDefinition(e);
+            TypeMirror[] exprType = new TypeMirror[1];
+            String[] binAndMethodNames = findDefinition(e, exprType);
             String fileBaseName = binAndMethodNames[0].replace('.', '-');
             if (binAndMethodNames[1] != null) {
                 fileBaseName += "-" + binAndMethodNames[1];
@@ -110,7 +111,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 if (binAndMethodNames[1] != null) {
                     f.stringvalue("method", binAndMethodNames[1]);
                 }
-                if (processingEnv.getTypeUtils().isAssignable(e.asType(), pane)) {
+                if (processingEnv.getTypeUtils().isAssignable(exprType[0], pane)) {
                     f.boolvalue("sourceview", true);
                 }
                 f.write();
@@ -119,7 +120,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         return true;
     }
 
-    private String[] findDefinition(Element e) throws LayerGenerationException {
+    private String[] findDefinition(Element e, TypeMirror[] type) throws LayerGenerationException {
         final TypeMirror lkp = processingEnv.getElementUtils().getTypeElement(Lookup.class.getCanonicalName()).asType();
         final TypeMirror mve = processingEnv.getElementUtils().getTypeElement(MultiViewElement.class.getName()).asType();
         if (e.getKind() == ElementKind.CLASS) {
@@ -145,6 +146,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
             if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
                 throw new LayerGenerationException("Class must be public", e);
             }
+            type[0] = e.asType();
             return new String[] {processingEnv.getElementUtils().getBinaryName(clazz).toString(), null};
         } else {
             ExecutableElement meth = (ExecutableElement) e;
@@ -169,6 +171,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
             if (!meth.getEnclosingElement().getModifiers().contains(Modifier.PUBLIC)) {
                 throw new LayerGenerationException("Class must be public", e);
             }
+            type[0] = meth.getReturnType();
             return new String[] {
                 processingEnv.getElementUtils().getBinaryName((TypeElement) meth.getEnclosingElement()).toString(),
                 meth.getSimpleName().toString()};

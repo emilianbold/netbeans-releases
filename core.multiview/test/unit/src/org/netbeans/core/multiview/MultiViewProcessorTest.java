@@ -41,6 +41,7 @@
  */
 package org.netbeans.core.multiview;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +69,7 @@ import org.openide.util.Lookup;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
@@ -166,7 +168,27 @@ public class MultiViewProcessorTest extends NbTestCase {
             fail("There shall be at least one description");
         }
     }
-
+    
+    public void testCompileInApt() throws Exception {
+        clearWorkDir();
+        String src = "\n"
+                + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
+                + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
+        + "@MultiViewElement.Registration(displayName = \"Testing\","
+        + "iconBase = \"none\","
+        + "mimeType = \"text/ble\","
+        + "persistenceType = 0,"
+        + "preferredID = \"bleple\")"
+                + "  public static MultiViewElement create() {\n"
+                + "    return new Test();\n"
+                + "  }\n"
+                + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertTrue("Compilation should succeed:\n" + os.toString(), res);
+    }
+    
     public void testIsSourceView() {
         int cnt = 0;
         for (MultiViewDescription d : MimeLookup.getLookup("text/plain").lookupAll(MultiViewDescription.class)) {
@@ -302,7 +324,10 @@ public class MultiViewProcessorTest extends NbTestCase {
         persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
     )
-    public static class CntxMVE extends MVE {
+    public static CntxMVE create(Lookup lkp) {
+        return new CntxMVE(lkp);
+    }
+    static class CntxMVE extends MVE {
         private Lookup context;
         public CntxMVE(Lookup context) {
             this.context = context;

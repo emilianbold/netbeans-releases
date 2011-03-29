@@ -181,7 +181,7 @@ public interface MultiViewElement {
      * The element class may have default constructor or a constructor that 
      * takes {@link Lookup} as an argument.
      */
-    @Target({ ElementType.TYPE })
+    @Target({ ElementType.TYPE, ElementType.METHOD })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Registration {
         /** Mime type this registration is associated with.

@@ -47,6 +47,7 @@ package org.netbeans.core.spi.multiview;
 import java.awt.Image;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -370,6 +371,7 @@ public final class MultiViewFactory {
         @Override
         public MultiViewElement createElement() {
             String name = get("class", String.class); // NOI18N
+            String method = (String)map.get("method"); // NOI18N
             try {
                 ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
                 if (cl == null) {
@@ -379,12 +381,22 @@ public final class MultiViewFactory {
                     cl = MultiViewFactory.class.getClassLoader();
                 }
                 Class<?> clazz = Class.forName(name, true, cl);
-                try {
-                    Constructor<?> lookupC = clazz.getConstructor(Lookup.class);
-                    return (MultiViewElement)lookupC.newInstance(context);
-                } catch (Exception ex) {
-                    Constructor<?> defC = clazz.getConstructor();
-                    return (MultiViewElement)defC.newInstance();
+                if (method == null) {
+                    try {
+                        Constructor<?> lookupC = clazz.getConstructor(Lookup.class);
+                        return (MultiViewElement)lookupC.newInstance(context);
+                    } catch (Exception ex) {
+                        Constructor<?> defC = clazz.getConstructor();
+                        return (MultiViewElement)defC.newInstance();
+                    }
+                } else {
+                    try {
+                        Method m = clazz.getMethod(method, Lookup.class);
+                        return (MultiViewElement) m.invoke(null, context);
+                    } catch (Exception ex) {
+                        Method m = clazz.getMethod(method);
+                        return (MultiViewElement) m.invoke(null);
+                    }
                 }
             } catch (Exception ex) {
                 throw new IllegalStateException("Cannot instantiate " + name, ex);
