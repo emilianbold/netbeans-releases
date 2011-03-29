@@ -1236,6 +1236,9 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
             </target>
             
+            <property name="jspc.schemas" value="/resources/schemas/"/><!-- #192308 -->
+            <property name="jspc.dtds" value="/resources/dtds/"/><!-- #192308 -->
+            
             <target name="compile-jsps">
                 <xsl:attribute name="depends">compile</xsl:attribute>
                 <xsl:attribute name="if">do.compile.jsps</xsl:attribute>
@@ -1251,9 +1254,12 @@ exists or setup the property manually. For example like this:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
+                    <arg value="-schemas ${{jspc.schemas}}"/>
+                    <arg value="-dtds ${{jspc.dtds}}"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
                     <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
+                    <arg value="-sysClasspath ${{libs.jsp-compilation-syscp.classpath}}"/><!-- #192308 -->
                     <classpath path="${{java.home}}/../lib/tools.jar:${{libs.jsp-compiler.classpath}}:${{libs.jsp-compilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
