@@ -68,7 +68,7 @@ public final class DirectoryStorage {
     private final File cacheFile;
     private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
     /* Incompatible version to discard */
-    private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
+    private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
 
     public DirectoryStorage(File file) {
         this.cacheFile = file;
