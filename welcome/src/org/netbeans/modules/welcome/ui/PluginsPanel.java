@@ -49,16 +49,16 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.LinkButton;
 import org.netbeans.modules.welcome.content.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -123,10 +123,10 @@ class PluginsPanel extends JPanel implements Constants {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
-                CallableSystemAction a = SystemAction.get(cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction").asSubclass(CallableSystemAction.class));
+                FileObject fo = FileUtil.getConfigFile( "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
+                Action a = (Action)fo.getAttribute( "instanceCreate" ); // NOI18N
                 a.putValue("InitialTab", initialTab); // NOI18N
-                a.performAction ();
+                a.actionPerformed( e );
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
