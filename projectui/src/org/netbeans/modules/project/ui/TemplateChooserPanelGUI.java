@@ -286,10 +286,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             List<DataFolder> l = new ArrayList<DataFolder>();
             for (DataObject d : folder.getChildren()) {
                 if (isFolderOfTemplates(d)) {
-                    // has children?
-                    if (hasChildren ((Project)projectsComboBox.getSelectedItem (), d)) {
-                        l.add((DataFolder) d);
-                    }
+                    l.add((DataFolder) d);
                 }
             }
             setKeys(l);
@@ -298,7 +295,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         protected Node[] createNodes(DataFolder d) {
             boolean haveChildren = false;
             for (DataObject child : d.getChildren()) {
-                if ((child instanceof DataFolder) && !isTemplate(child)) {
+                if (isFolderOfTemplates(child)) {
                     haveChildren = true;
                     break;
                 }
@@ -325,7 +322,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         private boolean isFolderOfTemplates(DataObject d) {
             if (d instanceof DataFolder && !isTemplate((DataFolder)d))  {
                 Object o = d.getPrimaryFile().getAttribute("simple"); // NOI18N
-                return o == null || Boolean.TRUE.equals (o);
+                if (o == null || Boolean.TRUE.equals(o)) {
+                    return hasChildren((Project) projectsComboBox.getSelectedItem(), d);
+                }
             }
             return false;
         }

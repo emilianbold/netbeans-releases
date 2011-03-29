@@ -108,6 +108,12 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         t.setAttribute("template", true);
         t.setAttribute("templateCategory", "other");
         f.createData("data");
+        f = f.createFolder("Snippets");
+        f.setAttribute("templateCategory", "always-hidden");
+        t = f.createData("snippet");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "main");
+        f.createData("data");
         f = r.createFolder("Other");
         t = f.createData("t4");
         t.setAttribute("template", true);
