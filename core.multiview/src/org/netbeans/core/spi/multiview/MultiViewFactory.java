@@ -44,21 +44,29 @@
 
 package org.netbeans.core.spi.multiview;
 
+import java.awt.BorderLayout;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
 import org.netbeans.core.multiview.SourceCheckDescription;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -239,10 +247,12 @@ public final class MultiViewFactory {
     private static final class DefaultCloseHandler implements CloseOperationHandler, Serializable {
          private static final long serialVersionUID =-3126744916624172427L;        
        
+        @Override
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            Iterator<CloseOperationState> it;
             if (elements != null) {
                 boolean canBeClosed = true;
-                Collection badOnes = new ArrayList();
+                Collection<CloseOperationState> badOnes = new ArrayList<CloseOperationState>();
                 for (int i = 0; i < elements.length; i++) {
                     if (!elements[i].canClose()) {
                         badOnes.add(elements[i]);
@@ -250,63 +260,61 @@ public final class MultiViewFactory {
                     }
                 }
                 if (!canBeClosed) {
-                    //TODO SHOW dialog here.
-                    throw new IllegalStateException("Cannot close component. Some of the elements require close operation handling. See MultiViewFactory.createMultiView()");
-//                    Object[] options = new Object[] {
-//                        new JButton("Proceed"),
-//                        new JButton("Discard"),
-//                        new JButton("Cancel")
-//                    };
-//                    NotifyDescriptor desc = new NotifyDescriptor(createPanel(badOnes), "Cannot close component.", 
-//                                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, 
-//                                options, options[0]);
-//                    Object retVal = DialogDisplayer.getDefault().notify(desc);
-//                    if (retVal == options[0]) {
-//                        // do proceed.
-//                        Iterator it = badOnes.iterator();
-//                        while (it.hasNext()) {
-//                            Action act = ((CloseOperationState)it.next()).getProceedAction();
-//                            if (act != null) {
-//                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
-//                            }
-//                        }
-//                    } else if (retVal == options[1]) {
-//                        // do discard
-//                        Iterator it = badOnes.iterator();
-//                        while (it.hasNext()) {
-//                            Action act = ((CloseOperationState)it.next()).getDiscardAction();
-//                            if (act != null) {
-//                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "discard"));
-//                            }
-//                        }
-//                    } else {
-//                        // was cancel..
-//                        return false;
-//                    }
+                    Object[] options = new Object[] {
+                        "Proceed",
+                        "Discard",
+                        "Cancel"
+                    };
+                    NotifyDescriptor desc = new NotifyDescriptor(createPanel(badOnes), "Cannot close component.", 
+                                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, 
+                                options, options[0]);
+                    Object retVal = DialogDisplayer.getDefault().notify(desc);
+                    if (retVal == options[0]) {
+                        // do proceed.
+                        it = badOnes.iterator();
+                        while (it.hasNext()) {
+                            Action act = ((CloseOperationState)it.next()).getProceedAction();
+                            if (act != null) {
+                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
+                            }
+                        }
+                    } else if (retVal == options[1]) {
+                        // do discard
+                        it = badOnes.iterator();
+                        while (it.hasNext()) {
+                            Action act = ((CloseOperationState)it.next()).getDiscardAction();
+                            if (act != null) {
+                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "discard"));
+                            }
+                        }
+                    } else {
+                        // was cancel..
+                        return false;
+                    }
                 }
             }
             return true;
         }
         
-//        private JPanel createPanel(Collection elems) {
-//            JPanel panel = new JPanel();
-//            panel.setLayout(new BorderLayout());
-//            JLabel lbl = new JLabel("Cannot safely close component for following reasons:");
-//            panel.add(lbl, BorderLayout.NORTH);
-//            JScrollPane pane = new JScrollPane();
-//            String[] warnings = new String[elems.size()];
-//            int index = 0;
-//            Iterator it = elems.iterator();
-//            while (it.hasNext()) {
-//                CloseOperationState state = (CloseOperationState)it.next();
-//                warnings[index] = state.getCloseWarningMessage();
-//                index = index + 1;
-//            }
-//            JList list = new JList(warnings);
-//            pane.setViewportView(list);
-//            panel.add(pane);
-//            return panel;
-//        }
+        private JPanel createPanel(Collection elems) {
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            JLabel lbl = new JLabel("Cannot safely close component for following reasons:");
+            panel.add(lbl, BorderLayout.NORTH);
+            JScrollPane pane = new JScrollPane();
+            String[] warnings = new String[elems.size()];
+            int index = 0;
+            Iterator it = elems.iterator();
+            while (it.hasNext()) {
+                CloseOperationState state = (CloseOperationState)it.next();
+                warnings[index] = state.getCloseWarningID();
+                index = index + 1;
+            }
+            JList list = new JList(warnings);
+            pane.setViewportView(list);
+            panel.add(pane);
+            return panel;
+        }
     }
     
     /**

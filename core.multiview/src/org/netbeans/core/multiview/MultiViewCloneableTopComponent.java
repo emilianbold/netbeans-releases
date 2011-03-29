@@ -48,7 +48,6 @@ import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -193,6 +192,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
         tc.setMultiViewDescriptions(peer.model.getDescriptions(), peer.model.getActiveDescription());;
         tc.setCloseOperationHandler(peer.closeHandler);
+        tc.peer.copyMimeContext(peer);
         return tc;
     }
     

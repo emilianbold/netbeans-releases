@@ -90,13 +90,11 @@ import org.openide.windows.TopComponent;
 
 /** Special subclass of TopComponent which shows and handles set of
  * MultiViewElements, shows them in switchable toggle buttons style, along
- * with toolbsrs af actions asociated with individual view elements.
+ * with toolbars of actions associated with individual view elements.
  *
  *
  * @author Dafe Simonek, Milos Kleint
  */
-
-
 public final class MultiViewPeer  {
 
     static final String MULTIVIEW_ID = "MultiView-"; //NOI18N
@@ -136,6 +134,11 @@ public final class MultiViewPeer  {
         delegateUndoRedo = new DelegateUndoRedo();
     }
     
+    void copyMimeContext(MultiViewPeer other) {
+        this.context = other.context;
+        this.mimeType = other.mimeType;
+    }
+    
     /** @param context context needs to be also serializable */
     public void setMimeLookup(String mimeType, Lookup.Provider context) {
         this.context = context;
@@ -153,7 +156,11 @@ public final class MultiViewPeer  {
         model = new MultiViewModel(arr.toArray(new MultiViewDescription[0]), arr.get(0), factory);
         model.addElementSelectionListener(selListener);
         tabs.setModel(model);
-        closeHandler = lkp.lookup(CloseOperationHandler.class);
+        CloseOperationHandler h = lkp.lookup(CloseOperationHandler.class);
+        if (h == null) {
+            h = SpiAccessor.DEFAULT.createDefaultCloseHandler();
+        }
+        closeHandler = h;
     }
     
     

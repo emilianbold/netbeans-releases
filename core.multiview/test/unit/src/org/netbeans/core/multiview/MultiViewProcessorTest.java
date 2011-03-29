@@ -41,11 +41,15 @@
  */
 package org.netbeans.core.multiview;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -62,7 +66,11 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
@@ -88,6 +96,9 @@ public class MultiViewProcessorTest extends NbTestCase {
         MVE.closeState = null;
         CloseH.globalElements = null;
         CloseH.retValue = null;
+        DD.d = null;
+        DD.ret = -1;
+        MockServices.setServices(DD.class);
     }
 
     public void testMultiViewsCreate() {
@@ -118,6 +129,30 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertNotNull("MultiViewComponent created", cmv);
         TopComponent mvc = cmv.cloneTopComponent();
         doCheck(mvc, ic);
+        
+        CntAction accept = new CntAction();
+        CntAction discard = new CntAction();
+        CloseH.retValue = false;
+        MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", accept, discard);
+        DD.ret = 2;
+        mvc.open();
+        assertFalse("Closed cancelled", mvc.close());
+        assertEquals("No accept", 0, accept.cnt);
+        assertEquals("No discard", 0, discard.cnt);
+        MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", accept, discard);
+        DD.ret = 1;
+        DD.d = null;
+        mvc.open();
+        assertTrue("Changes discarded, close accepted", mvc.close());
+        assertEquals("Still no accept", 0, accept.cnt);
+        assertEquals("One discard", 1, discard.cnt);
+        MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", accept, discard);
+        DD.ret = 0;
+        DD.d = null;
+        mvc.open();
+        assertTrue("Closed accepted OK", mvc.close());
+        assertEquals("Three buttons", 3, DD.d.getOptions().length);
+        assertNull("Not called, we use default handler", CloseH.globalElements);
     }
 
     public void testCloneableMultiViewsSerialize() throws Exception {
@@ -125,16 +160,20 @@ public class MultiViewProcessorTest extends NbTestCase {
         Lookup lookup = new AbstractLookup(ic);
         
         CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
+        assertPersistence("Always", TopComponent.PERSISTENCE_ALWAYS, cmv);
+        assertNotNull("MultiViewComponent created", cmv);
+        NbMarshalledObject mar = new NbMarshalledObject(cmv);
+        TopComponent mvc = (TopComponent) mar.get();
+        doCheck(mvc, ic);
+    }
+
+    private void assertPersistence(String msg, int pt, TopComponent cmv) {
         CharSequence log = Log.enable("org.netbeans.core.multiview", Level.WARNING);
         int res = cmv.getPersistenceType();
         if (log.length() > 0) {
             fail("There should be no warnings to compute getPersistenceType():\n" + log);
         }
-        assertEquals("Always", TopComponent.PERSISTENCE_ALWAYS, res);
-        assertNotNull("MultiViewComponent created", cmv);
-        NbMarshalledObject mar = new NbMarshalledObject(cmv);
-        TopComponent mvc = (TopComponent) mar.get();
-        doCheck(mvc, ic);
+        assertEquals(msg, pt, res);
     }
     
     private void doCheck(TopComponent mvc, InstanceContent ic) {
@@ -144,6 +183,8 @@ public class MultiViewProcessorTest extends NbTestCase {
         MultiViewPerspective[] arr = handler.getPerspectives();
         assertEquals("One perspetive found", 1, arr.length);
         assertEquals("Contextual", arr[0].getDisplayName());
+
+        assertPersistence("Always", TopComponent.PERSISTENCE_ALWAYS, mvc);
         
         mvc.open();
         mvc.requestActive();
@@ -384,6 +425,40 @@ public class MultiViewProcessorTest extends NbTestCase {
         @Override
         public Lookup getLookup() {
             return map.get(cnt);
+        }
+    }
+    
+    public static final class DD extends DialogDisplayer {
+        static int ret;
+        static NotifyDescriptor d;
+        
+        @Override
+        public Object notify(NotifyDescriptor descriptor) {
+            assertNull("No descriptor yet", d);
+            if (ret == -1) {
+                fail("We should know what to return");
+            }
+            d = descriptor;
+            if (d.getOptions().length <= ret) {
+                fail("not enough options. Need index " + ret + " but is just " + Arrays.toString(d.getOptions()));
+            }
+            Object obj = d.getOptions()[ret];
+            ret = -1;
+            return obj;
+        }
+
+        @Override
+        public Dialog createDialog(DialogDescriptor descriptor) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    
+    private static final class CntAction extends AbstractAction {
+        int cnt;
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            cnt++;
         }
     }
 }
