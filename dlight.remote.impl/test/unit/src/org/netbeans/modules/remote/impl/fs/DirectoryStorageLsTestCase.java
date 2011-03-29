@@ -85,6 +85,8 @@ public class DirectoryStorageLsTestCase extends NativeExecutionBaseTestCase {
             final String link = null;
             entry1 = new DirEntryLs(name, cacheName, access, user, group, size, timestamp, link);
             ds1.testAddEntry(entry1);
+            String dummy = "inexistent_file";
+            ds1.testAddDummy(dummy);
             ds1.store();
             DirectoryStorage ds2 = DirectoryStorage.load(file);
             DirEntry entry2 = ds2.getEntry(entry1.getName());
@@ -97,6 +99,9 @@ public class DirectoryStorageLsTestCase extends NativeExecutionBaseTestCase {
             assertEquals("Size", size, entry2.getSize());
             assertEquals("Timestamp", entry1.getLastModified(), entry2.getLastModified());
             assertEquals("Link", link, entry2.getLinkTarget());
+            assertTrue(ds2.isKnown(dummy));
+            assertFalse(ds2.isKnown("abrakadabra"));
+            assertTrue(ds2.isKnown(entry2.getName()));
         } finally {
             file.delete();
         }
