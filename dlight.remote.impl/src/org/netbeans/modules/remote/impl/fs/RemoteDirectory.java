@@ -428,7 +428,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (storage == null) {
             // try loading from disk
             fromMemOrDiskCache = false;
-            storage = new DirectoryStorage(storageFile);
+            storage = DirectoryStorage.EMPTY;
             if (storageFile.exists()) {
                 Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
                 try {
@@ -544,7 +544,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             for (DirEntry entry : directoryReader.getEntries()) {
                 newEntries.put(entry.getName(), entry);
             }
-            boolean changed = (newEntries.size() != storage.size());
+            boolean changed = (newEntries.size() != storage.size()) || storage == DirectoryStorage.EMPTY;
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
@@ -659,8 +659,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
             }
-            storageFile.setLastModified(System.currentTimeMillis());
-            if (trace) { trace("set lastModified to {0}", storageFile.lastModified()); } // NOI18N
             // fire all event under lock
             if (changed) {
                 for (FileObject deleted : filesToFireDeleted) {

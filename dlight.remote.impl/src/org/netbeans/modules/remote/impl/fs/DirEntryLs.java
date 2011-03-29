@@ -448,6 +448,11 @@ import org.openide.util.Exceptions;
         }
         return sb.toString();
     }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
     
     private String escape(String text) {
         if (text.indexOf(' ') < 0 && text.indexOf('\\') < 0) {

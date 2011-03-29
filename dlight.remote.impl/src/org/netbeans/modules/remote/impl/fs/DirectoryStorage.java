@@ -50,133 +50,115 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import org.netbeans.modules.remote.support.RemoteLogger;
 
 /**
  * Keeps information about all files that reside in the directory
  * @author Vladimir Kvashin
  */
-public final class DirectoryStorage {
+public class DirectoryStorage {
 
+    public static final DirectoryStorage EMPTY = new DirectoryStorage(null, Collections.<DirEntry>emptyList()) {
+
+        @Override
+        public void store() throws IOException {
+            RemoteLogger.assertTrueInConsole(false, "EMPTY.store() is called!"); //NOI18N
+        }
+
+        @Override
+        public void touch() throws IOException {
+            RemoteLogger.assertTrueInConsole(false, "EMPTY.touch() is called!"); //NOI18N
+        }
+
+        @Override
+        public String toString() {
+            return "EMPTY DirectoryStorage"; //NOI18N
+        }        
+    };
+    
     private final Map<String, DirEntry> entries;
-    /** known inexistent files in the case of r/o directory - see #196841 - remote FS doesn't work if any part of path to file does not have read permission */
-    private final Set<String> dummies = new HashSet<String>();
     private final File cacheFile;
     private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
     /* Incompatible version to discard */
     private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 4 : 3;
 
-    public DirectoryStorage(File file) {
-        this.cacheFile = file;
-        entries = new HashMap<String, DirEntry>();
-    }
-
     public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
-        this(file, newEntries, null);
-    }
-
-    public DirectoryStorage(File file, Collection<DirEntry> newEntries, Collection<String> newDummies) {
         this.cacheFile = file;
         this.entries = new HashMap<String, DirEntry>();
         for (DirEntry entry : newEntries) {
             entries.put(entry.getName(), entry);
         }
-        if (newDummies != null) {
-            dummies.addAll(newDummies);
-        }
     }
     
     static DirectoryStorage load(File storageFile) throws IOException, FormatException {
-        DirectoryStorage out = new DirectoryStorage(storageFile);
-        out.load();
-        return out;
-    }
-
-    /**
-     * Format is:
-     *      name cache access user group size "timestamp" link
-     * Note that
-     *      access contains file type as well (leftmost character)
-     *      name is escaped (i.e. " " is replaced by "\\ ", "\\" by "\\\\")
-     *      timestamp is quoted,
-     *      access and timestamp is as in ls output on remote system
-     * @throws IOException
-     */
-    private void load() throws IOException, FormatException {
-        synchronized (DirectoryStorage.this) {
-            BufferedReader br = null;
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(storageFile));
+            // check version
+            String line = br.readLine();
+            String prefix = "VERSION="; // NOI18N
+            if (line == null || ! line.startsWith(prefix)) {
+                throw new FormatException("Wrong file format " + storageFile.getAbsolutePath() + " line " + line, false); //NOI18N)
+            }
+            int version;
             try {
-                br = new BufferedReader(new FileReader(cacheFile));
-                // check version
-                String line = br.readLine();
-                String prefix = "VERSION="; // NOI18N
-                if (line == null || ! line.startsWith(prefix)) {
-                    throw new FormatException("Wrong file format " + cacheFile.getAbsolutePath() + " line " + line, false); //NOI18N)
-                }
-                int version;
-                try {
-                    version = Integer.parseInt(line.substring(prefix.length()));
-                } catch (NumberFormatException nfe) {
-                    throw new FormatException("wrong version format " + cacheFile.getAbsolutePath(), nfe); // NOI18N
-                }
-                if (version > VERSION) {
-                    throw new FormatException("directory cache file version " + version +  //NNOI18N
-                            " not supported: " + cacheFile.getAbsolutePath(), true); //NOI18N
-                }
-                if (version < ODD_VERSION) {
-                    throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
-                            ' ' + cacheFile.getAbsolutePath(), true); //NOI18N
-                }
+                version = Integer.parseInt(line.substring(prefix.length()));
+            } catch (NumberFormatException nfe) {
+                throw new FormatException("wrong version format " + storageFile.getAbsolutePath(), nfe); // NOI18N
+            }
+            if (version > VERSION) {
+                throw new FormatException("directory cache file version " + version +  //NNOI18N
+                        " not supported: " + storageFile.getAbsolutePath(), true); //NOI18N
+            }
+            if (version < ODD_VERSION) {
+                throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
+                        ' ' + storageFile.getAbsolutePath(), true); //NOI18N
+            }
+            line = br.readLine();
+            prefix = "dummies="; // NOI18N
+            if (line == null || ! line.startsWith(prefix)) {
+                throw new FormatException("Wrong file format " + storageFile.getAbsolutePath() + " line " + line, false); //NOI18N)
+            }
+            int invalidsCount;
+            try {
+                invalidsCount = Integer.parseInt(line.substring(prefix.length()));
+            } catch (NumberFormatException nfe) {
+                throw new FormatException("wrong dummies count format " + storageFile.getAbsolutePath(), nfe); // NOI18N
+            }
+            Collection<DirEntry> loadedEntries = new ArrayList<DirEntry>();
+
+            for (int i = 0; i < invalidsCount; i++) {
                 line = br.readLine();
-                prefix = "dummies="; // NOI18N
-                if (line == null || ! line.startsWith(prefix)) {
-                    throw new FormatException("Wrong file format " + cacheFile.getAbsolutePath() + " line " + line, false); //NOI18N)
+                if (line == null) {
+                    throw new FormatException("premature end of file " + storageFile.getAbsolutePath(), false); // NOI18N
+                } else {
+                    loadedEntries.add(DirEntryInvalid.fromExternalForm(line));
                 }
-                int dummiesCount;
-                try {
-                    dummiesCount = Integer.parseInt(line.substring(prefix.length()));
-                } catch (NumberFormatException nfe) {
-                    throw new FormatException("wrong dummies count format " + cacheFile.getAbsolutePath(), nfe); // NOI18N
+            }
+            while ((line = br.readLine()) != null) {
+                if (line.length() == 0) {
+                    continue; // just in case, ignore empty lines
                 }
-                for (int i = 0; i < dummiesCount; i++) {
-                    line = br.readLine();
-                    if (line == null) {
-                        throw new FormatException("premature end of file " + cacheFile.getAbsolutePath(), false); // NOI18N
-                    } else {
-                        dummies.add(line);
-                    }
-                }
-                while ((line = br.readLine()) != null) {
-                    if (line.length() == 0) {
-                        continue; // just in case, ignore empty lines
-                    }
-                    DirEntry entry = RemoteDirectory.getLsViaSftp() ? 
-                            DirEntrySftp.fromExternalForm(line) : DirEntryLs.fromExternalForm(line);
-                    entries.put(entry.getName(), entry);
-                }
-             } finally {
-                if (br != null) {
-                    br.close();
-                }
+                DirEntry entry = RemoteDirectory.getLsViaSftp() ? 
+                        DirEntrySftp.fromExternalForm(line) : DirEntryLs.fromExternalForm(line);
+                loadedEntries.add(entry);
+            }
+            return new DirectoryStorage(storageFile, loadedEntries);
+         } finally {
+            if (br != null) {
+                br.close();
             }
         }
     }
 
     public void touch() throws IOException {
-        if (cacheFile.exists()) {
-            cacheFile.setLastModified(System.currentTimeMillis());
-        } else {
-            store();
-        }
-    }
-    
-    public boolean isKnown(String fileName) {
-        synchronized (this) {
-            return entries.containsKey(fileName) || dummies.contains(fileName);
+        if (!cacheFile.exists()) {
+            store(); //TODO: do we really need this?
+            RemoteLogger.assertTrueInConsole(false, "Storage has been unexpectedly deleted: " + cacheFile.getAbsolutePath()); //NOI18N
         }
     }
     
@@ -186,12 +168,21 @@ public final class DirectoryStorage {
             try {
                 wr = new BufferedWriter(new FileWriter(cacheFile));
                 wr.write("VERSION=" + VERSION + "\n"); //NOI18N
-                wr.write("dummies=" + dummies.size() + '\n'); //NOI18N
-                for (String dummy: dummies) {
-                    wr.write(dummy);
+                Collection<DirEntry> invalid = new ArrayList<DirEntry>();
+                Collection<DirEntry> valid = new ArrayList<DirEntry>();
+                for (DirEntry entry : entries.values()) {                   
+                    if (entry.isValid()) {
+                        valid.add(entry);
+                    } else {
+                        invalid.add(entry);
+                    }
+                }                
+                wr.write("dummies=" + invalid.size() + '\n'); //NOI18N
+                for (DirEntry entry: invalid) {
+                    wr.write(entry.toExternalForm());
                     wr.write('\n');
                 }
-                for (DirEntry entry : entries.values()) {
+                for (DirEntry entry : valid) {
                     wr.write(entry.toExternalForm());
                     wr.write('\n');
                 }
@@ -236,9 +227,8 @@ public final class DirectoryStorage {
     }
     
     /*package*/ void testAddDummy(String dummy) {
-        synchronized (this) {
-            dummies.add(dummy);
-        }
+        DirEntry entry = new DirEntryInvalid(dummy);
+        testAddEntry(entry);
     }
 
     @Override

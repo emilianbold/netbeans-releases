@@ -156,6 +156,11 @@ public class DirEntrySftp implements DirEntry {
         return escape(cache) + ' ' + statInfo.toExternalForm();
     }
     
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+    
     public static DirEntrySftp fromExternalForm(String externalForm) throws FormatException {
         try {
             int pos = externalForm.indexOf(' ');

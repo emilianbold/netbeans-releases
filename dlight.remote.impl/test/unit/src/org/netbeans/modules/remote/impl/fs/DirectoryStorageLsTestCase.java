@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.util.Arrays;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
@@ -73,7 +74,6 @@ public class DirectoryStorageLsTestCase extends NativeExecutionBaseTestCase {
     public void testDirectoryStorageLs() throws Exception {
         File file = File.createTempFile("directoryStorage", ".dat");
         try {
-            DirectoryStorage ds1 = new DirectoryStorage(file);
             DirEntry entry1;
             final String name = "name";
             final String cacheName = "name.cache";
@@ -84,14 +84,15 @@ public class DirectoryStorageLsTestCase extends NativeExecutionBaseTestCase {
             final String timestamp = "2011-01-28 07:58:12 +0300";
             final String link = null;
             entry1 = new DirEntryLs(name, cacheName, access, user, group, size, timestamp, link);
-            ds1.testAddEntry(entry1);
             String dummy = "inexistent_file";
-            ds1.testAddDummy(dummy);
+            DirEntry dummyEntry = new DirEntryInvalid(dummy);
+            DirectoryStorage ds1 = new DirectoryStorage(file, Arrays.asList(entry1, dummyEntry));
             ds1.store();
             DirectoryStorage ds2 = DirectoryStorage.load(file);
             DirEntry entry2 = ds2.getEntry(entry1.getName());
             assertNotNull("No entry restored for " + entry1.getName(), entry2);
             assertEquals("Name", name, entry2.getName());
+            assertTrue(entry2.isValid());
             assertEquals("Cache", cacheName, entry2.getCache());
             assertEquals("Access", access.substring(1), entry2.getAccessAsString());
 //            assertEquals("User", user, entry2.getUser());
@@ -99,9 +100,9 @@ public class DirectoryStorageLsTestCase extends NativeExecutionBaseTestCase {
             assertEquals("Size", size, entry2.getSize());
             assertEquals("Timestamp", entry1.getLastModified(), entry2.getLastModified());
             assertEquals("Link", link, entry2.getLinkTarget());
-            assertTrue(ds2.isKnown(dummy));
-            assertFalse(ds2.isKnown("abrakadabra"));
-            assertTrue(ds2.isKnown(entry2.getName()));
+            DirEntry dummyEntry2 = ds2.getEntry(dummy);
+            assertNotNull(dummyEntry2);
+            assertFalse(dummyEntry2.isValid());
         } finally {
             file.delete();
         }
