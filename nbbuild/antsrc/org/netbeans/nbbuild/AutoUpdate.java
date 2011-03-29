@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -68,7 +67,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -197,11 +195,6 @@ public class AutoUpdate extends Task {
                     continue;
                 }
             }
-            if (info == null) {
-                log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
-            } else {
-                log("Version " + info.get(0) + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
-            }
 
             byte[] bytes = new byte[4096];
             File tmp = null;
@@ -233,6 +226,11 @@ public class AutoUpdate extends Task {
                         tmp = File.createTempFile(dash, ".nbm");
                         tmp.deleteOnExit();
                         delete = true;
+                    }
+                    if (info == null) {
+                        log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
+                    } else {
+                        log("Version " + info.get(0) + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
                     }
                     Get get = new Get();
                     get.setProject(getProject());
