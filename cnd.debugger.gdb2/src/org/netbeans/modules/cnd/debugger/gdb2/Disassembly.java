@@ -405,7 +405,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
                     if (addressLine >= 0) {
                         DataObject dobj = DataObject.find(getFileObject());
                         org.openide.text.Line line = EditorBridge.lineNumberToLine(dobj, addressLine);
-                        annotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, true));
+                        annotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, 0, true, ibpt));
                     }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
