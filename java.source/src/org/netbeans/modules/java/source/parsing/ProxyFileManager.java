@@ -141,26 +141,13 @@ public class ProxyFileManager implements JavaFileManager {
         }
         else if (location == StandardLocation.SOURCE_PATH && this.sourcePath != null) {
             if (this.memoryFileManager != null) {
-                if (this.aptSources != null) {
-                    return new JavaFileManager[] {
-                        this.sourcePath,
-                        this.aptSources,
-                        this.memoryFileManager
-                    };
-                }
-                else {
-                    return new JavaFileManager[] {
-                        this.sourcePath,
-                        this.memoryFileManager
-                    };
-                }
+                return new JavaFileManager[] {
+                    this.sourcePath,
+                    this.memoryFileManager
+                };
             }
             else {
-                if (this.aptSources != null) {
-                    return new JavaFileManager[] {this.sourcePath, this.aptSources};
-                } else {
-                    return new JavaFileManager[] {this.sourcePath};
-                }
+                return new JavaFileManager[] {this.sourcePath};
             }
         }
         else if (location == StandardLocation.CLASS_OUTPUT && this.outputhPath != null) {
