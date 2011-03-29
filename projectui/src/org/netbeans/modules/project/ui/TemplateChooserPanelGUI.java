@@ -259,7 +259,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private javax.swing.JComboBox projectsComboBox;
     private javax.swing.JPanel templatesPanel;
     // End of variables declaration//GEN-END:variables
-    
+
     // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
     
     private final class TemplateChildren extends Children.Keys<DataFolder> implements ActionListener {
@@ -285,12 +285,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         private void updateKeys() {
             List<DataFolder> l = new ArrayList<DataFolder>();
             for (DataObject d : folder.getChildren()) {
-                FileObject prim = d.getPrimaryFile();
-                if ( acceptTemplate( d, prim ) ) {
-                    // has children?
-                    if (hasChildren ((Project)projectsComboBox.getSelectedItem (), d)) {
-                        l.add((DataFolder) d);
-                    }
+                if (isFolderOfTemplates(d)) {
+                    l.add((DataFolder) d);
                 }
             }
             setKeys(l);
@@ -299,7 +295,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         protected Node[] createNodes(DataFolder d) {
             boolean haveChildren = false;
             for (DataObject child : d.getChildren()) {
-                if ((child instanceof DataFolder) && !isTemplate(child)) {
+                if (isFolderOfTemplates(child)) {
                     haveChildren = true;
                     break;
                 }
@@ -321,29 +317,14 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
                 
         
-        /** Uncoment if you want to have the templates sorted alphabeticaly
-         
-        // Comparator ---------------------------------------------------------- 
-         
-        public int compare(Object o1, Object o2) {
-            DataObject d1 = (DataObject)o1;
-            DataObject d2 = (DataObject)o2;
-            if ((d1 instanceof DataFolder) && !(d2 instanceof DataFolder)) {
-                return 1;
-            } else if (!(d1 instanceof DataFolder) && (d2 instanceof DataFolder)) {
-                return -1;
-            } else {
-                return NATURAL_NAME_SORT.compare(d1.getNodeDelegate().getDisplayName(), d2.getNodeDelegate().getDisplayName());
-            }
-        }
-        */
-
         // Private methods -----------------------------------------------------
         
-        private boolean acceptTemplate( DataObject d, FileObject primaryFile ) {            
+        private boolean isFolderOfTemplates(DataObject d) {
             if (d instanceof DataFolder && !isTemplate((DataFolder)d))  {
-                Object o = primaryFile.getAttribute ("simple"); // NOI18N
-                return o == null || Boolean.TRUE.equals (o);
+                Object o = d.getPrimaryFile().getAttribute("simple"); // NOI18N
+                if (o == null || Boolean.TRUE.equals(o)) {
+                    return hasChildren((Project) projectsComboBox.getSelectedItem(), d);
+                }
             }
             return false;
         }
@@ -382,7 +363,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
   
-    private final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
+    final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
         
         public Children createCategoriesChildren(DataFolder folder) {
             return new TemplateChildren (folder);

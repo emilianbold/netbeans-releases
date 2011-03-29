@@ -54,8 +54,8 @@ import org.openide.nodes.Children;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class TemplatesPanelTest extends NbTestCase implements TemplatesPanelGUI.Builder {
-    public TemplatesPanelTest(String testName) {
+public class TemplatesPanelGUITest extends NbTestCase implements TemplatesPanelGUI.Builder {
+    public TemplatesPanelGUITest(String testName) {
         super(testName);
     }
 
