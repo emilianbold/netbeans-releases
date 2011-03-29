@@ -528,7 +528,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     } else if (problem instanceof ExecutionException) {
                         throw (ExecutionException) problem;
                     } else {
-                        RemoteLogger.assertTrueInConsole(false, "Unexpected exception class: " + problem.getClass().getName()); //NOI18N
+                        throw new IllegalStateException("Unexpected exception class: " + problem.getClass().getName(), problem); //NOI18N
                     }
                 }
             }
