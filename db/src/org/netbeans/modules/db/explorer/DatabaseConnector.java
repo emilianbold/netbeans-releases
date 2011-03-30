@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -167,7 +167,7 @@ public class DatabaseConnector {
      */
     public void performDisconnect() throws DatabaseException {
         if (connection != null) {
-            String message = null;
+            Throwable cause = null;
             Connection con = connection;
             try {
                 setConnection(null); // fires change
@@ -175,15 +175,15 @@ public class DatabaseConnector {
             } catch (Exception exc) {
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
-
-                message = NbBundle.getMessage (DatabaseConnector.class, "EXC_ConnectionError", exc.getMessage()); // NOI18N
             }
 
             // XXX hack for Derby
             DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), con);
 
-            if (message != null) {
-                throw new DatabaseException(message);
+            if (cause != null) {
+                throw new DatabaseException(
+                            NbBundle.getMessage (DatabaseConnector.class, "EXC_DisconnectError", cause.getMessage()), // NOI18N
+                            cause);
             }
         }
     }
