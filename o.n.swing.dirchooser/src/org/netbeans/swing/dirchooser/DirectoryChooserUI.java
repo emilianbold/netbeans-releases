@@ -1067,18 +1067,21 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 dir = d;
             }
             List<File> files = new LinkedList<File>();
-            for (File f : dir.listFiles()) {
-                if(fileChooser.accept(f)) {
-                    if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
-                        if(f.isDirectory()) {
+            File[] children = dir.listFiles();
+            if (children != null) {
+                for (File f : children) {
+                    if(fileChooser.accept(f)) {
+                        if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
+                            if(f.isDirectory()) {
+                                files.add(f);
+                            }
+                        } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_ONLY) {
+                            if(f.isFile()) {
+                                files.add(f);
+                            }
+                        } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
                             files.add(f);
                         }
-                    } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_ONLY) {
-                        if(f.isFile()) {
-                            files.add(f);
-                        }
-                    } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
-                        files.add(f);
                     }
                 }
             }
@@ -1086,12 +1089,14 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 lastDir = dir;
                 lastChildren = files.toArray(new File[files.size()]);
             }
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    updateCompletions();
-                }
-            });
+            if (lastChildren.length > 0) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateCompletions();
+                    }
+                });
+            }
         }
     }
     
