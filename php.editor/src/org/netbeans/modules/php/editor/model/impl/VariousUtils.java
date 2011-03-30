@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -859,7 +859,7 @@ public class VariousUtils {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
-                        } else if (isSelf(token) || isParent(token)) {
+                        } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
@@ -990,7 +990,7 @@ public class VariousUtils {
             classScope = (ClassScope) msi.getInScope();
         }
         if (classScope != null) {
-            if ("self".equals(clsName) || "this".equals(clsName)) {//NOI18N
+            if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
                 clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
                 ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
@@ -1050,6 +1050,10 @@ public class VariousUtils {
         return token.id().equals(PHPTokenId.PHP_SELF);
     }
 
+    private static boolean isStatic(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_STATIC);
+    }
+    
     private static boolean isParent(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_PARENT);
     }

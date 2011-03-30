@@ -1285,6 +1285,9 @@ exists or setup the property manually. For example like this:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
+                    <arg value="-schemas ${{jspc.schemas}}"/>
+                    <arg value="-dtds ${{jspc.dtds}}"/>
+                    <arg value="-sysClasspath ${{libs.jsp-compilation-syscp.classpath}}"/><!-- #192308 -->
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
