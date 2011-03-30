@@ -211,6 +211,7 @@ public final class MavenEmbedder {
 
 
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
+        setUpLegacySupport();
         ArtifactResolutionRequest req = new ArtifactResolutionRequest();
         req.setLocalRepository(localRepository);
         req.setRemoteRepositories(remoteRepositories);
