@@ -45,6 +45,8 @@ package org.netbeans.modules.cnd.makeproject;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
@@ -105,9 +107,27 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                 ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
                 if (provider != null && provider.gotDescriptor()) {
                     MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                    if (descriptor != null && (descriptor.findProjectItemByPath(path) != null
-                                || descriptor.findExternalItemByPath(path) != null)) {
-                        return (Project) project;
+                    if (descriptor != null) {
+                        boolean mine = false;
+                        if (fo.isData()) {
+                            mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
+                        } else if (fo.isFolder()) {
+                            mine = descriptor.findFolderByPath(path) != null;
+                            if (!mine) {
+                                List<String> absRoots = new ArrayList<String>();
+                                absRoots.addAll(descriptor.getAbsoluteSourceRoots());
+                                absRoots.addAll(descriptor.getAbsoluteTestRoots());
+                                for (String srcPath : absRoots) {
+                                    if (path.startsWith(srcPath)) {
+                                        mine = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (mine) {
+                            return (Project) project;
+                        }
                     }
                 }
             }

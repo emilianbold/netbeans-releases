@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,83 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.OutputStreamWriter;
 import junit.framework.Test;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 /**
  *
- * @author Vladimir Kvashin
+ * @author vk155633
  */
-public class CaseSensivityTestCase extends RemoteFileTestBase {
+public class RenameTestCase extends RemoteFileTestBase  {
 
-    public CaseSensivityTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RenameTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
+    public RenameTestCase(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+        
+    public void testLocalRename() throws Exception {
+        File tmpDir = createTempFile("testLocalRename", "dat", true);
+        try {
+            FileObject tmpDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpDir));
+            assertNotNull(tmpDirFO);
+            FileObject oldFO = tmpDirFO.createData("file_1");
+            String newName = "file_1_renamed";
+            oldFO.rename(oldFO.lock(), newName, null);
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            assertTrue(newFO == oldFO);
+        } finally {
+            tmpDir.delete();
+        }
+    }
 
     @ForAllEnvironments
-    public void testCaseSensitiveDir() throws Exception {
+    public void testRemoteRename() throws Exception {
         String tmpDir = mkTemp(true);
         try {
-            FileObject tmpDirParentFO = getFileObject(PathUtilities.getDirName(tmpDir));
-            String upperDir = tmpDir + "/CC";
-            String lowerDir = tmpDir + "/cc";
-            String upperFile = upperDir + "/file.dat";
-            String lowerFile = lowerDir + "/file.dat";
-            //String commonFileU = upperDir + "/file.common";
-            //String commonFileL = lowerDir + "/file.common";
-            execute("mkdir", "-p", upperDir);
-            execute("mkdir", "-p", lowerDir);
-            File file = File.createTempFile("rfs-test", ".dat");
-            upload(file, lowerFile);
-            upload(file, upperFile);
-            tmpDirParentFO.refresh();
-            FileObject lowerDirFO = getFileObject(lowerDir);
-            FileObject upperDirFO = getFileObject(upperDir);
-            assertNotSame("Directory file objects should differ", lowerDirFO, upperDirFO);
-            FileObject lowerFO = getFileObject(lowerFile);
-            FileObject upperFO = getFileObject(upperFile);
-            assertNotSame("File objects should differ", lowerFO, upperFO);
-        } finally {
-            if (tmpDir != null) {
-                CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
+            FileObject tmpDirFO = FileSystemProvider.getFileObject(execEnv, tmpDir);
+            assertNotNull(tmpDirFO);
+            FileObject oldFO = tmpDirFO.createData("file_1");
+            String newName = "file_1_renamed";
+            oldFO.rename(oldFO.lock(), newName, null);
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            if(newFO != oldFO) {
+                assertTrue("New file object should be valid", newFO.isValid());
+                assertFalse("Old file object should not be valid", oldFO.isValid());                
             }
+        } finally {
+            CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
         }
     }
 
     public static Test suite() {
-        return RemoteApiTest.createSuite(CaseSensivityTestCase.class);
+        return RemoteApiTest.createSuite(RenameTestCase.class);
     }
-
+    
 }

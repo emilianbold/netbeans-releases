@@ -128,6 +128,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -138,7 +139,6 @@ import org.openide.util.Exceptions;
  */
 public class RepositoryUpdaterTest extends NbTestCase {
 
-    private static final Logger LOG = Logger.getLogger(RepositoryUpdaterTest.class.getName());
 
     private static final int TIME = 5000;
     private static final String SOURCES = "FOO_SOURCES";
@@ -1343,8 +1343,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(Collections.<URL>emptyList(), peers);        
                
     }
-
-    @RandomlyFails //for now
+    
     public void testCheckAllFiles() throws Exception {
         RepositoryUpdater ru = RepositoryUpdater.getDefault();
         assertEquals(0, ru.getScannedBinaries().size());
@@ -1367,8 +1366,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        indexerFactory.indexer.awaitIndex();
-        eindexerFactory.indexer.awaitIndex();
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
         Map<URL,Pair<Boolean,Boolean>> contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         Pair<Boolean,Boolean> state = contextState.get(this.srcRootWithFiles1.getURL());
@@ -1402,8 +1401,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        indexerFactory.indexer.awaitIndex();
-        eindexerFactory.indexer.awaitIndex();
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
@@ -1423,9 +1422,21 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
 
         //5th Do some modification and reopen the project (allFiles should be false)
-        Thread.sleep(3000);     //wait for filesystem
-        new File (customFiles[0].toURI()).setLastModified(System.currentTimeMillis());
-        new File (embeddedFiles[0].toURI()).setLastModified(System.currentTimeMillis());
+        Thread.sleep(5000);     //wait for filesystem
+        FileObject customFile = URLMapper.findFileObject(customFiles[0]);
+        OutputStream out = customFile.getOutputStream();
+        try {
+            out.write(65);
+        } finally {
+            out.close();
+        }
+        FileObject embeddedFile = URLMapper.findFileObject(embeddedFiles[0]);
+        out = embeddedFile.getOutputStream();
+        try {
+            out.write(65);
+        } finally {
+            out.close();
+        }
         indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
         handler.reset();
@@ -1434,8 +1445,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        indexerFactory.indexer.awaitIndex();
-        eindexerFactory.indexer.awaitIndex();
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
@@ -1452,13 +1463,23 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //6th Do some modification when source are registered (allFiles should be false)
         indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
-        Thread.sleep(3000);     //wait for filesystem
-        new File (customFiles[0].toURI()).setLastModified(System.currentTimeMillis());
-        LOG.info("File "+customFiles[0]+" modified expecting change in custom indexer");
-        new File (embeddedFiles[0].toURI()).setLastModified(System.currentTimeMillis());
-        LOG.info("File "+embeddedFiles[0]+" modified expecting change in embedded indexer");
-        indexerFactory.indexer.awaitIndex();
-        eindexerFactory.indexer.awaitIndex();
+        Thread.sleep(5000);     //wait for filesystem
+        customFile = URLMapper.findFileObject(customFiles[0]);
+        out = customFile.getOutputStream();
+        try {
+            out.write(65);
+        } finally {
+            out.close();
+        }
+        embeddedFile = URLMapper.findFileObject(embeddedFiles[0]);
+        out = embeddedFile.getOutputStream();
+        try {
+            out.write(65);
+        } finally {
+            out.close();
+        }
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
@@ -1471,13 +1492,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull(state);
         assertFalse(state.first);
         assertFalse(state.second);
-
+        
         //7th IndexingManager.refreshIndex(root, all_files, fullRescan==true) (allFiles should be true)
         indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
         IndexingManager.getDefault().refreshIndex(srcRootWithFiles1.getURL(), Collections.<URL>emptySet(), true);
-        indexerFactory.indexer.awaitIndex();
-        eindexerFactory.indexer.awaitIndex();
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
@@ -1497,8 +1518,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
         IndexingManager.getDefault().refreshIndex(srcRootWithFiles1.getURL(), Arrays.asList(new URL[] {customFiles[0], embeddedFiles[0]}), true, true);
-        indexerFactory.indexer.awaitIndex();
-        eindexerFactory.indexer.awaitIndex();
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
@@ -2270,13 +2291,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         @Override
         protected void index(Iterable<? extends Indexable> files, Context context) {
             contextState.put(context.getRootURI(),Pair.<Boolean,Boolean>of(context.isAllFilesIndexing(),context.checkForEditorModifications()));
-            LOG.info("Custom indexer called for ctx:" + context.getRootURI());
             for (Indexable i : files) {
-                LOG.info("Indexing " + i.getURL());
                 indexCounter++;
                 if (expectedIndex.remove(i.getURL())) {
-                    LOG.info("Count down " + i.getURL());
-                    //System.out.println("FooIndexer.index: " + i.getURL());
                     indexFilesLatch.countDown();
                 }
             }            
