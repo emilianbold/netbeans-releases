@@ -430,47 +430,34 @@ public class DataEditorSupport extends CloneableEditorSupport {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
         final FileObject fo = this.getDataObject().getPrimaryFile();
-        if (!warnedEncodingFiles.contains(fo)) {
-            if (!checkIfCharsetCanDecodeFile(fo, c)) {
-                throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", c)) {
-                    @Override
-                    public void confirmed() throws IOException {
-                        warnedEncodingFiles.add(fo);
-                    }
-                };
-            }
+        final Reader r;
+        if (warnedEncodingFiles.contains(fo)) {
+            r = new InputStreamReader (stream, c);
+        } else {
+            CharsetDecoder decoder = c.newDecoder();
+            decoder.reset();
+            r = new InputStreamReader (stream, decoder);
         }
-        final Reader r = new InputStreamReader (stream, c);
-        kit.read(r, doc, 0);
+        try {
+            kit.read(r, doc, 0);
+        } catch (CharacterCodingException e) {
+            ERR.log(Level.FINE, "Encoding problem using " + c, e); // NOI18N
+            doc.remove(0, doc.getLength());
+            createAndThrowIncorrectCharsetUQE(fo, c);
+        } catch (IllegalStateException e) {
+            ERR.log(Level.FINE, "Encoding problem using " + c, e); // NOI18N
+            doc.remove(0, doc.getLength());
+            createAndThrowIncorrectCharsetUQE(fo, c);
+        }
     }
 
-    private static boolean checkIfCharsetCanDecodeFile(FileObject fo, Charset charset) {
-        try {
-            int BUF_SIZE = 1024*4;
-
-            BufferedInputStream input = new BufferedInputStream(fo.getInputStream(), BUF_SIZE);
-            try {
-                CharsetDecoder decoder = charset.newDecoder();
-                decoder.reset();
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), decoder), BUF_SIZE);
-                    char[] buf = new char[BUF_SIZE];
-                    while (reader.read(buf) > 0) {}
-                    reader.close();
-                } catch (CharacterCodingException e) {
-                    ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
-                    return false;
-                } catch (IllegalStateException e) {
-                    ERR.log(Level.FINE, "Encoding problem using " + charset, e); // NOI18N
-                    return false;
-                }
-            } finally {
-                input.close();
+    private static boolean createAndThrowIncorrectCharsetUQE(final FileObject fo, Charset charset) throws UserQuestionException {
+        throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", charset)) {
+            @Override
+            public void confirmed() throws IOException {
+                warnedEncodingFiles.add(fo);
             }
-        } catch (IOException ex) {
-            ERR.log(Level.FINE, "Encoding problem using " + charset, ex); // NOI18N
-        }
-        return true;
+        };
     }
 
     private static Set<FileObject> warnedEncodingFiles = new WeakSet<FileObject>();
