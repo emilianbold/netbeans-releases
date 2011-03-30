@@ -427,7 +427,6 @@ public class DependencyNode extends AbstractNode {
 
     void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-        online.setUpLegacySupport();
         progress.start(2);
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             progress.finish();

@@ -98,7 +98,6 @@ class NBRepositoryModelResolver
     @Override
     public ModelSource resolveModel(String groupId, String artifactId, String version)
             throws UnresolvableModelException {
-        embedder.setUpLegacySupport();
         Artifact artifactParent = embedder.lookupComponent(RepositorySystem.class).createProjectArtifact(groupId, artifactId, version);
         try {
             embedder.resolve(artifactParent, remoteRepositories, embedder.getLocalRepository());
