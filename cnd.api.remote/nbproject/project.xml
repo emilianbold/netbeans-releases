@@ -93,6 +93,17 @@
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
                 <friend>com.sun.tools.odb</friend>
+                <friend>com.sun.tools.sendto</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
