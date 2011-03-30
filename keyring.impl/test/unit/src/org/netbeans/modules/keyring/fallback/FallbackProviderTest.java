@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,81 +34,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.project.ui;
-
-import java.awt.Component;
-import java.awt.Container;
-import java.lang.ref.WeakReference;
-import javax.swing.JEditorPane;
-import org.netbeans.junit.NbTestCase;
-import org.openide.loaders.DataFolder;
-import org.openide.nodes.Children;
-
-/**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class TemplatesPanelTest extends NbTestCase implements TemplatesPanelGUI.Builder {
-    public TemplatesPanelTest(String testName) {
-        super(testName);
+
+package org.netbeans.modules.keyring.fallback;
+
+import java.awt.Dialog;
+import java.util.concurrent.Callable;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.keyring.spi.EncryptionProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+
+public class FallbackProviderTest extends NbTestCase {
+
+    public FallbackProviderTest(String name) {
+        super(name);
     }
 
-    private static Object editor;
-    public void testTemplatesPanel() {
-        TemplatesPanelGUI inst;
-        inst = new TemplatesPanelGUI(this);
-        
-        inst.addNotify();
-        editor = find(inst, JEditorPane.class, true);
-        WeakReference<Object> ref = new WeakReference<Object>(inst);
-        
-        inst.removeNotify();
-        
-        inst = null;
-        assertGC("Panel does not hold ref", ref);
+    // #197205: if Win32Protect.encrypt fails with NTE_BAD_KEY_STATE, we must skip this provider.
+    public void testFreshSampleKeyEncryptionFails() throws Exception {
+        System.setProperty("netbeans.keyring.no.native", "true");
+        System.setProperty("netbeans.keyring.no.master", "true");
+        MockServices.setServices(BrokenProvider.class, DoNotPrompt.class);
+        assertFalse(new FallbackProvider().enabled());
     }
-    
-    private static Component find(Component c, Class<?> clazz, boolean fail) {
-        if (clazz.isInstance(c)) {
-            return c;
+
+    public static class BrokenProvider implements EncryptionProvider {
+        public @Override boolean enabled() {
+            return true;
         }
-        if (c instanceof Container) {
-            Container cont = (Container)c;
-            for (Component p : cont.getComponents()) {
-                Component r = find(p, clazz, false);
-                if (r != null) {
-                    return r;
-                }
-            }
+        public @Override String id() {
+            return "broken";
         }
-        if (fail) {
-            fail("Not found " + clazz + " in children of " + c);
+        public @Override byte[] encrypt(char[] cleartext) throws Exception {
+            throw new Exception("oops!");
         }
-        return null;
-    }
-    
-    public Children createCategoriesChildren(DataFolder folder) {
-        return Children.LEAF;
-    }
-
-    public Children createTemplatesChildren(DataFolder folder) {
-        return Children.LEAF;
-    }
-
-    public String getCategoriesName() {
-        return "";
+        public @Override char[] decrypt(byte[] ciphertext) throws Exception {
+            return new char[0];
+        }
+        public @Override boolean decryptionFailed() {
+            return false;
+        }
+        public @Override void encryptionChangingCallback(Callable<Void> callback) {}
+        public @Override void encryptionChanged() {}
+        public @Override void freshKeyring(boolean fresh) {}
     }
 
-    public String getTemplatesName() {
-        return "";
+    public static class DoNotPrompt extends DialogDisplayer {
+        public @Override Object notify(NotifyDescriptor descriptor) {
+            throw new AssertionError();
+        }
+        public @Override Dialog createDialog(DialogDescriptor descriptor) {
+            throw new AssertionError();
+        }
     }
 
-    public void fireChange() {
-    }
 }

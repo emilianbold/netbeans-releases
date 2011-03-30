@@ -64,10 +64,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- *
+ * Wizard panel for New Project.
  * @author  tom
  */
-public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY";
     public static final String PRESELECT_TEMPLATE = "PRESELECT_TEMPLATE";
     
@@ -77,16 +77,16 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
     private boolean warmUpActive;
     private boolean needsReselect = false;   // WelcomeScreen hack, XXX Delete after WS is redesigned
         
-    /** Creates a new instance of TemplatesPanel */
-    public TemplatesPanel() {
+    /** Creates a new instance of ProjectTemplatePanel */
+    public ProjectTemplatePanel() {
     }
     
     public void readSettings(WizardDescriptor settings) {
         TemplateWizard wd = (TemplateWizard) settings;
         wd.putProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (0));
         wd.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] {
-                NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
-                NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
+                NbBundle.getBundle (ProjectTemplatePanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
+                NbBundle.getBundle (ProjectTemplatePanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         FileObject templatesFolder = (FileObject) wd.getProperty (TemplatesPanelGUI.TEMPLATES_FOLDER);
         
         // WelcomeScreen hack, XXX Delete after WS is redesigned
@@ -168,7 +168,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx( TemplatesPanel.class );
+        return new HelpCtx( ProjectTemplatePanel.class );
     }
     
     public synchronized Component getComponent() {        
@@ -177,7 +177,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
             this.panel = new TemplatesPanelGUI (firer);
             Utilities.attachInitJob (panel, getWarmUp());
             this.warmUpActive = true;
-            this.panel.setName (NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N
+            this.panel.setName (NbBundle.getBundle (ProjectTemplatePanel.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N
         }
         return this.panel;
     }
@@ -283,7 +283,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
                 if (cursor != null) {
                     panel.setCursor (cursor);
                 }
-                synchronized(TemplatesPanel.this) {
+                synchronized(ProjectTemplatePanel.this) {
                     warmUpActive = false;
                 }
             }
@@ -315,12 +315,12 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
 
 
         public String getCategoriesName() {
-            return NbBundle.getMessage(TemplatesPanel.class,"CTL_Categories");
+            return NbBundle.getMessage(ProjectTemplatePanel.class,"CTL_Categories");
         }
 
 
         public String getTemplatesName() {
-            return NbBundle.getMessage(TemplatesPanel.class,"CTL_Projects");
+            return NbBundle.getMessage(ProjectTemplatePanel.class,"CTL_Projects");
         }
 
         public void fireChange() {

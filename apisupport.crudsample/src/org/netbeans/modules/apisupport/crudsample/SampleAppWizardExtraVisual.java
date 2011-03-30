@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  * @author jirka
  */
 public class SampleAppWizardExtraVisual extends JPanel implements DocumentListener {
-    public static final String[] SUPPORTED_PU_LIBRARIES = new String[] {"eclipselink", "toplink"};
+    public static final String[] SUPPORTED_PU_LIBRARIES = new String[] {"eclipselink"};
     public static final String JAVADB_HOME = "javadb.home";
 
     private final SampleAppWizardExtraPanel panel;
