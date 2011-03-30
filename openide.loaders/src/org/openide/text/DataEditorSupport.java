@@ -73,6 +73,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -104,7 +105,6 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -166,6 +166,43 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     public static CloneableEditorSupport create (DataObject obj, MultiDataObject.Entry entry, org.openide.nodes.CookieSet set) {
         return new SimpleES (obj, entry, set);
+    }
+
+    /** Factory method to create a bit more complicated CloneableEditorSupport for a given
+     * entry of a given DataObject. The common use inside DataObject looks like
+     * this:
+     * <pre>
+     *  getCookieSet().add((Node.Cookie) DataEditorSupport.create(
+     *    this, getPrimaryEntry(), getCookieSet(),
+     *    new Callable<Pane>() { 
+     *      public Pane call() {
+     *        return new {@link CloneableEditor YourSubclassOfCloneableEditor}(support);
+     *      }
+     *    }
+     *  ));
+     * </pre>
+     * The method can be used to instantiate <b>multi view</b> editor by returning
+     * <a href="@org-netbeans-core-multiview@/org/netbeans/core/api/multiview/MultiViews.html">
+     * MultiViews.createCloneableMultiView("text/yourmime", this)</a>.
+     *
+     * @param obj the data object
+     * @param entry the entry to read and write from
+     * @param set cookie set to add remove additional cookies (currently only {@link org.openide.cookies.SaveCookie})
+     * @param paneFactory callback to create editor(s) for this support
+     * @return a subclass of DataEditorSupport that implements at least
+     *   {@link org.openide.cookies.OpenCookie}, 
+     *   {@link org.openide.cookies.EditCookie}, 
+     *   {@link org.openide.cookies.EditorCookie.Observable}, 
+     *   {@link org.openide.cookies.PrintCookie}, 
+     *   {@link org.openide.cookies.CloseCookie}
+     * @since 7.21
+     */
+    public static CloneableEditorSupport create(
+        DataObject obj, MultiDataObject.Entry entry, 
+        org.openide.nodes.CookieSet set,
+        Callable<CloneableEditorSupport.Pane> paneFactory
+    ) {
+        return new SimpleES (obj, entry, set, paneFactory);
     }
     
     /** Getter of the data object that this support is associated with.
