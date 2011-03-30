@@ -94,15 +94,6 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInterceptedElements(javax.lang.model.element.TypeElement)
-     */
-    @Override
-    public Collection<Element> getInterceptedElements( TypeElement element ) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-    /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInterceptorBindings(javax.lang.model.element.Element)
      */
     @Override

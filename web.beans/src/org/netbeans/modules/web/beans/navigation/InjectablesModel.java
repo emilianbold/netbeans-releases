@@ -407,10 +407,12 @@ public final class InjectablesModel extends DefaultTreeModel
         Enumeration<?> children = parentNode.children();
         List<MethodTreeNode> movedChildren = new LinkedList<MethodTreeNode>();
         while (children.hasMoreElements()) {
-            MethodTreeNode childNode = (MethodTreeNode) children.nextElement();
-            if (childNode.overridesMethod(element, controller))
-            {
-                movedChildren.add(childNode);
+            Object child = children.nextElement();
+            if (child instanceof MethodTreeNode) {
+                MethodTreeNode childNode = (MethodTreeNode)child;
+                if (childNode.overridesMethod(element, controller)) {
+                    movedChildren.add(childNode);
+                }
             }
         }
 

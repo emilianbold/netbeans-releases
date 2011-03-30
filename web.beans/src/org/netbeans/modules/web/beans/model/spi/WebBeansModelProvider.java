@@ -95,8 +95,6 @@ public interface WebBeansModelProvider {
 
     Collection<TypeElement> getInterceptors( Element element );
 
-    Collection<Element> getInterceptedElements( TypeElement element );
-
     Collection<AnnotationMirror> getInterceptorBindings( Element element );
 
 }

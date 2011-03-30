@@ -22,7 +22,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="mySplitPane" alignment="1" pref="643" max="32767" attributes="0"/>
@@ -47,19 +47,21 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="myInjectableBindingLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="mySelectedBindingLbl" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="myScopeLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="myStereotypesLbl" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="myFiltersLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="myFiltersToolbar" pref="461" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="70" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="myFiltersToolbar" pref="487" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="myCloseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="myInjectableBindings" alignment="0" pref="590" max="32767" attributes="0"/>
-                          <Component id="myScope" alignment="1" pref="590" max="32767" attributes="0"/>
+                          <Component id="mySelectedBindings" alignment="0" pref="552" max="32767" attributes="0"/>
+                          <Component id="myScope" alignment="1" pref="552" max="32767" attributes="0"/>
+                          <Component id="myStereotypes" alignment="1" pref="552" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -69,7 +71,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="myTypeLbl" min="-2" max="-2" attributes="0"/>
@@ -89,11 +91,11 @@
                   <Component id="myCaseSensitiveFilterCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="mySplitPane" pref="166" max="32767" attributes="0"/>
+              <Component id="mySplitPane" pref="151" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="myInjectableBindingLbl" min="-2" max="-2" attributes="0"/>
-                  <Component id="myInjectableBindings" alignment="0" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="mySelectedBindingLbl" min="-2" max="-2" attributes="0"/>
+                  <Component id="mySelectedBindings" alignment="0" min="-2" pref="20" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -101,10 +103,21 @@
                   <Component id="myScope" min="-2" pref="20" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="myFiltersToolbar" alignment="0" min="-2" pref="25" max="-2" attributes="0"/>
-                  <Component id="myCloseButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="myFiltersLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" alignment="0" attributes="1">
+                      <Component id="myStereotypes" min="-2" pref="20" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="myCloseButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Component id="myStereotypesLbl" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="myFiltersLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="myFiltersToolbar" min="-2" pref="25" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -341,7 +354,7 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="2"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JEditorPane" name="myInjectableBindings">
+    <Component class="javax.swing.JEditorPane" name="mySelectedBindings">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -354,10 +367,10 @@
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="myInjectableBindingLbl">
+    <Component class="javax.swing.JLabel" name="mySelectedBindingLbl">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="myInjectableBindings"/>
+          <ComponentRef name="mySelectedBindings"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/beans/navigation/Bundle.properties" key="LBL_CurrentElementBindings" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -407,6 +420,34 @@
           <Connection code="myScopeLabel.getAccessibleContext().getAccessibleDescription()" type="code"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="myStereotypesLbl">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/beans/navigation/Bundle.properties" key="LBL_Stereotypes" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/beans/navigation/Bundle.properties" key="ACSN_Stereotypes" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/beans/navigation/Bundle.properties" key="ACSD_Stereotypes" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JEditorPane" name="myStereotypes">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder>
+              <Color PropertyName="color" blue="b9" green="9d" id="Nb.ScrollPane.Border.color" palette="3" red="7f" type="palette"/>
+            </LineBorder>
+          </Border>
+        </Property>
+        <Property name="contentType" type="java.lang.String" value="text/x-java"/>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

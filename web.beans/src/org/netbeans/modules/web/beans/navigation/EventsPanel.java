@@ -46,7 +46,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.swing.JLabel;
 
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.awt.Mnemonics;
@@ -57,7 +56,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class EventsPanel extends InjectablesPanel {
+public class EventsPanel extends BindingsPanel {
 
     private static final long serialVersionUID = -965978443984786734L;
 

@@ -294,17 +294,6 @@ public final class WebBeansModel {
     }
     
     /**
-     * Find elements which are intercepted by <code>element</code>.
-     * <code>element</code> should be an interceptor.
-     * This method is inverse operation for method {@link #getInterceptors(Element)}. 
-     * @param element
-     * @return
-     */
-    public Collection<Element> getInterceptedElements( TypeElement element ){
-        return getProvider().getInterceptedElements( element );
-    }
-    
-    /**
      * Returns interceptor bindings declared for <code>element</code>. 
      * @param element element annotated with interceptor bindings
      * @return interceptor bindings 

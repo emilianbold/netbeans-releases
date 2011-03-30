@@ -88,10 +88,10 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.navigation.BindingsPanel;
 import org.netbeans.modules.web.beans.navigation.EventsModel;
 import org.netbeans.modules.web.beans.navigation.EventsPanel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
-import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
 import org.netbeans.modules.web.beans.navigation.ObserversModel;
 import org.netbeans.modules.web.beans.navigation.ObserversPanel;
 import org.netbeans.modules.web.beans.navigation.ResizablePopup;
@@ -418,7 +418,7 @@ public class WebBeansActionHelper {
         String title = NbBundle.getMessage(WebBeansActionHelper.class,
                 "TITLE_Injectables" , name );//NOI18N
         dialog.setTitle( title );
-        dialog.setContentPane( new InjectablesPanel(subject, metamodel, model,
+        dialog.setContentPane( new BindingsPanel(subject, metamodel, model,
                 uiModel, result ));
         dialog.setVisible( true );
     }

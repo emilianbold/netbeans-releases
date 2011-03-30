@@ -45,13 +45,11 @@ package org.netbeans.modules.web.beans.navigation;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JLabel;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.awt.Mnemonics;
@@ -63,7 +61,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class ObserversPanel extends InjectablesPanel {
+public class ObserversPanel extends BindingsPanel {
 
     private static final long serialVersionUID = -5038408349629504998L;
     
@@ -83,11 +81,11 @@ public class ObserversPanel extends InjectablesPanel {
      * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#setInjectableType(javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationController)
      */
     @Override
-    protected void setInjectableType( TypeMirror typeMirror,
+    protected void setContextType( TypeMirror typeMirror,
             CompilationController controller )
     {
         TypeMirror parameterType = ((DeclaredType)typeMirror).getTypeArguments().get( 0 );
-        super.setInjectableType(parameterType, controller);
+        super.setContextType(parameterType, controller);
     }
     
     /* (non-Javadoc)
