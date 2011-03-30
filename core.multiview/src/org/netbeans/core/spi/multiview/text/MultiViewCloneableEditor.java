@@ -42,49 +42,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.spi.multiview;
+package org.netbeans.core.spi.multiview.text;
 
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.Document;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.windows.TopComponent;
 
 /**
  * @author  mkleint
  */
-abstract class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElement {
-
+class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElement {
     private static final long serialVersionUID =-3126744316644172415L;
 
     private transient MultiViewElementCallback multiViewObserver;
     private transient JToolBar bar;
     
-    /** Creates a new instance of MultiViewClonableEditor */
     public MultiViewCloneableEditor() {
-        this(null);
+        super();
     }
     
     public MultiViewCloneableEditor(CloneableEditorSupport support) {
-        super(support);
+        super(support, true);
+        initializeBySupport();
     }
     
+    @Override
     public JComponent getToolbarRepresentation() {
         Document doc = getEditorPane().getDocument();
         if (doc instanceof NbDocument.CustomToolbar) {
             if (bar == null) {
                 bar = ((NbDocument.CustomToolbar)doc).createToolbar(getEditorPane());
             }
-            return bar;
         }
-        return null;
+        if (bar == null) {
+            bar = new JToolBar();
+        }
+        return bar;
     }
     
+    @Override
     public javax.swing.JComponent getVisualRepresentation() {
         return this;
     }
     
+    @Override
     public final void setMultiViewCallback(MultiViewElementCallback callback) {
         multiViewObserver = callback;
     }
@@ -93,26 +102,32 @@ abstract class MultiViewCloneableEditor extends CloneableEditor  implements Mult
         return multiViewObserver;
     }
     
+    @Override
     public void componentActivated() {
         super.componentActivated();
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
     }
     
+    @Override
     public void componentDeactivated() {
         super.componentDeactivated();
     }
     
+    @Override
     public void componentHidden() {
         super.componentHidden();
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
     }
     
+    @Override
     public void componentShowing() {
         if (multiViewObserver != null) {
             updateName();
@@ -150,10 +165,15 @@ abstract class MultiViewCloneableEditor extends CloneableEditor  implements Mult
     }
     
     
+    @Override
     public void updateName() {
         super.updateName();
         if (multiViewObserver != null) {
-            multiViewObserver.updateTitle(getDisplayName());
+            TopComponent tc = multiViewObserver.getTopComponent();
+            tc.setHtmlDisplayName(getHtmlDisplayName());
+            tc.setDisplayName(getDisplayName());
+            tc.setName(getName());
+            tc.setToolTipText(getToolTipText());
         }
     }
     
@@ -166,9 +186,13 @@ abstract class MultiViewCloneableEditor extends CloneableEditor  implements Mult
         
     }
     
+    @Override
     public CloseOperationState canCloseElement() {
-        throw new IllegalStateException("Not implemented yet.");
-//        return CloseOperationState.STATE_OK;
+        if (canClose()) {
+            return CloseOperationState.STATE_OK;
+        } else {
+            return MultiViewFactory.createUnsafeCloseState("editor", null, null);
+        }
     }
     
 }

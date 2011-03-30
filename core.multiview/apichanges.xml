@@ -103,12 +103,27 @@ is the proper place.
     <apidefs>
         <apidef name="multiview_api">MultiView API</apidef>
         <apidef name="multiview_spi">MultiView SPI</apidef>
+        <apidef name="multiview_text">MultiView Text SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="MultiViewEditorElement">
+        <api name="multiview_text"/>
+        <summary>MultiViewEditorElement</summary>
+        <version major="1" minor="22"/>
+        <date day="14" month="4" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            Common support class for integrating multi view and text 
+            infrastructure.
+        </description>
+        <class package="org.netbeans.core.spi.multiview.text" name="MultiViewEditorElement"/>
+        <issue number="196810"/>
+    </change>
     <change id="MultiViews.create.mimetype">
         <api name="multiview_api"/>
         <summary>MultiViews.create for MIME type</summary>

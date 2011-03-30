@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.16</specification-version>
+                        <specification-version>6.37</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -161,6 +161,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.core.api.multiview</package>
                 <package>org.netbeans.core.spi.multiview</package>
+                <package>org.netbeans.core.spi.multiview.text</package>
             </public-packages>
         </data>
     </configuration>
