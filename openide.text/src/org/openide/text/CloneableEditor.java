@@ -143,12 +143,27 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     * @param support support that holds the document and operations above it
     */
     public CloneableEditor(CloneableEditorSupport support) {
+        this(support, false);
+    }
+
+    /** Creates new editor component associated with
+    * support object (possibly also with its 
+    * {@link CloneableEditorSupport#CloneableEditorSupport(org.openide.text.CloneableEditorSupport.Env, org.openide.util.Lookup) lookup}.
+    * 
+    * @param support support that holds the document and operations above it
+    * @param associateLookup true, if {@link #getLookup()} should return the lookup
+    *   associated with {@link CloneableEditorSupport}.
+    */
+    public CloneableEditor(CloneableEditorSupport support, boolean associateLookup) {
         super();
         this.support = support;
 
         updateName();
         _setCloseOperation();
         setMinimumSize(new Dimension(10, 10));
+        if (associateLookup) {
+            associateLookup(support.getLookup());
+        }
     }
     @SuppressWarnings("deprecation")
     private void _setCloseOperation() {
@@ -1143,6 +1158,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         out.writeObject(new Integer(pos));
+        out.writeBoolean(getLookup() == support.getLookup());
     }
 
     @Override
@@ -1170,6 +1186,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         updateName();
         isComponentOpened = true;
+        if (in.available() > 0) {
+            boolean associate = in.readBoolean();
+            if (associate && support != null) {
+                associateLookup(support.getLookup());
+            }
+        }
     }
 
     /**
