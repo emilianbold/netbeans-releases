@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -65,6 +66,7 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -129,8 +131,8 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
     }
 
     DLightSessionServiceInfoStorage(String storageUniq) {
-        super(DLIGHT_SERVICE_INFO_H2_DATABASE_URL + storageUniq + ";FILE_LOCK=NO"); // NOI18N
-        dbURL = storageUniq;
+        super(DLIGHT_SERVICE_INFO_H2_DATABASE_URL + "/" + storageUniq + "/" + storageUniq+ ";FILE_LOCK=NO"); // NOI18N
+        dbURL = DLIGHT_SERVICE_INFO_H2_DATABASE_URL + "/" + storageUniq + "/" + storageUniq;
     }
 
     @Override
@@ -245,10 +247,18 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
     }
 
     @Override
+    public boolean shutdown() {
+        boolean result = super.shutdown();
+        final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1); // NOI18N
+        result = result && Util.deleteLocalDirectory(new File(folderToDelete));
+        return result;
+    }    
+
+    @Override
     public Map<String, String> getInfo() {
         //read the table
         if (serviceInfoMap.isEmpty()) {
-            String sql = "SELECT * FROM " + SERVICE_INFO_TABLE;//NOI18N
+            String sql = "SELECT * FROM " + SERVICE_INFO_TABLE.getName();//NOI18N
 
             try {
                 PreparedStatement stat = getConnection().prepareStatement(sql);
