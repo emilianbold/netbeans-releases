@@ -241,6 +241,18 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
     }
+
+    /** Asks the associated {@link CloneableEditorSupport} to initialize
+     * this editor via its {@link CloneableEditorSupport#initializeCloneableEditor(org.openide.text.CloneableEditor)}
+     * method. By default called from the support on various occasions including
+     * shortly after creation and 
+     * after the {@link CloneableEditor} has been deserialized.
+     * 
+     * @since 6.37 
+     */
+    protected final void initializeBySupport() {
+        cloneableEditorSupport().initializeCloneableEditor(this);
+    }
     
     class AWTQuery implements Runnable {
         private UserQuestionException ex;
@@ -1187,7 +1199,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         if (discard()) {
             throw new java.io.InvalidObjectException("Deserialized component is invalid: " + this); // NOI18N
         } else {
-            support.initializeCloneableEditor(this);
+            initializeBySupport();
 
             return this;
         }
