@@ -337,7 +337,6 @@ public class J2eeTestCase extends JellyTestCase {
      * If the Missing server dialog appears, it's closed and first server from
      * project properties is used to resolve the missing server problem.
      *
-     * Project build script regeneration dialog is closed as well if it appears.
      * @param projectName name of project
      */
     protected void resolveServer(String projectName) {
@@ -358,24 +357,6 @@ public class J2eeTestCase extends JellyTestCase {
             propertiesDialogOper.ok();
             // if setting default server, it scans server jars; otherwise it continues immediatelly
             waitScanFinished();
-        }
-        String editPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.Bundle", "TXT_BuildImplRegenerateTitle");
-        int count = 0;
-        while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
-            count++;
-            JDialogOperator dialog = new NbDialogOperator(editPropertiesTitle);
-            String regenerateButtonTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.Bundle", "CTL_Regenerate");
-            JButtonOperator butt = new JButtonOperator(dialog, regenerateButtonTitle);
-            butt.push();
-            LOG.info("Closing buildscript regeneration");
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException exc) {
-                LOG.log(Level.INFO, "interrupt exception", exc);
-            }
-            if (dialog.isVisible()) {
-                dialog.close();
-            }
         }
     }
 
