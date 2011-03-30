@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -739,6 +739,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else if (varName.equals("$this")) { //NOI18N
                 staticContext = false;
                 instanceContext = true;
+            } else if (varName.equals("static")) {
+                staticContext = true;
+                instanceContext = false;
             }
 
             if (types != null) {
