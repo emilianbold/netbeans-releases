@@ -27,6 +27,11 @@
                 <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.nativeexecution.accessor</friend>
                 <friend>com.sun.tools.swdev.toolscommon.base</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>org.netbeans.libs.studio_base</friend>
                 <friend>org.netbeans.modules.cnd.dbx.support</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
