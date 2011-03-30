@@ -181,8 +181,8 @@ public class J2EEUtils {
         } else {
             // The first persistence unit - use EclipseLink provider
             // (it is delivered as a part of NetBeans J2EE support)
-            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
-            //provider = ProviderUtil.TOPLINK_PROVIDER1_0;
+            //provider = ProviderUtil.ECLIPSELINK_PROVIDER;
+            provider = ProviderUtil.TOPLINK_PROVIDER1_0;
         }
 
         unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection, persistence.getVersion());
