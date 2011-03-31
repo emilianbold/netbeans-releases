@@ -310,7 +310,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
         RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
-        fs.scheduleRefreshExistent(paths);
+        fs.getRefreshManager().scheduleRefreshExistent(paths);
     }
 
     @Override

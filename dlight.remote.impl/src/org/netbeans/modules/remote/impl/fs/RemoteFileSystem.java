@@ -113,7 +113,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
         factory = new RemoteFileObjectFactory(this);
-        refreshManager = new RefreshManager(execEnv);
+        refreshManager = new RefreshManager(execEnv, factory);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
         this.filePrefix = FileSystemCacheProvider.getCacheRoot(execEnv);
@@ -165,17 +165,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
-    public void scheduleRefreshExistent(Collection<String> paths) {
-        Collection<RemoteFileObjectBase> fileObjects = new ArrayList<RemoteFileObjectBase>(paths.size());
-        for (String path : paths) {
-            RemoteFileObjectBase fo = factory.getCachedFileObject(path);
-            if (fo != null) {
-                fileObjects.add(fo);
-            }
-        }
-        refreshManager.scheduleRefresh(fileObjects);
-    }
-
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
     }
