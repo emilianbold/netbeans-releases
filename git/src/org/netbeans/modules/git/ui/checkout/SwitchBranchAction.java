@@ -56,9 +56,9 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_CheckoutRevisionAction_Name")
-public class CheckoutRevisionAction extends AbstractCheckoutAction {
+@ActionID(id = "org.netbeans.modules.git.ui.checkout.SwitchBranchAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_SwitchBranchAction_Name")
+public class SwitchBranchAction extends AbstractCheckoutAction {
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
@@ -67,24 +67,23 @@ public class CheckoutRevisionAction extends AbstractCheckoutAction {
     }
 
     public void checkoutRevision (final File repository, String preselectedRevision) {
-        checkoutRevision(repository, new CheckoutRevision(repository, RepositoryInfo.getInstance(repository), preselectedRevision), "LBL_CheckoutRevisionAction.progressName"); //NOI18N
+        checkoutRevision(repository, new SwitchBranch(repository, RepositoryInfo.getInstance(repository), preselectedRevision), "LBL_SwitchBranchAction.progressName"); //NOI18N
     }
     
-    private static class CheckoutRevision extends AbstractCheckoutRevision {
-
-        public CheckoutRevision (File repository, RepositoryInfo info, String initialRevision) {
-            super(info, new RevisionDialogController(repository, new File[] { repository }, initialRevision));
-            panel.jLabel1.setText(NbBundle.getMessage(CheckoutRevisionAction.class, "CheckoutRevision.jLabel1.text")); //NOI18N
+    private static class SwitchBranch extends AbstractCheckoutRevision {
+        public SwitchBranch (File repository, RepositoryInfo info, String initialRevision) {
+            super(info, new RevisionDialogController(repository, new File[] { repository }, info.getBranches()));
+            panel.jLabel1.setText(NbBundle.getMessage(CheckoutRevisionAction.class, "SwitchBranch.jLabel1.text")); //NOI18N
         }
 
         @Override
         protected String getOkButtonLabel () {
-            return NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevision.OKButton.text"); //NOI18N
+            return NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_SwitchBranch.OKButton.text"); //NOI18N
         }
 
         @Override
         protected String getDialogTitle () {
-            return NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevision.title"); //NOI18N
+            return NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_SwitchBranch.title"); //NOI18N
         }
     }
 }
