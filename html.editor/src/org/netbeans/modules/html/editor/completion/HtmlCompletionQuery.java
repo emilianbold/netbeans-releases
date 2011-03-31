@@ -401,7 +401,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             if (queryHtmlContent) {
                 Collection<HtmlTag> possibleOpenTags = htmlResult.getPossibleTagsInContext(node, true);
-                Collection<HtmlTag> allTags = model.getAllTags();
+                Collection<HtmlTag> allTags = filterHtmlElements(model.getAllTags(), preText);
                 Collection<HtmlTag> filteredByPrefix = filterHtmlElements(possibleOpenTags, preText);
                 result.addAll(translateHtmlTags(documentItemOffset - 1, filteredByPrefix, allTags));
             }
