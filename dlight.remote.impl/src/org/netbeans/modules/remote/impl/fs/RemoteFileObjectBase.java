@@ -193,6 +193,10 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     abstract public RemoteFileObjectBase[] getChildren();
+    
+    protected RemoteFileObjectBase[] getExistentChildren() {
+        return new RemoteFileObjectBase[0];
+    }
 
     @Override
     public RemoteFileObjectBase getParent() {
@@ -300,7 +304,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public boolean isValid() {
-        return getFlag(MASK_VALID);
+        if(getFlag(MASK_VALID)) {
+            RemoteFileObjectBase p = getParent();
+            return (p == null) || p.isValid();
+        }
+        return false;
     }
 
     /*package*/ void invalidate() {
@@ -378,6 +386,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             return false;
         }
         final RemoteFileObjectBase other = (RemoteFileObjectBase) obj;
+        if (this.flags != other.flags) {
+            return false;
+        }
         if (this.getFileSystem() != other.getFileSystem() && (this.getFileSystem() == null || !this.fileSystem.equals(other.fileSystem))) {
             return false;
         }

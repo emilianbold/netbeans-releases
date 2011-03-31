@@ -314,24 +314,31 @@ public class Reindenter implements IndentTask {
                 }
                 break;
             case VARIABLE:
-                ExpressionTree init = ((VariableTree)last).getInitializer();
-                if (init == null || init.getKind() != Kind.NEW_ARRAY
-                        || (token = findFirstNonWhitespaceToken(startOffset, lastPos)) == null
-                        || token.token().id() != JavaTokenId.EQ
-                        || (token = findFirstNonWhitespaceToken(startOffset, endOffset)) == null
-                        || token.token().id() != JavaTokenId.LBRACE) {
-                    currentIndent += cs.getContinuationIndentSize();
-                } else {
-                    switch (cs.getOtherBracePlacement()) {
-                        case NEW_LINE_INDENTED:
-                            currentIndent += cs.getIndentSize();
-                            break;
-                        case NEW_LINE_HALF_INDENTED:
-                            currentIndent += (cs.getIndentSize() / 2);
-                            break;
+                Tree type = ((VariableTree)last).getType();
+                if (type != null && type.getKind() != Kind.ERRONEOUS) {
+                    ExpressionTree init = ((VariableTree)last).getInitializer();
+                    if (init == null || init.getKind() != Kind.NEW_ARRAY
+                            || (token = findFirstNonWhitespaceToken(startOffset, lastPos)) == null
+                            || token.token().id() != JavaTokenId.EQ
+                            || (token = findFirstNonWhitespaceToken(startOffset, endOffset)) == null
+                            || token.token().id() != JavaTokenId.LBRACE) {
+                        currentIndent += cs.getContinuationIndentSize();
+                    } else {
+                        switch (cs.getOtherBracePlacement()) {
+                            case NEW_LINE_INDENTED:
+                                currentIndent += cs.getIndentSize();
+                                break;
+                            case NEW_LINE_HALF_INDENTED:
+                                currentIndent += (cs.getIndentSize() / 2);
+                                break;
+                        }
                     }
+                    break;
+                } else {
+                    last = ((VariableTree)last).getModifiers();
+                    if (last == null)
+                        break;
                 }
-                break;
             case MODIFIERS:
                 Tree t = null;
                 for (Tree ann : ((ModifiersTree)last).getAnnotations()) {
@@ -345,7 +352,10 @@ public class Reindenter implements IndentTask {
                 }
                 break;
             case DO_WHILE_LOOP:
-                currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.DO), lastPos, currentIndent);
+                token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                if (token != null && !EnumSet.of(JavaTokenId.RBRACE, JavaTokenId.SEMICOLON).contains(token.token().id())) {
+                    currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.DO), lastPos, currentIndent);
+                }
                 break;
             case ENHANCED_FOR_LOOP:
                 currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.RPAREN), (int)sp.getEndPosition(cut, ((EnhancedForLoopTree)last).getExpression()), currentIndent);
@@ -378,7 +388,10 @@ public class Reindenter implements IndentTask {
             case IF:
                 token = findFirstNonWhitespaceToken(startOffset, endOffset);
                 if (token == null || token.token().id() != JavaTokenId.ELSE) {
-                    currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.RPAREN, JavaTokenId.ELSE), (int)sp.getEndPosition(cut, ((IfTree)last).getCondition()) - 1, currentIndent);
+                    token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                    if (token != null && !EnumSet.of(JavaTokenId.RBRACE, JavaTokenId.SEMICOLON).contains(token.token().id())) {
+                        currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.RPAREN, JavaTokenId.ELSE), (int)sp.getEndPosition(cut, ((IfTree)last).getCondition()) - 1, currentIndent);
+                    }
                 }
                 break;
             case SYNCHRONIZED:
@@ -387,14 +400,17 @@ public class Reindenter implements IndentTask {
             case TRY:
                 token = findFirstNonWhitespaceToken(startOffset, endOffset);
                 if (token == null || !EnumSet.of(JavaTokenId.CATCH, JavaTokenId.FINALLY).contains(token.token().id())) {
-                    t = null;
-                    for (Tree res : ((TryTree)last).getResources()) {
-                        if (sp.getEndPosition(cut, res) > startOffset) {
-                            break;
+                    token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                    if (token != null && token.token().id() != JavaTokenId.RBRACE) {
+                        t = null;
+                        for (Tree res : ((TryTree)last).getResources()) {
+                            if (sp.getEndPosition(cut, res) > startOffset) {
+                                break;
+                            }
+                            t = res;
                         }
-                        t = res;
+                        currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.TRY, JavaTokenId.RPAREN, JavaTokenId.FINALLY), t != null ? (int)sp.getEndPosition(cut, t) : lastPos, currentIndent);
                     }
-                    currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.TRY, JavaTokenId.RPAREN, JavaTokenId.FINALLY), t != null ? (int)sp.getEndPosition(cut, t) : lastPos, currentIndent);
                 }
                 break;
             case CATCH:
@@ -528,7 +544,8 @@ public class Reindenter implements IndentTask {
                 break;
             case NEW_ARRAY:
                 token = findFirstNonWhitespaceToken(startOffset, endOffset);
-                if (token == null || token.token().id() != JavaTokenId.RBRACE) {
+                nextTokenId = token != null ? token.token().id() : null;
+                if (nextTokenId != JavaTokenId.RBRACE) {
                     token = findFirstNonWhitespaceToken(startOffset, lastPos);
                     prevTokenId = token != null ? token.token().id() : null;
                     if (prevTokenId != null) {
@@ -539,10 +556,40 @@ public class Reindenter implements IndentTask {
                             case COMMA:
                                 currentIndent = getMultilineIndent(((NewArrayTree)last).getInitializers(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineArrayInit(), false);
                                 break;
+                            case RBRACKET:
+                                if (nextTokenId == JavaTokenId.LBRACE) {
+                                    switch (cs.getOtherBracePlacement()) {
+                                        case NEW_LINE_INDENTED:
+                                            currentIndent += cs.getIndentSize();
+                                            break;
+                                        case NEW_LINE_HALF_INDENTED:
+                                            currentIndent += (cs.getIndentSize() / 2);
+                                            break;
+                                    }
+                                    break;
+                                }
                             default:
                                 currentIndent += cs.getContinuationIndentSize();
                         }
                     }
+                }
+                break;
+            case NEW_CLASS:
+                token = findFirstNonWhitespaceToken(startOffset, endOffset);
+                nextTokenId = token != null ? token.token().id() : null;
+                token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                prevTokenId = token != null ? token.token().id() : null;
+                if (prevTokenId == JavaTokenId.RPAREN && nextTokenId == JavaTokenId.LBRACE) {
+                    switch (cs.getOtherBracePlacement()) {
+                        case NEW_LINE_INDENTED:
+                            currentIndent += cs.getIndentSize();
+                            break;
+                        case NEW_LINE_HALF_INDENTED:
+                            currentIndent += (cs.getIndentSize() / 2);
+                            break;
+                    }
+                } else {
+                    currentIndent += cs.getContinuationIndentSize();
                 }
                 break;
             case METHOD_INVOCATION:
