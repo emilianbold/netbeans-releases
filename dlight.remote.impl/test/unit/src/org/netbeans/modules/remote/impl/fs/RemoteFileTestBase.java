@@ -46,9 +46,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
@@ -62,7 +64,11 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 
 /**
  *
@@ -70,6 +76,63 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
+    protected static class FCL implements FileChangeListener {
+
+        private final String listenerName;
+        private final String prefixToStrip;
+        private final PrintStream out; 
+
+        public FCL(String name, String prefixToStrip, PrintStream out) {
+            this.listenerName = name;
+            this.prefixToStrip = prefixToStrip;
+            this.out = out;
+        }
+
+        private void register(String eventKind, FileEvent fe) {
+            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
+            String obj = stripPrefix(fe.getFile().getPath());
+            out.printf("FileEvent[%s]: %s src=%s obj=%s exp=%b\n", listenerName, eventKind, src, obj, fe.isExpected());
+        }
+        
+        private String stripPrefix(String path) {
+            if (path.startsWith(prefixToStrip)) {
+                path = path.substring(prefixToStrip.length());
+                if (path.startsWith("/")) {
+                    path =path.substring(1);
+                }
+            }
+            if (path.length() == 0) {
+                path = ".";
+            }
+            return path;
+        }
+        
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            register("fileAttributeChanged", fe);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            register("fileChanged", fe);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            register("fileDataCreated", fe);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            register("fileDeleted", fe);
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            register("fileFolderCreated", fe);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            register("fileRenamed", fe);
+        }        
+    }
+
+    
     protected RemoteFileSystem fs;
     protected FileObject rootFO;
     protected final ExecutionEnvironment execEnv;
@@ -211,5 +274,22 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 //        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
 //        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
 //    }
-
+    
+    protected static void printFile(File file, String prefix, PrintStream out) throws Exception {
+        BufferedReader rdr = new BufferedReader(new FileReader(file));
+        try {
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                if (prefix == null) {
+                    out.printf("%s\n", line);
+                } else {
+                    out.printf("%s: %s\n", prefix, line);
+                }
+            }
+        } finally {
+            if (rdr != null) {
+                rdr.close();                
+            }
+        }
+    }
 }
