@@ -71,6 +71,10 @@ public class RemoteLinkChild extends RemoteLinkBase {
         return delegate.getType();
     }    
     
+    @Override
+    public boolean isValid() {
+        return super.isValid() && delegate.isValid();
+    }
     
     @Override
     protected void postDeleteChild(FileObject child) {
