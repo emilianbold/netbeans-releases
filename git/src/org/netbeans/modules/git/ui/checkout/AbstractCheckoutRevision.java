@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -68,8 +67,8 @@ import org.openide.util.WeakListeners;
  *
  * @author ondra
  */
-public class CheckoutRevision implements DocumentListener, ActionListener, PropertyChangeListener {
-    private CheckoutRevisionPanel panel;
+public abstract class AbstractCheckoutRevision implements DocumentListener, ActionListener, PropertyChangeListener {
+    protected final CheckoutRevisionPanel panel;
     private RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
@@ -80,8 +79,8 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
     private final Map<String, GitBranch> branches;
     private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
 
-    public CheckoutRevision (File repository, RepositoryInfo info, String initialRevision) {
-        revisionPicker = new RevisionDialogController(repository, new File[] { repository }, initialRevision);
+    protected AbstractCheckoutRevision (RepositoryInfo info, RevisionDialogController revisionPicker) {
+        this.revisionPicker = revisionPicker;
         panel = new CheckoutRevisionPanel(revisionPicker.getPanel());
         info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         this.branches = info.getBranches();
@@ -98,12 +97,15 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
     boolean isCreateBranchSelected () {
         return panel.cbCheckoutAsNewBranch.isSelected();
     }
+    
+    protected abstract String getOkButtonLabel ();
+    
+    protected abstract String getDialogTitle ();
 
     boolean show() {
-        okButton = new JButton(NbBundle.getMessage(CheckoutRevision.class, "LBL_CheckoutRevision.OKButton.text")); //NOI18N
+        okButton = new JButton(getOkButtonLabel());
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
-        dd = new DialogDescriptor(panel, NbBundle.getMessage(CheckoutRevision.class, "LBL_CheckoutRevision.title"), true,  //NOI18N
-                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CheckoutRevision.class), null);
+        dd = new DialogDescriptor(panel, getDialogTitle(), true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(AbstractCheckoutRevision.class), null);
         validateBranchCB();
         revisionPicker.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -125,7 +127,7 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
         if (flag) {
             validateBranchCB();
         } else {
-            setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorRevision")); //NOI18N
+            setErrorMessage(NbBundle.getMessage(AbstractCheckoutRevision.class, "MSG_CheckoutRevision.errorRevision")); //NOI18N
             validate();
         }
     }
@@ -136,14 +138,14 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
         if (flag) {
             if (panel.cbCheckoutAsNewBranch.isSelected() && !nameValid) {
                 if (panel.branchNameField.getText().isEmpty()) {
-                    setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchNameEmpty")); //NOI18N
+                    setErrorMessage(NbBundle.getMessage(AbstractCheckoutRevision.class, "MSG_CheckoutRevision.errorBranchNameEmpty")); //NOI18N
                 } else {
-                    setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchExists")); //NOI18N
+                    setErrorMessage(NbBundle.getMessage(AbstractCheckoutRevision.class, "MSG_CheckoutRevision.errorBranchExists")); //NOI18N
                 }
                 flag = false;
                 messageSet = true;
             } else if (!panel.cbCheckoutAsNewBranch.isSelected() && branchNameRecommended) {
-                setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.warningDetachedHead")); //NOI18N
+                setErrorMessage(NbBundle.getMessage(AbstractCheckoutRevision.class, "MSG_CheckoutRevision.warningDetachedHead")); //NOI18N
                 messageSet = true;
             }
         }
