@@ -453,7 +453,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
         
-    private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared"); //NOI18N
+    private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared", "/home"); //NOI18N
     
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
