@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,20 +55,33 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author vita
  */
-public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer {
+public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer implements FileChangeListener {
 
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.ReadOnlyFilesHighlighting"; //NOI18N
 
     private static final AttributeSet EXTENDS_EOL_OR_EMPTY_ATTR_SET =
             AttributesUtilities.createImmutable(ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE, ATTR_EXTENDS_EOL, Boolean.TRUE);
 
-    private Boolean fileWritable;
+    private static final Logger LOG = Logger.getLogger(ReadOnlyFilesHighlighting.class.getName());
+    
+    private final Document document;
+
+    private final AttributeSet attribs;
+
+    private boolean fileReadOnly;
+    
+    private WeakReference<FileObject> lastFile;
 
     public ReadOnlyFilesHighlighting(Document doc) {
         this.document = doc;
@@ -94,10 +108,8 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         FileObject file = fileFromDoc(document);
         if (attribs != null && file != null) {
-            if (fileWritable == null) {
-                fileWritable = file.canWrite();
-            }
-            if (!fileWritable) {
+            checkFileStatus(file);
+            if (fileReadOnly) {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Highlighting file " + file + " in <" + startOffset + ", " + endOffset + ">"); //NOI18N
                 }
@@ -114,15 +126,55 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
 
         return HighlightsSequence.EMPTY;
     }
-
-    // -----------------------------------------------------------------------
-    // Private implementation
-    // -----------------------------------------------------------------------
-
-    private static final Logger LOG = Logger.getLogger(ReadOnlyFilesHighlighting.class.getName());
     
-    private final Document document;
-    private final AttributeSet attribs;
+    private synchronized void checkFileStatus(FileObject fo) {
+        if (lastFile == null || lastFile.get() != fo) {
+            lastFile = new WeakReference<FileObject>(fo);
+            fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
+            updateFileReadOnly(fo);
+        }
+    }
+    
+    private void updateFileReadOnly(FileObject fo) {
+        boolean origReadOnly = fileReadOnly;
+        fileReadOnly = !fo.canWrite();
+        if (fileReadOnly != origReadOnly) {
+            fireHighlightsChange(0, document.getLength() + 1); // +1 to include extra '\n'
+        }
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        if ("DataEditorSupport.read-only.refresh".equals(fe.getName())) {
+            synchronized (this) {
+                FileObject fo = fe.getFile();
+                assert lastFile != null;
+                if (lastFile.get() == fo) {
+                    updateFileReadOnly(fo);
+                }
+            }
+        }
+    }
 
     private static String s2s(Object o) {
         return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
