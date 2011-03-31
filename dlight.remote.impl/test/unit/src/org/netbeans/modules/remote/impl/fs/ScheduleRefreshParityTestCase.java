@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -61,19 +63,72 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Kvashin
  */
-public class ListenersParityTestCase extends RemoteFileTestBase {
+public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
 
-    public ListenersParityTestCase(String testName) {
+    public ScheduleRefreshParityTestCase(String testName) {
         super(testName);
     }
     
-    public ListenersParityTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
+    public ScheduleRefreshParityTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);
     }
-
-    private void doTestListeners2(FileObject baseDirFO, File log, boolean recursive) throws Exception {
+    
+    private void doTestScheduleRefresh2(final FileObject baseDirFO, File log, boolean recursive) throws Throwable {
         PrintStream out = new PrintStream(log);
+        final String[] path = new String[] { "build", "debug", "solaris" };
+        final String objdir = path[0] + '/' + path[1] + '/' + path[2];
+        final boolean local = FileSystemProvider.getExecutionEnvironment(baseDirFO).isLocal();
         try {
+            class Worker {
+                File baseDirFile;
+                public Worker() {
+                    if (local) {
+                        baseDirFile = FileUtil.toFile(baseDirFO);
+                    }
+                }
+                public void create()  throws Throwable {
+                    if (local) {
+                        File current = baseDirFile;
+                        for (int i = 0; i < path.length; i++) {
+                            File child = new File(current, path[i]);
+                            current = child;
+                        }
+                        assertTrue(current.mkdirs());
+                        for (int i = 0; i < 5; i++) {
+                            File file = new File(current, "file_" + i + ".o");
+                            assertTrue(file.createNewFile());
+                        }
+                    } else {
+                        StringBuilder script = new StringBuilder();
+                        script.append("cd ").append(baseDirFO.getPath()).append("; ");
+                        script.append("mkdir -p ");
+                        for (int i = 0; i < path.length; i++) {
+                            script.append(path[i]).append("/");
+                        }
+                        script.append("; ");
+                        script.append("cd ").append(objdir).append("; ");
+                        for (int i = 0; i < 5; i++) {
+                            script.append("touch file_").append(i).append(".o").append("; ");
+                        }
+                        runScript(script.toString());
+                    }
+                }
+                public void delete()  throws Throwable {
+                    if (local) {
+                        removeDirectoryContent(new File(baseDirFile, path[0]));
+                    } else {
+                        CommonTasksSupport.rmDir(execEnv, baseDirFO.getPath() + '/' + path[0] + '/' + path[1], 
+                                true, new OutputStreamWriter(System.err)).get();
+                    }
+                }
+            }
+            
+            Worker worker = new Worker();
+            worker.create();
+            baseDirFO.refresh();
+            Set<FileObject> bag = new HashSet<FileObject>();
+            recurse(baseDirFO, bag);
+            
             String prefix = baseDirFO.getPath();
             FCL fcl = new FCL("baseDir", prefix, out);
             if (recursive) {
@@ -81,34 +136,43 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             } else {
                 baseDirFO.addFileChangeListener(fcl);
             }
-            FileObject childFO = baseDirFO.createData("child_file_1");
-            FileObject subdirFO = baseDirFO.createFolder("child_folder");
-            if (!recursive) {
-                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out));
-            }
-            FileObject grandChildFO = subdirFO.createData("grand_child_file");
-            FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
-            FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
-            // baseDirFO.refresh() will break the test. TODO: investigate.
-            // baseDirFO.refresh();
-            grandGrandChildFO.delete();
-            grandChildDirFO.delete();
+            
+            worker.delete();
+            
+            FileSystemProvider.scheduleRefresh(baseDirFO);
+            sleep(5000);
+            
+            
         } finally {
             out.close();
         }
     }
     
-    private void doTestListeners1(boolean recursive) throws Throwable {
+    private void recurse(FileObject fo, Set<FileObject> bag) {
+        bag.add(fo);
+        for (FileObject child : fo.getChildren()) {
+            recurse(child, bag);
+        }
+    }
+            
+    @ForAllEnvironments
+    public void testScheduleRefresh() throws Throwable {
+        doTestScheduleRefresh(true);
+    }
+    
+    public void doTestScheduleRefresh(boolean recursive) throws Throwable {
         String remoteBaseDir = mkTemp(true);
-        File localTmpDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
+        File localBaseDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
         try {            
             FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
-            FileObject localBaseDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(localTmpDir));            
+            FileObject localBaseDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(localBaseDir));            
             File workDir = getWorkDir();
             File remoteLog = new File(workDir, "remote.dat");
             File localLog = new File(workDir, "local.dat");
-            doTestListeners2(remoteBaseDirFO, remoteLog, recursive);
-            doTestListeners2(localBaseDirFO, localLog, recursive);
+            
+            doTestScheduleRefresh2(remoteBaseDirFO, remoteLog, recursive);
+            doTestScheduleRefresh2(localBaseDirFO, localLog, recursive);
+            
             printFile(localLog, "LOCAL ", System.out);
             printFile(remoteLog, "REMOTE", System.out);
             File diff = new File(workDir, "diff.diff");
@@ -122,25 +186,15 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             }
         } finally {
             if (remoteBaseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, remoteBaseDir, true, new OutputStreamWriter(System.err));
+                CommonTasksSupport.rmDir(execEnv, remoteBaseDir, true, new OutputStreamWriter(System.err)).get();
             }
-            if (localTmpDir != null && localTmpDir.exists()) {
-                removeDirectory(localTmpDir);
+            if (localBaseDir != null && localBaseDir.exists()) {
+                removeDirectory(localBaseDir);
             }
         }    
     }
-    
-    @ForAllEnvironments
-    public void testListeners() throws Throwable {                
-        doTestListeners1(false);
-    }
-
-    @ForAllEnvironments
-    public void testRecursiveListeners() throws Throwable {                
-        doTestListeners1(true);
-    }
-
+           
     public static Test suite() {
-        return RemoteApiTest.createSuite(ListenersParityTestCase.class);
+        return RemoteApiTest.createSuite(ScheduleRefreshParityTestCase.class);
     }
 }
