@@ -189,18 +189,6 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         }
     }
 
-//    @Override
-//    public Date lastModified() {
-//        RemoteFileObjectBase delegate = getDelegate();
-//        return (delegate == null) ? null : delegate.lastModified();
-//    }
-
-    @Override
-    public boolean isValid() {
-        RemoteFileObjectBase delegate = getDelegate();
-        return delegate != null && delegate.isValid();
-    }
-
     @SuppressWarnings("deprecation")
     @Override
     public boolean isReadOnly() {

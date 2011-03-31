@@ -304,7 +304,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public boolean isValid() {
-        return getFlag(MASK_VALID);
+        if(getFlag(MASK_VALID)) {
+            RemoteFileObjectBase p = getParent();
+            return (p == null) || p.isValid();
+        }
+        return false;
     }
 
     /*package*/ void invalidate() {
