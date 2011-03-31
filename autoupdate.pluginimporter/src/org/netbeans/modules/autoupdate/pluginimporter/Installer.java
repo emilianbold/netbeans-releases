@@ -149,9 +149,11 @@ public class Installer extends ModuleInstall {
                     Collection<UpdateUnit> units = clusterUpdateProvider.getUpdateUnits (UpdateManager.TYPE.MODULE);
                     UpdateUnitProviderFactory.getDefault ().remove (clusterUpdateProvider);
                     PluginImporter importer = new PluginImporter (units);
-                    LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
-                    LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
-                    LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
+                        LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
+                        LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
+                    }
                     if (! importer.getBrokenPlugins ().isEmpty ()) {
                         LOG.info ("Plugins for import with broken dependencies: " + importer.getBrokenPlugins ());
                     }

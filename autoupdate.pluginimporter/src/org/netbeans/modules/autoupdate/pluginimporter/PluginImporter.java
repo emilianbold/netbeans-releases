@@ -140,8 +140,8 @@ public class PluginImporter {
                 if (! unit.getAvailableUpdates ().isEmpty ()) {
                     UpdateElement el = unit.getAvailableUpdates ().get (0);
                     if (remoteElement != null) {
-                        SpecificationVersion spec = new SpecificationVersion (el.getSpecificationVersion ());
-                        if (spec.compareTo (remoteSpec) > 0) {
+                        SpecificationVersion spec = el.getSpecificationVersion () == null ? null : new SpecificationVersion (el.getSpecificationVersion ());
+                        if (spec != null && spec.compareTo (remoteSpec) > 0) {
                             candidate2import.add (el);
                         }
                     } else {
@@ -155,8 +155,8 @@ public class PluginImporter {
                 assert ! unit.getAvailableUpdates ().isEmpty () : "If " + unit + " isn't installed thus has available updates.";
                 UpdateElement el = unit.getAvailableUpdates ().get (0);
                 if (remoteElement != null) {
-                    SpecificationVersion spec = new SpecificationVersion (el.getSpecificationVersion ());
-                    if (spec.compareTo (remoteSpec) > 0) {
+                    SpecificationVersion spec = el.getSpecificationVersion () == null ? null : new SpecificationVersion (el.getSpecificationVersion ());
+                    if (spec != null && spec.compareTo (remoteSpec) > 0) {
                         candidate2import.add (el);
                     } else {
                         toInstall.add (remoteElement);
