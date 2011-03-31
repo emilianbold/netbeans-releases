@@ -223,6 +223,25 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
     }
 
+    public void testIncrementalCompilationWithBrokenClassFiles() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v1\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "public class C2 {public @Override String toString() {return Bundle.k2();}}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C3", "class C3 {C3() {new Runnable() {public @Override void run() {new Runnable() {public @Override void run() {}};}};}}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v1", l.loadClass("p.C1").newInstance().toString());
+        assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
+        assertTrue(new File(dest, "p/C3.class").delete());
+        assertTrue(new File(dest, "p/C3$1.class").delete());
+        assertTrue(new File(dest, "p/C3$1$1.class").isFile());
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v3\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, null));
+        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v3", l.loadClass("p.C1").newInstance().toString());
+        assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
+    }
+
     public void testComments() throws Exception {
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages({\"# Something good to note.\", \"k=v\"})", "class C {}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
