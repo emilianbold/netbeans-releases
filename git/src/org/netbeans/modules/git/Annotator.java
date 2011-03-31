@@ -68,6 +68,7 @@ import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
+import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
@@ -167,6 +168,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 actions.add(SystemAction.get(CreateBranchAction.class));
                 actions.add(SystemAction.get(CheckoutRevisionAction.class));
+                actions.add(SystemAction.get(SwitchBranchAction.class));
                 actions.add(SystemAction.get(MergeRevisionAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
@@ -214,6 +216,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutRevisionAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchBranchAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_SwitchBranchAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
                 DisconnectAction da = SystemAction.get(DisconnectAction.class);
                 if (da.isEnabled()) {
