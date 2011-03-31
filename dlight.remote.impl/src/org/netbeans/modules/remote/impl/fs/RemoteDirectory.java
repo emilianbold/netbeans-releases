@@ -338,6 +338,46 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return fo;
     }
 
+    @Override
+    protected RemoteFileObjectBase[] getExistentChildren() {
+        return getExistentChildren(getExistingDirectoryStorage());
+    }
+    
+    private DirectoryStorage getExistingDirectoryStorage() {
+        
+        DirectoryStorage storage;
+        synchronized (refLock) {
+            storage = storageRef.get();
+        }
+        if (storage == null) {
+            File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+            if (storageFile.exists()) {
+                Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
+                try  {
+                    if (readLock.tryLock()) {
+                        try {
+                            storage = DirectoryStorage.load(storageFile);
+                        } catch (FormatException e) {
+                            Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
+                            RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
+                            storageFile.delete();
+                        } catch (InterruptedIOException e) {
+                            // nothing
+                        } catch (FileNotFoundException e) {
+                            // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
+                            RemoteLogger.finest(e);
+                        } catch (IOException e) {
+                            RemoteLogger.finest(e);
+                        }
+                    }
+                } finally {
+                    readLock.unlock();
+                }
+            }
+        }
+        return  storage == null ? DirectoryStorage.EMPTY : storage;
+    }
+    
     private RemoteFileObjectBase[] getExistentChildren(DirectoryStorage storage) {
         List<DirEntry> entries = storage.list();
         List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
@@ -354,6 +394,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public RemoteFileObjectBase[] getChildren() {
         try {
+            if (!isValid()) {
+                int i = 0;
+            }
             DirectoryStorage storage = getDirectoryStorage(null);
             List<DirEntry> entries = storage.list();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
@@ -483,7 +526,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         return true;
     }
-
+    
     private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
@@ -600,17 +643,20 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
                 } else {
-                    if (isFileNotFoundException(problem)) {
+                    boolean fileNotFoundException = isFileNotFoundException(problem);
+                    if (fileNotFoundException) {
                         synchronized (refLock) {
-                            storageRef = new SoftReference<DirectoryStorage>(null);
+                            storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
                         }
                     }
-                    if (problem instanceof IOException) { 
-                        throw (IOException) problem;
-                    } else if (problem instanceof ExecutionException) {
-                        throw (ExecutionException) problem;
-                    } else {
-                        throw new IllegalStateException("Unexpected exception class: " + problem.getClass().getName(), problem); //NOI18N
+                    if (!fileNotFoundException) { 
+                        if (problem instanceof IOException) { 
+                            throw (IOException) problem;
+                        } else if (problem instanceof ExecutionException) {
+                            throw (ExecutionException) problem;
+                        } else {
+                            throw new IllegalStateException("Unexpected exception class: " + problem.getClass().getName(), problem); //NOI18N
+                        }
                     }
                 }
             }
@@ -637,8 +683,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         keepCacheNames.add(newEntry);
                         boolean fire = false;
                         if (!newEntry.isSameLastModified(oldEntry)) {
-                            changed = fire = true;
                             if (newEntry.isPlainFile()) {
+                                changed = fire = true;
                                 File entryCache = new File(getCache(), oldEntry.getCache());
                                 if (entryCache.exists()) {
                                     if (trace) { trace("removing cache for updated file {0}", entryCache.getAbsolutePath()); } // NOI18N
@@ -747,6 +793,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         fireFileChangedEvent(getListeners(), new FileEvent(fo));
                     }
                 }
+                //fireFileChangedEvent(getListeners(), new FileEvent(this));
             }
         } finally {
             writeLock.unlock();

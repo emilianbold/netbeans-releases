@@ -46,9 +46,11 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -64,6 +66,7 @@ import org.openide.util.RequestProcessor;
 public class RefreshManager {
 
     private final ExecutionEnvironment env;
+    private final RemoteFileObjectFactory factory;
     private final RequestProcessor.Task updateTask;
     
     private final LinkedList<RemoteFileObjectBase> queue = new LinkedList<RemoteFileObjectBase>();
@@ -72,7 +75,7 @@ public class RefreshManager {
     
     private static final boolean REFRESH_ON_FOCUS = getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
     private static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
-    
+
     private final class RefreshWorker implements Runnable {
         public void run() {
             long time = System.currentTimeMillis();
@@ -116,53 +119,81 @@ public class RefreshManager {
         }
     }
 
-    public RefreshManager(ExecutionEnvironment env) {
+    public RefreshManager(ExecutionEnvironment env, RemoteFileObjectFactory factory) {
         this.env = env;
+        this.factory = factory;
         updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker()); //NOI18N
     }        
     
     public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {
         if (REFRESH_ON_FOCUS) {
             RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
-            scheduleRefresh(filterDirectories(fileObjects), false);
+            scheduleRefreshImpl(filterDirectories(fileObjects), false);
         }
     }
 
     public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
         if (REFRESH_ON_CONNECT) {
             RemoteLogger.getInstance().log(Level.FINE, "Refresh on connect schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
-            scheduleRefresh(filterDirectories(fileObjects), false);
+            scheduleRefreshImpl(filterDirectories(fileObjects), false);
         }
     }
     
     private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>();
+        Collection<RemoteFileObjectBase> result = new TreeSet<RemoteFileObjectBase>(new PathComparator(true));
         for (RemoteFileObjectBase fo : fileObjects) {
             // Don't call isValid() or isFolder() - they might be SLOW!
-            if (fo != null && ((fo instanceof RemoteLinkBase) || (fo instanceof RemoteDirectory))) {
+            if (isDirectory(fo)) {
                 result.add(fo);
             }
         }
         return result;
-    }    
-  
-// not used so far    
-//    private void scheduleRefresh(RemoteFileObjectBase fo) {
-//        if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
-//            RemoteLogger.getInstance().warning("scheduleRefresh(FileObject) is called while host is not connected");
-//        }        
-//        synchronized (queueLock) {
-//            queue.add(fo);
-//            set.add(fo);
-//            updateTask.schedule(0);
-//        }
-//    }
-    
-    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
-        scheduleRefresh(fileObjects, true);
     }
     
-    private void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean toTheHead) {
+    private static boolean isDirectory(RemoteFileObjectBase fo) {
+        return fo != null && ((fo instanceof RemoteLinkBase) || (fo instanceof RemoteDirectory));
+    }
+    
+    private static class PathComparator implements Comparator<RemoteFileObjectBase>  {
+        private final boolean childrenFirst;
+        public PathComparator(boolean childrenFirst) {
+            this.childrenFirst = childrenFirst;
+        }        
+        public int compare(RemoteFileObjectBase o1, RemoteFileObjectBase o2) {
+            int result = o1.getPath().compareTo(o2.getPath());
+            return childrenFirst ? -result : result;
+        }        
+    }
+    
+    public void scheduleRefreshExistent(Collection<String> paths) {
+        Collection<RemoteFileObjectBase> fileObjects = new ArrayList<RemoteFileObjectBase>(paths.size());
+        for (String path : paths) {
+            RemoteFileObjectBase fo = factory.getCachedFileObject(path);
+            if (fo != null) {
+                fileObjects.add(fo);
+            }
+        }
+        scheduleRefresh(fileObjects);
+    }
+       
+    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
+        Collection<RemoteFileObjectBase> toRefresh = new TreeSet<RemoteFileObjectBase>(new PathComparator(false));
+        for (RemoteFileObjectBase fo : fileObjects) {
+            addExistingChildren(fo, toRefresh);
+        }
+        scheduleRefreshImpl(toRefresh, true);
+    }
+    
+    private void addExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {
+        if (isDirectory(fo)) {
+            bag.add(fo);
+            for (RemoteFileObjectBase child : fo.getExistentChildren()) {
+                addExistingChildren(child, bag);
+            }
+        }
+    }
+    
+    private void scheduleRefreshImpl(Collection<RemoteFileObjectBase> fileObjects, boolean toTheHead) {
         if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
             RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
         }        
