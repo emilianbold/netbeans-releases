@@ -107,16 +107,16 @@ public class AnnotationProcessorTestUtils {
     public static boolean runJavac(File src, String srcIncludes, File dest, File[] cp, OutputStream stderr) {
         List<String> args = new ArrayList<String>();
         args.add("-classpath");
+        StringBuilder b = new StringBuilder(dest.getAbsolutePath());
         if (cp != null) {
-            StringBuilder b = new StringBuilder();
             for (File entry : cp) {
                 b.append(File.pathSeparatorChar);
                 b.append(entry.getAbsolutePath());
             }
-            args.add(b.toString());
         } else {
-            args.add(System.getProperty("java.class.path"));
+            b.append(File.pathSeparatorChar).append(System.getProperty("java.class.path"));
         }
+        args.add(b.toString());
         args.add("-d");
         args.add(dest.getAbsolutePath());
         args.add("-sourcepath");

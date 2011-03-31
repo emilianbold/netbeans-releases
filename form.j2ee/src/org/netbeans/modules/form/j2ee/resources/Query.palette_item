@@ -8,6 +8,6 @@
                display-name-key="NAME_Query"
                tooltip-key="HINT_Query" />
   <classpath>
-      <resource type="library" name="eclipselink" />
+      <resource type="library" name="toplink" />
   </classpath>
 </palette_item>
