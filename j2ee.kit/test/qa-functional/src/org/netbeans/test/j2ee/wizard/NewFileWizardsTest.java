@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -511,8 +512,8 @@ public class NewFileWizardsTest extends JellyTestCase {
                 try {
                     Logger lo = Logger.getLogger(NewFileWizardsTest.class.getName());
                     goldenFile = getGoldenFile(getName() + "_" + version + "/" + newFile.getName() + ".pass");
-                    lo.fine("comparing: " + goldenFile.getAbsolutePath());
-                    lo.fine("with: " + newFile.getAbsolutePath());
+                    lo.log(Level.FINE, "comparing: {0}", goldenFile.getAbsolutePath());
+                    lo.log(Level.FINE, "with: {0}", newFile.getAbsolutePath());
                     if (newFile.getName().endsWith(".xml") && !newFile.getName().startsWith("sun-") && !newFile.getName().startsWith("webservices.xml")) {
                         assertTrue(ContentComparator.equalsXML(goldenFile, newFile));
                     } else {
@@ -565,7 +566,6 @@ public class NewFileWizardsTest extends JellyTestCase {
         ProjectsTabOperator.invoke().getProjectRootNode(prjName).collapse();
         Utils.buildProject(prjName);
     }
-
 
 //----------------------------------------------------- multi src roots projects
     /**
@@ -755,6 +755,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             start = name;
         }
 
+        @Override
         public boolean accept(File dir, String name) {
             return name.startsWith(start);
         }
