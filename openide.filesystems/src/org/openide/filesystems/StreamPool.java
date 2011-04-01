@@ -60,13 +60,10 @@ import java.util.logging.Logger;
  * @author  rmatous
  */
 final class StreamPool extends Object {
-    /** Whether to keep the stack traces. By default, don't - too expensive. */
-    private static final boolean ANNOTATE_UNCLOSED_STREAMS = Boolean.getBoolean(
-            "org.openide.filesystems.annotateUnclosedStreams"
-        ); // NOI18N
     static final Logger LOG = Logger.getLogger(StreamPool.class.getName());
     private static Map<FileObject, StreamPool> fo2StreamPool = new WeakHashMap<FileObject, StreamPool>();
     private static Map<FileSystem, StreamPool> fs2StreamPool = new WeakHashMap<FileSystem, StreamPool>();
+    private static Boolean annotateUnclosedStreams;
     private Set<InputStream> iStreams;
     private Set<OutputStream> oStreams;
 
@@ -183,7 +180,7 @@ final class StreamPool extends Object {
      * Annotates ex with all exceptions of unclosed streams.
      * @param ex that should be annotated */
     public void annotate(Exception ex) {
-        if (!ANNOTATE_UNCLOSED_STREAMS) {
+        if (!annotateUnclosedStreams()) {
             return;
         }
 
@@ -356,7 +353,7 @@ final class StreamPool extends Object {
             super(emptyOs);
             this.fo = fo;
 
-            if (ANNOTATE_UNCLOSED_STREAMS) {
+            if (annotateUnclosedStreams()) {
                 ex = new Exception();
             }
 
@@ -403,7 +400,7 @@ final class StreamPool extends Object {
             super(emptyIs);
             this.fo = fo;
 
-            if (ANNOTATE_UNCLOSED_STREAMS) {
+            if (annotateUnclosedStreams()) {
                 ex = new Exception();
             }
         }
@@ -430,5 +427,20 @@ final class StreamPool extends Object {
         public Exception getException() {
             return ex;
         }
+    }
+    
+    /** Whether to keep the stack traces. By default, don't - too expensive. */
+    private static boolean annotateUnclosedStreams() {
+        if (annotateUnclosedStreams != null) {
+            return annotateUnclosedStreams;
+        }
+        String annotateProp = System.getProperty("org.openide.filesystems.annotateUnclosedStreams"); // NOI18N;
+        annotateUnclosedStreams = Boolean.parseBoolean(annotateProp);
+        try {
+            assert false;
+        } catch (AssertionError ex) {
+            annotateUnclosedStreams = annotateProp == null ? true : Boolean.FALSE.toString().equals(annotateProp);
+        }
+        return annotateUnclosedStreams;
     }
 }
