@@ -59,7 +59,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV3ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -322,11 +321,12 @@ public class J2eeTestCase extends JellyTestCase {
     }
 
     private static Configuration addTest(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
-        if ((testNames == null) || (testNames.length == 0)) {
-            return conf;
-        }
         if (clazz == null) {
-            return conf.addTest(testNames);
+            if ((testNames == null) || (testNames.length == 0)) {
+                return conf;
+            } else {
+                return conf.addTest(testNames);
+            }
         } else {
             return conf.addTest(clazz, testNames);
         }
