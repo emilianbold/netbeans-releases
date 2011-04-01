@@ -76,24 +76,57 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             baseDir = mkTemp(true);
             String roDirName = "ro_dir";
             String rwDirName = "rw_sub_dir";
-            String fileName = "file_1";
+            String fileName1 = "file_1";
+            String fileName2 = "file_2";
             String roDirPath = baseDir + '/' + roDirName;
             String rwDirPath = roDirPath + '/' + rwDirName;
-            String filePath = rwDirPath + '/' + fileName;
+            String filePath1 = rwDirPath + '/' + fileName1;
+            String filePath2 = roDirPath + '/' + fileName2;
             
             String script = 
                     "mkdir -p " + roDirPath + "; " +
                     "mkdir -p " + rwDirPath + "; " +
-                    "touch " + filePath + "; " +
+                    "touch " + filePath1 + "; " +
+                    "touch " + filePath2 + "; " +
                     "chmod a-r " + roDirPath;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
-            FileObject roDirFO = getFileObject(roDirPath);
+            RemoteDirectory roDirFO = (RemoteDirectory) getFileObject(roDirPath);
             assertFalse("Should not be readable: " + roDirFO, roDirFO.canRead());
             FileObject rwDirFO = getFileObject(rwDirPath);
-            FileObject fileFO = getFileObject(filePath);
-            FileObject[] children = roDirFO.getChildren();
+            FileObject fileFO1 = getFileObject(filePath1);
+            DirectoryStorage storage;
+            FileObject[] children;
+            RemoteFileObjectBase invalid;
+            
+            children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 1, children.length);
+            
+            invalid = roDirFO.getFileObject("inexistent1");
+            assertNull("file objject should be null for inexistent1", invalid);
+            children = roDirFO.getChildren();
+            assertEquals("children size for " + roDirFO.getPath(), 1, children.length);
+            storage = roDirFO.testGetExistingDirectoryStorage();            
+            assertEquals("storage.size", 2, storage.listAll().size());
+            
+            FileObject fileFO2 = getFileObject(filePath2);
+            children = roDirFO.getChildren();
+            assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
+            storage = roDirFO.testGetExistingDirectoryStorage();
+            assertEquals("storage.size", 3, storage.listAll().size());
+            
+            invalid = roDirFO.getFileObject("inexistent2");
+            assertNull("file objject should be null for inexistent2", invalid);
+            children = roDirFO.getChildren();
+            assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
+            storage = roDirFO.testGetExistingDirectoryStorage();
+            assertEquals("storage.size", 4, storage.listAll().size());
+            
+            roDirFO.refresh();
+            children = roDirFO.getChildren();
+            assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
+            storage = roDirFO.testGetExistingDirectoryStorage();
+            assertEquals("storage.size", 2, storage.listAll().size());            
         } finally {
             if (baseDir != null) {
                 CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
