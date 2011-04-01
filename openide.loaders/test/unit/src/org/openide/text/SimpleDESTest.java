@@ -44,6 +44,7 @@
 
 package org.openide.text;
 
+import java.awt.EventQueue;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import org.netbeans.junit.*;
@@ -138,6 +139,7 @@ public final class SimpleDESTest extends NbTestCase {
         
         OpenCookie open = obj.getCookie(OpenCookie.class);
         open.open ();
+        waitAWT();
         
         javax.swing.text.Document d = c.getDocument();
         assertNotNull (d);
@@ -148,6 +150,14 @@ public final class SimpleDESTest extends NbTestCase {
             "Now there is a save cookie", 
             obj.getCookie (org.openide.cookies.SaveCookie.class)
         );
+    }
+    
+    private void waitAWT() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
     }
     
     public void testItIsPossibleToMaskEditCookie () throws Exception {
