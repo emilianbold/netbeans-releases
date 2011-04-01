@@ -497,7 +497,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public final String getMIMEType() {
         DataObject dataObject = getDataObject();
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
-        if (fo == null) {
+        if (fo == null && fileObject != null && fileObject.isValid()) {
             fo = fileObject;
         }
         String mimeType = "";
