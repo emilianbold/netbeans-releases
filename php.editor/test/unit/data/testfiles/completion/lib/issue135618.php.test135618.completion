@@ -1,5 +1,6 @@
 Code completion result for source line:
 self::|BBB;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+METHOD     testMe()                        [PUBLIC]   B135618
 CONSTANT   AAA "aaa"                       [PUBLIC]   A135618
 CONSTANT   BBB "bbb"                       [PUBLIC]   B135618
