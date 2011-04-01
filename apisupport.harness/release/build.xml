@@ -53,6 +53,8 @@ made subject to such option by the copyright holder.
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
         <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
                  classpath="${harness.dir}/tasks.jar"/>
+        <typedef name="islocked" classname="org.netbeans.nbbuild.IsLocked" 
+                 classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
         <fail message="When using cluster.path property, remove netbeans.dest.dir, enabled.clusters and disabled.clusters properties from platform config, they would be ignored.">
             <condition>
