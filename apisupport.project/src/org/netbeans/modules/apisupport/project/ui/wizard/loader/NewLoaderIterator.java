@@ -70,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -115,6 +116,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         private boolean extensionBased = true;
         private String extension;
         private String namespace;
+        private boolean useMultiview;
         
         private CreatedModifiedFiles files;
         
@@ -161,6 +163,25 @@ final class NewLoaderIterator extends BasicWizardIterator {
         public void setExtensionBased(boolean extensionBased) {
             this.extensionBased = extensionBased;
         }
+
+        public boolean canUseMultiview() {
+            try {
+                SpecificationVersion v = getModuleInfo().getDependencyVersion("org.netbeans.core.multiview"); // NOI18N
+                if (v == null) {
+                    return false;
+                }
+                return v.compareTo(new SpecificationVersion("1.22")) >= 0; // NOI18N
+            } catch (IOException ex) {
+                return false;
+            }
+        }
+        public boolean isUseMultiview() {
+            return useMultiview;
+        }
+
+        public void setUseMultiview(boolean useMultiview) {
+            this.useMultiview = useMultiview;
+        }
         
         public String getExtension() {
             return extension;
@@ -186,7 +207,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         boolean loaderlessObject;
         boolean lookupReadyObject;
         try {
-            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
+            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders"); // NOI18N
             loaderlessObject = current == null || current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
             lookupReadyObject = current == null || current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
         } catch (IOException ex) {
@@ -250,7 +271,11 @@ final class NewLoaderIterator extends BasicWizardIterator {
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
         template = null;
         if (loaderlessObject) {
-            template = CreatedModifiedFiles.getTemplate("templateDataObjectInLayer.java");//NOI18N
+            if (model.isUseMultiview()) {
+                template = CreatedModifiedFiles.getTemplate("templateDataObjectMulti.java");//NOI18N
+            } else {
+                template = CreatedModifiedFiles.getTemplate("templateDataObjectInLayer.java");//NOI18N
+            }
         } else {
             if (lookupReadyObject) {
                 template = CreatedModifiedFiles.getTemplate("templateDataObjectWithLookup.java");//NOI18N
@@ -287,6 +312,12 @@ final class NewLoaderIterator extends BasicWizardIterator {
         }
         if (isEditable) {
             fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
+        }
+        if (model.isUseMultiview()) {
+            fileChanges.add(fileChanges.addModuleDependency("org.netbeans.core.multiview")); //NOI18N
+            String bundlePath = model.getDefaultPackagePath("Bundle.properties", true); // NOI18N
+            fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_EDITOR", // NOI18N
+                    "Source")); //NOI18N
         }
 
         if (!loaderlessObject) {

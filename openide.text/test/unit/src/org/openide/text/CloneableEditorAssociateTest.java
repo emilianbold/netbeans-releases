@@ -50,17 +50,19 @@ import java.io.*;
 import java.util.*;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.*;
 
-public class CloneableEditorTest extends NbTestCase
+public class CloneableEditorAssociateTest extends NbTestCase
 implements CloneableEditorSupport.Env {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
+    private transient InstanceContent ic;
     /** the support to work with */
     private transient CES support;
 
@@ -74,15 +76,16 @@ implements CloneableEditorSupport.Env {
     private transient List/*<PropertyChangeListener>*/ propL = new ArrayList ();
     private transient VetoableChangeListener vetoL;
     
-    private static CloneableEditorTest RUNNING;
+    private static CloneableEditorAssociateTest RUNNING;
     
-    public CloneableEditorTest(String s) {
+    public CloneableEditorAssociateTest(String s) {
         super(s);
     }
     
     @Override
     protected void setUp () {
-        support = new CES (this, Lookup.EMPTY);
+        ic = new InstanceContent();
+        support = new CES (this, new AbstractLookup(ic));
         RUNNING = this;
     }
     
@@ -99,6 +102,10 @@ implements CloneableEditorSupport.Env {
         support.open ();
 
         CloneableEditor ed = (CloneableEditor)support.getRef ().getAnyComponent ();
+        ic.add(20);
+        assertEquals("twenty", Integer.valueOf(20), ed.getLookup().lookup(Integer.class));
+        ic.remove(20);
+        assertNull("no twenty", ed.getLookup().lookup(Integer.class));
         
         JEditorPane[] panes = support.getOpenedPanes ();
         assertNotNull (panes);
@@ -115,22 +122,10 @@ implements CloneableEditorSupport.Env {
         panes = support.getOpenedPanes ();
         assertNotNull ("One again", panes);
         assertEquals ("One is there again", 1, panes.length);
-    }
-    
-    public void testInitializeBySupport() {
-        CloneableEditor ce = new CloneableEditor(support);
-        ce.initializeBySupport();
-        assertEquals("Nodes changed", Node.EMPTY, ce.getActivatedNodes()[0]);
-    }
-    
-    public void testEditorPaneActionMapIsParentOfCloneableEditorActionMap() {
-        support.open();
         
-        CloneableEditor ed = (CloneableEditor)support.getRef().getArbitraryComponent();
-        
-        assertSame(ed.getEditorPane().getActionMap(), ed.getActionMap().getParent());
+        ic.add(10);
+        assertEquals("ten", Integer.valueOf(10), ed.getLookup().lookup(Integer.class));
     }
-
     
     //
     // Implementation of the CloneableEditorSupport.Env
@@ -237,11 +232,9 @@ implements CloneableEditorSupport.Env {
         }
 
         @Override
-        protected void initializeCloneableEditor(CloneableEditor editor) {
-            editor.setActivatedNodes(new Node[] { Node.EMPTY });
+        protected CloneableEditor createCloneableEditor() {
+            return new CloneableEditor(this, true);
         }
-        
-        
     }
 
     private static final class Replace implements Serializable {

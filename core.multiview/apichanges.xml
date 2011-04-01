@@ -103,12 +103,58 @@ is the proper place.
     <apidefs>
         <apidef name="multiview_api">MultiView API</apidef>
         <apidef name="multiview_spi">MultiView SPI</apidef>
+        <apidef name="multiview_text">MultiView Text SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="MultiViewEditorElement">
+        <api name="multiview_text"/>
+        <summary>MultiViewEditorElement</summary>
+        <version major="1" minor="22"/>
+        <date day="14" month="4" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            Common support class for integrating multi view and text 
+            infrastructure.
+        </description>
+        <class package="org.netbeans.core.spi.multiview.text" name="MultiViewEditorElement"/>
+        <issue number="196810"/>
+    </change>
+    <change id="MultiViews.create.mimetype">
+        <api name="multiview_api"/>
+        <summary>MultiViews.create for MIME type</summary>
+        <version major="1" minor="22"/>
+        <date day="14" month="4" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            New factory methods to create multiview components for a given
+            mime type.
+        </description>
+        <class package="org.netbeans.core.api.multiview" name="MultiViews"/>
+        <issue number="196810"/>
+    </change>
+    <change id="MultiViewElement.Registration">
+        <api name="multiview_spi"/>
+        <summary>@MultiViewElement.Registration</summary>
+        <version major="1" minor="22"/>
+        <date day="14" month="4" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            Declarative way to register 
+            <a href="@TOP@org/netbeans/core/spi/multiview/MultiViewElement.html">
+            MultiViewElement</a> via 
+            <a href="@TOP@org/netbeans/core/spi/multiview/MultiViewElement.Registration.html">
+            @Registration</a> annotation.
+        </description>
+        <class package="org.netbeans.core.spi.multiview" name="MultiViewElement"/>
+        <issue number="196810"/>
+    </change>
     <change>
         <api name="multiview_spi"/>
         <summary>Added marker interface SourceViewMarker to identify elements with sourcecode.</summary>

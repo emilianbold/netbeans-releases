@@ -48,7 +48,6 @@ import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -61,13 +60,14 @@ import org.netbeans.core.spi.multiview.SourceViewMarker;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 
 /** Special subclass of TopComponent which shows and handles set of
  * MultiViewElements, shows them in switchable toggle buttons style, along
- * with toolbsrs af actions asociated with individual view elements.
+ * with toolbars and actions associated with individual view elements.
  *
  *
  * @author Dafe Simonek, Milos Kleint
@@ -92,6 +92,9 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
 //        setFocusable(false);
     }
     
+    public <T extends Serializable & Lookup.Provider> void setMimeLookup(String mimeType, T context) {
+        peer.setMimeLookup(mimeType, context);
+    }
     
     public void setMultiViewDescriptions(MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         peer.setMultiViewDescriptions(descriptions, defaultDesc);
@@ -183,8 +186,15 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     protected String preferredID() {
         return peer.preferredID();
     }
-    
-    
+
+    @Override
+    protected CloneableTopComponent createClonedObject() {
+        MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
+        tc.setMultiViewDescriptions(peer.model.getDescriptions(), peer.model.getActiveDescription());;
+        tc.setCloseOperationHandler(peer.closeHandler);
+        tc.peer.copyMimeContext(peer);
+        return tc;
+    }
     
     /** Serialize this top component.
     * Subclasses wishing to store state must call the super method, then write to the stream.
@@ -251,7 +261,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         
         MultiViewDescription[] descs = peer.model.getDescriptions();
         for (MultiViewDescription desc : descs) {
-            if (desc instanceof SourceViewMarker) {
+            if (isSourceView(desc)) {
                 el = peer.model.getElementForDescription(desc);
                 if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
                     return el;
@@ -324,7 +334,17 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
             MultiViewElementCallback call = peer.getModel().getCallbackForElement(paneEl);
             call.requestVisible();
         }
-    }    
+    }
+
+    static boolean isSourceView(MultiViewDescription desc) {
+        if (desc instanceof SourceViewMarker) {
+            return true;
+        }
+        if (desc instanceof SourceCheckDescription) {
+            return ((SourceCheckDescription)desc).isSourceView();
+        }
+        return false;
+    }
     
     
     /**
