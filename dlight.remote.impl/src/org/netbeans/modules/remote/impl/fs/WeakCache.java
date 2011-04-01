@@ -61,13 +61,32 @@ public class WeakCache<K, V> {
     private final ConcurrentMap<K, Ref<K, V>> map;
     private final ReferenceQueue<V> referenceQueue;
     private final Lock lock;
-
+            
     private static class Ref<K, V> extends SoftReference<V> {
         private final K key;
         private Ref(K key, V value, ReferenceQueue<V> referenceQueue) {
             super(value, referenceQueue);
             this.key = key;
         }
+        @Override
+	public boolean equals(Object o) {
+	    if (!(o instanceof Ref)) {
+		return false;
+            }
+	    Ref ref = (Ref)o;
+	    return equalsImpl(key, ref.key) && (get() == ref.get());
+	}
+        
+        @Override
+	public int hashCode() {
+            V value = get();
+	    return (key   == null ? 0 :   key.hashCode()) ^
+		   (value == null ? 0 : value.hashCode());
+	}
+        
+        private static boolean equalsImpl(Object o1, Object o2) {
+            return o1 == null ? o2 == null : o1.equals(o2);
+        }        
     }
 
     public WeakCache() {
@@ -87,19 +106,39 @@ public class WeakCache<K, V> {
         return result;
     }
     
+    public void remove(K key, V expected) {
+        Ref<K, V> expectedRef = new Ref<K, V>(key, expected, referenceQueue);
+        map.remove(key, expectedRef);
+    }
+    
+    public V safePut(K key, V value, V expected) {
+        final Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+        Ref<K, V> expectedRef = new Ref<K, V>(key, expected, referenceQueue);
+        if (map.replace(key, expectedRef, newRef)) {
+            return value;
+        } else {
+            Ref<K, V> curRef = map.get(key);
+            V result = curRef == null ? null : curRef.get();
+            if (result != null) {
+                return result;
+            }
+            
+            // ref was removed of unhold => try to replace it once more
+            expectedRef = new Ref<K, V>(key, null, referenceQueue);
+            if (map.replace(key, expectedRef, newRef)) {
+                return value;
+            }
+        }
+        return null;
+    }
+    
     public V putIfAbsent(K key, V value) {
         Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
         Ref<K, V> oldRef = map.putIfAbsent(key, newRef);
         if (oldRef == null) {
             return value;
         } else {
-            V oldValue = oldRef.get();
-            if (oldValue == null || (oldValue.getClass() != value.getClass())) {
-                map.put(key, newRef);
-                return value;
-            } else {
-                return oldValue;
-            }
+            return oldRef.get();
         }
     }
 

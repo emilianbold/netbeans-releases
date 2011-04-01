@@ -126,13 +126,16 @@ public class RemoteFileObjectFactory {
         }
         if (fo != null && parent.isValid()) {
             fo.invalidate();
+            fileObjectsCache.remove(remotePath, fo);
         }
         fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
         if (fo.isValid()) {
-            return (RemoteDirectory) fileObjectsCache.putIfAbsent(remotePath, fo);
-        } else {
-            return (RemoteDirectory)fo;
+            RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
+            if (result instanceof RemoteDirectory && result.getParent() == parent) {
+                return (RemoteDirectory)result;
+            }
         }
+        return (RemoteDirectory) fo;
     }
 
     public RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
@@ -150,13 +153,16 @@ public class RemoteFileObjectFactory {
         }
         if (fo != null && parent.isValid()) {
             fo.invalidate();
+            fileObjectsCache.remove(remotePath, fo);
         }
         fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);
         if (fo.isValid()) {
-            return (RemotePlainFile) fileObjectsCache.putIfAbsent(remotePath, fo);
-        } else {
-            return (RemotePlainFile)fo;
+            RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
+            if (result instanceof RemotePlainFile && result.getParent() == parent) {
+                return (RemotePlainFile)result;
+            }
         }
+        return (RemotePlainFile) fo;
     }
 
 

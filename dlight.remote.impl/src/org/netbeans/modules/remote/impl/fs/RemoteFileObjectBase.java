@@ -410,6 +410,10 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         return hash;
     }
     
+    protected static String composeName(String name, String ext) {
+        return (ext != null && ext.length() > 0) ? (name + "." + ext) : name;//NOI18N
+    }
+    
    /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
         return new SerializedForm(getExecutionEnvironment(), getPath());
     }
