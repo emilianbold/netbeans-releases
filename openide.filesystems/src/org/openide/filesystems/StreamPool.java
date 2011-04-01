@@ -444,7 +444,7 @@ final class StreamPool extends Object {
         try {
             assert false;
         } catch (AssertionError ex) {
-            annotateUnclosedStreams = annotateProp == null ? true : Boolean.FALSE.toString().equals(annotateProp);
+            annotateUnclosedStreams = annotateProp == null ? true : ! Boolean.FALSE.toString().equals(annotateProp);
         }
         return annotateUnclosedStreams;
     }
