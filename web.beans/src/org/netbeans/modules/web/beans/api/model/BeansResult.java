@@ -40,35 +40,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.navigation.actions;
+package org.netbeans.modules.web.beans.api.model;
 
-import javax.swing.text.JTextComponent;
-
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.filesystems.FileObject;
+import javax.lang.model.element.Element;
 
 
 /**
+ * Common interface for result that contains elements which 
+ * can be enabled/disabled via beans.xml file. 
+ * 
  * @author ads
  *
  */
-public interface ModelActionStrategy {
+public interface BeansResult {
+    
+    boolean isDisabled( Element element );
 
-    public enum InspectActionId {
-        OBSERVERS,
-        EVENTS,
-        INJECTABLES,
-        INTERCEPTORS;
-    }
-    
-    boolean isApplicable( InspectActionId id );
-    
-    boolean isApplicable( WebBeansModel model , Object[] context );
-    
-    void invokeModelAction( WebBeansModel model,
-            MetadataModel<WebBeansModel> metaModel, Object[] subject,
-            JTextComponent component, FileObject fileObject  );
 }
-
-

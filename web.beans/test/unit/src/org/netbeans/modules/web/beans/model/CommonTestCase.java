@@ -53,7 +53,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
@@ -472,53 +472,53 @@ public class CommonTestCase extends JavaSourceTestCase {
     public final void assertFindParameterResultInjectables(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
         assertResultInjectables(result, injectables);
     }
 
     public final void assertFindParameterResultProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
         assertResultProductions(result, injectables);
     }
 
     public final void assertFindParameterResultProductionsVar(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
         assertResultProductions(result, true, injectables);
     }
 
     public final void assertFindVariableResultInjectables(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultInjectables(result, injectables);
     }
 
     public final void assertFindVariableResultProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultProductions(result, injectables);
     }
 
     public final void assertFindVariableResultProductionsVar(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultProductions(result, true, injectables);
     }
 
     public final void assertFindAllProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String productionName , String enclosingClass ) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultAllProductions(result, productionName , enclosingClass );
     }
 
-    public final void assertResultInjectables(Result result, String... injectables) {
+    public final void assertResultInjectables(DependencyInjectionResult result, String... injectables) {
         assertNotNull(result);
         assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
 
@@ -537,11 +537,11 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    public final void assertResultProductions(Result result, String... producers) {
+    public final void assertResultProductions(DependencyInjectionResult result, String... producers) {
         assertResultProductions(result, false, producers);
     }
 
-    public final void assertResultProductions(Result result, boolean variable, String... producers) {
+    public final void assertResultProductions(DependencyInjectionResult result, boolean variable, String... producers) {
         assertNotNull(result);
         assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
 
@@ -567,7 +567,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    public final void assertResultAllProductions(Result result, String productionName , 
+    public final void assertResultAllProductions(DependencyInjectionResult result, String productionName , 
             String enclosingClass) 
     {
         assertNotNull(result);

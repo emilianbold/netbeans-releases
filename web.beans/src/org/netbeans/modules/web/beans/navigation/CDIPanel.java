@@ -98,8 +98,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.api.model.CdiException;
-import org.netbeans.modules.web.beans.api.model.Result;
-import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResolutionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
@@ -132,7 +132,7 @@ abstract class CDIPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    CDIPanel(final Object[] subject, JavaHierarchyModel treeModel ) {
+    CDIPanel(JavaHierarchyModel treeModel ) {
         initComponents();
         myJavaHierarchyModel = treeModel;
         
@@ -196,10 +196,9 @@ abstract class CDIPanel extends javax.swing.JPanel {
         super.removeNotify();
     }
     
-    
     protected abstract void showSelectedCDI();
 
-    protected abstract void reloadContextElement();
+    protected abstract void reloadSubjectElement();
     
     // Hack to allow showing of Help window when F1 or HELP key is pressed.
     @Override
@@ -215,15 +214,15 @@ abstract class CDIPanel extends javax.swing.JPanel {
         return super.processKeyBinding(ks, e, condition, pressed);
     }
     
-    protected JLabel getTypeLabel(){
-        return myTypeLbl;
+    protected JLabel getSubjectElementLabel(){
+        return mySubjectElementbl;
     }
     
-    protected JEditorPane getInitialElementType(){
-        return myType;
+    protected JEditorPane getInitialElement(){
+        return mySubjectElement;
     }
     
-    protected JLabel getInjectionQualifiersLabel(){
+    protected JLabel getSubjectBindingsLabel(){
         return myBindingLbl;
     }
     
@@ -261,6 +260,14 @@ abstract class CDIPanel extends javax.swing.JPanel {
     
     protected JEditorPane getInitialBindingsComponent(){
         return myBindings;
+    }
+    
+    protected JLabel getStereotypesLabel(){
+        return myStereotypesLbl;
+    }
+    
+    protected JLabel getSelectedBindingsLabel(){
+        return mySelectedBindingLbl;
     }
     
     private void enterBusy() {
@@ -469,7 +476,7 @@ abstract class CDIPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 WebBeansNavigationOptions.setShowFQN(myShowFQNToggleButton.isSelected());
                 myJavaHierarchyModel.fireTreeNodesChanged();
-                reloadContextElement();
+                reloadSubjectElement();
                 showSelectedCDI();
             }
         });
@@ -653,8 +660,8 @@ abstract class CDIPanel extends javax.swing.JPanel {
         mySeparator = new javax.swing.JSeparator();
         myBindings = new javax.swing.JEditorPane();
         myBindingLbl = new javax.swing.JLabel();
-        myType = new javax.swing.JEditorPane();
-        myTypeLbl = new javax.swing.JLabel();
+        mySubjectElement = new javax.swing.JEditorPane();
+        mySubjectElementbl = new javax.swing.JLabel();
         mySelectedBindings = new javax.swing.JEditorPane();
         mySelectedBindingLbl = new javax.swing.JLabel();
         myScopeLabel = new javax.swing.JLabel();
@@ -708,12 +715,12 @@ abstract class CDIPanel extends javax.swing.JPanel {
         myBindingLbl.setLabelFor(myBindings);
         org.openide.awt.Mnemonics.setLocalizedText(myBindingLbl, org.openide.util.NbBundle.getMessage(CDIPanel.class, "LBL_Bindings")); // NOI18N
 
-        myType.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
-        myType.setContentType("text/x-java");
-        myType.setEditable(false);
+        mySubjectElement.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
+        mySubjectElement.setContentType("text/x-java");
+        mySubjectElement.setEditable(false);
 
-        myTypeLbl.setLabelFor(myType);
-        org.openide.awt.Mnemonics.setLocalizedText(myTypeLbl, org.openide.util.NbBundle.getMessage(CDIPanel.class, "LBL_Type")); // NOI18N
+        mySubjectElementbl.setLabelFor(mySubjectElement);
+        org.openide.awt.Mnemonics.setLocalizedText(mySubjectElementbl, org.openide.util.NbBundle.getMessage(CDIPanel.class, "LBL_Type")); // NOI18N
 
         mySelectedBindings.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
         mySelectedBindings.setContentType("text/x-java");
@@ -752,10 +759,10 @@ abstract class CDIPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(myBindingLbl)
-                            .add(myTypeLbl))
+                            .add(mySubjectElementbl))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(myType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                            .add(mySubjectElement, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
                             .add(myBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -779,8 +786,8 @@ abstract class CDIPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(myTypeLbl)
-                    .add(myType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(mySubjectElementbl)
+                    .add(mySubjectElement, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(myBindings, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -829,8 +836,8 @@ abstract class CDIPanel extends javax.swing.JPanel {
         myCloseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSD_Close")); // NOI18N
         myBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSN_Bindings")); // NOI18N
         myBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSD_Bindnigs")); // NOI18N
-        myTypeLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSN_Type")); // NOI18N
-        myTypeLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSD_Type")); // NOI18N
+        mySubjectElementbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSN_Type")); // NOI18N
+        mySubjectElementbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSD_Type")); // NOI18N
         mySelectedBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSN_InjectableBindings")); // NOI18N
         mySelectedBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSD_InjectableBindnigs")); // NOI18N
         myScopeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CDIPanel.class, "ACSN_Scope")); // NOI18N
@@ -862,8 +869,8 @@ abstract class CDIPanel extends javax.swing.JPanel {
     private javax.swing.JSplitPane mySplitPane;
     private javax.swing.JEditorPane myStereotypes;
     private javax.swing.JLabel myStereotypesLbl;
-    private javax.swing.JEditorPane myType;
-    private javax.swing.JLabel myTypeLbl;
+    private javax.swing.JEditorPane mySubjectElement;
+    private javax.swing.JLabel mySubjectElementbl;
     // End of variables declaration//GEN-END:variables
     
     private Component myLastFocusedComponent;

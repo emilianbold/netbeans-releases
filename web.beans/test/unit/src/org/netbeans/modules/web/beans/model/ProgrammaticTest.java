@@ -57,8 +57,8 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
-import org.netbeans.modules.web.beans.api.model.Result.ResultKind;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
 
@@ -123,7 +123,7 @@ public class ProgrammaticTest extends CommonTestCase {
                     if ( element.getSimpleName().contentEquals("myField1")){
                         assertTrue ( "myField1 should be recognized as programmatic " +
                         		"injection point",model.isDynamicInjectionPoint(element));
-                        Result injectables = model.lookupInjectables(element, null);
+                        DependencyInjectionResult injectables = model.lookupInjectables(element, null);
                         ResultKind kind = injectables.getKind();
                         assertEquals(ResultKind.INJECTABLES_RESOLVED, kind);
                         check(element, injectables, kind);
@@ -131,10 +131,10 @@ public class ProgrammaticTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myField2")){
                         assertFalse ( "myField2 should be recognized as programmatic " +
                                 "injection point",model.isDynamicInjectionPoint(element));
-                        Result injectables = model.lookupInjectables(element, null);
+                        DependencyInjectionResult injectables = model.lookupInjectables(element, null);
                         ResultKind kind = injectables.getKind();
                         assertEquals(ResultKind.RESOLUTION_ERROR, kind);
-                        assertTrue( injectables instanceof Result.Error );
+                        assertTrue( injectables instanceof DependencyInjectionResult.Error );
                         check(element, injectables, kind);
                     }
                 }
@@ -148,19 +148,19 @@ public class ProgrammaticTest extends CommonTestCase {
         });
     }
     
-    private void check( VariableElement element, Result injectables,
+    private void check( VariableElement element, DependencyInjectionResult injectables,
             ResultKind kind )
     {
-        assertTrue( injectables instanceof Result.ApplicableResult );
-        assertTrue( injectables instanceof Result.ResolutionResult );
+        assertTrue( injectables instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( injectables instanceof DependencyInjectionResult.ResolutionResult );
         Set<TypeElement> typeElements = 
-            ((Result.ApplicableResult)injectables).getTypeElements();
+            ((DependencyInjectionResult.ApplicableResult)injectables).getTypeElements();
         assertEquals("Incorrect number of eligible elemets are found",
                 3, typeElements.size());
         for( TypeElement type : typeElements ){
             if ( type.getQualifiedName().contentEquals("foo.Three")){
                assertTrue(  "foo.Three element is enabled",
-                       ((Result.ApplicableResult)injectables).isDisabled(element));
+                       ((DependencyInjectionResult.ApplicableResult)injectables).isDisabled(element));
             }
         }
     }

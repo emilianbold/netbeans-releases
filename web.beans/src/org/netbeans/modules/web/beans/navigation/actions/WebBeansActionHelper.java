@@ -87,11 +87,14 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.BindingsPanel;
 import org.netbeans.modules.web.beans.navigation.EventsModel;
 import org.netbeans.modules.web.beans.navigation.EventsPanel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
+import org.netbeans.modules.web.beans.navigation.InterceptorsModel;
+import org.netbeans.modules.web.beans.navigation.InterceptorsPanel;
 import org.netbeans.modules.web.beans.navigation.ObserversModel;
 import org.netbeans.modules.web.beans.navigation.ObserversPanel;
 import org.netbeans.modules.web.beans.navigation.ResizablePopup;
@@ -114,6 +117,8 @@ import com.sun.source.util.TreePath;
  */
 public class WebBeansActionHelper {
     
+    private static final String WAIT_NODE = "LBL_WaitNode";     // NOI18N
+
     static final String DELEGATE = "javax.decorator.Delegate";  // NOI18N
 
     static final String DECORATOR = "javax.decorator.Decorator";// NOI18N
@@ -241,11 +246,11 @@ public class WebBeansActionHelper {
                         return variableElement;
                     }
                 }
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(
+                                WebBeansActionHelper.class, 
+                        "LBL_NotDecorator"));
             }
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(
-                            WebBeansActionHelper.class, 
-                    "LBL_NotDecorator"));
             return null;
         }
         return element;
@@ -266,6 +271,46 @@ public class WebBeansActionHelper {
             }
         }
         return false;
+    }
+    
+    static boolean getClassAtDot(
+            final JTextComponent component , final Object[] subject )
+    {
+        JavaSource javaSource = JavaSource.forDocument(component.getDocument());
+        if ( javaSource == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return false;
+        }
+        try {
+            javaSource.runUserActionTask( new Task<CompilationController>(){
+                @Override
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    int dot = component.getCaret().getDot();
+                    TreePath tp = controller.getTreeUtilities()
+                        .pathFor(dot);
+                    Element element = controller.getTrees().getElement(tp );
+                    if ( element == null ){
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(
+                                        WebBeansActionHelper.class, 
+                                "LBL_ElementNotFound"));
+                        return;
+                    }
+                    if ( element instanceof TypeElement ){
+                        subject[0] = ElementHandle.create(element);
+                        subject[1] = element.getSimpleName();
+                        subject[2] = InspectActionId.INTERCEPTORS;
+                    }
+                }
+            }, true );
+        }
+        catch(IOException e ){
+            Logger.getLogger( WebBeansActionHelper.class.getName()).
+                log( Level.WARNING, e.getMessage(), e);
+        }
+                    
+        return subject[0]!=null;
     }
     
     static boolean getMethodAtDot(
@@ -294,7 +339,7 @@ public class WebBeansActionHelper {
                     }
                     if ( element instanceof ExecutableElement ){
                         subject[0] = ElementHandle.create(element);
-                        subject[1] =  element.getSimpleName();
+                        subject[1] = element.getSimpleName();
                         subject[2] = InspectActionId.EVENTS;
                     }
                     else if ( element instanceof VariableElement ){
@@ -311,7 +356,7 @@ public class WebBeansActionHelper {
             }, true );
         }
         catch(IOException e ){
-            Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
+            Logger.getLogger( WebBeansActionHelper.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
                     
@@ -413,7 +458,7 @@ public class WebBeansActionHelper {
     {
         subject[2] = InspectActionId.INJECTABLES;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));           // NOI18N
+                InjectablesModel.class, WAIT_NODE));           // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(WebBeansActionHelper.class,
                 "TITLE_Injectables" , name );//NOI18N
@@ -429,7 +474,7 @@ public class WebBeansActionHelper {
     {
         subject[2] = InspectActionId.EVENTS;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
+                InjectablesModel.class, WAIT_NODE));
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(WebBeansActionHelper.class,
                 "TITLE_Events" , name );//NOI18N
@@ -446,7 +491,7 @@ public class WebBeansActionHelper {
     {
         subject[2] = InspectActionId.OBSERVERS;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                InjectablesModel.class, "LBL_WaitNode"));                // NOI18N
+                InjectablesModel.class, WAIT_NODE));
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(WebBeansActionHelper.class,
                 "TITLE_Observers" , name );//NOI18N
@@ -455,6 +500,23 @@ public class WebBeansActionHelper {
                 model ,uiModel ));
         dialog.setVisible( true );
         
+    }
+    
+    static void showInterceptorsDialog(
+            MetadataModel<WebBeansModel> metaModel, WebBeansModel model,
+            Object[] subject, InterceptorsModel uiModel, String name , 
+            InterceptorsResult result )
+    {
+        subject[2] = InspectActionId.INTERCEPTORS;
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                InjectablesModel.class, WAIT_NODE));
+        JDialog dialog = ResizablePopup.getDialog();
+        String title = NbBundle.getMessage(WebBeansActionHelper.class,
+                "TITLE_Interceptors" , name );//NOI18N
+        dialog.setTitle( title );
+        dialog.setContentPane( new InterceptorsPanel(subject, metaModel, 
+                model ,uiModel , result));
+        dialog.setVisible( true );        
     }
     
     public static VariableElement findVariable( final WebBeansModel model,
@@ -547,4 +609,5 @@ public class WebBeansActionHelper {
             variableAtCaret[2] = InspectActionId.INJECTABLES;
         }
     }
+
 }

@@ -37,11 +37,11 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="myBindingLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="myTypeLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="mySubjectElementbl" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="myType" alignment="0" pref="518" max="32767" attributes="0"/>
+                          <Component id="mySubjectElement" alignment="0" pref="518" max="32767" attributes="0"/>
                           <Component id="myBindings" alignment="0" pref="518" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -74,8 +74,8 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="myTypeLbl" min="-2" max="-2" attributes="0"/>
-                  <Component id="myType" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="mySubjectElementbl" min="-2" max="-2" attributes="0"/>
+                  <Component id="mySubjectElement" min="-2" pref="20" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -320,7 +320,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JEditorPane" name="myType">
+    <Component class="javax.swing.JEditorPane" name="mySubjectElement">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -333,10 +333,10 @@
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="myTypeLbl">
+    <Component class="javax.swing.JLabel" name="mySubjectElementbl">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="myType"/>
+          <ComponentRef name="mySubjectElement"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/beans/navigation/Bundle.properties" key="LBL_Type" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

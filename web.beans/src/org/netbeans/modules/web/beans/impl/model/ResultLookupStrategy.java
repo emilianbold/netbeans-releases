@@ -47,7 +47,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 
 
 /**
@@ -60,7 +60,7 @@ public interface ResultLookupStrategy {
     
     ResultLookupStrategy MULTI_LOOKUP_STRATEGY = new MultiLookupStrategy();
 
-    Result getResult(WebBeansModelImplementation model, Result result );
+    DependencyInjectionResult getResult(WebBeansModelImplementation model, DependencyInjectionResult result );
     
     TypeMirror getType( WebBeansModelImplementation model,
             DeclaredType parent, VariableElement element);

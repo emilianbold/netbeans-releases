@@ -40,35 +40,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.navigation.actions;
+package org.netbeans.modules.web.beans.api.model;
 
-import javax.swing.text.JTextComponent;
+import java.util.List;
 
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.filesystems.FileObject;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 
 /**
  * @author ads
  *
  */
-public interface ModelActionStrategy {
+public interface InterceptorsResult extends Result, BeansResult {
 
-    public enum InspectActionId {
-        OBSERVERS,
-        EVENTS,
-        INJECTABLES,
-        INTERCEPTORS;
-    }
+    /**
+     * Subject element accessor .
+     * @return element which is used for interceptor resolution
+     */
+    Element getElement();
     
-    boolean isApplicable( InspectActionId id );
+    /**
+     * Returns interceptors which have @Interceptor annotation and 
+     * meets the interceptor resolution requirements. 
+     * @return result of interceptor resolution.
+     */
+    List<TypeElement> getResolvedInterceptors();
     
-    boolean isApplicable( WebBeansModel model , Object[] context );
+    /**
+     * Interceptors could be assigned via @Interceptors annotation.
+     * @return explicitly declared interceptors
+     */
+    List<TypeElement> getDeclaredInterceptors();
     
-    void invokeModelAction( WebBeansModel model,
-            MetadataModel<WebBeansModel> metaModel, Object[] subject,
-            JTextComponent component, FileObject fileObject  );
+    /**
+     * The result is union of resolved and declared interceptors.  
+     * @return all available interceptors
+     */
+    List<TypeElement> getAllInterceptors();
+    
 }
-
-

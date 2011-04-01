@@ -58,6 +58,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
 
@@ -398,7 +399,8 @@ public class InterceptorResolutionTest extends CommonTestCase {
     private void checkInterceptors( WebBeansModel model, Element element,
             String... interceptorFqns )
     {
-        Collection<TypeElement> interceptors = model.getInterceptors(element);
+        InterceptorsResult result = model.getInterceptors(element);
+        Collection<TypeElement> interceptors = result.getResolvedInterceptors();
         Set<String> foundIceptors = new HashSet<String>();
         for (TypeElement typeElement : interceptors) {
             String fqn = typeElement.getQualifiedName().toString();

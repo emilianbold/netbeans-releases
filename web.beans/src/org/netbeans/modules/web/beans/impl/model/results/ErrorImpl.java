@@ -46,7 +46,7 @@ package org.netbeans.modules.web.beans.impl.model.results;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result.Error;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.Error;
 
 
 /**

@@ -97,7 +97,7 @@ public final class WebBeansModel {
      * @param parentType parent type of <code>element</code>
      * @return search result information
      */
-    public Result lookupInjectables( VariableElement element , 
+    public DependencyInjectionResult lookupInjectables( VariableElement element , 
             DeclaredType parentType)
     {
         return getProvider().lookupInjectables(element, parentType);
@@ -287,9 +287,9 @@ public final class WebBeansModel {
      * could also have interceptor bindings so this method could be 
      * useful for classes also. 
      * @param element type element or method element
-     * @return resolved interceptors  
+     * @return found interceptors  
      */
-    public Collection<TypeElement> getInterceptors( Element element ){
+    public InterceptorsResult getInterceptors( Element element ){
         return getProvider().getInterceptors( element );
     }
     

@@ -56,7 +56,8 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 
 
 /**
@@ -65,7 +66,7 @@ import org.netbeans.modules.web.beans.api.model.Result;
  */
 public interface WebBeansModelProvider {
 
-    Result lookupInjectables( VariableElement element , DeclaredType parentType);
+    DependencyInjectionResult lookupInjectables( VariableElement element , DeclaredType parentType);
     
     boolean isDynamicInjectionPoint( VariableElement element );
     
@@ -93,7 +94,7 @@ public interface WebBeansModelProvider {
 
     Collection<TypeElement> getDecorators( TypeElement element );
 
-    Collection<TypeElement> getInterceptors( Element element );
+    InterceptorsResult getInterceptors( Element element );
 
     Collection<AnnotationMirror> getInterceptorBindings( Element element );
 

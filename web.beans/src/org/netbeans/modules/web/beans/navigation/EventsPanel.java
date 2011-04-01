@@ -79,7 +79,7 @@ public class EventsPanel extends BindingsPanel {
     }
 
     private void initLabels() {
-        JLabel typeLabel = getTypeLabel();
+        JLabel typeLabel = getSubjectElementLabel();
         Mnemonics.setLocalizedText(typeLabel,NbBundle.getMessage( 
                 ObserversPanel.class, "LBL_ObservedEventType") );       // NOI18N
         typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
@@ -87,7 +87,7 @@ public class EventsPanel extends BindingsPanel {
         typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
                 ObserversPanel.class, "ACSD_ObservedEventType"));       // NOI18N
         
-        JLabel qualifiersLabel= getInjectionQualifiersLabel();
+        JLabel qualifiersLabel= getSubjectBindingsLabel();
         Mnemonics.setLocalizedText(qualifiersLabel,NbBundle.getMessage( 
                 ObserversPanel.class, "LBL_ObservedEventQualifiers") );  // NOI18N
         qualifiersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 

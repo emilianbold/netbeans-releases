@@ -59,7 +59,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
@@ -111,7 +111,7 @@ abstract class FieldInjectionPointLogic {
         return myModel;
     }
     
-    protected Result findVariableInjectable( VariableElement element, 
+    protected DependencyInjectionResult findVariableInjectable( VariableElement element, 
             DeclaredType parentType , ResultLookupStrategy strategy )
     {
         DeclaredType parent = parentType;
@@ -127,7 +127,7 @@ abstract class FieldInjectionPointLogic {
         }
         
         TypeMirror elementType = strategy.getType(getModel(), parent , element );
-        Result result  = doFindVariableInjectable(element, elementType, true);
+        DependencyInjectionResult result  = doFindVariableInjectable(element, elementType, true);
         return strategy.getResult( getModel() , result );
     }
     
@@ -150,7 +150,7 @@ abstract class FieldInjectionPointLogic {
         return parent;
     }
     
-    protected Result doFindVariableInjectable( VariableElement element,
+    protected DependencyInjectionResult doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, boolean injectRequired)
     {
         List<AnnotationMirror> quilifierAnnotations = new LinkedList<AnnotationMirror>();
@@ -421,7 +421,7 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
     
-    private Result createResult( VariableElement element, TypeMirror elementType, 
+    private DependencyInjectionResult createResult( VariableElement element, TypeMirror elementType, 
             Set<TypeElement> types, Set<Element> productions )
     {
         return new ResultImpl(element, elementType, types, productions, 

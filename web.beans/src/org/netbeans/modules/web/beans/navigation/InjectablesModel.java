@@ -74,7 +74,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.filesystems.FileObject;
 
@@ -92,21 +92,22 @@ public final class InjectablesModel extends DefaultTreeModel
     
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
 
-    public InjectablesModel(Result result, 
+    public InjectablesModel(DependencyInjectionResult result, 
             CompilationController controller ,MetadataModel<WebBeansModel> model ) 
     {
         super(null);
         
         myModel = model;
-        if ( result.getKind() == Result.ResultKind.DEFINITION_ERROR || 
-                !( result instanceof Result.ApplicableResult))
+        if ( result.getKind() == DependencyInjectionResult.ResultKind.DEFINITION_ERROR || 
+                !( result instanceof DependencyInjectionResult.ApplicableResult))
         {
             myTypeHandles= Collections.emptyList();
             myProductionHandles = Collections.emptyMap();
             return;
         }
         
-        Result.ApplicableResult applicableResult = (Result.ApplicableResult) result;
+        DependencyInjectionResult.ApplicableResult applicableResult = 
+            (DependencyInjectionResult.ApplicableResult) result;
         Set<TypeElement> typeElements = applicableResult.getTypeElements();
         
         myProductionHandles = new HashMap<ElementHandle<?>, 

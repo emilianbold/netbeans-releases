@@ -46,7 +46,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
@@ -79,7 +79,7 @@ public class MultiLookupStrategy extends SingleResultLookupStrategy {
     }
     
     @Override
-    protected Result filterEnabled( Result result, 
+    protected DependencyInjectionResult filterEnabled( DependencyInjectionResult result, 
             WebBeansModelImplementation model)
     {
         if ( result instanceof ResultImpl ){

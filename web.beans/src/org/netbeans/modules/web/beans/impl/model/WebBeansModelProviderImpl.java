@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.openide.util.NbBundle;
 
 
@@ -104,7 +104,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
      */
     @Override
-    public Result lookupInjectables(VariableElement element, DeclaredType parentType)  {
+    public DependencyInjectionResult lookupInjectables(VariableElement element, DeclaredType parentType)  {
         TypeMirror type = getParameterType(element, null, INSTANCE_INTERFACE);
         if ( type != null ){
             return lookupInjectables(element, parentType , 
@@ -309,7 +309,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
         return result;
     }
     
-    protected Result lookupInjectables( VariableElement element,
+    protected DependencyInjectionResult lookupInjectables( VariableElement element,
             DeclaredType parentType , ResultLookupStrategy strategy)
     {
         /* 

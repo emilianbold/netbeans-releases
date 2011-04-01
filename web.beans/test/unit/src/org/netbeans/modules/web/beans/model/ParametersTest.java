@@ -58,7 +58,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 
@@ -187,7 +187,7 @@ public class ParametersTest extends CommonTestCase {
                         assertFindParameterResultProductions(element, provider);
                     }
                     else if (method.getSimpleName().contentEquals("method4") ){
-                        Result result = provider.findParameterInjectable(element, null);
+                        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
                         assertResultInjectables(result);
                         assertResultProductions(result, true, "productionField");
                     }
@@ -196,7 +196,7 @@ public class ParametersTest extends CommonTestCase {
                         assertFindParameterResultProductions(element, provider, "productionMethod");
                     }
                     else if (method.getSimpleName().contentEquals("method6") ){
-                        Result result = provider.findParameterInjectable(element, null);
+                        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
                         /* Method has no any special annotation. It's argument is not injection point.*/
                         assertTrue( result instanceof DefinitionErrorResult );
                     }

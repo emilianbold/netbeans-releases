@@ -63,6 +63,7 @@ import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
+import org.netbeans.modules.web.beans.impl.model.results.InterceptorsResultImpl;
 
 
 /**
@@ -123,7 +124,7 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInterceptors(javax.lang.model.element.Element)
      */
     @Override
-    public Collection<TypeElement> getInterceptors( Element element ) {
+    public InterceptorsResultImpl getInterceptors( Element element ) {
         Collection<InterceptorObject> interceptors = getModel().
             getInterceptorsManager().getObjects();
         Set<TypeElement> result = new HashSet<TypeElement>();
@@ -138,9 +139,29 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
             }
         }
         filterBindingsByMembers(elementBindings, result, TypeElement.class);
-        return result;
+        return getInterceptorsResult( element , result );
     }
     
+    private InterceptorsResultImpl getInterceptorsResult( Element element,
+            Set<TypeElement> interceptors )
+    {
+        LinkedHashSet<String> interceptorClasses = getModel().getBeansModel().
+            getInterceptorClasses();
+        List<TypeElement> enabledInterceptors = new ArrayList<TypeElement>( 
+                interceptors.size());
+        for (String fqn : interceptorClasses) {
+            TypeElement interceptor = getCompilationController().getElements().
+                getTypeElement(fqn);
+            if ( interceptors.contains( interceptor )){
+                enabledInterceptors.add( interceptor );
+            }
+        }
+        interceptors.removeAll( enabledInterceptors );
+        InterceptorsResultImpl result = new InterceptorsResultImpl( element ,
+               enabledInterceptors , interceptors , getModel().getHelper() );
+        return result;
+    }
+
     static void transitiveVisitAnnotatedElements( Element element,
             List<AnnotationMirror> result, Set<Element> foundElements,
             AnnotationModelHelper helper, TransitiveAnnotationHandler handler )

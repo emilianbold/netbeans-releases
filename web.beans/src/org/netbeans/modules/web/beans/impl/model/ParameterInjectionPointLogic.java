@@ -57,7 +57,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
@@ -83,7 +83,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         super( model );
     }
     
-    protected Result findParameterInjectable( VariableElement element , 
+    protected DependencyInjectionResult findParameterInjectable( VariableElement element , 
             DeclaredType parentType , ResultLookupStrategy strategy ) 
     {
         DeclaredType parent = parentType;
@@ -127,7 +127,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         }
         TypeMirror elementType = strategy.getType( getModel(), parameterTypes.get(index));
         
-        Result result = null;
+        DependencyInjectionResult result = null;
         boolean disposes = AnnotationObjectProvider.hasAnnotation( element, 
                 DISPOSES_ANNOTATION, getModel().getHelper());
         boolean observes = AnnotationObjectProvider.hasAnnotation( element, 

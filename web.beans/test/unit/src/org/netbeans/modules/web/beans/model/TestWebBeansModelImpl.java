@@ -89,6 +89,7 @@ public class TestWebBeansModelImpl extends WebBeansModelImplementation {
         return super.getHelper();
     }
     
+    @Override
     protected BeansModel getBeansModel() {
         return myBeansModel;
     }

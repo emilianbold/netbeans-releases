@@ -65,7 +65,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.CdiException;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.ErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.InjectableResultImpl;
 import org.netbeans.modules.web.beans.impl.model.results.InjectablesResultImpl;
@@ -96,7 +96,7 @@ class EnableBeansFilter {
         isProgrammatic = programmatic;
     }
     
-    Result filter(){
+    DependencyInjectionResult filter(){
         myAlternatives = new HashSet<Element>();
         myEnabledAlternatives = new HashSet<Element>();
         

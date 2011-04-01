@@ -81,9 +81,10 @@ public class ObserversPanel extends BindingsPanel {
      * @see org.netbeans.modules.web.beans.navigation.InjectablesPanel#setInjectableType(javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationController)
      */
     @Override
-    protected void setContextType( TypeMirror typeMirror,
+    protected void setContextElement( Element context,
             CompilationController controller )
     {
+        TypeMirror typeMirror = context.asType();
         TypeMirror parameterType = ((DeclaredType)typeMirror).getTypeArguments().get( 0 );
         super.setContextType(parameterType, controller);
     }
@@ -102,7 +103,7 @@ public class ObserversPanel extends BindingsPanel {
     }
 
     private void initLabels() {
-        JLabel typeLabel = getTypeLabel();
+        JLabel typeLabel = getSubjectElementLabel();
         Mnemonics.setLocalizedText(typeLabel,NbBundle.getMessage( 
                 ObserversPanel.class, "LBL_EventType") );       // NOI18N
         typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
@@ -110,7 +111,7 @@ public class ObserversPanel extends BindingsPanel {
         typeLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 
                 ObserversPanel.class, "ACSD_EventType"));       // NOI18N
         
-        JLabel qualifiersLabel= getInjectionQualifiersLabel();
+        JLabel qualifiersLabel= getSubjectBindingsLabel();
         Mnemonics.setLocalizedText(qualifiersLabel,NbBundle.getMessage( 
                 ObserversPanel.class, "LBL_EventQualifiers") );       // NOI18N
         qualifiersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage( 

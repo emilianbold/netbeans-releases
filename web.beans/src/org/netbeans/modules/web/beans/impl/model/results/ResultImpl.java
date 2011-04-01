@@ -45,7 +45,6 @@ package org.netbeans.modules.web.beans.impl.model.results;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -59,8 +58,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.CdiException;
-import org.netbeans.modules.web.beans.api.model.Result;
-import org.netbeans.modules.web.beans.impl.model.StereotypeChecker;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 import org.openide.util.NbBundle;
 
@@ -69,7 +67,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class ResultImpl extends BaseResult implements Result.ResolutionResult {
+public class ResultImpl extends BaseResult implements DependencyInjectionResult.ResolutionResult {
     
     private static final String ALTERNATIVE = 
         "javax.enterprise.inject.Alternative";   // NOI18N
@@ -135,20 +133,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
      */
     @Override
     public List<AnnotationMirror> getStereotypes( Element element ) {
-        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
-        List<? extends AnnotationMirror> annotationMirrors = 
-            getController().getElements().getAllAnnotationMirrors( element );
-        StereotypeChecker checker = new StereotypeChecker( getHelper());
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            TypeElement annotationElement = (TypeElement)annotationMirror.
-                getAnnotationType().asElement();
-            if ( WebBeansModelProviderImpl.isStereotype( annotationElement, 
-                    checker ) )
-            {
-                result.add( annotationMirror );
-            }
-        }
-        return result; 
+        return InterceptorsResultImpl.getStereotypes(element, getHelper() );
     }
 
     /* (non-Javadoc)

@@ -47,7 +47,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 public class SingleResultLookupStrategy implements ResultLookupStrategy {
@@ -60,7 +60,7 @@ public class SingleResultLookupStrategy implements ResultLookupStrategy {
      * @see org.netbeans.modules.web.beans.impl.model.ResultLookupStrategy#getResult(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, org.netbeans.modules.web.beans.api.model.Result)
      */
     @Override
-    public Result getResult( WebBeansModelImplementation model , Result result ) {
+    public DependencyInjectionResult getResult( WebBeansModelImplementation model , DependencyInjectionResult result ) {
         /*
          * Simple filtering related to production elements types.
          * F.e. there could be injection point with String type.
@@ -96,14 +96,14 @@ public class SingleResultLookupStrategy implements ResultLookupStrategy {
         return typeMirror;
     }
 
-    protected void filterBeans( Result result, WebBeansModelImplementation model ) {
+    protected void filterBeans( DependencyInjectionResult result, WebBeansModelImplementation model ) {
         if ( result instanceof ResultImpl ){
             BeansFilter filter = BeansFilter.get();
             filter.filter(((ResultImpl)result).getTypeElements() );
         }
     }
     
-    protected Result filterEnabled( Result result, 
+    protected DependencyInjectionResult filterEnabled( DependencyInjectionResult result, 
             WebBeansModelImplementation model)
     {
         if ( result instanceof ResultImpl ){

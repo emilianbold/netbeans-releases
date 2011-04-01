@@ -67,11 +67,11 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.api.model.CdiException;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
-import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 
 
 /**
@@ -93,17 +93,13 @@ public class BindingsPanel extends CDIPanel {
     public BindingsPanel( final Object[] subject, MetadataModel<WebBeansModel> metaModel,
             WebBeansModel model, JavaHierarchyModel treeModel, Result result )
     {
-        super(subject, treeModel);
+        super(treeModel);
         
         myModel = metaModel;
         
-        if ( result instanceof Result.ResolutionResult ){
-            myResult = (Result.ResolutionResult)result;
-        }
-        else {
-            setVisibleScope(false);
-            setVisibleStereotypes( false );
-        }
+        myResult = result;
+        setVisibleScope(result instanceof DependencyInjectionResult.ResolutionResult);
+        setVisibleStereotypes( result != null );
         
         if ( model == null ){
             try {
@@ -145,25 +141,32 @@ public class BindingsPanel extends CDIPanel {
         getStereotypesComponent().setVisible( visible );
     }
     
-    protected void setContextType( TypeMirror typeMirror,
+    protected void setContextElement( Element context,
             CompilationController controller )
     {
+        TypeMirror typeMirror  = context.asType();
+        setContextType(typeMirror, controller );
+    }
+
+    protected void setContextType( TypeMirror typeMirror, 
+            CompilationController controller)
+    {
         if ( typeMirror.getKind().isPrimitive()){
-            myShortTypeName.append( typeMirror.getKind().toString().toLowerCase());
-            myFqnTypeName.append(  myShortTypeName);
+            myShortElementName.append( typeMirror.getKind().toString().toLowerCase());
+            myFqnElementName.append(  myShortElementName);
             return;
         }
         if ( typeMirror.getKind() == TypeKind.ARRAY ){
             setContextArrayType( typeMirror , controller );
-            myShortTypeName = myShortTypeName.append("[]");     // NOI18N
-            myFqnTypeName = myFqnTypeName.append("[]");         // NOI18N
+            myShortElementName = myShortElementName.append("[]");     // NOI18N
+            myFqnElementName = myFqnElementName.append("[]");         // NOI18N
         }
         Element element = controller.getTypes().asElement( typeMirror );
         if ( element != null ){
-            myFqnTypeName.append( (element instanceof TypeElement )?
+            myFqnElementName.append( (element instanceof TypeElement )?
                     ((TypeElement)element).getQualifiedName().toString() :
                         element.getSimpleName().toString());
-            myShortTypeName.append(element.getSimpleName().toString());
+            myShortElementName.append(element.getSimpleName().toString());
         }
     }
     
@@ -229,7 +232,102 @@ public class BindingsPanel extends CDIPanel {
         }
     }
     
-    private void doShowSelectedCDI(ElementHandle<?> elementHandle,
+    @Override
+    protected void reloadSubjectElement(){
+        if ( showFqns() ) {
+            getInitialBindingsComponent().setText( getFqnBindings() );
+            getInitialElement().setText(getFqnElementName().toString());
+        }
+        else {
+            getInitialBindingsComponent().setText( getShortBindings() );
+            getInitialElement().setText( getShortElementName().toString());
+        } 
+    }
+    
+    protected StringBuilder getShortElementName(){
+        return myShortElementName;
+    }
+    
+    protected StringBuilder getFqnElementName(){
+        return myFqnElementName;
+    }
+    
+    protected String getFqnBindings(){
+        return myFqnBindings;
+    }
+    
+    protected String getShortBindings(){
+        return myShortBindings;
+    }
+    
+    protected void setFqnBindings( String bindings ){
+        myFqnBindings = bindings;
+    }
+    
+    protected void setShortBindings( String bindings ){
+        myShortBindings = bindings;
+    }
+
+    protected void initBindings( WebBeansModel model, Element element ) {
+        List<AnnotationMirror> qualifiers = model.getQualifiers( element , true );
+        
+        StringBuilder fqnBuilder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
+        if ( model.hasImplicitDefaultQualifier(element)){
+            fqnBuilder.append('@');
+            builder.append('@');
+            fqnBuilder.append(DEFAULT_QUALIFIER_ANNOTATION);
+            builder.append(DEFAULT);
+            fqnBuilder.append(", ");           // NOI18N
+            builder.append(", ");           // NOI18N
+        }
+        
+        for (AnnotationMirror annotationMirror : qualifiers) {
+            appendAnnotationMirror(annotationMirror, fqnBuilder,  true );
+            appendAnnotationMirror(annotationMirror, builder,  false );
+        }
+        if ( fqnBuilder.length() >0 ){
+            myFqnBindings  = fqnBuilder.substring(0 , fqnBuilder.length() -2 );
+            myShortBindings = builder.substring(0 , builder.length() -2 );
+        }
+        else {
+            // this should never happens actually.
+            myFqnBindings = "";
+            myShortBindings = "";
+        }
+        if ( showFqns() ) {
+            getInitialBindingsComponent().setText( myFqnBindings );
+        }
+        else {
+            getInitialBindingsComponent().setText( myShortBindings );
+        }
+    }
+    
+    protected void appendAnnotationMirror( AnnotationMirror mirror , StringBuilder builder , 
+            boolean isFqn )
+    {
+        DeclaredType type = mirror.getAnnotationType();
+        Element annotation = type.asElement();
+        
+        builder.append('@');
+        String annotationName ;
+        if ( isFqn ) {
+            annotationName= ( annotation instanceof TypeElement )?
+                ((TypeElement)annotation).getQualifiedName().toString() : 
+                    annotation.getSimpleName().toString();
+        }
+        else { 
+            annotationName = annotation.getSimpleName().toString();
+        }
+        
+        builder.append( annotationName );
+        
+        appendBindingParamters( mirror , builder );
+        
+        builder.append(", ");           // NOI18N
+    }
+    
+    protected void doShowSelectedCDI(ElementHandle<?> elementHandle,
             WebBeansModel model ) throws CdiException
     {
         Element element = elementHandle.resolve(
@@ -268,11 +366,31 @@ public class BindingsPanel extends CDIPanel {
         }
     }
     
-    private void setScope( WebBeansModel model, Element element )
+    protected void setStereotypes( WebBeansModel model, Element element )
             throws CdiException
     {
         if (getResult() != null) {
-            String scope = getResult().getScope(element);
+            List<AnnotationMirror> stereotypes = getResult().getAllStereotypes(
+                    element);
+            if (stereotypes.isEmpty()) {
+                getStereotypesComponent().setText("");
+                return;
+            }
+            StringBuilder text = new StringBuilder();
+            boolean isFqn = showFqns();
+            for (AnnotationMirror stereotype : stereotypes) {
+                appendAnnotationMirror(stereotype, text, isFqn);
+            }
+            getStereotypesComponent().setText(text.substring(0, text.length() - 2));
+        }
+    }
+    
+    private void setScope( WebBeansModel model, Element element )
+            throws CdiException
+    {
+        if (getResult() instanceof DependencyInjectionResult.ResolutionResult) {
+            String scope = ((DependencyInjectionResult.ResolutionResult)
+                    getResult()).getScope(element);
             if (scope == null) {
                 return;
             }
@@ -295,25 +413,6 @@ public class BindingsPanel extends CDIPanel {
             getScopeComponent().setText(text);
         }
     }
-
-    private void setStereotypes( WebBeansModel model, Element element )
-            throws CdiException
-    {
-        if (getResult() != null) {
-            List<AnnotationMirror> stereotypes = getResult().getAllStereotypes(
-                    element);
-            if (stereotypes.isEmpty()) {
-                getStereotypesComponent().setText("");
-                return;
-            }
-            StringBuilder text = new StringBuilder();
-            boolean isFqn = showFqns();
-            for (AnnotationMirror stereotype : stereotypes) {
-                appendAnnotationMirror(stereotype, text, isFqn);
-            }
-            getStereotypesComponent().setText(text.substring(0, text.length() - 2));
-        }
-    }
     
     private void initCDIContext( Object[] subject, WebBeansModel model ) {
         Element element = null;
@@ -329,47 +428,15 @@ public class BindingsPanel extends CDIPanel {
             return;
         }
         
-        TypeMirror typeMirror  = context.asType();
-        myShortTypeName = new StringBuilder();
-        myFqnTypeName = new StringBuilder();
-        setContextType(typeMirror, model.getCompilationController());
+        myShortElementName = new StringBuilder();
+        myFqnElementName = new StringBuilder();
+        setContextElement(context, model.getCompilationController());
         
-        List<AnnotationMirror> qualifiers = model.getQualifiers( context , true );
+        initBindings(model, context);
         
-        StringBuilder fqnBuilder = new StringBuilder();
-        StringBuilder builder = new StringBuilder();
-        if ( model.hasImplicitDefaultQualifier(element)){
-            fqnBuilder.append('@');
-            builder.append('@');
-            fqnBuilder.append(DEFAULT_QUALIFIER_ANNOTATION);
-            builder.append(DEFAULT);
-            fqnBuilder.append(", ");           // NOI18N
-            builder.append(", ");           // NOI18N
-        }
-        
-        for (AnnotationMirror annotationMirror : qualifiers) {
-            appendAnnotationMirror(annotationMirror, fqnBuilder,  true );
-            appendAnnotationMirror(annotationMirror, builder,  false );
-        }
-        if ( fqnBuilder.length() >0 ){
-            myFqnBindings  = fqnBuilder.substring(0 , fqnBuilder.length() -2 );
-            myShortBindings = builder.substring(0 , builder.length() -2 );
-        }
-        else {
-            // this should never happens actually.
-            myFqnBindings = "";
-            myShortBindings = "";
-        }
-        if ( showFqns() ) {
-            getInitialBindingsComponent().setText( myFqnBindings );
-        }
-        else {
-            getInitialBindingsComponent().setText( myShortBindings );
-        }
-        
-        reloadContextElement();
+        reloadSubjectElement();
     }
-
+    
     private void setContextArrayType( TypeMirror typeMirror,
             CompilationController controller )
     {
@@ -377,30 +444,6 @@ public class BindingsPanel extends CDIPanel {
         setContextType(componentType, controller);
     }
     
-    private void appendAnnotationMirror( AnnotationMirror mirror , StringBuilder builder , 
-            boolean isFqn )
-    {
-        DeclaredType type = mirror.getAnnotationType();
-        Element annotation = type.asElement();
-        
-        builder.append('@');
-        String annotationName ;
-        if ( isFqn ) {
-            annotationName= ( annotation instanceof TypeElement )?
-                ((TypeElement)annotation).getQualifiedName().toString() : 
-                    annotation.getSimpleName().toString();
-        }
-        else { 
-            annotationName = annotation.getSimpleName().toString();
-        }
-        
-        builder.append( annotationName );
-        
-        appendBindingParamters( mirror , builder );
-        
-        builder.append(", ");           // NOI18N
-    }
-
     private void appendBindingParamters( AnnotationMirror mirror,
             StringBuilder builder )
     {
@@ -447,19 +490,7 @@ public class BindingsPanel extends CDIPanel {
         }
     }
     
-    @Override
-    protected void reloadContextElement(){
-        if ( showFqns() ) {
-            getInitialBindingsComponent().setText( myFqnBindings );
-            getInitialElementType().setText(myFqnTypeName.toString());
-        }
-        else {
-            getInitialBindingsComponent().setText( myShortBindings );
-            getInitialElementType().setText(myShortTypeName.toString());
-        } 
-    }
-    
-    private ResolutionResult getResult() {
+    private Result getResult() {
         return myResult;
     }
     
@@ -467,14 +498,14 @@ public class BindingsPanel extends CDIPanel {
         return myModel;
     }
     
-    private StringBuilder myFqnTypeName;
-    private StringBuilder myShortTypeName;
+    private StringBuilder myFqnElementName;
+    private StringBuilder myShortElementName;
     
     private String myFqnBindings;
     private String myShortBindings;
     
     private MetadataModel<WebBeansModel> myModel;
     
-    private Result.ResolutionResult myResult;
+    private Result myResult;
 
 }

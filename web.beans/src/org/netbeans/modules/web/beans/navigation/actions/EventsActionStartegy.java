@@ -118,7 +118,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
         ExecutableElement method = (ExecutableElement)element;
         if ( model.getObserverParameter( method ) == null ){
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
+                    NbBundle.getMessage(EventsActionStartegy.class,
                             "LBL_NotObserverContext"), // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
@@ -136,6 +136,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WebBeansActionHelper.showEventsDialog(metaModel, null , 
                             subject ,uiModel , name );

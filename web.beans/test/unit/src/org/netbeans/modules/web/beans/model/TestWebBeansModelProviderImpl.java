@@ -47,7 +47,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.ResultLookupStrategy;
 import org.netbeans.modules.web.beans.impl.model.SingleResultLookupStrategy;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
@@ -74,14 +74,14 @@ public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
     }
 
     @Override
-    protected Result findParameterInjectable( VariableElement element,
+    protected DependencyInjectionResult findParameterInjectable( VariableElement element,
             DeclaredType parentType, ResultLookupStrategy strategy )
     {
         return super.findParameterInjectable(element, parentType, strategy);
     }
 
     @Override
-    protected Result doFindVariableInjectable( VariableElement element,
+    protected DependencyInjectionResult doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, boolean injectRequired )
     {
         return super.doFindVariableInjectable(element, elementType,
@@ -89,19 +89,19 @@ public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
     }
 
     @Override
-    protected Result findVariableInjectable( VariableElement element,
+    protected DependencyInjectionResult findVariableInjectable( VariableElement element,
             DeclaredType parentType, ResultLookupStrategy strategy )
     {
         return super.findVariableInjectable(element, parentType, strategy );
     }
 
-    protected Result findParameterInjectable( VariableElement element,
+    protected DependencyInjectionResult findParameterInjectable( VariableElement element,
             DeclaredType parentType)
     {
         return findParameterInjectable(element, parentType, SINGLE_STRATEGY);
     }
 
-    protected Result findVariableInjectable( VariableElement element, 
+    protected DependencyInjectionResult findVariableInjectable( VariableElement element, 
             DeclaredType parentType )
     {
         return findVariableInjectable(element, parentType, SINGLE_STRATEGY);
@@ -119,7 +119,7 @@ class TestResultStrategy extends SingleResultLookupStrategy implements ResultLoo
      * @see org.netbeans.modules.web.beans.impl.model.SingleResultLookupStrategy#getResult(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, org.netbeans.modules.web.beans.api.model.Result)
      */
     @Override
-    public Result getResult( WebBeansModelImplementation model, Result result ){
+    public DependencyInjectionResult getResult( WebBeansModelImplementation model, DependencyInjectionResult result ){
         if ( myStartegy != null && ((TestWebBeansModelImpl)model).isFull() ){
             return myStartegy.getResult(model,result);
         }
