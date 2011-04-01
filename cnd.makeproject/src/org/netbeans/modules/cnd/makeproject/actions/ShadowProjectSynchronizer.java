@@ -618,6 +618,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
+        updateLocalConfigurationServerAndPlatform(doc);
         return saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
     }
 
@@ -628,10 +629,7 @@ public class ShadowProjectSynchronizer {
         Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }
 
-    private FileObject updateLocalPrivateConfiguration() throws IOException, SAXException {
-        FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
-        File confXml = FileUtil.toFile(fo);
-        Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
+    private void updateLocalConfigurationServerAndPlatform(Document doc) {
         Element root = doc.getDocumentElement();
         if (root != null) {
             NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
@@ -648,6 +646,13 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
+    }
+    
+    private FileObject updateLocalPrivateConfiguration() throws IOException, SAXException {
+        FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
+        File confXml = FileUtil.toFile(fo);
+        Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
+        updateLocalConfigurationServerAndPlatform(doc);
         return saveXml(doc, localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
     }
 
