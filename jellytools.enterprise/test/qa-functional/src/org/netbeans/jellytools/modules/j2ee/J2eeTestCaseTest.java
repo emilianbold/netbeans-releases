@@ -94,7 +94,7 @@ public class J2eeTestCaseTest extends JellyTestCase {
     
     public void testGlassfishPreferedFromTomcat() throws IOException {
         System.setProperty("glassfish.home", getWorkDirPath());
-        new File(getWorkDir(), "domains/domain1").mkdirs();
+        new File(getWorkDir(), "glassfish/domains/domain1").mkdirs();
         System.setProperty("tomcat.home", getDataDir().getPath());
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(conf).gui(false);
