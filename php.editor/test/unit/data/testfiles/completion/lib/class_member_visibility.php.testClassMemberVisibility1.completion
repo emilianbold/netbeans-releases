@@ -1,4 +1,7 @@
 Code completion result for source line:
 self::|ParentClassConst;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+METHOD     privateParentMethod()           [PRIVATE]  ParentClass
+METHOD     protectedParentMethod()         [PROTECTE  ParentClass
+METHOD     publicParentMethod()            [PUBLIC]   ParentClass
 CONSTANT   ParentClassConst 1              [PUBLIC]   ParentClass

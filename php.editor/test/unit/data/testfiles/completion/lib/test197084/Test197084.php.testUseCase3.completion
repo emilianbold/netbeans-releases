@@ -1,5 +1,7 @@
 Code completion result for source line:
 echo self::|LETTER . "\n";
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+METHOD     display()                       [PUBLIC]   AA
+METHOD     testNonStatic()                 [PUBLIC]   AA
 METHOD     testStatic()                    [STATIC]   AA
 CONSTANT   LETTER 'a'                      [PUBLIC]   AA
