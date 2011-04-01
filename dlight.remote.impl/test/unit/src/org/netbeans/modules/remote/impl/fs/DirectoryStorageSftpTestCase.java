@@ -83,7 +83,7 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
             DirectoryStorage ds1 = new DirectoryStorage(file, Arrays.asList(entry1, dummyEntry));
             ds1.store();
             DirectoryStorage ds2 = DirectoryStorage.load(file);
-            DirEntry entry2 = ds2.getEntry(entry1.getName());
+            DirEntry entry2 = ds2.getValidEntry(entry1.getName());
             assertNotNull("No entry restored for " + entry1.getName(), entry2);
             assertEquals("Name", name, entry2.getName());
             assertTrue(entry2.isValid());
@@ -94,9 +94,9 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
             assertEquals("Size", size, entry2.getSize());
             assertEquals("Timestamp", entry1.getLastModified(), entry2.getLastModified());
             assertEquals("Link", link, entry2.getLinkTarget());
-            DirEntry dummyEntry2 = ds2.getEntry(dummy);
-            assertNotNull(dummyEntry2);
-            assertFalse(dummyEntry2.isValid());
+            DirEntry dummyEntry2 = ds2.getValidEntry(dummy);
+            assertTrue(ds2.isKnown(dummy));
+            assertNull(dummyEntry2);
         } finally {
             file.delete();
         }        

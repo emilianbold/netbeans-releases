@@ -195,27 +195,34 @@ public class DirectoryStorage {
         }
     }
 
-    public DirEntry getEntry(String fileName) {
+    public DirEntry getValidEntry(String fileName) {
         synchronized (this) {
-            return entries.get(fileName);
+            DirEntry ret = entries.get(fileName);
+            return (ret == null || !ret.isValid()) ? null : ret;
         }
     }
     
-    public  DirEntry removeEntry(String fileName) {
+    public boolean isKnown(String fileName) {
         synchronized (this) {
-            return entries.remove(fileName);
+            return entries.containsKey(fileName);
         }
     }
 
-    public List<DirEntry> list() {
+    public List<DirEntry> listAll() {
         synchronized (this) {
             return new ArrayList<DirEntry>(entries.values());
         }
     }
 
-    public int size() {
+    public List<DirEntry> listValid() {
         synchronized (this) {
-            return entries.size();
+            ArrayList<DirEntry> result = new ArrayList<DirEntry>(entries.size());
+            for (DirEntry entry : entries.values()) {
+                if (entry.isValid()) {
+                    result.add(entry);
+                }
+            }
+            return result;
         }
     }
 
