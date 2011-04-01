@@ -731,7 +731,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             boolean selfContext  = false;
+            boolean staticLateBindingContext = false;
             if (varName.equals("self")) { //NOI18N
+                staticContext = true;
                 selfContext = true;
             } else if (varName.equals("parent")) { //NOI18N
                 invalidProposalsForClsMembers = Collections.emptyList();
@@ -743,6 +745,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else if (varName.equals("static")) {
                 staticContext = true;
                 instanceContext = false;
+                staticLateBindingContext = true;
             }
 
             if (types != null) {
@@ -750,7 +753,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (TypeScope typeScope : types) {
                     final StaticOrInstanceMembersFilter staticFlagFilter =
-                            new StaticOrInstanceMembersFilter(staticContext, instanceContext, selfContext);
+                            new StaticOrInstanceMembersFilter(staticContext, instanceContext, selfContext, staticLateBindingContext);
                     
                     final ElementFilter methodsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.METHOD),
@@ -1228,10 +1231,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         private final boolean forSelfContext;
         private final boolean staticAllowed;
         private final boolean nonstaticAllowed;
-        public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext, final boolean forSelfContext) {
+        private final boolean forStaticLateBinding;
+        public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext, 
+                final boolean forSelfContext, final boolean forStaticLateBinding) {
             this.forStaticContext = forStaticContext;
             this.forInstanceContext = forInstanceContext;
             this.forSelfContext = forSelfContext;
+            this.forStaticLateBinding = forStaticLateBinding;
             this.staticAllowed = OptionsUtils.codeCompletionStaticMethods();
             this.nonstaticAllowed = OptionsUtils.codeCompletionNonStaticMethods();
         }
@@ -1257,11 +1263,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         private boolean isAcceptedForStaticContext(final PhpElement element) {
             final boolean isStatic = element.getPhpModifiers().isStatic();
-            return isStatic || (nonstaticAllowed && element.getPhpElementKind().equals(PhpElementKind.METHOD));
+            return isStatic || (nonstaticAllowed && !forStaticLateBinding && element.getPhpElementKind().equals(PhpElementKind.METHOD));
         }
         
         private boolean isAcceptedForSelfContext(final PhpElement element) {
-            return !element.getPhpElementKind().equals(PhpElementKind.FIELD);
+            return forSelfContext && nonstaticAllowed && !element.getPhpElementKind().equals(PhpElementKind.FIELD);
         }
     }
 

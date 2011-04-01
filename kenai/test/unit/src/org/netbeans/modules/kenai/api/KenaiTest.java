@@ -51,8 +51,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -63,7 +61,7 @@ import org.junit.Test;
 public class KenaiTest extends AbstractKenaiTestCase {
 
     private static boolean firstRun = true;
-    private static String UNITTESTUNIQUENAME_BASE = "test";    
+    private static String UNITTESTUNIQUENAME_BASE = "kenaiutestunique";    
     private static String UNITTESTUNIQUENAME; 
     
     public KenaiTest(String S) {
@@ -78,6 +76,9 @@ public class KenaiTest extends AbstractKenaiTestCase {
             UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
             System.out.println("== Name: " + UNITTESTUNIQUENAME);
             firstRun = false;
+            
+            cleanupProjects();
+            
         }        
     }
 
@@ -618,6 +619,19 @@ public class KenaiTest extends AbstractKenaiTestCase {
 
         prj.deleteMember(user);
         assert !getKenai().getMyProjects().contains(prj);
+    }
+
+    private void cleanupProjects() throws KenaiException {
+        Collection<KenaiProject> result = getKenai().getMyProjects();    
+        for (KenaiProject kenaiProject : result) {
+            
+            if( kenaiProject.getName().startsWith(UNITTESTUNIQUENAME_BASE) && 
+                !kenaiProject.getName().equals(TEST_PROJECT) ) 
+            {
+                System.out.println(" testcleanup - deleting [" + kenaiProject.getDisplayName() + "]");
+                kenaiProject.delete();
+            }
+        }
     }
 
     private class FeatureDesc {
