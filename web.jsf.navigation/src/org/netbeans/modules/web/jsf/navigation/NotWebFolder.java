@@ -81,7 +81,7 @@ public class NotWebFolder extends javax.swing.JPanel{
         localTopMessage.setDisabledTextColor (javax.swing.UIManager.getColor ("Label.foreground"));  // NOI18N
         localTopMessage.setFont (javax.swing.UIManager.getFont ("Label.font")); // NOI18N
 
-        StringBuffer lTopMessage = new StringBuffer();
+        StringBuilder lTopMessage = new StringBuilder();
         lTopMessage.append(msg);
         localTopMessage.setText(lTopMessage.toString());
         add(localTopMessage, java.awt.BorderLayout.NORTH);
