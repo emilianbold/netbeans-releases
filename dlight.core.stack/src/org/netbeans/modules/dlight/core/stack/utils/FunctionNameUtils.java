@@ -53,17 +53,29 @@ public final class FunctionNameUtils {
     }
 
     public static SourceFileInfo getSourceFileInfo(String functionSignature) {
-        int indexOf = functionSignature.lastIndexOf("+"); //NOI18N
+        int indexOf = functionSignature.indexOf("+"); //NOI18N
+        int functionOffsetIndex = -1;
         //now we should get source file info (if presented)
         while (indexOf > 0) {
-            if (functionSignature.length() > indexOf + 1
-                    && functionSignature.charAt(indexOf + 1) == '0') { //NOI18N
-                break;
+            if (functionSignature.length() > indexOf + 2
+                    && functionSignature.charAt(indexOf + 1) == '0' && //NOI18N
+                    functionSignature.charAt(indexOf + 2) == 'x') { //NOI18N
+                functionOffsetIndex = indexOf;
             }
             indexOf = functionSignature.indexOf("+", indexOf + 1); //NOI18N
         }
+        //find function qualififed name
+        String functionQualifiedName = getFunctionQName(functionSignature);
+        int prev = indexOf;
+        indexOf = functionSignature.indexOf(functionQualifiedName);
+        if (indexOf >= 0 ){
+            indexOf  = indexOf + functionQualifiedName.length();
+        }
+        if  (indexOf == 0){
+            indexOf = prev;
+        }
         //here we are: after the function offset there could be : which starts file:line
-        int indexOfFile = functionSignature.indexOf(":", indexOf); //NOI18N
+        int indexOfFile = functionSignature.indexOf(":", functionOffsetIndex); //NOI18N
         if (indexOfFile < 0) {
             return null;
         }
