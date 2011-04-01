@@ -1100,7 +1100,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         FunctionCallImpl(Function function, long offset, Map<FunctionMetric, Object> metrics) {
             super(function, offset);
             this.metrics = metrics;
-            SourceFileInfo sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
+            SourceFileInfo sourceFileInfo = null;
+            try{
+                sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
+            }catch(Throwable e){}
             lineNumber = sourceFileInfo == null ? -1 : sourceFileInfo.getLine();
             setLineNumber(lineNumber);
 
