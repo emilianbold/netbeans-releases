@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.impl.model.results;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +52,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -68,6 +70,8 @@ import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
  *
  */
 public class InterceptorsResultImpl implements InterceptorsResult {
+    
+    static final String INTERCEPTORS = "javax.interceptor.Interceptors";    // NOI18N
     
     public InterceptorsResultImpl( Element element , 
             List<TypeElement> enabledInterceptors, 
@@ -153,7 +157,7 @@ public class InterceptorsResultImpl implements InterceptorsResult {
     
 
     private void initDeclaredInterceptors() {
-        myDeclaredInterceptors = new LinkedList<TypeElement>();
+        final LinkedHashSet<TypeElement> result = new LinkedHashSet<TypeElement>();
         AnnotationParser parser = AnnotationParser.create( getHelper());
         parser.expectClassArray("value", new ArrayValueHandler() {
             
@@ -164,12 +168,32 @@ public class InterceptorsResultImpl implements InterceptorsResult {
                     Element element = getController().getTypes().
                         asElement( typeMirror );
                     if ( element instanceof TypeElement ){
-                        myDeclaredInterceptors.add( (TypeElement)element );
+                        result.add( (TypeElement)element );
                     }
                 }
                 return null;
             }
         }, null);
+        Element subjectElement = getElement();
+        if ( subjectElement instanceof ExecutableElement ){
+            TypeElement enclosingType = getController().getElementUtilities().
+                enclosingTypeElement( subjectElement);
+            fillDeclaredAnnotations(parser, enclosingType);
+        }
+        fillDeclaredAnnotations(parser, subjectElement);
+        myDeclaredInterceptors = new ArrayList<TypeElement>( result );
+    }
+
+    private void fillDeclaredAnnotations( AnnotationParser parser,
+            Element subjectElement )
+    {
+        List<? extends AnnotationMirror> annotationMirrors = 
+            getController().getElements().getAllAnnotationMirrors( subjectElement );
+        AnnotationMirror annotationMirror = getHelper().getAnnotationsByType( 
+                annotationMirrors).get(INTERCEPTORS);
+        if ( annotationMirror != null ){
+            parser.parse(annotationMirror);
+        }
     }
     
     static List<AnnotationMirror> getStereotypes( Element element , 

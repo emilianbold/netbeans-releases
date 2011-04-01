@@ -467,6 +467,19 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({TYPE}) "+      
                 "public @interface Interceptor  {" +
                 "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/interceptor/Interceptors.java",
+                "package javax.interceptor; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE,METHOD}) "+      
+                "public @interface Interceptors  {" +
+                " Class<?>[] value(); "+
+                "}");
     }
 
     public final void assertFindParameterResultInjectables(VariableElement element,

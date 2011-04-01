@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -224,6 +225,130 @@ public class InterceptorResolutionTest extends CommonTestCase {
         });
     }
     
+    public void testEnabledInterceptor() throws IOException{
+        createInterceptorBinding("IBinding1");
+        createInterceptorBinding("IBinding2");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "beans.xml",
+                "<?xml  version='1.0' encoding='UTF-8'?> " +
+                "<beans xmlns=\"http://java.sun.com/xml/ns/javaee\">" +
+                "<interceptors> "+
+                    "<class>foo.Iceptor2</class>"+
+                    "<class>foo.Iceptor3</class>"+
+                "</interceptors> " +
+                "</beans>");
+
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "@IBinding1 "+
+                "public class One {" +
+                " void @IBinding2 method1(){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iceptor1.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "@Interceptor "+
+                "@IBinding1 "+
+                "public class Iceptor1 {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iceptor2.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "@Interceptor "+
+                "@IBinding2 "+
+                "public class Iceptor2 {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iceptor3.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "@Interceptor "+
+                "@IBinding2 @IBinding1 "+
+                "public class Iceptor3 {" +
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                checkMethodEnabledInterceptors(model, "foo.One", "method1", 
+                        new String[]{ "foo.Iceptor2" , "foo.Iceptor3"}, "foo.Iceptor1");
+                
+                return null;
+            }
+            
+        });
+    }
+    
+    public void testDeclaredInterceptor() throws IOException{
+        createInterceptorBinding("IBinding1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "beans.xml",
+                "<?xml  version='1.0' encoding='UTF-8'?> " +
+                "<beans xmlns=\"http://java.sun.com/xml/ns/javaee\">" +
+                "<interceptors> "+
+                "</interceptors> " +
+                "</beans>");
+
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "@Interceptors({DeclaredIceptor1.class, DeclaredIceptor2.class}) "+
+                "public class One {" +
+                " void @IBinding1 @Interceptors({DeclaredIceptor3.class}) method(){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iceptor1.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "@Interceptor "+
+                "@IBinding1 "+
+                "public class Iceptor1 {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DeclaredIceptor1.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "public class DeclaredIceptor1 {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DeclaredIceptor2.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "public class DeclaredIceptor2 {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DeclaredIceptor3.java",
+                "package foo; " +
+                "import javax.interceptor.*; "+
+                "public class DeclaredIceptor3 {" +
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                checkInterceptors(model, "foo.One",  false, "foo.DeclaredIceptor1", 
+                        "foo.DeclaredIceptor2" );
+                
+                checkMethodInterceptors(model, "foo.One", "method", false   , 
+                        "foo.DeclaredIceptor1", "foo.DeclaredIceptor2", 
+                        "foo.DeclaredIceptor3");
+                
+                return null;
+            }
+            
+        });
+    }
+    
     public void testInterceptorMixedCases() throws IOException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding1.java",
                 "package foo; " +
@@ -369,14 +494,37 @@ public class InterceptorResolutionTest extends CommonTestCase {
     private void checkInterceptors(WebBeansModel model , String className , 
             String... interceptorFqns)
     {
+        checkInterceptors(model, className, true , interceptorFqns);
+    }
+    
+    private void checkInterceptors(WebBeansModel model , String className , 
+            boolean resolved, String... interceptorFqns)
+    {
         TypeMirror type = model.resolveType( className );
         Element clazz = model.getCompilationController().getTypes().asElement( type );
         
-        checkInterceptors(model, clazz, interceptorFqns);
+        checkInterceptors(model, clazz, resolved , interceptorFqns);
     }
     
-    private void checkMethodInterceptors(WebBeansModel model , String className , 
-            String methodName, String... interceptorFqns)
+    private InterceptorsResult checkMethodInterceptors(WebBeansModel model , 
+            String className , String methodName, String... interceptorFqns)
+    {
+        return checkMethodInterceptors(model, className, methodName, 
+                true, interceptorFqns);
+    }
+    
+    private InterceptorsResult checkMethodInterceptors(WebBeansModel model , 
+            String className , String methodName, boolean resolved ,
+            String... interceptorFqns)
+    {
+        ExecutableElement element = getMethod(model, className, methodName);
+        
+        assertNotNull( element );
+        return checkInterceptors(model, element, resolved, interceptorFqns);
+    }
+
+    private ExecutableElement getMethod( WebBeansModel model, String className,
+            String methodName )
     {
         TypeMirror type = model.resolveType( className );
         Element clazz = model.getCompilationController().getTypes().asElement( type );
@@ -391,16 +539,72 @@ public class InterceptorResolutionTest extends CommonTestCase {
                 break;
             }
         }
+        return element;
+    }
+    
+    private void checkMethodEnabledInterceptors(WebBeansModel model , 
+            String className , String methodName, String[] enabledInterceptors,
+            String...  disabledInterceptors )
+    {
+        List<String> list = new LinkedList<String>( Arrays.asList( enabledInterceptors ));
+        list.addAll( Arrays.asList( disabledInterceptors ));
+        InterceptorsResult result = checkMethodInterceptors(model, className, 
+                methodName, list.toArray( new String[0] ));
         
-        assertNotNull( element );
-        checkInterceptors(model, element, interceptorFqns);
+        Set<String> disabled = new HashSet<String>();
+        Set<String> enabled =  new HashSet<String>();
+        List<TypeElement> allInterceptors = result.getAllInterceptors();
+        for (TypeElement typeElement : allInterceptors) {
+            if ( result.isDisabled(typeElement)){
+                disabled.add( typeElement.getQualifiedName().toString());
+            }
+            else {
+                enabled.add( typeElement.getQualifiedName().toString());
+            }
+        }
+
+        Set<String> requiredEnabled = new HashSet<String>( Arrays.asList( enabledInterceptors));
+        compareCollections(enabled, requiredEnabled, "Not found enabled interceptors :");
+        compareCollections(Arrays.asList( enabledInterceptors), 
+                enabled, "These interceptos are unexpectedly enabled :");
+        
+        Set<String> requiredDisabled = new HashSet<String>( Arrays.asList( disabledInterceptors));
+        compareCollections(disabled, requiredDisabled, "Not found disabled interceptors :");
+        compareCollections(Arrays.asList( disabledInterceptors), 
+                disabled, "These interceptos are unexpectedly disabled :");
+    }
+    
+    private void compareCollections( Collection<String> actual,Set<String> required ,
+            String errorMessage )
+    {
+        required.removeAll( actual );
+        if ( !required.isEmpty()){
+            StringBuilder builder = new StringBuilder();
+            for (String fqn : required) {
+                builder.append( fqn );
+                builder.append(" , ");
+            }
+            assertFalse( errorMessage+ builder.toString() ,true );
+        }
+    }
+    
+    private InterceptorsResult checkInterceptors( WebBeansModel model, Element element,
+            String... interceptorFqns  )
+    {
+        return checkInterceptors(model, element, true , interceptorFqns);
     }
 
-    private void checkInterceptors( WebBeansModel model, Element element,
-            String... interceptorFqns )
+    private InterceptorsResult checkInterceptors( WebBeansModel model, Element element,
+             boolean resolved , String... interceptorFqns )
     {
         InterceptorsResult result = model.getInterceptors(element);
-        Collection<TypeElement> interceptors = result.getResolvedInterceptors();
+        Collection<TypeElement> interceptors = null;
+        if ( resolved ){
+            interceptors = result.getResolvedInterceptors();
+        }
+        else {
+            interceptors = result.getDeclaredInterceptors();
+        }
         Set<String> foundIceptors = new HashSet<String>();
         for (TypeElement typeElement : interceptors) {
             String fqn = typeElement.getQualifiedName().toString();
@@ -421,11 +625,12 @@ public class InterceptorResolutionTest extends CommonTestCase {
         foundIceptors.removeAll(Arrays.asList( interceptorFqns));
         if ( !foundIceptors.isEmpty() ){
             StringBuilder builder = new StringBuilder();
-            for( String fqn : requiredFqns ){
+            for( String fqn : foundIceptors ){
                 builder.append( fqn );
                 builder.append(", ");
             }
             assertFalse("Interceptors "+builder+" found but not expected", true );
         }
+        return result;
     }
 }
