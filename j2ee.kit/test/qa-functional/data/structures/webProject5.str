@@ -10,10 +10,9 @@ src/
 src/conf/
 src/conf/MANIFEST.MF
 src/java/
-test/
 web/
 web/index.jsp
 web/WEB-INF/
-web/WEB-INF/sun-web.xml
+web/WEB-INF/glassfish-web.xml
 web/WEB-INF/web.xml
 build.xml

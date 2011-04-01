@@ -110,7 +110,7 @@ public class LibraryTest extends J2eeTestCase {
         WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
         NewJavaProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
-        WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
+        WizardUtils.setJ2eeSpecVersion(npnlso, "1.4");
         //Create EJB Module:
         String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
         JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);

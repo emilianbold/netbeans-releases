@@ -47,6 +47,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest.NewProjectWizardsTest5;
 
 /**
  *
@@ -72,7 +73,7 @@ public class WizardsJavaEE5Test extends J2eeTestCase {
 
         public Suite() {
             super();
-            addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard"));
+            addTest(new NewProjectWizardsTest5("testEJBModWizard"));
             addTest(new NewFileWizardsTest("testLocalSessionBean"));
             addTest(new NewFileWizardsTest("testRemoteSessionBean"));
             addTest(new NewFileWizardsTest("testLocalRemoteSessionBean"));
@@ -87,16 +88,16 @@ public class WizardsJavaEE5Test extends J2eeTestCase {
             addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb"));
             addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod"));
 
-            addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard"));
+            addTest(new NewProjectWizardsTest5("testWebModWizard"));
             addTest(new NewFileWizardsTest("testServiceLocatorInWeb"));
             addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb"));
             addTest(new NewFileWizardsTest("testPersistenceUnitInWeb"));
             addTest(new NewFileWizardsTest("testEntityClassInWeb"));
             addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod"));
 
-            addTest(new NewProjectWizardsTest("testDefaultAppClientWizard"));
-            addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard"));
-            addTest(new NewProjectWizardsTest("closeProjects"));
+            addTest(new NewProjectWizardsTest5("testAppClientWizard"));
+            addTest(new NewProjectWizardsTest5("testEnterpriseAppWizard"));
+            addTest(new NewProjectWizardsTest5("closeProjects"));
         }
     }
 }
