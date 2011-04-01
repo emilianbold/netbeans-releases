@@ -386,7 +386,11 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 return false;
             }
         }
-
+        if (!ProviderUtil.isValidServerInstanceOrNone(project)){
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class,"ERR_MissingServer")); //NOI18N
+            return false;
+        }
         if (!entityClosure.isModelReady()) {
             RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
 
