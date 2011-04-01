@@ -128,11 +128,12 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(NewProjectWizardsTest4.class);
-        conf = conf.addTest(NewProjectWizardsTest5.class);
-        conf = conf.addTest(NewProjectWizardsTest6.class);
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class);
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest5.class);
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest6.class);
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, conf));
+        return NbModuleSuite.create(conf);
     }
 
     /**
