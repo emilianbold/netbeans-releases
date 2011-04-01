@@ -8,9 +8,11 @@ nbproject/private/
 nbproject/private/private.properties
 src/
 src/conf/
-src/java/
-src/conf/ejb-jar.xml
 src/conf/MANIFEST.MF
-src/conf/sun-ejb-jar.xml
-test/
+src/java/
+web/
+web/index.jsp
+web/WEB-INF/
+web/WEB-INF/glassfish-web.xml
+web/WEB-INF/web.xml
 build.xml
