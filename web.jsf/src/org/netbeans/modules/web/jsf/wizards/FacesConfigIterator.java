@@ -187,11 +187,10 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
 
-        folderPanel = Templates.createSimpleTargetChooser(project, sourceGroups);
-        WizardDescriptor.Panel firstPanel = new JSFValidationPanel(
-                Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel));
+        folderPanel = new JSFValidationPanel(
+                Templates.createSimpleTargetChooser(project, sourceGroups));
 
-        panels = new WizardDescriptor.Panel[] { firstPanel };
+        panels = new WizardDescriptor.Panel[] { folderPanel };
 
         // Creating steps.
         Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
