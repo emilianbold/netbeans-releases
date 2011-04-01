@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -102,6 +102,7 @@ final class StreamPool extends Object {
             ((NotifyInputStream) retVal).setOriginal(abstractFileSystem.info.inputStream(fo.getPath()));
         } else {
             retVal = new InputStream() {
+                        @Override
                         public int read() throws IOException {
                             FileAlreadyLockedException alreadyLockedEx = new FileAlreadyLockedException(fo.getPath());
                             get(fo).annotate(alreadyLockedEx);
@@ -147,6 +148,7 @@ final class StreamPool extends Object {
             ((NotifyOutputStream) retVal).setOriginal(abstractFileSystem.info.outputStream(fo.getPath()));
         } else {
             retVal = new OutputStream() {
+                        @Override
                         public void write(int b) throws IOException {
                             FileAlreadyLockedException alreadyLockedEx = new FileAlreadyLockedException(fo.getPath());
                             get(fo).annotate(alreadyLockedEx);
@@ -367,10 +369,12 @@ final class StreamPool extends Object {
         /** Faster implementation of writing than is implemented in
          * the filter output stream.
          */
+        @Override
         public void write(byte[] b, int off, int len) throws IOException {
             out.write(b, off, len);
         }
 
+        @Override
         public void close() throws IOException {
             if (!closed) {
                 closed = true;
@@ -409,6 +413,7 @@ final class StreamPool extends Object {
             in = is;
         }
 
+        @Override
         public void close() throws IOException {
             if (!closed) {
                 closed = true;
