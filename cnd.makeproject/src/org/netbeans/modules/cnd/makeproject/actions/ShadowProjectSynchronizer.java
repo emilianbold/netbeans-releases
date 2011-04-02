@@ -651,10 +651,13 @@ public class ShadowProjectSynchronizer {
             Element compilerSet = doc.createElement(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
             compilerSet.setTextContent(csNameAndFlavor);
             toolSetNode.appendChild(compilerSet);
-        } else {
+        } 
+        if (!publicConf || version < 70) {
             Element devServer = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
             devServer.setTextContent(ExecutionEnvironmentFactory.toUniqueID(env));
             toolSetNode.appendChild(devServer);
+        }
+        if (!publicConf || version < 72) {
             Element platformElement = doc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
             platformElement.setTextContent(Integer.toString(getPlatform(env)));
             toolSetNode.appendChild(platformElement);            
