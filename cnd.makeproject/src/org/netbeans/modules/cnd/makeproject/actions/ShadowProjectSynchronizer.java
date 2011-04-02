@@ -88,6 +88,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -585,6 +586,7 @@ public class ShadowProjectSynchronizer {
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
+            final int version = getVersion(root);
             String csNameAndFlavor;
             String origCsNameAndFlavor = getOrigCompilerSet(root); //NOI18N
             if (DEFAULT.equals(origCsNameAndFlavor)) {
@@ -605,16 +607,7 @@ public class ShadowProjectSynchronizer {
             if (toolSetList.getLength() > 0) {
                 for(int i = 0; i < toolSetList.getLength(); i++) {
                     Node node = toolSetList.item(i);
-                    removeChildren(node);
-                    Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.FIXED_SYNC_FACTORY_ELEMENT);
-                    remoteMode.setTextContent("full"); //NOI18N
-                    node.appendChild(remoteMode);
-                    remoteMode = doc.createElement(MakeProject.REMOTE_MODE);
-                    remoteMode.setTextContent(RemoteProject.Mode.REMOTE_SOURCES.name());
-                    node.appendChild(remoteMode);
-                    remoteMode = doc.createElement(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
-                    remoteMode.setTextContent(csNameAndFlavor);
-                    node.appendChild(remoteMode);
+                    updateLocalToolSetNode(node, doc, version, csNameAndFlavor, true);
                 }
             }
         }
@@ -632,29 +625,64 @@ public class ShadowProjectSynchronizer {
         FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
-        Element root = doc.getDocumentElement();
+        Element root = doc.getDocumentElement();        
         if (root != null) {
+            final int version = getVersion(root);
             NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
             if (toolSetList.getLength() > 0) {
                 for(int i = 0; i < toolSetList.getLength(); i++) {
                     Node node = toolSetList.item(i);
-                    removeChildren(node);
-                    Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
-                    remoteMode.setTextContent(ExecutionEnvironmentFactory.toUniqueID(env));
-                    node.appendChild(remoteMode);
-                    Element platformElement = doc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
-                    platformElement.setTextContent(Integer.toString(getPlatform(env)));
-                    node.appendChild(platformElement);
+                    updateLocalToolSetNode(node, doc, version, null, false);
                 }
             }
         }
         return saveXml(doc, localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
     }
+    
+    private void updateLocalToolSetNode(Node toolSetNode, Document doc, int version, String csNameAndFlavor, boolean publicConf) {
+        removeChildren(toolSetNode);
+        if (publicConf) {
+            Element syncFactory = doc.createElement(CommonConfigurationXMLCodec.FIXED_SYNC_FACTORY_ELEMENT);
+            syncFactory.setTextContent("full"); //NOI18N
+            toolSetNode.appendChild(syncFactory);
+            Element remoteMode = doc.createElement(MakeProject.REMOTE_MODE);
+            remoteMode.setTextContent(RemoteProject.Mode.REMOTE_SOURCES.name());
+            toolSetNode.appendChild(remoteMode);
+            Element compilerSet = doc.createElement(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
+            compilerSet.setTextContent(csNameAndFlavor);
+            toolSetNode.appendChild(compilerSet);
+        } else {
+            Element devServer = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
+            devServer.setTextContent(ExecutionEnvironmentFactory.toUniqueID(env));
+            toolSetNode.appendChild(devServer);
+            Element platformElement = doc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
+            platformElement.setTextContent(Integer.toString(getPlatform(env)));
+            toolSetNode.appendChild(platformElement);            
+        }
+    }
 
     private static int getPlatform(ExecutionEnvironment env) {
         return CompilerSetManager.get(env).getPlatform();
     }
-
+    
+    private static int getVersion(Element root) {
+        if (root != null) {
+            NamedNodeMap attrs = root.getAttributes();
+            if (attrs != null) {
+                Node versionItem = attrs.getNamedItem(CommonConfigurationXMLCodec.VERSION_ATTR);
+                if (versionItem != null) {
+                    String strVersion = versionItem.getNodeValue();
+                    try {
+                        return Integer.parseInt(strVersion);
+                    } catch (NumberFormatException nfe) {
+                        Exceptions.printStackTrace(nfe);
+                    }
+                }
+            }
+        }
+        return CommonConfigurationXMLCodec.CURRENT_VERSION;
+    }
+    
     private static FileObject getOrCreateFileObject(FileObject dstParent, String name, boolean folder) throws IOException {
         FileObject fo = dstParent.getFileObject(name);
         if (fo != null && fo.isValid() && (fo.isFolder() != folder)) {
