@@ -512,6 +512,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         boolean commandSucceeded = false;
         URL urlToConnectTo = null;
         URLConnection conn = null;
+        HttpURLConnection hconn = null;
         String commandUrl;
         
         try {
@@ -534,7 +535,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
-                        HttpURLConnection hconn = (HttpURLConnection) conn;
+                        hconn = (HttpURLConnection) conn;
 
                         if (conn instanceof HttpsURLConnection) {
                             // let's just trust any server that we connect to...
@@ -645,6 +646,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                         fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
                                 ex.getLocalizedMessage());
                     }
+                } finally {
+                    if (null != hconn) hconn.disconnect();
                 }
                 
                 if(!httpSucceeded && retries > 0) {
