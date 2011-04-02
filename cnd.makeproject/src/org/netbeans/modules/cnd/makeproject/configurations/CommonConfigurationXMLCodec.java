@@ -351,7 +351,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ARCHIVERTOOL_RUN_RANLIB_ELEMENT = "runRanlib"; // NOI18N
     protected final static String ARCHIVERTOOL_VERBOSE_ELEMENT = "archiverVerbose"; // NOI18N
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
-    protected final static String VERSION_ATTR = "version"; // NOI18N
+    public final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
     protected final static String KIND_ATTR = "kind"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
