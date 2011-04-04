@@ -189,7 +189,7 @@ class ErrorLineConvertor implements LineConvertor {
         }
     }
     
-    class LinkOutputListener implements OutputListener {
+    private static class LinkOutputListener implements OutputListener {
         
         private final String message; 
         private final int line;
