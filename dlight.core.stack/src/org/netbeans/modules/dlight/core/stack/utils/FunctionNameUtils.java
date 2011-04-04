@@ -65,6 +65,13 @@ public final class FunctionNameUtils {
         }
         String fileName = _file.substring(0, index);
         String line = _file.substring(index + 1);
+        int lineNumber = -1;
+        try{
+            lineNumber = Integer.valueOf(line);
+        }catch(NumberFormatException e){
+            //if exception is here means something is wrong with the parsing
+            return null;
+        }
         return new SourceFileInfo(fileName, Integer.valueOf(line), 0);
     }
 
