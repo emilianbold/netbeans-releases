@@ -103,10 +103,7 @@ public class RenameTestCase extends RemoteFileTestBase  {
             oldFO.rename(oldFO.lock(), newName, null);
             FileObject newFO = tmpDirFO.getFileObject(newName);
             assertNotNull(newFO);
-            if(newFO != oldFO) {
-                assertTrue("New file object should be valid", newFO.isValid());
-                assertFalse("Old file object should not be valid", oldFO.isValid());                
-            }
+            assertTrue(newFO == oldFO);
         } finally {
             CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
         }

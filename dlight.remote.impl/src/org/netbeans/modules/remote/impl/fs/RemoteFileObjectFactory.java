@@ -84,7 +84,7 @@ public class RemoteFileObjectFactory {
     public RemoteFileObjectBase getCachedFileObject(String path) {
         return fileObjectsCache.get(path);
     }
-    
+
     private void scheduleCleanDeadEntries() {
         cleaningTask.schedule(CLEAN_INTERVAL);
     }
@@ -195,7 +195,13 @@ public class RemoteFileObjectFactory {
         }
         return fo;
     }
-
+    
+    public void rename(String path2Rename, String newPath, RemoteFileObjectBase fo2Rename) {
+        fileObjectsCache.remove(path2Rename, fo2Rename);
+        fo2Rename.renamePath(newPath);
+        fileObjectsCache.putIfAbsent(newPath, fo2Rename);
+    }
+        
     public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {
         RemoteFileObjectBase fo = fileObjectsCache.get(linkRemotePath);
         if (fo != null) {
