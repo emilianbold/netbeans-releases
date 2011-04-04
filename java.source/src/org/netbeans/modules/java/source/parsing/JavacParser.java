@@ -92,6 +92,7 @@ import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
@@ -1089,7 +1090,12 @@ public class JavacParser extends Parser {
                     this.document = doc;
                 }
             } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
-                positions.clear();
+                final Document doc = document;
+                final JTextComponent focused = EditorRegistry.focusedComponent();
+                final Document focusedDoc = focused == null ? null : focused.getDocument();
+                if (doc != null && doc == focusedDoc) {
+                    positions.clear();
+                }
             }
         }
 
@@ -1152,6 +1158,8 @@ public class JavacParser extends Parser {
 
     private static final class EditorRegistryWeakListener extends WeakReference<PropertyChangeListener> implements PropertyChangeListener, Runnable {
 
+        private JTextComponent last;
+
         private EditorRegistryWeakListener(final @NonNull PropertyChangeListener delegate) {
             super(delegate,org.openide.util.Utilities.activeReferenceQueue());
         }
@@ -1159,7 +1167,9 @@ public class JavacParser extends Parser {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final PropertyChangeListener delegate = get();
-            if (delegate != null) {
+            final JTextComponent lastCandidate = EditorRegistry.focusedComponent();
+            if (delegate != null && lastCandidate != null && lastCandidate != last) {
+                last = lastCandidate;
                 delegate.propertyChange(evt);
             }
         }
