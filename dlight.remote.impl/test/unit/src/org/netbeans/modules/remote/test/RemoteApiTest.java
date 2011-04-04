@@ -61,6 +61,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
 import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
+import org.netbeans.modules.remote.impl.fs.RenameTestCase;
 
 /**
  *
@@ -75,6 +76,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            RemoteLinksTestCase.class,
            RemotePathTestCase.class,
            RemoteURLTestCase.class,
+           RenameTestCase.class,
            EscapeWindowsNameTestCase.class,
            CaseSensivityTestCase.class,
            DirectoryStorageSftpTestCase.class,

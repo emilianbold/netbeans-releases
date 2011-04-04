@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -72,7 +73,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     private final RemoteFileSystem fileSystem;
     private final RemoteFileObjectBase parent;
-    private final String remotePath;
+    private volatile String remotePath;
     private final File cache;
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
@@ -340,7 +341,42 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public void rename(FileLock lock, String name, String ext) throws IOException {
-        throw new ReadOnlyException();
+        RemoteFileObjectBase p = getParent();
+        if (p != null) {
+            String newNameExt = composeName(name, ext);
+            if (newNameExt.equals(getNameExt())) {
+                // nothing to rename
+                return;
+            }
+            if (!p.isValid()) {
+                throw new IOException("Can not rename in " + p.getPath());//NOI18N
+            }
+            // Can not rename in read only folder
+            if (!p.canWrite()) {
+                throw new IOException("Can not rename in read only " + p.getPath());//NOI18N
+            }
+            // check there are no other child with such name
+            if (p.getFileObject(newNameExt) != null) {
+                throw new IOException("Can not rename to " + newNameExt);//NOI18N
+            }
+            
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                throw new IOException("No connection: Can not rename in " + p.getPath()); //NOI18N
+            }
+            try {
+                p.renameChild(lock, this, newNameExt);
+            } catch (ConnectException ex) {
+                throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
+            } catch (InterruptedException ex) {
+                InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
+                outEx.initCause(ex);
+                throw outEx;
+            } catch (CancellationException ex) {
+                throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
+            } catch (ExecutionException ex) {
+                throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
+            }
+        }
     }
 
     @Override
@@ -365,6 +401,12 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     public abstract FileType getType();
+    protected abstract void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+
+    final void renamePath(String newPath) {
+        this.remotePath = newPath;
+    }
 
     private static class ReadOnlyException extends IOException {
         public ReadOnlyException() {
