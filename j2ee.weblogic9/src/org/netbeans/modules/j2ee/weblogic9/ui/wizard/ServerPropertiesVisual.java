@@ -303,7 +303,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
         String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
         String versionString = properties.getProperty(WLPluginProperties.DOMAIN_VERSION);
-        Version domainVersion = versionString != null ? Version.fromJsr277NotationWithFallback(versionString) : null;
+        Version domainVersion = versionString != null ? Version.fromJsr277OrDottedNotationWithFallback(versionString) : null;
 
         Boolean isProductionMode = (Boolean)properties.get(
                 WLPluginProperties.PRODUCTION_MODE);

@@ -640,7 +640,8 @@ public final class WLPluginProperties {
     public static boolean isSupportedVersion(Version version) {
         return version != null && (Integer.valueOf(9).equals(version.getMajor())
                     || Integer.valueOf(10).equals(version.getMajor())
-                    || Integer.valueOf(11).equals(version.getMajor()));
+                    || Integer.valueOf(11).equals(version.getMajor())
+                    || Integer.valueOf(12).equals(version.getMajor()));
     }
 
     public static File[] getClassPath(WLDeploymentManager manager) {
@@ -726,7 +727,7 @@ public final class WLPluginProperties {
                 }
                 if (implementationVersion != null) { // NOI18N
                     implementationVersion = implementationVersion.trim();
-                    return Version.fromJsr277NotationWithFallback(implementationVersion);
+                    return Version.fromJsr277OrDottedNotationWithFallback(implementationVersion);
                 }
             } finally {
                 try {
@@ -757,7 +758,7 @@ public final class WLPluginProperties {
             // Retrieve domain version
             if (d.getElementsByTagName("domain-version").getLength() > 0) {
                 String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
-                return  strVersion != null ? Version.fromJsr277NotationWithFallback(strVersion) : null;
+                return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
             }
 
         } catch(FileNotFoundException e) {
