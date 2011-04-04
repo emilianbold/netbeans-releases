@@ -289,12 +289,7 @@ public class NewProjectWizardsTest extends J2eeTestCase {
 
     private Node checkProjectNodes() {
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ie) {
-            //do nothing
-        }
-        assertTrue("Project " + projectName + " is not expanded", node.isExpanded());
+        node.waitExpanded();
         return node;
     }
 }
