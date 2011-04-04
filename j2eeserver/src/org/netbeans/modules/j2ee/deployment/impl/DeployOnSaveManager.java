@@ -72,6 +72,8 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -356,6 +358,8 @@ public final class DeployOnSaveManager {
                 }
                 try {
                     notifyServer(entry.getKey(), entry.getValue());
+                    // run nbjpdaapprealoaded task.
+                    runJPDAAppReloaded();
                 } catch (Throwable t) {
                     // do not throw away any exception:
                     LOGGER.log(Level.SEVERE, null, t);
@@ -470,5 +474,27 @@ public final class DeployOnSaveManager {
                 lastDeploymentStates.put(provider, state);
             }
         }
+        
+        private void runJPDAAppReloaded() {
+            // Hack: run nbjpdaappreloaded ANT task after deploy to fix breakpoints.
+            String reloadedClassName = org.apache.tools.ant.module.api.IntrospectedInfo.getKnownInfo().getDefs("task").get("nbjpdaappreloaded");    // NOI18N
+            String reloadedPackageName = reloadedClassName.substring(0, reloadedClassName.lastIndexOf('.'));
+            try {
+                Map<String, ClassLoader> customDefClassLoaders = (Map<String, ClassLoader>)
+                        Lookup.getDefault().lookup(ClassLoader.class).
+                        loadClass("org.apache.tools.ant.module.bridge.AntBridge").  // NOI18N
+                        getMethod("getCustomDefClassLoaders").invoke(null);         // NOI18N
+                //Class reloadedClass = org.apache.tools.ant.module.bridge.AntBridge.getCustomDefClassLoaders().get(reloadedPackageName).loadClass(reloadedClassName);
+                ClassLoader reloadedClassLoader = customDefClassLoaders.get(reloadedPackageName);
+                if (reloadedClassLoader != null) {
+                    Class reloadedClass = reloadedClassLoader.loadClass(reloadedClassName);
+                    reloadedClass.getMethod("execute").invoke(reloadedClass.newInstance());
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
     }
+    
 }
