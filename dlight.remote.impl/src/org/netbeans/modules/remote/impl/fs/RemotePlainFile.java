@@ -167,6 +167,13 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
+    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        // plain file can not be container of children
+        RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
+    }
+
+    @Override
     public OutputStream getOutputStream(FileLock lock) throws IOException {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N

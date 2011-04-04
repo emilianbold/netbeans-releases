@@ -79,6 +79,7 @@ import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
 
 /**
@@ -88,7 +89,6 @@ import org.openide.util.Exceptions;
 public class RemoteDirectory extends RemoteFileObjectBase {
 
     private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
-    private static boolean LS_VIA_SFTP = ! Boolean.getBoolean("remote.parse.ls");
 
     private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);
     private static final class RefLock {}
@@ -111,13 +111,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public RemoteFileObjectBase getFileObject(String name, String ext) {
-         return getFileObject(name + '.' + ext); // NOI18N
+         return getFileObject(composeName(name, ext));
     }
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
         try {
             DirectoryStorage storage = getDirectoryStorage(childNameExt);
-            DirEntry entry = storage.getEntry(childNameExt);
+            DirEntry entry = storage.getValidEntry(childNameExt);
             return entry != null && entry.canWrite(getExecutionEnvironment()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             throw ex; // don't report
@@ -138,7 +138,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(childNameExt);
-            DirEntry entry = storage.getEntry(childNameExt);
+            DirEntry entry = storage.getValidEntry(childNameExt);
             return entry != null && entry.canRead(getExecutionEnvironment());
         } catch (ConnectException ex) {
             return false; // don't report
@@ -163,11 +163,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     
     @Override
     public FileObject createData(String name, String ext) throws IOException {
-        if (ext == null || ext.length() == 0) {
-            return create(name, false);
-        } else {
-            return create(name + '.' + ext, false);
-        }
+        return create(composeName(name, ext), false);
     }
 
     @Override
@@ -276,7 +272,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         RemoteLogger.assertTrue(slashPos == -1);
         try {
             DirectoryStorage storage = getDirectoryStorage(relativePath);
-            DirEntry entry = storage.getEntry(relativePath);
+            DirEntry entry = storage.getValidEntry(relativePath);
             if (entry == null) {
                 return null;
             }
@@ -338,8 +334,48 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return fo;
     }
 
+    @Override
+    protected RemoteFileObjectBase[] getExistentChildren() {
+        return getExistentChildren(getExistingDirectoryStorage());
+    }
+    
+    private DirectoryStorage getExistingDirectoryStorage() {
+        
+        DirectoryStorage storage;
+        synchronized (refLock) {
+            storage = storageRef.get();
+        }
+        if (storage == null) {
+            File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+            if (storageFile.exists()) {
+                Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
+                try  {
+                    if (readLock.tryLock()) {
+                        try {
+                            storage = DirectoryStorage.load(storageFile);
+                        } catch (FormatException e) {
+                            Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
+                            RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
+                            storageFile.delete();
+                        } catch (InterruptedIOException e) {
+                            // nothing
+                        } catch (FileNotFoundException e) {
+                            // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
+                            RemoteLogger.finest(e);
+                        } catch (IOException e) {
+                            RemoteLogger.finest(e);
+                        }
+                    }
+                } finally {
+                    readLock.unlock();
+                }
+            }
+        }
+        return  storage == null ? DirectoryStorage.EMPTY : storage;
+    }
+    
     private RemoteFileObjectBase[] getExistentChildren(DirectoryStorage storage) {
-        List<DirEntry> entries = storage.list();
+        List<DirEntry> entries = storage.listValid();
         List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
         for (DirEntry entry : entries) {
             String path = getPath() + '/' + entry.getName();
@@ -354,8 +390,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public RemoteFileObjectBase[] getChildren() {
         try {
+            if (!isValid()) {
+                int i = 0;
+            }
             DirectoryStorage storage = getDirectoryStorage(null);
-            List<DirEntry> entries = storage.list();
+            List<DirEntry> entries = storage.listValid();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirEntry entry = entries.get(i);
@@ -410,7 +449,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
         
-    private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared"); //NOI18N
+    private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared", "/home"); //NOI18N
     
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
@@ -428,19 +467,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (childName != null) {
             String absPath = getPath() + '/' + childName;
-            RemoteLogger.assertTrueInConsole(oldStorage.getEntry(childName) == null || forceRefresh, "should not get here: " + absPath); //NOI18N
+            RemoteLogger.assertTrueInConsole(!oldStorage.isKnown(childName) || forceRefresh, "should not get here: " + absPath); //NOI18N
             if (!newEntries.containsKey(childName)) {
                 DirEntry entry = getSpecialDirChildEntry(absPath, childName);
                 newEntries.put(entry.getName(), entry);
             }
         }
-        for (DirEntry oldEntry : oldStorage.list()) {
+        for (DirEntry oldEntry : oldStorage.listAll()) {
             String oldChildName = oldEntry.getName();
             if (!newEntries.containsKey(oldChildName)) {
                 if (forceRefresh) {
-                    String absPath = getPath() + '/' + oldChildName;
-                    DirEntry newEntry = getSpecialDirChildEntry(absPath, oldChildName);
-                    newEntries.put(oldChildName, newEntry);
+                    if (oldEntry.isValid()) {
+                        String absPath = getPath() + '/' + oldChildName;
+                        DirEntry newEntry = getSpecialDirChildEntry(absPath, oldChildName);
+                        newEntries.put(oldChildName, newEntry);
+                    }
                 } else {
                     newEntries.put(oldChildName, oldEntry);
                 }
@@ -450,7 +491,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
-        FileInfoProvider.StatInfo statInfo = FileInfoProvider.stat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
+        FileInfoProvider.StatInfo statInfo;
+        try {
+            statInfo = FileInfoProvider.stat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
+        } catch (ExecutionException e) {
+            if (isFileNotFoundException(e)) {
+                statInfo = null;
+            } else {
+                throw e;
+            }
+        }
         DirEntry entry = (statInfo == null) ? new DirEntryInvalid(childName) : new DirEntrySftp(statInfo, statInfo.getName());
         return entry;
     }
@@ -473,7 +523,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     
     private boolean isAlreadyKnownChild(DirectoryStorage storage, String childName) {
         if (childName != null && storage != null) {
-            if (storage.getEntry(childName) == null) {
+            if (!storage.isKnown(childName)) {
                 if (ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     if (isSpecialDirectory()) {
                         return false;
@@ -482,6 +532,236 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
         }
         return true;
+    }
+    
+    @Override
+    protected final void renameChild(FileLock lock, RemoteFileObjectBase directChild2Rename, String newNameExt) throws 
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        String nameExt2Rename = directChild2Rename.getNameExt();
+        String name2Rename = directChild2Rename.getName();
+        String ext2Rename = directChild2Rename.getExt();
+        String path2Rename = directChild2Rename.getPath();
+        File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+
+        checkConnection(this, true);
+
+        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        if (trace) {trace("waiting for lock");} // NOI18N
+        writeLock.lock();
+        try {
+            DirectoryStorage storage = getExistingDirectoryStorage();
+            if (storage.getValidEntry(nameExt2Rename) == null) {
+                throw new IOException(nameExt2Rename + " is not an existing child of " + this); // NOI18N
+            }
+            if (!getCache().exists()) {
+                getCache().mkdirs();
+                if (!getCache().exists()) {
+                    throw new IOException("Can not create cache directory " + getCache()); // NOI18N
+                }
+            }
+            if (trace) {trace("renaming");} // NOI18N
+            ProcessUtils.ExitStatus ret = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "mv", nameExt2Rename, newNameExt);// NOI18N
+            if (!ret.isOK()) {
+                throw new IOException(ret.error);
+            }
+            
+            if (trace) {trace("synchronizing");} // NOI18N
+            Exception problem = null;
+            Map<String, DirEntry> newEntries = Collections.emptyMap();
+            try {
+                newEntries = readEntries(storage, true, newNameExt);
+            } catch (FileNotFoundException ex) {
+                throw ex;
+            } catch (IOException ex) {
+                problem = ex;
+            } catch (ExecutionException ex) {
+                problem = ex;
+            }
+            if (problem != null) {
+                if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                    // connection was broken while we read directory content - add notification
+                    getFileSystem().getRemoteFileSupport().addPendingFile(this);
+                    throw new ConnectException(problem.getMessage());
+                } else {
+                    boolean fileNotFoundException = isFileNotFoundException(problem);
+                    if (fileNotFoundException) {
+                        this.invalidate();
+                        synchronized (refLock) {
+                            storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
+                        }
+                    }
+                    if (!fileNotFoundException) {
+                        if (problem instanceof IOException) {
+                            throw (IOException) problem;
+                        } else if (problem instanceof ExecutionException) {
+                            throw (ExecutionException) problem;
+                        } else {
+                            throw new IllegalStateException("Unexpected exception class: " + problem.getClass().getName(), problem); //NOI18N
+                        }
+                    }
+                }
+            }
+            getFileSystem().incrementDirSyncCount();
+            Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
+            boolean hasDups = false;
+            boolean changed = true;
+            Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
+            List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
+            List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
+            List<FileObject> filesToFireDeleted = new ArrayList<FileObject>();
+            for (DirEntry newEntry : newEntries.values()) {
+                if (newEntry.isValid()) {
+                    String cacheName;
+                    DirEntry oldEntry = storage.getValidEntry(newEntry.getName());
+                    if (oldEntry == null) {
+                        cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                        if (newEntry.getName().equals(newNameExt)) {
+                            DirEntry renamedEntry = storage.getValidEntry(nameExt2Rename);
+                            RemoteLogger.assertTrueInConsole(renamedEntry != null, "original DirEntry is absent for " + path2Rename + " in " + this); // NOI18N
+                            // reuse cache from original file
+                            if (renamedEntry != null) {
+                                cacheName = renamedEntry.getCache();
+                                newEntry.setCache(cacheName);
+                                keepCacheNames.add(newEntry);
+                            }
+                        } else {
+                            entriesToFireCreated.add(newEntry);
+                        }
+                    } else {
+                        if (oldEntry.isSameType(newEntry)) {
+                            cacheName = oldEntry.getCache();
+                            keepCacheNames.add(newEntry);
+                            boolean fire = false;
+                            if (!newEntry.isSameLastModified(oldEntry)) {
+                                if (newEntry.isPlainFile()) {
+                                    changed = fire = true;
+                                    File entryCache = new File(getCache(), oldEntry.getCache());
+                                    if (entryCache.exists()) {
+                                        if (trace) {trace("removing cache for updated file {0}", entryCache.getAbsolutePath());} // NOI18N
+                                        entryCache.delete(); // TODO: We must just mark it as invalid instead of physically deleting cache file...
+                                    }
+                                }
+                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
+                                changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event 
+                                getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
+                            } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                                changed = fire = true;
+                            } else if (!newEntry.isSameUser(oldEntry)) {
+                                changed = fire = true;
+                            } else if (!newEntry.isSameGroup(oldEntry)) {
+                                changed = fire = true;
+                            } else if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
+                                changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
+                            }
+                            if (fire) {
+                                entriesToFireChanged.add(newEntry);
+                            }
+                        } else {
+                            changed = true;
+                            FileObject removedFO = invalidate(oldEntry);
+                            // remove old
+                            if (removedFO != null) {
+                                filesToFireDeleted.add(removedFO);
+                            }
+                            // add new 
+                            entriesToFireCreated.add(newEntry);
+                            cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                        }
+                    }
+                    newEntry.setCache(cacheName);
+                    String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
+                    List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
+                    if (dupEntries == null) {
+                        dupEntries = new ArrayList<DirEntry>();
+                        dupLowerNames.put(lowerCacheName, dupEntries);
+                    } else {
+                        hasDups = true;
+                    }
+                    dupEntries.add(newEntry);
+                } else {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                // Check for removal
+                for (DirEntry oldEntry : storage.listValid()) {
+                    if (!oldEntry.getName().equals(nameExt2Rename)) {
+                        DirEntry newEntry = newEntries.get(oldEntry.getName());
+                        if (newEntry == null || !newEntry.isValid()) {
+                            FileObject removedFO = invalidate(oldEntry);
+                            if (removedFO != null) {
+                                filesToFireDeleted.add(removedFO);
+                            }
+                        }
+                    }
+                }
+                if (hasDups) {
+                    for (Map.Entry<String, List<DirEntry>> mapEntry :
+                            new ArrayList<Map.Entry<String, List<DirEntry>>>(dupLowerNames.entrySet())) {
+
+                        List<DirEntry> dupEntries = mapEntry.getValue();
+                        if (dupEntries.size() > 1) {
+                            for (int i = 0; i < dupEntries.size(); i++) {
+                                DirEntry entry = dupEntries.get(i);
+                                if (keepCacheNames.contains(entry)) {
+                                    continue; // keep the one that already exists
+                                }
+                                // all duplicates will have postfix
+                                for (int j = 0; j < Integer.MAX_VALUE; j++) {
+                                    String cacheName = mapEntry.getKey() + '_' + j;
+                                    String lowerCacheName = cacheName.toLowerCase();
+                                    if (!dupLowerNames.containsKey(lowerCacheName)) {
+                                        if (trace) {
+                                            trace("resolving cache names conflict in {0}: {1} -> {2}", // NOI18N
+                                                    getCache().getAbsolutePath(), entry.getCache(), cacheName);
+                                        }
+                                        entry.setCache(cacheName);
+                                        dupLowerNames.put(lowerCacheName, Collections.singletonList(entry));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                storage = new DirectoryStorage(storageFile, newEntries.values());
+                storage.store();
+            } else {
+                storage.touch();
+            }
+            // always put new content in cache 
+            // do it before firing events, to give liseners real content
+            synchronized (refLock) {
+                storageRef = new SoftReference<DirectoryStorage>(storage);
+            }
+            // fire all event under lock
+            if (changed) {
+                for (FileObject deleted : filesToFireDeleted) {
+                    fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
+                }
+                for (DirEntry entry : entriesToFireCreated) {
+                    RemoteFileObjectBase fo = createFileObject(entry);
+                    fireRemoteFileObjectCreated(fo);
+                }
+                for (DirEntry entry : entriesToFireChanged) {
+                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+                    if (fo != null) {
+                        fireFileChangedEvent(getListeners(), new FileEvent(fo));
+                    }
+                }
+                // rename itself
+                String newPath = getPath() + '/' + newNameExt;
+                getFileSystem().getFactory().rename(path2Rename, newPath, directChild2Rename);
+                // fire rename
+                fireFileRenamedEvent(directChild2Rename.getListeners(), new FileRenameEvent(directChild2Rename, directChild2Rename, name2Rename, ext2Rename));
+                fireFileRenamedEvent(this.getListeners(), new FileRenameEvent(this, directChild2Rename, name2Rename, ext2Rename));
+            }
+        } finally {
+            writeLock.unlock();
+        }        
+        if (directChild2Rename.isFolder()) {
+            directChild2Rename.refreshImpl(true);
+        }
     }
 
     private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName) throws
@@ -600,81 +880,84 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
                 } else {
-                    if (isFileNotFoundException(problem)) {
+                    boolean fileNotFoundException = isFileNotFoundException(problem);
+                    if (fileNotFoundException) {
                         synchronized (refLock) {
-                            storageRef = new SoftReference<DirectoryStorage>(null);
+                            storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
                         }
                     }
-                    if (problem instanceof IOException) { 
-                        throw (IOException) problem;
-                    } else if (problem instanceof ExecutionException) {
-                        throw (ExecutionException) problem;
-                    } else {
-                        throw new IllegalStateException("Unexpected exception class: " + problem.getClass().getName(), problem); //NOI18N
+                    if (!fileNotFoundException) { 
+                        if (problem instanceof IOException) { 
+                            throw (IOException) problem;
+                        } else if (problem instanceof ExecutionException) {
+                            throw (ExecutionException) problem;
+                        } else {
+                            throw new IllegalStateException("Unexpected exception class: " + problem.getClass().getName(), problem); //NOI18N
+                        }
                     }
                 }
             }
             getFileSystem().incrementDirSyncCount();
             Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
             boolean hasDups = false;
-            boolean changed = (newEntries.size() != storage.size()) || storage == DirectoryStorage.EMPTY;
+            boolean changed = (newEntries.size() != storage.listAll().size()) || (storage == DirectoryStorage.EMPTY);
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
             List<FileObject> filesToFireDeleted = new ArrayList<FileObject>();
             for (DirEntry newEntry : newEntries.values()) {
-                String cacheName;
-                DirEntry oldEntry = storage.getEntry(newEntry.getName());
-                if (oldEntry == null) {
-                    changed = true;
-                    cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
-                    if (fromMemOrDiskCache || newEntry.getName().equals(expectedName)) {
-                        entriesToFireCreated.add(newEntry);
-                    }
-                } else {
-                    if (oldEntry.isSameType(newEntry)) {
-                        cacheName = oldEntry.getCache();
-                        keepCacheNames.add(newEntry);
-                        boolean fire = false;
-                        if (!newEntry.isSameLastModified(oldEntry)) {
-                            changed = fire = true;
-                            if (newEntry.isPlainFile()) {
-                                File entryCache = new File(getCache(), oldEntry.getCache());
-                                if (entryCache.exists()) {
-                                    if (trace) { trace("removing cache for updated file {0}", entryCache.getAbsolutePath()); } // NOI18N
-                                    entryCache.delete(); // TODO: We must just mark it as invalid instead of physically deleting cache file...
-                                }
-                            } 
-                        } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
-                            changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event 
-                            getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
-                        } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
-                            changed = fire = true;
-                        } else if (!newEntry.isSameUser(oldEntry)) {
-                            changed = fire = true;
-                        } else if (!newEntry.isSameGroup(oldEntry)) {
-                            changed = fire = true;
-                        } else if (newEntry.getSize() != oldEntry.getSize()) {
-                            changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
-                        }
-                        if (fire) {
-                            entriesToFireChanged.add(newEntry);
+                if (newEntry.isValid()) {
+                    String cacheName;
+                    DirEntry oldEntry = storage.getValidEntry(newEntry.getName());
+                    if (oldEntry == null || !oldEntry.isValid()) {
+                        changed = true;
+                        cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                        if (fromMemOrDiskCache || newEntry.getName().equals(expectedName)) {
+                            entriesToFireCreated.add(newEntry);
                         }
                     } else {
-                        changed = true;
-                        FileObject removedFO = invalidate(oldEntry);
-                        // remove old
-                        if (removedFO != null) {
-                            filesToFireDeleted.add(removedFO);
+                        if (oldEntry.isSameType(newEntry)) {
+                            cacheName = oldEntry.getCache();
+                            keepCacheNames.add(newEntry);
+                            boolean fire = false;
+                            if (!newEntry.isSameLastModified(oldEntry)) {
+                                if (newEntry.isPlainFile()) {
+                                    changed = fire = true;
+                                    File entryCache = new File(getCache(), oldEntry.getCache());
+                                    if (entryCache.exists()) {
+                                        if (trace) { trace("removing cache for updated file {0}", entryCache.getAbsolutePath()); } // NOI18N
+                                        entryCache.delete(); // TODO: We must just mark it as invalid instead of physically deleting cache file...
+                                    }
+                                } 
+                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
+                                changed = fire = true; // TODO: we forgot old link path, probably should be passed to change event 
+                                getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
+                            } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                                changed = fire = true;
+                            } else if (!newEntry.isSameUser(oldEntry)) {
+                                changed = fire = true;
+                            } else if (!newEntry.isSameGroup(oldEntry)) {
+                                changed = fire = true;
+                            } else if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
+                                changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
+                            }
+                            if (fire) {
+                                entriesToFireChanged.add(newEntry);
+                            }
+                        } else {
+                            changed = true;
+                            FileObject removedFO = invalidate(oldEntry);
+                            // remove old
+                            if (removedFO != null) {
+                                filesToFireDeleted.add(removedFO);
+                            }
+                            // add new 
+                            entriesToFireCreated.add(newEntry);
+                            cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
                         }
-                        // add new 
-                        entriesToFireCreated.add(newEntry);
-                        cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
                     }
-                }
-                newEntry.setCache(cacheName);
-                if (!RemoteFileSystemUtils.isSystemCaseSensitive()) {
-                    String lowerCacheName = newEntry.getCache().toLowerCase();
+                    newEntry.setCache(cacheName);
+                    String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                     List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
                         dupEntries = new ArrayList<DirEntry>();
@@ -683,12 +966,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         hasDups = true;
                     }
                     dupEntries.add(newEntry);
+                } else {
+                    if (!storage.isKnown(childName)) {
+                        changed = true;
+                    }
                 }
             }
             if (changed) {
                 // Check for removal
-                for (DirEntry oldEntry : storage.list()) {
-                    if (!newEntries.containsKey(oldEntry.getName())) {
+                for (DirEntry oldEntry : storage.listValid()) {
+                    DirEntry newEntry = newEntries.get(oldEntry.getName());
+                    if (newEntry == null || !newEntry.isValid()) {
                         FileObject removedFO = invalidate(oldEntry);
                         if (removedFO != null) {
                             filesToFireDeleted.add(removedFO);
@@ -723,7 +1011,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     }
                 }
                 storage = new DirectoryStorage(storageFile, newEntries.values());
-                storage.store();
+                storage.store();  
             } else {
                 storage.touch();
             }
@@ -747,6 +1035,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         fireFileChangedEvent(getListeners(), new FileEvent(fo));
                     }
                 }
+                //fireFileChangedEvent(getListeners(), new FileEvent(this));
             }
         } finally {
             writeLock.unlock();
@@ -906,7 +1195,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             DirectoryStorage directoryStorage = getDirectoryStorage(child.getNameExt());
             if (directoryStorage != null) {
-                DirEntry entry = directoryStorage.getEntry(child.getNameExt());
+                DirEntry entry = directoryStorage.getValidEntry(child.getNameExt());
                 if (entry != null) {
                     return entry;
                 } else {
@@ -941,5 +1230,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return childEntry.getLastModified();
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
-    } 
+    }
+    
+    /** for tests ONLY! */
+    /*package*/ DirectoryStorage testGetExistingDirectoryStorage() {
+        return getExistingDirectoryStorage();
+    }    
 }

@@ -902,17 +902,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private Item createItem(String path) {
         Project project = projectDescriptor.getProject();
-        FileObject projectDirFO = project.getProjectDirectory();
         if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            FileObject baseDirFO = remoteProject.getSourceBaseDirFileObject();
             if (FileSystemProvider.isAbsolute(path)) {
                 FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
                 if (itemFO == null) {
                     return new Item(path); //XXX:fullRemote
                 } else {
-                    return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
+                    return new Item(itemFO, baseDirFO, ProjectSupport.getPathMode(project));
                 }
-            } else {
-                return new Item(path); //XXX:fullRemote
+            } else {                
+                FileObject itemFO = RemoteFileUtil.getFileObject(baseDirFO, path);
+                if (itemFO != null) {
+                    return new Item(itemFO, baseDirFO, ProjectSupport.getPathMode(project));
+                } else {
+                    return new Item(path);
+                }
             }
         } else {
             return new Item(path); //XXX:fullRemote convert this to use of file items as well

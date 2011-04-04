@@ -217,6 +217,9 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public boolean isMine(String absoluteURL) {
+        if (absoluteURL.length() == 0) {
+            return true;
+        }
         if (isWindows) {
             return (absoluteURL.length() > 1) && absoluteURL.charAt(1) == ':';
         } else {

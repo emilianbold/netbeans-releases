@@ -39,65 +39,78 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import java.io.File;
+import java.io.OutputStreamWriter;
+import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileLock;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author vk155633
  */
-public class RemoteLinkChild extends RemoteLinkBase {
+public class RenameTestCase extends RemoteFileTestBase  {
 
-    private final RemoteFileObjectBase delegate;
-    
-    public RemoteLinkChild(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
-        super(fileSystem, execEnv, parent, remotePath);
-        Parameters.notNull("delegate", delegate);
-        this.delegate = delegate;
+    public RenameTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+    }
+
+    public RenameTestCase(String testName) {
+        super(testName);
     }
 
     @Override
-    public RemoteFileObjectBase getDelegate() {
-        return delegate;
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
     @Override
-    public FileType getType() {
-        return delegate.getType();
-    }    
-    
-    @Override
-    public boolean isValid() {
-        return super.isValid() && delegate.isValid();
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
-    
-    @Override
-    protected void postDeleteChild(FileObject child) {
-        getDelegate().postDeleteChild(child);
-    }
-
-    @Override
-    protected void deleteImpl() throws IOException {
-        getDelegate().deleteImpl();
-    }
-
-    @Override
-    public void rename(FileLock lock, String name, String ext) throws IOException {
-        // all work in delegate
-        RemoteFileObjectBase dlg = getDelegate();
-        if (dlg != null) {
-            dlg.rename(lock, name, ext);
-        } else {
-            throw new IOException("can not rename " + getPath()); //NOI18N
+        
+    public void testLocalRename() throws Exception {
+        File tmpDir = createTempFile("testLocalRename", "dat", true);
+        try {
+            FileObject tmpDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpDir));
+            assertNotNull(tmpDirFO);
+            FileObject oldFO = tmpDirFO.createData("file_1");
+            String newName = "file_1_renamed";
+            oldFO.rename(oldFO.lock(), newName, null);
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            assertTrue(newFO == oldFO);
+        } finally {
+            tmpDir.delete();
         }
     }
+
+    @ForAllEnvironments
+    public void testRemoteRename() throws Exception {
+        String tmpDir = mkTemp(true);
+        try {
+            FileObject tmpDirFO = FileSystemProvider.getFileObject(execEnv, tmpDir);
+            assertNotNull(tmpDirFO);
+            FileObject oldFO = tmpDirFO.createData("file_1");
+            String newName = "file_1_renamed";
+            oldFO.rename(oldFO.lock(), newName, null);
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            assertTrue(newFO == oldFO);
+        } finally {
+            CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
+        }
+    }
+
+    public static Test suite() {
+        return RemoteApiTest.createSuite(RenameTestCase.class);
+    }
+    
 }
