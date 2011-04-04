@@ -74,6 +74,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,6 +99,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -1064,6 +1066,7 @@ public class JavacParser extends Parser {
                 th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
                 document = doc;
             }
+            EditorRegistry.addPropertyChangeListener(new EditorRegistryWeakListener(this));
         }
 
         @Override
@@ -1085,6 +1088,8 @@ public class JavacParser extends Parser {
                     //reset document
                     this.document = doc;
                 }
+            } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                positions.clear();
             }
         }
 
@@ -1145,6 +1150,25 @@ public class JavacParser extends Parser {
         }
     }
 
+    private static final class EditorRegistryWeakListener extends WeakReference<PropertyChangeListener> implements PropertyChangeListener, Runnable {
+
+        private EditorRegistryWeakListener(final @NonNull PropertyChangeListener delegate) {
+            super(delegate,org.openide.util.Utilities.activeReferenceQueue());
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final PropertyChangeListener delegate = get();
+            if (delegate != null) {
+                delegate.propertyChange(evt);
+            }
+        }
+
+        @Override
+        public void run() {
+            EditorRegistry.removePropertyChangeListener(this);
+        }
+    }
 
     /**
      * For unit tests only
