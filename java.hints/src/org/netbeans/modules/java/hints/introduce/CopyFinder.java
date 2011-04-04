@@ -74,6 +74,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -117,23 +118,26 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     private boolean nocheckOnAllowVariablesRemap = false;
     private AtomicBoolean cancel;
     private static final String CLASS = "class"; //NOI18N
+    private final Set<Options> options;
 
     private Map<String, TypeMirror> designedTypeHack;
 
-    private CopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel) {
+    private CopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel, Options... options) {
         this.searchingFor = searchingFor;
         this.info = info;
         this.cancel = cancel;
+        this.options = EnumSet.noneOf(Options.class);
+        this.options.addAll(Arrays.asList(options));
     }
 
     public static Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
         return computeDuplicates(info, searchingFor, scope, true, cancel, designedTypeHack);
     }
 
-    public static Map<TreePath, VariableAssignments> computeDuplicates(final CompilationInfo info, TreePath searchingFor, TreePath scope, boolean fullElementVerify, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
+    public static Map<TreePath, VariableAssignments> computeDuplicates(final CompilationInfo info, TreePath searchingFor, TreePath scope, boolean fullElementVerify, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack, Options... options) {
         CopyFinder f =   fullElementVerify
-                       ? new CopyFinder(searchingFor, info, cancel)
-                       : new UnattributedCopyFinder(searchingFor, info, cancel);
+                       ? new CopyFinder(searchingFor, info, cancel, options)
+                       : new UnattributedCopyFinder(searchingFor, info, cancel, options);
 
         f.designedTypeHack = designedTypeHack;
 
@@ -147,11 +151,9 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return null;
         }
 
-        CopyFinder f = new CopyFinder(searchingFor, info, cancel);
+        CopyFinder f = new CopyFinder(searchingFor, info, cancel, Options.ALLOW_VARIABLES_IN_PATTERN);
 
         f.allowGoDeeper = false;
-
-
         f.designedTypeHack = designedTypeHack;
 
         if (f.scan(scope, searchingFor)) {
@@ -173,14 +175,14 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return isDuplicate(info, one, second, fullElementVerify, inVariables, fillInVariables, null, cancel);
     }
 
-    public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, Set<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel) {
+    public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, Set<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel, Options... options) {
         if (one.getLeaf().getKind() != second.getLeaf().getKind()) {
             return false;
         }
 
         CopyFinder f =   fullElementVerify
-                       ? new CopyFinder(one, info, cancel)
-                       : new UnattributedCopyFinder(one, info, cancel);
+                       ? new CopyFinder(one, info, cancel, options)
+                       : new UnattributedCopyFinder(one, info, cancel, options);
 
         if (inVariables != null) {
             if (fillInVariables) {
@@ -343,7 +345,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (p != null && p.getLeaf().getKind() == Kind.IDENTIFIER) {
             String ident = ((IdentifierTree) p.getLeaf()).getName().toString();
 
-            if (ident.startsWith("$")) {
+            if (ident.startsWith("$") && options.contains(Options.ALLOW_VARIABLES_IN_PATTERN)) {
                 if (bindState.variables2Names.containsKey(ident)) {
                     if (node.getKind() == Kind.IDENTIFIER)
                         return ((IdentifierTree) node).getName().toString().equals(bindState.variables2Names.get(ident));
@@ -377,8 +379,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                         boolean oldAllowGoDeeper = allowGoDeeper;
 
                         try {
+                            options.remove(Options.ALLOW_VARIABLES_IN_PATTERN);
                             return scan(node, original);
                         } finally {
+                            options.add(Options.ALLOW_VARIABLES_IN_PATTERN);
                             allowGoDeeper = oldAllowGoDeeper;
                         }
                     }
@@ -497,7 +501,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (p.getLeaf().getKind() == Kind.IDENTIFIER) {
             String ident = ((IdentifierTree) p.getLeaf()).getName().toString();
 
-            if (ident.startsWith("$")) {
+            if (ident.startsWith("$") && options.contains(Options.ALLOW_VARIABLES_IN_PATTERN)) {
                 return scan(node, p);
             }
         }
@@ -1552,8 +1556,8 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     }
 
     private static final class UnattributedCopyFinder extends CopyFinder {
-        private UnattributedCopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel) {
-            super(searchingFor, info, cancel);
+        private UnattributedCopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel, Options... options) {
+            super(searchingFor, info, cancel, options);
         }
         @Override
         protected VerifyResult verifyElements(TreePath node, TreePath p) {
@@ -1571,5 +1575,9 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
             return Collections.singleton(new TreePath(tp, thisTree));
         }
+    }
+
+    public enum Options {
+        ALLOW_VARIABLES_IN_PATTERN
     }
 }

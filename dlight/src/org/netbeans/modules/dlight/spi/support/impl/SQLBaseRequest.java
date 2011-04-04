@@ -46,19 +46,23 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.spi.support.SQLRequest;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 public abstract class SQLBaseRequest implements SQLRequest {
 
-    private static final Logger logger = null; // DLightLogger.getLogger(SQLBaseRequest.class);
+    private static final Logger logger = DLightLogger.getLogger(SQLBaseRequest.class);
 
     public abstract PreparedStatement getPreparedStatement() throws SQLException;
 
     @Override
     public void execute() throws SQLException {
         PreparedStatement statement = getPreparedStatement();
-        if (logger != null && logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "SQL: dispatching insert  {0}", statement.toString()); //NOI18N
+
+        if (statement == null) {
+            logger.log(Level.WARNING, "{0}.getPreparedStatement() returned NULL", this.getClass().getName()); // NOI18N
+            return;
         }
+
         statement.execute();
     }
 }

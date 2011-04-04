@@ -95,8 +95,9 @@ public final class AdvancedPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        getAdvancedPanel().init();
-        return getAdvancedPanel ();
+	AdvancedPanel p = getAdvancedPanel();
+	p.init();
+	return p;
     }
     
     @Override
@@ -120,7 +121,7 @@ public final class AdvancedPanelController extends OptionsPanelController {
 
     private AdvancedPanel advancedPanel;
     
-    private AdvancedPanel getAdvancedPanel () {
+    private synchronized AdvancedPanel getAdvancedPanel () {
         if (advancedPanel == null)
             advancedPanel = new AdvancedPanel(subpath);
         return advancedPanel;

@@ -51,10 +51,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
@@ -62,9 +65,6 @@ import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
-import org.netbeans.modules.xml.xam.locator.CatalogModel;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -72,7 +72,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -111,17 +110,6 @@ public class Utilities {
             ic.add(file);
             ic.add(doc);
             ModelSource ms = new ModelSource(lookup, editable);
-//            ic.add(new DummyCatalogModel());
-//            final CatalogModel catalogModel;
-//            try {
-//                catalogModel = CatalogModelFactory.getDefault().getCatalogModel(ms);
-//                assert catalogModel != null;
-//                if (catalogModel != null) {
-//                    ic.add(catalogModel);
-//                }
-//            } catch (CatalogModelException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
             return ms;
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -130,36 +118,11 @@ public class Utilities {
         return null;
     }
     
-    
-    public static Document getDocument(FileObject modelSourceFileObject) {
-        Document result = null;
-        try {
-            DataObject dObject = DataObject.find(modelSourceFileObject);
-            EditorCookie ec = dObject.getCookie(EditorCookie.class);
-            Document doc = ec.openDocument();
-            if (doc instanceof BaseDocument) {
-                return doc;
-            }
-            
-            
-//            result = new org.netbeans.editor.BaseDocument(
-//                    org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
-//            String str = doc.getText(0, doc.getLength());
-//            result.insertString(0,str,null);
-            
-        } catch (Exception dObjEx) {
-            return null;
-        }
-        return result;
-    }
-    
-    private static Document _getDocument(DataObject modelSourceDataObject)
-    throws IOException {
-        Document result = null;
+    private static BaseDocument getDocument(final DataObject modelSourceDataObject) throws IOException {
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
             EditorCookie ec = modelSourceDataObject.getCookie(EditorCookie.class);
             assert ec != null : "Data object "+modelSourceDataObject.getPrimaryFile().getPath()+" has no editor cookies.";
-            Document doc = null;
+            Document doc;
             try {
                 doc = ec.openDocument();
             } catch (UserQuestionException uce) {
@@ -168,29 +131,42 @@ public class Utilities {
                 uce.confirmed();
                 doc = ec.openDocument();
             }
-//            assert(doc instanceof BaseDocument) : "instance of " + doc.getClass();
-            result = doc;
+            if (doc instanceof BaseDocument) {
+                return (BaseDocument) doc;
+            } else {
+                logger.log(Level.FINE, "Got document of unexpected {0} from {1}", new Object[] {doc.getClass(), modelSourceDataObject});
+                // Replace with a BaseDocument. Mostly useful for unit test.
+                final BaseDocument doc2 = new GuardedDocument("text/xml");
+                try {
+                    String str = doc.getText(0, doc.getLength());
+                    doc2.insertString(0, str, null);
+                } catch (BadLocationException x) {
+                    throw new IOException(x);
+                }
+                final Document orig = doc;
+                doc2.addDocumentListener(new DocumentListener() {
+                    public @Override void insertUpdate(DocumentEvent e) {
+                        try {
+                            orig.insertString(e.getOffset(), doc2.getText(e.getOffset(), e.getLength()), null);
+                        } catch (BadLocationException x) {
+                            assert false : x;
+                        }
+                    }
+                    public @Override void removeUpdate(DocumentEvent e) {
+                        try {
+                            orig.remove(e.getOffset(), e.getLength());
+                        } catch (BadLocationException x) {
+                            assert false : x;
+                        }
+                    }
+                    public @Override void changedUpdate(DocumentEvent e) {}
+                });
+                doc2.putProperty(Document.StreamDescriptionProperty, doc.getProperty(Document.StreamDescriptionProperty));
+                return doc2;
+            }
+        } else {
+            return null;
         }
-        return result;
-    }
-    
-    /**
-     * This method must be overridden by the Unit testcase to return a special
-     * Document object for a FileObject.
-     */
-    protected static Document _getDocument(FileObject modelSourceFileObject)
-    throws DataObjectNotFoundException, IOException {
-        DataObject dObject = DataObject.find(modelSourceFileObject);
-        return _getDocument(dObject);
-    }
-    
-    
-    public static FileObject getFileObject(ModelSource ms) {
-        return ms.getLookup().lookup(FileObject.class);
-    }
-    
-    public static CatalogModel getCatalogModel(ModelSource ms) throws CatalogModelException{
-        return CatalogModelFactory.getDefault().getCatalogModel(ms);
     }
     
     /**
@@ -211,7 +187,7 @@ public class Utilities {
                 try {
                     DataObject dobj = DataObject.find(thisFileObj);
                     items.add(dobj);
-                    Document doc = _getDocument(dobj);
+                    BaseDocument doc = getDocument(dobj);
                     if (doc != null) {
                         items.add(doc);
                     }
@@ -283,7 +259,7 @@ public class Utilities {
             if (save != null) {
                 save.save();
             } else {
-                //not changed?
+                logger.log(Level.FINE, "no changes in {0}", dobj);
             }
         }
     }
@@ -298,6 +274,10 @@ public class Utilities {
         assert pomFileObject != null;
         assert operations != null;
         ModelSource source = Utilities.createModelSource(pomFileObject);
+        if (source.getLookup().lookup(BaseDocument.class) == null) {
+            logger.log(Level.WARNING, "#193187: no Document associated with {0}", pomFileObject);
+            return;
+        }
         POMModel model = POMModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {
@@ -314,7 +294,7 @@ public class Utilities {
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
-                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Canot write POM", ex);
+                logger.log(Level.INFO, "Canot write POM", ex);
 //                Exceptions.printStackTrace(ex);
             } finally {
                 if (model.isIntransaction()) {
@@ -322,7 +302,7 @@ public class Utilities {
                 }
             }
         } else {
-            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "Cannot create model from current content of {0}", pomFileObject);
+            logger.log(Level.WARNING, "Cannot create model from current content of {0}", pomFileObject);
         }
     }
 

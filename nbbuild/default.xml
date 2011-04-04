@@ -167,7 +167,7 @@ made subject to such option by the copyright holder.
   
   <target name="-do-set-buildnumber" depends="init-tasks" unless="buildnumber">
     <tstamp>
-    	<format property="buildstamp" pattern="yyMMdd"/>
+    	<format property="buildstamp" pattern="yyyyMMdd"/>
     </tstamp>
     <tstamp>
     	<format property="buildday" pattern="d MMM yyyy" locale="en" />

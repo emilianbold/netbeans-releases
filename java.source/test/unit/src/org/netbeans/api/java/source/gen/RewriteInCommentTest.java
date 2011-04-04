@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tests WorkingCopy.rewriteInComment
  */
-public class RewriteInCommentTest extends GeneratorTest {
+public class RewriteInCommentTest extends GeneratorTestBase {
 
     public RewriteInCommentTest(String name) {
         super(name);

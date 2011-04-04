@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -71,7 +72,9 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         description = new StringBuffer("");
     }
     
-    public void addTabs(Set<WSEditor> editors, Node node, JaxWsModel jaxWsModel){
+    public void addTabs(Set<WSEditor> editors, Node node, JaxWsModel jaxWsModel) 
+        throws InvalidDataException 
+    {
         jTabbedPane1.removeAll();
         treeMap.clear();
         

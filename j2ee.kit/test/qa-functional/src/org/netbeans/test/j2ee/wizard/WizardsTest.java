@@ -68,7 +68,7 @@ public class WizardsTest extends J2eeTestCase {
     }
 
     public static class Suite extends NbTestSuite {
-        
+
         public Suite() {
             super();
             addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard", "1.4"));

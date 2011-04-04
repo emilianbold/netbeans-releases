@@ -144,6 +144,13 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             list.stateChanged(new ChangeEvent(this));
         }
     }
+
+    /** @return true if {@link #getReports} is nonempty */
+    public boolean isBroken() {
+        synchronized (reports) {
+            return !reports.isEmpty();
+        }
+    }
     
     public Collection<ProblemReport> getReports() {
         synchronized (reports) {

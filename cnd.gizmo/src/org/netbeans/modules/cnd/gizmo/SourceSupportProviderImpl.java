@@ -83,13 +83,15 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         return NbBundle.getMessage(SourceSupportProviderImpl.class, key, arg);
     }
 
-    public void showSource(SourceFileInfo lineInfo, boolean isReadOnly) {
+    public boolean showSource(SourceFileInfo lineInfo, boolean isReadOnly) {
         FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(lineInfo.getFileName()));
         try {
             new ROEditor(fo).open();
         } catch (DataObjectNotFoundException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     private static final class ROEditor extends DataEditorSupport {
@@ -123,10 +125,10 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
      *
      * @param lineInfo
      */
-    public void showSource(final SourceFileInfo lineInfo) {
+    public boolean showSource(final SourceFileInfo lineInfo) {
         if (lineInfo == null) {
             StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.NoInfo")); // NOI18N
-            return;
+            return false;
         }
 
         if (!lineInfo.isSourceKnown()) {
@@ -134,7 +136,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             // Or, even better to have special GUI icon that indicates availability
             // of source code...
             StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.UnknownSource")); // NOI18N
-            return;
+            return false;
         }
         String fileName = lineInfo.getFileName();
         try {
@@ -150,7 +152,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                         String rowPath = uri.getRawPath();
                         int lastIndexOfSeparator = rowPath.lastIndexOf('/'); // NOI18N
                         if (lastIndexOfSeparator == -1) {
-                            return;
+                            return false;
                         }
                         String file = rowPath.substring(lastIndexOfSeparator, rowPath.length());
                         inputStream = uri.toURL().openStream();
@@ -180,13 +182,14 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                     Throwable t = ErrorManager.getDefault().annotate(e, loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, t);
                     StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
+                    return false;
                     //Exceptions.printStackTrace(e);
                 }
             }
 
             if (fo == null || !fo.isValid()) {
                 StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
-                return;
+                return false;
             }
 
             final DataObject dob = DataObject.find(fo);
@@ -216,11 +219,13 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                         }
                     }
                 });
+                return true;
             }
         } catch (DataObjectNotFoundException e) {
             e.printStackTrace(System.err);
             StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
         }
+        return false;
     }
 
     private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {

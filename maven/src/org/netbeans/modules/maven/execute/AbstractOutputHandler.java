@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.NotifyFinishOutputProcessor;
@@ -84,26 +83,13 @@ public abstract class AbstractOutputHandler {
     private RequestProcessor.Task sleepTask;
     private static final int SLEEP_DELAY = 5000;
 
-    protected AbstractOutputHandler() {
+    protected AbstractOutputHandler(final ProgressHandle hand) {
         processors = new HashMap<String, Set<OutputProcessor>>();
         currentProcessors = new HashSet<OutputProcessor>();
         visitor = new OutputVisitor();
         toFinishProcessors = new HashSet<NotifyFinishOutputProcessor>();
-    }
-
-    protected AbstractOutputHandler(final ProgressHandle hand) {
-        this();
-        sleepTask = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
-                hand.suspend("");
-            }
-        });
-    }
-
-    protected AbstractOutputHandler(final AggregateProgressHandle hand) {
-        this();
-        sleepTask = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
+        sleepTask = new RequestProcessor(AbstractOutputHandler.class).create(new Runnable() {
+            public @Override void run() {
                 hand.suspend("");
             }
         });

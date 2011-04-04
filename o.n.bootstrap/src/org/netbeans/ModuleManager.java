@@ -58,6 +58,7 @@ import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,9 +66,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import org.openide.LifecycleManager;
@@ -76,7 +77,6 @@ import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
@@ -443,6 +443,16 @@ public final class ModuleManager extends Modules {
                 continue;
             }
         }
+    }
+
+    /** Only for use with Javeleon modules. */
+    public void replaceJaveleonModule(Module module, Module newModule) {
+        assert newModule instanceof JaveleonModule;
+        modules.remove(module);
+        modulesByName.remove(module.getCodeNameBase());
+        modules.add(newModule);
+        modulesByName.put(newModule.getCodeNameBase(), newModule);
+        invalidateClassLoader();
     }
 
     /** A classloader giving access to all the module classloaders at once. */
@@ -1083,6 +1093,12 @@ public final class ModuleManager extends Modules {
         firer.fire();
     }
 
+    private static class CodeNameBaseComparator implements Comparator<Module> {
+        public @Override int compare(Module m1, Module m2) {
+            return m1.getCodeNameBase().compareTo(m2.getCodeNameBase());
+        }
+    }
+
     /** Simulate what would happen if a set of modules were to be enabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently enabled,
      * though they may be fixed (if they have not yet been enabled).
@@ -1122,7 +1138,7 @@ public final class ModuleManager extends Modules {
         }
          */
         // XXX also optimize for modules.size == 1
-        Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1);
+        Set<Module> willEnable = new TreeSet<Module>(new CodeNameBaseComparator());
         for (Module m: modules) {
             if (honorAutoloadEager) {
                 if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
@@ -1294,6 +1310,45 @@ public final class ModuleManager extends Modules {
         return true;
     }
 
+    /** Only for use from Javeleon code. */
+    public List<Module> simulateJaveleonReload(Module moduleToReload) throws IllegalArgumentException {
+        Set<Module> transitiveDependents = new HashSet<Module>(20);
+        addToJaveleonDisableList(transitiveDependents, moduleToReload);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(transitiveDependents, modulesByName, providersOf);
+        try {
+            LinkedList<Module> orderedForEnabling = new LinkedList<Module>();
+            for (Module m : Utilities.topologicalSort(transitiveDependents, deps)) {
+                if (m != moduleToReload) {
+                    orderedForEnabling.addFirst(m);
+                }
+            }
+            return orderedForEnabling;
+        } catch (TopologicalSortException ex) {
+            return new ArrayList<Module>(transitiveDependents);
+        }
+    }
+    private void addToJaveleonDisableList(Set<Module> willDisable, Module m) {
+        if (willDisable.contains(m)) {
+            return;
+        }
+        willDisable.add(m);
+        for (Module other : modules) {
+            if (! other.isEnabled() || willDisable.contains(other)) {
+                continue;
+            }
+            Dependency[] depenencies = other.getDependenciesArray();
+            for (int i = 0; i < depenencies.length; i++) {
+                Dependency dep = depenencies[i];
+                if (dep.getType() == Dependency.TYPE_MODULE) {
+                    if (dep.getName().equals(m.getCodeName())) {
+                        addToDisableList(willDisable, other);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     /** Simulate what would happen if a set of modules were to be disabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently disabled, nor fixed.
      * The returned set will list all modules that would actually be disabled,
@@ -1313,7 +1368,7 @@ public final class ModuleManager extends Modules {
         }
         // XXX also optimize for modules.size == 1
         // Probably not a very efficient algorithm. But it probably does not need to be.
-        Set<Module> willDisable = new HashSet<Module>(20);
+        Set<Module> willDisable = new TreeSet<Module>(new CodeNameBaseComparator());
         for (Module m : modules) {
             if (m.isAutoload()) throw new IllegalArgumentException("Cannot disable autoload: " + m); // NOI18N
             if (m.isEager()) throw new IllegalArgumentException("Cannot disable eager module: " + m); // NOI18N

@@ -103,6 +103,7 @@ public interface NativeFileItem {
      * Returns a list <String> of compiler defined macro definitions used when compiling this file item.
      * @return a list <String> of compiler defined macro definitions.
      * Macro definitions are not prefixed with the compiler option (usually -D).
+     * It looks like MACRO=VALUE
      */
     public List<String> getSystemMacroDefinitions();
     
@@ -110,6 +111,7 @@ public interface NativeFileItem {
      * Returns a list <String> of user defined macro definitions used when compiling this file item.
      * @return a list <String> of user defined macro definitions.
      * Macro definitions are not prefixed with the compiler option (usually -D).
+     * It looks like MACRO=VALUE
      */
     public List<String> getUserMacroDefinitions();
     

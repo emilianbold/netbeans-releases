@@ -46,24 +46,15 @@ package org.openide.filesystems;
 
 import junit.framework.*;
 import java.io.IOException;
-import java.util.*;
 import org.netbeans.junit.*;
 
-import org.openide.filesystems.*;
 
 /**
- *
  * @author  David Strupl
- * @version
  */
 public class MemoryFileSystemTest extends FileSystemFactoryHid {
-    /** Creates new JarFileSystemTest */
     public MemoryFileSystemTest(Test test) {
         super(test);
-    }
-
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
     }
 
     public static Test suite() {
@@ -77,9 +68,11 @@ public class MemoryFileSystemTest extends FileSystemFactoryHid {
     }
     
     
+    @Override
     protected void destroyFileSystem(String testName) throws IOException {
     }
     
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException{
         return new FileSystem[] {new MemoryFileSystem(resources)};
     }

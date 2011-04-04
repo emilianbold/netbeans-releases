@@ -68,9 +68,15 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service = PersistentDataStorageFactory.class,  position = 10)
 })
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
-
+    private static final Lock lock= new Lock();
     private static RcFile rcFile;
     static final String H2_DATA_STORAGE_TYPE = "db:sql:h2"; // NOI18N
+
+    private static class Lock {
+
+        public Lock() {
+        }
+    }
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     //should keep somehow the storages: store them somehow
 
@@ -114,66 +120,71 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     }
 
     @Override
-    public synchronized H2DataStorage createStorage() {
-        try {
-            H2DataStorage result =  new H2DataStorage();            
-            result.connect();
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
-            return result;
-        } catch (SQLException ex) {
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
-            return null;
-        }
-    }
-
-    @Override
-    public synchronized H2DataStorage createStorage(String uniqueKey) {
-        try {
-            //check if it exesits already by any chance...
-
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Create Storage with unique id={0}", uniqueKey);//NOI18N
-            H2DataStorage result = new H2DataStorage(true, uniqueKey);
-            result.connect();
-            result.isPersistent = true;
-            rcFile.put("h2.storages", uniqueKey, result.dbURL);//NOI18N
-            rcFile.save();
-            return result;
-        } catch (IOException ex) {
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (SQLException ex){     
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, 
-                    "Exception has been occured while trying to connect using storageUniqueID=" + uniqueKey , ex);//NOI18N
-            return null;
-        }
-    }
-
-    @Override
-    public synchronized H2DataStorage openStorage(String uniqueKey) {
-        try {
-            //find dburl
-            String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
-                    "Trying to open storage with the uniqueID={0} and dbURL={1}", new String[]{uniqueKey, dbURL});//NOI18N
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
-                    "Stack Trace is ", Thread.currentThread().getStackTrace());//NOI18N                        
-            if (dbURL != null) {
-                H2DataStorage result = new H2DataStorage(dbURL);
+    public H2DataStorage createStorage() {
+        synchronized(lock){
+            try {
+                H2DataStorage result =  new H2DataStorage();
                 result.connect();
-                result.loadSchema();
-                result.isPersistent = true;
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
-                    "storage with the uniqueID={0} and dbURL={1} successfully OPENED" , new String[]{uniqueKey, dbURL});     //NOI18N           
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
                 return result;
-            }else{
-                return createStorage(uniqueKey);
+            } catch (SQLException ex) {
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+                return null;
             }
-        } catch (SQLException ex) {
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+         }
+    }
+
+    @Override
+    public  H2DataStorage createStorage(String uniqueKey) {
+        synchronized(lock){
+            try {
+                //check if it exesits already by any chance...
+
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Create Storage with unique id={0}", uniqueKey);//NOI18N
+                H2DataStorage result = new H2DataStorage(true, uniqueKey);
+                result.connect();
+                result.isPersistent = true;
+                rcFile.put("h2.storages", uniqueKey, result.dbURL);//NOI18N
+                rcFile.save();
+                return result;
+            } catch (IOException ex) {
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+                return null;
+            } catch (SQLException ex){
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE,
+                        "Exception has been occured while trying to connect using storageUniqueID=" + uniqueKey , ex);//NOI18N
+                return null;
+            }
+         }
+    }
+
+    @Override
+    public H2DataStorage openStorage(String uniqueKey) {
+        synchronized(lock){
+            try {
+                //find dburl
+                String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE,
+                        "Trying to open storage with the uniqueID={0} and dbURL={1}", new String[]{uniqueKey, dbURL});//NOI18N
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE,
+                        "Stack Trace is ", Thread.currentThread().getStackTrace());//NOI18N
+                if (dbURL != null) {
+                    H2DataStorage result = new H2DataStorage(dbURL);
+                    result.connect();
+                    result.loadSchema();
+                    result.isPersistent = true;
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE,
+                        "storage with the uniqueID={0} and dbURL={1} successfully OPENED" , new String[]{uniqueKey, dbURL});     //NOI18N
+                    return result;
+                }else{
+                    return createStorage(uniqueKey);
+                }
+            } catch (SQLException ex) {
+                DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+            }
+
+            return null;
         }
-
-        return null;
-
 
     }
 
@@ -191,7 +202,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     }
 
     @Override
-    public  synchronized  H2DataStorage openStorage(String uniqueKey, Mode mode) {
+    public  H2DataStorage openStorage(String uniqueKey, Mode mode) {
         return openStorage(uniqueKey);
 
     }

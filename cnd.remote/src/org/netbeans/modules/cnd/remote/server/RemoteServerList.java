@@ -134,7 +134,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
             } else if (!record.isOnline()) {
                 record.validate(true);
-            }
+            }            
         } else {
             for (RemoteServerRecord rec : recordsToNotify) {
                 rec.checkHostInfo();

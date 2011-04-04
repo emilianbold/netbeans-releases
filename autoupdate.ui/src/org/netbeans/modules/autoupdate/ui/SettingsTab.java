@@ -413,9 +413,6 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 details.setText(null);
                 details.setActionListener2(null);
                 details.setActionListener(null);
-
-                ListSelectionModel lsm = table.getSelectionModel();
-                lsm.setSelectionInterval(0, 0);
             }
         }
         

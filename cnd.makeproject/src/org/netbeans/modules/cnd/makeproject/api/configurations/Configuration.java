@@ -74,11 +74,15 @@ public abstract class Configuration implements ProjectConfiguration {
 
         // For change support
         pcs = new PropertyChangeSupport(this);
-
+    }
+    
+    // extracted from constructor to avoid leaking "this"
+    // MUST be called by descendant classes
+    protected final void initAuxObjects() {
         // Create and initialize auxiliary objects
         ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();
         for (int i = 0; i < auxObjectProviders.length; i++) {
-            ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(baseDir, pcs);
+            ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(baseDir, pcs, this);
             pao.initialize();
             //auxObjects.add(pao);
             String id = pao.getId();
@@ -87,7 +91,6 @@ public abstract class Configuration implements ProjectConfiguration {
             }
             auxObjectsMap.put(id,pao);
         }
-
     }
 
     public void setCloneOf(Configuration profile) {

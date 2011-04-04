@@ -2,7 +2,7 @@
     <Tags>
         <PHPDocTypeTag start='23' end='37' kind='RETURN'>
             <Types>
-                <PHPDocNode start='31' end='37' value='string'/>
+                <PHPDocTypeNode start='31' end='37' value='string' isArray='false'/>
             </Types>
         </PHPDocTypeTag>
     </Tags>

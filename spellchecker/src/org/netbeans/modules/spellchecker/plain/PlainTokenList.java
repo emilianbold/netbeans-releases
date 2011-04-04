@@ -43,13 +43,13 @@
  */
 package org.netbeans.modules.spellchecker.plain;
 
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,6 +62,7 @@ public class PlainTokenList implements TokenList {
     private String currentWord;
     private int currentStartOffset;
     private int nextSearchOffset;
+    private boolean hidden;
 
     /** Creates a new instance of JavaTokenList */
     public PlainTokenList(Document doc) {
@@ -73,6 +74,9 @@ public class PlainTokenList implements TokenList {
         currentWord = null;
         currentStartOffset = (-1);
         this.nextSearchOffset = offset;
+        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/Plain");
+        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+        hidden = Boolean.TRUE.equals (b);
     }
 
     public int getCurrentWordStartOffset() {
@@ -84,6 +88,7 @@ public class PlainTokenList implements TokenList {
     }
 
     public boolean nextWord() {
+        if (hidden) return false;
         try {
             int offset = nextSearchOffset;
             boolean searching = true;

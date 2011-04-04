@@ -64,7 +64,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Jan Lahoda and Pavel Flaska
  */
-public class MultiCatchTest extends GeneratorTest {
+public class MultiCatchTest extends GeneratorTestBase {
     
     /** Creates a new instance of TryTest */
     public MultiCatchTest(String name) {

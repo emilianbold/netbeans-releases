@@ -46,8 +46,10 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -73,6 +75,15 @@ public class ModuleTestDependencies extends Task {
         this.output = output;
     }
 
+    private File reverseOutput;
+    /**
+     * An optional output file for test dependencies going to forbidden clusters.
+     * @param reverseOutput a file to generate
+     */
+    public void setReverseOutput(File reverseOutput) {
+        this.reverseOutput = reverseOutput;
+    }
+
     /**
      * Runs the task.
      * @throws BuildException for the usual reasons
@@ -83,10 +94,11 @@ public class ModuleTestDependencies extends Task {
             Hashtable<String,String> props = getProject().getProperties();
             ModuleListParser mlp = new ModuleListParser(props, ModuleType.NB_ORG, getProject());
             SortedMap<String,SortedSet<String>> deps = new TreeMap<String,SortedSet<String>>();
+            SortedMap<String,SortedSet<String>> reverseDeps = reverseOutput != null ? new TreeMap<String,SortedSet<String>>() : null;
             File nball = new File(props.get("nb_all"));
             for (ModuleListParser.Entry entry : mlp.findAll()) {
                 String myCnb = entry.getCnb();
-                String myCluster = entry.getClusterName().replaceFirst("\\d+$", "");
+                String myCluster = entry.getClusterName();
                 if (myCluster.equals("extra")) {
                     continue;
                 }
@@ -96,29 +108,41 @@ public class ModuleTestDependencies extends Task {
                 Element config = getConfig(projectXml, pDoc);
                 Element td = ParseProjectXml.findNBMElement(config, "test-dependencies");
                 if (td != null) {
+                    String clusterDeps = getProject().getProperty("nb.cluster." + myCluster + ".depends");
+                    if (clusterDeps == null) {
+                        throw new BuildException("no property ${nb.cluster." + myCluster + ".depends} defined");
+                    }
+                    Set<String> allowed = new HashSet<String>();
+                    allowed.add(myCluster);
+                    allowed.add("harness");
+                    for (String piece : clusterDeps.split(",")) {
+                        allowed.add(piece.replaceFirst("^nb[.]cluster[.]", ""));
+                    }
                     for (Element depGroup : XMLUtil.findSubElements(td)) {
                         String testType = ParseProjectXml.findTextOrNull(depGroup, "name");
-                        if (testType != null && !testType.equals(ParseProjectXml.TestDeps.UNIT)) {
-                            continue;
-                        }
                         for (Element dep : XMLUtil.findSubElements(depGroup)) {
-                            if (ParseProjectXml.findNBMElement(dep, "test") == null) {
-                                continue;
-                            }
-                            if (ParseProjectXml.findNBMElement(dep, "compile-dependency") == null) {
-                                continue;
-                            }
                             String targetCnb = ParseProjectXml.findTextOrNull(dep, "code-name-base");
-                            if (targetCnb.equals(myCnb)) {
+                            if (targetCnb == null || targetCnb.equals(myCnb)) {
                                 continue;
                             }
-                            SortedSet<String> target = deps.get(myCnbAndCluster);
-                            if (target == null) {
-                                target = new TreeSet<String>();
-                                deps.put(myCnbAndCluster, target);
+                            String targetCluster = mlp.findByCodeNameBase(targetCnb).getClusterName();
+                            String targetCnbAndCluster = targetCnb + " (" + targetCluster + ")";
+                            if (ParseProjectXml.TestDeps.UNIT.equals(testType) && ParseProjectXml.findNBMElement(dep, "test") != null && ParseProjectXml.findNBMElement(dep, "compile-dependency") != null) {
+                                SortedSet<String> depsForMe = deps.get(myCnbAndCluster);
+                                if (depsForMe == null) {
+                                    depsForMe = new TreeSet<String>();
+                                    deps.put(myCnbAndCluster, depsForMe);
+                                }
+                                depsForMe.add(targetCnbAndCluster);
                             }
-                            String targetCluster = mlp.findByCodeNameBase(targetCnb).getClusterName().replaceFirst("\\d+$", "");
-                            target.add(targetCnb + " (" + targetCluster + ")");
+                            if (reverseDeps != null && !targetCnb.equals("org.netbeans.libs.junit4") && !allowed.contains(targetCluster)) {
+                                SortedSet<String> depsForMe = reverseDeps.get(myCnbAndCluster);
+                                if (depsForMe == null) {
+                                    depsForMe = new TreeSet<String>();
+                                    reverseDeps.put(myCnbAndCluster, depsForMe);
+                                }
+                                depsForMe.add(targetCnbAndCluster);
+                            }
                         }
                     }
                 }
@@ -133,6 +157,18 @@ public class ModuleTestDependencies extends Task {
             }
             pw.flush();
             pw.close();
+            if (reverseDeps != null) {
+                log(reverseOutput + ": generating reverse test dependencies");
+                pw = new PrintWriter(reverseOutput);
+                for (Map.Entry<String,SortedSet<String>> entry : reverseDeps.entrySet()) {
+                    pw.printf("MODULE %s\n", entry.getKey());
+                    for (String dep : entry.getValue()) {
+                        pw.printf("  REQUIRES %s\n", dep);
+                    }
+                }
+                pw.flush();
+                pw.close();
+            }
         } catch (Exception x) {
             throw new BuildException(x);
         }

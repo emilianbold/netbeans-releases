@@ -65,6 +65,7 @@ import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.support.RefreshCookie;
+import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.customization.multiview.SaveableSectionInnerPanel;
 import org.netbeans.modules.websvc.customization.multiview.WSCustomizationTopComponent;
@@ -77,7 +78,9 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -162,10 +165,14 @@ public class CustomizationWSEditor implements WSEditor {
         removeListeners();
     }
 
-    public JComponent createWSEditorComponent(Node node) {
+    public JComponent createWSEditorComponent(Node node) throws InvalidDataException {
         try {
             initializeModels(node);
-        } catch (Exception e) {
+        }
+        catch ( InvalidDataException ex){
+            throw ex;
+        } 
+        catch (Exception e) {
             Logger.getLogger(CustomizationWSEditor.class.getName()).log(Level.FINE, 
                     "Cannot create WSEditor Component", e); //NOI1*N
         }
@@ -184,7 +191,8 @@ public class CustomizationWSEditor implements WSEditor {
     }
     private Map<WSDLModel, Boolean> wsdlModels = new HashMap<WSDLModel, Boolean>();
 
-    private void initializeModels(Node node) throws IOException, CatalogModelException {
+    private void initializeModels(Node node) throws IOException, 
+        CatalogModelException, InvalidDataException {
         if (wsdlModels.isEmpty()) {
             undoManager = new UndoManager();
             WSDLModel primaryModel = getPrimaryModel(node);
@@ -261,7 +269,7 @@ public class CustomizationWSEditor implements WSEditor {
     }
 
     private WSDLModel getPrimaryModel(Node node)
-            throws MalformedURLException, IOException {
+            throws MalformedURLException, IOException, InvalidDataException {
         WSDLModel model = null;
         FileObject wsdlFO = null;
         FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
@@ -276,13 +284,18 @@ public class CustomizationWSEditor implements WSEditor {
                 ModelSource ms = Utilities.getModelSource(wsdlFO, true);
                 model = WSDLModelFactory.getDefault().getModel(ms);
             } else { //wsdl not found, throw an exception
-                throw new IOException("WSDL file not found");
+                notifyWsdlAbsence();
             }
         } else {
-            throw new IOException("WSDL file not found");
+            notifyWsdlAbsence();
         }
         primaryDefinitions = model.getDefinitions();
         return model;
+    }
+    
+    private void notifyWsdlAbsence() throws InvalidDataException {
+        throw new InvalidDataException (  "WSDL not found" , NbBundle.
+                getMessage(CustomizationWSEditor.class, "TXT_WsdlNotFound"));    // NOI18N 
     }
 
     public void cancel(Node node) {

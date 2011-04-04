@@ -69,11 +69,11 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
     private final boolean useHtmlFormat;
 
     PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, 
-            FunctionCall functionCall, boolean useHMTL) {
+            FunctionCall functionCall, boolean useHMTL, GoToSourceCallbackAction callbackAction) {
         super(Children.LEAF);
         this.functionCall = functionCall;
         this.useHtmlFormat = useHMTL;
-        action = new GoToSourceAction(sourceFileInfoDataProvider, functionCall, this);
+        action = new GoToSourceAction(callbackAction, sourceFileInfoDataProvider, functionCall, this);
         updateNames();
     }
 

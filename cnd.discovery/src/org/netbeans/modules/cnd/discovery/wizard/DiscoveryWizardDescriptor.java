@@ -66,6 +66,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
     public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
     public static final String LOG_FILE = "DW:logFile"; // NOI18N
+    public static final String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
     public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
     public static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
     public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
@@ -157,6 +158,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setBuildLog(String logFile) {
         putProperty(LOG_FILE, logFile);
+    }
+    
+    @Override
+    public String getExecLog() {
+        return (String) getProperty(EXEC_LOG_FILE);
+    }
+
+    @Override
+    public void setExecLog(String logFile) {
+        putProperty(EXEC_LOG_FILE, logFile);
     }
     
     @Override
@@ -354,6 +365,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildLog(String logFile) {
             wizard.putProperty(LOG_FILE, logFile);
+        }
+        
+        @Override
+        public String getExecLog() {
+            return (String) wizard.getProperty(EXEC_LOG_FILE);
+        }
+
+        @Override
+        public void setExecLog(String logFile) {
+            wizard.putProperty(EXEC_LOG_FILE, logFile);
         }
         
         @Override
@@ -560,6 +581,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildLog(String logFile) {
             map.put(LOG_FILE, logFile);
+        }
+        
+        @Override
+        public String getExecLog() {
+            return (String) map.get(EXEC_LOG_FILE);
+        }
+
+        @Override
+        public void setExecLog(String logFile) {
+            map.put(EXEC_LOG_FILE, logFile);
         }
         
         @Override

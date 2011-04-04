@@ -494,55 +494,6 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
     
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    /*
-     * An entry point via EditCookie.
-     * Delegate to <code>openDocument()</code>.
-     */
-    public final void edit() {
-        
-        try {
-            openDocument(); //use sync version of call  - prepare encodingErr
-            if (encodingErr) {
-                String pattern = Util.THIS.getString(
-                        TextEditorSupport.class, "TEXT_WRONG_ENCODING");
-                String msg = MessageFormat.format(pattern, new Object[] { getDataObject().getPrimaryFile().toString() /*compatibleEntry.getFile().toString()*/});
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-                
-            } else {
-                Mutex.EVENT.writeAccess(new Runnable() {
-                    public void run() {
-                        CloneableTopComponent editor = openCloneableEditor();
-                        editor.requestActive();
-                    }
-                });
-            }
-        } catch (UserQuestionException e){  //this is a hack due to the issue #50701
-            open();
-            if(isDocumentLoaded()) {
-                if (encodingErr) {
-                    String pattern = Util.THIS.getString(
-                            TextEditorSupport.class, "TEXT_WRONG_ENCODING");
-                    String msg = MessageFormat.format(pattern, new Object[] { getDataObject().getPrimaryFile().toString() /*compatibleEntry.getFile().toString()*/});
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-                    
-                } else {
-                    Mutex.EVENT.writeAccess(new Runnable() {
-                        public void run() {
-                            CloneableTopComponent editor = openCloneableEditor();
-                            editor.requestActive();
-                        }
-                    });
-                }
-            }
-        } catch (IOException ex) {
-            String pattern = Util.THIS.getString(
-                    TextEditorSupport.class, "TEXT_LOADING_ERROR");
-            String msg = MessageFormat.format(pattern, new Object[] { getDataObject().getPrimaryFile().toString() /*compatibleEntry.getFile().toString()*/});
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-        }
-        
-    }
-    
     
     /*
      * Simply open for an cloneable editor. It at first tries to locate

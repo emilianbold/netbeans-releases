@@ -244,8 +244,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 if (uid.equals(keyTo)) {
                     return true;
                 }
-                if (!res.contains(uid)){
-                    res.add(uid);
+                if (res.add(uid)){
                     if (isFileIncluded(map, res, uid, keyTo)){
                         return true;
                     }
@@ -346,9 +345,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 NodeLink node = graph.get(keyTo);
                 if (node != null) {
                     for(CsmUID<CsmFile> uid : node.getInLinks()){
-                        if (!res.contains(uid)){
-                            res.add(uid);
-                        }
+                        res.add(uid);
                     }
                 }
             } finally {
@@ -377,9 +374,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 NodeLink node = graph.get(keyTo);
                 if (node != null) {
                     for(CsmUID<CsmFile> uid : node.getOutLinks()){
-                        if (!res.contains(uid)){
-                            res.add(uid);
-                        }
+                        res.add(uid);
                     }
                 }
             } finally {
@@ -414,8 +409,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         NodeLink node = graph.get(keyFrom);
         if (node != null) {
             for(CsmUID<CsmFile> uid : node.getOutLinks()){
-                if (!res.contains(uid)){
-                    res.add(uid);
+                if (res.add(uid)){
                     getIncludedFiles(res, uid);
                 }
             }
@@ -429,8 +423,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         NodeLink node = graph.get(keyTo);
         if (node != null) {
             for(CsmUID<CsmFile> uid : node.getInLinks()){
-                if (!res.contains(uid)){
-                    res.add(uid);
+                if (res.add(uid)){
                     getParentFiles(res, uid);
                 }
             }

@@ -50,9 +50,12 @@ import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -72,6 +75,8 @@ public final class ProjectActionEvent {
         RUN("Run"), // NOI18N
         DEBUG("Debug"), // NOI18N
         DEBUG_STEPINTO("Debug"), // NOI18N
+        DEBUG_TEST("Debug"), // NOI18N
+        DEBUG_STEPINTO_TEST("Debug"), // NOI18N
         CHECK_EXECUTABLE("CheckExecutable"), // NOI18N
         CUSTOM_ACTION("Custom"), // NOI18N
         BUILD_TESTS("BuildTests"), // NOI18N
@@ -147,11 +152,22 @@ public final class ProjectActionEvent {
         if (runCommand.length == 0) {
             return "";
         }
-        return runCommand[0];
+        String command = runCommand[0];
+
+        // Use absolute path for shell commands. FIXUP: always a shell command here?
+        if (!FileSystemProvider.isAbsolute(command) && !command.contains("/")) { // NOI18N
+            ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();
+            PlatformInfo pi = PlatformInfo.getDefault(execEnv);
+            String qualifiedCommand = pi.findCommand(command);
+            if (qualifiedCommand != null) {
+                command = qualifiedCommand;
+            }
+        }
+
+        return command;
     }
 
     public String getExecutable() {
-        // see IZ 191812 we should always get executable for debug from run command
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             return getExecutableFromRunCommand();
         }
@@ -160,7 +176,7 @@ public final class ProjectActionEvent {
 
     private String[] getRunCommand() {
         if (runCommandCache == null || runCommandCache.length == 0) {
-            String command = getProfile().getRunCommand();
+            String command = getProfile().getRunCommand().getValue();
 
             // not clear what is the difference between getPlatformInfo
             // and getDevelopmentHost. 
@@ -196,7 +212,13 @@ public final class ProjectActionEvent {
                 result.addAll(Arrays.asList(Arrays.copyOfRange(params, 1, params.length)));
             }
         }
-        result.addAll(Arrays.asList(getProfile().getArgsArray()));
+        else if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
+            result.addAll(Arrays.asList(getProfile().getArgsArray()));
+            //???????? <===== Egor, need to do something here for debugging ????
+        }
+        else {
+            result.addAll(Arrays.asList(getProfile().getArgsArray()));
+        }
         return result;
     }
 

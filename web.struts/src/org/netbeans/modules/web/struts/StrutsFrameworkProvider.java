@@ -85,6 +85,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -138,7 +139,12 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
 
             try {
-                FileSystem fs = wm.getWebInf().getFileSystem();
+                FileObject webInf = wm.getWebInf();
+                if (webInf == null) {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                }
+                assert webInf != null;
+                FileSystem fs = webInf.getFileSystem();
                 fs.runAtomicAction(new CreateStrutsConfig(wm));
                 result.add(wm.getDocumentBase().getFileObject("welcomeStruts", "jsp"));
             } catch (FileNotFoundException exc) {
@@ -275,8 +281,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
             
             //MessageResource.properties
-            Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());
-            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());            
             String sresource = panel.getAppResource();
             if (sresource != null && sresource.trim().length()>0) {
                 int index = sresource.lastIndexOf('.');
@@ -287,7 +292,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     name = sresource.substring(sresource.lastIndexOf(".")+1);    //NOI18N
                 }
                 name = name + ".properties";   //NOI18N
-                FileObject targetFolder = sourceGroups[0].getRootFolder();
+                SourceGroup[] resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                if (resourceGroups.length == 0) {
+                    resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                }
+                FileObject targetFolder = resourceGroups[0].getRootFolder();
                 String folders[] = path.split("\\.");
                 for (int i = 0; i < folders.length; i++){
                     if (targetFolder.getFileObject(folders[i])== null)
@@ -337,6 +346,9 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             
             // Enter servlet into the deployment descriptor
             FileObject dd = wm.getDeploymentDescriptor();
+            if(dd == null) {
+                dd = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+            }
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
@@ -467,6 +479,4 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
         }
     }
-    
-    
 }

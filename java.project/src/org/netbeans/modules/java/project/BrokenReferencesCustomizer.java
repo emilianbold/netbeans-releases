@@ -44,26 +44,36 @@
 
 package org.netbeans.modules.java.project;
 
+import org.netbeans.api.project.libraries.Library;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.java.project.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author  David Konecny
  */
 public class BrokenReferencesCustomizer extends javax.swing.JPanel {
+
+    private static final RequestProcessor RP = new RequestProcessor(BrokenReferencesCustomizer.class);
+    private static final Logger LOG = Logger.getLogger(BrokenReferencesCustomizer.class.getName());
 
     private BrokenReferencesModel model;
     private File lastSelectedFile;
@@ -179,31 +189,89 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         if (index==-1) {
             return;
         }
-        BrokenReferencesModel.OneReference or = model.getOneReference(index);
+        final BrokenReferencesModel.OneReference or = model.getOneReference(index);
         if (or.getType() == BrokenReferencesModel.RefType.LIBRARY ||
             or.getType() == BrokenReferencesModel.RefType.LIBRARY_CONTENT) {
-            LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
+            fix.setEnabled(false);
+            try {
+                final LibraryManager lm = model.getProjectLibraryManager(or);
+                if (lm == null) {
+                    //Closed and freed project
+                    return;
+                }
+                LibrariesCustomizer.showCustomizer(null,lm);
+            } finally {
+                fix.setEnabled(true);
+            }
+        } else if (or.getType() == BrokenReferencesModel.RefType.DEFINABLE_LIBRARY) {
+            fix.setEnabled(false);
+            RP.post(new Runnable() {
+                public @Override void run() {
+                    try {
+                        Library lib = or.define();
+                        LOG.log(Level.FINE, "found {0}", lib);
+                        EventQueue.invokeLater(new Runnable() {
+                            public @Override void run() {
+                                model.refresh();
+                                updateSelection();
+                            }
+                        });
+                    } catch (Exception x) {
+                        LOG.log(Level.INFO, null, x);
+                        // fallback: user may need to create library manually
+                        final LibraryManager lm = model.getProjectLibraryManager(or);
+                        if (lm == null) {
+                            //Closed and freed project
+                            return;
+                        }
+                        LibrariesCustomizer.showCustomizer(null, lm);
+                    } finally {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fix.setEnabled(true);
+                            }
+                        });
+                    }
+                }
+            });
+            return;
         } else if (or.getType() == BrokenReferencesModel.RefType.PLATFORM) {
-            PlatformsCustomizer.showCustomizer(null);
+            fix.setEnabled(false);
+            try {
+                PlatformsCustomizer.showCustomizer(null);
+            } finally {
+                fix.setEnabled(true);
+            }
         } else if (or.getType() == BrokenReferencesModel.RefType.VARIABLE || or.getType() == BrokenReferencesModel.RefType.VARIABLE_CONTENT) {
-            VariablesSupport.showVariablesCustomizer();
+            fix.setEnabled(false);
+            try {
+                VariablesSupport.showVariablesCustomizer();
+            } finally {
+                fix.setEnabled(true);
+            }
         } else {
-            JFileChooser chooser;
-            if (or.getType() == BrokenReferencesModel.RefType.PROJECT) {
-                chooser = ProjectChooser.projectChooser();
-                chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_Project(or.getDisplayID()));
-            } else {
-                chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_File(or.getDisplayID()));
-            }
-            if (lastSelectedFile != null) {
-                chooser.setSelectedFile(lastSelectedFile);
-            }
-            int option = chooser.showOpenDialog(null);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                model.updateReference(errorList.getSelectedIndex(), chooser.getSelectedFile());
-                lastSelectedFile = chooser.getSelectedFile();
+            fix.setEnabled(false);
+            try {
+                JFileChooser chooser;
+                if (or.getType() == BrokenReferencesModel.RefType.PROJECT) {
+                    chooser = ProjectChooser.projectChooser();
+                    chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_Project(or.getDisplayID()));
+                } else {
+                    chooser = new JFileChooser();
+                    chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                    chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_File(or.getDisplayID()));
+                }
+                if (lastSelectedFile != null) {
+                    chooser.setSelectedFile(lastSelectedFile);
+                }
+                int option = chooser.showOpenDialog(null);
+                if (option == JFileChooser.APPROVE_OPTION) {
+                    model.updateReference(errorList.getSelectedIndex(), chooser.getSelectedFile());
+                    lastSelectedFile = chooser.getSelectedFile();
+                }
+            } finally {
+                fix.setEnabled(true);
             }
         }
         model.refresh();
@@ -231,6 +299,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
     
     @Messages({
         "LBL_BrokenLinksCustomizer_BrokenLibraryDesc=Problem: The project uses a class library called \"{0}\", but this class library was not found.\nSolution: Click Resolve to open the Library Manager and create a new class library called \"{0}\".",
+        "LBL_BrokenLinksCustomizer_BrokenDefinableLibraryDesc=Problem: The project uses a class library called \"{0}\", but this class library is not currently defined locally.\nSolution: Click Resolve to download or otherwise automatically define this library.",
         "LBL_BrokenLinksCustomizer_BrokenLibraryContentDesc=Problem: The project uses the class library called \"{0}\" but the classpath items of this library are missing.\nSolution: Click Resolve to open the Library Manager and locate the missing classpath items of \"{0}\" library.",
         "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc=Problem: The project classpath includes a reference to the project called \"{0}\", but this project was not found.\nSolution: Click Resolve and locate the missing project.",
         "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc=Problem: The project uses the file/folder called \"{0}\", but this file/folder was not found.\nSolution: Click Resolve and locate the missing file/folder.",
@@ -243,6 +312,8 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         switch (or.getType()) {
             case LIBRARY:
                 return LBL_BrokenLinksCustomizer_BrokenLibraryDesc(or.getDisplayID());
+            case DEFINABLE_LIBRARY:
+                return LBL_BrokenLinksCustomizer_BrokenDefinableLibraryDesc(or.getDisplayID());
             case LIBRARY_CONTENT:
                 return LBL_BrokenLinksCustomizer_BrokenLibraryContentDesc(or.getDisplayID());
             case PROJECT:

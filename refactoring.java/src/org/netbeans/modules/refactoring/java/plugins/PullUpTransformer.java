@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.api.MemberInfo.Group;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
@@ -145,9 +146,73 @@ public class PullUpTransformer extends RefactoringVisitor {
                         TreePath mpath = workingCopy.getTrees().getPath(members[i].getElementHandle().resolve(workingCopy));
                         Tree newMethodTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
                         newMethodTree = genUtils.importFQNs(newMethodTree);
-                        if (methodElm!=null) 
-                            RetoucheUtils.copyJavadoc(methodElm, newMethodTree, workingCopy);
-                        njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
+                        
+                        if (methodElm.getModifiers().contains(Modifier.PRIVATE)) {
+                            if (members[i].getGroup() == Group.METHOD) {
+                                MethodTree oldOne = (MethodTree) newMethodTree;
+                                MethodTree m = make.Method(
+                                        make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                        oldOne.getName(),
+                                        oldOne.getReturnType(),
+                                        oldOne.getTypeParameters(),
+                                        oldOne.getParameters(),
+                                        oldOne.getThrows(),
+                                        oldOne.getBody(),
+                                        (ExpressionTree) oldOne.getDefaultValue());
+                                RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                                njuClass = genUtils.insertClassMember(njuClass, m);
+                            } else if (members[i].getGroup() == Group.FIELD) {
+                                VariableTree oldOne = (VariableTree) newMethodTree;
+                                VariableTree m = make.Variable(
+                                        make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                        oldOne.getName(),
+                                        oldOne.getType(),
+                                        oldOne.getInitializer());
+                                RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                                njuClass = genUtils.insertClassMember(njuClass, m);
+                            } else if (members[i].getGroup() == Group.TYPE) {
+                                ClassTree oldOne = (ClassTree) newMethodTree;
+                                Tree m = null;
+                                switch (methodElm.getKind()) {
+                                    case CLASS:
+                                        m = make.Class(
+                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                                oldOne.getSimpleName(),
+                                                oldOne.getTypeParameters(),
+                                                oldOne.getExtendsClause(),
+                                                oldOne.getImplementsClause(),
+                                                oldOne.getMembers());
+                                        break;
+                                    case INTERFACE:
+                                        m = make.Interface(
+                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                                oldOne.getSimpleName(),
+                                                oldOne.getTypeParameters(),
+                                                oldOne.getImplementsClause(),
+                                                oldOne.getMembers());
+                                        break;
+                                    case ANNOTATION_TYPE:
+                                        m = make.AnnotationType(
+                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                                oldOne.getSimpleName(),
+                                                oldOne.getMembers());
+                                        break;
+                                    case ENUM:
+                                        m = make.Enum(
+                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                                oldOne.getSimpleName(),
+                                                oldOne.getImplementsClause(),
+                                                oldOne.getMembers());
+                                        break;
+                                }
+                                                                
+                                RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                                njuClass = genUtils.insertClassMember(njuClass, m);
+                                
+                            }
+                        } else {
+                            njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
+                        }
                         rewrite(tree, njuClass);
                         if (methodElm.getModifiers().contains(Modifier.ABSTRACT)  && !classIsAbstract) {
                             classIsAbstract = true;

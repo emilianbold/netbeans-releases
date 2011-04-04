@@ -509,6 +509,34 @@ public class CommentCollectorTest extends NbTestCase {
         src.runModificationTask(task);
 
     }
+
+    public void test197057() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n public void aa() {\n//aa\n } public void bb() {\n//bb\n } }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree a = (MethodTree) clazz.getMembers().get(0);
+                MethodTree b = (MethodTree) clazz.getMembers().get(1);
+
+                a = GeneratorUtilities.get(workingCopy).importComments(a, workingCopy.getCompilationUnit());
+                b = GeneratorUtilities.get(workingCopy).importComments(b, workingCopy.getCompilationUnit());
+
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                verify(a.getBody(), CommentSet.RelativePosition.INNER, service, "", "//aa");
+                verify(b.getBody(), CommentSet.RelativePosition.INNER, service, "", "//bb");
+            }
+        };
+        src.runModificationTask(task);
+
+    }
     
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);

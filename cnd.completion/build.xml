@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
 
     <!-- SmartCompletionInQuoteTestCase wants Quote sources -->
 
-    <target name="do-unit-test-build" depends="projectized-common.do-unit-test-build">
+    <target name="do-unit-test-build" depends="projectized.do-unit-test-build">
         <copy todir="${build.test.unit.dir}/data">
             <fileset dir="../cnd.modelimpl/test/unit/data">
                 <include name="common/**"/>
@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
         </copy>
     </target>
 
-    <target name="test-unit-build-datajar" depends="projectized-common.test-unit-build-datajar">
+    <target name="test-unit-build-datajar" depends="projectized.test-unit-build-datajar">
         <zip destfile="${test.unit.out.folder}/data.zip" update="true">
             <fileset dir="../cnd.modelimpl/test/unit/data">
                 <include name="common/**"/>

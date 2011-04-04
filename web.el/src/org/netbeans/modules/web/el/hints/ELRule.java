@@ -48,6 +48,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,6 +93,6 @@ abstract class ELRule implements AstRule {
         return HintSeverity.WARNING;
     }
 
-    protected abstract void run(ELRuleContext context, List<Hint> result);
+    protected abstract void run(RuleContext context, List<Hint> result);
 
 }

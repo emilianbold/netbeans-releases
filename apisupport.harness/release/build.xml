@@ -166,16 +166,15 @@ made subject to such option by the copyright holder.
             moduledependenciesproperty="module.dependencies"
             moduleclasspathproperty="module.classpath"
             publicpackagejardir="${public.package.jar.dir}"
+            moduleprocessorclasspathproperty="module.processor.classpath"
             modulerunclasspathproperty="module.run.classpath"
             classpathextensionsproperty="class.path.extensions"
         >
             <testtype name="unit"
-                      folder="test.unit.folder"
                       runtimecp="test.unit.runtime.cp"
                       compilecp="test.unit.compile.cp"
                       compiledep="test.unit.testdep"/>
             <testtype name="qa-functional"
-                      folder="test.qa-functional.folder"
                       runtimecp="test.qa-functional.runtime.cp"
                       compilecp="test.qa-functional.compile.cp"
                       compiledep="test.qa-functional.testdep"/>
@@ -260,8 +259,7 @@ made subject to such option by the copyright holder.
     <target name="javadoc" depends="build-init,-javadoc-init">
         <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
         <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}" encoding="UTF-8">
-            <classpath refid="cp"/>
-            <classpath path="${module.run.classpath}"/><!-- XXX #157320 -->
+            <classpath refid="processor.cp"/> <!-- #157320 -->
             <sourcepath location="${src.dir}"/>
             <doctitle>${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>

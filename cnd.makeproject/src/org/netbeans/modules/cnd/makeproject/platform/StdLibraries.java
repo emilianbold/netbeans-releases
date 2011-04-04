@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-/*package-local*/ class StdLibraries {
+public class StdLibraries {
     private static final HashMap<String, LibraryItem.StdLibItem> libraries = new HashMap<String, LibraryItem.StdLibItem>();
 
     static {

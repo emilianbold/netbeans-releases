@@ -55,7 +55,7 @@ import org.openide.windows.IOContainer;
 * @author Tomas Holy
 */
 @ActionID(id = "org.netbeans.core.io.ui.IOWindowAction", category = "Window")
-@ActionRegistration(displayName = "#IOWindow", iconBase="org/netbeans/core/resources/frames/output.png")
+@ActionRegistration(displayName = "#IOWindow", iconBase="org/netbeans/core/io/ui/output.png")
 @ActionReferences({
     @ActionReference(name = "D-4", path = "Shortcuts"),
     @ActionReference(position = 100, path = "Menu/Window/Output")

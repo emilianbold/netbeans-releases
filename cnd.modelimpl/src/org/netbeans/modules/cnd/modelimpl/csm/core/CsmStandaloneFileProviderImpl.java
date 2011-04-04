@@ -83,6 +83,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -156,11 +157,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (file == null) {
             return null;
         }        
-        String absPath = CndFileUtils.getNormalizedPath(fo);
+        String absPath = CndFileUtils.normalizePath(fo);
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(absPath, false);
+            CsmFile csmFile = ModelImpl.instance().findFile(absPath, true, false);
             if (csmFile != null) {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
@@ -172,8 +173,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(fo);
                 if (platformProject != null) {
                     project = ModelImpl.instance().addProject(platformProject, absPath, true);
-                    if (TRACE) {trace("added project %s", project.toString());} //NOI18N
-                    project.ensureFilesCreated();
+                    if (TRACE) {trace("added project %s", project);} //NOI18N
+                    // could be null when model is swithing off
+                    if (project != null) {
+                        project.ensureFilesCreated();
+                    }
                 }
             }
         }
@@ -423,7 +427,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public Object getProject() {
+        public Lookup.Provider getProject() {
             return null;
         }
 
@@ -562,7 +566,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         
         @Override
         public String getAbsolutePath() {
-            return CndFileUtils.getNormalizedPath(fileObject);
+            return CndFileUtils.normalizePath(fileObject);
             }
 
         @Override

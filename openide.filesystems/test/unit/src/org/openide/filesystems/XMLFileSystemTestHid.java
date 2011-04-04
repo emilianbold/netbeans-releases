@@ -1072,6 +1072,40 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         }
     }
 
+    public void testWeights() throws Exception { // #195827
+        File c1 = writeFile("c1.txt", "first");
+        File c2 = writeFile("c2.txt", "second");
+        File f1 = writeFile("layer1.xml",
+                "<filesystem>\n" +
+                "<folder name='d'>\n" +
+                "<file name='f' url='" + c1.toURI() + "'/>" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+        File f2 = writeFile("layer2.xml",
+                "<filesystem>\n" +
+                "<folder name='d'>\n" +
+                "<file name='f' url='" + c2.toURI() + "'>" +
+                "  <attr name='weight' intvalue='100'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f2.toURI().toURL(), f1.toURI().toURL());
+        FileObject fo = xfs.findResource("d/f");
+        assertNotNull(fo);
+        assertEquals(6, fo.getSize());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f1.toURI().toURL(), f2.toURI().toURL());
+        fo = xfs.findResource("d/f");
+        assertNotNull(fo);
+        assertEquals(6, fo.getSize());
+        // XXX overriding of inline CDATA
+        // XXX overriding of attributes (not sure if this is even supported by MFS?)
+        // XXX nonintegral weights (not currently implemented)
+        // XXX competition between two nonzero weights, or unspecified and a negative weight
+    }
+
     private static String layers(FileObject fo) {
         Object obj = fo.getAttribute("layers");
         assertNotNull("layers attr found for " + fo, obj);

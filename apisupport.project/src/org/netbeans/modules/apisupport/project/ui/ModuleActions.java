@@ -484,6 +484,9 @@ public final class ModuleActions implements ActionProvider {
                         // #141069: lock file exists, run with bogus option
                         p.setProperty(TEST_USERDIR_LOCK_PROP_NAME, TEST_USERDIR_LOCK_PROP_VALUE);
                     }
+                    if (command.equals(ActionProvider.COMMAND_REBUILD)) {
+                        p.setProperty("do.not.clean.module.config.xml", "true"); // #196192
+                    }
 
                     targetNames = globalCommands.get(command);
                     if (targetNames == null) {

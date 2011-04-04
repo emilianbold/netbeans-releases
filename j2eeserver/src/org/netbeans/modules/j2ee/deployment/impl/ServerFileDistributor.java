@@ -57,7 +57,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
 /**

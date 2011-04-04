@@ -47,6 +47,7 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 
 /**
@@ -105,13 +106,13 @@ public interface ModuleEntry extends Comparable<ModuleEntry> {
      * Returns either the module release version or <code>null</code> if
      * there isn't any.
      */
-    String getReleaseVersion();
+    @CheckForNull String getReleaseVersion();
     
     /**
      * Returns either the module specification version or <code>null</code>
      * if there isn't any.
      */
-    String getSpecificationVersion();
+    @CheckForNull String getSpecificationVersion();
     
     /**
      * Returns array of provided tokens by the module. Can be empty.
@@ -154,7 +155,7 @@ public interface ModuleEntry extends Comparable<ModuleEntry> {
      * Returns javadoc for the module.
      * @return Javadoc for the module. May be <tt>null</tt>.
      */
-    URL getJavadoc(NbPlatform platform);
+    @CheckForNull URL getJavadoc(NbPlatform platform);
 
     /**
      * Get a set of names of all <em>nonempty</em> packages this module

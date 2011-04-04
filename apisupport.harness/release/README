@@ -735,6 +735,10 @@ classpath, according to <module-dependencies>. Similar to ${module.classpath}
 except does not use public-package-only JARs; includes run-time-only
 dependencies; and processes dependencies transitively.
 
+module.processor.classpath [since 7.0.1] - your main module source's processor
+classpath, according to <module-dependencies>. Similar to
+${module.run.classpath} except run-time-only dependencies are not considered.
+
 module.jar - location of module JAR relative to cluster directory. Do not
 override directly; override ${module.jar.basename} (default
 "${code.name.base.dashes}.jar") and/or ${module.jar.dir} (default "modules") if

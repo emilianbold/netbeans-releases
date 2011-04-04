@@ -45,26 +45,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
+import org.netbeans.modules.dlight.dtrace.collector.DTraceEventData;
+import org.netbeans.modules.dlight.dtrace.collector.DTraceOutputParser;
 
 /**
  * @author Alexey Vladykin
@@ -85,10 +75,10 @@ public class DtraceParserTest extends NbTestCase {
         DataTableMetadata metadata = new DataTableMetadata(
                 "dummy",
                 Arrays.asList(
-                        new Column("timestamp", Long.class),
-                        new Column("cpu", Integer.class)),
+                new Column("timestamp", Long.class),
+                new Column("cpu", Integer.class)),
                 null);
-        doTest(getDataFile(), new DtraceParser(metadata));
+        doTest(getDataFile(), new DataOnlyParser(metadata));
     }
 
     @Test
@@ -96,25 +86,25 @@ public class DtraceParserTest extends NbTestCase {
         DataTableMetadata metadata = new DataTableMetadata(
                 "strings",
                 Arrays.asList(
-                        new Column("timestamp", Long.class),
-                        new Column("filename", String.class)),
+                new Column("timestamp", Long.class),
+                new Column("filename", String.class)),
                 null);
-        doTest(getDataFile(), new DtraceParser(metadata));
+        doTest(getDataFile(), new DataOnlyParser(metadata));
     }
-
     @Test
     public void testMemD() throws IOException {
         DataTableMetadata metadata = new DataTableMetadata(
                 "mem",
                 Arrays.asList(
-                        new Column("timestamp", Long.class),
-                        new Column("kind", Integer.class),
-                        new Column("size", Integer.class),
-                        new Column("address", Long.class),
-                        new Column("total", Integer.class),
-                        new Column("stackid", Long.class)),
+                new Column("timestamp", Long.class),
+                new Column("kind", Integer.class),
+                new Column("size", Integer.class),
+                new Column("address", Long.class),
+                new Column("total", Integer.class),
+                new Column("stack_id", Long.class)),
                 null);
-        doTest(getDataFile(), new DtraceDataAndStackParser(metadata, new SDSImpl()));
+
+        doTest(getDataFile(), new DataAndStacksParser(metadata));
     }
 
     @Test
@@ -122,113 +112,56 @@ public class DtraceParserTest extends NbTestCase {
         DataTableMetadata metadata = new DataTableMetadata(
                 "mysql",
                 Arrays.asList(
-                        new Column("timestamp", Time.class),
-                        new Column("query", String.class),
-                        new Column("time", Long.class)),
+                new Column("timestamp", Time.class),
+                new Column("query", String.class),
+                new Column("time", Long.class)),
                 null);
 
-        DtraceParser parser = new DtraceParser(metadata);
-        DataRow row = parser.process("32008075846  \"select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'\\0\"  121419");
+        LineParser parser = new LineParser(metadata.getColumns());
+        List<Object> data = parser.parse("32008075846  \"select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'\\0\"  121419", null);
+        //DataRow row = 
         assertEquals(
                 Arrays.<Object>asList(
-                        Long.valueOf(32008075846L),
-                        "select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'",
-                        Long.valueOf(121419)),
-                row.getData());
-
-        assertNull(parser.processClose());
+                Long.valueOf(32008075846L),
+                "select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'",
+                Long.valueOf(121419)),
+                data);
     }
-
+    
     protected File getDataFile() {
         String fullClassName = this.getClass().getName();
         String dataFilePath = fullClassName.replace('.', '/') + '/' + getName() + ".txt";
         return new File(getDataDir(), dataFilePath);
     }
 
-    protected void doTest(File dataFile, DtraceParser parser) throws IOException {
+    protected void doTest(File dataFile, DTraceOutputParser parser) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(dataFile));
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-                DataRow row = parser.process(line);
+                DTraceEventData data = parser.parse(line);
+                if (data == null) {
+                    continue;
+                }
+
+                DataRow row = data.getDataRow();
+
                 if (row != null) {
                     ref(row.toString());
+                }
+
+                List<CharSequence> stack = data.getEventCallStack();
+
+                if (stack != null) {
+                    for (CharSequence node : stack) {
+                        ref(node.toString());
+                    }
                 }
             }
         } finally {
             reader.close();
         }
+
         compareReferenceFiles();
-    }
-
-
-    private class SDSImpl implements StackDataStorage {
-
-        private List<String> knownStacks;
-
-        public SDSImpl() {
-            knownStacks = new ArrayList<String>();
-        }
-
-        public long putStack(List<CharSequence> stack) {
-            return putSample(stack, -1, -1);
-        }
-
-        public long putSample(List<CharSequence> stack, long timestamp, long duraction) {
-            String stackAsString = stack.toString();
-            long id = 0;
-            while (id < knownStacks.size()) {
-                if (knownStacks.get((int)id).equals(stackAsString)) {
-                    break;
-                }
-                ++id;
-            }
-            if (knownStacks.size() <= id) {
-                knownStacks.add((int)id, stackAsString);
-            }
-            ++id;
-            ref("putStack(" + stack + ", " + duraction + ") = " + id);
-            return id;
-        }
-
-        public List<FunctionCall> getCallStack(long stackId) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public List<FunctionMetric> getMetricsList() {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public ThreadDump getThreadDump(ThreadDumpQuery query) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
-
-        public List<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
-            fail("Parser is not expected to call this method");
-            return null;
-        }
     }
 }

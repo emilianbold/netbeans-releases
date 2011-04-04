@@ -54,17 +54,13 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
-import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
@@ -96,7 +92,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         outlineView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         outlineView.getAccessibleContext().setAccessibleName(browserAcsn);
         if(singleSelection) {
-            outlineView.getOutline().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            outlineView.getOutline().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
         outlineView.setPopupAllowed(true);
         
@@ -174,6 +170,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         }                
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -195,6 +192,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             startEditingAtPath(path);
         }         
         
+        @Override
         public void addNotify() {
             super.addNotify();
             setDefaultColumnSizes();
@@ -213,6 +211,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
     
         private void setDefaultColumnSizes() {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     int width = getWidth();                    
                     getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 50 / 100);
@@ -230,6 +229,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public T getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }

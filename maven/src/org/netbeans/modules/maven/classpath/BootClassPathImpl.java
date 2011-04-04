@@ -86,6 +86,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         this.project = project;
         this.ecpImpl = ecpImpl;
         ecpImpl.setBCP(this);
+        ecpImpl.addPropertyChangeListener(this);
     }
 
     public List<? extends PathResourceImplementation> getResources() {
@@ -198,6 +199,8 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
                     resetCache();
                 }
             }
+        } else if (evt.getSource() == ecpImpl) {
+            resetCache();
         }
     }
     

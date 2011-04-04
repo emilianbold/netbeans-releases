@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Error.Badging;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -78,13 +79,13 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
 
     public static final String  INDEXER_NAME = "TLIndexer"; //NOI18N
-    public static final int     INDEXER_VERSION = 4;
+    public static final int     INDEXER_VERSION = 5;
 
     public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
     public static final String FIELD_DESCRIPTION = "description"; //NOI18N
     public static final String FIELD_LINE_NUMBER = "lineNumber"; //NOI18N
 
-    private static final Map<Indexable, Collection<Error>> errors = new IdentityHashMap<Indexable, Collection<Error>>();
+    private static final Map<Indexable, Collection<SimpleError>> errors = new IdentityHashMap<Indexable, Collection<SimpleError>>();
     private static final Map<Indexable, List<Integer>> lineStartOffsetsCache = new IdentityHashMap<Indexable, List<Integer>>();
     
     @Override
@@ -97,8 +98,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
     }
 
-    private static void commitErrors(URL root, Map<Indexable, Collection<Error>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
-        for (Entry<Indexable, Collection<Error>> e : errors.entrySet()) {
+    private static void commitErrors(URL root, Map<Indexable, Collection<SimpleError>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
+        for (Entry<Indexable, Collection<SimpleError>> e : errors.entrySet()) {
             ErrorsCache.setErrors(root, e.getKey(), e.getValue(), new ErrorConvertorImpl(lineStartOffsetsCache.get(e.getKey())));
         }
 
@@ -124,7 +125,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         Context                 context
     ) {
         for (Indexable indexable : deleted) {
-            ErrorsCache.setErrors(context.getRootURI(), indexable, Collections.<Error>emptyList(), DUMMY);
+            ErrorsCache.setErrors(context.getRootURI(), indexable, Collections.<SimpleError>emptyList(), DUMMY);
         }
     }
 
@@ -151,23 +152,24 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         return INDEXER_VERSION;
     }
 
-    private static final class ErrorConvertorImpl implements Convertor<Error>{
+    private static final class ErrorConvertorImpl implements Convertor<SimpleError>{
         private final List<Integer> lineStartOffsets;
         public ErrorConvertorImpl(List<Integer> lineStartOffsets) {
             this.lineStartOffsets = lineStartOffsets;
         }
-        public ErrorKind getKind(Error error) {
+        @Override
+        public ErrorKind getKind(SimpleError error) {
             if (error.getSeverity() == Severity.WARNING) {
                 return ErrorKind.WARNING;
-            } else if (error instanceof Badging && ((Badging) error).showExplorerBadge()) {
-                return ErrorKind.ERROR;
-            } else {
-                return ErrorKind.ERROR_NO_BADGE;
+            } else if (error.isBadging()) {
+                    return ErrorKind.ERROR;
+                } else {
+                    return ErrorKind.ERROR_NO_BADGE;
+                }
             }
-        }
-        public int getLineNumber(Error error) {
-            // #172100, ParserResult.getDiagnostics() uses document offsets rather then snapshot offsets
-            int originalOffset = error.getStartPosition();
+        @Override
+        public int getLineNumber(SimpleError error) {
+            int originalOffset = error.getStartPosition(); //snapshot offset
             int lineNumber = 1;
             if (originalOffset >= 0) {
                 int idx = Collections.binarySearch(lineStartOffsets, originalOffset);
@@ -186,7 +188,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
             return lineNumber;
         }
-        public String getMessage(Error error) {
+        @Override
+        public String getMessage(SimpleError error) {
             return error.getDisplayName();
         }
     }
@@ -198,10 +201,10 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     private static final class TLIndexer extends EmbeddingIndexer {
 
-        private final Map<Indexable, Collection<Error>> errors;
+        private final Map<Indexable, Collection<SimpleError>> errors;
         private final Map<Indexable, List<Integer>> lineStartOffsetsCache;
 
-        public TLIndexer(Map<Indexable, Collection<Error>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
+        public TLIndexer(Map<Indexable, Collection<SimpleError>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
             this.errors = errors;
             this.lineStartOffsetsCache = lineStartOffsetsCache;
         }
@@ -218,10 +221,10 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
             }
 
-            Collection<Error> storedErrors = this.errors.get(indexable);
+            Collection<SimpleError> storedErrors = this.errors.get(indexable);
 
             if (storedErrors == null) {
-                this.errors.put(indexable, storedErrors = new LinkedList<Error>());
+                this.errors.put(indexable, storedErrors = new LinkedList<SimpleError>());
             }
 
             if (errors == null) {
@@ -233,10 +236,19 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             if (lineStartOffsets == null) {
                 lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
             }
-
-            storedErrors.addAll(gsfParserResult.getDiagnostics ());
+            
+            //filter all the errors and retain only those suitable for the tasklist
+            List<? extends Error> filteredErrors = ErrorFilterQuery.getFilteredErrors(gsfParserResult, ErrorFilter.FEATURE_TASKLIST);
+            
+            //convert the Error-s to SimpleError-s instancies. For more info look at the SimpleError class javadoc
+            List<SimpleError> simplifiedErrors = new ArrayList<SimpleError>();
+            for(Error e : filteredErrors) {
+                simplifiedErrors.add(simplify(e));
+            }
+            
+            storedErrors.addAll(simplifiedErrors);
         }
-
+        
         private static List<Integer> getLineStartOffsets(Source source) {
             List<Integer> lineStartOffsets = new ArrayList<Integer>();
 
@@ -253,4 +265,62 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         }
     } // End of TLIndexer class
 
+    
+    /** 
+     * The main purpose of the SimpleError class is to allow the tasklist to hold 
+     * all the errors returned from many parse results. Some of the parser implementations
+     * set various stuff to the error parameters and some of these objects may hold 
+     * quite big chunks of objects. 
+     * 
+     * For more info look at the 
+     * Bug 196490 - Javascript parser errors indirectly refers to their parser 
+     * result and snapshot which causes OOM during tasklist indexing
+     * 
+     */
+    private static class SimpleError {
+        
+        private String displayName;
+        private String description;
+        private int startPosition;
+        private Severity severity;
+        private boolean isBadging;
+
+        public SimpleError(String displayName, String description, int startPosition, Severity severity, boolean isBadging) {
+            this.displayName = displayName;
+            this.description = description;
+            this.startPosition = startPosition;
+            this.severity = severity;
+            this.isBadging = isBadging;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public Severity getSeverity() {
+            return severity;
+        }
+
+        public int getStartPosition() {
+            return startPosition;
+        }
+        
+        public boolean isBadging() {
+            return isBadging;
+        }
+                
+    }
+    
+    private static SimpleError simplify(Error error) {
+        return new SimpleError(error.getDisplayName(), 
+                error.getDescription(), 
+                error.getStartPosition(), 
+                error.getSeverity(),
+                error instanceof Badging && ((Badging) error).showExplorerBadge());
+    }
+    
 }

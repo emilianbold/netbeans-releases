@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.editor.api.elements;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 
@@ -71,5 +73,10 @@ public final class AliasedClass extends AliasedType implements ClassElement {
 
     private ClassElement getClassElement() {
         return (ClassElement) element;
+    }
+
+    @Override
+    public Collection<QualifiedName> getPossibleFQSuperClassNames() {
+        return Collections.emptyList();
     }
 }
