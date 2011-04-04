@@ -399,10 +399,8 @@ public class J2eeTestCase extends JellyTestCase {
         }
         try {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            System.out.println("loader=" + loader);
             if (loader == null) {
                 loader = J2eeTestCase.class.getClassLoader();
-                System.out.println("loader=" + loader);
             }
             Class<?> regClass = Class.forName("org.netbeans.modules.glassfish.common.registration.AutomaticRegistration", true, loader);
             Method method = regClass.getDeclaredMethod("autoregisterGlassFishInstance", String.class, String.class);
