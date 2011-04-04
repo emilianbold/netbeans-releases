@@ -97,12 +97,12 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             } finally {
                 lock.releaseLock();
             }
-//            lock = subdirFO.lock();
-//            try {
-//                subdirFO.rename(lock, "child_folder_renamed", "dir");
-//            } finally {
-//                lock.releaseLock();
-//            }
+            lock = subdirFO.lock();
+            try {
+                subdirFO.rename(lock, "child_folder_renamed", "dir");
+            } finally {
+                lock.releaseLock();
+            }
             
             // baseDirFO.refresh() will break the test. TODO: investigate.
             baseDirFO.refresh();
