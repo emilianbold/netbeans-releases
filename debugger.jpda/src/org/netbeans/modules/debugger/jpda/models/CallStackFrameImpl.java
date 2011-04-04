@@ -957,13 +957,14 @@ public class CallStackFrameImpl implements CallStackFrame {
             EqualsInfo ei = (EqualsInfo) obj;
             return thread == ei.thread &&
                    depth == ei.depth &&
-                   location.equals(ei.location);
+                   (location == ei.location ||
+                    location != null && location.equals(ei.location));
         }
 
         @Override
         public int hashCode() {
             if (thread == null) return 0;
-            return (thread.hashCode() << 8 + depth + location.hashCode() << 4);
+            return (thread.hashCode() << 8 + depth + (location != null ? location.hashCode() << 4 : 0));
         }
         
     }

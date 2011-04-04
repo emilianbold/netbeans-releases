@@ -43,7 +43,11 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -84,5 +88,16 @@ public class RemoteLinkChild extends RemoteLinkBase {
     @Override
     protected void deleteImpl() throws IOException {
         getDelegate().deleteImpl();
-    }       
+    }
+
+    @Override
+    public void rename(FileLock lock, String name, String ext) throws IOException {
+        // all work in delegate
+        RemoteFileObjectBase dlg = getDelegate();
+        if (dlg != null) {
+            dlg.rename(lock, name, ext);
+        } else {
+            throw new IOException("can not rename " + getPath()); //NOI18N
+        }
+    }
 }

@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -89,8 +90,22 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
             FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
+            baseDirFO.refresh();
+            FileLock lock = grandGrandChildFO.lock();
+            try {
+                grandGrandChildFO.rename(lock, "grand_grand_child_file_renamed", "txt");
+            } finally {
+                lock.releaseLock();
+            }
+            lock = subdirFO.lock();
+            try {
+                subdirFO.rename(lock, "child_folder_renamed", "dir");
+            } finally {
+                lock.releaseLock();
+            }
+            
             // baseDirFO.refresh() will break the test. TODO: investigate.
-            // baseDirFO.refresh();
+            baseDirFO.refresh();
             grandGrandChildFO.delete();
             grandChildDirFO.delete();
         } finally {

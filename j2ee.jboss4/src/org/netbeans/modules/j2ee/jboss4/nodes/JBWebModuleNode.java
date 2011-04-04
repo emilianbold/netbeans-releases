@@ -68,7 +68,7 @@ public class JBWebModuleNode extends AbstractNode {
 
     public JBWebModuleNode(String fileName, Lookup lookup, String url) {
         super(new JBServletsChildren(fileName, lookup));
-        setDisplayName(fileName.substring(0, fileName.indexOf('.')));
+        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         this.abilitiesSupport = new JBAbilitiesSupport(lookup);
         if (abilitiesSupport.isRemoteManagementSupported()
                 && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
