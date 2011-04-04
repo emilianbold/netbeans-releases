@@ -1103,7 +1103,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             SourceFileInfo sourceFileInfo = null;
             try{
                 sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
-            }catch(Throwable e){}
+            }catch(Throwable e){
+                System.err.println(e);
+            }
             lineNumber = sourceFileInfo == null ? -1 : sourceFileInfo.getLine();
             setLineNumber(lineNumber);
 
