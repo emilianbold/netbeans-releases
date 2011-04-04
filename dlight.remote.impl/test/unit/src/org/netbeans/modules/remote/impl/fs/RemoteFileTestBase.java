@@ -128,7 +128,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            register("fileRenamed", fe);
+            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
+            String obj = stripPrefix(fe.getFile().getPath());
+            out.printf("FileEvent[%s]: %s src=%s obj=%s oldName=%s oldExt=%s exp=%b\n", listenerName, "fileRenamed", src, obj, fe.getName(), fe.getExt(), fe.isExpected());
         }        
     }
 

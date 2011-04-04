@@ -758,12 +758,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
         } finally {
             writeLock.unlock();
-        }        
-        if (directChild2Rename.isFolder()) {
-            directChild2Rename.refreshImpl(true);
         }
     }
-
+    
     private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
