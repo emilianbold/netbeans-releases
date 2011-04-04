@@ -74,6 +74,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,12 +86,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
@@ -98,6 +101,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -198,10 +202,11 @@ public class JavacParser extends Parser {
     //Incremental parsing support
     private final boolean supportsReparse;
     //Incremental parsing support
-    private final List<Pair<DocPositionRegion,MethodTree>> positions = Collections.synchronizedList(new LinkedList<Pair<DocPositionRegion,MethodTree>>());
+    private final List<Pair<DocPositionRegion,MethodTree>> positions =
+            Collections.synchronizedList(new LinkedList<Pair<DocPositionRegion,MethodTree>>());
     //Incremental parsing support
-    //@GuardedBy(this)
-    private Pair<DocPositionRegion,MethodTree> changedMethod;
+    private final AtomicReference<Pair<DocPositionRegion,MethodTree>> changedMethod =
+            new AtomicReference<Pair<DocPositionRegion, MethodTree>>();
     //Incremental parsing support
     private final DocListener listener;
     //J2ME preprocessor support
@@ -347,20 +352,14 @@ public class JavacParser extends Parser {
                 init (snapshot, task, true);
                 boolean needsFullReparse = true;
                 if (supportsReparse) {
-                    Pair<DocPositionRegion,MethodTree> _changedMethod;
-                    synchronized (this) {
-                        _changedMethod = this.changedMethod;
-                        this.changedMethod = null;
-                    }
+                    final Pair<DocPositionRegion,MethodTree> _changedMethod = changedMethod.getAndSet(null);
                     if (_changedMethod != null && ciImpl != null) {
                         LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
                         needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
                     }
                 }
                 if (needsFullReparse) {
-                    synchronized (positions) {
-                        positions.clear();
-                    }
+                    positions.clear();
                     ciImpl = createCurrentInfo (this, file, root,snapshot, null);
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
@@ -1064,6 +1063,7 @@ public class JavacParser extends Parser {
                 th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
                 document = doc;
             }
+            EditorRegistry.addPropertyChangeListener(new EditorRegistryWeakListener(this));
         }
 
         @Override
@@ -1084,6 +1084,13 @@ public class JavacParser extends Parser {
                 else {
                     //reset document
                     this.document = doc;
+                }
+            } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                final Document doc = document;
+                final JTextComponent focused = EditorRegistry.focusedComponent();
+                final Document focusedDoc = focused == null ? null : focused.getDocument();
+                if (doc != null && doc == focusedDoc) {
+                    positions.clear();
                 }
             }
         }
@@ -1136,15 +1143,36 @@ public class JavacParser extends Parser {
                         if (changedMethod!=null) {
                             positions.add (changedMethod);
                         }
-                        synchronized (JavacParser.this) {
-                            JavacParser.this.changedMethod = changedMethod;
-                        }
+                        JavacParser.this.changedMethod.set(changedMethod);
                     }
                 }
             }
         }
     }
 
+    private static final class EditorRegistryWeakListener extends WeakReference<PropertyChangeListener> implements PropertyChangeListener, Runnable {
+
+        private JTextComponent last;
+
+        private EditorRegistryWeakListener(final @NonNull PropertyChangeListener delegate) {
+            super(delegate,org.openide.util.Utilities.activeReferenceQueue());
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final PropertyChangeListener delegate = get();
+            final JTextComponent lastCandidate = EditorRegistry.focusedComponent();
+            if (delegate != null && lastCandidate != null && lastCandidate != last) {
+                last = lastCandidate;
+                delegate.propertyChange(evt);
+            }
+        }
+
+        @Override
+        public void run() {
+            EditorRegistry.removePropertyChangeListener(this);
+        }
+    }
 
     /**
      * For unit tests only
@@ -1153,7 +1181,7 @@ public class JavacParser extends Parser {
      */
     public synchronized void setChangedMethod (final Pair<DocPositionRegion,MethodTree> changedMethod) {
         assert changedMethod != null;
-        this.changedMethod = changedMethod;
+        this.changedMethod.set(changedMethod);
     }
 
     /**
