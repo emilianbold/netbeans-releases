@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -197,11 +198,26 @@ public class RemoteFileObjectFactory {
     }
     
     public void rename(String path2Rename, String newPath, RemoteFileObjectBase fo2Rename) {
-        fileObjectsCache.remove(path2Rename, fo2Rename);
-        fo2Rename.renamePath(newPath);
-        fileObjectsCache.putIfAbsent(newPath, fo2Rename);
+        Collection<RemoteFileObjectBase> toRename = new HashSet<RemoteFileObjectBase>();
+        addAllExistingChildren(fo2Rename, toRename);
+        for (RemoteFileObjectBase fo : toRename) {
+            String curPath = fo.getPath();
+            String changedPath = curPath.replaceFirst(path2Rename, newPath);
+            fileObjectsCache.remove(curPath, fo);
+            fo.renamePath(changedPath);
+            fileObjectsCache.putIfAbsent(changedPath, fo);
+        }
     }
         
+    private void addAllExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {
+        bag.add(fo);
+        if (fo.isFolder()) {
+            for (RemoteFileObjectBase child : fo.getExistentChildren()) {
+                addAllExistingChildren(child, bag);
+            }
+        }
+    }
+    
     public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {
         RemoteFileObjectBase fo = fileObjectsCache.get(linkRemotePath);
         if (fo != null) {
