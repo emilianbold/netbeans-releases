@@ -77,7 +77,7 @@ import org.openide.text.PositionBounds;
  * @author Jan Pokorsky
  * @author Pavel Flaska
  */
-public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
+public class AddMethodToInterfaceTemplateTest extends GeneratorTestBase {
 
     public AddMethodToInterfaceTemplateTest(String name) {
         super(name);

@@ -46,23 +46,37 @@ package org.netbeans.modules.java.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -70,67 +84,117 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.java.project.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 public final class BrokenReferencesModel extends AbstractListModel {
 
-    private String[] props;
-    private String[] platformsProps;
-    private AntProjectHelper helper;
-    private ReferenceHelper resolver;
+    private static final Logger LOG = Logger.getLogger(BrokenReferencesModel.class.getName());
+
+    private final Context ctx;
+    private final boolean global;
     private List<OneReference> references;
 
     public BrokenReferencesModel(AntProjectHelper helper, 
             ReferenceHelper resolver, String[] props, String[] platformsProps) {
-        this.props = props.clone();
-        this.platformsProps = platformsProps.clone();
-        this.resolver = resolver;
-        this.helper = helper;
+        this(new Context(new BrokenProject(helper, resolver, helper.getStandardPropertyEvaluator(), props, platformsProps)),false);
+    }
+
+    public BrokenReferencesModel(final @NonNull Context ctx, boolean global) {
+        assert ctx != null;
+        this.ctx = ctx;
+        this.global = global;
         references = new ArrayList<OneReference>();
         refresh();
+        ctx.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                refresh();
+            }
+        });
     }
 
     public void refresh() {
         Set<OneReference> all = new LinkedHashSet<OneReference>();
-        Set<OneReference> s = getReferences(helper, resolver, helper.getStandardPropertyEvaluator(), props, false);
-        all.addAll(s);
-        s = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
-        all.addAll(s);
+        for (BrokenProject bprj : ctx.getBrokenProjects()) {
+            Set<OneReference> s = getReferences(bprj, false);
+            all.addAll(s);
+            s = getPlatforms(bprj, false);
+            all.addAll(s);
+        }
         updateReferencesList(references, all);
         this.fireContentsChanged(this, 0, getSize());
     }
 
     @Messages({
         "LBL_BrokenLinksCustomizer_BrokenLibrary=\"{0}\" library could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenDefinableLibrary=\"{0}\" library must be defined",
         "LBL_BrokenLinksCustomizer_BrokenLibraryContent=\"{0}\" library has missing items",
         "LBL_BrokenLinksCustomizer_BrokenProjectReference=\"{0}\" project could not be found",
         "LBL_BrokenLinksCustomizer_BrokenFileReference=\"{0}\" file/folder could not be found",
         "LBL_BrokenLinksCustomizer_BrokenVariable=\"{0}\" variable could not be found",
         "LBL_BrokenLinksCustomizer_BrokenVariableContent=\"{0}\" variable based file/folder could not be found",
-        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found"
+        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenLibrary_In_Project=\"{0}\" library (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenDefinableLibrary_In_Project=\"{0}\" library (in {1}) must be defined",
+        "LBL_BrokenLinksCustomizer_BrokenLibraryContent_In_Project=\"{0}\" library (in {1}) has missing items",
+        "LBL_BrokenLinksCustomizer_BrokenProjectReference_In_Project=\"{0}\" project (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenFileReference_In_Project=\"{0}\" file/folder (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenVariable_In_Project=\"{0}\" variable (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenVariableContent_In_Project=\"{0}\" variable based file/folder (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenPlatform_In_Project=\"{0}\" platform (in {1}) could not be found"
     })
     public @Override Object getElementAt(int index) {
-        OneReference or = getOneReference(index);
-        switch (or.type) {
-            case LIBRARY:
-                return LBL_BrokenLinksCustomizer_BrokenLibrary(or.getDisplayID());
-            case LIBRARY_CONTENT:
-                return LBL_BrokenLinksCustomizer_BrokenLibraryContent(or.getDisplayID());
-            case PROJECT:
-                return LBL_BrokenLinksCustomizer_BrokenProjectReference(or.getDisplayID());
-            case FILE:
-                return LBL_BrokenLinksCustomizer_BrokenFileReference(or.getDisplayID());
-            case VARIABLE:
-                return LBL_BrokenLinksCustomizer_BrokenVariable(or.getDisplayID());
-            case VARIABLE_CONTENT:
-                return LBL_BrokenLinksCustomizer_BrokenVariableContent(or.getDisplayID());
-            case PLATFORM:
-                return LBL_BrokenLinksCustomizer_BrokenPlatform(or.getDisplayID());
-            default:
-                assert false;
-                return null;
+        final OneReference or = getOneReference(index);
+        final Project prj = or.bprj.getProject();
+        if (global && prj != null) {
+            final String projectName = ProjectUtils.getInformation(prj).getDisplayName();
+            switch (or.type) {
+                case LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenLibrary_In_Project(or.getDisplayID(), projectName);
+                case DEFINABLE_LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenDefinableLibrary_In_Project(or.getDisplayID(), projectName);
+                case LIBRARY_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenLibraryContent_In_Project(or.getDisplayID(), projectName);
+                case PROJECT:
+                    return LBL_BrokenLinksCustomizer_BrokenProjectReference_In_Project(or.getDisplayID(), projectName);
+                case FILE:
+                    return LBL_BrokenLinksCustomizer_BrokenFileReference_In_Project(or.getDisplayID(), projectName);
+                case VARIABLE:
+                    return LBL_BrokenLinksCustomizer_BrokenVariable_In_Project(or.getDisplayID(), projectName);
+                case VARIABLE_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenVariableContent_In_Project(or.getDisplayID(), projectName);
+                case PLATFORM:
+                    return LBL_BrokenLinksCustomizer_BrokenPlatform_In_Project(or.getDisplayID(), projectName);
+                default:
+                    assert false;
+                    return null;
+            }
+        } else {
+            switch (or.type) {
+                case LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenLibrary(or.getDisplayID());
+                case DEFINABLE_LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenDefinableLibrary(or.getDisplayID());
+                case LIBRARY_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenLibraryContent(or.getDisplayID());
+                case PROJECT:
+                    return LBL_BrokenLinksCustomizer_BrokenProjectReference(or.getDisplayID());
+                case FILE:
+                    return LBL_BrokenLinksCustomizer_BrokenFileReference(or.getDisplayID());
+                case VARIABLE:
+                    return LBL_BrokenLinksCustomizer_BrokenVariable(or.getDisplayID());
+                case VARIABLE_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenVariableContent(or.getDisplayID());
+                case PLATFORM:
+                    return LBL_BrokenLinksCustomizer_BrokenPlatform(or.getDisplayID());
+                default:
+                    assert false;
+                    return null;
+            }
         }
     }
 
@@ -148,19 +212,27 @@ public final class BrokenReferencesModel extends AbstractListModel {
     }
 
     public static boolean isBroken(AntProjectHelper helper, ReferenceHelper refHelper, PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
-        Set<OneReference> s = getReferences(helper, refHelper, evaluator, props, true);
+        final BrokenProject bprj = new BrokenProject(helper, refHelper, evaluator, props, platformsProps);
+        Set<OneReference> s = getReferences(bprj, true);
         if (s.size() > 0) {
             return true;
         }
-        s = getPlatforms(evaluator, platformsProps, true);
+        s = getPlatforms(bprj, true);
         return s.size() > 0;
     }
 
-    private static Set<OneReference> getReferences(AntProjectHelper helper, ReferenceHelper refHelper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
+    private static Set<OneReference> getReferences(final BrokenProject bprj, final boolean abortAfterFirstProblem) {
         Set<OneReference> set = new LinkedHashSet<OneReference>();
         StringBuilder all = new StringBuilder();
         // this call waits for list of libraries to be refreshhed
         LibraryManager.getDefault().getLibraries();
+        final AntProjectHelper helper = bprj.getAntProjectHelper();
+        final PropertyEvaluator evaluator = bprj.getEvaluator();
+        final ReferenceHelper refHelper = bprj.getReferenceHelper();
+        if (helper == null || evaluator == null || refHelper == null) {
+            return set;
+        }
+        final String[] ps = bprj.getProperties();
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         for (String p : ps) {
             // evaluate given property and tokenize it
@@ -169,6 +241,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
             if (prop == null) {
                 continue;
             }
+            LOG.log(Level.FINE, "Evaluated {0}={1}", new Object[] {p, prop});
             String[] vals = PropertyUtils.tokenizePath(prop);
                         
             // no check whether after evaluating there are still some 
@@ -182,7 +255,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                 if (v.startsWith("${project.")) { // NOI18N
                     // something in the form: "${project.<projID>}/dist/foo.jar"
                     String val = v.substring(2, v.indexOf('}')); // NOI18N
-                    set.add(new OneReference(RefType.PROJECT, val, true));
+                    set.add(new OneReference(bprj, RefType.PROJECT, val, true));
                 } else {
                     RefType type = RefType.LIBRARY;
                     if (v.startsWith("${file.reference")) { // NOI18N
@@ -191,7 +264,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                         type = RefType.VARIABLE;
                     }
                     String val = v.substring(2, v.length() - 1);
-                    set.add(new OneReference(type, val, true));
+                    set.add(new OneReference(bprj, type, val, true));
                 }
                 if (abortAfterFirstProblem) {
                     break;
@@ -218,7 +291,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                         if (f.exists()) {
                             continue;
                         }
-                        set.add(new OneReference(RefType.VARIABLE_CONTENT, v, true));
+                        set.add(new OneReference(bprj, RefType.VARIABLE_CONTENT, v, true));
                     }
                 }
             }
@@ -249,7 +322,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                 if (all.indexOf(value) == -1) {
                     continue;
                 }
-                set.add(new OneReference(RefType.PROJECT, key, true));
+                set.add(new OneReference(bprj, RefType.PROJECT, key, true));
             }
             else if (key.startsWith("file.reference")) {    //NOI18N
                 File f = getFile(helper, evaluator, value);
@@ -258,7 +331,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                 if (f.exists() || all.indexOf(value) == -1 || alreadyChecked) { // NOI18N
                     continue;
                 }
-                set.add(new OneReference(RefType.FILE, key, true));
+                set.add(new OneReference(bprj, RefType.FILE, key, true));
             }
         }
         
@@ -280,7 +353,8 @@ public final class BrokenReferencesModel extends AbstractListModel {
             String libraryName = libraryRef.substring(5,libraryRef.length()-10);
             Library lib = refHelper.findLibrary(libraryName);
             if (lib == null) {
-                set.add(new OneReference(RefType.LIBRARY, libraryRef, true));
+                // Should already have been caught before?
+                set.add(new OneReference(bprj, RefType.LIBRARY, libraryRef, true));
             }
             else {
                 //XXX: Should check all the volumes (sources, javadoc, ...)?
@@ -291,7 +365,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                     }
                     FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(lib.getManager().getLocation(), uri2);
                     if (null == fo && !canResolveEvaluatedUri(helper.getStandardPropertyEvaluator(), lib.getManager().getLocation(), uri2)) {
-                        set.add(new OneReference(RefType.LIBRARY_CONTENT, libraryRef, true));
+                        set.add(new OneReference(bprj, RefType.LIBRARY_CONTENT, libraryRef, true));
                         break;
                     }
                 }
@@ -332,9 +406,13 @@ public final class BrokenReferencesModel extends AbstractListModel {
         }
     }
 
-    private static Set<OneReference> getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
-        Set<OneReference> set = new LinkedHashSet<OneReference>();
-        for (String pprop : platformsProps) {
+    private static Set<OneReference> getPlatforms(final BrokenProject bprj, boolean abortAfterFirstProblem) {
+        final Set<OneReference> set = new LinkedHashSet<OneReference>();
+        final PropertyEvaluator evaluator = bprj.getEvaluator();
+        if (evaluator == null) {
+            return set;
+        }
+        for (String pprop : bprj.getPlatformProperties()) {
             String prop = evaluator.getProperty(pprop);
             if (prop == null) {
                 continue;
@@ -348,7 +426,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                     prop = evaluator.getProperty(pprop + ".description"); // NOI18N
                 }
                 
-                set.add(new OneReference(RefType.PLATFORM, prop, true));
+                set.add(new OneReference(bprj, RefType.PLATFORM, prop, true));
             }
             if (set.size() > 0 && abortAfterFirstProblem) {
                 break;
@@ -358,6 +436,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
     }
     
     private static void updateReferencesList(List<OneReference> oldBroken, Set<OneReference> newBroken) {
+        LOG.log(Level.FINE, "References updated from {0} to {1}", new Object[] {oldBroken, newBroken});
         for (OneReference or : oldBroken) {
             if (newBroken.contains(or)) {
                 or.broken = true;
@@ -412,7 +491,13 @@ public final class BrokenReferencesModel extends AbstractListModel {
     }
     
     private void updateReference0(int index, File file) {
-        final String reference = getOneReference(index).ID;
+        final OneReference ref = getOneReference(index);
+        final String reference = ref.ID;
+        final AntProjectHelper helper = ref.bprj.getAntProjectHelper();
+        if (helper == null) {
+            //Closed and freed project, ignore
+            return;
+        }
         FileObject myProjDirFO = helper.getProjectDirectory();
         final String propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
         final String path = file.getAbsolutePath();
@@ -444,9 +529,12 @@ public final class BrokenReferencesModel extends AbstractListModel {
     }
     
     /** @return non-null library manager */
-    LibraryManager getProjectLibraryManager() {
-        return resolver.getProjectLibraryManager() != null ? 
-            resolver.getProjectLibraryManager() : LibraryManager.getDefault();
+    LibraryManager getProjectLibraryManager(@NonNull final OneReference or) {
+        assert or != null;
+        final ReferenceHelper resolver = or.bprj.getReferenceHelper();
+        return resolver == null ? null :
+                resolver.getProjectLibraryManager() != null ?
+                    resolver.getProjectLibraryManager() : LibraryManager.getDefault();
     }
 
     enum RefType {
@@ -454,21 +542,42 @@ public final class BrokenReferencesModel extends AbstractListModel {
         FILE,
         PLATFORM,
         LIBRARY,
+        DEFINABLE_LIBRARY,
         LIBRARY_CONTENT,
         VARIABLE,
         VARIABLE_CONTENT,
     }
-    
-    public static class OneReference {
-        
+
+    public static final class OneReference {
+
+        private final BrokenProject bprj;
         private final RefType type;
         private boolean broken;
         private final String ID;
+        private final Callable<Library> definer;
 
-        public OneReference(RefType type, String ID, boolean broken) {
+        OneReference(
+            @NonNull final BrokenProject bprj,
+            @NonNull RefType type,
+            @NonNull final String ID,
+            final boolean broken) {
+            assert bprj != null;
+            Callable<Library> _definer = null;
+            if (type == RefType.LIBRARY) {
+                String name = ID.substring(5, ID.length() - 10);
+                for (LibraryDefiner ld : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
+                    _definer = ld.missingLibrary(name);
+                    if (_definer != null) {
+                        type = RefType.DEFINABLE_LIBRARY;
+                        break;
+                    }
+                }
+            }
+            this.bprj = bprj;
             this.type = type;
             this.ID = ID;
             this.broken = broken;
+            definer = _definer;
         }
         
         public RefType getType() {
@@ -479,6 +588,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
             switch (type) {
                 
                 case LIBRARY:
+                case DEFINABLE_LIBRARY:
                 case LIBRARY_CONTENT:
                     // libs.<name>.classpath
                     return ID.substring(5, ID.length()-10);
@@ -506,6 +616,14 @@ public final class BrokenReferencesModel extends AbstractListModel {
             }
         }
 
+        public Library define() throws Exception {
+            return definer.call();
+        }
+
+        public @Override String toString() {
+            return type + ":" + ID + (broken ? "" : "[fixed]");
+        }
+
         public @Override boolean equals(Object o) {
             if (o == this) {
                 return true;
@@ -514,7 +632,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                 return false;
             }
             OneReference or = (OneReference)o;
-            return (this.type == or.type && this.ID.equals(or.ID));
+            return (this.type == or.type && this.ID.equals(or.ID) && this.bprj.equals(or.bprj));
         }
         
         public @Override int hashCode() {
@@ -523,6 +641,115 @@ public final class BrokenReferencesModel extends AbstractListModel {
             return result;
         }
         
+    }
+
+    public static final class BrokenProject {
+        private final Reference<AntProjectHelper> helper;
+        private final Reference<ReferenceHelper> referenceHelper;
+        private final Reference<PropertyEvaluator> evaluator;
+        private final String[] properties;
+        private final String[] platformProperties;
+
+        public BrokenProject(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final ReferenceHelper referenceHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String[] properties,
+            @NonNull final String[] platformProperties) {
+            assert helper != null;
+            assert referenceHelper != null;
+            assert properties != null;
+            assert platformProperties != null;
+            this.helper = new WeakReference<AntProjectHelper>(helper);
+            this.referenceHelper = new WeakReference<ReferenceHelper>(referenceHelper);
+            this.evaluator = new WeakReference<PropertyEvaluator>(evaluator);
+            this.properties = Arrays.copyOf(properties, properties.length);
+            this.platformProperties = Arrays.copyOf(platformProperties, platformProperties.length);
+        }
+
+        AntProjectHelper getAntProjectHelper() {
+            return helper.get();
+        }
+
+        Project getProject() {
+            final AntProjectHelper h = getAntProjectHelper();
+            return h == null ? null : FileOwnerQuery.getOwner(h.getProjectDirectory());
+        }
+
+        ReferenceHelper getReferenceHelper() {
+            return referenceHelper.get();
+        }
+
+        PropertyEvaluator getEvaluator() {            
+            return evaluator.get();
+        }
+
+        String[] getProperties() {
+            return this.properties;
+        }
+
+        String[] getPlatformProperties() {
+            return this.platformProperties;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof BrokenProject)) {
+                return false;
+            }
+            final AntProjectHelper myAPH = getAntProjectHelper();
+            final AntProjectHelper otherAPH = ((BrokenProject)other).getAntProjectHelper();
+            final FileObject myDir = myAPH == null ? null : myAPH.getProjectDirectory();
+            final FileObject otherDir = otherAPH == null ? null : otherAPH.getProjectDirectory();
+            return myDir == null ? otherDir == null : myDir.equals(otherDir);
+        }
+
+        @Override
+        public int hashCode() {
+            final AntProjectHelper h = getAntProjectHelper();
+            return h == null ? 0 : h.getProjectDirectory().hashCode();
+        }
+    }
+
+    public static final class Context {
+        private final List<BrokenProject> toResolve;
+        private final ChangeSupport support;
+
+        public Context() {
+            toResolve = Collections.synchronizedList(new LinkedList<BrokenProject>());
+            support = new ChangeSupport(this);
+        }
+
+        private Context(final @NonNull BrokenProject broken) {
+            this();
+            this.offer(broken);
+        }
+
+        public void offer(final BrokenProject broken) {
+            assert broken != null;
+            this.toResolve.add(broken);
+            support.fireChange();
+        }
+
+        public boolean isEmpty() {
+            return this.toResolve.isEmpty();
+        }
+
+        public BrokenProject[] getBrokenProjects() {
+            synchronized (toResolve) {
+                return toResolve.toArray(new BrokenProject[toResolve.size()]);
+            }
+        }
+
+        public void addChangeListener(final @NonNull ChangeListener listener) {
+            assert listener != null;
+            support.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(final @NonNull ChangeListener listener) {
+            assert listener != null;
+            support.removeChangeListener(listener);
+        }
     }
     
 }

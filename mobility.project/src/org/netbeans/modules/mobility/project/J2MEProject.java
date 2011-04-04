@@ -171,6 +171,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     
     private static final Set<FileObject> roots = new HashSet<FileObject>();
     private static final Map<FileObject, Boolean> folders = new WeakHashMap<FileObject, Boolean>();
+    private static final RequestProcessor RP = new RequestProcessor();
     private final ReferenceHelper refHelper;
     private final PropertyChangeSupport pcs;
     private final RequestProcessor rp;
@@ -347,7 +348,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         if (fo != null && !isJ2MEFile(fo)) {
             synchronized (roots) {
                 if (roots.add(fo))
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             final Enumeration en = fo.getChildren(true);
                             while (en.hasMoreElements()) try {
@@ -811,7 +812,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         
         public void resultChanged(final LookupEvent e) {
             final Collection<Lookup.Result> result = ((Lookup.Result) e.getSource()).allInstances();
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     DeploymentPropertiesHandler.loadDeploymentProperties(result);
                 }

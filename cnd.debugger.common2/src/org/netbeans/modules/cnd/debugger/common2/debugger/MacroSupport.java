@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
@@ -63,7 +61,7 @@ public class MacroSupport {
     public static String expandMacro(NativeDebugger debugger, String expr) {
         Frame currentFrame = debugger.getCurrentFrame();
         if (currentFrame != null) {
-            StyledDocument doc = getDocument(currentFrame);
+            StyledDocument doc = getDocument(debugger, currentFrame);
             if (doc != null) {
                 int offset = getOffset(currentFrame, doc);
                 if (offset >= 0) {
@@ -77,12 +75,12 @@ public class MacroSupport {
         return expr;
     }
     
-    private static StyledDocument getDocument(Frame frame) {
+    private static StyledDocument getDocument(NativeDebugger debugger, Frame frame) {
         String fullPath = frame.getFullPath();
         if (fullPath == null) {
             return null;
-        } 
-        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fullPath));
+        }
+        FileObject fo = EditorBridge.findFileObject(fullPath, debugger);
         if (fo != null /*paranoia*/ && fo.isValid()) {
             return (StyledDocument) CsmUtilities.getDocument(fo);
         }

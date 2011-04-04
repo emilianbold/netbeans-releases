@@ -528,7 +528,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
     }
 
-    public static class NameKey implements Comparable<NameKey> {
+    public static final class NameKey implements Comparable<NameKey> {
         private int start = 0;
         private CharSequence name;
         public NameKey(CsmUID<CsmOffsetableDeclaration> anUid) {

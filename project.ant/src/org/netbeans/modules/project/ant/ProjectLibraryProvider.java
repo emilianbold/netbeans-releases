@@ -98,7 +98,6 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -468,8 +467,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             }
             return NbCollections.checkedMapByFilter(p, String.class, String.class, true);
         } catch (IOException x) {
-            Exceptions.attachMessage(x, "Loading: " + f); // NOI18N
-            Exceptions.printStackTrace(x);
+            Logger.getLogger(ProjectLibraryProvider.class.getName()).log(Level.INFO, "Loading: " + f, x);
             return Collections.emptyMap();
         }
     }

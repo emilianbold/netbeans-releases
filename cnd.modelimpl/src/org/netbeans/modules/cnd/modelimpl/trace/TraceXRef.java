@@ -210,7 +210,7 @@ public class TraceXRef extends TraceModel {
     }
 
     private CsmFile getCsmFile(String path) {
-        return super.getProject().findFile(new java.io.File(path).getAbsolutePath(), false);
+        return super.getProject().findFile(new java.io.File(path).getAbsolutePath(), true, false);
     }
 
     @Override

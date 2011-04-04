@@ -142,7 +142,7 @@ public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
     }
 
     protected CsmFile getCsmFile(File testSourceFile) throws Exception {
-        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testSourceFile.getAbsolutePath(), false);
+        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testSourceFile.getAbsolutePath(), true, false);
         assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N
         return csmFile;
     }

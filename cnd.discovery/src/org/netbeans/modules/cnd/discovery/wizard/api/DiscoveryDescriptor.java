@@ -76,6 +76,9 @@ public interface DiscoveryDescriptor {
     String getBuildLog();
     void setBuildLog(String logFile);
 
+    String getExecLog();
+    void setExecLog(String logFile);
+
     String getLevel();
     void setLevel(String level);
 

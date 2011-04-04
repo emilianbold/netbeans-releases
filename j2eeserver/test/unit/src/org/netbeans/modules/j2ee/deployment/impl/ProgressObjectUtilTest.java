@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.util.concurrent.TimeoutException;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -84,7 +85,7 @@ public class ProgressObjectUtilTest extends NbTestCase {
         try {
             assertFalse(ProgressObjectUtil.trackProgressObject(ui, po, 1000));
             fail("the task should time out");
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             // exception should be thrown
         }
         

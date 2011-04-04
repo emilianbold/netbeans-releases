@@ -98,6 +98,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     private final EntityClassScope entityClassScope = EntityClassScopeFactory.createEntityClassScope(scopeImpl);
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
     private final EntityMappingsMetadataModelHelper modelHelper;
+    private static final RequestProcessor RP = new RequestProcessor();
     private final PropertyChangeListener scopeListener = new PropertyChangeListener() {
 
         @Override
@@ -246,7 +247,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     }
 
     private void puChanged() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {

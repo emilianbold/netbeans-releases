@@ -194,7 +194,6 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             }
             try {
                 model.sync();
-                model.refresh();
             } catch (IOException ex) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Error while syncing pom model.", ex);
             }
@@ -208,18 +207,28 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 return err;
             }
 
-            Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
-            Lookup.Result<SelectionPOMFixProvider> res = lkp.lookupResult(SelectionPOMFixProvider.class);
-            for (SelectionPOMFixProvider prov : res.allInstances()) {
-                if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
-                    continue;
+            boolean isInTransaction = model.isIntransaction();
+            if (!isInTransaction && !model.startTransaction()) {
+                return err;
+            }
+            try {
+                Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
+                Lookup.Result<SelectionPOMFixProvider> res = lkp.lookupResult(SelectionPOMFixProvider.class);
+                for (SelectionPOMFixProvider prov : res.allInstances()) {
+                    if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
+                        continue;
+                    }
+                    List<ErrorDescription> lst = prov.getErrorsForDocument(model, project, selectionStart, selectionEnd);
+                    if (lst != null) {
+                        err.addAll(lst);
+                    }
                 }
-                List<ErrorDescription> lst = prov.getErrorsForDocument(model, project, selectionStart, selectionEnd);
-                if (lst != null) {
-                    err.addAll(lst);
+                return err;
+            } finally {
+                if (!isInTransaction && model.isIntransaction()) {
+                    model.endTransaction();
                 }
             }
-            return err;
         }
 
 

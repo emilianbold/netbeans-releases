@@ -31,6 +31,7 @@ import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,9 +75,10 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
                 ClassPath cp  = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
                 boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
                                           cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
-                                          cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
+                                          cp.findResource("com/sun/faces/facelets/Facelet.class") !=null || // NOI18N
+                                          cp.findResource("javax/faces/view/facelets/FaceletContext.class") != null; //NOI18N
                 if (!faceletsPresent) {
-                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "No Facelets Libraries Found");
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TemplatePanel.class, "ERR_NoJSFLibraryFound"));
                     return false;
                 }
             }
@@ -84,13 +86,13 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         return true;
     }
-    
+
     public void addChangeListener(ChangeListener l) {
     }
-    
+
     public void removeChangeListener(ChangeListener l) {
     }
-    
+
     public boolean isFinishPanel() {
         return true;
     }

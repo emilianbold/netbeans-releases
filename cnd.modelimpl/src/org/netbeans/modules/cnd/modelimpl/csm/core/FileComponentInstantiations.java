@@ -45,19 +45,15 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -129,31 +125,8 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         put();
     }
 
-    Collection<CsmInstantiation> getInstantiations() {
-        Collection<CsmInstantiation> out;
-        try {
-            instantiationsLock.readLock().lock();
-            out = UIDCsmConverter.UIDsToInstantiations(instantiations);
-        } finally {
-            instantiationsLock.readLock().unlock();
-        }
-        return out;
-    }
-
-    Iterator<CsmInstantiation> getInstantiations(CsmFilter filter) {
-        Iterator<CsmInstantiation> out;
-        try {
-            instantiationsLock.readLock().lock();
-            out = UIDCsmConverter.UIDsToInstantiations(instantiations, filter);
-
-        } finally {
-            instantiationsLock.readLock().unlock();
-        }
-        return out;
-    }
-
     private Set<CsmUID<CsmInstantiation>> createInstantiations() {
-        return new TreeSet<CsmUID<CsmInstantiation>>(UID_START_OFFSET_COMPARATOR);
+        return new HashSet<CsmUID<CsmInstantiation>>();
     }
 
     @Override
@@ -167,18 +140,4 @@ public class FileComponentInstantiations extends FileComponent implements Persis
             instantiationsLock.readLock().unlock();
         }
     }
-
-    private static final Comparator<CsmUID<?>> UID_START_OFFSET_COMPARATOR = new Comparator<CsmUID<?>>() {
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public int compare(CsmUID<?> o1, CsmUID<?> o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-            Comparable<CsmUID> i1 = (Comparable<CsmUID>) o1;
-            assert i1 != null;
-            return i1.compareTo(o2);
-        }
-    };
 }

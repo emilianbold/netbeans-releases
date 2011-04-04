@@ -221,6 +221,42 @@ public class UtilitiesTest extends TestBase {
         String golden = "try {\n } catch (NullPointerException ex) { } finally {\n }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
+    
+    public void testARMResourceVariable1() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try ($t$) { $stmts$; } catch $catches$", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try ($t$) { $stmts$; }$catches$";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testARMResourceVariable2() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try ($t$; $type $name = $init) { $stmts$; } catch $catches$", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try ($t$ final $type $name = $init;) { $stmts$; }$catches$";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testARMResourceNotVariable() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try ($t $n = $init$) { $stmts$; } catch $catches$", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try (final $t $n = $init$;) { $stmts$; }$catches$";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
 
     public void testGeneralization() throws Exception {
         performGeneralizationTest("package test;\n" +

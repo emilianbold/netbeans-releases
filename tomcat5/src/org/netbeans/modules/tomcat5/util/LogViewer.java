@@ -340,7 +340,9 @@ public class LogViewer extends Thread {
                     }
                 }
             } finally {
-                reader.close();
+                if (reader != null) {
+                    reader.close();
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

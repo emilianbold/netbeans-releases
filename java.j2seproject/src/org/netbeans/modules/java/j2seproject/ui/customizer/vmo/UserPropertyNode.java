@@ -11,19 +11,15 @@ public class UserPropertyNode extends JavaVMOption<OptionValue<Map.Entry<String,
     
     public static final String NAME = "D";
 
-    public UserPropertyNode(Token name, Token value, int start) {
+    public UserPropertyNode(Token name, String value, int start) {
         super(name);
-        setName(NAME);
-        setValue(new OptionValue.StringPair(name.getText(), (value != null ? value.getText() : null)));
+        setName(name.getText());
+        setValue(new OptionValue.StringPair(name.getText(), value));
     }
 
     public UserPropertyNode() {
         super(NAME);
         setValue(new OptionValue.StringPair());        
-    }
-
-    public UserPropertyNode(int cprop, Token name, Token value, int start) {
-        this(name, value, start);
     }
 
     @Override

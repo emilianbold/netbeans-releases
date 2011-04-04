@@ -51,7 +51,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Dialog;
@@ -68,10 +67,12 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
@@ -79,6 +80,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -229,7 +231,9 @@ public class DelegateMethodGenerator implements CodeGenerator {
         while (scope != null && (cls = scope.getEnclosingClass()) != null) {
             DeclaredType type = (DeclaredType) cls.asType();
             for (VariableElement field : ElementFilter.fieldsIn(elements.getAllMembers(cls))) {
-                if (!ERROR.contentEquals(field.getSimpleName()) && !field.asType().getKind().isPrimitive() && trees.isAccessible(scope,
+                TypeMirror fieldType = field.asType();
+                if (!ERROR.contentEquals(field.getSimpleName()) && !fieldType.getKind().isPrimitive()
+                        && (fieldType.getKind() != TypeKind.DECLARED || ((DeclaredType)fieldType).asElement() != cls) && trees.isAccessible(scope,
                         field, type)) {
                     List<ElementNode.Description> descriptions = map.get(field.getEnclosingElement());
                     if (descriptions == null) {
@@ -255,16 +259,21 @@ public class DelegateMethodGenerator implements CodeGenerator {
         if (field.asType().getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) field.asType();
             Trees trees = controller.getTrees();
+            ElementUtilities eu = controller.getElementUtilities();
             Scope scope = controller.getTreeUtilities().scopeFor(caretOffset);
+            TypeElement origin = scope.getEnclosingClass();
             Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             for (ExecutableElement method : ElementFilter.methodsIn(controller.getElements().getAllMembers((TypeElement) type.asElement()))) {
                 if (trees.isAccessible(scope, method, type)) {
-                    List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
-                    if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
-                        map.put(method.getEnclosingElement(), descriptions);
+                    Element impl = eu.getImplementationOf(method, origin);
+                    if (impl == null || (!impl.getModifiers().contains(Modifier.FINAL) && impl.getEnclosingElement() != origin)) { 
+                        List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
+                        if (descriptions == null) {
+                            descriptions = new ArrayList<ElementNode.Description>();
+                            map.put(method.getEnclosingElement(), descriptions);
+                        }
+                        descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
                     }
-                    descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
                 }
             }
             List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();

@@ -154,11 +154,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
             // Cf. ModuleActions.createReloadAction.
             Project app = MavenNbModuleImpl.findAppProject(project);
-            if (app == null) {
-                if (SelectPlatformAppModulePanel.findAppModule(project)) {
-                    app = MavenNbModuleImpl.findAppProject(project);
-                }
-            }
             if (app != null) {
                 if (!FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile()) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbmActionGoalProvider_target_platform_not_running(), NotifyDescriptor.WARNING_MESSAGE));

@@ -78,6 +78,8 @@ public class SyntaxTreeBuilder {
     public static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
     static final String TAG_CANNOT_BE_EMPTY = "tag_cannot_be_empty"; //NOI18N
     static final String UNEXPECTED_SYMBOL_IN_OPEN_TAG = "unexpected_symbol_in_open_tag"; //NOI18N
+    
+    private static final String ARTIFICIAL_NODE_NAME = "_NO_NAME_PROVIDED_"; //NOI18N
 
     //XXX >>> fix this, fake context only!!!
     private static final class Context {
@@ -435,7 +437,7 @@ public class SyntaxTreeBuilder {
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
 
-                AstNode node = new AstNode(null, nodeType, element.offset(),
+                AstNode node = new AstNode(ARTIFICIAL_NODE_NAME, nodeType, element.offset(),
                         element.offset() + element.length(), false);
 
                 copyProblemsFromElementToNode(element, node);

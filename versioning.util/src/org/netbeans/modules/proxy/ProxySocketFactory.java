@@ -46,11 +46,11 @@ package org.netbeans.modules.proxy;
 import javax.net.SocketFactory;
 import java.net.*;
 import java.util.*;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.io.*;
 import java.nio.channels.SocketChannel;
 import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NetworkSettings;
 
 /**
  * Creates sockets capable of connecting through HTTPS and SOCKS proxies.
@@ -60,10 +60,6 @@ import org.netbeans.api.keyring.Keyring;
 public class ProxySocketFactory extends SocketFactory {
     
     private static final int CONNECT_TIMEOUT = 1000 * 20; /// 20 seconds timeout
-    
-    private static final String USE_PROXY_AUTHENTICATION        = "useProxyAuthentication";
-    private static final String PROXY_AUTHENTICATION_USERNAME   = "proxyAuthenticationUsername";
-    private static final String PROXY_AUTHENTICATION_PASSWORD   = "proxyAuthenticationPassword";
     
     private static final String AUTH_NONE = "<none>";
     private static final String AUTH_BASIC = "Basic";
@@ -417,7 +413,7 @@ public class ProxySocketFactory extends SocketFactory {
         List<Proxy> proxies = ProxySelector.getDefault().select(uri);
         IOException lastFailure = null;
         for (Proxy proxy : proxies) {
-            ConnectivitySettings cs = proxyToCs(proxy);
+            ConnectivitySettings cs = proxyToCs(proxy, uri);
             try {
                 Socket s = createSocket(cs, address, timeout);
                 lastKnownSettings.put(address, cs);
@@ -430,7 +426,7 @@ public class ProxySocketFactory extends SocketFactory {
         throw lastFailure;
     }
     
-    private ConnectivitySettings proxyToCs(Proxy proxy) {
+    private ConnectivitySettings proxyToCs(Proxy proxy, URI uri) {
         ConnectivitySettings cs = new ConnectivitySettings();
         InetSocketAddress isa = (InetSocketAddress) proxy.address();
         switch (proxy.type()) {
@@ -443,23 +439,12 @@ public class ProxySocketFactory extends SocketFactory {
         default:
         }
         
-        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core"); // NOI18N    
-        if (prefs.getBoolean(USE_PROXY_AUTHENTICATION, false)) {
-            cs.setProxyUsername(prefs.get(PROXY_AUTHENTICATION_USERNAME, null));
-            cs.setProxyPassword(getProxyPassword(prefs));
+        String prosyUser = NetworkSettings.getAuthenticationUsername(uri);
+        if (prosyUser != null && !prosyUser.isEmpty()) {
+            cs.setProxyUsername(prosyUser);
+            cs.setProxyPassword(Keyring.read(NetworkSettings.getKeyForAuthenticationPassword(uri)));
         }
         return cs;
-    }
-
-    private char[] getProxyPassword (Preferences prefs) {
-        char[] password = null;
-        String old = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
-        if (old == null) {
-            password = Keyring.read(PROXY_AUTHENTICATION_PASSWORD);
-        } else {
-            password = old.toCharArray();
-        }
-        return password;
     }
 
     private void setupProxy(ConnectivitySettings cs, int connectionType, InetSocketAddress inetSocketAddress) {

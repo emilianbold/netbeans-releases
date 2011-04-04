@@ -83,12 +83,14 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -1862,8 +1864,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
 
-                    ReturnTree ret = null;
-                    VariableElement returnAssignTo = null;
+                    Callable<ReturnTree> ret = null;
+                    final VariableElement returnAssignTo;
 
                     if (IntroduceMethodFix.this.returnAssignTo != null) {
                         returnAssignTo = (VariableElement) IntroduceMethodFix.this.returnAssignTo.resolveElement(copy);
@@ -1871,10 +1873,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         if (returnAssignTo == null) {
                             return; //TODO...
                         }
+                    } else {
+                        returnAssignTo = null;
                     }
 
                     if (returnAssignTo != null) {
-                        ret = make.Return(make.Identifier(returnAssignTo.getSimpleName()));
+                        ret = new Callable<ReturnTree>() {
+                            @Override public ReturnTree call() throws Exception {
+                                return make.Return(make.Identifier(returnAssignTo.getSimpleName()));
+                            }
+                        };
                         if (declareVariableForReturnValue) {
                             nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
                             invocation = null;
@@ -1894,15 +1902,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         assert handle != null;
 
-                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN) {
+                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN && returnAssignTo == null) {
                             nueStatements.add(make.Return(invocation));
                         } else {
                             if (ret == null) {
-                                if (exitsFromAllBranches) {
-                                    ret = make.Return(null);
-                                } else {
-                                    ret = make.Return(make.Literal(true));
-                                }
+                                ret = new Callable<ReturnTree>() {
+                                    @Override public ReturnTree call() throws Exception {
+                                        if (exitsFromAllBranches) {
+                                            return make.Return(null);
+                                        } else {
+                                            return make.Return(make.Literal(true));
+                                        }
+                                    }
+                                };
                             }
 
                             for (TreePathHandle h : exists) {
@@ -1912,7 +1924,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                     return ; //TODO...
                                 }
 
-                                copy.rewrite(resolved.getLeaf(), ret);
+                                ReturnTree r = ret.call();
+
+                                GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, false);
+                                GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, true);
+                                
+                                copy.rewrite(resolved.getLeaf(), r);
                             }
 
                             StatementTree branch = null;
@@ -1941,7 +1958,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         invocation = null;
                     } else {
                         if (ret != null) {
-                            methodStatements.add(ret);
+                            methodStatements.add(ret.call());
                         }
                     }
 
@@ -1949,7 +1966,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         nueStatements.add(make.ExpressionStatement(invocation));
 
                     nueStatements.addAll(statements.subList(to + 1, statements.size()));
+                    
+                    Map<Tree, Tree> rewritten = new IdentityHashMap<Tree, Tree>();
 
+                    doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
+                    
                     if (replaceOther) {
                         //handle duplicates
                         Document doc = copy.getDocument();
@@ -1960,7 +1981,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
-                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
+                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(new TreePath(new TreePath(mdd.firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, mdd.firstLeaf.getParentPath().getLeaf())), mdd.firstLeaf.getLeaf()));
                             int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
                             int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
 
@@ -2016,7 +2037,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             newStatements.addAll(parentStatements.subList(mdd.dupeEnd + 1, parentStatements.size()));
 
-                            doReplaceInBlockCatchSingleStatement(copy, mdd.firstLeaf, newStatements);
+                            doReplaceInBlockCatchSingleStatement(copy, rewritten, mdd.firstLeaf, newStatements);
                         }
 
                         introduceBag(doc).clear();
@@ -2065,7 +2086,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
-                    doReplaceInBlockCatchSingleStatement(copy, firstStatement, nueStatements);
                 }
             }).commit();
 
@@ -2074,9 +2094,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     }
 
-    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
+    private static Tree resolveRewritten(Map<Tree, Tree> rewritten, Tree t) {
+        while (rewritten.containsKey(t)) {
+            t = rewritten.get(t);
+        }
+        
+        return t;
+    }
+    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, Map<Tree, Tree> rewritten, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
         TreeMaker make = copy.getTreeMaker();
-        Tree toReplace = firstLeaf.getParentPath().getLeaf();
+        Tree toReplace = resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf());
         Tree nueTree;
 
         switch (toReplace.getKind()) {
@@ -2095,6 +2122,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         copy.rewrite(toReplace, nueTree);
+        rewritten.put(toReplace, nueTree);
     }
 
     private static final class IntroduceExpressionBasedMethodFix implements Fix {

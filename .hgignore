@@ -159,8 +159,6 @@ derby\.log
 ^performance/threaddemo/user\.build\.properties$
 ^php.doc/libdoc/doc\.gzip$
 ^php.doc/libdoc/doc\.html$
-^o.jruby.distro/unpatched_source$
-^o.jruby/patched_source$
 ^o.mozilla.rhino.patched/patched_source$
 ^j2ee.sun.appsrv81/\.keystore$
 ^tomcat5/\.swo$
@@ -170,26 +168,6 @@ derby\.log
 ^versioning/clearcase/JavaApplication21/\.hgignore$
 ^versioning/clearcase/JavaApplication21/\.hg$
 ^versioning/test/qa-functional/data/tck\.properties$
-^visualweb.complib/\.classpath$
-^visualweb.complib/\.project$
-^visualweb.dataconnectivity/doc$
-^visualweb.dataconnectivity/dataconnectivity-doc\.zip$
-^visualweb.ejb/classes$
-^visualweb.jsfsupport/.*\.jpx\.local$
-^visualweb.jsfsupport.designtime/conf$
-^visualweb.jsfsupport.designtime/\.generated$
-^visualweb.jsfsupport.designtime/src/org/netbeans/modules/visualweb/faces/dt/component/.*BeanInfoBase\.java$
-^visualweb.jsfsupport.designtime/src/org/netbeans/modules/visualweb/faces/dt/component/Bundle-JSF\.properties$
-^visualweb.kit/test/data/DefaultDeploymentTargets\.properties$
-^visualweb.rowset/lib$
-^visualweb.rowset/library/lib$
-^performance/visualweb/test/.*\.sh$
-^performance/visualweb/test/qa-functional/src/gui/.*Temp.*$
-^visualweb.webui.designtime/gen$
-^visualweb.webui.designtime/\.generated$
-^visualweb.webui/library/gen$
-^visualweb\.woodstock\.webui\.jsf/test/functional-compile\.mark$
-^visualweb.xhtml/generated$
 ^web\.client\.tools\.internetexplorer/nativesrc/(activescript|Release|Debug|VSIP 8.0)$
 ^web\.client\.tools\.internetexplorer/nativesrc/NetBeansExtension\.(h|ncb|suo|vcproj\..+)$
 ^web\.client\.tools\.internetexplorer/nativesrc/NetBeansExtension_(i|p)\.c$

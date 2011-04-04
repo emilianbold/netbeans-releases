@@ -87,9 +87,12 @@ public final class IndentImpl {
 // XXX: formatting infra cleanup
 //    private Formatter defaultFormatter;
     
-    private Thread lockThread;
-
-    private int lockExtraDepth;
+    private Thread indentLockThread;
+    private int indentLockExtraDepth;
+    private final Object indentLock = new Object();
+    private Thread reformatLockThread;
+    private int reformatLockExtraDepth;
+    private final Object reformatLock = new Object();
     
     public IndentImpl(Document doc) {
         this.doc = doc;
@@ -128,46 +131,50 @@ public final class IndentImpl {
 //        }
 //    }
     
-    public synchronized void indentLock() {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("indentLock() on " + this);
-        }
-        Thread currentThread = Thread.currentThread();
-        while (lockThread != null) {
-            if (currentThread == lockThread) {
-                lockExtraDepth++; // Extra inner lock
-                return;
+    public void indentLock() {
+        synchronized(indentLock) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("indentLock() on " + this);
             }
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new Error("Interrupted at acquiring indent-lock");
+            Thread currentThread = Thread.currentThread();
+            while (indentLockThread != null) {
+                if (currentThread == indentLockThread) {
+                    indentLockExtraDepth++; // Extra inner lock
+                    return;
+                }
+                try {
+                    indentLock.wait();
+                } catch (InterruptedException e) {
+                    throw new Error("Interrupted at acquiring indent-lock");
+                }
             }
+            indentLockThread = currentThread;
+            TaskHandler handler = new TaskHandler(true, doc);
+            if (handler.collectTasks()) {
+                handler.lock();
+            }
+            indentHandler = handler;
         }
-        lockThread = currentThread;
-        TaskHandler handler = new TaskHandler(true, doc);
-        if (handler.collectTasks()) {
-            handler.lock();
-        }
-        indentHandler = handler;
     }
     
-    public synchronized void indentUnlock() {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("indentUnlock() on " + this);
-        }
-        Thread currentThread = Thread.currentThread();
-        if (currentThread != lockThread) {
-            throw new IllegalStateException("Invalid indentUnlock(): current-thread=" + // NOI18N
-                    currentThread + ", lockThread=" + lockThread + ", lockExtraDepth=" + lockExtraDepth); // NOI18N
-        }
-        if (lockExtraDepth == 0) {
-            indentHandler.unlock();
-            indentHandler = null;
-            lockThread = null;
-            notifyAll();
-        } else {
-            lockExtraDepth--;
+    public void indentUnlock() {
+        synchronized(indentLock) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("indentUnlock() on " + this);
+            }
+            Thread currentThread = Thread.currentThread();
+            if (currentThread != indentLockThread) {
+                throw new IllegalStateException("Invalid indentUnlock(): current-thread=" + // NOI18N
+                        currentThread + ", lockThread=" + indentLockThread + ", lockExtraDepth=" + indentLockExtraDepth); // NOI18N
+            }
+            if (indentLockExtraDepth == 0) {
+                indentHandler.unlock();
+                indentHandler = null;
+                indentLockThread = null;
+                indentLock.notifyAll();
+            } else {
+                indentLockExtraDepth--;
+            }
         }
     }
     
@@ -175,27 +182,51 @@ public final class IndentImpl {
         return indentHandler;
     }
     
-    public synchronized void reformatLock() {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("reformatLock() on " + this);
+    public void reformatLock() {
+        synchronized(reformatLock) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("reformatLock() on " + this);
+            }
+            Thread currentThread = Thread.currentThread();
+            while (reformatLockThread != null) {
+                if (currentThread == reformatLockThread) {
+                    reformatLockExtraDepth++; // Extra inner lock
+                    return;
+                }
+                try {
+                    reformatLock.wait();
+                } catch (InterruptedException e) {
+                    throw new Error("Interrupted at acquiring reformat-lock");
+                }
+            }
+            reformatLockThread = currentThread;
+            TaskHandler handler = new TaskHandler(false, doc);
+            if (handler.collectTasks()) {
+                handler.lock();
+            }
+            reformatHandler = handler;
         }
-        if (reformatHandler != null)
-            throw new IllegalStateException("Already locked");
-        TaskHandler handler = new TaskHandler(false, doc);
-        if (handler.collectTasks()) {
-            handler.lock();
-        }
-        reformatHandler = handler;
     }
     
-    public synchronized void reformatUnlock() {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("reformatUnlock() on " + this);
+    public void reformatUnlock() {
+        synchronized(reformatLock) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("reformatUnlock() on " + this);
+            }
+            Thread currentThread = Thread.currentThread();
+            if (currentThread != reformatLockThread) {
+                throw new IllegalStateException("Invalid reformatUnlock(): current-thread=" + // NOI18N
+                        currentThread + ", lockThread=" + reformatLockThread + ", lockExtraDepth=" + reformatLockExtraDepth); // NOI18N
+            }
+            if (reformatLockExtraDepth == 0) {
+                reformatHandler.unlock();
+                reformatHandler = null;
+                reformatLockThread = null;
+                reformatLock.notifyAll();
+            } else {
+                reformatLockExtraDepth--;
+            }
         }
-        if (reformatHandler == null)
-            throw new IllegalStateException("Already unlocked");
-        reformatHandler.unlock();
-        reformatHandler = null;
     }
     
     public TaskHandler reformatHandler() {
@@ -299,7 +330,7 @@ public final class IndentImpl {
         }
     }
 
-    public void reformat(int startOffset, int endOffset) throws BadLocationException {
+    public void reformat(int startOffset, int endOffset, int caretOffset) throws BadLocationException {
         if (startOffset > endOffset) {
             throw new IllegalArgumentException("startOffset=" + startOffset + " > endOffset=" + endOffset); // NOI18N
         }
@@ -314,6 +345,7 @@ public final class IndentImpl {
             if (runUnlocked) {
                 reformatHandler.collectTasks();
             }
+            reformatHandler.setCaretOffset(caretOffset);
 // XXX: formatting infra cleanup
 //            boolean done = false;
             if (reformatHandler.hasItems()) {

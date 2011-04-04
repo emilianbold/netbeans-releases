@@ -66,7 +66,7 @@ public class JEE6WsValidation extends WsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6WsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6WsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
                 "testSetSOAP",

@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 import org.netbeans.modules.dlight.util.ui.DualPaneSupport;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.DataRowNode;
+import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponent;
 import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponentsProvider;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.ui.AdvancedDataRowTableOutline;
@@ -154,7 +155,7 @@ public final class AdvancedTableViewVisualizer extends TableViewVisualizer<Advan
         }
 
         @Override
-        public List<Component> getToolbarComponents() {
+        public List<VisualizerToolbarComponent> getToolbarComponents() {
             return orig.getToolbarComponents();
         }
 

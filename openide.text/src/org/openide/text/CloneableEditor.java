@@ -967,6 +967,39 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return new Dimension(bounds.width / 2, bounds.height / 2);
     }
 
+    @Override
+    public void open() {
+        dockIfNeeded();
+        super.open();
+    }
+
+    /** Dock this top component to editor mode if it is not docked
+     * in some mode at this time  */
+    private void dockIfNeeded() {
+        // dock into editor mode if possible
+        Mode ourMode = WindowManager.getDefault().findMode(this);
+        if( null == ourMode ) {
+            //dock into 'editor' mode to avoid being tagged as a pre-version-4.0
+            //TopComponent that is allowed to be drag and dropped outside the editor area
+
+            //first check the active mode as it might be a floating editor window
+            TopComponent activeTc = TopComponent.getRegistry().getActivated();
+            if( null != activeTc ) {
+                ourMode = WindowManager.getDefault().findMode( activeTc );
+                if( !WindowManager.getDefault().isEditorMode( ourMode ) )
+                    ourMode = null;
+            }
+            if( null == ourMode )
+                ourMode = WindowManager.getDefault().findMode( "editor" );
+            if( null != ourMode ) {
+                 ourMode.dockInto( this );
+            } else {
+                //should not happen - editor mode is always defined
+                Logger.getAnonymousLogger().warning("The window system cannot find the default editor mode." );
+            }
+        }
+    }
+
     private Action getAction(String key) {
         if (key == null) {
             return null;

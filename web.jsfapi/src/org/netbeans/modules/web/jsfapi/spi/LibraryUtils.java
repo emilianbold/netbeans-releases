@@ -249,7 +249,7 @@ public class LibraryUtils {
                             indent.reindent(originalInsertPosition, originalInsertPosition + offset_shift);
 
                         } catch (BadLocationException ex) {
-                            Logger.global.log(Level.INFO, null, ex);
+                            Logger.getAnonymousLogger().log(Level.INFO, null, ex);
                         }
                     }
                 });
@@ -260,7 +260,7 @@ public class LibraryUtils {
             return imports; //return the remained libraries which should be those really imported
 
         } catch (ParseException ex) {
-            Logger.global.log(Level.INFO, null, ex);
+            Logger.getAnonymousLogger().log(Level.INFO, null, ex);
         }
 
         return Collections.emptyMap();

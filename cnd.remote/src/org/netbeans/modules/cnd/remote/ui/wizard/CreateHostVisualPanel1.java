@@ -64,6 +64,8 @@ import org.openide.util.NbBundle;
     public CreateHostVisualPanel1(CreateHostData data, final ChangeListener listener) {
         this.data = data;
         initComponents();
+        lblUser.setVisible(data.isManagingUser());
+        textUser.setVisible(data.isManagingUser());
         textPort.setText(Integer.toString(22));
         textHostname.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -118,6 +120,7 @@ import org.openide.util.NbBundle;
     }
 
     void init() {
+        textUser.setText(data.getUserName());
         textPort.setText(Integer.toString(data.getPort()));
     }
 
@@ -127,16 +130,22 @@ import org.openide.util.NbBundle;
     }
 
     public String getHostname() {
-        return textHostname.getText();
+        return textHostname.getText().trim();
     }
 
+    public String getUser() {
+        return textUser.getText().trim();
+    }
+    
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        textUser.setEnabled(enabled);
         textHostname.setEnabled(enabled);
         textHostname.setEditable(enabled);
         textPort.setEnabled(enabled);
         textPort.setEditable(enabled);
+        lblUser.setEnabled(enabled);
         lblHostName.setEnabled(enabled);
         lblNeighbouthood.setEnabled(enabled);
         lblPort.setEnabled(enabled);
@@ -149,7 +158,7 @@ import org.openide.util.NbBundle;
         }
 
         try {
-            return Integer.valueOf(Integer.parseInt(textPort.getText()));
+            return Integer.valueOf(Integer.parseInt(textPort.getText().trim()));
         } catch(NumberFormatException e) {
             //return Integer.valueOf(ExecutionEnvironmentFactory.DEFAULT_PORT);
             return null;
@@ -172,6 +181,8 @@ import org.openide.util.NbBundle;
         pbarStatusPanel = new javax.swing.JPanel();
         lblPort = new javax.swing.JLabel();
         textPort = new org.netbeans.modules.cnd.remote.ui.wizard.PortTextField();
+        lblUser = new javax.swing.JLabel();
+        textUser = new javax.swing.JTextField();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
@@ -203,27 +214,42 @@ import org.openide.util.NbBundle;
 
         textPort.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.textPort.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblUser, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.lblUser.text")); // NOI18N
+
+        textUser.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel1.class, "CreateHostVisualPanel1.textUser.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lblHostName)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textHostname, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblPort)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lblNeighbouthood)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(lblNeighbouthood)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(lblUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblHostName))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(textUser, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                            .addComponent(textHostname, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblPort)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblUser)
+                    .addComponent(textUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textHostname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblHostName)
@@ -232,7 +258,7 @@ import org.openide.util.NbBundle;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblNeighbouthood)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -251,10 +277,12 @@ import org.openide.util.NbBundle;
     private javax.swing.JLabel lblHostName;
     private javax.swing.JLabel lblNeighbouthood;
     private javax.swing.JLabel lblPort;
+    private javax.swing.JLabel lblUser;
     private javax.swing.JPanel pbarStatusPanel;
     private javax.swing.JTable tableHostsList;
     private javax.swing.JTextField textHostname;
     private org.netbeans.modules.cnd.remote.ui.wizard.PortTextField textPort;
+    private javax.swing.JTextField textUser;
     // End of variables declaration//GEN-END:variables
 
     private class HostTable extends JTable {

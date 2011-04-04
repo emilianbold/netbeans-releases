@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
+import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -58,7 +59,7 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
     public RefreshSlow() {
         super();
         set(true);
-        ignoreRecursiveListener = true;
+        ignoreRecursiveListener = Watcher.isEnabled();
     }
 
     @Override
@@ -139,9 +140,5 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
 
     void estimate(int cnt) {
         this.size = cnt;
-    }
-
-    final void setIgnoreRecursiveListener(boolean b) {
-        ignoreRecursiveListener = b;
     }
 }

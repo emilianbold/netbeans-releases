@@ -7,20 +7,23 @@ package ${PACKAGE_NAME};
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CallableSystemAction;
 
 // An example action demonstrating how the wizard could be called from within
-// your code. You can copy-paste the code below wherever you need.
-public final class ${WIZARD_PREFIX}WizardAction extends CallableSystemAction {
+// your code. You can move the code below wherever you need, or register an action:
+// @ActionID(category="...", id="${PACKAGE_NAME}.${WIZARD_PREFIX}WizardAction")
+// @ActionRegistration(displayName="Open ${WIZARD_PREFIX} Wizard")
+// @ActionReference(path="Menu/Tools", position=...)
+public final class ${WIZARD_PREFIX}WizardAction implements ActionListener {
 
     private WizardDescriptor.Panel[] panels;
 
-    public void performAction() {
+    public @Override void actionPerformed(ActionEvent e) {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
@@ -67,24 +70,6 @@ public final class ${WIZARD_PREFIX}WizardAction extends CallableSystemAction {
             }
         }
         return panels;
-    }
-
-    public String getName() {
-        return "Start Sample Wizard";
-    }
-
-    @Override
-    public String iconResource() {
-        return null;
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
     }
 
 }

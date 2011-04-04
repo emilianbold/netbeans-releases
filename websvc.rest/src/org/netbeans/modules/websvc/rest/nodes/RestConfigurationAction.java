@@ -116,7 +116,7 @@ public class RestConfigurationAction extends NodeAction  {
                         isJerseyLib,
                         restSupport.getAntProjectHelper() != null 
                             && RestUtils.isAnnotationConfigAvailable(project),
-                        restSupport.getServerJerseyLibrary()!=null);
+                        restSupport.hasJerseyLibrary());
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
                     NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
@@ -176,7 +176,7 @@ public class RestConfigurationAction extends NodeAction  {
                         // add jersey library
                         boolean added = false;
                         if ( configPanel.isServerJerseyLibSelected() ){
-                            added = restSupport.addDeployableServerJerseyLibrary();
+                            added = restSupport.addDeployableServerJerseyLibraries();
                         }
                         if (!added || addJersey) {
                             Library swdpLibrary = LibraryManager.getDefault()

@@ -323,7 +323,7 @@ public final class SuiteUtils {
                             FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
                                     getFileObject("nbproject/platform.properties"); // NOI18N
                             FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
-                            if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                            if (subModuleNbProject != null && subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
                                 FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
                             }
                         }

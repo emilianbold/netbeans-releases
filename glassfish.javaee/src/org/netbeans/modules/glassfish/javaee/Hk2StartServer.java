@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -445,6 +445,32 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
 
                 @Override
                 public void operationStateChanged(OperationState newState, String message) {
+                    if (OperationState.COMPLETED.equals(newState)) {
+                        // Make sure the server really is ready before we
+                        // advertise that it is ready
+                        try {
+                            int t = 0;
+                            Logger.getLogger("glassfish-javaee").log(Level.FINE,"t == {0}", t); // NOI18N
+
+                            // Wait for the profiler to start completely...
+                            while (!(ProfilerSupport.getState() == ProfilerSupport.STATE_PROFILING) &&
+                                    t < 30000) {
+                                Thread.sleep(1000);
+                                t += 1000;
+                                Logger.getLogger("glassfish-javaee").log(Level.FINE,"t.1 == {0}", t);  // NOI18N
+                            }
+
+                            // Wait for the admin port to be 'running'
+                            while (!Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
+                                    ip.getProperty(GlassfishModule.ADMINPORT_ATTR)) && t < 60000) {
+                                Thread.sleep(1000);
+                                t += 1000;
+                                Logger.getLogger("glassfish-javaee").log(Level.FINE,"t.2 == {0}", t);  // NOI18N
+                            }
+                            Logger.getLogger("glassfish-javaee").log(Level.FINE, "t.3 == {0}", t);  // NOI18N
+                        } catch (InterruptedException ex) {
+                        }
+                    }
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                             CommandType.START, translateState(newState), ActionType.EXECUTE,
                             message));
@@ -453,5 +479,4 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         }
         return this;
     }
-
 }

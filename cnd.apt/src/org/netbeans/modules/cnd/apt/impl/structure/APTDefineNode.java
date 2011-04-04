@@ -98,6 +98,11 @@ public final class APTDefineNode extends APTMacroBaseNode
         super(token);
     }
 
+    /** Creates a new instance of APTDefineNode for pragma once*/
+    public APTDefineNode(APTToken token, APTToken fileName) {
+        super(token, fileName);
+    }
+
     @Override
     public final int getType() {
         return APT.Type.DEFINE;

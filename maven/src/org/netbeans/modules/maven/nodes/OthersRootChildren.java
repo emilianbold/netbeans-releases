@@ -54,7 +54,7 @@ import javax.swing.Icon;
 import org.apache.maven.model.Resource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.MavenSourcesImpl;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.VisibilityQueryDataFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;

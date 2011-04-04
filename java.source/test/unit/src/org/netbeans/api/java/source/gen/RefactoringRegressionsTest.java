@@ -43,6 +43,10 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.util.TreePath;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -59,7 +63,7 @@ import static org.netbeans.api.java.source.JavaSource.*;
 
 /**
  *
- * @author Pavel Flaska
+ * @author Pavel Flaska, Jan Becicka
  */
 public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
 
@@ -624,6 +628,213 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
             }
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAnnotatedParameters196719a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t(@SuppressWarnings(\"\") int aa, long bb) {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t(@SuppressWarnings(\"\") int cc, long bb) {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+                VariableTree param = mt.getParameters().get(0);
+
+                workingCopy.rewrite(param, workingCopy.getTreeMaker().setLabel(param, "cc"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAnnotatedParameters196719b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t(@SuppressWarnings(\"\") int aa, long bb) {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void x(@SuppressWarnings(\"\") int aa, long bb) {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(mt, workingCopy.getTreeMaker().setLabel(mt, "x"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAnnotatedParameters196719c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void t() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void x() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(mt, workingCopy.getTreeMaker().setLabel(mt, "x"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test197057() throws Exception {
+        System.err.println("test197057");
+
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void a() {\n" +
+            "       //a\n" +
+            "    }\n" +
+            "    private void b() {\n" +
+            "       //b\n" +
+            "    }\n" +
+            "}\n" +
+            "class A {\n" +
+            "}\n");
+
+
+
+         String golden =
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void a() {\n" +
+            "       //a\n" +
+            "    }\n" +
+            "    private void b() {\n" +
+            "       //b\n" +
+            "    }\n" +
+            "}\n" +
+            "class A {\n\n" +
+            "    private void a() {\n" +
+            "        //a\n" +
+            "    }\n\n" +
+            "    private void b() {\n" +
+            "        //b\n" +
+            "    }\n" +
+            "}\n";
+
+
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree dest = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(1);
+                ClassTree newDest;
+
+                MethodTree a = (MethodTree) clazz.getMembers().get(1);
+                MethodTree b = (MethodTree) clazz.getMembers().get(2);
+
+                GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                TreePath mpath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), a);
+                Tree newMethodTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
+                newMethodTree = genUtils.importFQNs(newMethodTree);
+
+                MethodTree oldOne = (MethodTree) newMethodTree;
+                MethodTree newm = make.Method(
+                        oldOne.getModifiers(),
+                        oldOne.getName(),
+                        oldOne.getReturnType(),
+                        oldOne.getTypeParameters(),
+                        oldOne.getParameters(),
+                        oldOne.getThrows(),
+                        oldOne.getBody(),
+                        (ExpressionTree) oldOne.getDefaultValue());
+                //RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                newDest = genUtils.insertClassMember(dest, newm);
+
+                mpath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), b);
+                newMethodTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
+                newMethodTree = genUtils.importFQNs(newMethodTree);
+
+                oldOne = (MethodTree) newMethodTree;
+                newm = make.Method(
+                        oldOne.getModifiers(),
+                        oldOne.getName(),
+                        oldOne.getReturnType(),
+                        oldOne.getTypeParameters(),
+                        oldOne.getParameters(),
+                        oldOne.getThrows(),
+                        oldOne.getBody(),
+                        (ExpressionTree) oldOne.getDefaultValue());
+                //RetoucheUtils.copyJavadoc(methodElm, m, workingCopy);
+                newDest = genUtils.insertClassMember(newDest, newm);
+
+                workingCopy.rewrite(dest, newDest);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);

@@ -73,6 +73,8 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -134,6 +136,196 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
         return ((WLDeploymentManager) dm).getJ2eePlatformImpl();
     }
+    
+    public static List<URL> getWLSClassPath(@NonNull File platformRoot,
+            @NullAllowed File mwHome, @NullAllowed J2eePlatformImplImpl j2eePlatform) {
+
+        List<URL> list = new ArrayList<URL>();
+        try {
+            // the WLS jar is intentional
+            File weblogicFile = new File(platformRoot, WLPluginProperties.WEBLOGIC_JAR);
+            if (weblogicFile.exists()) {
+                list.add(fileToUrl(weblogicFile));
+            }
+            File apiFile = new File(platformRoot, "server/lib/api.jar"); // NOI18N
+            if (apiFile.exists()) {
+                list.add(fileToUrl(apiFile));
+                list.addAll(getJarClassPath(apiFile));
+            }
+
+            // patches
+            // FIXME multiple versions under same middleware
+            if (mwHome != null) {
+                File[] patchDirCandidates = mwHome.listFiles(PATCH_DIR_FILTER);
+                if (patchDirCandidates != null) {
+                    for (File candidate : patchDirCandidates) {
+                        File jarFile = FileUtil.normalizeFile(new File(candidate,
+                                "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
+                        if (jarFile.exists()) {
+                            list.add(fileToUrl(jarFile));
+                            List<URL> deps = getJarClassPath(jarFile);
+                            list.addAll(deps);
+                            for (URL dep : deps) {
+                                List<URL> innerDeps = getJarClassPath(dep);
+                                list.addAll(innerDeps);
+                                for (URL innerDep : innerDeps) {
+                                    if (innerDep.getPath().contains("patch_jars")) { // NOI18N
+                                        list.addAll(getJarClassPath(innerDep));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // oepe contributions
+            if (weblogicFile.exists()) {
+                List<URL> cp = getJarClassPath(weblogicFile);
+                URL oepe = null;
+                for (URL cpElem : cp) {
+                    if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
+                        oepe = cpElem;
+                        //list.add(oepe);
+                        break;
+                    }
+                }
+                if (oepe != null) {
+                    list.addAll(getJarClassPath(oepe));
+                }
+            }
+
+            addPersistenceLibrary(list, mwHome, j2eePlatform);
+
+            // file needed for jsp parsing WL9 and WL10
+            list.add(fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
+        } catch (MalformedURLException e) {
+            LOGGER.log(Level.WARNING, null, e);
+        }
+        return list;
+    }
+    
+    /**
+     * Converts a file to the URI in system resources.
+     * Copied from the plugin for Sun Appserver 8
+     * 
+     * @param file a file to be converted
+     * 
+     * @return the resulting URI
+     */
+    static URL fileToUrl(File file) throws MalformedURLException {
+        URL url = file.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        }
+        return url;
+    }
+
+    // package for tests only
+    static List<URL> getJarClassPath(URL url) {
+        URL fileUrl = FileUtil.getArchiveFile(url);
+        if (fileUrl != null) {
+            FileObject fo = URLMapper.findFileObject(fileUrl);
+            if (fo != null) {
+                File file = FileUtil.toFile(fo);
+                if (file != null) {
+                    return getJarClassPath(file);
+                }
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    // package for tests only
+    static List<URL> getJarClassPath(File jarFile) {
+        List<URL> urls = new ArrayList<URL>();
+
+        try {
+            JarFile file = new JarFile(jarFile);
+            try {
+                Manifest manifest = file.getManifest();
+                Attributes attrs = manifest.getMainAttributes();
+                String value = attrs.getValue("Class-Path"); //NOI18N
+                if (value != null) {
+                    String[] values = value.split("\\s+"); // NOI18N
+                    File parent = FileUtil.normalizeFile(jarFile).getParentFile();
+                    if (parent != null) {
+                        for (String cpElement : values) {
+                            if (!"".equals(cpElement.trim())) { // NOI18N
+                                File f = new File(cpElement);
+                                if (!f.isAbsolute()) {
+                                    f = new File(parent, cpElement);
+                                }
+                                f = FileUtil.normalizeFile(f);
+                                if (!f.exists()) {
+                                    continue;
+                                }
+                                urls.add(fileToUrl(f));
+                            }
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Could not read WebLogic JAR", ex);
+            } finally {
+                file.close();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not open WebLogic JAR", ex);
+        }
+
+        return urls;
+    }    
+    
+    //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
+    // method checks whether there is already persistence API present in the list
+    private static void addPersistenceLibrary(List<URL> list, @NullAllowed File middleware,
+            @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
+
+        boolean foundJpa2 = false;
+        boolean foundJpa1 = false;
+        for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
+            URL archiveUrl = FileUtil.getArchiveFile(it.next());
+            if (archiveUrl != null) {
+                if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                    foundJpa2 = true;
+                    break;
+                } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
+                    foundJpa1 = true;
+                    break;
+                }
+            }
+        }  
+
+        if (j2eePlatform != null) {
+            synchronized (j2eePlatform) {
+                j2eePlatform.jpa2Available = foundJpa2;
+            }
+        }
+        if (foundJpa2 || foundJpa1) {
+            return;
+        }
+
+        if (middleware != null) {
+            File modules = new File(middleware, "modules"); // NOI18N
+            if (modules.exists() && modules.isDirectory()) {
+                File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
+                    }
+                });
+                if (persistenceCandidates.length > 0) {
+                    for (File candidate : persistenceCandidates) {
+                        list.add(fileToUrl(candidate));
+                    }
+                    if (persistenceCandidates.length > 1) {
+                        LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
+                    }
+                }
+            }
+        }
+    }     
     
     public static class J2eePlatformImplImpl extends J2eePlatformImpl2 {
 
@@ -220,7 +412,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             // shortcut
-            if (!"openJpaPersistenceProviderIsDefault".equals(toolName) // NOI18N
+            if (!"openJpaPersistenceProviderIsDefault1.0".equals(toolName) // NOI18N
                     && !"eclipseLinkPersistenceProviderIsDefault".equals(toolName) // NOI18N
                     && !OPENJPA_JPA_PROVIDER.equals(toolName)
                     && !ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
@@ -229,7 +421,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // JPA provider part
             String currentDefaultJpaProvider = getDefaultJpaProvider();
-            if ("openJpaPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+            if ("openJpaPersistenceProviderIsDefault1.0".equals(toolName)) { // NOI18N
                 return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
             }
             if ("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
@@ -307,21 +499,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         @Override
         public File getMiddlewareHome() {
-            File platformRootFile = new File(getPlatformRoot());
-            File middleware = null;
-            String mwHome = dm.getProductProperties().getMiddlewareHome();
-            if (mwHome != null) {
-                middleware = new File(mwHome);
-            }
-            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
-                middleware = platformRootFile.getParentFile();
-            }
-
-            // make guess :(
-            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
-                return middleware;
-            }
-            return null;
+            return WLPluginProperties.getMiddlewareHome(getServerHome());
         }        
 
         @Override
@@ -413,64 +591,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // add the required jars to the library
             try {
                 List<URL> list = new ArrayList<URL>();
-                // the WLS jar is intentional
-                File weblogicFile = new File(getPlatformRoot(), WLPluginProperties.WEBLOGIC_JAR);
-                if (weblogicFile.exists()) {
-                    list.add(fileToUrl(weblogicFile));
-                }
-                File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
-                if (apiFile.exists()) {
-                    list.add(fileToUrl(apiFile));
-                    list.addAll(getJarClassPath(apiFile));
-                }
-                
-                // patches
-                // FIXME multiple versions under same middleware
-                File mwHome = getMiddlewareHome();
-                if (mwHome != null) {
-                    File[] patchDirCandidates = mwHome.listFiles(PATCH_DIR_FILTER);
-                    if (patchDirCandidates != null) {
-                        for (File candidate : patchDirCandidates) {
-                            File jarFile = FileUtil.normalizeFile(new File(candidate,
-                                    "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
-                            if (jarFile.exists()) {
-                                list.add(fileToUrl(jarFile));
-                                List<URL> deps = getJarClassPath(jarFile);
-                                list.addAll(deps);
-                                for (URL dep : deps) {
-                                    List<URL> innerDeps = getJarClassPath(dep);
-                                    list.addAll(innerDeps);
-                                    for (URL innerDep : innerDeps) {
-                                        if (innerDep.getPath().contains("patch_jars")) { // NOI18N
-                                            list.addAll(getJarClassPath(innerDep));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // oepe contributions
-                if (weblogicFile.exists()) {
-                    List<URL> cp = getJarClassPath(weblogicFile);
-                    URL oepe = null;
-                    for (URL cpElem : cp) {
-                        if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
-                            oepe = cpElem;
-                            //list.add(oepe);
-                            break;
-                        }
-                    }
-                    if (oepe != null) {
-                        list.addAll(getJarClassPath(oepe));
-                    }
-                }
-                
-                addPersistenceLibrary(list);
-
-                // file needed for jsp parsing WL9 and WL10
-                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar"))); // NOI18N
+                list.addAll(getWLSClassPath(getServerHome(), getMiddlewareHome(), this));
 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
@@ -603,126 +724,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          */
         public String getDisplayName() {
             return NbBundle.getMessage(WLJ2eePlatformFactory.class, "PLATFORM_NAME"); // NOI18N
-        }
-
-        //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
-        // method checks whether there is already persistence API present in the list
-        private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
-            boolean foundJpa2 = false;
-            boolean foundJpa1 = false;
-            for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
-                URL archiveUrl = FileUtil.getArchiveFile(it.next());
-                if (archiveUrl != null) {
-                    if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
-                        foundJpa2 = true;
-                        break;
-                    } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
-                        foundJpa1 = true;
-                        break;
-                    }
-                }
-            }  
-            
-            synchronized (this) {
-                jpa2Available = foundJpa2;
-            }
-            if (foundJpa2 || foundJpa1) {
-                return;
-            }
-            
-            File middleware = getMiddlewareHome();
-            if (middleware != null) {
-                File modules = new File(middleware, "modules"); // NOI18N
-                if (modules.exists() && modules.isDirectory()) {
-                    File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String name) {
-                            return JAVAX_PERSISTENCE_PATTERN.matcher(name).matches();
-                        }
-                    });
-                    if (persistenceCandidates.length > 0) {
-                        for (File candidate : persistenceCandidates) {
-                            list.add(fileToUrl(candidate));
-                        }
-                        if (persistenceCandidates.length > 1) {
-                            LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Converts a file to the URI in system resources.
-         * Copied from the plugin for Sun Appserver 8
-         * 
-         * @param file a file to be converted
-         * 
-         * @return the resulting URI
-         */
-        private static URL fileToUrl(File file) throws MalformedURLException {
-            URL url = file.toURI().toURL();
-            if (FileUtil.isArchiveFile(url)) {
-                url = FileUtil.getArchiveRoot(url);
-            }
-            return url;
-        }
-        
-        // package for tests only
-        static List<URL> getJarClassPath(URL url) {
-            URL fileUrl = FileUtil.getArchiveFile(url);
-            if (fileUrl != null) {
-                FileObject fo = URLMapper.findFileObject(fileUrl);
-                if (fo != null) {
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        return getJarClassPath(file);
-                    }
-                }
-            }
-            return Collections.emptyList();
-        }
-        
-        // package for tests only
-        static List<URL> getJarClassPath(File jarFile) {
-            List<URL> urls = new ArrayList<URL>();
-
-            try {
-                JarFile file = new JarFile(jarFile);
-                try {
-                    Manifest manifest = file.getManifest();
-                    Attributes attrs = manifest.getMainAttributes();
-                    String value = attrs.getValue("Class-Path"); //NOI18N
-                    if (value != null) {
-                        String[] values = value.split("\\s+"); // NOI18N
-                        File parent = FileUtil.normalizeFile(jarFile).getParentFile();
-                        if (parent != null) {
-                            for (String cpElement : values) {
-                                if (!"".equals(cpElement.trim())) { // NOI18N
-                                    File f = new File(cpElement);
-                                    if (!f.isAbsolute()) {
-                                        f = new File(parent, cpElement);
-                                    }
-                                    f = FileUtil.normalizeFile(f);
-                                    if (!f.exists()) {
-                                        continue;
-                                    }
-                                    urls.add(fileToUrl(f));
-                                }
-                            }
-                        }
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Could not read WebLogic JAR", ex);
-                } finally {
-                    file.close();
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Could not open WebLogic JAR", ex);
-            }
-
-            return urls;
-        }        
+        }     
         
         private String getPlatformRoot() {
             if (platformRoot == null) {

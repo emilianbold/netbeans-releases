@@ -65,9 +65,11 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulationException;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -82,6 +84,8 @@ import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.openide.util.Exceptions;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -207,6 +211,7 @@ public final class MavenEmbedder {
 
 
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
+        setUpLegacySupport();
         ArtifactResolutionRequest req = new ArtifactResolutionRequest();
         req.setLocalRepository(localRepository);
         req.setRemoteRepositories(remoteRepositories);
@@ -286,4 +291,16 @@ public final class MavenEmbedder {
 
         return req;
     }
+
+    /**
+     * Needed to avoid an NPE in {@link org.sonatype.aether.impl.internal.DefaultArtifactResolver#resolveArtifacts} under some conditions.
+     * (Also {@link org.sonatype.aether.impl.internal.DefaultMetadataResolver#resolve}; wherever a {@link org.sonatype.aether.RepositorySystemSession} is used.)
+     * Should be called in the same thread as whatever thread was throwing the NPE.
+     */
+    public void setUpLegacySupport() {
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(getLocalRepository().getBasedir()));
+        lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
+    }
+
 }

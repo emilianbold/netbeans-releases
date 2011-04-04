@@ -393,7 +393,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         run ();
         if (!authorized) {
             // connection to tomcat manager has not been authorized
-            String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_AuthorizationFailed");
+            String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_AuthorizationFailed",
+                    tm.isTomcat70() ? "manager-script" : "manager");
             IllegalStateException ise = new IllegalStateException(errMsg);
             throw (IllegalStateException)ise.initCause(new AuthorizationException());
         }
@@ -426,10 +427,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING)) {
                         modules.add (new TomcatModule (t, ctx, path));
                     }
-                }
-                catch (java.util.NoSuchElementException e) {
+                } catch (java.util.NoSuchElementException e) {
                     // invalid value
-                    e.printStackTrace ();
+                    LOGGER.log(Level.FINE, line, e);
+                    System.err.println(line);
+                    e.printStackTrace();
                 }
             }
         }

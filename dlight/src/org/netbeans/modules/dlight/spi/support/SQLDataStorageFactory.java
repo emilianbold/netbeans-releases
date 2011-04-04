@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 
 /**
  * Please be sure you have connected the database at the time it was created
