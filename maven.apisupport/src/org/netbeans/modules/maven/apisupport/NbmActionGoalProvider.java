@@ -144,6 +144,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (ActionProvider.COMMAND_RUN.equals(action) || ActionProvider.COMMAND_DEBUG.equals(action)) {
             return hasNbm(project) || isPlatformApp(project);
         }
+        if (ActionProvider.COMMAND_TEST.equals(action)) {
+            return isPlatformApp(project);
+        }
         return false;
     }
 
@@ -174,6 +177,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
+                !ActionProvider.COMMAND_TEST.equals(actionName) &&
                 !NBMRELOAD.equals(actionName)) {
             return null;
         }
@@ -196,6 +200,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
+                !ActionProvider.COMMAND_TEST.equals(actionName) &&
                 !NBMRELOAD.equals(actionName)) {
             return null;
         }

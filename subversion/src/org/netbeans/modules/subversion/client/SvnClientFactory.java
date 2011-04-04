@@ -405,6 +405,8 @@ public class SvnClientFactory {
                 adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             }
         };
+        LOG.fine("Setting svnkit prop: svnkit.http.methods=Basic");
+        System.setProperty("svnkit.http.methods", "Basic"); //NOI18N
         LOG.info("svnClientAdapter running on svnkit");
         return true;
     }

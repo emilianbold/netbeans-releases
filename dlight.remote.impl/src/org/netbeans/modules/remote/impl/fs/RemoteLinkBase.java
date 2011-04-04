@@ -51,6 +51,7 @@ import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -214,6 +215,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         }
     }
 
+    @Override
+    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        // all work in it's wrapped delegate
+        RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
+    }
+    
     @Override
     public FileObject createFolder(String name) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
