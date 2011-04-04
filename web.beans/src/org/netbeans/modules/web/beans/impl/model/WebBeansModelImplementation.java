@@ -84,6 +84,14 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     {
         return new WebBeansModelImplementation( unit );
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getBeansModel()
+     */
+    @Override
+    public BeansModel getBeansModel() {
+        return super.getBeansModel();
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#isReady()
@@ -134,14 +142,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     @Override
     protected WebBeansModel getModel() {
         return super.getModel();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getBeansModel()
-     */
-    @Override
-    protected BeansModel getBeansModel() {
-        return super.getBeansModel();
     }
     
     Map<String,PersistentObjectManager<BindingQualifier>> getManagers(){

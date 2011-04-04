@@ -44,9 +44,9 @@ package org.netbeans.modules.web.beans.navigation;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,8 +61,9 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.openide.filesystems.FileObject;
 
 
@@ -70,34 +71,33 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-public final class InterceptorsModel extends DefaultTreeModel 
-    implements JavaHierarchyModel 
+public final class DecoratorsModel extends DefaultTreeModel implements
+        JavaHierarchyModel
 {
-
-    private static final long serialVersionUID = 8135037731227112414L;
+    
+    private static final long serialVersionUID = 5096971301097791384L;
     
     private static final Logger LOG = Logger.getLogger(
-            InterceptorsModel.class.getName());
-    
-    public InterceptorsModel( InterceptorsResult result ,
-            CompilationController controller ,MetadataModel<WebBeansModel> model ) 
+            DecoratorsModel.class.getName());
+
+    public DecoratorsModel( Collection<TypeElement> decorators , 
+            BeansModel beansModel, CompilationController controller ,
+            MetadataModel<WebBeansModel> model) 
     {
-        super( null );
+        super(null);
         myModel = model;
-        List<TypeElement> interceptors = result.getAllInterceptors();
-        myHandles = new ArrayList<ElementHandle<TypeElement>>( interceptors.size());
-        myDisabledInterceptors = new HashSet<ElementHandle<TypeElement>>();
-        Set<TypeElement> disabled = new HashSet<TypeElement>();
-        for (TypeElement interceptor : interceptors) {
-            ElementHandle<TypeElement> handle = ElementHandle.create( interceptor );
-            myHandles.add( handle );
-            if ( result.isDisabled( interceptor )){
-                myDisabledInterceptors.add( handle );
-                disabled.add( interceptor );
-            }
+        
+        myHandles = new ArrayList<ElementHandle<TypeElement>>( decorators.size());
+        myEnabledDecorators = new LinkedHashSet<ElementHandle<TypeElement>>();
+        
+        LinkedHashSet<TypeElement> enabled = WebBeansActionHelper.
+            getEnabledDecorators( decorators,beansModel, myEnabledDecorators, 
+                    controller);
+        for (TypeElement decorator : decorators ) {
+            myHandles.add( ElementHandle.create( decorator ));
         }
         
-        update( interceptors , disabled , controller );
+        update( decorators , enabled , controller );
     }
 
     /* (non-Javadoc)
@@ -114,26 +114,11 @@ public final class InterceptorsModel extends DefaultTreeModel
      */
     @Override
     public void update() {
-        updateHandles( myHandles , myDisabledInterceptors);
+        updateHandles( myHandles , myEnabledDecorators);
     }
     
-    private void update( List<TypeElement> types , Set<TypeElement> disabled,
-            CompilationController controller) 
-    {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        
-        for (TypeElement type : types) {
-            FileObject fileObject = SourceUtils.getFile(ElementHandle
-                    .create(type), controller.getClasspathInfo());
-            TypeTreeNode node = new TypeTreeNode(fileObject, type,  
-                        disabled.contains(type ),controller);
-            root.add( node );
-        }
-        setRoot(root);
-    }
-    
-    private void updateHandles( final List<ElementHandle<TypeElement>> handles ,
-            final Set<ElementHandle<TypeElement>> disabled ) 
+    private void updateHandles( final List<ElementHandle<TypeElement>> handles,
+            final LinkedHashSet<ElementHandle<TypeElement>> enabled )
     {
         try {
             getModel().runReadAction(
@@ -141,22 +126,21 @@ public final class InterceptorsModel extends DefaultTreeModel
 
                         @Override
                         public Void run( WebBeansModel model ) {
-                            List<TypeElement> list = 
-                                new ArrayList<TypeElement>(handles.size());
-                            Set<TypeElement> set = new HashSet<TypeElement>();
-                            for (ElementHandle<TypeElement> handle : 
-                                handles)
-                            {
-                                TypeElement type = handle.resolve( 
-                                        model.getCompilationController());
-                                if ( type != null ){
-                                    list.add( type );
+                            List<TypeElement> list = new ArrayList<TypeElement>(
+                                    handles.size());
+                            LinkedHashSet<TypeElement> set = 
+                                new LinkedHashSet<TypeElement>();
+                            for (ElementHandle<TypeElement> handle : handles) {
+                                TypeElement type = handle.resolve(model
+                                        .getCompilationController());
+                                if (type != null) {
+                                    list.add(type);
                                 }
-                                if ( disabled.contains( handle )){
-                                    set.add( type );
+                                if (enabled.contains(handle)) {
+                                    set.add(type);
                                 }
                             }
-                            update( list , set, model.getCompilationController());
+                            update(list, set, model.getCompilationController());
                             return null;
                         }
                     });
@@ -168,7 +152,26 @@ public final class InterceptorsModel extends DefaultTreeModel
         }
         catch (IOException e) {
             LOG.log(Level.WARNING, e.getMessage(), e);
-        }                
+        }
+    }
+
+    private void update( Collection<TypeElement> foundDecorators,
+            LinkedHashSet<TypeElement> enabled, CompilationController controller )
+    {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        
+        LinkedHashSet<TypeElement> allDecorators = new LinkedHashSet<TypeElement>();
+        allDecorators.addAll( enabled );
+        allDecorators.addAll( foundDecorators );
+        
+        for (TypeElement type : allDecorators) {
+            FileObject fileObject = SourceUtils.getFile(ElementHandle
+                    .create(type), controller.getClasspathInfo());
+            TypeTreeNode node = new TypeTreeNode(fileObject, type,  
+                        !enabled.contains(type ),controller);
+            root.add( node );
+        }
+        setRoot(root);                
     }
     
     private MetadataModel<WebBeansModel> getModel(){
@@ -177,5 +180,5 @@ public final class InterceptorsModel extends DefaultTreeModel
     
     private MetadataModel<WebBeansModel> myModel;
     private List<ElementHandle<TypeElement>> myHandles;
-    private Set<ElementHandle<TypeElement>> myDisabledInterceptors;
+    private LinkedHashSet<ElementHandle<TypeElement>> myEnabledDecorators;
 }

@@ -69,7 +69,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        return id == InspectActionId.INJECTABLES ;
+        return id == InspectActionId.INJECTABLES_CONTEXT ;
     }
 
     @Override

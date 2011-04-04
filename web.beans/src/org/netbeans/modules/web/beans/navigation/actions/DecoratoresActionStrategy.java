@@ -42,17 +42,21 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
+import java.util.Collection;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.navigation.InterceptorsModel;
+import org.netbeans.modules.web.beans.navigation.DecoratorsModel;
 import org.openide.filesystems.FileObject;
 
 
@@ -60,14 +64,14 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-public final class InterceptorsActionStrategy implements ModelActionStrategy {
+public final class DecoratoresActionStrategy implements ModelActionStrategy {
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId)
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        return id == InspectActionId.CLASS_CONTEXT|| id == InspectActionId.METHOD_CONTEXT;
+        return id == InspectActionId.CLASS_CONTEXT;
     }
 
     /* (non-Javadoc)
@@ -81,14 +85,19 @@ public final class InterceptorsActionStrategy implements ModelActionStrategy {
         }
         Element element = ((ElementHandle<?>)handle).resolve( 
                 model.getCompilationController());
-        if (context[2] == InspectActionId.METHOD_CONTEXT) {
-            if ( !( element instanceof ExecutableElement)) {
-                return false;
-            }
-            return model.getInterceptorBindings(element).size() >0 ;
+        if ( element == null ){
+            return false;
         }
-        // Now check all interceptor bindings for element
-        return true;
+        List<AnnotationMirror> qualifiers = model.getQualifiers(element,  true);
+        // if class has qualifiers then Class context is considered as decorator context
+        if ( qualifiers.size() >0 ){
+            return true;
+        }
+        /*
+         *  If it doesn't have explicit qualifiers then it could have implicit @Default
+         *  qualifier . In the latter case check Interceptor Bindings presence 
+         */
+        return model.getInterceptorBindings(element).isEmpty();
     }
 
     /* (non-Javadoc)
@@ -102,28 +111,28 @@ public final class InterceptorsActionStrategy implements ModelActionStrategy {
         final Object handle = subject[0];
         Element element = ((ElementHandle<?>)handle).resolve( 
                 model.getCompilationController());
-        if ( element == null ){
+        if ( !( element instanceof TypeElement) ){
             return;
         }
+        TypeElement type = (TypeElement)element;
         CompilationController controller = model.getCompilationController();
-        final InterceptorsResult result = model.getInterceptors(element);
-        final InterceptorsModel uiModel = new InterceptorsModel( 
-               result , controller, metaModel);
-        final String name = element.getSimpleName().toString();
+        Collection<TypeElement> decorators = model.getDecorators(type);
+        BeansModel beansModel = model.getModelImplementation().getBeansModel();
+        final DecoratorsModel uiModel = new DecoratorsModel(decorators, 
+                beansModel, controller, metaModel);
+        final String name = type.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            WebBeansActionHelper.showInterceptorsDialog( metaModel, model, 
-                    subject , uiModel , name, result );
+            WebBeansActionHelper.showDecoratorsDialog( metaModel, model, 
+                    subject , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    WebBeansActionHelper.showInterceptorsDialog(metaModel, null , 
-                            subject ,uiModel , name , result);
+                    WebBeansActionHelper.showDecoratorsDialog(metaModel, null , 
+                            subject ,uiModel , name );
                 }
             });
         }
-
     }
-
 }

@@ -71,7 +71,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        return id == InspectActionId.EVENTS || id == InspectActionId.INJECTABLES;
+        return id == InspectActionId.METHOD_CONTEXT || id == InspectActionId.INJECTABLES_CONTEXT;
     }
 
     /* (non-Javadoc)
@@ -92,7 +92,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
         else {
             return false;
         }
-        if ( context[2] == InspectActionId.EVENTS && 
+        if ( context[2] == InspectActionId.METHOD_CONTEXT && 
                 model.getObserverParameter( method ) == null )
         {
             StatusDisplayer.getDefault().setStatusText(

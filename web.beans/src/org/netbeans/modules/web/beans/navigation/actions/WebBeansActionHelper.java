@@ -45,8 +45,11 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -87,9 +90,12 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.BindingsPanel;
+import org.netbeans.modules.web.beans.navigation.DecoratorsModel;
+import org.netbeans.modules.web.beans.navigation.DecoratorsPanel;
 import org.netbeans.modules.web.beans.navigation.EventsModel;
 import org.netbeans.modules.web.beans.navigation.EventsPanel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
@@ -203,7 +209,8 @@ public class WebBeansActionHelper {
                         StatusDisplayer.getDefault().setStatusText(
                                 NbBundle.getMessage(
                                 WebBeansActionHelper.class, 
-                                "LBL_NotVariableElement"));
+                                "LBL_NotVariableElement",
+                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT));
                         return;
                     }
                     else {
@@ -212,7 +219,7 @@ public class WebBeansActionHelper {
                                 ElementHandle.create((VariableElement)element);
                             variable[0] = handle;
                             variable[1] = element.getSimpleName().toString();
-                            variable[2] = InspectActionId.INJECTABLES;
+                            variable[2] = InspectActionId.INJECTABLES_CONTEXT;
                         }
                         else {
                             setVariablePath(variable, controller, element);
@@ -223,7 +230,7 @@ public class WebBeansActionHelper {
         }
         catch(IOException e ){
             Logger.getLogger( GoToInjectableAtCaretAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
+                log( Level.INFO, e.getMessage(), e);
         }
         return variable[1] !=null ;
     }
@@ -300,7 +307,7 @@ public class WebBeansActionHelper {
                     if ( element instanceof TypeElement ){
                         subject[0] = ElementHandle.create(element);
                         subject[1] = element.getSimpleName();
-                        subject[2] = InspectActionId.INTERCEPTORS;
+                        subject[2] = InspectActionId.CLASS_CONTEXT;
                     }
                 }
             }, true );
@@ -340,7 +347,7 @@ public class WebBeansActionHelper {
                     if ( element instanceof ExecutableElement ){
                         subject[0] = ElementHandle.create(element);
                         subject[1] = element.getSimpleName();
-                        subject[2] = InspectActionId.EVENTS;
+                        subject[2] = InspectActionId.METHOD_CONTEXT;
                     }
                     else if ( element instanceof VariableElement ){
                         Element enclosingElement = element.getEnclosingElement();
@@ -349,7 +356,7 @@ public class WebBeansActionHelper {
                         {
                             subject[0] = ElementHandle.create(enclosingElement);
                             subject[1] = enclosingElement.getSimpleName();
-                            subject[2] = InspectActionId.EVENTS;
+                            subject[2] = InspectActionId.METHOD_CONTEXT;
                         }
                     }
                 }
@@ -433,7 +440,7 @@ public class WebBeansActionHelper {
                                                     ElementHandle.create(var);
                                                 variable[0]= handle;
                                                 variable[1]= varName;   
-                                                variable[2]= InspectActionId.OBSERVERS;  
+                                                variable[2]= InspectActionId.OBSERVERS_CONTEXT;  
                                                 return;
                                             }
                                         }
@@ -456,7 +463,7 @@ public class WebBeansActionHelper {
             InjectablesModel uiModel , String name , 
             org.netbeans.modules.web.beans.api.model.Result result ) 
     {
-        subject[2] = InspectActionId.INJECTABLES;
+        subject[2] = InspectActionId.INJECTABLES_CONTEXT;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, WAIT_NODE));           // NOI18N
         JDialog dialog = ResizablePopup.getDialog();
@@ -472,7 +479,7 @@ public class WebBeansActionHelper {
             WebBeansModel model,Object[] subject, 
             EventsModel uiModel , String name ) 
     {
-        subject[2] = InspectActionId.EVENTS;
+        subject[2] = InspectActionId.METHOD_CONTEXT;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, WAIT_NODE));
         JDialog dialog = ResizablePopup.getDialog();
@@ -489,7 +496,7 @@ public class WebBeansActionHelper {
             Object[] subject, ObserversModel uiModel ,
             String name ) 
     {
-        subject[2] = InspectActionId.OBSERVERS;
+        subject[2] = InspectActionId.OBSERVERS_CONTEXT;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, WAIT_NODE));
         JDialog dialog = ResizablePopup.getDialog();
@@ -502,12 +509,28 @@ public class WebBeansActionHelper {
         
     }
     
+    public static void showDecoratorsDialog(
+            MetadataModel<WebBeansModel> metaModel, WebBeansModel model,
+            Object[] subject, DecoratorsModel uiModel, String name )
+    {
+        subject[2] = InspectActionId.CLASS_CONTEXT;
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                InjectablesModel.class, WAIT_NODE));
+        JDialog dialog = ResizablePopup.getDialog();
+        String title = NbBundle.getMessage(WebBeansActionHelper.class,
+                "TITLE_Decorators" , name );//NOI18N
+        dialog.setTitle( title );
+        dialog.setContentPane( new DecoratorsPanel(subject, metaModel, 
+                model ,uiModel ));
+        dialog.setVisible( true );             
+    }
+    
     static void showInterceptorsDialog(
             MetadataModel<WebBeansModel> metaModel, WebBeansModel model,
             Object[] subject, InterceptorsModel uiModel, String name , 
             InterceptorsResult result )
     {
-        subject[2] = InspectActionId.INTERCEPTORS;
+        subject[2] = InspectActionId.CLASS_CONTEXT;
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, WAIT_NODE));
         JDialog dialog = ResizablePopup.getDialog();
@@ -517,6 +540,29 @@ public class WebBeansActionHelper {
         dialog.setContentPane( new InterceptorsPanel(subject, metaModel, 
                 model ,uiModel , result));
         dialog.setVisible( true );        
+    }
+    
+    public static LinkedHashSet<TypeElement> getEnabledDecorators( 
+            Collection<TypeElement> decorators,BeansModel beansModel, 
+            LinkedHashSet<ElementHandle<TypeElement>> enabledHandles,
+            CompilationController controller)
+            
+    {
+        LinkedHashSet<TypeElement> enabled = new LinkedHashSet<TypeElement>();
+        
+        Set<TypeElement> foundDecorators = new HashSet<TypeElement>( decorators );
+        LinkedHashSet<String> decoratorClasses = beansModel.getDecoratorClasses();
+        for (String decorator : decoratorClasses) {
+            TypeElement enabledDecorator = controller.getElements().
+                getTypeElement( decorator );
+            if ( foundDecorators.contains(enabledDecorator) ){
+                enabled.add( enabledDecorator );
+                if ( enabledHandles!= null){
+                    enabledHandles.add( ElementHandle.create( enabledDecorator));
+                }
+            }
+        }
+        return enabled;
     }
     
     public static VariableElement findVariable( final WebBeansModel model,
@@ -606,7 +652,7 @@ public class WebBeansActionHelper {
                     (ExecutableElement)parent ) ;
             variableAtCaret[0] = handle;
             variableAtCaret[1] = element.getSimpleName().toString();
-            variableAtCaret[2] = InspectActionId.INJECTABLES;
+            variableAtCaret[2] = InspectActionId.INJECTABLES_CONTEXT;
         }
     }
 

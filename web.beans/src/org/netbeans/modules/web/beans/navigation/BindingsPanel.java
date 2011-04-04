@@ -151,23 +151,7 @@ public class BindingsPanel extends CDIPanel {
     protected void setContextType( TypeMirror typeMirror, 
             CompilationController controller)
     {
-        if ( typeMirror.getKind().isPrimitive()){
-            myShortElementName.append( typeMirror.getKind().toString().toLowerCase());
-            myFqnElementName.append(  myShortElementName);
-            return;
-        }
-        if ( typeMirror.getKind() == TypeKind.ARRAY ){
-            setContextArrayType( typeMirror , controller );
-            myShortElementName = myShortElementName.append("[]");     // NOI18N
-            myFqnElementName = myFqnElementName.append("[]");         // NOI18N
-        }
-        Element element = controller.getTypes().asElement( typeMirror );
-        if ( element != null ){
-            myFqnElementName.append( (element instanceof TypeElement )?
-                    ((TypeElement)element).getQualifiedName().toString() :
-                        element.getSimpleName().toString());
-            myShortElementName.append(element.getSimpleName().toString());
-        }
+        fillElementType(typeMirror, myShortElementName, myFqnElementName, controller);
     }
     
     /*
@@ -385,7 +369,7 @@ public class BindingsPanel extends CDIPanel {
         }
     }
     
-    private void setScope( WebBeansModel model, Element element )
+    protected void setScope( WebBeansModel model, Element element )
             throws CdiException
     {
         if (getResult() instanceof DependencyInjectionResult.ResolutionResult) {
@@ -416,7 +400,7 @@ public class BindingsPanel extends CDIPanel {
     
     private void initCDIContext( Object[] subject, WebBeansModel model ) {
         Element element = null;
-        if ( subject[2] == InspectActionId.INJECTABLES ){
+        if ( subject[2] == InspectActionId.INJECTABLES_CONTEXT ){
             element = WebBeansActionHelper.findVariable(model, subject);
         }
         else {
@@ -435,13 +419,6 @@ public class BindingsPanel extends CDIPanel {
         initBindings(model, context);
         
         reloadSubjectElement();
-    }
-    
-    private void setContextArrayType( TypeMirror typeMirror,
-            CompilationController controller )
-    {
-        TypeMirror componentType = ((ArrayType)typeMirror).getComponentType();
-        setContextType(componentType, controller);
     }
     
     private void appendBindingParamters( AnnotationMirror mirror,
@@ -496,6 +473,35 @@ public class BindingsPanel extends CDIPanel {
     
     private MetadataModel<WebBeansModel> getModel(){
         return myModel;
+    }
+    
+    static void fillElementType( TypeMirror typeMirror, StringBuilder shortName,
+            StringBuilder fqnName , CompilationController controller)
+    {
+        if ( typeMirror.getKind().isPrimitive()){
+            shortName.append( typeMirror.getKind().toString().toLowerCase());
+            fqnName.append(  shortName );
+            return;
+        }
+        if ( typeMirror.getKind() == TypeKind.ARRAY ){
+            fillArrayType( typeMirror , shortName, fqnName , controller );
+            shortName = shortName.append("[]");     // NOI18N
+            fqnName = fqnName.append("[]");         // NOI18N
+        }
+        Element element = controller.getTypes().asElement( typeMirror );
+        if ( element != null ){
+            fqnName.append( (element instanceof TypeElement )?
+                    ((TypeElement)element).getQualifiedName().toString() :
+                        element.getSimpleName().toString());
+            shortName.append(element.getSimpleName().toString());
+        }
+    }
+    
+    static void fillArrayType( TypeMirror typeMirror, StringBuilder shortName,
+            StringBuilder fqnName , CompilationController controller )
+    {
+        TypeMirror componentType = ((ArrayType)typeMirror).getComponentType();
+        fillElementType(componentType, shortName , fqnName , controller);
     }
     
     private StringBuilder myFqnElementName;

@@ -81,6 +81,11 @@ public class TestWebBeansModelImpl extends WebBeansModelImplementation {
         return MetadataModelFactory.createMetadataModel( this );
     }
     
+    @Override
+    public BeansModel getBeansModel() {
+        return myBeansModel;
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation#getHelper()
      */
@@ -89,11 +94,6 @@ public class TestWebBeansModelImpl extends WebBeansModelImplementation {
         return super.getHelper();
     }
     
-    @Override
-    protected BeansModel getBeansModel() {
-        return myBeansModel;
-    }
-
    /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getProvider()
      */

@@ -69,7 +69,7 @@ final class ObserversActionStrategy implements ModelActionStrategy {
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        return id == InspectActionId.INJECTABLES || id == InspectActionId.OBSERVERS;
+        return id == InspectActionId.INJECTABLES_CONTEXT || id == InspectActionId.OBSERVERS_CONTEXT;
     }
 
     /* (non-Javadoc)
@@ -81,7 +81,7 @@ final class ObserversActionStrategy implements ModelActionStrategy {
         if (var == null) {
             return false;
         }
-        if (context[2] == InspectActionId.OBSERVERS &&
+        if (context[2] == InspectActionId.OBSERVERS_CONTEXT &&
                 !model.isEventInjectionPoint(var)) 
         {
             StatusDisplayer.getDefault().setStatusText(

@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,9 +44,15 @@ package org.netbeans.modules.web.beans.navigation.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -59,10 +64,14 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
@@ -72,95 +81,117 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+import com.sun.source.util.TreePath;
+
 
 /**
  * @author ads
  *
  */
-public final class GoToInjectableAtCaretAction extends AbstractInjectableAction {
-
-    private static final long serialVersionUID = -6998124281864635094L;
-
-    private static final String GOTO_INJACTABLE_AT_CARET =
-        "go-to-injactable-at-caret";                     // NOI18N
+public class GoToDecoratorAtCaretAction extends AbstractCdiAction {
     
-    private static final String GOTO_INJACTABLE_AT_CARET_POPUP =
-        "go-to-injactable-at-caret-popup";               // NOI18N
+    private static final long serialVersionUID = 6777839777383350958L;
 
-    public GoToInjectableAtCaretAction() {
+    private static final String GOTO_DECORATOR_AT_CARET =
+        "go-to-decorator-at-caret";                     // NOI18N
+    
+    private static final String GOTO_DECORATOR_AT_CARET_POPUP =
+        "go-to-decorator-at-caret-popup";               // NOI18N
+    
+    public GoToDecoratorAtCaretAction( ) {
         super(NbBundle.getMessage(GoToInjectableAtCaretAction.class, 
-                GOTO_INJACTABLE_AT_CARET));
+                GOTO_DECORATOR_AT_CARET));
     }
     
-
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractCdiAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
      */
     @Override
-    protected String getActionCommand() {
-        return GOTO_INJACTABLE_AT_CARET;
-    }
+    protected boolean findContext( final JTextComponent component, 
+            final Object[] context )
+    {
+        JavaSource javaSource = JavaSource.forDocument(component.getDocument());
+        if ( javaSource == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return false;
+        }
+        try {
+            javaSource.runUserActionTask(  new Task<CompilationController>(){
+                @Override
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    int dot = component.getCaret().getDot();
+                    TreePath tp = controller.getTreeUtilities().pathFor(dot);
+                    Element contextElement = controller.getTrees().getElement(tp );
+                    if ( contextElement == null ){
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(
+                                        WebBeansActionHelper.class, 
+                                "LBL_ElementNotFound"));
+                        return;
+                    }
+                    context[0] = contextElement;
+                }
+            }, true );
+            }
+        catch (IOException e) {
+            Logger.getLogger(GoToDecoratorAtCaretAction.class.getName()).log(
+                    Level.INFO, e.getMessage(), e);
+        }
+        if ( context[0] == null ){
+            return false;
+        }
+        boolean result = context[0] instanceof TypeElement;
+        
+        context[0] = ElementHandle.create( (TypeElement) context[0]);
 
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
-     */
-    @Override
-    protected String getPopupMenuKey() {
-        return GOTO_INJACTABLE_AT_CARET_POPUP;
+        if ( !result ){
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(GoToDecoratorAtCaretAction.class, 
+                            "LBL_NotTypeElement"),                     // NOI18N
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        }
+            
+        return result;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
      */
-    /**
-     * Variable element is resolved based on containing type element 
-     * qualified name and simple name of variable itself.
-     * Model methods are used further for injectable resolution.   
-     */
     @Override
     protected void modelAcessAction( WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] variable,
+            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
             final JTextComponent component, FileObject fileObject )
     {
-        VariableElement var = WebBeansActionHelper.findVariable(model, variable);
-        if (var == null) {
+        Element element = ((ElementHandle<?>)subject[0]).resolve( 
+                model.getCompilationController());
+        if (element == null) {
             return;
         }
-        try {
-            if ( !model.isInjectionPoint(var) ){
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(GoToInjectableAtCaretAction.class, 
-                                "LBL_NotInjectionPoint"),            // NOI18N
-                        StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                return;
-            }
-        }
-        catch (InjectionPointDefinitionError e) {
-            StatusDisplayer.getDefault().setStatusText(e.getMessage(),
-                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-        }
-        final DependencyInjectionResult result = model.lookupInjectables(var, null);
-        if (result == null) {
+        Collection<TypeElement> decorators = model.getDecorators((TypeElement)element);
+        if (decorators.size() == 0) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
-                            "LBL_InjectableNotFound"),              // NOI18N
+                    NbBundle.getMessage(GoToDecoratorAtCaretAction.class,
+                            "LBL_DecoratorsNotFound"),              // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
-        if (result instanceof DependencyInjectionResult.Error) {
+        
+        BeansModel beansModel = model.getModelImplementation().getBeansModel();
+        final LinkedHashSet<TypeElement> enabledDecorators = WebBeansActionHelper.
+                getEnabledDecorators(decorators, beansModel, null, 
+                        model.getCompilationController());
+        if (enabledDecorators.size() == 0) {
             StatusDisplayer.getDefault().setStatusText(
-                    ((DependencyInjectionResult.Error) result).getMessage(),
+                    NbBundle.getMessage(GoToDecoratorAtCaretAction.class,
+                            "LBL_EnabledDecoratorsNotFound"),        // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-        }
-        if (result.getKind() == DependencyInjectionResult.ResultKind.DEFINITION_ERROR) {
             return;
         }
-        if (result.getKind() == DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED) {
-            Element injectable = ((DependencyInjectionResult.InjectableResult) result)
-                    .getElement();
-            final ElementHandle<Element> handle = ElementHandle
-                    .create(injectable);
+        
+        if (enabledDecorators.size() == 1) {
+            final ElementHandle<TypeElement> handle = ElementHandle
+                    .create(enabledDecorators.iterator().next());
             final ClasspathInfo classpathInfo = model
                     .getCompilationController().getClasspathInfo();
             SwingUtilities.invokeLater(new Runnable() {
@@ -171,48 +202,31 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
                 }
             });
         }
-        else if (result.getKind() == DependencyInjectionResult.ResultKind.RESOLUTION_ERROR) {
+        else  {
             final CompilationController controller = model
                     .getCompilationController();
             if (SwingUtilities.isEventDispatchThread()) {
-                showPopup(result, controller, metaModel, component);
+                showPopup(enabledDecorators, controller, metaModel, component);
             }
             else {
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
-                        showPopup(result, controller, metaModel, component);
+                        showPopup(enabledDecorators, controller, metaModel, component);
                     }
                 });
             }
         }
     }
 
-    private void showPopup( DependencyInjectionResult result , CompilationController controller, 
-            MetadataModel<WebBeansModel> model ,JTextComponent target ) 
+    private void showPopup( LinkedHashSet<TypeElement> elements , CompilationController 
+            controller, MetadataModel<WebBeansModel> model ,JTextComponent target ) 
     {
-        if ( !(result instanceof DependencyInjectionResult.ApplicableResult)){
-            return;
-        }
-        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
-        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
-        if ( typeElements.size() +productions.size() == 0 ){
-            return;
-        }
         List<ElementHandle<? extends Element>> handles  = new ArrayList<
-            ElementHandle<? extends Element>>(typeElements.size() +productions.size()); 
-        for (Element element : typeElements) {
-            if ( !((DependencyInjectionResult.ApplicableResult)result).isDisabled(element)){
-                handles.add( ElementHandle.create( element ));
-            }
-        }
-        for (Element element : productions) {
-            if ( !((DependencyInjectionResult.ApplicableResult)result).isDisabled(element)){
-                handles.add( ElementHandle.create( element ));
-            }
-        }
-        if ( handles.size() == 0 ){
-            return;
+            ElementHandle<? extends Element>>(elements.size()); 
+        for (TypeElement element : elements) {
+            handles.add( ElementHandle.create( element ));
         }
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));
@@ -222,7 +236,7 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
             SwingUtilities.convertPointToScreen(point, target);
 
             String title = NbBundle.getMessage(
-                    GoToInjectableAtCaretAction.class, "LBL_ChooseInjectable");
+                    GoToInjectableAtCaretAction.class, "LBL_ChooseDecorator");
             PopupUtil.showPopup(new InjectablesPopup(title, handles, controller), title,
                     point.x, point.y);
 
@@ -230,6 +244,22 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
         catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
+     */
+    @Override
+    protected String getActionCommand() {
+        return GOTO_DECORATOR_AT_CARET;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
+     */
+    @Override
+    protected String getPopupMenuKey() {
+        return GOTO_DECORATOR_AT_CARET_POPUP;
     }
 
 }
