@@ -48,10 +48,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicEjbJar;
+import org.netbeans.modules.j2ee.weblogic9.dd.model.EjbJarModel;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -73,14 +74,26 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
     private final J2eeModule j2eeModule;
     private final DataObject dataObject;
     
-    private WeblogicEjbJar weblogicEjbJar;
-        
+    private final Version serverVersion;
+    
+    private final boolean isWebProfile;    
+
+    private EjbJarModel weblogicEjbJar;
+    
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
+        this(j2eeModule, null, false);
+    }
+
     /**
      * Creates a new instance of EjbDeploymentConfiguration 
      */
-    public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion,
+            boolean isWebProfile) {
+
         super(j2eeModule);
         this.j2eeModule = j2eeModule;
+        this.serverVersion = serverVersion;
+        this.isWebProfile = isWebProfile;
         file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-ejb-jar.xml"); // NOI18N
         getWeblogicEjbJar();
         DataObject dataObject = null;
@@ -98,13 +111,13 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
      *
      * @return WeblogicEjbJar graph or null if the weblogic-ejb-jar.xml file is not parseable.
      */
-    public synchronized WeblogicEjbJar getWeblogicEjbJar() {
+    public synchronized EjbJarModel getWeblogicEjbJar() {
         if (weblogicEjbJar == null) {
             try {
                 if (file.exists()) {
                     // load configuration if already exists
                     try {
-                        weblogicEjbJar = weblogicEjbJar.createGraph(file);
+                        weblogicEjbJar = EjbJarModel.forFile(file);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
@@ -113,7 +126,7 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
                 } else {
                     // create weblogic-ejb-jar.xml if it does not exist yet
                     weblogicEjbJar = genereateWeblogicEjbJar();
-                    ConfigUtil.writefile(file, weblogicEjbJar);
+                    weblogicEjbJar.write(file);
                 }
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
@@ -137,7 +150,7 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
     // FIXME this is not a proper implementation - deployment PLAN should be saved
     // not a deployment descriptor    
     public void save(OutputStream os) throws ConfigurationException {
-        WeblogicEjbJar weblogicEjbJar = getWeblogicEjbJar();
+        EjbJarModel weblogicEjbJar = getWeblogicEjbJar();
         if (weblogicEjbJar == null) {
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", file.getPath());
             throw new ConfigurationException(msg);
@@ -155,8 +168,8 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
     /**
      * Genereate WeblogicEjbJar graph.
      */
-    private WeblogicEjbJar genereateWeblogicEjbJar() {
-        return new WeblogicEjbJar();
+    private EjbJarModel genereateWeblogicEjbJar() {
+        return EjbJarModel.generate(serverVersion);
     }
 
 }
