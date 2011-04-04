@@ -86,6 +86,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.processing.Processor;
@@ -201,10 +202,11 @@ public class JavacParser extends Parser {
     //Incremental parsing support
     private final boolean supportsReparse;
     //Incremental parsing support
-    private final List<Pair<DocPositionRegion,MethodTree>> positions = Collections.synchronizedList(new LinkedList<Pair<DocPositionRegion,MethodTree>>());
+    private final List<Pair<DocPositionRegion,MethodTree>> positions =
+            Collections.synchronizedList(new LinkedList<Pair<DocPositionRegion,MethodTree>>());
     //Incremental parsing support
-    //@GuardedBy(this)
-    private Pair<DocPositionRegion,MethodTree> changedMethod;
+    private final AtomicReference<Pair<DocPositionRegion,MethodTree>> changedMethod =
+            new AtomicReference<Pair<DocPositionRegion, MethodTree>>();
     //Incremental parsing support
     private final DocListener listener;
     //J2ME preprocessor support
@@ -350,20 +352,14 @@ public class JavacParser extends Parser {
                 init (snapshot, task, true);
                 boolean needsFullReparse = true;
                 if (supportsReparse) {
-                    Pair<DocPositionRegion,MethodTree> _changedMethod;
-                    synchronized (this) {
-                        _changedMethod = this.changedMethod;
-                        this.changedMethod = null;
-                    }
+                    final Pair<DocPositionRegion,MethodTree> _changedMethod = changedMethod.getAndSet(null);
                     if (_changedMethod != null && ciImpl != null) {
                         LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
                         needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
                     }
                 }
                 if (needsFullReparse) {
-                    synchronized (positions) {
-                        positions.clear();
-                    }
+                    positions.clear();
                     ciImpl = createCurrentInfo (this, file, root,snapshot, null);
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
@@ -1147,9 +1143,7 @@ public class JavacParser extends Parser {
                         if (changedMethod!=null) {
                             positions.add (changedMethod);
                         }
-                        synchronized (JavacParser.this) {
-                            JavacParser.this.changedMethod = changedMethod;
-                        }
+                        JavacParser.this.changedMethod.set(changedMethod);
                     }
                 }
             }
@@ -1187,7 +1181,7 @@ public class JavacParser extends Parser {
      */
     public synchronized void setChangedMethod (final Pair<DocPositionRegion,MethodTree> changedMethod) {
         assert changedMethod != null;
-        this.changedMethod = changedMethod;
+        this.changedMethod.set(changedMethod);
     }
 
     /**
