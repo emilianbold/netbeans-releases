@@ -497,6 +497,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public final String getMIMEType() {
         DataObject dataObject = getDataObject();
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+        //XXX:fullRemote the entire "if" below should be removed
         if (fo == null && fileObject != null && fileObject.isValid()) {
             fo = fileObject;
         }
