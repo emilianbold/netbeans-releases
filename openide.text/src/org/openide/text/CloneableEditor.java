@@ -969,34 +969,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     @Override
     public void open() {
-        dockIfNeeded();
+        boolean wasNull = getClientProperty( "TopComponentAllowDockAnywhere" ) == null; //NOI18N
         super.open();
-    }
-
-    /** Dock this top component to editor mode if it is not docked
-     * in some mode at this time  */
-    private void dockIfNeeded() {
-        // dock into editor mode if possible
-        Mode ourMode = WindowManager.getDefault().findMode(this);
-        if( null == ourMode ) {
-            //dock into 'editor' mode to avoid being tagged as a pre-version-4.0
-            //TopComponent that is allowed to be drag and dropped outside the editor area
-
-            //first check the active mode as it might be a floating editor window
-            TopComponent activeTc = TopComponent.getRegistry().getActivated();
-            if( null != activeTc ) {
-                ourMode = WindowManager.getDefault().findMode( activeTc );
-                if( !WindowManager.getDefault().isEditorMode( ourMode ) )
-                    ourMode = null;
-            }
-            if( null == ourMode )
-                ourMode = WindowManager.getDefault().findMode( "editor" );
-            if( null != ourMode ) {
-                 ourMode.dockInto( this );
-            } else {
-                //should not happen - editor mode is always defined
-                Logger.getAnonymousLogger().warning("The window system cannot find the default editor mode." );
-            }
+        if( wasNull ) {
+            //since we don't define a mode to dock this editor to, the window
+            //system thinks we're an uknown component allowed to dock anywhere
+            //but editor windows can dock into editor modes only, so let's clear
+            //the 'special' flag
+            putClientProperty( "TopComponentAllowDockAnywhere", null); //NOI18N
         }
     }
 
