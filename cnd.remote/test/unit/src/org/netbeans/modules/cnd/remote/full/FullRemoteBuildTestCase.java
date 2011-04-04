@@ -56,6 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadParameters;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 
@@ -93,7 +94,13 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         String projectName = "simple_make_project_to_import";
         File origProject = getDataFile(projectName);
-        String remoteProjectPath = upload(origProject, remoteTmpDir);
+        String remoteProjectPath = upload(origProject, remoteTmpDir, "copy-to-private", "private");
+        FileObject remoteTmpDirFO = FileSystemProvider.getFileObject(getTestExecutionEnvironment(), remoteTmpDir);
+        if (remoteTmpDirFO == null) {
+            FileSystemProvider.getFileSystem(getTestExecutionEnvironment()).getRoot().refresh();
+        } else {
+            remoteTmpDirFO.refresh();
+        }        
         File shadowProjectFile = new File(new File(getWorkDir(), getTestHostName()), projectName);
         removeDirectory(shadowProjectFile);
         String shadowProjectPath = shadowProjectFile.getAbsolutePath();
@@ -103,8 +110,13 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
     
-    protected String upload(File file, String destination) throws Exception {
-        String remotePath = destination + '/' + file.getName();
+    // hg filters out "nbproject/private", for that reason we have to rewname it and restore correct name while copying
+    protected String upload(File file, String destination, String filterFrom, String filterTo) throws Exception {
+        String fileName = file.getName();
+        if (fileName.equals(filterFrom)) {
+            fileName = filterTo;
+        }
+        String remotePath = destination + '/' + fileName;
         PrintWriter err = new PrintWriter(System.err);
         if (file.isFile()) {
             UploadParameters up = new CommonTasksSupport.UploadParameters(
@@ -119,7 +131,7 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
                 throw new IOException("Error creating directory  " + getTestExecutionEnvironment() + ':' + remotePath);
             }
             for(File child : file.listFiles()) {
-                upload(child, remotePath);
+                upload(child, remotePath, filterFrom, filterTo);
             }
         }
         return remotePath;
