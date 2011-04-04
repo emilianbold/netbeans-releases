@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
@@ -274,12 +275,22 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             et.repaint();
                             SwingUtilities.invokeLater(new Runnable() {
                                 public @Override void run() {
-                                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+                                    EditorUI eui = Utilities.getEditorUI(ep);
+                                    if (eui != null) {
+                                        eui.getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+                                    } else {
+                                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                                    }
                                 }
                             });
                         }
                     });
-                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
+                    EditorUI eui = Utilities.getEditorUI(ep);
+                    if (eui != null) {
+                        eui.getToolTipSupport().setToolTip(et);
+                    } else {
+                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                    }
                 }
             });
         } else {
