@@ -60,7 +60,6 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.JvmVendor;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 
 /**
  *
@@ -72,11 +71,8 @@ class CustomizerJVM extends javax.swing.JPanel {
 
     private WLDeploymentManager manager;
     
-    private final WLJpa2SwitchSupport support;
-    
     CustomizerJVM(WLDeploymentManager manager) {
         this.manager = manager;
-        this.support = new WLJpa2SwitchSupport(manager);
         initComponents();
         
         initValues();

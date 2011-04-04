@@ -70,7 +70,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
     
     private final WLDeploymentManager manager;
     
-    private final WLJpa2SwitchSupport support;
+    private final transient WLJpa2SwitchSupport support;
     
     private boolean passwordVisible;
     
