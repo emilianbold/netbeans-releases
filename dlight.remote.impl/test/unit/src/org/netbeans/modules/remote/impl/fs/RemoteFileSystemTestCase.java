@@ -198,7 +198,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             fo = rootFO.getFileObject(stdio_h);
             assertNotNull("null file object for " + stdio_h, fo);
             assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
-            tempFile = mkTemp();
+            tempFile = mkTempAndRefreshParent();
             fo = rootFO.getFileObject(tempFile);
             assertNotNull("Null file object for " + tempFile, fo);
             assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
@@ -211,7 +211,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             assertEquals("File content differ", content.toString(), readContent.toString());
         } finally {
             if (tempFile != null) {
-                CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
+                removeRemoteDirIfNotNull(tempFile);
             }
         }
     }
@@ -220,7 +220,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     public void testReservedWindowsNames() throws Exception {
         String tempDir = null;
         try {
-            tempDir = mkTemp(true);
+            tempDir = mkTempAndRefreshParent(true);
             FileObject tempDirFO = rootFO.getFileObject(tempDir);
             assertNotNull("Null file object for " + tempDir, tempDirFO);
             //assertTrue("FileObject should be writable: " + tempDirFO.getPath(), tempDirFO.canWrite());
@@ -245,7 +245,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     public void testReservedRfsNames() throws Exception {
         String tempDir = null;
         try {
-            tempDir = mkTemp(true);
+            tempDir = mkTempAndRefreshParent(true);
             FileObject tempDirFO = rootFO.getFileObject(tempDir);
             assertNotNull("Null file object for " + tempDir, tempDirFO);
             //assertTrue("FileObject should be writable: " + tempDirFO.getPath(), tempDirFO.canWrite());
@@ -272,26 +272,33 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     
     @ForAllEnvironments
     public void testDate() throws Exception {
-        String path = mkTemp();
-        Date localDate = new Date();
-        FileObject fo = getFileObject(path);
-        assertTrue("Invalid file object " + path, fo.isValid());
-        Date lastMod = fo.lastModified();
-        assertNotNull("getDate() returned null for " + fo, lastMod);
-        System.out.println("local file creation date:  " + localDate);
-        System.out.println("remote last modified date: " + lastMod);
-        
-        long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
-        long delta = Math.abs(localDate.getTime() - lastMod.getTime());
-        if (delta > Math.abs(skew) + (long)(1000*60*15)) {
-            assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
-                    " delta " + delta + " ms; skew " + skew, false);
+        String path = null;
+        try {
+            path = mkTempAndRefreshParent();
+            Date localDate = new Date();
+            FileObject fo = getFileObject(path);
+            assertTrue("Invalid file object " + path, fo.isValid());
+            Date lastMod = fo.lastModified();
+            assertNotNull("getDate() returned null for " + fo, lastMod);
+            System.out.println("local file creation date:  " + localDate);
+            System.out.println("remote last modified date: " + lastMod);
+
+            long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
+            long delta = Math.abs(localDate.getTime() - lastMod.getTime());
+            if (delta > Math.abs(skew) + (long)(1000*60*15)) {
+                assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
+                        " delta " + delta + " ms; skew " + skew, false);
+            }
+            fo.delete();
+            assertTrue("isValid should return false for " + fo, !fo.isValid());
+            Date lastMod2 = fo.lastModified();
+            System.out.println("remote date after deletion: " + lastMod2);
+            assertNotNull("getDate() should never return null", lastMod2);
+        } finally {
+            if (path != null) {
+                removeRemoteDirIfNotNull(path);
+            }
         }
-        fo.delete();
-        assertTrue("isValid should return false for " + fo, !fo.isValid());
-        Date lastMod2 = fo.lastModified();
-        System.out.println("remote date after deletion: " + lastMod2);
-        assertNotNull("getDate() should never return null", lastMod2);
     }
 
     

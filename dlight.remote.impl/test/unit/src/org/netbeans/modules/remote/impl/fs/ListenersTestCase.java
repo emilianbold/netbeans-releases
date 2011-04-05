@@ -133,8 +133,9 @@ public class ListenersTestCase extends RemoteFileTestBase {
 //    }
 
     private void doTestListeners(boolean recursive) throws Exception {
-        String baseDir = mkTemp(true);
-        try {            
+        String baseDir = null;
+        try {          
+            baseDir = mkTempAndRefreshParent(true);
             Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
             FileObject baseDirFO = getFileObject(baseDir);
             FCL fcl = new FCL("baseDir", evMap);
@@ -157,9 +158,7 @@ public class ListenersTestCase extends RemoteFileTestBase {
             fe = evMap.get(subdirFO);
             assertNotNull("No file event for " + childFO, fe);
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }
     }
     

@@ -114,9 +114,10 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
     }
     
     private void doTestListeners1(boolean recursive) throws Throwable {
-        String remoteBaseDir = mkTemp(true);
         File localTmpDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
+        String remoteBaseDir = null;
         try {            
+            remoteBaseDir = mkTempAndRefreshParent(true);
             FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
             FileObject localBaseDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(localTmpDir));            
             File workDir = getWorkDir();
@@ -136,9 +137,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
                 throw ex;
             }
         } finally {
-            if (remoteBaseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, remoteBaseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(remoteBaseDir);
             if (localTmpDir != null && localTmpDir.exists()) {
                 removeDirectory(localTmpDir);
             }
