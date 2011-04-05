@@ -346,13 +346,17 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <!-- COS feature - used in run-deploy -->
+            <!-- compiler use deploy.on.save flag to fire changes -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
                     <xsl:attribute name="property">deploy.on.save</xsl:attribute>
                     <xsl:attribute name="value">true</xsl:attribute>
-                    <istrue value="${{j2ee.deploy.on.save}}"/>
+                    <or>
+                        <istrue value="${{j2ee.deploy.on.save}}"/>
+                        <istrue value="${{j2ee.compile.on.save}}"/>
+                    </or>
                 </condition>            
             </target>
             
