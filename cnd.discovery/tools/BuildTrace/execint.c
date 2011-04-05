@@ -57,9 +57,7 @@
 #include <string.h>
 //#include <unistd.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 #ifdef TRACE
 #define LOG(args...) fprintf(stderr, ## args)
@@ -69,80 +67,22 @@
 
 /****************************************************************/
 extern char *getcwd (char *__buf, size_t __size);
-
-static char* filter[100];
-static int filter_sz = 0;
-static char* env_log = NULL;
-static int interpose_init = 0;
 static struct stat buffer;
 
-static int comparator(const void * elem1, const void * elem2) {
-    const char* str1 = *(const char**) elem1;
-    const char* str2 = *(const char**) elem2;
-    return strcmp(str1, str2);
-}
+static void __logprint(const char* fname, char *const argv[], ...) {
 
-static int init() {
-    /* This function is not reenterable!!! TODO: introduce locking */
-    if (interpose_init != 0) {
-        return interpose_init;
-    }
-
-    char* map = getenv("__CND_TOOLS__");
-    if (map == NULL) {
-        LOG("\n>>>ERROR: __CND_TOOLS__ is not set!!!\n");
-        return interpose_init = -1;
+    char* tools = getenv("__CND_TOOLS__");
+    if (tools == NULL) {
+        LOG("\nBuildTrace ERROR: __CND_TOOLS__ is not set!!!\n");
+        return;
     }
 
     char* log = getenv("__CND_BUILD_LOG__");
     if (log == NULL) {
-        LOG("\n>>>ERROR: __CND_BUILD_LOG__ is not set!!!\n");
-        return interpose_init = -1;
-    }
-    LOG("\n>>>NBBUILD: TOOLS=%s\n\tLOG=%s\n", map, log);
-
-    env_log = strdup(log);
-    char* env_map = strdup(map);
-    char * token;
-    int i = 0;
-    for (token = strtok(env_map, ":");
-            token;
-            token = strtok(NULL, ":")) {
-        if (strlen(token) == 0) {
-            LOG("\n>>>WARN: TOOLS list contains empty values!!!\n");
-            continue;
-        }
-        char* tail = strrchr(token, '/');
-        if (tail) {
-            LOG("\n>>>WARN: TOOLS list contains slashes - %s!!!\n", token);
-            if (strlen(tail) == 0) {
-                LOG("\n>>>WARN: TOOLS list contains directory - %s!!!\n", token);
-                continue;
-            }
-            token = tail;
-        }
-        filter[i] = strdup(token);
-        i++;
-        filter_sz++;
-    }
-    free(env_map);
-
-    if (filter_sz == 0) {
-        return interpose_init = -1;
-    }
-
-    qsort(filter, filter_sz, sizeof (filter[0]), comparator);
-
-    LOG("\n>>>NBBUILD: INIT DONE\n");
-
-    return interpose_init = 1;
-}
-
-static void __logprint(const char* fname, char *const argv[], ...) {
-
-    if (init() < 0) {
+        LOG("\nBuildTrace ERROR: __CND_BUILD_LOG__ is not set!!!\n");
         return;
     }
+    LOG("\nBuildTrace: TOOLS=%s\n\tLOG=%s\n", map, log);
 
     int shortName = 0;
     const char* key = strrchr(fname, '/');
@@ -152,10 +92,17 @@ static void __logprint(const char* fname, char *const argv[], ...) {
     } else {
         key++;
     }
+    LOG("\nBuildTrace: key = %s\n", key);
 
-    LOG("\n>>>NBBUILD: key = %s\n", key);
-
-    char** found = bsearch(&key, filter, filter_sz, sizeof (filter[0]), comparator);
+    char* filters = strdup(tools);
+    int found = 0;
+    char* token;
+    for(token = strtok(filters, ":"); token; token = strtok(NULL, ":")) {
+        if(strcmp(token, key) == 0) {
+            found = 1;
+            break;
+        }
+    }
 
     if (found) {
         if (shortName == 0) {
@@ -165,17 +112,15 @@ static void __logprint(const char* fname, char *const argv[], ...) {
             }
         }
         
-        LOG("\n>>>NBBUILD: found %s\n", *found);
-        FILE* flog = fopen(env_log, "a");
-        LOG("\n>>>NBBUILD: opened file %s\n", env_log);
+        LOG("\nBuildTrace: found %s\n", *found);
+        FILE* flog = fopen(log, "a");
+        LOG("\nBuildTrace: opened file %s\n", env_log);
 
         if (flog == NULL) {
-            LOG("\n>>>ERROR: can not open%s!!!\n", env_log);
-            interpose_init = -1;
+            LOG("\nBuildTrace ERROR: can not open %s!!!\n", env_log);
             return;
         }
 
-        //FILE* log = stderr;
         fprintf(flog, "called: %s\n", fname);
         char *buf = malloc(1024);
         getcwd(buf, 1024);
@@ -188,7 +133,7 @@ static void __logprint(const char* fname, char *const argv[], ...) {
         fprintf(flog, "\n");
         fflush(flog);
         fclose(flog);
-        LOG("log closed\n");
+        LOG("\nBuildTrace: log closed\n");
     }
     return;
 }
@@ -209,12 +154,12 @@ int func (const char * p_original param) { \
     char * p = strdup(p_original); \
     static int (* ORIG(func))(const char* p param) = NULL; \
     INIT(func); \
-    LOG(">>>EXECINT: %s called. PATH=%s\n", QUOTE(func), p); \
+    LOG("BuildTrace: %s called. PATH=%s\n", QUOTE(func), p); \
     __logprint(p actual); \
     errno = prev_errno; \
     int ret = ORIG(func) (p actual); \
     prev_errno = errno; \
-    LOG(">>>EXECINT: %s  returned\n", QUOTE(func)); \
+    LOG("BuildTrace: %s returned\n", QUOTE(func)); \
     free(p); \
     errno = prev_errno; \
     return ret; \
@@ -235,18 +180,23 @@ INSTRUMENT(execv, PARG, ARG)
 INSTRUMENT(execve, PENV, ENV)
 INSTRUMENT(execvp, PARG, ARG)
 
-#define RETURN(f) return f(name, (char **)first)
+#define RETURN(f) return f(name, (char **)argv)
 
 #define CONVERT(from_func, to_func) \
-int from_func(char *name, ...) { \
+int from_func(char *name, const char *first, ...) { \
     va_list args; \
-    char**  first; \
+    char* argv[128]; \
+    char**  p; \
     char**  env; \
-    va_start(args, name); \
-    first = (char**)args; \
+    va_start(args, first); \
+    *p++ = (char*) first; \
+    p = (char**)argv; \
+    do { \
+        *p = va_arg(args, char*); \
+    } while(*p++); \
     GETENV; \
     va_end(args); \
-    LOG(">>>EXECINT: %s converted to %s\n", QUOTE(from_func), QUOTE(to_func)); \
+    LOG("BuildTrace: %s converted to %s\n", QUOTE(from_func), QUOTE(to_func)); \
     RETURN(to_func); \
 }
 
@@ -255,10 +205,8 @@ CONVERT(execlp, execvp)
 
 #undef RETURN
 #undef GETENV
-#define GETENV \
-       while (va_arg(args, char *) != (char *)0) {;};\
-       env = va_arg(args, char **)
-#define RETURN(f) return f(name, (char **)first, (const char**)env)
+#define GETENV env = va_arg(args, char **)
+#define RETURN(f) return f(name, (char **)argv, (const char**)env)
 
 CONVERT(execle, execve)
 
@@ -270,11 +218,4 @@ init_function(void) {
 static void
 __attribute((destructor))
 fini_function(void) {
-    int i = 0;
-    for (; i < filter_sz; i++) {
-        free(filter[i]);
-    }
-    if (env_log) {
-        free(env_log);
-    }
 }

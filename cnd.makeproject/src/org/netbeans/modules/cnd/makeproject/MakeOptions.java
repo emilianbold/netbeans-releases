@@ -339,7 +339,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Use smart build analyzer to configure code assistance
     public boolean isUseBuildTrace() {
-        return getPreferences().getBoolean(USE_BUILD_TRACE, false);
+        return getPreferences().getBoolean(USE_BUILD_TRACE, true);
     }
 
     public void setUseBuildTrace(boolean value) {

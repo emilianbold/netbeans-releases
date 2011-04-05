@@ -684,6 +684,8 @@ public class JavacParser extends Parser {
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
         options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
+        options.add("-XDsuppressAbortOnBadClassFile");   // NOI18N, when a class file cannot be read, produce an error type instead of failing with an exception
+        options.add("-XDshouldStopPolicy=GENERATE");   // NOI18N, parsing should not stop in phase where an error is found
         options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table

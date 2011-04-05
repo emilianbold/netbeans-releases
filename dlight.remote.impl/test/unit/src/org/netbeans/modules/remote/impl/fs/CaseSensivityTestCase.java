@@ -64,8 +64,9 @@ public class CaseSensivityTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testCaseSensitiveDir() throws Exception {
-        String tmpDir = mkTemp(true);
+        String tmpDir = null;
         try {
+            tmpDir = mkTempAndRefreshParent(true);
             FileObject tmpDirParentFO = getFileObject(PathUtilities.getDirName(tmpDir));
             String upperDir = tmpDir + "/CC";
             String lowerDir = tmpDir + "/cc";
@@ -86,9 +87,7 @@ public class CaseSensivityTestCase extends RemoteFileTestBase {
             FileObject upperFO = getFileObject(upperFile);
             assertNotSame("File objects should differ", lowerFO, upperFO);
         } finally {
-            if (tmpDir != null) {
-                CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(tmpDir);
         }
     }
 

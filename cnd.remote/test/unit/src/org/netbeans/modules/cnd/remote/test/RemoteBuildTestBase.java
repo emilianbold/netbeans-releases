@@ -47,12 +47,20 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -69,8 +77,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -90,6 +98,11 @@ import org.openide.nodes.Node;
  * @author Vladimir Kvashin
  */
 public class RemoteBuildTestBase extends RemoteTestBase {
+
+    private boolean trace = Boolean.getBoolean("cnd.test.remote.code.model.trace");
+    static {
+        System.setProperty("apt.trace.resolver", "true");
+    }
 
     public RemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -342,4 +355,42 @@ public class RemoteBuildTestBase extends RemoteTestBase {
             buildProject(makeProject, ActionProvider.COMMAND_BUILD, firstTimeout, TimeUnit.SECONDS);
         }
     }
+
+    protected void checkCodeModel(MakeProject makeProject) throws Exception {
+        NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+        assertNotNull("Null NativeProject", np);
+        CsmModel model = CsmModelAccessor.getModel();
+        ((ModelImpl) model).enableProject(np);
+        CsmProject csmProject = model.getProject(makeProject);
+        assertNotNull("Null CsmProject", csmProject);
+        csmProject.waitParse();
+        checkIncludes(csmProject, true);
+    }
+        
+    protected void checkIncludes(CsmFile csmFile, boolean recursive, Set<CsmFile> antiLoop) throws Exception {
+        if (!antiLoop.contains(csmFile)) {
+            antiLoop.add(csmFile);
+            trace("Checking %s\n", csmFile.getAbsolutePath());
+            for (CsmInclude incl : csmFile.getIncludes()) {
+                CsmFile includedFile = incl.getIncludeFile();
+                trace("\t%s -> %s\n", incl.getIncludeName(), includedFile);
+                assertNotNull("Unresolved include: " + incl.getIncludeName() + " in " + csmFile.getAbsolutePath(), includedFile);
+                if (recursive) {
+                    checkIncludes(includedFile, true, antiLoop);
+                }
+            }
+        }
+    }
+
+    protected void checkIncludes(CsmProject csmProject, boolean recursive) throws Exception {
+        for (CsmFile csmFile : csmProject.getAllFiles()) {
+            checkIncludes(csmFile, recursive, new HashSet<CsmFile>());
+        }
+    }
+    
+    protected void trace(String pattern, Object... args) {
+        if (trace) {
+            System.err.printf(pattern, args);
+        }
+    }    
 }
