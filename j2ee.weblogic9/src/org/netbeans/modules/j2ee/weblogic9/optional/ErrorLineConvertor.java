@@ -189,9 +189,13 @@ class ErrorLineConvertor implements LineConvertor {
         }
     }
     
-    class LinkOutputListener implements OutputListener {
+    private static class LinkOutputListener implements OutputListener {
         
-        LinkOutputListener( String msg , int lineNo , String filePath ){
+        private final String message; 
+        private final int line;
+        private final String path;
+        
+        LinkOutputListener (String msg , int lineNo , String filePath) {
             message = msg;
             line = lineNo;
             path = filePath;
@@ -235,10 +239,6 @@ class ErrorLineConvertor implements LineConvertor {
         
         public void outputLineSelected(OutputEvent ev) {           
         }
-        
-        private String message; 
-        private int line;
-        private String path;
         
     }
 

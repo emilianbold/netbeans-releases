@@ -1,0 +1,143 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.cnd.remote.full;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
+import junit.framework.Test;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadParameters;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
+
+/**
+ * @author Vladimir Kvashin
+ */
+public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
+
+    private String remoteTmpDir;
+    
+    public FullRemoteBuildTestCase(String testName) {
+        super(testName);
+    }
+
+    public FullRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
+    }
+
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        setupHost();
+        remoteTmpDir = createRemoteTmpDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        clearRemoteTmpDir(); // before disconnection!
+        super.tearDown();
+    }
+
+    @ForAllEnvironments
+    public void testFullRemoteBuildSimple() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String projectName = "simple_make_project_to_import";
+        File origProject = getDataFile(projectName);
+        String remoteProjectPath = upload(origProject, remoteTmpDir, "copy-to-private", "private");
+        FileObject remoteTmpDirFO = FileSystemProvider.getFileObject(getTestExecutionEnvironment(), remoteTmpDir);
+        if (remoteTmpDirFO == null) {
+            FileSystemProvider.getFileSystem(getTestExecutionEnvironment()).getRoot().refresh();
+        } else {
+            remoteTmpDirFO.refresh();
+        }        
+        File shadowProjectFile = new File(new File(getWorkDir(), getTestHostName()), projectName);
+        removeDirectory(shadowProjectFile);
+        String shadowProjectPath = shadowProjectFile.getAbsolutePath();
+        ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteProjectPath, shadowProjectPath, execEnv);
+        FileObject shadowProjectFO = synchronizer.createShadowProject();
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(shadowProjectFO);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    }
+    
+    // hg filters out "nbproject/private", for that reason we have to rewname it and restore correct name while copying
+    protected String upload(File file, String destination, String filterFrom, String filterTo) throws Exception {
+        String fileName = file.getName();
+        if (fileName.equals(filterFrom)) {
+            fileName = filterTo;
+        }
+        String remotePath = destination + '/' + fileName;
+        PrintWriter err = new PrintWriter(System.err);
+        if (file.isFile()) {
+            UploadParameters up = new CommonTasksSupport.UploadParameters(
+                    file, getTestExecutionEnvironment(), remotePath, -1, err);
+            int rc = CommonTasksSupport.uploadFile(up).get();
+            if (rc != 0) {
+                throw new IOException("Error uploading " + file.getAbsolutePath() + " to " + up.dstExecEnv + ':' + up.dstFileName);
+            }
+        } else {
+            int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), remotePath, err).get();
+            if (rc != 0) {
+                throw new IOException("Error creating directory  " + getTestExecutionEnvironment() + ':' + remotePath);
+            }
+            for(File child : file.listFiles()) {
+                upload(child, remotePath, filterFrom, filterTo);
+            }
+        }
+        return remotePath;
+    }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(FullRemoteBuildTestCase.class);
+    }
+}
