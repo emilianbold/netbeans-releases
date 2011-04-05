@@ -91,6 +91,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", //NOI18N
             "checkoutRevision", //NOI18N
             "merge", //NOI18N
+            "pull", //NOI18N
             "remove", //NOI18N
             "reset", //NOI18N
             "clean")); //NOI18N
@@ -129,6 +130,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "createBranch", //NOI18N // should refresh set of known branches
             "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
+            "pull", //NOI18N // creates a new head
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset", //NOI18N
             "removeRemote", //NOI18N - updates remotes

@@ -290,7 +290,22 @@ public interface GitClient {
      * @throws GitException an error occurs
      */
     public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException;
-
+    
+    /**
+     * Pulls changes from a remote repository and merges a given remote branch to an active one.
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
+     * @param fetchRefSpecifications 
+     * @param branchToMerge a remote branch that will be merged into an active branch
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
+     * @throws GitException.CheckoutConflictException there are local changes in the working tree that would result in a merge conflict
+     * @throws GitException.MissingObjectException given branch to merge does not exist
+     */
+    public GitPullResult pull (String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) throws GitException.AuthorizationException, 
+            GitException.CheckoutConflictException, GitException.MissingObjectException, GitException;
+    
     /**
      * Removes given files/folders from the index and/or from the working tree
      * @param roots files/folders to remove, can not be empty
