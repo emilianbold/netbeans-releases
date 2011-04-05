@@ -446,7 +446,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                             "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
                             // this is used in the setclasspath.sb/bat script for work-arounding 
                             // problems caused by the compatibility pack when running on 1.5
-                            "NB_TOMCAT_JDK="    + jdkVersion   // NOI18N
+                            "NB_TOMCAT_JDK="    + jdkVersion,   // NOI18N
+                            TomcatManager.KEY_UUID + "=" + tm.getUri()
                         },
                         true,
                         new File (homeDir, "bin") // NOI18N
@@ -485,7 +486,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
                         // this is used in the setclasspath.sb/bat script for work-arounding 
                         // problems caused by the compatibility pack when running on 1.5
-                        "NB_TOMCAT_JDK="    + jdkVersion       // NOI18N
+                        "NB_TOMCAT_JDK="    + jdkVersion,       // NOI18N
+                        TomcatManager.KEY_UUID + "=" + tm.getUri()
                     };
                     String[] profEnv = profilerSettings.getEnv();
                     // merge Tomcat and profiler env properties
@@ -534,7 +536,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                             "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
                             // this is used in the setclasspath.sb/bat script for work-arounding 
                             // problems caused by the compatibility pack when running on 1.5
-                            "NB_TOMCAT_JDK="    + jdkVersion       // NOI18N
+                            "NB_TOMCAT_JDK="    + jdkVersion,       // NOI18N
+                            TomcatManager.KEY_UUID + "=" + tm.getUri()
                         },
                         true,
                         new File (homeDir, "bin")
