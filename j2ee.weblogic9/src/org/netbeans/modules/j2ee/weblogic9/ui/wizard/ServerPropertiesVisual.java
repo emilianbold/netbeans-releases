@@ -538,21 +538,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
 
-    private class UpdateListener implements DocumentListener {
-
-        public void changedUpdate(DocumentEvent e) {
-            //fireChangeEvent();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            //fireChangeEvent();
-        }
-
-        public void insertUpdate(DocumentEvent e) {
-            //fireChangeEvent();
-        }
-    }
-
     /**
      * Simple listener for instance combo box changes.
      */
