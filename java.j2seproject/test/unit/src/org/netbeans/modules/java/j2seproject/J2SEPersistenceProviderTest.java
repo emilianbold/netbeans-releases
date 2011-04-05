@@ -84,13 +84,6 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         super(testName);
     }
 
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
     protected @Override int timeOut() {
         return 300000;
     }
