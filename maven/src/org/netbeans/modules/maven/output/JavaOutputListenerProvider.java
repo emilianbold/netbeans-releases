@@ -86,7 +86,7 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                 String lineNum = match.group(2);
                 String text = match.group(4);
                 File clazzfile;
-                if (clazz.startsWith("\\") && windowsDrive != null) {
+                if (clazz.startsWith("\\") && !clazz.startsWith("\\\\") && windowsDrive != null) {
                     clazzfile = FileUtil.normalizeFile(new File(windowsDrive + clazz + ".java"));
                 } else {
                     clazzfile = FileUtil.normalizeFile(new File(clazz + ".java"));
