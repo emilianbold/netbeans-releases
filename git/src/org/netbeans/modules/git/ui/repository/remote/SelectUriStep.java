@@ -168,7 +168,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         } else if (panel.rbCreateNew.isSelected()) {
             valid = repository.isValid();
             msg = repository.getMessage();
-            if (valid && panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty()) {
+            if (valid && (panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty())) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteName"), false); //NOI18N
             }
