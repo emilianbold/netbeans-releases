@@ -55,9 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
@@ -73,7 +71,6 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
@@ -484,7 +481,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             userIncludes = new ArrayList<String>(aUserIncludes.size());
             for(String s : aUserIncludes){
                 if (s.startsWith("/") && pathMapper != null) { // NOI18N
-                    s = pathMapper.getLocalPath(what);
+                    s = pathMapper.getLocalPath(s);
                 }
                 userIncludes.add(PathCache.getString(s));
             }
