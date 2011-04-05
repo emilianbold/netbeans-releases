@@ -94,8 +94,9 @@ public class RenameTestCase extends RemoteFileTestBase  {
 
     @ForAllEnvironments
     public void testRemoteRename() throws Exception {
-        String tmpDir = mkTemp(true);
+        String tmpDir = null;
         try {
+            tmpDir = mkTempAndRefreshParent(true);
             FileObject tmpDirFO = FileSystemProvider.getFileObject(execEnv, tmpDir);
             assertNotNull(tmpDirFO);
             FileObject oldFO = tmpDirFO.createData("file_1");
@@ -105,7 +106,7 @@ public class RenameTestCase extends RemoteFileTestBase  {
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);
         } finally {
-            CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
+            removeRemoteDirIfNotNull(tmpDir);
         }
     }
 

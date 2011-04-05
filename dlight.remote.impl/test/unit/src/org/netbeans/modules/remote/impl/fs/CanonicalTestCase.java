@@ -71,7 +71,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testCanonical() throws Exception {
-        String baseDir = mkTemp(true);
+        String baseDir = mkTempAndRefreshParent(true);
         try {
             String origDir = "orig-dir";
             String lnkDir1 = "lnk-dir-1";
@@ -115,15 +115,13 @@ public class CanonicalTestCase extends RemoteFileTestBase {
             checkCanonical(getFileObject(baseDirFO, lnkFileA), origFileFO);
             
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }
     }
     
     @ForAllEnvironments
     public void testCyclicLinks() throws Exception {
-        String baseDir = mkTemp(true);
+        String baseDir = mkTempAndRefreshParent(true);
         try {
             String link0 = "link1";
             String link1 = "link2";
@@ -184,9 +182,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
                 assertNotNull(operations[i] + " should throw an exception", exceptions[i]);
             }
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }
     }
 

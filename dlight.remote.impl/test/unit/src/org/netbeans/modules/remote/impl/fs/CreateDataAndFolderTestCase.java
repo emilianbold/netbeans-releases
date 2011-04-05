@@ -66,9 +66,9 @@ public class CreateDataAndFolderTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testCreateFolder() throws Exception {
-        String baseDir = mkTemp(true);
+        String baseDir = null;
         try {
-            baseDir = mkTemp(true);
+            baseDir = mkTempAndRefreshParent(true);
             FileObject baseDirFO = getFileObject(baseDir);
             
             String childName;
@@ -102,9 +102,7 @@ public class CreateDataAndFolderTestCase extends RemoteFileTestBase {
             assertTrue("Child file should exist: " + childAbsPath, HostInfoUtils.fileExists(execEnv, childAbsPath));
             
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }
     }
     
@@ -112,9 +110,9 @@ public class CreateDataAndFolderTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testCreateData() throws Exception {
-        String baseDir = mkTemp(true);
+        String baseDir = mkTempAndRefreshParent(true);
         try {
-            baseDir = mkTemp(true);
+            baseDir = mkTempAndRefreshParent(true);
             FileObject baseDirFO = getFileObject(baseDir);
             
             String childName;
@@ -146,9 +144,7 @@ public class CreateDataAndFolderTestCase extends RemoteFileTestBase {
             childAbsPath = baseDir + '/' + childName;
             assertTrue("Child file should exist: " + childAbsPath, HostInfoUtils.fileExists(execEnv, childAbsPath));
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }
     }
     

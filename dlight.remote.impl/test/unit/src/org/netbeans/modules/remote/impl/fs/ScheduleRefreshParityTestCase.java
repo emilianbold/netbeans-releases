@@ -117,8 +117,7 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
                     if (local) {
                         removeDirectoryContent(new File(baseDirFile, path[0]));
                     } else {
-                        CommonTasksSupport.rmDir(execEnv, baseDirFO.getPath() + '/' + path[0] + '/' + path[1], 
-                                true, new OutputStreamWriter(System.err)).get();
+                        removeRemoteDirIfNotNull(baseDirFO.getPath() + '/' + path[0] + '/' + path[1]);
                     }
                 }
             }
@@ -161,7 +160,7 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
     }
     
     public void doTestScheduleRefresh(boolean recursive) throws Throwable {
-        String remoteBaseDir = mkTemp(true);
+        String remoteBaseDir = mkTempAndRefreshParent(true);
         File localBaseDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
         try {            
             FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
@@ -185,9 +184,7 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
                 throw ex;
             }
         } finally {
-            if (remoteBaseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, remoteBaseDir, true, new OutputStreamWriter(System.err)).get();
-            }
+            removeRemoteDirIfNotNull(remoteBaseDir);
             if (localBaseDir != null && localBaseDir.exists()) {
                 removeDirectory(localBaseDir);
             }

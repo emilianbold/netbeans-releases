@@ -62,8 +62,9 @@ public class RefreshTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testDirectoryExplicitRefresh() throws Exception {
-        String dir = mkTemp(true);
+        String dir = null;
         try {
+            dir = mkTempAndRefreshParent(true);
             String file1 = "file1.dat";
             runScript("echo xxx > " + dir + '/' + file1);
             FileObject dirFO = getFileObject(dir);
@@ -103,9 +104,7 @@ public class RefreshTestCase extends RemoteFileTestBase {
             assertNotNull("Should not be null after root refresh", fo3);
 //            assertEquals("Dir. sync count differs", prevSyncCount+2, fs.getDirSyncCount());
         } finally {
-            if (dir != null) {
-                CommonTasksSupport.rmDir(execEnv, dir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(dir);
         }
     }
 

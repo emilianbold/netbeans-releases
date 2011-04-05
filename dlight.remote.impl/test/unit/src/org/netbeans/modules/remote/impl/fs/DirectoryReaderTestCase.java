@@ -112,7 +112,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             } else {
                 group = execute("groups").split(" ")[0];
             }
-            remoteDir = mkTemp(true);
+            remoteDir = mkTempAndRefreshParent(true);
             ProcessUtils.execute(execEnv, "umask", "0002");
             script =
                 "cd " + remoteDir + "\n" +
@@ -144,7 +144,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
         if (execEnv != null) {
-            ProcessUtils.execute(execEnv, "rm", "-rf", remoteDir);
+            removeRemoteDirIfNotNull(remoteDir);
         }
     }
 

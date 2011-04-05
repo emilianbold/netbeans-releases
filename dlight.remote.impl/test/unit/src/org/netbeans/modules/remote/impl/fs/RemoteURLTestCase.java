@@ -133,7 +133,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     public void testURLConnectionRead() throws Exception {
         String tempFile = null;
         try {
-            tempFile = mkTemp();
+            tempFile = mkTempAndRefreshParent();
             FileObject fo = rootFO.getFileObject(tempFile);
             assertNotNull("Null file object for " + tempFile, fo);
             assertTrue("FileObject should be readable: " + fo.getPath(), fo.canRead());
@@ -160,7 +160,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             }
         } finally {
             if (tempFile != null) {
-                CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
+                removeRemoteDirIfNotNull(tempFile);
             }
         }
     }
@@ -169,7 +169,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     public void testURLConnectionWrite() throws Exception {
         String tempFile = null;
         try {
-            tempFile = mkTemp();
+            tempFile = mkTempAndRefreshParent();
             final String referenceText = "...jumps over a lazy dog";
             FileObject fo = rootFO.getFileObject(tempFile);
             assertNotNull("Null file object for " + tempFile, fo);
@@ -193,7 +193,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             assertEquals(referenceText, res.output);
         } finally {
             if (tempFile != null) {
-                CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
+                removeRemoteDirIfNotNull(tempFile);
             }
         }
     }
