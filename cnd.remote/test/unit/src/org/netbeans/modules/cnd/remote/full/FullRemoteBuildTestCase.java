@@ -49,8 +49,13 @@ import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -89,12 +94,17 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
         super.tearDown();
     }
 
-    @ForAllEnvironments
-    public void testFullRemoteBuildSimple() throws Exception {
+    private MakeProject importProject(String projectName, boolean link) throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String projectName = "simple_make_project_to_import";
         File origProject = getDataFile(projectName);
-        String remoteProjectPath = upload(origProject, remoteTmpDir, "copy-to-private", "private");
+        String origProjectCopyName = projectName + "-orig";
+        String remoteProjectPath = upload(origProject, remoteTmpDir, "copy-to-private", "private", projectName, origProjectCopyName);
+        if (link) {
+            String symLinkPath = remoteTmpDir + '/' + projectName + "-lnk";
+            runScript(String.format("cd %s; ln -s %s %s", remoteTmpDir, origProjectCopyName, symLinkPath));
+            remoteProjectPath = symLinkPath;
+        }
+        
         FileObject remoteTmpDirFO = FileSystemProvider.getFileObject(getTestExecutionEnvironment(), remoteTmpDir);
         if (remoteTmpDirFO == null) {
             FileSystemProvider.getFileSystem(getTestExecutionEnvironment()).getRoot().refresh();
@@ -107,14 +117,47 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
         ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteProjectPath, shadowProjectPath, execEnv);
         FileObject shadowProjectFO = synchronizer.createShadowProject();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(shadowProjectFO);
+        assertNotNull("Error opening project " + shadowProjectFO, makeProject);
+        return makeProject;
+    }
+    
+    private void doTestCodeModel(String projectName, boolean link) throws Exception {
+        MakeProject makeProject = importProject(projectName, link);
+        checkCodeModel(makeProject);
+    }
+    
+    @ForAllEnvironments
+    public void testFullRemoteBuildSimple() throws Exception {
+        MakeProject makeProject = importProject("simple_make_project_to_import", false);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
     
+    @ForAllEnvironments
+    public void testFullRemoteBuildLink() throws Exception {
+        MakeProject makeProject = importProject("simple_make_project_to_import", true);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    }
+    
+    @ForAllEnvironments
+    public void testFullRemoteCodeModelSimple() throws Exception {
+        MakeProject makeProject = importProject("simple_make_project_to_import", false);
+        checkCodeModel(makeProject);
+    }
+    
+    @ForAllEnvironments
+    public void testFullRemoteCodeModelLink() throws Exception {
+        MakeProject makeProject = importProject("simple_make_project_to_import", true);
+        checkCodeModel(makeProject);
+    }
+    
     // hg filters out "nbproject/private", for that reason we have to rewname it and restore correct name while copying
-    protected String upload(File file, String destination, String filterFrom, String filterTo) throws Exception {
+    protected String upload(File file, String destination, String... replace) throws Exception {
+        assertTrue(replace.length % 2 == 0);
         String fileName = file.getName();
-        if (fileName.equals(filterFrom)) {
-            fileName = filterTo;
+        for (int i = 0; i < replace.length; i += 2) {
+            if (fileName.equals(replace[i])) {
+                fileName = replace[i+1];
+            }
         }
         String remotePath = destination + '/' + fileName;
         PrintWriter err = new PrintWriter(System.err);
@@ -131,7 +174,7 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
                 throw new IOException("Error creating directory  " + getTestExecutionEnvironment() + ':' + remotePath);
             }
             for(File child : file.listFiles()) {
-                upload(child, remotePath, filterFrom, filterTo);
+                upload(child, remotePath, replace);
             }
         }
         return remotePath;

@@ -190,8 +190,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_KEYWORD_FUNCTIONS = {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
+    final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
+    
     final static String[] PHP_CLASS_KEYWORDS = {
-        "$this->", "self::", "parent::"
+        PHP_CLASS_KEYWORD_THIS, "self::", "parent::" //NOI18N
     };
 
     final static String[] PHP_STATIC_CLASS_KEYWORDS = {
@@ -350,6 +352,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case STRING:
                     // LOCAL VARIABLES
                     completionResult.addAll(getVariableProposals(request, null));
+                    // are we in class?
+                    if (prefix.length() == 0 || startsWith(PHP_CLASS_KEYWORD_THIS, prefix)) {
+                        final ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
+                        if (classDecl != null) {
+                            final String className = CodeUtils.extractClassName(classDecl);
+                            if (className != null) {
+                                completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(className, PHP_CLASS_KEYWORD_THIS, request));
+                            }
+                        }
+                    }
                     break;
                 case CLASS_MEMBER:
                     autoCompleteClassMembers(completionResult, request, false);
