@@ -40,59 +40,61 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
+package org.netbeans.libs.git.jgit.commands;
 
-import java.io.File;
-import java.io.OutputStreamWriter;
-import junit.framework.Test;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.filesystems.FileObject;
+import org.netbeans.libs.git.GitMergeResult;
+import org.netbeans.libs.git.GitTransportUpdate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.FetchResult;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitPullResult;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+
 /**
  *
- * @author Vladimir Kvashin
+ * @author ondra
  */
-public class CaseSensivityTestCase extends RemoteFileTestBase {
+public class PullCommand extends TransportCommand {
 
-    public CaseSensivityTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    private final ProgressMonitor monitor;
+    private final List<String> refSpecs;
+    private final String remote;
+    private Map<String, GitTransportUpdate> updates;
+    private FetchResult result;
+    private final String branchToMerge;
+    private GitMergeResult mergeResult;
+
+    public PullCommand (Repository repository, String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) {
+        super(repository, remote, monitor);
+        this.monitor = monitor;
+        this.remote = remote;
+        this.refSpecs = fetchRefSpecifications;
+        this.branchToMerge = branchToMerge;
     }
 
+    @Override
+    protected void run () throws GitException.AuthorizationException, GitException {
+        FetchCommand fetch = new FetchCommand(getRepository(), remote, refSpecs, monitor);
+        fetch.run();
+        this.updates = fetch.getUpdates();
+        MergeCommand merge = new MergeCommand(getRepository(), branchToMerge, monitor);
+        merge.run();
+        this.mergeResult = merge.getResult();
+    }
 
-    @ForAllEnvironments
-    public void testCaseSensitiveDir() throws Exception {
-        String tmpDir = null;
-        try {
-            tmpDir = mkTempAndRefreshParent(true);
-            FileObject tmpDirParentFO = getFileObject(PathUtilities.getDirName(tmpDir));
-            String upperDir = tmpDir + "/CC";
-            String lowerDir = tmpDir + "/cc";
-            String upperFile = upperDir + "/file.dat";
-            String lowerFile = lowerDir + "/file.dat";
-            //String commonFileU = upperDir + "/file.common";
-            //String commonFileL = lowerDir + "/file.common";
-            execute("mkdir", "-p", upperDir);
-            execute("mkdir", "-p", lowerDir);
-            File file = File.createTempFile("rfs-test", ".dat");
-            upload(file, lowerFile);
-            upload(file, upperFile);
-            tmpDirParentFO.refresh();
-            FileObject lowerDirFO = getFileObject(lowerDir);
-            FileObject upperDirFO = getFileObject(upperDir);
-            assertNotSame("Directory file objects should differ", lowerDirFO, upperDirFO);
-            FileObject lowerFO = getFileObject(lowerFile);
-            FileObject upperFO = getFileObject(upperFile);
-            assertNotSame("File objects should differ", lowerFO, upperFO);
-        } finally {
-            removeRemoteDirIfNotNull(tmpDir);
+    @Override
+    protected String getCommandDescription () {
+        StringBuilder sb = new StringBuilder("git pull ").append(remote); //NOI18N
+        for (String refSpec : refSpecs) {
+            sb.append(' ').append(refSpec);
         }
+        return sb.toString();
     }
 
-    public static Test suite() {
-        return RemoteApiTest.createSuite(CaseSensivityTestCase.class);
+    public GitPullResult getResult () {
+        return new GitPullResult(updates, mergeResult);
     }
-
 }
