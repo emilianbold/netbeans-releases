@@ -73,7 +73,7 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
     public void testReadOnlyDirectory() throws Exception {
         String baseDir = null;
         try {
-            baseDir = mkTemp(true);
+            baseDir = mkTempAndRefreshParent(true);
             String roDirName = "ro_dir";
             String rwDirName = "rw_sub_dir";
             String fileName1 = "file_1";
@@ -128,9 +128,7 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             storage = roDirFO.testGetExistingDirectoryStorage();
             assertEquals("storage.size", 2, storage.listAll().size());            
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }        
     }
     

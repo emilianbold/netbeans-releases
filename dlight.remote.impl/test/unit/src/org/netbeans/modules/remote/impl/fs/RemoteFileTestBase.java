@@ -57,6 +57,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -182,8 +183,15 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         }
     }
 
-    protected String mkTemp() throws Exception {
-        return mkTemp(false);
+    
+    protected String mkTempAndRefreshParent() throws Exception {
+        return mkTempAndRefreshParent(false);
+    }
+    
+    protected void removeRemoteDirIfNotNull(String path) throws Exception {
+        if (path != null) {
+            CommonTasksSupport.rmDir(execEnv, path, true, new OutputStreamWriter(System.err)).get();
+        }
     }
 
     protected String execute(String command, String... args) {
@@ -224,13 +232,20 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         assertEquals(0, rc);
     }
 
-    protected String mkTemp(boolean directory) throws Exception {
+    protected String mkTempAndRefreshParent(boolean directory) throws Exception {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp",
                 directory ? mkTempArgsDir : mkTempArgsPlain);
         assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
-        return res.output;
+        String path = res.output;
+        refreshParent(path);
+        return path;
     }
 
+    private void refreshParent(String path) throws Exception {
+        String parent = PathUtilities.getDirName(path);
+        getFileObject(parent).refresh();
+    }
+    
     protected String readRemoteFile(String absPath) throws Exception {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);

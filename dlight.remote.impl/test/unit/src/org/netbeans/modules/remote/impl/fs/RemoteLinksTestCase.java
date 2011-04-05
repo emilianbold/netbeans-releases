@@ -68,7 +68,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
     public void testDirectoryLink() throws Exception {
         String baseDir = null;
         try {
-            baseDir = mkTemp(true);
+            baseDir = mkTempAndRefreshParent(true);
 
             String realDir = baseDir + "/real_dir";
             String linkDirName = "link_dir";
@@ -110,9 +110,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                         child.getPath().startsWith(parentPath));
             }
         } finally {
-            if (baseDir != null) {
-                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
-            }
+            removeRemoteDirIfNotNull(baseDir);
         }
     }
     
