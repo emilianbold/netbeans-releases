@@ -440,29 +440,32 @@ public class TaskList {
     }
     
     private void fireTasksAdded( List<Task> tasks ) {
+        TaskList.Listener[] tmp; 
         synchronized( listeners ) {
-            ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
-            for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
-                i.next().tasksAdded( tasks );
-            }
+            tmp = listeners.toArray(new TaskList.Listener[listeners.size()]);
+        }
+        for ( Listener l : tmp ) {
+            l.tasksAdded( tasks );
         }
     }
     
     private void fireTasksRemoved( List<Task> tasks ) {
+        TaskList.Listener[] tmp; 
         synchronized( listeners ) {
-            ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
-            for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
-                i.next().tasksRemoved( tasks );
-            }
+            tmp = listeners.toArray(new TaskList.Listener[listeners.size()]);
+        }
+        for ( Listener l : tmp ) {
+            l.tasksRemoved( tasks );
         }
     }
     
     private void fireCleared() {
+        TaskList.Listener[] tmp; 
         synchronized( listeners ) {
-            ArrayList<Listener> tmp = new ArrayList<TaskList.Listener>( listeners );
-            for( Iterator<Listener> i=tmp.iterator(); i.hasNext(); ) {
-                i.next().cleared();
-            }
+            tmp = listeners.toArray(new TaskList.Listener[listeners.size()]);
+        }
+        for( Listener l : tmp) {
+            l.cleared();
         }
     }
     
