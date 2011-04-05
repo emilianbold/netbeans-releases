@@ -1307,7 +1307,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             index--;
         }
         while ((forward ? index < tokenText.length() : index > 0) &&
-                tokenText.charAt(index) == ' ') {
+                Character.isWhitespace(tokenText.charAt(index))) {
             if (forward) {
                 index++;
             } else {
