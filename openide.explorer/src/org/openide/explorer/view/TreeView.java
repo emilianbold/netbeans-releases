@@ -2075,6 +2075,7 @@ public abstract class TreeView extends JScrollPane {
         
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
+            Set<TreePath> resSet = new HashSet<TreePath>();
 
             int startIndex = origSelectionPaths != null ? Math.max(0, getRowForPath(origSelectionPaths[0])) : 0;
             int size = getRowCount();
@@ -2094,9 +2095,10 @@ public abstract class TreeView extends JScrollPane {
                     path = getNextMatch(prefix, startIndex, Position.Bias.Forward);
                 }
 
-                if ((path != null) && !results.contains(path)) {
+                if ((path != null) && !resSet.contains(path)) {
                     startIndex = tree.getRowForPath(path);
                     results.add(path);
+                    resSet.add(path);
 
                     if (!quickSearchUsingSubstring) {
                         String elementName = ((VisualizerNode) path.getLastPathComponent()).getDisplayName();

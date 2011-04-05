@@ -131,6 +131,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     private static final FilenameFilter PATCH_DIR_FILTER = new PrefixesFilter("patch_wls"); // NOI18N    
 
+    private static final Version JDK6_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("10.3"); // NOI18N
+
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
@@ -461,6 +463,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             Set versions = new HashSet();
             versions.add("1.4"); // NOI18N
             versions.add("1.5"); // NOI18N
+            if (dm.getServerVersion() != null
+                    && dm.getServerVersion().isAboveOrEqual(JDK6_SUPPORTED_SERVER_VERSION)) {
+                versions.add("1.6");
+            }
             return versions;
         }
         

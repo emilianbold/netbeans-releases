@@ -66,6 +66,7 @@ import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
+import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -85,6 +86,7 @@ import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
+import org.netbeans.libs.git.jgit.commands.PullCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
@@ -357,6 +359,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         Repository repository = gitRepository.getRepository();
         MergeCommand cmd = new MergeCommand(repository, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
+    }
+
+    @Override
+    public GitPullResult pull (String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) throws GitException {
+        PullCommand cmd = new PullCommand(gitRepository.getRepository(), remote, fetchRefSpecifications, branchToMerge, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getResult();
     }
