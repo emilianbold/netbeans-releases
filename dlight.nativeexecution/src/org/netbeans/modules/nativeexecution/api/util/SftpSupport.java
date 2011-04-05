@@ -399,7 +399,7 @@ class SftpSupport {
             try {
                 cftp.get(srcFileName, dstFileName);
             } catch (SftpException e) {
-                throw decorateSftpException(e, dstFileName);
+                throw decorateSftpException(e, srcFileName);
             } finally {
                 releaseChannel(cftp);
             }
