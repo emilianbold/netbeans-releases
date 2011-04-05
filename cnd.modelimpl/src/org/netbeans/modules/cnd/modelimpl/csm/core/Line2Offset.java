@@ -72,28 +72,30 @@ public class Line2Offset {
 
     public int[] getLineColumnByOffset(int offset) throws IOException {
         int[] lineCol = new int[]{1, 1};
-        int line = _getLineByOffset(offset);
-        int start = _getStartLineOffset(line);
-        lineCol[0] = line;
-        // find line and column
-        int TABSIZE = ModelSupport.getTabSize();
-        int length = getLength();
-        for (int curOffset = start; curOffset < offset && curOffset < length; curOffset++) {
-            char curChar = getCharAt(curOffset);
-            switch (curChar) {
-                case '\n':
-                    // just increase line number
-                    lineCol[0] = lineCol[0] + 1;
-                    lineCol[1] = 1;
-                    break;
-                case '\t':
-                    int col = lineCol[1];
-                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
-                    lineCol[1] = newCol;
-                    break;
-                default:
-                    lineCol[1]++;
-                    break;
+        if (offset >= 0) {
+            int line = _getLineByOffset(offset);
+            int start = _getStartLineOffset(line);
+            lineCol[0] = line;
+            // find line and column
+            int TABSIZE = ModelSupport.getTabSize();
+            int length = getLength();
+            for (int curOffset = start; curOffset < offset && curOffset < length; curOffset++) {
+                char curChar = getCharAt(curOffset);
+                switch (curChar) {
+                    case '\n':
+                        // just increase line number
+                        lineCol[0] = lineCol[0] + 1;
+                        lineCol[1] = 1;
+                        break;
+                    case '\t':
+                        int col = lineCol[1];
+                        int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
+                        lineCol[1] = newCol;
+                        break;
+                    default:
+                        lineCol[1]++;
+                        break;
+                }
             }
         }
         return lineCol;

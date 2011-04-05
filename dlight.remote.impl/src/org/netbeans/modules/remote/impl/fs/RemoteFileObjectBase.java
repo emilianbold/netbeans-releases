@@ -437,7 +437,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.getExecutionEnvironment().equals(other.getExecutionEnvironment()))) {
             return false;
         }
-        if (this.getCache() != other.getCache() && (this.getCache() == null || !this.cache.equals(other.cache))) {
+        String thisPath = this.getPath();
+        String otherPath = other.getPath();
+        if (thisPath != otherPath && (thisPath == null || !thisPath.equals(otherPath))) {
             return false;
         }
         return true;
@@ -448,7 +450,8 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         int hash = 3;
         hash = 11 * hash + (this.getFileSystem() != null ? this.getFileSystem().hashCode() : 0);
         hash = 11 * hash + (this.getExecutionEnvironment() != null ? this.getExecutionEnvironment().hashCode() : 0);
-        hash = 11 * hash + (this.getCache() != null ? this.getCache().hashCode() : 0);
+        String thisPath = this.getPath();
+        hash = 11 * hash + (thisPath != null ? thisPath.hashCode() : 0);
         return hash;
     }
     
