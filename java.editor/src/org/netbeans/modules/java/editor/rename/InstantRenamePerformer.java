@@ -54,6 +54,8 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -74,6 +76,8 @@ import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -81,6 +85,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
+import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -176,7 +181,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         region = new SyncDocumentRegion(doc, regions);
 
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(this);
+            BaseDocument bdoc = ((BaseDocument) doc);
+            bdoc.setPostModificationDocumentListener(this);
+
+            UndoableEdit undo = new CancelInstantRenameUndoableEdit(this);
+            for (UndoableEditListener l : bdoc.getUndoableEditListeners()) {
+                l.undoableEditHappened(new UndoableEditEvent(doc, undo));
+            }
         }
 
         target.addKeyListener(this);
@@ -833,6 +844,27 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         return bag;
+    }
+
+    private static class CancelInstantRenameUndoableEdit extends AbstractUndoableEdit {
+
+        private final Reference<InstantRenamePerformer> performer;
+
+        public CancelInstantRenameUndoableEdit(InstantRenamePerformer performer) {
+            this.performer = new WeakReference<InstantRenamePerformer>(performer);
+        }
+
+        @Override public boolean isSignificant() {
+            return false;
+        }
+
+        @Override public void undo() throws CannotUndoException {
+            InstantRenamePerformer perf = performer.get();
+
+            if (perf != null) {
+                perf.release();
+            }
+        }
     }
     
 }
