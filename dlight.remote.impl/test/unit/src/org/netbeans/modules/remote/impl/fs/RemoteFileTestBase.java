@@ -140,7 +140,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     
     protected RemoteFileSystem fs;
-    protected FileObject rootFO;
+    protected RemoteFileObjectBase rootFO;
     protected final ExecutionEnvironment execEnv;
 
     protected String sharedLibExt;
@@ -213,7 +213,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return fo;
     }
     
-    private void assertNotNullFileObject(FileObject fo, FileObject parent, String relOrAbsPath) {
+    private void assertNotNullFileObject(FileObject fo, FileObject parent, String relOrAbsPath) throws Exception    {
         if (fo == null) {
             String absPath;
             StringBuilder message = new StringBuilder();
@@ -225,7 +225,27 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
                 absPath = parent.getPath() + '/' + relOrAbsPath;
                 message.append(" in ").append(parent);
             }
-            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "ls", "-ld", relOrAbsPath);
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "ls", "-ld", absPath);
+            System.err.printf("Null file object for %s:%s\n", execEnv, absPath);
+            System.err.printf("ls -ld %s\nrc=%d\n%s\n%s", absPath, res.exitCode, res.output, res.error);
+            String dirName = PathUtilities.getDirName(absPath);
+            String baseName = PathUtilities.getBaseName(absPath);
+            RemoteFileObjectBase parentFO = rootFO.getFileObject(dirName);
+            System.err.printf("parentFO=%s\n", parentFO);
+            if (parentFO != null) {                
+                File cache = parentFO.getCache();
+                if(cache == null) {
+                    System.err.printf("Cache file is null\n");
+                } else {
+                    System.err.printf("Cache file content:\n");
+                    printFile(cache, null, System.err);
+                }
+                fo = parentFO.getFileObject(baseName);
+                System.err.printf("2-nd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
+                parentFO.refresh();
+                fo = parentFO.getFileObject(baseName);
+                System.err.printf("3-rd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
+            }
             if (res.isOK()) {
                 message.append("; ls reports that file exists:\n").append(res.output);
             } else {
