@@ -48,6 +48,7 @@ import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
+import com.sun.el.parser.Token;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -97,6 +98,11 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             return CodeCompletionResult.NONE;
         }
         Node target = getTargetNode(element, context.getCaretOffset());
+        if(target == null) {
+            //completion called outside of the EL content, resp. inside the
+            //delimiters #{ or } area
+            return CodeCompletionResult.NONE;
+        }
         AstPath path = new AstPath(element.getNode());
         List<Node> rootToNode = path.rootToNode(target);
         if (rootToNode.isEmpty()) {
@@ -168,15 +174,29 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return sanitizer.sanitized();
     }
 
+    /**
+     * @param offset swing <b>document</b> offset
+     */
     private Node getTargetNode(ELElement element, int offset) {
         Node result = element.findNodeAt(offset);
         // in EL AST for example #{foo.bar^} the caret is at a deferred expression node, whereas
         // for code completion we need the "bar" property node; the code below tries to accomplish
         // that
         if (result instanceof AstDeferredExpression || result instanceof AstDynamicExpression) {
-            Node realTarget = element.findNodeAt(offset - 1);
-            if (realTarget != null) {
-                result = realTarget;
+            //ensure we do not jump out from the expression && do not offer EL stuff in delimiters
+            int relativeOffset = offset - element.getOriginalOffset().getStart();
+            assert relativeOffset >= 0;
+            
+            //do the workaround only if the completion called at or after 
+            //the opening EL delimiter #{ or ${, not before or inside it
+            if(relativeOffset >= 2) { 
+                Node realTarget = element.findNodeAt(offset - 1);
+                if (realTarget != null) {
+                    result = realTarget;
+                }
+            } else {
+                //ensure no EL completion before or inside the delimiters
+                return null; 
             }
         }
         return result;
