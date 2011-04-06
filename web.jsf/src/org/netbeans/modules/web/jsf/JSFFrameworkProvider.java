@@ -449,7 +449,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             
             //Add Faces Servlet and servlet-mapping into web.xml
-            if (ddRoot != null && ddRoot.getVersion() != null) {
+            if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {
                 boolean shouldAddMappings = shouldAddMappings(webModule);
                 try{
                     if (shouldAddMappings || !DEFAULT_MAPPING.equals(facesMapping)) {
