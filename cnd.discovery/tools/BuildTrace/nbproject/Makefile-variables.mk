@@ -59,10 +59,9 @@ CND_PACKAGE_PATH_Linux-x86_64=dist/Linux-x86_64/OracleSolarisStudio-Linux-x86/pa
 #
 # dmake command
 ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \
-	mkdir -p nbproject/private && \
-	touch nbproject/private/Makefile-variables.mk
+	(mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)
 #
 # gmake command
-.PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)
+.PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || (mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk))
 #
 include nbproject/private/Makefile-variables.mk
