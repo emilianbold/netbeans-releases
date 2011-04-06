@@ -82,17 +82,20 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         private final String listenerName;
         private final String prefixToStrip;
         private final PrintStream out; 
+        private final boolean checkExpected;
 
-        public FCL(String name, String prefixToStrip, PrintStream out) {
+        public FCL(String name, String prefixToStrip, PrintStream out, boolean checkExpected) {
             this.listenerName = name;
             this.prefixToStrip = prefixToStrip;
             this.out = out;
+            this.checkExpected = checkExpected;
         }
 
         private void register(String eventKind, FileEvent fe) {
             String src = stripPrefix(((FileObject) fe.getSource()).getPath());
             String obj = stripPrefix(fe.getFile().getPath());
-            out.printf("FileEvent[%s]: %s src=%s obj=%s exp=%b\n", listenerName, eventKind, src, obj, fe.isExpected());
+            String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
+            out.printf("FileEvent[%s]: %s src=%s obj=%s %s\n", listenerName, eventKind, src, obj, exp);
         }
         
         private String stripPrefix(String path) {
