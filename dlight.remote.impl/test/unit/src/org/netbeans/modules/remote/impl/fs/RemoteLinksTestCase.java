@@ -85,12 +85,8 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
             FileObject realFO, linkFO;
             
-            realFO = rootFO.getFileObject(realFile);
-            assertNotNull("Null file object for " + realFile, realFO);
-
-            linkFO = rootFO.getFileObject(linkFile);
-            assertNotNull("Null file object for " + linkFile, linkFO);
-
+            realFO = getFileObject(realFile);
+            linkFO = getFileObject(linkFile);
 
             assertTrue("FileObject should be writable: " + linkFO.getPath(), linkFO.canWrite());
             String content = "a quick brown fox...";
