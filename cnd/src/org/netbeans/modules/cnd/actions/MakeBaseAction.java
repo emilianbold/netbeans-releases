@@ -188,7 +188,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
         }
         
-        MacroMap mm = MacroMap.createEmpty(execEnv);
+        MacroMap mm = MacroMap.forExecEnv(execEnv);
         mm.putAll(envMap);
         
         if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
