@@ -65,8 +65,7 @@ public class RemoteFileSystemOffilneTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testOfflineStdlibH() throws Exception {
         String absPath = "/usr/include/stdlib.h";
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject fo = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         String content = readFile(fo);
         String text2search = "getenv";
@@ -74,8 +73,7 @@ public class RemoteFileSystemOffilneTestCase extends RemoteFileTestBase {
                 content.indexOf(text2search) >= 0);
         ConnectionManager.getInstance().disconnect(execEnv);
         assertFalse("Shouldn't be connected now", ConnectionManager.getInstance().isConnectedTo(execEnv));
-        fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        fo = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         content = readFile(fo);
         text2search = "getenv";

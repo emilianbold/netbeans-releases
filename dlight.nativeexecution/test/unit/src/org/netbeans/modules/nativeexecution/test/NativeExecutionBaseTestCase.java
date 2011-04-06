@@ -55,7 +55,10 @@ import java.io.Writer;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -314,10 +317,45 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     public static void writeFile(File file, CharSequence content) throws IOException {
         Writer writer = new FileWriter(file);
-        writer.write(content.toString());
-        writer.close();
+        try {
+            writer.write(content.toString());
+        } finally {
+            writer.close();
+        }
+    }
+    
+    public static void writeFile(File file, List<? extends CharSequence> lines) throws IOException {
+        Writer writer = new FileWriter(file);
+        try {
+            for (CharSequence line : lines) {
+                writer.write(line.toString());
+                writer.write('\n');
+            }
+        } finally {
+            writer.close();
+        }
     }
 
+    public void sortFile(File file) throws IOException {
+        List<String> lines = readFileLines(file);
+        Collections.sort(lines);
+        writeFile(file, lines);
+    }
+    
+    private List<String> readFileLines(File file) throws IOException {
+        BufferedReader r = new BufferedReader(new FileReader(file));
+        try {
+            List<String> lines = new ArrayList<String>();
+            String line;
+            while ((line = r.readLine()) != null) {
+                lines.add(line);
+            }
+            return lines;
+        } finally {
+            if (r != null) try { r.close(); } catch (IOException e) {}
+        }
+    }
+    
     public String readFile(File file) throws IOException {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
         StringBuilder sb = new StringBuilder();
