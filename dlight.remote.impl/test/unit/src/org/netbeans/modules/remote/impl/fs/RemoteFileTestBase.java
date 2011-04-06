@@ -206,7 +206,17 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected FileObject getFileObject(String path) throws Exception {
         FileObject fo = rootFO.getFileObject(path);
-        assertNotNull("Null file object for " + path, fo);
+        if (fo == null) {
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "ls", "-ld", path);
+            StringBuilder sb = new StringBuilder();
+            sb.append("Null file object for ").append(path);
+            if (res.isOK()) {
+                sb.append("; ls reports that file exists:\n").append(res.output);
+            } else {
+                sb.append("; ls reports that file does NOT exist:\n").append(res.error);
+            }
+            assertTrue(sb.toString(), false);
+        }
         return fo;
     }
 
