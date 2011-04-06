@@ -74,8 +74,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject fo = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         String content = readFile(fo);
         String text2search = "printf";
@@ -86,8 +85,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testParents() throws Exception {
         String absPath = "/usr/include/sys/time.h";
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject fo = getFileObject(absPath);
         FileObject p = getParentAssertNotNull(fo); // /usr/include/sys
         p = getParentAssertNotNull(p); // /usr/include
         p = getParentAssertNotNull(p); // /usr
@@ -102,7 +100,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     }
 
     @ForAllEnvironments
-    public void testDifferentPaths() {
+    public void testDifferentPaths() throws Exception {
         class Pair {
             final String parent;
             final String relative;
@@ -125,37 +123,21 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             if (pair.parent == null) {
                 parentFO = rootFO;
             } else {
-                parentFO = rootFO.getFileObject(pair.parent);
-                assertNotNull("Null file object for " + pair.parent, parentFO);
+                parentFO = getFileObject(pair.parent);
             }
-            FileObject childFO = parentFO.getFileObject(pair.relative);
-            assertNotNull("Null file object for " + pair.relative + " from " + parentFO, childFO);
+            FileObject childFO = getFileObject(parentFO, pair.relative);
         }
     }
 
     @ForAllEnvironments
-    public void testSingleFileObject() {
+    public void testSingleFileObject() throws Exception {
         String absPath = "/usr/include/stdio.h";
-        FileObject fo1 = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo1);
+        FileObject fo1 = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo1.isValid());
-        FileObject fo2 = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo2);
+        FileObject fo2 = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo2.isValid());
         assertTrue("Two instances of file objects for " + absPath, fo1 == fo2);
     }
-
-//    @ForAllEnvironments
-//    public void testSingleLocalFileObject() {
-//        String absPath = "/usr/include/stdio.h";
-//        FileObject fo1 = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()).findResource(absPath);
-//        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo1);
-//        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo1.isValid());
-//        FileObject fo2 = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()).findResource(absPath);
-//        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo2);
-//        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo2.isValid());
-//        assertTrue("Two instances of file objects for " + absPath, fo1 == fo2);
-//    }
 
     @ForAllEnvironments
     public void testMultipleRead() throws Exception {
@@ -164,8 +146,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         long firstTime = -1;
         for (int i = 0; i < 5; i++) {
             long time = System.currentTimeMillis();
-            FileObject fo = rootFO.getFileObject(absPath);
-            assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+            FileObject fo = getFileObject(absPath);
             assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
             InputStream is = fo.getInputStream();
             assertNotNull("Got null input stream for " + getFileName(execEnv, absPath), is);
@@ -195,12 +176,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         try {
             FileObject fo;
             String stdio_h = "/usr/include/stdio.h";
-            fo = rootFO.getFileObject(stdio_h);
-            assertNotNull("null file object for " + stdio_h, fo);
+            fo = getFileObject(stdio_h);
             assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
             tempFile = mkTempAndRefreshParent();
-            fo = rootFO.getFileObject(tempFile);
-            assertNotNull("Null file object for " + tempFile, fo);
+            fo = getFileObject(tempFile);
             assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
             String content = "a quick brown fox...";
             writeFile(fo, content);
@@ -221,8 +200,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         String tempDir = null;
         try {
             tempDir = mkTempAndRefreshParent(true);
-            FileObject tempDirFO = rootFO.getFileObject(tempDir);
-            assertNotNull("Null file object for " + tempDir, tempDirFO);
+            FileObject tempDirFO = getFileObject(tempDir);
             //assertTrue("FileObject should be writable: " + tempDirFO.getPath(), tempDirFO.canWrite());
             String lpt = "LPT1";
             String withColon = "file:with:colon";
@@ -230,10 +208,8 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
                 "echo \"123\" > " + lpt + "\n" +
                 "echo \"123\" > " + withColon + "\n");
             tempDirFO.refresh();
-            FileObject lptFO = tempDirFO.getFileObject(lpt);
-            assertNotNull("Null file object for " + lpt, lptFO);
-            FileObject colonFO = tempDirFO.getFileObject(withColon);
-            assertNotNull("Null file object for " + withColon, colonFO);
+            FileObject lptFO = getFileObject(tempDirFO, lpt);
+            FileObject colonFO = getFileObject(tempDirFO, withColon);
         } finally {
             if (tempDir != null) {
                 CommonTasksSupport.rmFile(execEnv, tempDir, new OutputStreamWriter(System.err));
@@ -246,8 +222,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         String tempDir = null;
         try {
             tempDir = mkTempAndRefreshParent(true);
-            FileObject tempDirFO = rootFO.getFileObject(tempDir);
-            assertNotNull("Null file object for " + tempDir, tempDirFO);
+            FileObject tempDirFO = getFileObject(tempDir);
             //assertTrue("FileObject should be writable: " + tempDirFO.getPath(), tempDirFO.canWrite());
             String resName1 = RemoteFileSystem.CACHE_FILE_NAME;
             String resName2 = RemoteFileSystem.ATTRIBUTES_FILE_NAME;
@@ -255,10 +230,8 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             runScript("cd " + tempDir + "\n" +
                 "echo \"" + refText + "\" > " + resName1 + "\n" +
                 "echo \"" + refText + "\" > " + resName2 + "\n");
-            FileObject fo1 = tempDirFO.getFileObject(resName1);
-            assertNotNull("Null file object for " + resName1, fo1);
-            FileObject fo2 = tempDirFO.getFileObject(resName2);
-            assertNotNull("Null file object for " + resName1, fo2);
+            FileObject fo1 = getFileObject(tempDirFO, resName1);
+            FileObject fo2 = getFileObject(tempDirFO, resName2);
             String text1 = readFile(fo1);
             assertEquals("content of " + fo1.getPath(), refText, text1);
             String text2 = readFile(fo1);
