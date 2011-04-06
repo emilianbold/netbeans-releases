@@ -42,72 +42,49 @@
 
 package org.netbeans.modules.remote.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
-import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
-import org.netbeans.modules.remote.impl.fs.CreateDataAndFolderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorageSftpTestCase;
-import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
-import org.netbeans.modules.remote.impl.fs.ListenersParityTestCase;
-import org.netbeans.modules.remote.impl.fs.ListenersTestCase;
-import org.netbeans.modules.remote.impl.fs.NormalizationTestCase;
-import org.netbeans.modules.remote.impl.fs.ReadOnlyDirTestCase;
-import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
-import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
-import org.netbeans.modules.remote.impl.fs.RenameTestCase;
 import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApiTest extends NativeExecutionBaseTestSuite {
+public class RemoteApiMultipleTestSuite extends NativeExecutionBaseTestSuite {
 
     @SuppressWarnings("unchecked")
-    public RemoteApiTest() {
+    public RemoteApiMultipleTestSuite() {
         this("Remote API", getTestClasses());
     }
 
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-           RemoteFileSystemTestCase.class,
-           RemoteLinksTestCase.class,
-           RemotePathTestCase.class,
-           RemoteURLTestCase.class,
-           RenameTestCase.class,
-           EscapeWindowsNameTestCase.class,
-           CaseSensivityTestCase.class,
-           DirectoryStorageSftpTestCase.class,
-           DirectoryReaderTestCase.class,
-           RefreshTestCase.class,
-           CanonicalTestCase.class,
-           CreateDataAndFolderTestCase.class,
-           ListenersTestCase.class,
-           NormalizationTestCase.class,
-           ListenersParityTestCase.class,
-           ReadOnlyDirTestCase.class,
-           ScheduleRefreshParityTestCase.class,
-           RemoteFileSystemOffilneTestCase.class
-        };
+        Class[] orig = RemoteApiTest.getTestClasses();
+        int mul = 4;
+        List<Class<? extends NativeExecutionBaseTestCase>> res = new ArrayList<Class<? extends NativeExecutionBaseTestCase>>();
+        for (int i = 0; i < mul; i++) {
+            for (int j = 0; j < orig.length; j++) {
+                if (orig[j] != RemoteFileSystemOffilneTestCase.class && orig[j] != ScheduleRefreshParityTestCase.class) {
+                    res.add(orig[j]);
+                }
+            }
+        }
+        return res.toArray(new Class[res.size()]);
     }
     
     @SuppressWarnings("unchecked")
-    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new RemoteApiTest(testClass.getName(), testClass);
+    public static RemoteApiMultipleTestSuite createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
+        return new RemoteApiMultipleTestSuite(testClass.getName(), testClass);
     }
 
-    public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+    public RemoteApiMultipleTestSuite(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        return new RemoteApiTest();
+        return new RemoteApiMultipleTestSuite();
     }
 }
