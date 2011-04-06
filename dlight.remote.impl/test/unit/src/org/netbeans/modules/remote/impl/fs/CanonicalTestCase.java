@@ -131,6 +131,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
                     "ln -s " + "inexistent" + ' ' + link3;
             execute("sh", "-c", script);
             FileObject baseDirFO = getFileObject(baseDir);
+            baseDirFO.refresh();
             final FileObject[] links = new FileObject[3];
             links[0] = (RemoteFileObjectBase) getFileObject(baseDirFO, link0);
             links[1] = (RemoteFileObjectBase) getFileObject(baseDirFO, link1);
