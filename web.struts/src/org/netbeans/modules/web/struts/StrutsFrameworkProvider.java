@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -95,6 +96,8 @@ import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -350,7 +353,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 dd = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
             }
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            if (ddRoot != null){
+            if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {
                 try{
                     Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
                     servlet.setServletName("action"); //NOI18N
@@ -408,6 +411,18 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 catch (ClassNotFoundException cnfe){
                     Exceptions.printStackTrace(cnfe);
                 }
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        NotifyDescriptor warningDialog = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(StrutsFrameworkProvider.class, "WARN_UnknownDeploymentDescriptorText"), //NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(warningDialog);
+                    }
+                });
+
             }
             
             //copy Welcome.jsp
