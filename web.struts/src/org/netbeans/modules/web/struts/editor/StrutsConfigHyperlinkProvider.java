@@ -130,7 +130,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
     public int[] getHyperlinkSpan(javax.swing.text.Document doc, int offset) {
         if (debug) debug(":: getHyperlinkSpan");
         if (eav != null){
-            return new int []{valueOffset, valueOffset + eav[2].length() -1};
+            return new int []{valueOffset, valueOffset + eav[2].length()};
         }
         return null;
     }

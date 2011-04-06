@@ -241,7 +241,12 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                 ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
                 DefaultArtifactHandler handler = new DefaultArtifactHandler();
                 handler.setExtension("pom");
-                fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
+                String groupId = mdl.getGroupId();
+                if (groupId == null && mdl.getParent() != null) {
+                    groupId = mdl.getParent().getGroupId();
+                }
+                assert groupId != null;
+                fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(groupId, mdl.getArtifactId(), version, null, "pom", null, handler)));
             }
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
             if (fo != null) {

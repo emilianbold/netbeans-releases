@@ -484,10 +484,12 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static abstract class AbstractErrorChecksForMimetypeFix implements HintFix {
 
-        private SyntaxAnalyzerResult result;
+        protected Document doc;
+        protected String mimeType;
 
         public AbstractErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
-            this.result = result;
+            this.doc =  result.getSource().getSnapshot().getSource().getDocument(false);
+            this.mimeType = HtmlErrorFilter.getWebPageMimeType(result);
         }
 
         @Override
@@ -498,14 +500,6 @@ public class HtmlHintsProvider implements HintsProvider {
         @Override
         public boolean isInteractive() {
             return false;
-        }
-
-        protected String getMimeType() {
-            return HtmlErrorFilter.getWebPageMimeType(result);
-        }
-
-        protected Snapshot getSnapshot() {
-            return result.getSource().getSnapshot();
         }
 
     }
@@ -520,15 +514,14 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public String getDescription() {
-            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_MIMETYPE", getMimeType()); //NOI18N
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_MIMETYPE", mimeType); //NOI18N
         }
 
         @Override
         public void implement() throws Exception {
-            HtmlPreferences.setHtmlErrorChecking(getMimeType(), false);
+            HtmlPreferences.setHtmlErrorChecking(mimeType, false);
 
             //force reparse of *THIS document only* => hints update
-            Document doc = getSnapshot().getSource().getDocument(false);
             if (doc != null) {
                 forceReparse(doc);
             }
@@ -545,15 +538,14 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public String getDescription() {
-            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_MIMETYPE", getMimeType()); //NOI18N
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_MIMETYPE", mimeType); //NOI18N
         }
 
         @Override
         public void implement() throws Exception {
-            HtmlPreferences.setHtmlErrorChecking(getMimeType(), true);
+            HtmlPreferences.setHtmlErrorChecking(mimeType, true);
 
             //force reparse of *THIS document only* => hints update
-            Document doc = getSnapshot().getSource().getDocument(false);
             if (doc != null) {
                 forceReparse(doc);
             }

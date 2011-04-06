@@ -76,6 +76,7 @@ import javax.xml.namespace.QName;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelProblem;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -310,7 +311,18 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             if (m.getArtifactId() == null) { // normal for superpom
                                 continue;
                             }
-                            Artifact a = embedder.createArtifact(m.getGroupId(), m.getArtifactId(), m.getVersion(), m.getPackaging());
+                            Parent parent = m.getParent();
+                            String groupId = m.getGroupId();
+                            if (groupId == null && parent != null) {
+                                groupId = parent.getGroupId();
+                            }
+                            assert groupId != null;
+                            String version = m.getVersion();
+                            if (version == null && parent != null) {
+                                version = parent.getVersion();
+                            }
+                            assert version != null;
+                            Artifact a = embedder.createArtifact(groupId, m.getArtifactId(), version, m.getPackaging());
                             try {
                                 embedder.resolve(a, Collections.<ArtifactRepository>emptyList(), embedder.getLocalRepository());
                             } catch (Exception x) {

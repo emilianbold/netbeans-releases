@@ -91,7 +91,7 @@ public class Utilities {
 
     private Utilities() {}
 
-    private static final Logger logger = Logger.getLogger(Utilities.class.getName());
+    static final Logger logger = Logger.getLogger(Utilities.class.getName());
 
     /**
      * 
@@ -221,6 +221,7 @@ public class Utilities {
         if (dobj == null) {
             final Document doc = model.getModelSource().getLookup().lookup(Document.class);
             final File file = model.getModelSource().getLookup().lookup(File.class);
+            logger.log(Level.FINE, "saving changes in {0}", file);
             File parent = file.getParentFile();
             FileObject parentFo = FileUtil.toFileObject(parent);
             if (parentFo == null) {
@@ -257,6 +258,7 @@ public class Utilities {
         } else {
             SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
             if (save != null) {
+                logger.log(Level.FINE, "saving changes in {0}", dobj);
                 save.save();
             } else {
                 logger.log(Level.FINE, "no changes in {0}", dobj);
