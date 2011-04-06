@@ -137,9 +137,11 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             worker.delete();
             
             FileSystemProvider.scheduleRefresh(baseDirFO);
-            sleep(5000);
-            
-            
+            if (baseDirFO instanceof RemoteFileObjectBase) {
+                ((RemoteFileObjectBase) baseDirFO).getFileSystem().getRefreshManager().testWaitLastRefreshFinished();
+            } else {
+                LocalFileSystemProvider.testWaitLastRefreshFinished();
+            }            
         } finally {
             out.close();
         }
