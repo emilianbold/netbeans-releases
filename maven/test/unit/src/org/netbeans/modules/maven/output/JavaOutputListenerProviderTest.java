@@ -107,6 +107,11 @@ public class JavaOutputListenerProviderTest extends TestCase {
             ann = (CompileAnnotation) visitor.getOutputListener();
             assertNotNull(ann);
             assertEquals("X:\\Documents and Settings\\My Self\\prj\\src\\main\\java\\test\\prj\\App.java", ann.clazzfile.getAbsolutePath());
+            provider.processLine("Compiling 1 source file to \\\\server\\share\\prj\\target\\classes", visitor);
+            provider.processLine("\\\\server\\share\\prj\\src\\main\\java\\test\\prj\\App.java:[11,45] not a statement", visitor);
+            ann = (CompileAnnotation) visitor.getOutputListener();
+            assertNotNull(ann);
+            assertEquals("\\\\server\\share\\prj\\src\\main\\java\\test\\prj\\App.java", ann.clazzfile.getAbsolutePath());
             visitor.resetVisitor();
         }
     }

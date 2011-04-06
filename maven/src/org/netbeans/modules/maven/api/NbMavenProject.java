@@ -207,6 +207,12 @@ public final class NbMavenProject {
                             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbMavenProject.class, "MSG_Failed", ex.getLocalizedMessage()));
                         }
                     } catch (ThreadDeath d) { // download interrupted
+                    } catch (IllegalStateException x) {
+                        if (x.getCause() instanceof ThreadDeath) {
+                            // #197261: download interrupted
+                        } else {
+                            throw x;
+                        }
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
