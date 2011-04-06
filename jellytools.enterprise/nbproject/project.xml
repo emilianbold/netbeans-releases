@@ -14,6 +14,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>4</release-version>
+                        <specification-version>1.77</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

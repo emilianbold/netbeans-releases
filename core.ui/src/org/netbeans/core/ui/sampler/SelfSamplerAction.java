@@ -238,8 +238,26 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
             File outFile = File.createTempFile("selfsampler", SamplesOutputStream.FILE_EXT); // NOI18N
             outFile = FileUtil.normalizeFile(outFile);
             writeToFile(outFile, arr);
+            
+            File gestures = new File(new File(new File(
+                new File(System.getProperty("netbeans.user")), // NOI18N
+                "var"), "log"), "uigestures"); // NOI18N
+            
+            SelfSampleVFS fs;
+            if (gestures.exists()) {
+                fs = new SelfSampleVFS(
+                    new String[] { "selfsampler.npss", "selfsampler.log" }, 
+                    new File[] { outFile, gestures }
+                );
+            } else {
+                fs = new SelfSampleVFS(
+                    new String[] { "selfsampler.npss" }, 
+                    new File[] { outFile }
+                );
+            }
+            
             // open snapshot
-            FileObject fo = FileUtil.toFileObject(outFile);
+            FileObject fo = fs.findResource("selfsampler.npss");
             DataObject dobj = DataObject.find(fo);
             // ugly test for DefaultDataObject
             if (defaultDataObject.isAssignableFrom(dobj.getClass())) {

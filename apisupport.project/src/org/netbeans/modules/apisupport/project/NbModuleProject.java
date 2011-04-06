@@ -394,7 +394,7 @@ public final class NbModuleProject implements Project {
         return helper.resolveFileObject(evaluator().getProperty("manifest.mf")); // NOI18N
     }
     
-    public Manifest getManifest() {
+    public @CheckForNull Manifest getManifest() {
         return Util.getManifest(getManifestFile());
     }
 

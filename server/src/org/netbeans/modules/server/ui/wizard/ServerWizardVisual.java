@@ -182,6 +182,10 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     private boolean existsDisplayName(String displayName) {
         for (ServerInstanceProvider type : ServerRegistry.getInstance().getProviders()) {
             for (ServerInstance instance : type.getInstances()) {
+                assert instance != null : "ServerInstance returned by provider " + type + " is null";
+                if (instance == null) {
+                    continue;
+                }
                 String instanceName = instance.getDisplayName();
                 if (null != instanceName && instanceName.equalsIgnoreCase(displayName)) {
                     return true;

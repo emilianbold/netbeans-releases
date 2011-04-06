@@ -141,26 +141,13 @@ public class ProxyFileManager implements JavaFileManager {
         }
         else if (location == StandardLocation.SOURCE_PATH && this.sourcePath != null) {
             if (this.memoryFileManager != null) {
-                if (this.aptSources != null) {
-                    return new JavaFileManager[] {
-                        this.sourcePath,
-                        this.aptSources,
-                        this.memoryFileManager
-                    };
-                }
-                else {
-                    return new JavaFileManager[] {
-                        this.sourcePath,
-                        this.memoryFileManager
-                    };
-                }
+                return new JavaFileManager[] {
+                    this.sourcePath,
+                    this.memoryFileManager
+                };
             }
             else {
-                if (this.aptSources != null) {
-                    return new JavaFileManager[] {this.sourcePath, this.aptSources};
-                } else {
-                    return new JavaFileManager[] {this.sourcePath};
-                }
+                return new JavaFileManager[] {this.sourcePath};
             }
         }
         else if (location == StandardLocation.CLASS_OUTPUT && this.outputhPath != null) {
@@ -298,7 +285,7 @@ public class ProxyFileManager implements JavaFileManager {
                         }
                         sb.append(surl);
                     }
-                    LOG.log(Level.INFO, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL{0} using: {1}",  //NOI18N
+                    LOG.log(Level.FINE, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
                             new Object[]{sb.toString(), bestSoFar});
                 }
                 siblings.push(bestSoFar);

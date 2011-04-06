@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="J2EE">
-                <attr name="include" stringvalue="config/(J2EE|GlassFish)/.*"/>
+                <attr name="include" stringvalue="config/(J2EE|GlassFish|GlassFishEE6|GlassFishEE6WC)/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.deployment.impl.Bundle#J2EE.Options.Export.displayName"/>
             </file>
         </folder>

@@ -45,14 +45,16 @@ package org.netbeans.modules.project.ui;
 import java.lang.ref.WeakReference;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.ui.TemplateChooserPanelGUI.FileChooserBuilder;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-/**
- *
- * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
- */
 public class TemplateChooserPanelGUITest extends NbTestCase {
     TemplateChooserPanelGUI instance;
     
@@ -69,9 +71,6 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         return 300000;
     }
 
-    /**
-     * Test of readValues method, of class TemplateChooserPanelGUI.
-     */
     public void testReadValues() {
         Project p = new P();
         String category = "";
@@ -88,17 +87,87 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         assertGC("Panel does not hold ref", ref);
     }
 
+    public void testFileChooserBuilder() throws Exception {
+        FileObject r = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject f = r.createFolder("Licenses");
+        f.setAttribute("templateCategory", "invisible");
+        FileObject t = f.createData("irrelevant");
+        t.setAttribute("template", true);
+        f = r.createFolder("Projects");
+        f.setAttribute("simple", false);
+        t = f.createData("irrelevant");
+        t.setAttribute("template", true);
+        f = r.createFolder("Main");
+        t = f.createData("t1");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "main");
+        t = f.createData("t2");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "misc");
+        t = f.createData("t3");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "other");
+        f.createData("data");
+        f = f.createFolder("Snippets");
+        f.setAttribute("templateCategory", "always-hidden");
+        t = f.createData("snippet");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "main");
+        f.createData("data");
+        f = r.createFolder("Other");
+        t = f.createData("t4");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "other");
+        f = r.createFolder("Samples").createFolder("Main");
+        t = f.createData("t5");
+        t.setAttribute("template", true);
+        t.setAttribute("templateCategory", "main");
+        TemplateChooserPanelGUI gui = new TemplateChooserPanelGUI();
+        gui.construct();
+        gui.finished();
+        gui.readValues(new P(), null, null);
+        FileChooserBuilder builder = gui.new FileChooserBuilder();
+        assertChildren("Main, Samples[Main]", builder.createCategoriesChildren(DataFolder.findFolder(r)));
+        assertChildren("t1, t2", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Main"))));
+        assertChildren("t5", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Samples/Main"))));
+    }
+
+    private static void assertChildren(String repn, Children c) {
+        StringBuilder b = new StringBuilder();
+        representationOf(c, b);
+        assertEquals(repn, b.toString());
+    }
+    private static void representationOf(Children c, StringBuilder b) {
+        boolean first = true;
+        for (Node n : c.getNodes(true)) {
+            if (first) {
+                first = false;
+            } else {
+                b.append(", ");
+            }
+            b.append(n.getDisplayName());
+            if (!n.isLeaf()) {
+                b.append('[');
+                representationOf(n.getChildren(), b);
+                b.append(']');
+            }
+        }
+    }
         
-    class P implements Project {
+    private static class P implements Project {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         
-        public FileObject getProjectDirectory() {
+        public @Override FileObject getProjectDirectory() {
             return root;
         }
 
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
+        public @Override Lookup getLookup() {
+            return Lookups.singleton(new RecommendedTemplates() {
+                public @Override String[] getRecommendedTypes() {
+                    return new String[] {"main", "misc"};
+                }
+            });
         }
         
     }
-    }
+}

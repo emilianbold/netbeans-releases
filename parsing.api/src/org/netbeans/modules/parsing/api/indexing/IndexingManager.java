@@ -191,7 +191,7 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
-        refreshIndexAndWait(root, files, true);
+        refreshIndexAndWait(root, files, true, false);
     }
 
     /**
@@ -214,13 +214,40 @@ public final class IndexingManager {
      * @since 1.16
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan) {
+        refreshIndexAndWait(root, files, fullRescan, false);
+    }
+
+
+    /**
+     * Schedules new files for indexing and blocks until they are reindexed. This
+     * method does the same thing as {@link #refreshIndex(java.net.URL, java.util.Collection, boolean, boolean)  },
+     * but it will block the caller until the index refreshing is done.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param filesOrFolders The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     * @param fullRescan If <code>true</code> no timestamps check will be done
+     *   on the <code>files</code> passed in and they all will be reindexed. If
+     *   <code>false</code> only changed files will be reindexed.
+     * @param checkEditor when true the indexers will use content of modified editor
+     *  documents rather than saved files. For scans the indexers should prefer
+     *  content of files. the document content may be useful for example for error badge
+     *  recovery.
+     * @since 1.40
+     */
+    public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) {
         if (SwingUtilities.isEventDispatchThread()) {
             //Prevent AWT deadlock refreshIndexAndWait posted by SwingUtilities.invokeLater
             //in between completion-active = true and completion-active = false.
             EventSupport.releaseCompletionCondition();
         }
         if (!RepositoryUpdater.getDefault().isIndexer()) {
-            RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan, false);
+            RepositoryUpdater.getDefault().addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
         }
     }
 

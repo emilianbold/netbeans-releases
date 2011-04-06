@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
-                     "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
 	<mapID target="AboutCandC++Projects" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
@@ -51,9 +51,6 @@
 	<mapID target="NewDynamicLibWizard" url="WorkingWithCandC++Projects/NewDynamicLibWizard.html"/>
 	<mapID target="NewStaticLibWizard" url="WorkingWithCandC++Projects/NewStaticLibWizard.html"/>
 	<mapID target="NewMakeWizardP0" url="WorkingWithCandC++Projects/NewMakeWizardP0.html"/>
-	<mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
-	<mapID target="NewMakeWizardP2" url="WorkingWithCandC++Projects/NewMakeWizardP2.html"/>
-	<mapID target="NewMakeWizardP3" url="WorkingWithCandC++Projects/NewMakeWizardP3.html"/>
 	<mapID target="ProjectsWindow" url="GettingStarted/ProjectsWindow.html"/>
 	<mapID target="FilesWindow" url="GettingStarted/FilesWindow.html"/>
 	<mapID target="UsingCodeCompletion1" url="EditingSourceFiles/UsingCodeCompletion.html"/>
@@ -121,7 +118,6 @@
 	<mapID target="ChangeColumn" url="images/ChangeColumn.gif"/>
 	<mapID target="CurrentFrame" url="images/CurrentFrame.gif"/>
 	<mapID target="CurrentSession" url="images/CurrentSession.gif"/>
-	<mapID target="Field" url="images/Field.gif"/>
 	<mapID target="LocalVariable" url="images/LocalVariable.gif"/>
 	<mapID target="NonLineBreakpoint" url="images/NonLineBreakpoint.gif"/>
 	<mapID target="Session" url="images/Session.gif"/>
@@ -132,8 +128,6 @@
 	<mapID target="DeletingCorC++Project" url="WorkingWithCandC++Projects/DeletingCorC++Project.html"/>
 	<mapID target="MovingCorC++Project" url="WorkingWithCandC++Projects/MovingCorC++Project.html"/>
 	<mapID target="Memory" url="GettingStarted/Memory.html"/>
-	<mapID target="NewMakeWizardP11" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
-	<mapID target="NewMakeWizardP4" url="WorkingWithCandC++Projects/NewMakeWizardP4.html"/>
 	<mapID target="CodeAssistanceWizardP1" url="WorkingWithCandC++Projects/CodeAssistanceWizardP1.html"/>
 	<mapID target="CodeAssistanceWizardP2" url="WorkingWithCandC++Projects/CodeAssistanceWizardP2.html"/>
 	<mapID target="CodeAssistanceWizardP3" url="WorkingWithCandC++Projects/CodeAssistanceWizardP3.html"/>
@@ -311,7 +305,6 @@
 	<mapID target="ConfiguringProjectDefaults" url="WorkingWithCandC++Projects/ConfiguringProjectDefaults.html"/>
 	<mapID target="Documenting" url="EditingSourceFiles/Documenting.html"/>
 	<mapID target="AddingUnitTests" url="WorkingWithCandC++Projects/AddingUnitTests.html"/>
-	<mapID target="NewMakeWizardP5" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
 	<mapID target="c_unit_about" url="TestingCandC++Projects/c_unit_about.html"/>
 	<mapID target="c_unit_creatingtests" url="TestingCandC++Projects/c_unit_creatingtests.html"/>
 	<mapID target="c_unit_debuggingtests" url="TestingCandC++Projects/c_unit_debuggingtests.html"/>
@@ -321,7 +314,7 @@
 	<mapID target="c_unit_runningtests" url="TestingCandC++Projects/c_unit_runningtests.html"/>
 	<mapID target="RemoteDevelopmentConfigureHost" url="WorkingWithCandC++Projects/RemoteDevelopmentConfigureHost.html"/>
 	<mapID target="RemoteDevelopmentProjects" url="WorkingWithCandC++Projects/RemoteDevelopmentProjects.html"/>
-	<mapID target="RemoteDevelopmentManageHosts" url="WorkingWithCandC++Projects/RemoteDevelopmentManageHosts.html"/>
+	<mapID target="RemoteDevelopmentManageHosts" url="WorkingWithCandC++Projects/RemoteDevelopmentHostProperties.html"/>
 	<mapID target="GoToOverride1" url="EditingSourceFiles/GoToOverride.html"/>
 	<mapID target="Documenting1" url="EditingSourceFiles/Documenting.html"/>
 	<mapID target="NewMakeWizardP01" url="WorkingWithCandC++Projects/NewMakeWizardP0.html"/>
@@ -334,4 +327,51 @@
 	<mapID target="CreateCppUnitTestWizardP1" url="TestingCandC++Projects/CreateCppUnitTestWizardP1.html"/>
 	<mapID target="CreateCppUnitTestWizardP2" url="TestingCandC++Projects/CreateCppUnitTestWizardP2.html"/>
 	<mapID target="testFolder" url="images/testFolder.png"/>
+	<mapID target="Refactoring" url="EditingSourceFiles/Refactoring.html"/>
+	<mapID target="RefactoringWindow" url="EditingSourceFiles/RefactoringWindow.html"/>
+	<mapID target="Debug_Main_Project" url="images/Debug_Main_Project.gif"/>
+	<mapID target="Finish_Debugger_Session" url="images/Finish_Debugger_Session.gif"/>
+	<mapID target="ConditionalBreakpoint" url="images/ConditionalBreakpoint.gif"/>
+	<mapID target="DisabledConditionalBreakpoint" url="images/DisabledConditionalBreakpoint.gif"/>
+	<mapID target="DebuggingCoreFile" url="CandC++ProjectBasics/DebuggingCoreFile.html"/>
+	<mapID target="PoppingCorC++Stack" url="CandC++ProjectBasics/PoppingCorC++Stack.html"/>
+	<mapID target="Field" url="images/Field.gif"/>
+	<mapID target="PC" url="images/PC.gif"/>
+	<mapID target="Breakpoint_PC" url="images/Breakpoint_PC.gif"/>
+	<mapID target="disassembler_run_to" url="images/disassembler_run_to.gif"/>
+	<mapID target="disassembler_step_into" url="images/disassembler_step_into.gif"/>
+	<mapID target="disassembler_step_out" url="images/disassembler_step_out.gif"/>
+	<mapID target="disassembler_step_over" url="images/disassembler_step_over.gif"/>
+	<mapID target="Show_Watches" url="images/Show_Watches.gif"/>
+	<mapID target="Create_Watch" url="images/Create_Watch.gif"/>
+	<mapID target="CandC++RegistersWindow" url="CandC++ProjectBasics/CandC++RegistersWindow.html"/>
+	<mapID target="Restart" url="images/Restart.gif"/>
+	<mapID target="DebuggerConsole" url="CandC++ProjectBasics/DebuggerConsole.html"/>
+	<mapID target="Local_Variable1" url="images/Local_Variable.gif"/>
+	<mapID target="Watch_Pointer" url="images/Watch_Pointer.gif"/>
+	<mapID target="Current_Thread" url="images/Current_Thread.gif"/>
+	<mapID target="Thread_Hit" url="images/Thread_Hit.gif"/>
+	<mapID target="Current_Thread_Hit" url="images/Current_Thread_Hit.gif"/>
+	<mapID target="Local_Variable_Pointer" url="images/Local_Variable_Pointer.gif"/>
+	<mapID target="Static_Local_Variable" url="images/Static_Local_Variable.gif"/>
+	<mapID target="Static_Local_Pointer" url="images/Static_Local_Pointer.gif"/>
+	<mapID target="Pointer_Field" url="images/Pointer_Field.gif"/>
+	<mapID target="Static_Field" url="images/Static_Field.gif"/>
+	<mapID target="Static_Pointer_Field" url="images/Static_Pointer_Field.gif"/>
+	<mapID target="CandC++EvaluationWindow" url="CandC++ProjectBasics/CandC++EvaluationWindow.html"/>
+	<mapID target="DisabledBreakpoint" url="images/DisabledBreakpoint.gif"/>
+	<mapID target="EvaluatingExpression" url="CandC++ProjectBasics/EvaluatingExpression.html"/>
+	<mapID target="RunToCursor" url="CandC++ProjectBasics/RunToCursor.html"/>
+	<mapID target="CreateProject" url="WorkingWithCandC++Projects/CreateProject.html"/>
+	<mapID target="NewBinaryWizardP1" url="WorkingWithCandC++Projects/NewBinaryWizardP1.html"/>
+	<mapID target="NewBinaryWizardP2" url="WorkingWithCandC++Projects/NewBinaryWizardP2.html"/>
+	<mapID target="Existing_Sources" url="images/Existing_Sources.gif"/>
+	<mapID target="Application" url="images/Application.gif"/>
+	<mapID target="Dynamic_Library" url="images/Dynamic_Library.gif"/>
+	<mapID target="Static_Library" url="images/Static_Library.gif"/>
+	<mapID target="Binary" url="images/Binary.gif"/>
+	<mapID target="QT_Application" url="images/QT_Application.gif"/>
+	<mapID target="QT_Dynamic_Library" url="images/QT_Dynamic_Library.gif"/>
+	<mapID target="QT_Static_Library" url="images/QT_Static_Library.gif"/>
+	<mapID target="RemoteDevelopmentBrowsing" url="WorkingWithCandC++Projects/RemoteDevelopmentManaging.html"/>
 </map>

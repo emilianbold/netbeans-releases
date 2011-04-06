@@ -227,23 +227,15 @@ public class Hk2PluginProperties {
 
             // jaxrs in 3.0
             //              {"jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "mimepull", "jsr311-api"}; //NOI18N
-            jars.add("jackson-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jackson-core-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-gf-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-multipart"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jettison"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("mimepull"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            // has the javax.ws.rs.* classes and packages
+            // Jersey is NOT part of Java EE -- but jsr311 sure is.
             jars.add("jsr311-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             // jaxrxs in 3.1
             //              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
-            jars.add("jackson-jaxrs"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jackson-mapper-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-client"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            // has the javax.ws.rs.* classes and packages... plus some Jersey imple gunk
+            // TODO: find jar that doesn't include Jersey impl gunk...
             jars.add("jersey-core"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-gf-server"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-json"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);

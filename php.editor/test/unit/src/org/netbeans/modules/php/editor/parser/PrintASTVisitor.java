@@ -739,6 +739,12 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
+    public void visit(PHPDocTypeNode phpDocTypeNode) {
+        XMLPrintNode printNode = new XMLPrintNode(phpDocTypeNode, "PHPDocTypeNode",
+                new String[] {"value", phpDocTypeNode.getValue(), "isArray", phpDocTypeNode.isArray() ? "true" : "false"});
+        printNode.print(this);
+    }
+    
     public void visit(PHPVarComment node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "PHPVarComment");
         printNode.addChild("Variable", node.getVariable());

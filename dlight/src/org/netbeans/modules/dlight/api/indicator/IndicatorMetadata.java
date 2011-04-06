@@ -39,9 +39,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.indicator;
 
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 
@@ -50,30 +50,29 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
  */
 public final class IndicatorMetadata {
 
-  private final List<Column> columns;
+    private final List<Column> columns;
 
-  /**
-   * Use columns to create new metadata
-   * @param columns columns description to create new metadata for
-   */
-  public IndicatorMetadata(List<Column> columns) {
-    this.columns =  columns;
-  }
+    /**
+     * Use columns to create new metadata
+     * @param columns columns description to create new metadata for
+     */
+    public IndicatorMetadata(List<Column> columns) {
+        this.columns = columns;
+    }
 
-  /**
-   * Returns columns list
-   * @return columns list
-   */
-  public List<Column> getColumns() {
-    return columns;
-  }
+    /**
+     * Returns columns list
+     * @return columns list
+     */
+    public List<Column> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
 
-  /**
-   * Returns columns count
-   * @return columns count
-   */
-  public int getColumnsCount() {
-    return columns.size();
-  }
-
+    /**
+     * Returns columns count
+     * @return columns count
+     */
+    public int getColumnsCount() {
+        return columns.size();
+    }
 }

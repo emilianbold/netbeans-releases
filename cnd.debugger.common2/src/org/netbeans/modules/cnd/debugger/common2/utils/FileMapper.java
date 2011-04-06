@@ -212,12 +212,28 @@ public abstract class FileMapper {
     private static class MSysFileMapper extends FileMapper {
         @Override
         public String engineToWorld(String path) {
-            return WindowsSupport.getInstance().convertFromMSysPath(path);
+            if (path == null) {
+                return null;
+            }
+            String res = WindowsSupport.getInstance().convertFromMSysPath(path);
+            if (res != null) {
+                return res;
+            } else {
+                return path;
+            }
         }
 
         @Override
         public String worldToEngine(String path) {
-            return WindowsSupport.getInstance().convertToMSysPath(path);
+            if (path == null) {
+                return null;
+            }
+            String res =  WindowsSupport.getInstance().convertToMSysPath(path);
+            if (res != null) {
+                return res;
+            } else {
+                return path;
+            }
         }
 
     }

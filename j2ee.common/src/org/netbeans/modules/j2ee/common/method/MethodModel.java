@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.common.method;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -64,14 +65,16 @@ public final class MethodModel {
     private final List<Variable> parameters; // unmodifiable list
     private final List<String> exceptions; // unmodifiable list
     private final Set<Modifier> modifiers; // unmodifiable set
+    private final List<Annotation> annotations; // unmodifiable list
     
-    private MethodModel(String name, String returnType, String body, List<Variable> parameters, List<String> exceptions, Set<Modifier> modifiers) {
+    private MethodModel(String name, String returnType, String body, List<Variable> parameters, List<String> exceptions, Set<Modifier> modifiers, List<Annotation> annotations) {
         this.name = name;
         this.returnType = returnType;
         this.body = body;
         this.parameters = Collections.unmodifiableList(parameters);
         this.exceptions = Collections.unmodifiableList(exceptions);
         this.modifiers = Collections.unmodifiableSet(modifiers);
+        this.annotations = Collections.unmodifiableList(annotations);
     }
     
     /**
@@ -96,7 +99,34 @@ public final class MethodModel {
         Parameters.notNull("parameters", parameters);
         Parameters.notNull("exceptions", exceptions);
         Parameters.notNull("modifiers", modifiers);
-        return new MethodModel(name, returnType, body, parameters, exceptions, modifiers);
+        return new MethodModel(name, returnType, body, parameters, exceptions, modifiers, Collections.<Annotation>emptyList());
+    }
+    
+    /**
+     * Creates new instance of method model. None of the parameters can be null.
+     *
+     * @param name name of the method, must be valid Java identifier
+     * @param returnType name of return type as written in source code,
+     * for non-primitive types fully-qualfied name must be used,
+     * must contain at least one non-whitespace character
+     * @param body string representation of body, can be null
+     * @param parameters list of method parameters, can be empty
+     * @param exceptions list of exceptions represented by fully-qualified names of exceptions, can be empty
+     * @param modifiers list of modifiers of method, can be empty
+     * @param annotations list of {@code Annotations} represented by fully-qualified names of annotations, can be empty
+     * @throws NullPointerException if any of the parameters is <code>null</code>.
+     * @throws IllegalArgumentException if the paramter returnType does not contain at least one non-whitespace character
+     * or the parameter name is not a valid Java identifier
+     * @return immutable model of method
+     */
+    public static MethodModel create(String name, String returnType, String body, List<Variable> parameters, List<String> exceptions, Set<Modifier> modifiers,  List<Annotation> annotations) {
+        Parameters.javaIdentifier("name", name);
+        Parameters.notWhitespace("returnType", returnType);
+        Parameters.notNull("parameters", parameters);
+        Parameters.notNull("exceptions", exceptions);
+        Parameters.notNull("modifiers", modifiers);
+        Parameters.notNull("annotations", annotations);
+        return new MethodModel(name, returnType, body, parameters, exceptions, modifiers, annotations);
     }
     
     /**
@@ -207,6 +237,62 @@ public final class MethodModel {
     // </editor-fold>
 
     }
+
+    /**
+     * Immutable type representing method annotation
+     */
+    public static final class Annotation {
+
+        private final String type;
+        private final List<? extends ExpressionTree> arguments;
+
+        private Annotation(String type, List<? extends ExpressionTree> arguments) {
+            this.type = type;
+            this.arguments = arguments;
+        }
+
+        /**
+         * Creates new instance of a model of {@code Annotation}
+         *
+         * @param type name of annotation type, fully qualified name must be used
+         * @throws {@code NullPointerException} if the type parameter is {@code null}
+         * @throws {@code IllegalArgumentException} if the parameter type is not fully qualified
+         * name of valid annotation
+         * @return immutable model of {@code Annotation}
+         */
+        public static Annotation create(String type) {
+            Parameters.notNull("type", type);    //NOI18N
+            return new MethodModel.Annotation(type, null);
+        }
+
+        /**
+         * Creates new instance of a model of {@code Annotation}
+         *
+         * @param type name of annotation type, fully qualified name must be used
+         * @param arguments {@code List} of annotation arguments, for generation them see {@code GenerationUtils} class
+         * @throws {@code NullPointerException} if any of the parameters is {@code null}
+         * @throws {@code IllegalArgumentException} if the parameter type is not fully qualified
+         * name of valid annotation
+         * @return immutable model of {@code Annotation}
+         */
+        public static Annotation create(String type, List<? extends ExpressionTree> arguments) {
+            Parameters.notNull("type", type);    //NOI18N
+            Parameters.notNull("arguments", arguments); //NOI18N
+            return new MethodModel.Annotation(type, arguments);
+        }
+
+        // <editor-fold defaultstate="collapsed" desc="Annotation's getters">
+
+        public String getType() {
+            return type;
+        }
+
+        public List<? extends ExpressionTree> getArguments() {
+            return arguments;
+        }
+
+        // </editor-fold>
+    }
     
     // <editor-fold defaultstate="collapsed" desc="MethodModel's getters">
     
@@ -265,6 +351,16 @@ public final class MethodModel {
      */
     public Set<Modifier> getModifiers() {
         return modifiers;
+    }
+
+    /**
+     * Unmodifiable list of annotations. Attempts to modify the returned set, whether
+     * direct or via its iterator, result in an <tt>UnsupportedOperationException</tt>.
+     *
+     * @return non-null value
+     */
+    public List<Annotation> getAnnotations() {
+        return annotations;
     }
     
     // </editor-fold>

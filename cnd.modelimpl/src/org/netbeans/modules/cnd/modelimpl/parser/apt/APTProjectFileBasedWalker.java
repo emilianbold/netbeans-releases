@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -85,9 +86,11 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     protected boolean include(ResolvedPath resolvedPath, APTInclude apt, PostIncludeData postIncludeState) {
         FileImpl included = null;
         boolean error = false;
+        IncludeState pushIncludeState;
         if (resolvedPath != null) {
             CharSequence path = resolvedPath.getPath();
-            if (getIncludeHandler().pushInclude(path, apt, resolvedPath.getIndex())) {
+            pushIncludeState = getIncludeHandler().pushInclude(path, apt, resolvedPath.getIndex());
+            if (pushIncludeState== IncludeState.Success) {
                 ProjectBase aStartProject = this.getStartProject();
                 if (aStartProject != null){
                     if (aStartProject.isValid()) {
@@ -110,16 +113,19 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                     getIncludeHandler().popInclude();
                 }
             } else {
+                // Recursive include
                 error = true;
             }
+        } else {
+            pushIncludeState = IncludeState.Fail;
         }
-        postInclude(apt, included);
+        postInclude(apt, included, pushIncludeState);
         return ((postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState()) && !error;
     }
     
     abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, PostIncludeData postIncludeState) throws IOException;
 
-    protected void postInclude(APTInclude apt, FileImpl included) {
+    protected void postInclude(APTInclude apt, FileImpl included, IncludeState includeState) {
     }
     
     protected FileImpl getFile() {

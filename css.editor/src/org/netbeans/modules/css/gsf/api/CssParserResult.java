@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.css.gsf.api;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.gsf.CssAnalyser;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -56,14 +59,16 @@ import org.netbeans.modules.parsing.spi.Parser;
 public class CssParserResult extends ParserResult {
 
     private SimpleNode root;
-    private List<Error> errors;
+    private final List<Error> errors = new ArrayList<Error>();
+    
+    private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
 
     private boolean invalidated = false;
     
-    public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> errors) {
+    public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> parserErrors) {
         super(snapshot);
         this.root = root;
-        this.errors = errors;
+        errors.addAll(parserErrors);
     }
     
     public SimpleNode root() {
@@ -78,9 +83,14 @@ public class CssParserResult extends ParserResult {
         if(invalidated) {
             throw new IllegalStateException("The CssParserResult already invalidated!"); //NOI18N
         }
+        
+        if(!analyzerErrorsComputed.getAndSet(true)) {
+            errors.addAll(CssAnalyser.checkForErrors(getSnapshot(), root));
+        }
+        
         return errors;
     }
-
+    
     @Override
     protected void invalidate() {
     }

@@ -1215,13 +1215,10 @@ public final class OpenProjectList {
         logProjects("doOpenProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         // Notify projects opened
         notifyOpened(p);
-        
-        Mutex.EVENT.readAccess(new Action<Void>() {
-            public Void run() {
-                // Open project files
+
+        OPENING_RP.post(new Runnable() {
+            public @Override void run() {
                 ProjectUtilities.openProjectFiles(p);
-                
-                return null;
             }
         });
         

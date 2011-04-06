@@ -418,6 +418,8 @@ class EarImpl implements EarImplementation, EarImplementation2,
                             }
                         }
                         if (!found) {
+                            // FIXME obviously J2EE platform version is wrong and won't really work
+                            // if this j2ee module will be used (it has to be module version such as 2.4, 2.5 for web)
                             J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(a, getJ2eePlatformVersion(), provider));
                             EarImpl.MavenModule m = findMavenModule(a, mm);
                             J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));

@@ -126,6 +126,21 @@ public interface HostInfo {
     public String getUserDir();
 
     public File getUserDirFile();
+    
+    /** Gets the numeric current user ID  */
+    public int getUserId();
+
+    /** Gets the current user main group ID (in numeric form)  */
+    public int getGroupId();
+
+    /** Gets the current user main group name */
+    public String getGroup();
+   
+    /** Gets the current user all group IDs (in numeric form)  */
+    public int[] getAllGroupIDs();
+
+    /** Gets the current user all group names  */
+    public String[] getAllGroups();
 
     /**
      * @return time difference in milliseconds between remote and localhost

@@ -121,7 +121,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(SymfonyOptions.class);
     }
 
     @Override

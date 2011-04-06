@@ -62,12 +62,15 @@ public class UpdateProviderFactoryTest extends NbTestCase {
         super (testName);
     }
 
+    @Override
     protected void setUp () throws Exception {
+        clearWorkDir();
+        System.setProperty("netbeans.user", getWorkDirPath());
         MockServices.setServices (MyProvider.class, MyProvider2.class);
     }
     
+    @Override
     protected void tearDown () throws  Exception {
-        clearWorkDir ();
     }
 
     public void testGetUpdatesProviders () {

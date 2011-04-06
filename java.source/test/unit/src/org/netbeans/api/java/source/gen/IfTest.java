@@ -70,7 +70,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 /**
  * Tests if statement creation.
  */
-public class IfTest extends GeneratorTest {
+public class IfTest extends GeneratorTestBase {
 
     public IfTest(String name) {
         super(name);

@@ -167,7 +167,7 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
             }
             if (!tmpFile.renameTo(gitIgnore)) {
                 // cannot rename directly, try backup and delete te original .gitignore
-                File tmpCopy = File.createTempFile(Constants.DOT_GIT_IGNORE, "tmp", gitIgnore.getParentFile()); //NOI18N
+                File tmpCopy = generateTempFile(Constants.DOT_GIT_IGNORE, gitIgnore.getParentFile()); //NOI18N
                 boolean success = false;
                 if (gitIgnore.renameTo(tmpCopy)) {
                     // and try to rename again
@@ -176,6 +176,7 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
                         // restore te original .gitignore file
                         tmpCopy.renameTo(gitIgnore);
                     }
+                    tmpCopy.delete();
                 }
                 if (!success) {
                     tmpFile.delete();
@@ -222,5 +223,13 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
         File excludeFile = new File(getRepository().getDirectory(), "info/exclude");
         List<IgnoreRule> ignoreRules = parse(excludeFile);
         return addStatement(ignoreRules, excludeFile, path, isDirectory, false) == MatchResult.CHECK_PARENT;
+    }
+
+    private File generateTempFile (String basename, File parent) {
+        File tempFile = new File(parent, basename);
+        while (tempFile.exists()) {
+            tempFile = new File(parent, basename + Long.toString(System.currentTimeMillis()));
+        }
+        return tempFile;
     }
 }

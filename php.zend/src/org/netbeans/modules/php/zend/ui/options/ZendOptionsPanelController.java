@@ -119,7 +119,7 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(ZendOptions.class);
     }
 
     @Override

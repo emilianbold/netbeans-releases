@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -77,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
  */
 public final class RepositoryUtils {
 
+    private static final Logger LOG = Logger.getLogger(RepositoryUtils.class.getName());
     private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
@@ -84,7 +88,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 104;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 107;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -177,7 +181,7 @@ public final class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             put(key, (Persistent) csmObj);
-            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject))){
+            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject)||(csmObj instanceof CsmInstantiation))){
                 assert uid.getObject() != null;
             }
         }
@@ -314,7 +318,9 @@ public final class RepositoryUtils {
         if (!cleanRepository) {
             int errors = myRepositoryListenerProxy.getErrorCount(unit);
             if (errors > 0) {
-                System.err.println("Clean index for project \""+unit+"\" because index was corrupted (was "+errors+" errors)."); // NOI18N
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "Clean index for project \"{0}\" because index was corrupted (was {1} errors).", new Object[]{unit, errors}); // NOI18N
+                }
                 cleanRepository = true;
             }
         }

@@ -52,6 +52,7 @@ import java.util.List;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -85,7 +86,7 @@ public final class Utils {
     }
 
     public static boolean checkExecutable (Repository repository) {
-        return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
+        return repository.getConfig().getBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
     }
     
     public static Collection<PathFilter> getPathFilters (File workDir, File[] roots) {

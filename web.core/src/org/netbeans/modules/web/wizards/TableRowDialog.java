@@ -282,7 +282,7 @@ public class TableRowDialog extends javax.swing.JPanel {
         }
     }
 
-    static class Condition {
+    public static class Condition {
         private String condition;
 
         private Condition(String condition) {

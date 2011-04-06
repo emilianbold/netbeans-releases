@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.diff;
 
+import java.awt.Component;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.Mode;
@@ -79,6 +80,7 @@ class EditorBufferSelectorPanel extends JPanel implements ListSelectionListener 
 
     private void initEditorDocuments() {
         elementsList = new JList() {
+            @Override
             public String getToolTipText(MouseEvent event) {
                 int index = locationToIndex(event.getPoint());
                 if (index != -1) {
@@ -107,9 +109,9 @@ class EditorBufferSelectorPanel extends JPanel implements ListSelectionListener 
                     }
                     if (fo != null && fo != peer) {
                         if (tc.getHtmlDisplayName() != null) {
-                            elements.add(new EditorListElement(fo, tc.getHtmlDisplayName()));
+                            elements.add(new EditorListElement(fo, tc.getHtmlDisplayName(), true));
                         } else {
-                            elements.add(new EditorListElement(fo, tc.getName()));
+                            elements.add(new EditorListElement(fo, tc.getName(), false));
                         }   
                     }
                 }
@@ -119,11 +121,31 @@ class EditorBufferSelectorPanel extends JPanel implements ListSelectionListener 
         elementsList.setListData(elements.toArray(new EditorListElement[elements.size()]));
         elementsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         elementsList.addListSelectionListener(this);
+        elementsList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (isSelected && value instanceof EditorListElement && ((EditorListElement) value).isHtml()) {
+                    value = stripHtml(((EditorListElement) value).toString());
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+
+            private String stripHtml (String htmlText) {
+                if (null == htmlText) {
+                    return null;
+                }
+                String res = htmlText.replaceAll("<[^>]*>", ""); // NOI18N // NOI18N
+                res = res.replaceAll("&nbsp;", " "); // NOI18N // NOI18N
+                res = res.trim();
+                return res;
+            }
+        });
 
         JScrollPane sp = new JScrollPane(elementsList);
         jPanel1.add(sp);
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         EditorListElement element = (EditorListElement) elementsList.getSelectedValue();
         if (element != null) {
@@ -182,14 +204,21 @@ class EditorBufferSelectorPanel extends JPanel implements ListSelectionListener 
     private class EditorListElement {
         FileObject      fileObject;
         String          displayName;
+        private final boolean html;
 
-        EditorListElement(FileObject tc, String displayName) {
+        EditorListElement(FileObject tc, String displayName, boolean isHtml) {
             this.fileObject = tc;
             this.displayName = displayName;
+            this.html = isHtml;
         }
 
+        @Override
         public String toString() {
             return displayName;
+        }
+        
+        public boolean isHtml () {
+            return html;
         }
     }
 }

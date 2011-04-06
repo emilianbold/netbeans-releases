@@ -47,7 +47,10 @@ import org.netbeans.modules.websvc.rest.support.Utils;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
@@ -65,17 +68,7 @@ import org.openide.util.RequestProcessor;
 
 
 
-public class HttpMethodsChildren extends Children.Keys {
-    private Project project;
-    private RestServicesModel model;
-    private String serviceName;
-    private RestServicesListener listener;
-    
-    private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
-        public void run() {
-            updateKeys();
-        }
-    });
+public class HttpMethodsChildren extends ChildFactory<HttpMethodNode> {
     
     public HttpMethodsChildren(Project project,RestServicesModel model, 
             String serviceName) {
@@ -84,55 +77,26 @@ public class HttpMethodsChildren extends Children.Keys {
         this.serviceName = serviceName;
     }
     
-    protected void addNotify() {
-        super.addNotify();
-        listener = new RestServicesListener();
-        try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().addPropertyChangeListener(listener);
-                    
-                    return null;
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        updateKeys();
-    }
-    
-    protected void removeNotify() {
-        try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().removePropertyChangeListener(listener);
-                    
-                    return null;
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        setKeys(Collections.EMPTY_SET);
-    }
-    
-    private void updateKeys() {
-        final List keys = new ArrayList();
-        
+    /* (non-Javadoc)
+     * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
+     */
+    @Override
+    protected boolean createKeys( final List<HttpMethodNode> keys ) {
         try {
             model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
-                    RestServiceDescription desc = root.getRestServiceDescription(serviceName);
+                    RestServiceDescription desc = root.getRestServiceDescription(
+                            serviceName);
                     
                     if (desc != null) {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof HttpMethod) {
-                                keys.add(HttpMethodNode.getKey((HttpMethod) method));
+                                keys.add(new HttpMethodNode(project, desc,
+                                        (HttpMethod) method));
                             }
                         }
+                        Collections.sort( keys , COMPARATOR );
                     }
                     
                     return null;
@@ -141,42 +105,35 @@ public class HttpMethodsChildren extends Children.Keys {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-        setKeys(Utils.sortKeys(keys));
+        return true;
     }
     
-    protected Node[] createNodes(final Object key) {
-        try {
-            Node[] nodes = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Node[]>() {
-                public Node[] run(RestServicesMetadata metadata) throws IOException {
-                    RestServices root = metadata.getRoot();
-                    RestServiceDescription desc = root.getRestServiceDescription(serviceName);
-                    
-                    if (desc != null) {
-                        for (RestMethodDescription method : desc.getMethods()) {
-                            if (method instanceof HttpMethod) {
-                                if (HttpMethodNode.getKey((HttpMethod) method).equals(key)) {
-                                    return new Node[] {
-                                        new HttpMethodNode(project, desc,(HttpMethod) method)};
-                                }
-                            }
-                        }
-                    }
-                    return new Node[0];
-                }
-            });
+    @Override
+    protected Node createNodeForKey( HttpMethodNode node ){
+        return node;
+    }
             
-            return nodes;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            
+    
+    static class HttpMethodsComparator implements Comparator<HttpMethodNode> {
+
+        /* (non-Javadoc)
+         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+         */
+        @Override
+        public int compare( HttpMethodNode node1, HttpMethodNode node2 ) {
+            String key1 = node1.getKey();
+            String key2 = node2.getKey();
+            return key1.compareTo( key2 );
         }
         
-        return new Node[0];
     }
   
-    class RestServicesListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(0);
-        }
-    }
+    private static final Comparator<HttpMethodNode> COMPARATOR = 
+        new HttpMethodsComparator();
+    
+    private Project project;
+    private RestServicesModel model;
+    private String serviceName;
+    
 }

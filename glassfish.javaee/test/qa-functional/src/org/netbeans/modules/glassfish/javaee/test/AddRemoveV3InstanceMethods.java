@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,10 +49,10 @@ import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 //import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.AddServerLocationVisualPanel;
 import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
 import org.netbeans.modules.glassfish.common.wizards.Retriever;
-import org.netbeans.modules.glassfish.common.wizards.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -79,9 +79,9 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
 
             if (!f.exists() || f.list().length < 1) {
                 // time to retrieve
-                Retriever r = new Retriever(f.getParentFile(),ServerDetails.GLASSFISH_SERVER_3.indirectUrl,
+                Retriever r = new Retriever(f.getParentFile(),ServerDetails.GLASSFISH_SERVER_3.getIndirectUrl(),
                         AddServerLocationVisualPanel.V3_DOWNLOAD_PREFIX,
-                        ServerDetails.GLASSFISH_SERVER_3.directUrl, new Retriever.Updater() {
+                        ServerDetails.GLASSFISH_SERVER_3.getDirectUrl(), new Retriever.Updater() {
 
                     public void updateMessageText(String msg) {
                         //System.out.println(msg);

@@ -73,6 +73,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -158,11 +159,14 @@ public class PageFlowController {
 
             final NotWebFolder panel = new NotWebFolder(NO_WEB_FOLDER_WARNING);
             DialogDescriptor descriptor = new DialogDescriptor(panel, NO_WEB_FOLDER_TITLE, true, NotifyDescriptor.PLAIN_MESSAGE, NotifyDescriptor.YES_OPTION, null);
+            JButton okButton = new JButton(
+                    NbBundle.getMessage(PageFlowController.class, "MSG_OkButtonText")); //NOI18N
+            descriptor.setOptions(new Object[]{okButton});
             descriptor.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
-            descriptor.setClosingOptions(new Object[]{NotifyDescriptor.OK_OPTION});
+            descriptor.setClosingOptions(new Object[]{okButton});
             descriptor.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
             final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
-            d.setSize(380, 180);
+            d.setSize(400, 200);
             d.setVisible(true);
 
             setShowNoWebFolderDialog(panel.getShowDialog());

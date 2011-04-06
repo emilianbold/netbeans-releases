@@ -175,7 +175,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }
 
     private String[] findAllExecutables(FileObject root) {
-        if (!root.isValid() || !root.isFolder()) {
+        if (root == null || !root.isValid() || !root.isFolder()) {
             // Something is wrong
             return new String[]{};
         }

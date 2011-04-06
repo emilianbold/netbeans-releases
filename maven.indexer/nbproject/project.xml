@@ -181,8 +181,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/indexer-core-4.0.0.jar</runtime-relative-path>
-                <binary-origin>external/indexer-core-4.0.0.jar</binary-origin>
+                <runtime-relative-path>ext/maven/indexer-core-4.0.0.MINDEXER-12+MINDEXER-13.jar</runtime-relative-path>
+                <binary-origin>external/indexer-core-4.0.0.MINDEXER-12+MINDEXER-13.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/indexer-artifact-4.0.0.jar</runtime-relative-path>

@@ -144,6 +144,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (ActionProvider.COMMAND_RUN.equals(action) || ActionProvider.COMMAND_DEBUG.equals(action)) {
             return hasNbm(project) || isPlatformApp(project);
         }
+        if (ActionProvider.COMMAND_TEST.equals(action)) {
+            return isPlatformApp(project);
+        }
         return false;
     }
 
@@ -154,11 +157,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
             // Cf. ModuleActions.createReloadAction.
             Project app = MavenNbModuleImpl.findAppProject(project);
-            if (app == null) {
-                if (SelectPlatformAppModulePanel.findAppModule(project)) {
-                    app = MavenNbModuleImpl.findAppProject(project);
-                }
-            }
             if (app != null) {
                 if (!FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile()) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbmActionGoalProvider_target_platform_not_running(), NotifyDescriptor.WARNING_MESSAGE));
@@ -179,6 +177,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
+                !ActionProvider.COMMAND_TEST.equals(actionName) &&
                 !NBMRELOAD.equals(actionName)) {
             return null;
         }
@@ -201,6 +200,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
+                !ActionProvider.COMMAND_TEST.equals(actionName) &&
                 !NBMRELOAD.equals(actionName)) {
             return null;
         }

@@ -44,6 +44,7 @@ masterfs,\
 maven,\
 maven.apisupport,\
 maven.embedder,\
+maven.hints,\
 maven.indexer,\
 maven.junit,\
 maven.model,\
@@ -83,6 +84,7 @@ sendopts,\
 settings,\
 spi.quicksearch,\
 tasklist.todo,\
-tasklist.ui test || exit
+tasklist.ui,\
+uihandler test || exit
 ant check-sigtests-release -Dfail.on.error=false || exit
 ant init-test-dist || exit

@@ -100,6 +100,13 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
             }
             throw iae;
         }
+        if (rootS.contains("/../") || rootS.contains("/./")) {  //NOI18N
+            final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; it cannot contain current or parent dir reference." + context); //NOI18N
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
+        }
     }
 
     private URL url;

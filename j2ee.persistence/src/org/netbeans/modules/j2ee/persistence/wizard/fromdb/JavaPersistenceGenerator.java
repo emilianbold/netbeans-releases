@@ -1209,10 +1209,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         }
                         TypeMirror exTm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), exMemberType));
                         String newType = m.getMemberType();
-                        TypeElement newTE = copy.getElements().getTypeElement(newType);
-                        TypeMirror newTm = newTE.asType();
                         //first if type is the same, just return and keep all as is
-                        if(exTm.equals(newTm)){
+                        if(exTm.toString().equals(newType)){
                             return;//nothing is changed
                         } else {
                             //found no refactoring for type change, need manually found variable/setter/getter/constructor, other parts user may need to update himself

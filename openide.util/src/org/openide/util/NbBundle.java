@@ -378,7 +378,7 @@ public class NbBundle extends Object {
     * @return the resource bundle
     * @exception MissingResourceException if the bundle does not exist
     */
-    public static final ResourceBundle getBundle(String baseName)
+    public static ResourceBundle getBundle(String baseName)
     throws MissingResourceException {
         return getBundle(baseName, Locale.getDefault(), getLoader());
     }
@@ -392,7 +392,7 @@ public class NbBundle extends Object {
     * @return the resource bundle
     * @exception MissingResourceException if the bundle does not exist
     */
-    public static ResourceBundle getBundle(Class clazz)
+    public static ResourceBundle getBundle(Class<?> clazz)
     throws MissingResourceException {
         String name = findName(clazz);
 
@@ -400,7 +400,7 @@ public class NbBundle extends Object {
     }
 
     /** Finds package name for given class */
-    private static String findName(Class clazz) {
+    private static String findName(Class<?> clazz) {
         String pref = clazz.getName();
         int last = pref.lastIndexOf('.');
 
@@ -421,7 +421,7 @@ public class NbBundle extends Object {
     * @return the resource bundle
     * @exception MissingResourceException if the bundle does not exist
     */
-    public static final ResourceBundle getBundle(String baseName, Locale locale)
+    public static ResourceBundle getBundle(String baseName, Locale locale)
     throws MissingResourceException {
         return getBundle(baseName, locale, getLoader());
     }
@@ -433,7 +433,7 @@ public class NbBundle extends Object {
     * @return the resource bundle
     * @exception MissingResourceException if the bundle does not exist
     */
-    public static final ResourceBundle getBundle(String baseName, Locale locale, ClassLoader loader)
+    public static ResourceBundle getBundle(String baseName, Locale locale, ClassLoader loader)
     throws MissingResourceException {
         if (USE_DEBUG_LOADER) {
             loader = DebugLoader.get(loader);
@@ -637,7 +637,7 @@ public class NbBundle extends Object {
     * @return the string associated with the resource
     * @throws MissingResourceException if either the bundle or the string cannot be found
     */
-    public static String getMessage(Class clazz, String resName)
+    public static String getMessage(Class<?> clazz, String resName)
     throws MissingResourceException {
         return getBundle(clazz).getString(resName);
     }
@@ -653,7 +653,7 @@ public class NbBundle extends Object {
     * @throws MissingResourceException if either the bundle or the string cannot be found
     * @see java.text.MessageFormat#format(String,Object[])
     */
-    public static String getMessage(Class clazz, String resName, Object param1)
+    public static String getMessage(Class<?> clazz, String resName, Object param1)
     throws MissingResourceException {
         return getMessage(clazz, resName, new Object[] { param1 });
     }
@@ -670,7 +670,7 @@ public class NbBundle extends Object {
     * @throws MissingResourceException if either the bundle or the string cannot be found
     * @see java.text.MessageFormat#format(String,Object[])
     */
-    public static String getMessage(Class clazz, String resName, Object param1, Object param2)
+    public static String getMessage(Class<?> clazz, String resName, Object param1, Object param2)
     throws MissingResourceException {
         return getMessage(clazz, resName, new Object[] { param1, param2 });
     }
@@ -688,7 +688,7 @@ public class NbBundle extends Object {
     * @throws MissingResourceException if either the bundle or the string cannot be found
     * @see java.text.MessageFormat#format(String,Object[])
     */
-    public static String getMessage(Class clazz, String resName, Object param1, Object param2, Object param3)
+    public static String getMessage(Class<?> clazz, String resName, Object param1, Object param2, Object param3)
     throws MissingResourceException {
         return getMessage(clazz, resName, new Object[] { param1, param2, param3 });
     }
@@ -709,7 +709,7 @@ public class NbBundle extends Object {
     * @see java.text.MessageFormat#format(String,Object[])
     * @since org.openide.util 7.27
     */
-    public static String getMessage(Class clazz, String resName, Object param1, Object param2, Object param3, Object param4, Object... params)
+    public static String getMessage(Class<?> clazz, String resName, Object param1, Object param2, Object param3, Object param4, Object... params)
     throws MissingResourceException {
         Object[] allParams = new Object[params.length + 4];
         allParams[0] = param1;
@@ -731,7 +731,7 @@ public class NbBundle extends Object {
     * @throws MissingResourceException if either the bundle or the string cannot be found
     * @see java.text.MessageFormat#format(String,Object[])
     */
-    public static String getMessage(Class clazz, String resName, Object[] arr)
+    public static String getMessage(Class<?> clazz, String resName, Object[] arr)
     throws MissingResourceException {
         return java.text.MessageFormat.format(getMessage(clazz, resName), arr);
     }
@@ -897,11 +897,11 @@ public class NbBundle extends Object {
             this.locale = locale;
         }
 
-        public Enumeration<String> getKeys() {
+        public @Override Enumeration<String> getKeys() {
             return Collections.enumeration(m.keySet());
         }
 
-        protected Object handleGetObject(String key) {
+        protected @Override Object handleGetObject(String key) {
             return m.get(key);
         }
 
@@ -934,11 +934,11 @@ public class NbBundle extends Object {
             return loc;
         }
 
-        public Enumeration<String> getKeys() {
+        public @Override Enumeration<String> getKeys() {
             return Enumerations.removeDuplicates(Enumerations.concat(sub1.getKeys(), sub2.getKeys()));
         }
 
-        protected Object handleGetObject(String key) throws MissingResourceException {
+        protected @Override Object handleGetObject(String key) throws MissingResourceException {
             try {
                 return sub1.getObject(key);
             } catch (MissingResourceException mre) {
@@ -1011,7 +1011,7 @@ public class NbBundle extends Object {
         /** @return next suffix.
         * @exception NoSuchElementException if there is no more locale suffix.
         */
-        public String next() throws NoSuchElementException {
+        public @Override String next() throws NoSuchElementException {
             if (current == null) {
                 throw new NoSuchElementException();
             }
@@ -1076,11 +1076,11 @@ public class NbBundle extends Object {
         }
 
         /** Tests if there is any sufix.*/
-        public boolean hasNext() {
+        public @Override boolean hasNext() {
             return (current != null);
         }
 
-        public void remove() throws UnsupportedOperationException {
+        public @Override void remove() throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
         }
     }
@@ -1246,7 +1246,7 @@ public class NbBundle extends Object {
                 this.localizable = localizable;
             }
 
-            public int read() throws IOException {
+            public @Override int read() throws IOException {
                 if (toInsert != null) {
                     char result = toInsert.charAt(0);
 
@@ -1455,7 +1455,7 @@ public class NbBundle extends Object {
                             assert keyLine > 0;
                             toInsert = "(" + id + ":" + keyLine + ")"; // NOI18N
                             if (next != -1) {
-                                toInsert += new Character((char) next);
+                                toInsert += Character.valueOf((char) next);
                             }
                             keyLine = 0;
 

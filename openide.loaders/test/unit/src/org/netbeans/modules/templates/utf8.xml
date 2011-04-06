@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
-<root>
-    Žluťoučký kůň skákal přes čtvero mezí.
-</root>
+println('<?xml version="1.0"?>');
+println('<root>');
+println('    Žluťoučký kůň skákal přes čtvero mezí.');
+println('</root>');

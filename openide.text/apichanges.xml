@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="NbDocument-Annotatable">
+        <api name="text"/>
+        <summary></summary>
+        <version major="6" minor="35"/>
+        <date day="7" month="2" year="2011"/>
+        <author login="mmetelka"/>
+        <compatibility semantic="incompatible"/>
+        <description>
+            <p>
+                <code>addAnnotation()</code> and <code>removeAnnotation()</code>
+                no longer re-plan their work into EDT.
+            </p>
+        </description>
+        <class package="org.openide.text" name="NbDocument"/>
+        <issue number="194816"/>
+    </change>
     <change id="commit-groups">
         <api name="text"/>
         <summary>Better support for vi mode</summary>
