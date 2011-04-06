@@ -155,7 +155,7 @@ import org.openide.windows.InputOutput;
                 }
                 env.putenv("LD_PRELOAD", merge); // NOI18N
                 
-                merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH");
+                merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH"); // NOI18N
                 //merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
                 if (merge != null && !merge.isEmpty()) {
                     merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
