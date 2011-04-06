@@ -99,6 +99,13 @@ public class GdbDisassemblyService implements DisassemblyService {
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    Line disLine = EditorBridge.lineNumberToLine(dobj, line);
+                    EditorBridge.showInEditor(disLine);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 //                try {
 //                    return EditorContextBridge.getContext().showSource(DataObject.find(fo), line, null);
 //                } catch (DataObjectNotFoundException dex) {
