@@ -333,6 +333,32 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertNotNull("Returned", instance);
         assertEquals("Right class", Count.class, instance.getClass());
     }
+    public void testMultiFileSystemWithOverridenAttributes() throws Exception {
+        File f = writeFile("layer.xml",
+                "<filesystem>\n"
+                + "    <folder name =\"org-sepix\">\n"
+                + "       <folder name =\"Panes\">\n"
+                + "            <file name=\"Demo.txt\">\n"
+                + "                <attr name=\"position\" intvalue=\"100\"/>\n"
+                + "            </file>\n"
+                + "      </folder>\n"
+                + "    </folder>\n"
+                + "</filesystem>");
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
+        final LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { lfs, xfs });
+        FileObject folder = mfs.findResource("org-sepix/Panes/");
+
+        for (FileObject fileObject : folder.getChildren()) {
+            assertEquals("should be 100", 100, fileObject.getAttribute("position"));
+
+            fileObject.setAttribute("position", 200);
+            assertEquals("should be 200", 200, fileObject.getAttribute("position"));
+            assertEquals("should be 200 still", 200, fileObject.getAttribute("position"));
+        }
+    }
 
     public void testGetAttributeDoesNotAccessAllAttributes() throws Exception {
         File f = writeFile("layer.xml",
