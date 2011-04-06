@@ -43,11 +43,9 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -76,7 +74,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
         PrintStream out = new PrintStream(log);
         try {
             String prefix = baseDirFO.getPath();
-            FCL fcl = new FCL("baseDir", prefix, out);
+            FCL fcl = new FCL("baseDir", prefix, out, true);
             if (recursive) {
                 FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {
@@ -85,7 +83,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             FileObject childFO = baseDirFO.createData("child_file_1");
             FileObject subdirFO = baseDirFO.createFolder("child_folder");
             if (!recursive) {
-                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out));
+                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
             }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");

@@ -104,6 +104,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisInfoPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
@@ -786,6 +787,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public void annotateDis(boolean andShow) {
         DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         if (disProvider != null && visitedLocation != null) {
+            DisInfoPanel.setLocation(visitedLocation);
             disProvider.movePC(visitedLocation.pc(), currentDisPCMarker, andShow);
         }
     }

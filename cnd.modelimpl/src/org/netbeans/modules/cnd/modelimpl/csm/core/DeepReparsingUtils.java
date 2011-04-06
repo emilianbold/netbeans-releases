@@ -138,7 +138,9 @@ public final class DeepReparsingUtils {
             Set<CsmFile> topParentsImpl = new HashSet<CsmFile>();
             for (CsmUID<CsmFile> file : coherence) {
                 CsmFile fileImpl = UIDCsmConverter.UIDtoFile(file);
-                updateStartFilesWithBestStartFiles(Collections.singleton(fileImpl), topParentsImpl);
+                if (fileImpl != null) {
+                    updateStartFilesWithBestStartFiles(Collections.singleton(fileImpl), topParentsImpl);
+                }
             }
             for (CsmUID<CsmFile> file : coherence) {
                 FileImpl fileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
