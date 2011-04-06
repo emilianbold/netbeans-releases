@@ -83,6 +83,7 @@ import org.apache.maven.settings.building.SettingsBuildingException;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
@@ -193,19 +194,19 @@ public final class MavenEmbedder {
         }
     }
 
-    public Artifact createArtifactWithClassifier(String groupId, String artifactId, String version, String type, String classifier) {
+    public Artifact createArtifactWithClassifier(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, String type, String classifier) {
         return repositorySystem.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
     }
 
-    public Artifact createArtifact(String groupId, String artifactId, String version, String packaging ){
+    public Artifact createArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, @NonNull String packaging) {
          return repositorySystem.createArtifact(groupId,  artifactId,  version,  packaging);
     }
 
-    public Artifact createArtifact(String groupId, String artifactId, String version, String scope, String type ){
+    public Artifact createArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, String scope, String type) {
          return repositorySystem.createArtifact( groupId,  artifactId,  version,   scope,  type);
     }
 
-    public Artifact createProjectArtifact(String groupId, String artifactId, String version ){
+    public Artifact createProjectArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
         return repositorySystem.createProjectArtifact(groupId, artifactId, version);
     }
 

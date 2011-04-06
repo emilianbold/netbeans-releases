@@ -91,6 +91,30 @@ public class EmbedderFactoryTest extends NbTestCase {
         assertEquals(2, lineage.size());
         assertEquals("grp:art2:jar:1.0-SNAPSHOT", lineage.get(0).getId());
         assertEquals(1, lineage.get(0).getProfiles().size());
+        // #197288: groupId and version can be inherited from parents
+        TestFileUtils.writeFile(new File(getWorkDir(), "parent.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+            "<modelVersion>4.0.0</modelVersion>" +
+            "<groupId>grp</groupId>" +
+            "<artifactId>parent</artifactId>" +
+            "<version>1.0</version>" +
+            "<packaging>pom</packaging>" +
+            "</project>");
+        pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+            "<modelVersion>4.0.0</modelVersion>" +
+            "<parent>" +
+            "<relativePath>parent.xml</relativePath>" +
+            "<groupId>grp</groupId>" +
+            "<artifactId>parent</artifactId>" +
+            "<version>1.0</version>" +
+            "</parent>" +
+            "<artifactId>art3</artifactId>" +
+            "</project>");
+        lineage = EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+        assertEquals(3, lineage.size());
+        assertEquals("[inherited]:art3:jar:[inherited]", lineage.get(0).getId());
+        assertEquals("grp", lineage.get(0).getParent().getGroupId());
+        assertEquals("1.0", lineage.get(0).getParent().getVersion());
+        assertEquals("grp:parent:pom:1.0", lineage.get(1).getId());
     }
 
 }
