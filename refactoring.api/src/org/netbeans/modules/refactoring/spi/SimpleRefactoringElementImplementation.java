@@ -50,6 +50,7 @@ import org.netbeans.editor.JumpList;
 import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.netbeans.modules.refactoring.spi.impl.PreviewManager;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
@@ -104,8 +105,12 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
         
         if (panes!=null) {
             JumpList.checkAddEntry();
-            panes[0].setCaretPosition(bounds.getEnd().getOffset());
-            panes[0].moveCaretPosition(beginPos.getOffset());
+            try {
+                panes[0].setCaretPosition(bounds.getEnd().getOffset());
+                panes[0].moveCaretPosition(beginPos.getOffset());
+            } catch (IllegalArgumentException iae) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
+            }
             getTopComponent(panes[0]).requestActive();
         } else {
             // todo (#pf): what to do if there is no pane? -- now, there

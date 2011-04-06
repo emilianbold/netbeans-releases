@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,54 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
+package org.netbeans.modules.remote.test;
+
+import java.util.ArrayList;
+import java.util.List;
 import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
-import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
+import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
 
 /**
- * There hardly is a way to unit test remote operations.
- * This is just an entry point for manual validation.
  *
  * @author Vladimir Kvashin
  */
-public class RemoteFileSystemOffilneTestCase extends RemoteFileTestBase {
+public class RemoteApiMultipleTestSuite extends NativeExecutionBaseTestSuite {
 
-    public RemoteFileSystemOffilneTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
-        super(testName, execEnv);
+    @SuppressWarnings("unchecked")
+    public RemoteApiMultipleTestSuite() {
+        this("Remote API", getTestClasses());
     }
 
-    @ForAllEnvironments
-    public void testOfflineStdlibH() throws Exception {
-        String absPath = "/usr/include/stdlib.h";
-        FileObject fo = getFileObject(absPath);
-        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
-        String content = readFile(fo);
-        String text2search = "getenv";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                content.indexOf(text2search) >= 0);
-        ConnectionManager.getInstance().disconnect(execEnv);
-        assertFalse("Shouldn't be connected now", ConnectionManager.getInstance().isConnectedTo(execEnv));
-        fo = getFileObject(absPath);
-        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
-        content = readFile(fo);
-        text2search = "getenv";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                content.indexOf(text2search) >= 0);
+    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
+        Class[] orig = RemoteApiTest.getTestClasses();
+        int mul = 4;
+        List<Class<? extends NativeExecutionBaseTestCase>> res = new ArrayList<Class<? extends NativeExecutionBaseTestCase>>();
+        for (int i = 0; i < mul; i++) {
+            for (int j = 0; j < orig.length; j++) {
+                if (orig[j] != RemoteFileSystemOffilneTestCase.class && orig[j] != ScheduleRefreshParityTestCase.class) {
+                    res.add(orig[j]);
+                }
+            }
+        }
+        return res.toArray(new Class[res.size()]);
     }
-        
+    
+    @SuppressWarnings("unchecked")
+    public static RemoteApiMultipleTestSuite createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
+        return new RemoteApiMultipleTestSuite(testClass.getName(), testClass);
+    }
+
+    public RemoteApiMultipleTestSuite(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+        super(name, "remote.platforms", testClasses);
+    }
+
     public static Test suite() {
-        return RemoteApiTest.createSuite(RemoteFileSystemOffilneTestCase.class);
+        return new RemoteApiMultipleTestSuite();
     }
 }

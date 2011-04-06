@@ -685,8 +685,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     isReady = result.get(timeout, units) == OperationState.COMPLETED;
                     break;
                 } else {
+                    // keep trying for 10 minutes if the server is stuck between 
+                    // httpLive and server ready state. We have to give up sometime, though.
+                    if (maxtries < 20)
+                        maxtries++;
                     long end = System.nanoTime();
-                    Logger.getLogger("glassfish").log(Level.FINE, "{0} timed out inside server after {1}ms", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO, "{0} returned from server after {1}ms. The server is still getting ready", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
                 }
             } catch(Exception ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " timed out.", ex); // NOI18N
@@ -811,7 +815,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         } catch (ExecutionException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
         } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
         }
 
     }

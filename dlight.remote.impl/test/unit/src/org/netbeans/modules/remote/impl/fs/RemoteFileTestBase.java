@@ -82,17 +82,20 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         private final String listenerName;
         private final String prefixToStrip;
         private final PrintStream out; 
+        private final boolean checkExpected;
 
-        public FCL(String name, String prefixToStrip, PrintStream out) {
+        public FCL(String name, String prefixToStrip, PrintStream out, boolean checkExpected) {
             this.listenerName = name;
             this.prefixToStrip = prefixToStrip;
             this.out = out;
+            this.checkExpected = checkExpected;
         }
 
         private void register(String eventKind, FileEvent fe) {
             String src = stripPrefix(((FileObject) fe.getSource()).getPath());
             String obj = stripPrefix(fe.getFile().getPath());
-            out.printf("FileEvent[%s]: %s src=%s obj=%s exp=%b\n", listenerName, eventKind, src, obj, fe.isExpected());
+            String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
+            out.printf("FileEvent[%s]: %s src=%s obj=%s %s\n", listenerName, eventKind, src, obj, exp);
         }
         
         private String stripPrefix(String path) {
@@ -137,7 +140,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     
     protected RemoteFileSystem fs;
-    protected FileObject rootFO;
+    protected RemoteFileObjectBase rootFO;
     protected final ExecutionEnvironment execEnv;
 
     protected String sharedLibExt;
@@ -206,13 +209,55 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected FileObject getFileObject(String path) throws Exception {
         FileObject fo = rootFO.getFileObject(path);
-        assertNotNull("Null file object for " + path, fo);
+        assertNotNullFileObject(fo, null, path);
         return fo;
+    }
+    
+    private void assertNotNullFileObject(FileObject fo, FileObject parent, String relOrAbsPath) throws Exception    {
+        if (fo == null) {
+            String absPath;
+            StringBuilder message = new StringBuilder();
+            message.append("Null file object for ").append(relOrAbsPath);
+            if (parent == null) {
+                absPath = relOrAbsPath;
+                message.append(" in ").append(execEnv);
+            } else {
+                absPath = parent.getPath() + '/' + relOrAbsPath;
+                message.append(" in ").append(parent);
+            }
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "ls", "-ld", absPath);
+            System.err.printf("Null file object for %s:%s\n", execEnv, absPath);
+            System.err.printf("ls -ld %s\nrc=%d\n%s\n%s", absPath, res.exitCode, res.output, res.error);
+            String dirName = PathUtilities.getDirName(absPath);
+            String baseName = PathUtilities.getBaseName(absPath);
+            RemoteFileObjectBase parentFO = rootFO.getFileObject(dirName);
+            System.err.printf("parentFO=%s\n", parentFO);
+            if (parentFO != null) {                
+                File cache = parentFO.getCache();
+                if(cache == null) {
+                    System.err.printf("Cache file is null\n");
+                } else {
+                    System.err.printf("Cache file content:\n");
+                    printFile(cache, null, System.err);
+                }
+                fo = parentFO.getFileObject(baseName);
+                System.err.printf("2-nd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
+                parentFO.refresh();
+                fo = parentFO.getFileObject(baseName);
+                System.err.printf("3-rd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
+            }
+            if (res.isOK()) {
+                message.append("; ls reports that file exists:\n").append(res.output);
+            } else {
+                message.append("; ls reports that file does NOT exist:\n").append(res.error);
+            }
+            assertTrue(message.toString(), false);
+        }
     }
 
     protected FileObject getFileObject(FileObject base, String path) throws Exception {
         FileObject fo = base.getFileObject(path);
-        assertNotNull("Null file object for " + path + " in " + base.getPath(), fo);
+        assertNotNullFileObject(fo, base, path);
         return fo;
     }
 
@@ -247,8 +292,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     }
     
     protected String readRemoteFile(String absPath) throws Exception {
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject fo = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         return readFile(fo);
     }
@@ -286,12 +330,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return execEnv.toString() + ':' + absPath;
     }
 
-//    protected void checkFileExistance(String absPath) throws Exception {
-//        FileObject fo = rootFO.getFileObject(absPath);
-//        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-//        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
-//    }
-    
     protected static void printFile(File file, String prefix, PrintStream out) throws Exception {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
         try {

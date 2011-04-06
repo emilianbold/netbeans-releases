@@ -62,6 +62,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
 import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
 import org.netbeans.modules.remote.impl.fs.RenameTestCase;
+import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
 
 /**
  *
@@ -71,7 +72,11 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
 
     @SuppressWarnings("unchecked")
     public RemoteApiTest() {
-        this("Remote API",
+        this("Remote API", getTestClasses());
+    }
+
+    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
+        return new Class[] {
            RemoteFileSystemTestCase.class,
            RemoteLinksTestCase.class,
            RemotePathTestCase.class,
@@ -88,10 +93,11 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            NormalizationTestCase.class,
            ListenersParityTestCase.class,
            ReadOnlyDirTestCase.class,
-           RemoteFileSystemOffilneTestCase.class);
+           ScheduleRefreshParityTestCase.class,
+           RemoteFileSystemOffilneTestCase.class
+        };
     }
-
-
+    
     @SuppressWarnings("unchecked")
     public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
         return new RemoteApiTest(testClass.getName(), testClass);

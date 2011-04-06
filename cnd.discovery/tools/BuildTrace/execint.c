@@ -70,7 +70,6 @@ extern char *getcwd (char *__buf, size_t __size);
 static struct stat buffer;
 
 static void __logprint(const char* fname, char *const argv[], ...) {
-
     char* tools = getenv("__CND_TOOLS__");
     if (tools == NULL) {
         LOG("\nBuildTrace ERROR: __CND_TOOLS__ is not set!!!\n");
@@ -82,7 +81,7 @@ static void __logprint(const char* fname, char *const argv[], ...) {
         LOG("\nBuildTrace ERROR: __CND_BUILD_LOG__ is not set!!!\n");
         return;
     }
-    LOG("\nBuildTrace: TOOLS=%s\n\tLOG=%s\n", map, log);
+    LOG("\nBuildTrace: TOOLS=%s\n\t    LOG=%s\n", tools, log);
 
     int shortName = 0;
     const char* key = strrchr(fname, '/');
@@ -112,12 +111,12 @@ static void __logprint(const char* fname, char *const argv[], ...) {
             }
         }
         
-        LOG("\nBuildTrace: found %s\n", *found);
+        LOG("\nBuildTrace: found %s\n", key);
         FILE* flog = fopen(log, "a");
-        LOG("\nBuildTrace: opened file %s\n", env_log);
+        LOG("\nBuildTrace: opened file %s\n", log);
 
         if (flog == NULL) {
-            LOG("\nBuildTrace ERROR: can not open %s!!!\n", env_log);
+            LOG("\nBuildTrace ERROR: can not open %s!!!\n", log);
             return;
         }
 
@@ -189,8 +188,8 @@ int from_func(char *name, const char *first, ...) { \
     char**  p; \
     char**  env; \
     va_start(args, first); \
-    *p++ = (char*) first; \
     p = (char**)argv; \
+    *p++ = (char*) first; \
     do { \
         *p = va_arg(args, char*); \
     } while(*p++); \

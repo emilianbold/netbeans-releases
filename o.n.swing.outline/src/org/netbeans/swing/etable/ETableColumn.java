@@ -501,12 +501,12 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     }
 
     /**
-     * An icon pointing up. It is used if the LAF does not supply
+     * An icon pointing down. It is used if the LAF does not supply
      * special icon.
      */
-    private static class SortUpIcon implements Icon {
+    private static class SortDownIcon implements Icon {
         
-        public SortUpIcon() {
+        public SortDownIcon() {
         }
         
         @Override
@@ -529,12 +529,12 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     }
 
     /**
-     * An icon pointing down. It is used if the LAF does not supply
+     * An icon pointing up. It is used if the LAF does not supply
      * special icon.
      */
-    private static class SortDownIcon implements Icon {
+    private static class SortUpIcon implements Icon {
         
-        public SortDownIcon() {
+        public SortUpIcon() {
         }
         
         @Override
