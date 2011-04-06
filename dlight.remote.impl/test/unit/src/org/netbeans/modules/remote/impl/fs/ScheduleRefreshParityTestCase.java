@@ -137,9 +137,11 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             worker.delete();
             
             FileSystemProvider.scheduleRefresh(baseDirFO);
-            sleep(5000);
-            
-            
+            if (baseDirFO instanceof RemoteFileObjectBase) {
+                ((RemoteFileObjectBase) baseDirFO).getFileSystem().getRefreshManager().testWaitLastRefreshFinished();
+            } else {
+                LocalFileSystemProvider.testWaitLastRefreshFinished();
+            }            
         } finally {
             out.close();
         }
@@ -172,6 +174,8 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             
             printFile(localLog, "LOCAL ", System.out);
             printFile(remoteLog, "REMOTE", System.out);
+            sortFile(localLog);
+            sortFile(remoteLog);
             File diff = new File(workDir, "diff.diff");
             try {
                 assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);
