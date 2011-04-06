@@ -89,6 +89,13 @@ public final class ViewUtils {
         }
         return new Rectangle2D.Double(r.getX(), r.getY(), r.getWidth(), r.getHeight());
     }
+    
+    public static Rectangle2D.Double shape2RelBounds(Shape s, double x, double y) {
+        Rectangle2D.Double r = shape2Bounds(s);
+        r.x = x - r.x;
+        r.y = y - r.y;
+        return r;
+    }
 
     public static Rectangle2D shapeAsRect(Shape s) {
         Rectangle2D r;
