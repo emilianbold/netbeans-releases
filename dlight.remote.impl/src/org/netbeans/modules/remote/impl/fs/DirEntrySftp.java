@@ -197,6 +197,6 @@ public class DirEntrySftp implements DirEntry {
 
     @Override
     public String toString() {
-        return statInfo.toString() + " (" + cache + ')'; // NOI18N
+        return statInfo.toString() + " (" + cache + ')' + (isValid() ? "[valid]" : "[invalid]"); // NOI18N
     }
 }
