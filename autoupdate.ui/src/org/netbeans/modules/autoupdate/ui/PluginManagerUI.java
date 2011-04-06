@@ -701,4 +701,11 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         return null;
     }
     
+    final String getSelectedTabName() {
+        int index = initialTabToSelect;
+        if (index == -1) {
+            index = tpTabs.getSelectedIndex();
+        }
+        return TAB_NAMES[index];
+    }
 }
