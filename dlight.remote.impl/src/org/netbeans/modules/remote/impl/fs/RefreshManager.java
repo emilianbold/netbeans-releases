@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -216,5 +217,9 @@ public class RefreshManager {
             result = Boolean.parseBoolean(text);
         }
         return result;
+    }
+    
+    /*package*/ void testWaitLastRefreshFinished() {
+        updateTask.waitFinished();
     }
 }

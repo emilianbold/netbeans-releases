@@ -62,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -76,6 +77,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
     private final boolean isWindows = Utilities.isWindows();
     private static RequestProcessor RP = new RequestProcessor(LocalFileSystemProvider.class.getSimpleName());
+    private static volatile RequestProcessor.Task lastRefreshTask;
 
     @Override
     public String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
@@ -285,7 +287,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
     
     private void scheduleRefresh(final File... files) {
-        RP.post(new Runnable() {
+        lastRefreshTask = RP.post(new Runnable() {
             public void run() {
                 FileUtil.refreshFor(files);
             }
@@ -302,5 +304,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     public void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
         File file = new File(absPath);
         FileUtil.removeRecursiveListener(listener, file);
-    }    
+    }
+
+    /** for TEST purposes ONLY */
+    /*package*/ static void testWaitLastRefreshFinished() {
+        Task task = lastRefreshTask;
+        if (task != null) {
+            task.waitFinished();
+        }
+    }
 }

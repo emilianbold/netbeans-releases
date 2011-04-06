@@ -94,7 +94,6 @@
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>

@@ -532,15 +532,17 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
     }*/
     
     public int getAddressLine(String address) {
+        return getAddressLine(Address.parseAddr(address));
+        // had problems with string comparison: 0x01 is not equal to 0x1
         //TODO : can use binary search
-        synchronized (lines) {
-            for (Line line : lines) {
-                if (line.address.equals(address)) {
-                    return line.idx;
-                }
-            }
-        }
-        return -1;
+//        synchronized (lines) {
+//            for (Line line : lines) {
+//                if (line.address.equals(address)) {
+//                    return line.idx;
+//                }
+//            }
+//        }
+//        return -1;
     }
     
     public int getAddressLine(long address) {

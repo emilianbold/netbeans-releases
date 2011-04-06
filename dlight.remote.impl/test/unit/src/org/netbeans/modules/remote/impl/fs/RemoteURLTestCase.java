@@ -52,7 +52,6 @@ import java.net.URLConnection;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -108,8 +107,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testFindURL() throws Exception {
         String absPath = "/usr/include/stdio.h";
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject fo = getFileObject(absPath);
         URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
         assertNotNull("null URL", url);
         String ext = url.toExternalForm();
@@ -120,8 +118,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testURLtoFileObject() throws Exception {
         String absPath = "/usr/include/stdlib.h";
-        FileObject fo = rootFO.getFileObject(absPath);
-        assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
+        FileObject fo = getFileObject(absPath);
         URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
         assertNotNull("null URL", url);
         FileObject fo2 = URLMapper.findFileObject(url);
@@ -134,8 +131,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
         String tempFile = null;
         try {
             tempFile = mkTempAndRefreshParent();
-            FileObject fo = rootFO.getFileObject(tempFile);
-            assertNotNull("Null file object for " + tempFile, fo);
+            FileObject fo = getFileObject(tempFile);
             assertTrue("FileObject should be readable: " + fo.getPath(), fo.canRead());
             final String referenceText = "a quick brown fox...";
             writeFile(fo, referenceText);
@@ -171,8 +167,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
         try {
             tempFile = mkTempAndRefreshParent();
             final String referenceText = "...jumps over a lazy dog";
-            FileObject fo = rootFO.getFileObject(tempFile);
-            assertNotNull("Null file object for " + tempFile, fo);
+            FileObject fo = getFileObject(tempFile);
             URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
             assertNotNull("null URL", url);
             URLConnection conn = url.openConnection();
