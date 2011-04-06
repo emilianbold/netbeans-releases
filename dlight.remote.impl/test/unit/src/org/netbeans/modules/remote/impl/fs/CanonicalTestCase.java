@@ -43,13 +43,11 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -133,6 +131,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
                     "ln -s " + "inexistent" + ' ' + link3;
             execute("sh", "-c", script);
             FileObject baseDirFO = getFileObject(baseDir);
+            baseDirFO.refresh();
             final FileObject[] links = new FileObject[3];
             links[0] = (RemoteFileObjectBase) getFileObject(baseDirFO, link0);
             links[1] = (RemoteFileObjectBase) getFileObject(baseDirFO, link1);
