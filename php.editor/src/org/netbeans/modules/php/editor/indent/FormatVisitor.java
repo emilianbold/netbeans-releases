@@ -576,7 +576,7 @@ public class FormatVisitor extends DefaultVisitor {
 		|| ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
 	    //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
 	    addRestOfLine();
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset() + ts.token().length()));
+	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELD, ts.offset() + ts.token().length()));
 	}
     }
 

@@ -415,6 +415,12 @@ public class PHPFormatterTest extends PHPTestBase {
         options.put(FmtOptions.initialIndent, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields06.php", options);
     }
+    
+    public void testBLFields07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.blankLinesAfterField, 3);
+        reformatFileContents("testfiles/formatting/blankLines/Fields07.php", options);
+    }
 
     public void testBLFunction01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
