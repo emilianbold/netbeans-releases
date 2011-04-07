@@ -321,4 +321,9 @@ public final class SemanticHighlighter extends HighlighterBase {
     public boolean isHighPriority() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "SemanticHighlighter runner"; //NOI18N
+    }
 }

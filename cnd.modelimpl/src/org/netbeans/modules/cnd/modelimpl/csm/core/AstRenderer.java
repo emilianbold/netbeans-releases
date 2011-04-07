@@ -144,6 +144,18 @@ public class AstRenderer {
                         DiagnosticExceptoins.register(e);
                     }
                     break;
+                case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_INSTANTIATION:
+                    try {
+                        if(isClassExplicitInstantiation(token)) {
+                            // TODO
+                        } else {
+                            CsmFunctionInstantiation fi = FunctionInstantiationImpl.create(token, file, !isRenderingLocalContext());
+                            container.addDeclaration(fi);
+                        }
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
+                    }
+                    break;                    
                 case CPPTokenTypes.CSM_CTOR_DEFINITION:
                 case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                     try {
@@ -1778,6 +1790,23 @@ public class AstRenderer {
         return true;
     }
 
+    private boolean isClassExplicitInstantiation(AST ast) {
+        AST type = ast.getFirstChild(); // type
+        if (type != null) {
+            AST child = type;
+            while ((child = child.getNextSibling()) != null) {
+                if (child.getType() == CPPTokenTypes.GREATERTHAN) {
+                    child = child.getNextSibling();
+                    if (child != null && (child.getType() == CPPTokenTypes.SEMICOLON)) {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        }
+        return false;
+    }    
+    
     protected boolean isMemberDefinition(AST ast) {
         if (CastUtils.isCast(ast)) {
             return CastUtils.isMemberDefinition(ast);

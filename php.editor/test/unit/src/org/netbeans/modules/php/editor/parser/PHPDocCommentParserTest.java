@@ -263,6 +263,18 @@ public class PHPDocCommentParserTest extends CslTestBase {
          "   * @see sfAction";
         perform(comment, "Example01");
     }
+    
+    public void testArrayParam01() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @param Car[] $test\n";
+        perform(comment, "ArrayParam01");
+    }
+    
+    public void testArrayParam02() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @param Car[] $test\n";
+        perform(comment, "ArrayParam02");
+    }
 
     public void testHTMLWrapper() throws Exception {
         String comment =

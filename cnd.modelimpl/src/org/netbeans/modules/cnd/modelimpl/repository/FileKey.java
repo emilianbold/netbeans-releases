@@ -51,8 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
-/*package*/
-final class FileKey extends ProjectFileNameBasedKey {
+/*package*/ final class FileKey extends ProjectFileNameBasedKey {
     
     FileKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());

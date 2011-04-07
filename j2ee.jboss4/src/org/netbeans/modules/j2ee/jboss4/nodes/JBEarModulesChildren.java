@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -85,7 +86,9 @@ public class JBEarModulesChildren extends Children.Keys {
                     // Query to the jboss4 server
                     Object server = Util.getRMIServer(lookup);
                     ObjectName searchPattern = new ObjectName("jboss.management.local:J2EEApplication="+j2eeAppName+",*");
-                    Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
+                    Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                    method = Util.fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
                     
                     Iterator it = managedObj.iterator();
                     

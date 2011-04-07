@@ -374,12 +374,12 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
             public void modify(WeblogicWebApp webLogicWebApp) {
                 for (LibraryRefType libRef : webLogicWebApp.getLibraryRef()) {
                     ServerLibraryDependency lib = getServerLibraryRange(libRef);
-                    if (library.equals(lib)) {
+                    if (library.specificationEquals(lib)) {
                         return;
                     }
                 }
 
-                setServerLibraryRange(webLogicWebApp, library);
+                addServerLibraryRange(webLogicWebApp, library);
             }
         });
     }
@@ -477,7 +477,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         }
     }
 
-    private void setServerLibraryRange(WeblogicWebApp webApp, ServerLibraryDependency library) {
+    private void addServerLibraryRange(WeblogicWebApp webApp, ServerLibraryDependency library) {
         LibraryRefType libRef = new LibraryRefType();
         libRef.setLibraryName(library.getName());
         if (library.isExactMatch()) {
@@ -489,7 +489,12 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         if (library.getImplementationVersion() != null) {
             libRef.setImplementationVersion(library.getImplementationVersion().toString());
         }
-        webApp.setLibraryRef(new LibraryRefType[] {libRef});
+        
+        LibraryRefType[] refs = webApp.getLibraryRef();
+        LibraryRefType[] updated = new LibraryRefType[refs.length + 1];
+        System.arraycopy(refs, 0, updated, 1, refs.length);
+        updated[0] = libRef;
+        webApp.setLibraryRef(updated);
     }
 
     // private helper interface -----------------------------------------------

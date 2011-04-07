@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -226,7 +227,14 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
             ren.setIndent(26);
         }
 
-        ren.setIcon(icon);
+        try {
+            ren.setIcon(icon);
+        } catch (NullPointerException ex) {
+            Exceptions.attachMessage(ex, "icon: " + icon); // NOI18N
+            Exceptions.attachMessage(ex, "vis: " + vis); // NOI18N
+            Exceptions.attachMessage(ex, "ren: " + ren); // NOI18N
+            throw ex;
+        }
 
         if (target instanceof TreeTable.TreeTableCellRenderer) {
             TreeTable.TreeTableCellRenderer ttRen = (TreeTable.TreeTableCellRenderer) target;

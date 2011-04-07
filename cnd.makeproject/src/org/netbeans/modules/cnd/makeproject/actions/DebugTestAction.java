@@ -43,12 +43,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -92,7 +89,7 @@ public class DebugTestAction extends NodeAction {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookups.fixed(new Object[]{project, n}));
+            ap.invokeAction(MakeActionProvider.COMMAND_DEBUG_TEST, Lookups.fixed(new Object[]{project, n}));
         }
 
 

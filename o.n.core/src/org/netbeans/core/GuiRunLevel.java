@@ -71,11 +71,9 @@ import org.openide.windows.WindowManager;
  */
 @ServiceProvider(service=RunLevel.class)
 public class GuiRunLevel implements RunLevel {
-    private static int count;
     
     public GuiRunLevel() {
         MainLookup.started();
-        assert count++ == 0 : "Only one instance allowed"; // NOI18N
     }
     
     /** Initialization of the manager.
@@ -165,34 +163,7 @@ public class GuiRunLevel implements RunLevel {
         if (windowSystem != null) {
             windowSystem.init();
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public @Override void run() {
-                StartLog.logProgress("Window system initialization");
-                if (System.getProperty("netbeans.warmup.skip") == null && System.getProperty("netbeans.close") == null) {
-                    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                    mainWindow.addComponentListener(new ComponentAdapter() {
-                        public @Override void componentShown(ComponentEvent evt) {
-                            mainWindow.removeComponentListener(this);
-                            WarmUpSupport.warmUp();
-                        }
-                    });
-                }
-                if (windowSystem != null) {
-                    windowSystem.load();
-                    StartLog.logProgress("Window system loaded");
-                    if (StartLog.willLog()) {
-                        waitForMainWindowPaint();
-                    }
-                    windowSystem.show();
-                } else {
-                    Logger.getLogger(GuiRunLevel.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
-                }
-                StartLog.logProgress("Window system shown");
-                if (!StartLog.willLog()) {
-                    maybeDie(null);
-                }
-            }
-        });
+        SwingUtilities.invokeLater(new InitWinSys(windowSystem));
         StartLog.logEnd ("Main window initialization"); //NOI18N
     }
   
@@ -243,6 +214,55 @@ public class GuiRunLevel implements RunLevel {
                 StartLog.logMeasuredStartupTime((Long) o);
             }
             org.openide.LifecycleManager.getDefault().exit();
+        }
+    }
+
+    private class InitWinSys implements Runnable {
+
+        private final WindowSystem windowSystem;
+        private int phase;
+
+        public InitWinSys(WindowSystem windowSystem) {
+            this.windowSystem = windowSystem;
+        }
+
+        public @Override void run() {
+            StartLog.logProgress("Window system initialization");
+            if (System.getProperty("netbeans.warmup.skip") == null && System.getProperty("netbeans.close") == null) {
+                final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                mainWindow.addComponentListener(new ComponentAdapter() {
+                    public @Override void componentShown(ComponentEvent evt) {
+                        mainWindow.removeComponentListener(this);
+                        WarmUpSupport.warmUp();
+                    }
+                });
+            }
+            if (phase == 0) {
+                if (windowSystem != null) {
+                    windowSystem.load();
+                    StartLog.logProgress("Window system loaded");
+                } else {
+                    Logger.getLogger(GuiRunLevel.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
+                }
+                phase = 1;
+                SwingUtilities.invokeLater(this);
+                return;
+            }
+            
+            if (phase == 1) {
+                if (windowSystem != null) {
+                    if (StartLog.willLog()) {
+                        waitForMainWindowPaint();
+                    }
+                    windowSystem.show();
+                }
+                StartLog.logProgress("Window system shown");
+                if (!StartLog.willLog()) {
+                    maybeDie(null);
+                }
+                return;
+            }
+            assert false : "Wrong phase " + phase;
         }
     }
 

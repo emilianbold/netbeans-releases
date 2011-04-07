@@ -56,6 +56,7 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
 import org.openide.text.Line;
 
@@ -63,7 +64,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -104,6 +104,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisInfoPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
@@ -268,7 +269,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private PathMap cachedPathMap;
     private boolean lookedPathMap;
 
-    public final PathMap getPathMap() {
+    private PathMap getPathMap() {
 	if (!lookedPathMap) {
 	    lookedPathMap = true;
 	    Configuration conf = getNDI().getConfiguration();
@@ -276,8 +277,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 		cachedPathMap = null;
 	    } else {
 		MakeConfiguration mc = (MakeConfiguration) conf;
-		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();
-		cachedPathMap = HostInfoProvider.getMapper(ee);
+		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
+                RemoteSyncFactory syncFactory = mc.getRemoteSyncFactory();                
+		cachedPathMap = (syncFactory == null) ? null : syncFactory.getPathMap(ee);
 	    }
 	}
 	return cachedPathMap;
@@ -785,6 +787,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public void annotateDis(boolean andShow) {
         DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         if (disProvider != null && visitedLocation != null) {
+            DisInfoPanel.setLocation(visitedLocation);
             disProvider.movePC(visitedLocation.pc(), currentDisPCMarker, andShow);
         }
     }
@@ -873,7 +876,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
                     // Locations should already be in local path form.
 		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
-		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
+		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
+                            NativeDebuggerImpl.this);
 		    if (l != null) {
                         ShowMode showMode = ShowMode.NONE;
                         if (andShow) {
@@ -1272,10 +1276,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         private StateListener runToCursorListener = null;
 
         // interface Controller
-        abstract public void requestDis();
+        abstract public void requestDis(boolean withSource);
 
         // interface Controller
-        abstract public void requestDis(String start, int count);
+        abstract public void requestDis(String start, int count, boolean withSource);
 
 
 	protected abstract void setBreakpointHelp(String address);
@@ -1548,7 +1552,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    this.location = location;
 
             if (retrieve && !inRange(location.pc())) {
-		disController().requestDis();
+		disController().requestDis(true);
             } else {
                 for (Listener l : listeners) {
                     l.stateUpdated();
@@ -1656,7 +1660,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    return Collections.emptySet();
 	}
 
-	return Autos.get(EditorBridge.documentFor(location.src()), location.line()-1);
+	return Autos.get(EditorBridge.documentFor(location.src(), this), location.line()-1);
     }
     
     public int getAutosCount() {

@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1306,7 +1307,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             index--;
         }
         while ((forward ? index < tokenText.length() : index > 0) &&
-                tokenText.charAt(index) == ' ') {
+                tokenText.charAt(index) == ' ' || tokenText.charAt(index) == '\t') {
             if (forward) {
                 index++;
             } else {
@@ -1370,7 +1371,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
         boolean beingFormatted = line != null ? line.index >= lineStart : false;
         int thisLineIndent = 0;
-        List<IndentCommand> allCommands = new ArrayList<IndentCommand>(allPreviousCommands);
+        
+        //UnmodifiableButExtendableList assumptions:
+        //1. allCommands does not escape from this context,
+        //2. only get(index), size() and add(object) methods are called on it.
+        List<IndentCommand> allCommands = new UnmodifiableButExtendableList<IndentCommand>(allPreviousCommands);
+        
         int preservedLineIndentation = -1;
 
         // iterate over indent commands for the given line and calculate line's indentation
@@ -2070,6 +2076,146 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
 
+    }
+    
+    /**
+     * !!! the implementation only implements following methods: size, get(...), add(...) !!!
+     * @param <T> 
+     */
+    private static class UnmodifiableButExtendableList<T> implements List<T> {
+
+        private static final String NOT_SUPPORTED_MGS = "UnmodifiableButExtendableList doesn't implement the method, if you've modified the using code, please update the UnmodifiableButExtendableList class accordingly!"; //NOI18N
+        
+        private List<T> original;
+        private List<T> ext;
+
+        public UnmodifiableButExtendableList(List<T> original) {
+            this.original = original;
+            this.ext = new ArrayList<T>();
+        }
+        
+        @Override
+        public int size() {
+            return original.size() + ext.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return original.isEmpty() && ext.isEmpty();
+        }
+
+        @Override
+        public boolean add(T e) {
+            return ext.add(e);
+        }
+        
+        @Override
+        public T get(int i) {
+            int os = original.size();
+            if(i < os) {
+                return original.get(i);
+            } else {
+                return ext.get(i - os);
+            }
+        }
+        
+        //>>> follows unsupported operations >>>
+        
+        @Override
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public Object[] toArray() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public <T> T[] toArray(T[] ts) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends T> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean addAll(int i, Collection<? extends T> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public T set(int i, T e) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public void add(int i, T e) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public T remove(int i) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public ListIterator<T> listIterator() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public ListIterator<T> listIterator(int i) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public List<T> subList(int i, int i1) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+        
     }
 
 }

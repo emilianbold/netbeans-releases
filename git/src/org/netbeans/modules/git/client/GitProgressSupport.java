@@ -135,6 +135,10 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         return task;
     }
     
+    protected String getDisplayName () {
+        return displayName;
+    }
+    
     protected void setDisplayName (String displayName) {
         this.displayName = displayName;
         setProgress();

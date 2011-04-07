@@ -95,7 +95,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             workdirPanel.scanForProjectsCheckBox.addItemListener(this);
             workdirPanel.atWorkingDirLevelCheckBox.addItemListener(this);
                     
-            workdirPanel.workdirTextField.setText(defaultWorkingDirectory().getPath());            
+            workdirPanel.workdirTextField.setText(defaultWorkingDirectory().getPath().trim());            
             workdirPanel.workdirTextField.getDocument().addDocumentListener(this);                
             workdirPanel.workdirTextField.addFocusListener(this);
             workdirPanel.repositoryPathTextField.getDocument().addDocumentListener(this);        
@@ -137,7 +137,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     @Override
     protected void validateBeforeNext() {
         if (validateUserInput(true)) {
-            String text = workdirPanel.workdirTextField.getText();
+            String text = getWorkdirText();
             File file = new File(text);
             if (file.exists() == false) {
                 boolean done = file.mkdirs();
@@ -149,11 +149,19 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
     }
 
+    private String getWorkdirText () {
+        return workdirPanel.workdirTextField.getText().trim();
+    }
+
     private boolean validateUserInput(boolean full) {                
         invalidTarget = false;
         if(repositoryPaths != null) {
             try {           
                 repositoryPaths.getRepositoryFiles();
+                if (repositoryPaths.getRevision() instanceof SVNRevision.Number && ((SVNRevision.Number) repositoryPaths.getRevision()).getNumber() < 0) {
+                    invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2018"), false)); //NOI18N
+                    return false;
+                }
             } catch (NumberFormatException ex) {
                 invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2018"), false));// NOI18N
                 return false;
@@ -163,7 +171,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             }
         }
         
-        String text = workdirPanel.workdirTextField.getText();
+        String text = getWorkdirText();
         if (text == null || text.length() == 0) {
             invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2014"), true));// NOI18N
             return false;
@@ -225,7 +233,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         fileChooser.showDialog(workdirPanel, NbBundle.getMessage(CheckoutStep.class, "BK0009"));// NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
-            workdirPanel.workdirTextField.setText(f.getAbsolutePath());
+            workdirPanel.workdirTextField.setText(f.getAbsolutePath().trim());
         }                
     }    
     
@@ -240,7 +248,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
      */
     private File defaultWorkingDirectory() {
         File defaultDir = null;
-        String current = workdirPanel.workdirTextField.getText();
+        String current = getWorkdirText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
             File currentFile = new File(current);
             while (currentFile != null && currentFile.exists() == false) {
@@ -333,7 +341,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
     
     public File getWorkdir() {
-        return new File(workdirPanel.workdirTextField.getText());
+        return new File(getWorkdirText());
     }        
 
     public RepositoryFile[] getRepositoryFiles() {
@@ -405,7 +413,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
 
     private void refreshWorkingCopy(RepositoryFile[] repositoryFiles) {
-        String localFolderPath = trimTrailingSlashes(workdirPanel.workdirTextField.getText().trim());
+        String localFolderPath = trimTrailingSlashes(getWorkdirText());
         int filesCount = (repositoryFiles != null) ? repositoryFiles.length : 0;
 
         String workingCopyPath;

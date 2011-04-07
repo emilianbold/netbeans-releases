@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
@@ -77,6 +78,7 @@ public class ValidatorImpl implements Validator {
     public ValidationResult validate(ValidationContext context) throws ValidationException {
         assert canValidate(context.getVersion());
         
+        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ValidationTransaction validatorTransaction = 
                     ValidationTransaction.create(context.getVersion()); //NOI18N
@@ -116,6 +118,13 @@ public class ValidatorImpl implements Validator {
 
         } catch (SAXException ex) {
             throw new ValidationException(ex);
+        } finally {
+            //ensure the thread's context classloader hasn't been changed during the validator code execution
+            if(Thread.currentThread().getContextClassLoader() != contextClassLoader) {
+                Logger.getAnonymousLogger().info("Thread's context ClassLoader has been changed during the validation.nu code execution! See issue 195626 for more info"); //NOI18N
+                //let's recover
+                Thread.currentThread().setContextClassLoader(contextClassLoader);
+            }
         }
 
     }

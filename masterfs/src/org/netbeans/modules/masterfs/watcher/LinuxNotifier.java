@@ -47,6 +47,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * A {@link Notifier} implementation based on Linux inotify mechanism.
@@ -54,7 +59,8 @@ import java.util.Map;
  * @author nenik
  */
 public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
-
+    private static final Logger LOG = Logger.getLogger(LinuxNotifier.class.getName());
+    
     private static interface InotifyImpl extends Library {
 	public int inotify_init();
 	public int inotify_init1(int flags);
@@ -98,6 +104,17 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
          buff.position(buff.capacity()); // make the buffer empty
          buff.order(ByteOrder.nativeOrder());
          fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
+         if (fd < 0) {
+             LOG.log(
+                 Level.INFO, "Linux kernel {0} returned {1} from inotify_init1",
+                 new Object[] { System.getProperty("os.version"), fd }
+             );
+             fd = IMPL.inotify_init();
+             LOG.log(Level.INFO, "Trying inotify_init: {0}", fd);
+         }
+         if (fd < 0) {
+             throw new IllegalStateException("inotify_init failed: " + fd);
+         }
     }
 
     private String getString(int maxLen) {

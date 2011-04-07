@@ -222,7 +222,12 @@ public class RetoucheUtils {
             if (type == null) {
                 // #120577: log info to find out what is going wrong
                 FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
-                throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                if (file == null) {
+                    //Deleted file
+                    continue;
+                } else {
+                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                }
             }
             for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {
@@ -336,11 +341,14 @@ public class RetoucheUtils {
             return false;
 
         //workaround for 143542
+        // XXX why is it checking open projects, rather than just p?
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (Project pr : opened) {
-            for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
-                    return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
+            for (String type : new String[] {JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
+                for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(type)) {
+                    if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
+                        return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
+                    }
                 }
             }
         }

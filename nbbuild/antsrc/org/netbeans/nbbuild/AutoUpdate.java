@@ -43,26 +43,31 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.xpath.XPathFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -84,6 +89,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class AutoUpdate extends Task {
     private List<Modules> modules = new ArrayList<Modules>();
     private FileSet nbmSet;
+    private File download;
     private File dir;
     private File cluster;
     private URL catalog;
@@ -108,6 +114,10 @@ public class AutoUpdate extends Task {
     public void setToDir(File dir) {
         this.cluster = dir;
     }
+    
+    public void setDownloadDir(File dir) {
+        this.download = dir;
+    }
 
     /** Forces rewrite even the version of a module is not newer */
     public void setForce(boolean force) {
@@ -122,8 +132,14 @@ public class AutoUpdate extends Task {
 
     @Override
     public void execute() throws BuildException {
+        boolean downloadOnly = false;
         if ((dir != null) == (cluster != null)) {
-            throw new BuildException("Specify either todir or installdir");
+            if (dir == null && cluster == null && download != null) {
+                log("Going to download NBMs only to " + download);
+                downloadOnly = true;
+            } else {
+                throw new BuildException("Specify either todir or installdir");
+            }
         }
         Map<String, ModuleItem> units;
         if (catalog != null) {
@@ -179,18 +195,13 @@ public class AutoUpdate extends Task {
                     continue;
                 }
             }
-            if (info == null) {
-                log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
-            } else {
-                log("Version " + info.get(0) + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
-            }
 
             byte[] bytes = new byte[4096];
             File tmp = null;
             boolean delete = false;
             File lastM = null;
             try {
-                if (uu.getURL().getProtocol().equals("file")) {
+                if (download == null && uu.getURL().getProtocol().equals("file")) {
                     try {
                         tmp = new File(uu.getURL().toURI());
                     } catch (URISyntaxException ex) {
@@ -202,9 +213,25 @@ public class AutoUpdate extends Task {
                 }
                 final String dash = uu.getCodeName().replace('.', '-');
                 if (tmp == null) {
-                    tmp = File.createTempFile(dash, ".nbm");
-                    tmp.deleteOnExit();
-                    delete = true;
+                    if (download != null) {
+                        tmp = new File(download, dash + ".nbm");
+                        String v = readVersion(tmp);
+                        if (v != null && !uu.isNewerThan(v)) {
+                            log("Version " + v + " of " + tmp + " is up to date", Project.MSG_VERBOSE);
+                            if (!force) {
+                                continue;
+                            }
+                        }
+                    } else {
+                        tmp = File.createTempFile(dash, ".nbm");
+                        tmp.deleteOnExit();
+                        delete = true;
+                    }
+                    if (info == null) {
+                        log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
+                    } else {
+                        log("Version " + info.get(0) + " of " + uu.getCodeName() + " needs update to " + uu.getSpecVersion(), Project.MSG_INFO);
+                    }
                     Get get = new Get();
                     get.setProject(getProject());
                     get.setTaskName("get:" + uu.getCodeName());
@@ -212,6 +239,9 @@ public class AutoUpdate extends Task {
                     get.setDest(tmp);
                     get.setVerbose(true);
                     get.execute();
+                }
+                if (downloadOnly) {
+                    continue;
                 }
 
                 File whereTo = dir != null ? new File(dir, uu.targetcluster) : cluster;
@@ -251,10 +281,23 @@ public class AutoUpdate extends Task {
                     log("Writing " + trgt, Project.MSG_VERBOSE);
 
                     InputStream is = zf.getInputStream(zipEntry);
-                    OutputStream os = new FileOutputStream(trgt);
                     boolean doUnpack200 = false;
                     if(relName.endsWith(".jar.pack.gz") && zf.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length() - 8))==null) {
                         doUnpack200 = true;
+                    }
+                    OutputStream os;
+                    AtomicLong assumedCRC = null;
+                    if (relName.endsWith(".external")) {
+                        assumedCRC = new AtomicLong();
+                        is = externalDownload(is, assumedCRC);
+                        if (assumedCRC.longValue() == -1L) {
+                            assumedCRC = null;
+                        }
+                        File dest = new File(trgt.getParentFile(), trgt.getName().substring(0, trgt.getName().length() - 9));
+                        os = new FileOutputStream(dest);
+                        relName = relName.substring(0, relName.length() - ".external".length());
+                    } else {
+                        os = new FileOutputStream(trgt);
                     }
                     CRC32 crc = new CRC32();
                     for (;;) {
@@ -277,6 +320,9 @@ public class AutoUpdate extends Task {
                         trgt.delete();
                         crcValue = getFileCRC(dest);
                         relName = relName.substring(0, relName.length() - 8);
+                    }
+                    if (assumedCRC != null && assumedCRC.get() != crcValue) {
+                        throw new BuildException("Expecting CRC " + assumedCRC.get() + " but was " + crcValue);
                     }
                     Element file = (Element) module_version.appendChild(doc.createElement("file"));
                     file.setAttribute("crc", String.valueOf(crcValue));
@@ -302,6 +348,47 @@ public class AutoUpdate extends Task {
                 }
             }
         }
+    }
+    
+    private InputStream externalDownload(InputStream is, AtomicLong crc) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        URLConnection conn;
+        crc.set(-1L);
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("CRC:")) {
+                crc.set(Long.parseLong(line.substring(4).trim()));
+            }
+            if (line.startsWith("URL:")) {
+                String url = line.substring(4).trim();
+                for (;;) {
+                    int index = url.indexOf("${");
+                    if (index == -1) {
+                        break;
+                    }
+                    int end = url.indexOf("}", index);
+                    String propName = url.substring(index + 2, end);
+                    final String propVal = System.getProperty(propName);
+                    if (propVal == null) {
+                        throw new IOException("Can't find property " + propName);
+                    }
+                    url = url.substring(0, index) + propVal + url.substring(end + 1);
+                }
+                log("Trying external URL: " + url, Project.MSG_INFO);
+                try {
+                    conn = new URL(url).openConnection();
+                    conn.connect();
+                    return conn.getInputStream();
+                } catch (IOException ex) {
+                    log("Cannot connect to " + url, Project.MSG_WARN);
+                    log("Details", ex, Project.MSG_VERBOSE);
+                }
+            }
+        }
+        throw new IOException("Cannot resolve external references");
     }
 
     
@@ -385,6 +472,24 @@ public class AutoUpdate extends Task {
             }
         }
         return all;
+    }
+    
+    private String readVersion(File nbm) {
+        try {
+            URL u = new URL("jar:" + nbm.toURI() + "!/Info/info.xml");
+            XPathFactory f = XPathFactory.newInstance();
+            final InputStream s = u.openStream();
+            InputSource is = new InputSource(s);
+            String res = f.newXPath().evaluate("module/manifest/@OpenIDE-Module-Specification-Version", is);
+            if (res.length() == 0) {
+                throw new IOException("Not found tag OpenIDE-Module-Specification-Version!");
+            }
+            s.close();
+            return res;
+        } catch (Exception ex) {
+            log("Cannot parse Info/info.xml from " + nbm, ex, Project.MSG_INFO);
+            return null;
+        }
     }
 
     private void parseVersion(final File config, final Map<String,List<String>> toAdd) throws Exception {

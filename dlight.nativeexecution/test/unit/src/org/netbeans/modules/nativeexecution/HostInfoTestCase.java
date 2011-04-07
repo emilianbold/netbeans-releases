@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.text.Utilities;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -78,6 +82,38 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         assertNotNull(hi);
     }
 
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testGetHostInfoEx() throws Exception {
+        if (org.openide.util.Utilities.isWindows()) {
+            return; // skip test for Windows
+        }
+        HostInfo hi = HostInfoUtils.getHostInfo(getTestExecutionEnvironment());
+        assertNotNull(hi);
+        int uid = hi.getUserId();
+        int gid = hi.getGroupId();
+        String group = hi.getGroup();
+        int[] allGids = hi.getAllGroupIDs();
+        
+        String[] tmp = runScript("groups").trim().split(" +");
+        Set<String> refGroups = new HashSet<String>(Arrays.asList(tmp));
+        Set<String> realGroups = new HashSet<String>(Arrays.asList(hi.getAllGroups()));
+        assertEquals("Groups names differ", refGroups, realGroups);
+
+        assertEquals("Groups ids count differ", refGroups.size(), allGids.length);
+        
+        tmp = runScript("getent passwd " + getTestExecutionEnvironment().getUser()).split(":");
+        // format is:
+        // greys:x:1000:113:Gleb Reys,,,:/home/greys:/bin/bash
+        int refUid = Integer.parseInt(tmp[2]);
+        assertEquals("User IDs", refUid, uid);
+        
+        int refGid = Integer.parseInt(tmp[3]);
+        assertEquals("Group IDs", refGid, gid);
+        
+        // TODO: test all group IDs
+    }
+        
     @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetOS() throws Exception {

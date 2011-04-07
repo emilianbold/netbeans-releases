@@ -612,7 +612,7 @@ public class ObserversTest extends CommonTestCase {
                 + " @Inject @Binding(value=\"c\") Event<List<EventObject>> event2; "
                 + " @Inject @Binding(value=\"d\") Event<Collection<EventObject>> event3; "
                 + " @Inject @Binding(value=\"e\") Event<Collection<EventObject>> event4; "
-                + " @Inject @Binding(value=\"f\") Event<Set<EventObject>> event5; "
+                + " @Inject @Binding(value=\"f\") Event<EventObject> event5; "
                 + "} ");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
@@ -633,7 +633,7 @@ public class ObserversTest extends CommonTestCase {
                 " public <T extends SuperObject> void eventObserver1( @Observes @Binding(value=\"c\") List<T> list){} "+
                 " public void eventObserver2( @Observes @Binding(value=\"d\") Collection<? extends SuperObject> list){} "+
                 " public void eventObserver3( @Observes @Binding(value=\"e\") Collection<? super ChildObject> list){} "+
-                " public void eventObserver4( @Observes @Binding(value=\"f\") Set<T extends SuperObject> set){} "+
+                " public <T extends SuperObject> void eventObserver4( @Observes @Binding(value=\"f\") T t){} "+
                 "} ");
         
         inform("start raw and parameterized assignability observer test");

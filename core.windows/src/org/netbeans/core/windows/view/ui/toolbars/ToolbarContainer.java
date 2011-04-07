@@ -569,6 +569,7 @@ final class ToolbarContainer extends JPanel {
             add( sep, BorderLayout.CENTER );
             dim = new Dimension (GRIP_WIDTH, GRIP_WIDTH);
             max = new Dimension (GRIP_WIDTH, Integer.MAX_VALUE);
+            setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
         }
 
         /** @return minimum size */

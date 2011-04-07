@@ -78,7 +78,8 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
-import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConfigurationFactory;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.tree.FileConfigurationNode;
 import org.netbeans.modules.cnd.discovery.wizard.tree.FolderConfigurationNode;
 import org.netbeans.modules.cnd.discovery.wizard.tree.IncludesListModel;
@@ -318,20 +319,10 @@ public final class SelectConfigurationPanel extends JPanel {
             List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
             if (projectConfigurations != null) {
                 for(ProjectConfiguration project : projectConfigurations){
-                    consolidateModel(project, consolidation);
+                    ConsolidationStrategy.consolidateModel(project, consolidation);
                 }
             }
             updateListModels();
-        }
-    }
-    
-    public static void consolidateModel(ProjectConfiguration project, String level){
-        if (ConsolidationStrategyPanel.PROJECT_LEVEL.equals(level)){
-            ConfigurationFactory.consolidateProject((ProjectConfigurationImpl)project);
-        } else if (ConsolidationStrategyPanel.FOLDER_LEVEL.equals(level)){
-            ConfigurationFactory.consolidateFolder((ProjectConfigurationImpl)project);
-        } else if (ConsolidationStrategyPanel.FILE_LEVEL.equals(level)){
-            ConfigurationFactory.consolidateFile((ProjectConfigurationImpl)project);
         }
     }
     
@@ -380,8 +371,8 @@ public final class SelectConfigurationPanel extends JPanel {
             includedFiles.addAll(conf.getIncludedFiles());
             List<ProjectProperties> langList = conf.getProjectConfiguration();
             for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
-                ProjectConfigurationImpl project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
-                consolidateModel(project, consolidation);
+                ProjectConfiguration project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
+                ConsolidationStrategy.consolidateModel(project, consolidation);
                 projectConfigurations.add(project);
             }
             for (SourceFileProperties source : conf.getSourcesConfiguration()) {

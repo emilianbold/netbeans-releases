@@ -57,6 +57,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.client.CredentialsCallback;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -175,14 +176,20 @@ public final class Git {
     }
 
     public GitClient getClient (File repository, GitProgressSupport progressSupport) throws GitException {
+        return getClient(repository, progressSupport, true);
+    }
+    
+    public GitClient getClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         // get the only instance for the repository folder, so we can synchronize on it
         File repositoryFolder = getRepositoryRoot(repository);
         if (repositoryFolder != null) {
             repository = repositoryFolder;
         }
         GitClient client = GitClientFactory.getInstance(null).getClient(repository);
+        client.setCallback(new CredentialsCallback());
         GitClientInvocationHandler handler = new GitClientInvocationHandler(client, repository);
         handler.setProgressSupport(progressSupport);
+        handler.setHandleAuthenticationIssues(handleAuthenticationIssues);
         return (GitClient) Proxy.newProxyInstance(GitClient.class.getClassLoader(), new Class[] { GitClient.class }, handler);
     }
 

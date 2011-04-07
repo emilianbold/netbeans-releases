@@ -81,5 +81,4 @@ public class WizardProperties {
     public static final String STUB_ROOT_FOLDER = "StubRootFolder"; //NOI18N
     public static final String STUB_FOLDER_NAME = "StubFolderName"; //NOI18N
     public static final String OVERWRITE_EXISTING = "OverwriteExisting"; //NOI18N
-    public static final String CREATE_JMAKI_REST_COMPONENTS = "CreateJMakiRestComponents"; //NOI18N
 }

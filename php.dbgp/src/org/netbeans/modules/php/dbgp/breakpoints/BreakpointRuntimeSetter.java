@@ -136,11 +136,13 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
         public void perform( AbstractBreakpoint breakpoint, SessionId id,
                 DebugSession session )
         {
-            BrkpntSetCommand command = Utils.getCommand( session, id, 
-                    breakpoint);
-            if ( command != null ){
-                session.sendCommandLater(command);
-            }            
+            if (session != null) {
+                BrkpntSetCommand command = Utils.getCommand( session, id, 
+                        breakpoint);
+                if ( command != null ){
+                    session.sendCommandLater(command);
+                }
+            }
         }
     }
     

@@ -359,6 +359,11 @@ public class Utilities {
         
     }
 
+    public static final String TAG_SELECT = "select";
+    public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff) throws IOException {
+        return commitAndComputeChangeInfo(target, diff, TAG_SELECT);
+    }
+
     /**
      * Commits changes and provides selection bounds
      *
@@ -398,10 +403,12 @@ public class Utilities {
                         doc.render(new Runnable() {
                             public void run() {
                                 try {
-                                    int[] span = diff.getSpan(tag);
-                                    if(span != null) {
-                                        pos[0] = fdoc.createPosition(span[0]);
-                                        pos[1] = fdoc.createPosition(span[1]);
+                                    if (tag != null) {
+                                        int[] span = diff.getSpan(tag);
+                                        if(span != null) {
+                                            pos[0] = fdoc.createPosition(span[0]);
+                                            pos[1] = fdoc.createPosition(span[1]);
+                                        }
                                     } else {
                                         pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
                                         pos[1] = pos[0];
@@ -597,7 +604,8 @@ public class Utilities {
 
         Element el = info.getTrees().getElement(tp);
 
-        if (el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String) {
+        if (el != null && (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.LOCAL_VARIABLE)
+                && ((VariableElement) el).getConstantValue() instanceof String) {
             return true;
         }
 
@@ -1075,6 +1083,47 @@ public class Utilities {
             }
 
             return qnString;
+        }
+    }
+
+    public static Visibility effectiveVisibility(TreePath tp) {
+        Visibility result = null;
+
+        while (tp != null) {
+            Visibility current = Visibility.forTree(tp.getLeaf());
+
+            if (current != null) {
+                if (result != null) result = result.enclosedBy(current);
+                else result = current;
+            }
+            
+            tp = tp.getParentPath();
+        }
+
+        return result;
+    }
+
+    public enum Visibility {
+        PRIVATE,
+        PACKAGE_PRIVATE,
+        PROTECTED,
+        PUBLIC;
+        public Visibility enclosedBy(Visibility encl) {
+            return Visibility.values()[Math.min(ordinal(), encl.ordinal())];
+        }
+        public static Visibility forModifiers(ModifiersTree mt) {
+            if (mt.getFlags().contains(Modifier.PUBLIC)) return PUBLIC;
+            if (mt.getFlags().contains(Modifier.PROTECTED)) return PROTECTED;
+            if (mt.getFlags().contains(Modifier.PRIVATE)) return PRIVATE;
+            return PACKAGE_PRIVATE;
+        }
+        public static Visibility forTree(Tree t) {
+            switch (t.getKind()) {
+                case CLASS: return forModifiers(((ClassTree) t).getModifiers());
+                case VARIABLE: return forModifiers(((VariableTree) t).getModifiers());
+                case METHOD: return forModifiers(((MethodTree) t).getModifiers());
+                default: return null;
+            }
         }
     }
 }

@@ -95,6 +95,7 @@ class JBStopRunnable implements Runnable {
         List<String> envp = new ArrayList<String>(3);
         envp.add("JAVA=" + javaHome + "/bin/java"); // NOI18N
         envp.add("JAVA_HOME=" + javaHome); // NOI18N
+        envp.add("JBOSS_HOME=" + properties.getRootDir().getAbsolutePath());    // NOI18N        
         if (Utilities.isWindows()) {
             // the shutdown script should not wait for a key press
             envp.add("NOPAUSE=true"); // NOI18N

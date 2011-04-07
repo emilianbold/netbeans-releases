@@ -65,6 +65,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
     public static synchronized void register() {
         if (!proxyFactoryInitialized) {
             URLStreamHandler originalJarHandler = null;
+            if (!ProxyURLStreamHandlerFactory.class.getClassLoader().getClass().getName().equals("com.sun.jnlp.JNLPClassLoader")) { // #196970
             try {
                 List<Field> candidates = new ArrayList<Field>();
                 for (Field f : URL.class.getDeclaredFields()) {
@@ -83,6 +84,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
                 if (originalJarHandler == null) {
                     LOG.log(Level.SEVERE, "No way to find original stream handler for jar protocol", t); // NOI18N
                 }
+            }
             }
             try {
                 URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(null, originalJarHandler));

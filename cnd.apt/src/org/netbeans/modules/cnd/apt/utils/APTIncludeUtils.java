@@ -97,10 +97,10 @@ public class APTIncludeUtils {
         SupportAPIAccessor accessor = SupportAPIAccessor.get();
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
-            FileSystem fs = dirPrefix.getFileSystem();
-            char fileSeparatorChar = CndFileUtils.getFileSeparatorChar(fs);
-            String includedFile = anIncludedFile.replace('/', fileSeparatorChar);
             if (accessor.isExistingDirectory(dirPrefix)) {
+                FileSystem fs = dirPrefix.getFileSystem();
+                char fileSeparatorChar = CndFileUtils.getFileSeparatorChar(fs);
+                String includedFile = anIncludedFile.replace('/', fileSeparatorChar);
                 String prefix = dirPrefix.getPath();
                 int len = prefix.length();
                 String absolutePath;

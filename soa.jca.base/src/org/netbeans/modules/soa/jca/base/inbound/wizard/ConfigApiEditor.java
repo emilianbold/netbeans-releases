@@ -159,6 +159,52 @@ public class ConfigApiEditor extends java.beans.PropertyEditorSupport {
             if (encrypted) {
                 String key = parameterElement.getAttribute("key"); // NOI18N
                 final String decryptedKey = ScEncrypt.decrypt("as8%232.nJXIN384103 bp5md-+z2123", key); // NOI18N
+                if ("Password".equalsIgnoreCase(name)){ // Mask Password Field
+                	Node.Property p = new PropertySupport.ReadWrite(
+                            name,
+                            String.class,
+                            displayName,
+                            name
+                            ) {
+                				String maskPassword = null;
+								
+                                public boolean canWrite() {
+                                    return editable;
+                                }
+                                public Object getValue() {
+                                    try {
+                                        String val = valueElementRef.getTextContent();
+                                        if (val == null || val.length() == 0) {
+                                            return val;
+                                        }
+                                        String decryptVal = ScEncrypt.decrypt(decryptedKey, val);
+                                       {
+                                        	maskPassword =  "";
+                                        	for (int i=0;i< decryptVal.length(); i++)
+                                        		maskPassword +=  "*";
+                                        	return maskPassword;
+                                        }
+                                    } catch (Exception e) {
+                                        return null;
+                                    }
+                                }
+                                public void setValue(Object val) {
+                                	try {
+	                                	String strVal = (String)val; 
+	                                	if (strVal != null && strVal.length() > 0 && 
+	                                			maskPassword != null && maskPassword.length() >0 && strVal.startsWith(maskPassword)) {
+	                                		strVal = ScEncrypt.decrypt(decryptedKey, valueElementRef.getTextContent())+(strVal.substring(maskPassword.length()));
+	                                	}
+	                                    String encryptVal = ScEncrypt.encrypt(decryptedKey, strVal);
+	                                    valueElementRef.setTextContent(encryptVal);
+	                                    writeValueToXml();
+                                	} catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                    };
+                    pset.put(p);
+                    } else {
                 Node.Property p = new PropertySupport.ReadWrite(
                         name,
                         String.class,
@@ -187,6 +233,8 @@ public class ConfigApiEditor extends java.beans.PropertyEditorSupport {
                             }
                 };
                 pset.put(p);
+                }
+                
             } else {
                 Node.Property p = new PropertySupport.ReadWrite(
                         name,

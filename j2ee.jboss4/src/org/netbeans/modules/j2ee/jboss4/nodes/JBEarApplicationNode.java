@@ -64,7 +64,7 @@ public class JBEarApplicationNode extends AbstractNode {
     
     public JBEarApplicationNode(String fileName, Lookup lookup) {
         super(new JBEarModulesChildren(lookup, fileName));
-        setDisplayName(fileName.substring(0, fileName.indexOf('.')));
+        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EAR, lookup));
     }
     

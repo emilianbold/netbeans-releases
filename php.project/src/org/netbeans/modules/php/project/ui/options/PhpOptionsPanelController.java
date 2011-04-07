@@ -129,7 +129,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(PhpOptions.class);
     }
 
     @Override

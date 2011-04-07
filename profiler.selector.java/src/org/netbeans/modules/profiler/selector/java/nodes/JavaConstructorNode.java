@@ -54,6 +54,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
+import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.selector.spi.nodes.ConstructorNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ConstructorsNode;
@@ -67,6 +69,8 @@ public class JavaConstructorNode extends ConstructorNode {
     private SourceCodeSelection signature;
     private Set<String> modifiers;
 
+    private static MethodNameFormatterFactory formatterFactory = MethodNameFormatterFactory.getDefault(new DefaultMethodNameFormatter(DefaultMethodNameFormatter.VERBOSITY_METHOD));
+    
     public JavaConstructorNode(ClasspathInfo cpInfo, final ExecutableElement method, String methodName, ConstructorsNode parent) {
         super(methodName, parent);
         this.method = method;
@@ -92,7 +96,7 @@ public class JavaConstructorNode extends ConstructorNode {
         if (signatureString[0] != null) {
             signature = new SourceCodeSelection(getEnclosingClass(method).getQualifiedName().toString(),
                     method.getSimpleName().toString(), signatureString[0]);
-
+            updateDisplayName(formatterFactory.getFormatter().formatMethodName(signature).toFormatted());
             modifiers = new HashSet<String>();
             for (Modifier modifier : method.getModifiers()) {
                 modifiers.add(modifier.name());

@@ -82,11 +82,11 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightExecutorService.DLightScheduledTask;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.TasksCachedProcessor;
-import org.openide.util.Exceptions;
 
 public class ProcFSDataCollector
         extends IndicatorDataProvider<ProcFSDCConfiguration>
@@ -241,7 +241,7 @@ public class ProcFSDataCollector
                     insertMSAStatement = null;
                 }
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
 
         }
@@ -261,7 +261,7 @@ public class ProcFSDataCollector
                     msa.LWP_MSA_STP.getColumnName()));
             result = true;
         } catch (SQLException ex) {
-            log.warning(String.format("Exception while preparing insert statement (%s)", ex.getMessage())); // NOI18N
+            SQLExceptions.printStackTrace(Level.WARNING, sqlStorage, ex);
         }
         return result;
     }
@@ -347,9 +347,7 @@ public class ProcFSDataCollector
 
                                 insertMSAStatement.executeUpdate();
                             } catch (SQLException ex) {
-                                if (log.isLoggable(Level.FINE)) {
-                                    log.log(Level.FINE, "SQL exception", ex);
-                                }
+                                SQLExceptions.printStackTrace(Level.FINE, sqlStorage, ex);
                             }
                         }
                         lwpsTracker.endOfUpdate();
@@ -412,9 +410,7 @@ public class ProcFSDataCollector
                         insertStatement.setLong(2, toNanoOffset(attachTimeNano > 0 ? attachTimeNano : lwp_usageInfo.getUsageInfo().pr_create)); // USE MILLISECONDS PASSED FROM START
                         insertStatement.executeUpdate();
                     } catch (SQLException ex) {
-                        if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, "", ex);
-                        }
+                        SQLExceptions.printStackTrace(Level.FINE, sqlStorage, ex);
                     }
                 }
             }
@@ -440,9 +436,7 @@ public class ProcFSDataCollector
                         updateStatement.setInt(2, deadThreadUsage.getUsageInfo().pr_lwpid);
                         updateStatement.executeUpdate();
                     } catch (SQLException ex) {
-                        if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, "", ex);
-                        }
+                        SQLExceptions.printStackTrace(Level.FINE, sqlStorage, ex);
                     }
                 }
             }

@@ -45,11 +45,11 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,7 +77,8 @@ public final class JSchChannelsSupport {
     private final ReentrantLock sessionsLock = new ReentrantLock();
     private final Condition sessionAvailable = sessionsLock.newCondition();
     // AtomicInteger stores a number of available channels for the session
-    private final HashMap<Session, AtomicInteger> sessions = new HashMap<Session, AtomicInteger>();
+    // We use ConcurrentHashMap to be able fast isConnected() check; in most other cases sessions is guarded bu "this"
+    private final ConcurrentHashMap<Session, AtomicInteger> sessions = new ConcurrentHashMap<Session, AtomicInteger>();
     private final Set<Channel> knownChannels = new HashSet<Channel>();
 
     public JSchChannelsSupport(JSch jsch, ExecutionEnvironment env) {
@@ -131,7 +132,8 @@ public final class JSchChannelsSupport {
         return result;
     }
 
-    public synchronized boolean isConnected() {
+    public boolean isConnected() {
+        // ConcurrentHashMap.keySet() never throws ConcurrentModificationException
         for (Session s : sessions.keySet()) {
             if (s.isConnected()) {
                 return true;

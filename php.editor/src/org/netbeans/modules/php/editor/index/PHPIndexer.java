@@ -53,6 +53,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -77,6 +81,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -195,6 +200,20 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
+            
+            boolean isFileEdited = false;
+            if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {
+                final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
+                if (jtc != null) {
+                    Document doc = jtc.getDocument();
+                    if (doc != null) {
+                        FileObject editedFO = NbEditorUtilities.getFileObject(doc);
+                        if (editedFO != null && editedFO.equals(r.getSnapshot().getSource().getFileObject())) {
+                            isFileEdited = true;
+                        }
+                    }
+                }
+            }
             IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
@@ -209,7 +228,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 QualifiedName superClassName = classScope.getSuperClassName();
                 if (superClassName != null) {
                     final String name = superClassName.getName();
-                    //final String namespaceName = superClassName.toNamespaceName().toString();
+                    //final String namespaceName = superClassName.toNamespaceName().toString();                    
                     Collection<QualifiedName> namespaceNames = VariousUtils.getPossibleFQN(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope());
                     final String namespaceName = ModelUtils.getFirst(namespaceNames).getNamespaceName();
                     classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
@@ -225,6 +244,12 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
 
                 for (MethodScope methodScope : classScope.getDeclaredMethods()) {
+                    if (!isFileEdited && methodScope instanceof LazyBuild) {
+                        LazyBuild lazyMethod = (LazyBuild) methodScope;
+                        if (!lazyMethod.isScanned()) {
+                            lazyMethod.scan();
+                        }
+                    }
                     classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
                     if (methodScope.isConstructor()) {
                         classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
@@ -327,7 +352,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 16;
+        public static final int VERSION = 18;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

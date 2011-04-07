@@ -55,12 +55,11 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
 import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.text.NbDocument;
 
-public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation {
+public class JspParserErrorAnnotation extends ErrorAnnotationImpl.LineSetAnnotation {
     
     /** Document line where the bug is reported
      */

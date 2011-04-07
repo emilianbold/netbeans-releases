@@ -55,12 +55,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Delegates the work to the owner of files in query.
@@ -90,6 +92,11 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
 
     @Override
     public boolean isVisible(File file) {
+
+        if(isHiddenMetadata(file)) {
+            return false;
+        }
+        
         boolean visible;
         synchronized (cache) {
             cache.clearOldValues();
@@ -139,6 +146,34 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         for (ChangeListener l : ls) {
             l.stateChanged(event);
         }
+    }
+
+    private static final String SVN_ADMIN_DIR;
+    private static final Pattern svnmetadataPattern;
+    static {
+        if (Utilities.isWindows()) {
+            String env = System.getenv("SVN_ASP_DOT_NET_HACK");
+            if (env != null) {
+                SVN_ADMIN_DIR = "_svn";
+            } else {
+                SVN_ADMIN_DIR = ".svn";
+            }
+        } else {
+            SVN_ADMIN_DIR = ".svn";
+        }
+        svnmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
+    }
+    private static final Pattern hgmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N
+    private static final Pattern cvsmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
+    private static final Pattern gitmetadatapattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
+    
+    // temporary hack to fix issue #195985
+    // should be replaced by a change in VCSVisibilityQuery
+    private boolean isHiddenMetadata(File file) {
+        return svnmetadataPattern.matcher(file.getAbsolutePath()).matches() ||
+               hgmetadataPattern.matcher(file.getAbsolutePath()).matches()  ||
+               cvsmetadataPattern.matcher(file.getAbsolutePath()).matches() ||
+               gitmetadatapattern.matcher(file.getAbsolutePath()).matches();
     }
 
     private class VisibilityChangedTask implements Runnable {

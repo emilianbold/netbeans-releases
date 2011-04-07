@@ -723,11 +723,11 @@ public class FileStatusCache {
         propertySupport.removePropertyChangeListener(listener);
     }
     
-    // --- Package private contract ------------------------------------------
-    
-    boolean ready() {
+    public boolean ready() {
         return ready;
     }
+    
+    // --- Package private contract ------------------------------------------
 
     /**
      * compute the cache index
@@ -1094,30 +1094,6 @@ public class FileStatusCache {
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         getLabelsCache().remove(file); // remove info from label cache, it could change
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
-    }
-
-    public void setCommand(int command) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logCommandLine(String commandLine) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logMessage(String message) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logError(String message) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logRevision(long revision, String path) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logCompleted(String message) {
-        // boring ISVNNotifyListener event
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
