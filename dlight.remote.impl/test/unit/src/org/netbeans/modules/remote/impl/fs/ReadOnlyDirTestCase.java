@@ -89,6 +89,7 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
                     "chmod a-r " + roDirPath;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            refreshParent(roDirPath);
             RemoteDirectory roDirFO = (RemoteDirectory) getFileObject(roDirPath);
             assertFalse("Should not be readable: " + roDirFO, roDirFO.canRead());
             FileObject rwDirFO = getFileObject(rwDirPath);
@@ -126,7 +127,10 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             storage = roDirFO.testGetExistingDirectoryStorage();
             assertEquals("storage.size", 2, storage.listAll().size());            
         } finally {
-            removeRemoteDirIfNotNull(baseDir);
+            if (baseDir != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
+                removeRemoteDirIfNotNull(baseDir);
+            }
         }        
     }
     

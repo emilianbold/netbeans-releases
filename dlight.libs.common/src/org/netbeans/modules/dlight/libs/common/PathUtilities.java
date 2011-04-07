@@ -91,12 +91,15 @@ public class PathUtilities {
      */
     public static String normalizeUnixPath(String absPath) {
         String norm = normalize(absPath);
-        if (absPath.startsWith("/") &&  norm.contains("..")) { //NOI18N
-            int pos = norm.lastIndexOf(".."); //NOI18N
+        if (norm.startsWith("/../")) { //NOI18N
+            int pos = norm.lastIndexOf("/../"); //NOI18N
+            // the path normalize returns can only start with several "/../" , 
+            // (it is when there are more "/../" segments than path nesting level)
+            // but can not contain it in the middle
             if (norm.endsWith("/")) { // NOI18N
-                norm = norm.substring(pos + 2, norm.length() - 1);
+                norm = norm.substring(pos + 3, norm.length() - 1);
             } else {
-                norm = norm.substring(pos + 2);
+                norm = norm.substring(pos + 3);
             }
         } else if (norm.endsWith("/")) { // NOI18N
             norm = norm.substring(0, norm.length() - 1);

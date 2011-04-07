@@ -577,6 +577,10 @@ class OutWriter extends PrintWriter {
                 ansiColor = ansiColor.darker();
             }
         }
+        if (text == 0) {
+            // That was an unknown sequence
+            return false;
+        }
         if (text < len) { // final segment
             print(s.subSequence(text, len), null, important, ansiColor, err, addLS);
         } else if (addLS) { // line ended w/ control seq
