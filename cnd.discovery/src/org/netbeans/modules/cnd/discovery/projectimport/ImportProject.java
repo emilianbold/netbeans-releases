@@ -143,9 +143,9 @@ public class ImportProject implements PropertyChangeListener {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
-    private String nativeProjectPath;
-    private FileObject nativeProjectFO;
-    private File projectFolder;
+    private final String nativeProjectPath;
+    private final FileObject nativeProjectFO;
+    private final File projectFolder;
     private String projectName;
     private String makefilePath;
     private String configurePath;
@@ -184,6 +184,9 @@ public class ImportProject implements PropertyChangeListener {
         Boolean b = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
         fullRemote = (b == null) ? false : b.booleanValue();
         pathMode = fullRemote ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
+        projectFolder = FileUtil.normalizeFile((File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER)); 
+        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
+        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
         if (Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) { // NOI18N
             simpleSetup(wizard);
         } else {
@@ -200,9 +203,6 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
-        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); 
-        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
-        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
         projectName = projectFolder.getName();
         workingDir = nativeProjectPath;
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH); 
@@ -246,10 +246,6 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void customSetup(WizardDescriptor wizard) {
-        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); 
-        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR); 
-        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO); 
-        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         projectName = (String) wizard.getProperty(WizardConstants.PROPERTY_NAME);
         workingDir = (String) wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR);
         buildCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_COMMAND);
@@ -284,7 +280,6 @@ public class ImportProject implements PropertyChangeListener {
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        projectFolder = CndFileUtils.normalizeFile(projectFolder); // always local
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel;
         if (fullRemote) { //XXX:fullRemote {
@@ -725,12 +720,12 @@ public class ImportProject implements PropertyChangeListener {
                 CndUtils.assertAbsolutePathInConsole(makefilePath);
                 makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
             } else {
-                makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
+                makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)));
             }
         }
         if (!fullRemote) {
             downloadRemoteFile(CndFileUtils.createLocalFile(makeFileObject.getPath())); // FileUtil.toFile SIC! - always local
-            makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
+            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)));
         }
         scanConfigureLog(logFile);
         if (makeFileObject != null && makeFileObject.isValid()) {
