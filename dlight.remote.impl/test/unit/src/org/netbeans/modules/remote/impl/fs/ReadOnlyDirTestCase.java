@@ -127,7 +127,10 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             storage = roDirFO.testGetExistingDirectoryStorage();
             assertEquals("storage.size", 2, storage.listAll().size());            
         } finally {
-            removeRemoteDirIfNotNull(baseDir);
+            if (baseDir != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
+                removeRemoteDirIfNotNull(baseDir);
+            }
         }        
     }
     
