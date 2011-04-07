@@ -428,9 +428,10 @@ public final class StandardLogger extends AntLogger {
         getSessionData(event.getSession()).lastHyperlink = null;
     }
 
-    private static final Pattern IMPORTANT_MESSAGE = Pattern.compile("\\[deprecation\\]|warning|stopped");
+    // exclusion of "cannot find symbol" is a workaround for javac #6403465 (fixed in JDK 7): AP-generated sources initially not found
+    private static final Pattern UNIMPORTANT_MESSAGE = Pattern.compile("\\[deprecation\\]|warning|stopped|cannot find symbol");
     public static boolean isImportant(String message) {
-        return !IMPORTANT_MESSAGE.matcher(message).find();
+        return !UNIMPORTANT_MESSAGE.matcher(message).find();
     }
 
     public static class PartiallyLinkedLine { // used also in ForkedJavaOverride
