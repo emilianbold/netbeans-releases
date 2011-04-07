@@ -44,11 +44,14 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
@@ -68,6 +71,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class MergeTest extends AbstractGitTestCase {
     private File workDir;
     private static final String BRANCH_NAME = "new_branch";
+    private Repository repo;
 
     public MergeTest (String testName) throws IOException {
         super(testName);
@@ -77,6 +81,7 @@ public class MergeTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         workDir = getWorkingDirectory();
+        repo = getRepository(getLocalGitRepository());
     }
     
     public void testMergeStatus () {
@@ -224,6 +229,8 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals("<<<<<<< HEAD\nmaster\n=======\nnew_branch\n>>>>>>> " + BRANCH_NAME, read(f));
         assertNull(result.getNewHead());
         assertEquals(Arrays.asList(f), result.getConflicts());
+        // with new jgit this will change and contain also information about conflicts
+        assertEquals("Merge new_branch", repo.readMergeCommitMsg());
         
         crit = new SearchCriteria();
         crit.setRevisionTo(Constants.MASTER);
@@ -312,6 +319,7 @@ public class MergeTest extends AbstractGitTestCase {
         
         try {
             client.merge(branchInfo.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Should fail");
         } catch (GitException.CheckoutConflictException ex) {
             // OK
             assertEquals(Arrays.asList(new String[] { f.getName(), f2.getName() }), Arrays.asList(ex.getConflicts()));
@@ -334,5 +342,13 @@ public class MergeTest extends AbstractGitTestCase {
         GitMergeResult result = client.merge("origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(MergeStatus.FAST_FORWARD, result.getMergeStatus());
         assertEquals(Arrays.asList(new String[] { ObjectId.zeroId().getName(), updates.get("origin/master").getNewObjectId() }), Arrays.asList(result.getMergedCommits()));
+    }
+    
+    // when starts to fail, update GitMergeResult with failingPaths
+    public void testMergeResultFailingPaths () throws Exception {
+        try {
+            Field f = MergeResult.class.getDeclaredField("failingPaths");
+            fail("Update GitMergeResult");
+        } catch (NoSuchFieldException ex) {}
     }
 }

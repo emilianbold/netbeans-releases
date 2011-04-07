@@ -237,14 +237,21 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
                 if(cache == null) {
                     System.err.printf("Cache file is null\n");
                 } else {
-                    System.err.printf("Cache file content:\n");
-                    printFile(cache, null, System.err);
+                    File storageFile = new File(cache, RemoteFileSystem.CACHE_FILE_NAME);
+                    if (storageFile.exists()) {
+                        System.err.printf("Parent directory cache (%s) content:\n", storageFile.getAbsolutePath());
+                        printFile(storageFile, null, System.err);
+                    } else {
+                        System.err.printf("Parent directory cache (%s) does not exist\n", storageFile.getAbsolutePath());
+                    }
                 }
                 fo = parentFO.getFileObject(baseName);
                 System.err.printf("2-nd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
-                parentFO.refresh();
-                fo = parentFO.getFileObject(baseName);
-                System.err.printf("3-rd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
+                if (fo == null) {
+                    parentFO.refresh();
+                    fo = parentFO.getFileObject(baseName);
+                    System.err.printf("3-rd attempt %s: %s\n", (fo == null ? "failed" : "succeeded"), fo);
+                }
             }
             if (res.isOK()) {
                 message.append("; ls reports that file exists:\n").append(res.output);
@@ -286,7 +293,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return path;
     }
 
-    private void refreshParent(String path) throws Exception {
+    protected void refreshParent(String path) throws Exception {
         String parent = PathUtilities.getDirName(path);
         getFileObject(parent).refresh();
     }
