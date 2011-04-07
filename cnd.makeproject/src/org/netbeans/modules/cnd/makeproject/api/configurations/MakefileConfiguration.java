@@ -158,14 +158,15 @@ public class MakefileConfiguration {
     }
 
     public String getAbsBuildCommandWorkingDir() {
+        String wd;
         if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
-            return getBuildCommandWorkingDirValue();
+            wd = getBuildCommandWorkingDirValue();
         } else {
-            String wd = getMakeConfiguration().getSourceBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
-            // Normalize            
-            wd = FileSystemProvider.normalizeAbsolutePath(wd, getSourceExecutionEnvironment());
-            return wd;
+            wd = getMakeConfiguration().getSourceBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
         }
+        // Normalize            
+        wd = FileSystemProvider.normalizeAbsolutePath(wd, getSourceExecutionEnvironment());
+        return wd;
     }
     
     public boolean canClean() {
