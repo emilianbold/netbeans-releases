@@ -293,7 +293,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return path;
     }
 
-    private void refreshParent(String path) throws Exception {
+    protected void refreshParent(String path) throws Exception {
         String parent = PathUtilities.getDirName(path);
         getFileObject(parent).refresh();
     }
