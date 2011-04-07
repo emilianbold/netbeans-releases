@@ -44,7 +44,6 @@ package org.netbeans.modules.git.ui.fetch;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,7 +63,6 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
-import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
@@ -81,7 +79,6 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     private GitProgressSupport supp;
     private GitProgressSupport validatingSupp;
     private final Mode mode;
-    private static final String BRANCH_MAPPING_LABEL = "{0} -> {1}/{0} [{2}]"; //NOI18N
     private final File repository;
     private final ItemSelector<BranchMapping> branches;
 
@@ -234,7 +231,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public List<String> getSelectedRefSpecs () {
         List<String> specs = new LinkedList<String>();
         for (BranchMapping b : branches.getSelectedBranches()) {
-            specs.add(org.netbeans.libs.git.utils.Utils.getRefSpec(b.remoteBranch, remote.getRemoteName()));
+            specs.add(b.getRefSpec());
         }
         return specs;
     }
@@ -243,66 +240,4 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public boolean isFinishPanel () {
         return true;
     }
-  
-    private static class BranchMapping extends ItemSelector.Item {
-        
-        private final String label;
-        private final String tooltip;
-        private final GitBranch remoteBranch;
-        private final GitRemoteConfig remote;
-
-        public BranchMapping (GitBranch remoteBranch, GitBranch localBranch, GitRemoteConfig remote) {
-            this.remoteBranch = remoteBranch;
-            this.remote = remote;
-            if(localBranch == null) {
-                // added
-                label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranch.getName(), remote.getRemoteName(), "<font color=\"#00b400\">A</font>");
-                
-                tooltip = NbBundle.getMessage(
-                    FetchBranchesStep.class, 
-                    "LBL_FetchBranchesPanel.BranchMapping.description", //NOI18N
-                    new Object[] { 
-                        localBranch == null ? remote.getRemoteName() + "/" + remoteBranch.getName() :  localBranch.getName(), //NOI18N
-                        NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.added.description") //NOI18N
-                    }); //NOI18N
-            } else {
-                // modified
-                label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranch.getName(), remote.getRemoteName(), "<font color=\"#0000FF\">U</font>"); //NOI18N                 
-                
-                tooltip = NbBundle.getMessage(
-                    FetchBranchesStep.class, 
-                    "LBL_FetchBranchesPanel.BranchMapping.description", //NOI18N
-                    new Object[] { 
-                        localBranch.getName(), 
-                        NbBundle.getMessage(FetchBranchesStep.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.updated.description") //NOI18N
-                    }); 
-            }
-        }
-        
-        public String getRefSpec () {
-            return org.netbeans.libs.git.utils.Utils.getRefSpec(remoteBranch, remote.getRemoteName());
-        }
-
-        @Override
-        public String getText () {
-            return label;
-        }
-        
-        @Override
-        public String getTooltipText() {
-            return tooltip;
-        }
-
-        @Override
-        public int compareTo(Item t) {
-            if(t == null) {
-                return 1;
-            }
-            if(t instanceof BranchMapping) {
-                return remoteBranch.getName().compareTo(((BranchMapping)t).remoteBranch.getName());
-            }
-            return 0;            
-        }
-    }
-
 }
