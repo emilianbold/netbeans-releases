@@ -924,7 +924,7 @@ public class JavacParser extends Parser {
                 final JavaFileObject prevLogged = l.useSource(cu.getSourceFile());
                 JCBlock block;
                 try {
-                    DiagnosticListener dl = ctx.get(DiagnosticListener.class);
+                    DiagnosticListener dl = ci.getDiagnosticListener();
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
