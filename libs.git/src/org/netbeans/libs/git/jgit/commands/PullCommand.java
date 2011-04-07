@@ -42,13 +42,16 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.IOException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitTransportUpdate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.RefSpec;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -81,6 +84,7 @@ public class PullCommand extends TransportCommand {
         fetch.run();
         this.updates = fetch.getUpdates();
         MergeCommand merge = new MergeCommand(getRepository(), branchToMerge, monitor);
+        merge.setCommitMessage("branch \'" + findRemoteBranchName() + "\' of " + fetch.getResult().getURI().setUser(null).setPass(null).toString());
         merge.run();
         this.mergeResult = merge.getResult();
     }
@@ -96,5 +100,27 @@ public class PullCommand extends TransportCommand {
 
     public GitPullResult getResult () {
         return new GitPullResult(updates, mergeResult);
+    }
+
+    private String findRemoteBranchName () throws GitException {
+        Ref ref = null;
+        try {
+            ref = getRepository().getRef(branchToMerge);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+        if (ref != null) {
+            for (String s : refSpecs) {
+                RefSpec spec = new RefSpec(s);
+                if (spec.matchDestination(ref)) {
+                    spec = spec.expandFromDestination(ref);
+                    String refName = spec.getSource();
+                    if (refName.startsWith(Constants.R_HEADS)) {
+                        return refName.substring(Constants.R_HEADS.length());
+                    }
+                }
+            }
+        }
+        return branchToMerge;
     }
 }
