@@ -134,7 +134,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             TokenId id = token.id();
 
             if (id == TplTopTokenId.T_SMARTY && ts.offset() < startOffset && balance == 0) {
-                int index = ts.index();
+                int[] index = ts.index();
                 ts.moveNext();
                 Token tk = LexUtilities.findNext(ts, Arrays.asList(TplTopTokenId.T_SMARTY));
                 ts.moveIndex(index);
