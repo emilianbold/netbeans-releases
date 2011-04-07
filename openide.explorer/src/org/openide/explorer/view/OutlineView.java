@@ -153,6 +153,7 @@ public class OutlineView extends JScrollPane {
     private OutlineViewOutline outline;
     /** Explorer manager, valid when this view is showing */
     ExplorerManager manager;
+    private final Object managerLock = new Object();
     /** not null if popup menu enabled */
     private PopupAdapter popupListener;
     /** the most important listener (on four types of events */
@@ -812,10 +813,12 @@ public class OutlineView extends JScrollPane {
         selection = new Selection(outline.getSelectionModel());
         outline.getSelectionModel().clearSelection();
         outline.getSelectionModel().removeListSelectionListener(managerListener);
-        if (manager != null) {
-            manager.removePropertyChangeListener (wlpc);
-            manager.removeVetoableChangeListener (wlvc);
-            manager = null;
+        synchronized (managerLock) {
+            if (manager != null) {
+                manager.removePropertyChangeListener (wlpc);
+                manager.removeVetoableChangeListener (wlvc);
+                manager = null;
+            }
         }
     }
 
@@ -1154,12 +1157,14 @@ public class OutlineView extends JScrollPane {
      */
     private class TableSelectionListener implements VetoableChangeListener, ListSelectionListener, PropertyChangeListener {
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            if (manager == null) return; // the tree view has been removed before the event got delivered
-            if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
-                synchronizeRootContext();
-            }
-            if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-                synchronizeSelectedNodes(true);
+            synchronized (managerLock) {
+                if (manager == null) return; // the tree view has been removed before the event got delivered
+                if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
+                    synchronizeRootContext();
+                }
+                if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                    synchronizeSelectedNodes(true);
+                }
             }
         }
 
