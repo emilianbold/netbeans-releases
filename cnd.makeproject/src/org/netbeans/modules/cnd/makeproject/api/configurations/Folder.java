@@ -46,13 +46,13 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -99,7 +99,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     private final String name;
     private String displayName;
     private final Folder parent;
-    private ArrayList<Object> items = null; // Folder or Item
+    private final ArrayList<Object> items; // Folder or Item
+    private final ReentrantReadWriteLock itemsLock = new ReentrantReadWriteLock();
     private HashMap<String, HashMap<Configuration, DeletedConfiguration>> deletedItems;
     private final Set<ChangeListener> changeListenerList = new WeakSet<ChangeListener>(1);
     private final boolean projectFiles;
@@ -131,7 +132,12 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Method reduce folder items size
      */
     public void pack() {
-        items.trimToSize();
+        itemsLock.writeLock().lock();
+        try {
+            items.trimToSize();
+        } finally {
+            itemsLock.writeLock().unlock();
+        }
     }
 
     public Kind getKind() {
@@ -413,15 +419,25 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public List<Object> getElements() {
-        return Collections.unmodifiableList(items);
+        itemsLock.readLock().lock();
+        try {
+            return new ArrayList(items);
+        } finally {
+            itemsLock.readLock().unlock();
+        }
     }
 
     private void reInsertElement(Object element) {
-        int index = items.indexOf(element);
-        if (index < 0) {
-            return;
+        itemsLock.writeLock().lock();
+        try {
+            int index = items.indexOf(element);
+            if (index < 0) {
+                return;
+            }
+            items.remove(element);
+        } finally {
+            itemsLock.writeLock().unlock();
         }
-        items.remove(element);
         if (element instanceof Folder) {
             insertFolderElement((Folder) element);
         } else if (element instanceof Item) {
@@ -433,32 +449,37 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private void insertFolderElement(Folder element) {
-        if (!element.isProjectFiles()) {
-            // Insert last
-            items.add(element);
-            return;
+        itemsLock.writeLock().lock();
+        try {
+            if (!element.isProjectFiles()) {
+                // Insert last
+                items.add(element);
+                return;
+            }
+            String name1 = element.getSortName();
+            int indexAt = items.size() - 1;
+            while (indexAt >= 0) {
+                Object o = items.get(indexAt);
+                if (!(o instanceof Folder)) {
+                    indexAt--;
+                    continue;
+                }
+                if (!((Folder) o).isProjectFiles()) {
+                    indexAt--;
+                    continue;
+                }
+                String name2 = ((Folder) o).getSortName();
+                int compareRes = name1.compareToIgnoreCase(name2);
+                if (compareRes < 0) {
+                    indexAt--;
+                    continue;
+                }
+                break;
+            }
+            items.add(indexAt + 1, element);
+        } finally {
+            itemsLock.writeLock().unlock();
         }
-        String name1 = element.getSortName();
-        int indexAt = items.size() - 1;
-        while (indexAt >= 0) {
-            Object o = items.get(indexAt);
-            if (!(o instanceof Folder)) {
-                indexAt--;
-                continue;
-            }
-            if (!((Folder) o).isProjectFiles()) {
-                indexAt--;
-                continue;
-            }
-            String name2 = ((Folder) o).getSortName();
-            int compareRes = name1.compareToIgnoreCase(name2);
-            if (compareRes < 0) {
-                indexAt--;
-                continue;
-            }
-            break;
-        }
-        items.add(indexAt + 1, element);
     }
 
     public static void insertItemElementInList(ArrayList<Object> list, Item element) {
@@ -482,7 +503,12 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private void insertItemElement(Item element) {
-        insertItemElementInList(items, element);
+        itemsLock.writeLock().lock();
+        try {
+            insertItemElementInList(items, element);
+        } finally {
+            itemsLock.writeLock().unlock();
+        }
     }
 
     private void addElement(Object element, boolean setModified) { // FIXUP: shopuld be private
@@ -729,7 +755,12 @@ public class Folder implements FileChangeListener, ChangeListener {
             return false;
         }
         // Remove it from folder
-        ret = items.remove(item);
+        itemsLock.writeLock().lock();
+        try {
+            ret = items.remove(item);
+        } finally {
+            itemsLock.writeLock().unlock();
+        }
         if (!ret) {
             fireChangeEvent(this, false);
             return ret;
@@ -799,7 +830,12 @@ public class Folder implements FileChangeListener, ChangeListener {
                 folder.detachListener();
             }
             folder.removeAll();
-            ret = items.remove(folder);
+            itemsLock.writeLock().lock();
+            try {
+                ret = items.remove(folder);
+            } finally {
+                itemsLock.writeLock().unlock();
+            }
             if (isProjectFiles()) {
                 // Remove it form all configurations
                 Configuration[] configurations = configurationDescriptor.getConfs().toArray();
@@ -829,7 +865,12 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void reset() {
-        items = new ArrayList<Object>();
+        itemsLock.writeLock().lock();
+        try {
+            items.clear();
+        } finally {
+            itemsLock.writeLock().unlock();
+        }
         fireChangeEvent();
     }
 

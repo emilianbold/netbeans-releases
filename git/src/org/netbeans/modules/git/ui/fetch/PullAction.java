@@ -43,18 +43,25 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
@@ -63,51 +70,59 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_FetchAction_Name")
-public class FetchAction extends GetRemoteChangesAction {
+@ActionID(id = "org.netbeans.modules.git.ui.fetch.PullAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_PullAction_Name")
+public class PullAction extends GetRemoteChangesAction {
+    
+    private static final Logger LOG = Logger.getLogger(PullAction.class.getName());
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
-        fetch(repository);
+        pull(repository);
     }
     
-    public void fetch (final File repository, GitRemoteConfig remote) {
-        if (remote.getUris().size() != 1) {
-            Utils.post(new Runnable () {
-                @Override
-                public void run () {
-                    fetch(repository);
-                }
-            });
-        } else {
-            fetch(repository, remote.getUris().get(0), remote.getFetchRefSpecs());
-        }
-    }
-    
-    private void fetch (File repository) {
+    private void pull (File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refreshRemotes();
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        FetchWizard wiz = new FetchWizard(repository, remotes);
+        PullWizard wiz = new PullWizard(repository, remotes);
         if (wiz.show()) {
-            fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs());
+            pull(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getBranchToMerge());
         }
     }
     
-    public void fetch (File repository, final String remote, final List<String> fetchRefSpecs) {
+    public void pull (File repository, final String remote, final List<String> fetchRefSpecs, final String branchToMerge) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
+                File repository = getRepositoryRoot();
+                LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, remote }); //NOI18N
                 try {
+                    boolean cont;
                     GitClient client = getClient();
-                    Map<String, GitTransportUpdate> updates = client.fetch(remote, fetchRefSpecs, this);
-                    log(updates, getLogger());
+                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), this);
+                    do {
+                        cont = false;
+                        try {
+                            GitPullResult result = client.pull(remote, fetchRefSpecs, branchToMerge, this);
+                            log(result.getFetchResult(), getLogger());
+                            mrp.processResult(result.getMergeResult());
+                        } catch (GitException.CheckoutConflictException ex) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                            }
+                            cont = mrp.resolveLocalChanges(ex.getConflicts());
+                        }
+                    } while (cont);
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
+                } finally {
+                    setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
+                    GitUtils.headChanged(repository);
                 }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(FetchAction.class, "LBL_FetchAction.progressName")); //NOI18N
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PullAction.class, "LBL_PullAction.progressName")); //NOI18N
     }
 }

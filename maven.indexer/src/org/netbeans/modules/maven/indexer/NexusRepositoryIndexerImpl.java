@@ -89,7 +89,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
-import org.apache.maven.index.AbstractSearchRequest;
 import org.apache.maven.index.ArtifactAvailablility;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactContextProducer;
@@ -436,7 +435,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         }
 
-        fsr.setResultHitLimit(AbstractSearchRequest.UNDEFINED_HIT_LIMIT + 1); // if ==1000 then may return exactly 1000 hits when there are more!
         int oldMax = BooleanQuery.getMaxClauseCount();
         try {
             int max = oldMax;
@@ -445,13 +443,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 try {
                     BooleanQuery.setMaxClauseCount(max);
                     response = searcher.searchFlatPaged(fsr, contexts);
-                    if (response.isHitLimitExceeded()) {
-                        int limit = fsr.getResultHitLimit();
-                        LOGGER.log(Level.FINE, "#197036: passed on {0} clauses processing {1} but encountered hit limit of {2}", new Object[] {max, q, limit});
-                        fsr.setResultHitLimit(limit * 2);
-                        continue;
-                    }
-                    LOGGER.log(Level.FINE, "passed on {0} clauses processing {1} with {2} hits", new Object[] {max, q, response.getTotalHits()});
+                    LOGGER.log(Level.FINE, "passed on {0} clauses processing {1} with {2} hits", new Object[] {max, q, response.getTotalHitsCount()});
                     return response;
                 } catch (BooleanQuery.TooManyClauses exc) {
                     LOGGER.log(Level.FINE, "TooManyClauses on {0} clauses processing {1}", new Object[] {max, q});
