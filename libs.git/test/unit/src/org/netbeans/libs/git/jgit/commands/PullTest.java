@@ -56,6 +56,7 @@ import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitMergeResult.MergeStatus;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitRefUpdateResult;
@@ -238,7 +239,7 @@ public class PullTest extends AbstractGitTestCase {
         assertUpdate(updates.get("origin/master"), "origin/master", "master", commitId, masterInfo.getRevision(), new URIish(otherWT.toURI().toURL()).toString(), Type.BRANCH, GitRefUpdateResult.FAST_FORWARD);
         assertEquals(MergeStatus.CONFLICTING, result.getMergeResult().getMergeStatus());
         assertEquals(new HashSet<File>(Arrays.asList(f)), new HashSet<File>(result.getMergeResult().getConflicts()));
-        assertEquals("<<<<<<< HEAD\nhi, i am new\n=======\nremote change\n>>>>>>> origin/master", read(f));
+        assertEquals("<<<<<<< HEAD\nhi, i am new\n=======\nremote change\n>>>>>>> branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), read(f)); // this should be fixed in JGit
     }
 
     public void testPullChangesInOtherBranchPlusMerge () throws Exception {
@@ -292,6 +293,24 @@ public class PullTest extends AbstractGitTestCase {
         assertStatus(client.getStatus(new File[] { f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR), workDir, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
     }
 
+    public void testPullCommitMessages () throws Exception {
+        GitClient client = getClient(workDir);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File f = new File(workDir, "localFile");
+        
+        makeLocalChange(f, "1");
+        makeRemoteChange("master");
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(GitMergeResult.MergeStatus.MERGED, result.getMergeResult().getMergeStatus());
+        assertEquals("Merge branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), client.log(result.getMergeResult().getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR).getFullMessage());
+        
+        makeLocalChange(f, "2");
+        makeRemoteChange("master", "2");
+        result = client.pull("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(GitMergeResult.MergeStatus.MERGED, result.getMergeResult().getMergeStatus());
+        assertEquals("Merge branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), client.log(result.getMergeResult().getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR).getFullMessage());
+    }
+
     private void setupRemoteSpec (String remote, String fetchSpec) throws URISyntaxException, IOException {
         RemoteConfig cfg = new RemoteConfig(repository.getConfig(), remote);
         cfg.addFetchRefSpec(new RefSpec(fetchSpec));
@@ -310,11 +329,23 @@ public class PullTest extends AbstractGitTestCase {
     }
 
     private String makeRemoteChange (String branch) throws Exception {
+        return makeRemoteChange(branch, "remote change");
+    }
+    
+    private String makeRemoteChange (String branch, String content) throws Exception {
         GitClient client = getClient(otherWT);
         client.checkoutRevision(branch, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        write(f, "remote change");
+        write(f, content);
         File[] roots = new File[] { f };
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
         return client.commit(roots, "remote change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+    }
+
+    private String makeLocalChange (File f, String content) throws Exception {
+        GitClient client = getClient(workDir);
+        write(f, content);
+        File[] roots = new File[] { f };
+        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        return client.commit(roots, "local change: " + content, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
     }
 }
