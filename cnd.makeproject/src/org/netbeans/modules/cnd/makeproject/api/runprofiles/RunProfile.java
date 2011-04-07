@@ -74,10 +74,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNod
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.PropertySupport;
@@ -931,7 +933,8 @@ public boolean isSimpleRunCommand() {
 
         @Override
         public java.awt.Component getCustomEditor() {
-            return new DirectoryChooserPanel(seed, this, propenv);
+            FileSystem fs = (makeConfiguration == null) ? CndFileUtils.getLocalFileSystem() : makeConfiguration.getSourceFileSystem();
+            return new DirectoryChooserPanel(seed, this, propenv, fs);
         }
 
         @Override
