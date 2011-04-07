@@ -346,13 +346,17 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <!-- COS feature - used in run-deploy -->
+            <!-- compiler use deploy.on.save flag to fire changes -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
                     <xsl:attribute name="property">deploy.on.save</xsl:attribute>
                     <xsl:attribute name="value">true</xsl:attribute>
-                    <istrue value="${{j2ee.deploy.on.save}}"/>
+                    <or>
+                        <istrue value="${{j2ee.deploy.on.save}}"/>
+                        <istrue value="${{j2ee.compile.on.save}}"/>
+                    </or>
                 </condition>            
             </target>
             
@@ -2200,15 +2204,18 @@ exists or setup the property manually. For example like this:
             <xsl:attribute name="depends">init</xsl:attribute>
             
             <xsl:choose>
-                <xsl:when test="$ear">
-                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
+                <xsl:when test="$type">
+                    <xsl:choose>
+                        <xsl:when test="$ear">
+                            <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
-                </xsl:otherwise>
             </xsl:choose>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">

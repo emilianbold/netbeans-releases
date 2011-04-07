@@ -2003,15 +2003,18 @@ exists or setup the property manually. For example like this:
             <xsl:attribute name="depends">init</xsl:attribute>
             
             <xsl:choose>
-                <xsl:when test="$ear">
-                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
+                <xsl:when test="$type">
+                    <xsl:choose>
+                        <xsl:when test="$ear">
+                            <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
-                </xsl:otherwise>
             </xsl:choose>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">
