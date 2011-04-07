@@ -47,6 +47,8 @@ package org.netbeans.core.startup;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -312,7 +314,7 @@ final class NbEvents extends Events {
     }
     
     private void notify(String text, boolean warn) {
-        if (Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
+        if (GraphicsEnvironment.isHeadless() || Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
             // #21773: interferes with automated GUI testing.
             logger.log(Level.WARNING, text + "\n");
         } else {
