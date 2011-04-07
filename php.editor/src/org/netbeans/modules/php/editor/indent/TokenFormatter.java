@@ -591,6 +591,9 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_FIELD:
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
                                         break;
+                                    case WHITESPACE_AFTER_FIELD:
+                                        newLines = docOptions.blankLinesAfterField + 1 > newLines ? docOptions.blankLinesAfterField + 1 : newLines;
+                                        break;
                                     case WHITESPACE_BETWEEN_FIELDS:
                                         indentRule = true;
                                         newLines = 1;
