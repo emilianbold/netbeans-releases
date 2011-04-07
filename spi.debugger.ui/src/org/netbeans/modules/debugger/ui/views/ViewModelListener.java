@@ -186,12 +186,23 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     // </RAVE>
     
     void setUp() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(new Runnable() {
+                public void run() {
+                    setUp();
+                }
+            });
+            return ;
+        }
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
         preferences.addPreferenceChangeListener(prefListener);
-        updateModel ();
+        synchronized (this) {
+            isUp = true;
+        }
+        updateModelLazily ();
     }
 
     void destroy () {
