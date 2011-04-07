@@ -182,11 +182,11 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
         DocumentView docView = paragraphView.getDocumentView();
         if (docView != null) {
             boolean wrapDone = false;
-            wrapInfo = null;
             double childrenWidth = getMajorAxisChildrenSpan(boxView);
             float childrenHeight = getMinorAxisChildrenSpan(boxView);
             // Do no word wrap in case there's RTL text anywhere in paragraph view
             if (docView.getLineWrapType() != DocumentView.LineWrapType.NONE && !paragraphView.isRTL()) {
+                wrapInfo = null;
                 float visibleWidth = docView.getVisibleWidth();
                 // Check if major axis span (should already be updated) exceeds scrollpane width.
                 if (visibleWidth > docView.getDefaultCharWidth() && childrenWidth > visibleWidth) {

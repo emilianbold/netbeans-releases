@@ -71,7 +71,7 @@ public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescr
     @Override
     public final void validate () throws WizardValidationException {
         validateBeforeNext();
-        if (!valid || errMessage != null) {
+        if (!valid) {
             throw new WizardValidationException (
                 getJComponent(),
                 errMessage.getMessage(),

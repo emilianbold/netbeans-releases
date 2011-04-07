@@ -89,6 +89,7 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
                     "chmod a-r " + roDirPath;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            refreshParent(roDirPath);
             RemoteDirectory roDirFO = (RemoteDirectory) getFileObject(roDirPath);
             assertFalse("Should not be readable: " + roDirFO, roDirFO.canRead());
             FileObject rwDirFO = getFileObject(rwDirPath);
