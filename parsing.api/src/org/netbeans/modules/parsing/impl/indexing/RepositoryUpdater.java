@@ -81,6 +81,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -153,7 +155,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class RepositoryUpdater implements PathRegistryListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
+public final class RepositoryUpdater implements PathRegistryListener, ChangeListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -168,7 +170,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     public void start(boolean force) {
         Work work = null;
-
         synchronized (this) {
             if (state == State.CREATED) {
                 state = State.STARTED;
@@ -179,7 +180,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 EditorRegistry.addPropertyChangeListener(this);
                 IndexerCache.getCifCache().addPropertyChangeListener(this);
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
-
+                VisibilityQuery.getDefault().addChangeListener(this);
                 if (force) {
                     work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, false);
                 }
@@ -432,6 +433,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         for (URL rootUrl : includesChanged) {
             scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, false, false, sourcesForBinaryRoots.contains(rootUrl)), false);
+        }
+    }
+
+    @Override
+    public void stateChanged (@NonNull final ChangeEvent event) {
+        if (Crawler.listenOnVisibility()) {
+            LOGGER.fine ("VisibilityQuery changed, reindexing");    //NOI18N
+            refreshAll(false, false, true);
         }
     }
 

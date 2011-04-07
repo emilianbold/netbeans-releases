@@ -1552,10 +1552,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, ru.getScannedBinaries().size());
         assertEquals(0, ru.getScannedBinaries().size());
         assertEquals(0, ru.getScannedUnknowns().size());
+        Crawler.setListenOnVisibility(false);
 
         //4th) Making customFiles[1] invisible & touching the files to be indexed
         fsWait();
-        Thread.sleep(5000);     //wait for filesystem
         touch (customFiles);
         touch (embeddedFiles);
         final Visibility visibility = Lookup.getDefault().lookup(Visibility.class);
@@ -1580,6 +1580,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, ru.getScannedBinaries().size());
         assertEquals(0, ru.getScannedBinaries().size());
         assertEquals(0, ru.getScannedUnknowns().size());
+        Crawler.setListenOnVisibility(false);
         
         //6th) Making customFiles[1] visible again & touching the files to be indexed
         fsWait();
@@ -1596,6 +1597,60 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
         assertTrue(indexerFactory.indexer.awaitIndex());
         assertTrue(eindexerFactory.indexer.awaitIndex());
+    }
+
+    public void testVisibilityQueryInIDERun() throws Exception {        
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        ////1st) Default visibility everything should be scanned
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        final MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());        
+
+        //2nd) Change of VisibilityQuery should trigger rescan, customFiles[1] should be invisible
+        final Visibility visibility = Lookup.getDefault().lookup(Visibility.class);
+        assertNotNull(visibility);
+        visibility.registerInvisibles(Collections.singleton(URLMapper.findFileObject(customFiles[1])));
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[] {customFiles[1]}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+
+        //3rd) Change of VisibilityQuery should trigger rescan, customFiles[1] should be visible again
+        visibility.registerInvisibles(Collections.<FileObject>emptySet());
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[]{customFiles[1]}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());        
     }
 
     /**
