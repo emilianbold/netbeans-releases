@@ -422,7 +422,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         } else {
             validity = getFlag(MASK_VALID) ? "[invalid] (flagged)" : "[invalid]"; //NOI18N
         }
-        return getExecutionEnvironment().toString() + ":" + getPath() + validity;
+        return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
     }
 
     @Override
