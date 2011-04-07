@@ -103,6 +103,14 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         return new RemoteApiTest(testClass.getName(), testClass);
     }
 
+    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
+        Class[] classes = new Class[timesToRepeat];
+        for (int i = 0; i < classes.length; i++) {
+            classes[i] = testClass;            
+        }
+        return new RemoteApiTest(testClass.getName(), classes);
+    }
+    
     public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super(name, "remote.platforms", testClasses);
     }

@@ -64,6 +64,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class MergeCommand extends GitCommand {
     private final String revision;
     private GitMergeResult result;
+    private String commitMessage;
 
     public MergeCommand (Repository repository, String revision, ProgressMonitor monitor) {
         super(repository, monitor);
@@ -84,8 +85,11 @@ public class MergeCommand extends GitCommand {
         if (ref == null) {
             command.include(Utils.findCommit(repository, revision));
         } else {
-            String mergeRevisionName = Utils.getRefName(ref);
-            command.include(mergeRevisionName, ref.getTarget().getObjectId());
+            String msg = commitMessage;
+            if (msg == null) {
+                msg = Utils.getRefName(ref);
+            }
+            command.include(msg, ref.getTarget().getObjectId());
         }
         command.setStrategy(MergeStrategy.RESOLVE);
         try {
@@ -110,5 +114,12 @@ public class MergeCommand extends GitCommand {
 
     public GitMergeResult getResult () {
         return result;
+    }
+
+    void setCommitMessage (String message) {
+        if (message != null) {
+            message = message.replace("\n", "").replace("\r", ""); //NOI18N
+        }
+        this.commitMessage = message;
     }
 }
