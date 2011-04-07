@@ -240,14 +240,14 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     }
 
     @Override
-    public Tree visitDisjunctiveType(DisjunctiveTypeTree node, Boolean p) {
+    public Tree visitUnionType(UnionTypeTree node, Boolean p) {
         List<? extends Tree> typeComponents = translateTree(node.getTypeAlternatives());
 
         if (make == null) return node;
 
         if (typeComponents != node.getTypeAlternatives())
         {
-            node = make.DisjunctiveType(typeComponents);
+            node = make.UnionType(typeComponents);
         }
         return node;
     }

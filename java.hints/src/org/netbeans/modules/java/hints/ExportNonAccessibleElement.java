@@ -57,7 +57,6 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.DisjunctiveType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.NoType;
@@ -67,6 +66,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.Task;
@@ -350,7 +350,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     }
 
     @Override
-    public Boolean visitDisjunctive(DisjunctiveType tm, Void p) {
+    public Boolean visitUnion(UnionType tm, Void p) {
         for (TypeMirror t : tm.getAlternatives()) {
             if (stop) {
                 return false;

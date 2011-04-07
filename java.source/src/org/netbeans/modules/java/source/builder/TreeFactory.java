@@ -205,7 +205,7 @@ public class TreeFactory {
         return make.at(NOPOS).ClassDef((JCModifiers)modifiers,
                              names.fromString(simpleName.toString()),
                              typarams.toList(),
-                             (JCTree)extendsClause,
+                             (JCExpression)extendsClause,
                              impls.toList(),
                              defs.toList());
         
@@ -294,11 +294,11 @@ public class TreeFactory {
         return make.at(NOPOS).Continue(n);
     }
     
-    public DisjunctiveTypeTree DisjunctiveType(List<? extends Tree> typeComponents) {
+    public UnionTypeTree UnionType(List<? extends Tree> typeComponents) {
         ListBuffer<JCExpression> components = new ListBuffer<JCExpression>();
         for (Tree t : typeComponents)
             components.append((JCExpression)t);
-        return make.at(NOPOS).TypeDisjunction(components.toList());
+        return make.at(NOPOS).TypeUnion(components.toList());
     }
 
     public DoWhileLoopTree DoWhileLoop(ExpressionTree condition, StatementTree statement) {
@@ -1596,7 +1596,7 @@ public class TreeFactory {
         return make.at(NOPOS).ClassDef(make.at(NOPOS).Modifiers(modifiers, annotations),
                              names.fromString(simpleName.toString()),
                              typarams.toList(),
-                             (JCTree)extendsClause,
+                             (JCExpression)extendsClause,
                              impls.toList(),
                              defs.toList());
         

@@ -1658,7 +1658,7 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
-        public Boolean visitDisjunctiveType(DisjunctiveTypeTree node, Void p) {
+        public Boolean visitUnionType(UnionTypeTree node, Void p) {
             List<? extends Tree> alts = node.getTypeAlternatives();
             if (alts != null && !alts.isEmpty()) {
                 wrapList(cs.wrapDisjunctiveCatchTypes(), cs.alignMultilineDisjunctiveCatchTypes(), false, BAR, alts);
