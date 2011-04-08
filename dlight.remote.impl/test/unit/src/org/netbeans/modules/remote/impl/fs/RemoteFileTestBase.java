@@ -46,7 +46,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -335,23 +334,5 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected String getFileName(ExecutionEnvironment execEnv, String absPath) {
         return execEnv.toString() + ':' + absPath;
-    }
-
-    protected static void printFile(File file, String prefix, PrintStream out) throws Exception {
-        BufferedReader rdr = new BufferedReader(new FileReader(file));
-        try {
-            String line;
-            while ((line = rdr.readLine()) != null) {
-                if (prefix == null) {
-                    out.printf("%s\n", line);
-                } else {
-                    out.printf("%s: %s\n", prefix, line);
-                }
-            }
-        } finally {
-            if (rdr != null) {
-                rdr.close();                
-            }
-        }
     }
 }
