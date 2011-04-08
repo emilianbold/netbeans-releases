@@ -270,8 +270,6 @@ public class Utils {
     public static void buildProject(String projectName) {
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         Node node = pto.getProjectRootNode(projectName);
-//        node.performPopupAction(Bundle.getStringTrimmed(
-//                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_RebuildAction_Name"));
         node.performPopupAction("Clean and Build");
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
@@ -281,14 +279,13 @@ public class Utils {
     }
 
     public static void cleanProject(String projectName) {
-        Action cleanAction = new Action(null, Bundle.getStringTrimmed(
-                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_RebuildAction_Name"));
+        Action cleanAction = new Action(null, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CleanProjectAction_Name_popup"));
         cleanAction.setComparator(new Operator.DefaultStringComparator(true, true));
         cleanAction.perform(new ProjectsTabOperator().getProjectRootNode(projectName));
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
-                new String[]{projectName.replace(' ', '_') + " (clean,dist)"}));
+                new String[]{projectName.replace(' ', '_') + " (clean)"}));
         new EventTool().waitNoEvent(2500);
     }
 

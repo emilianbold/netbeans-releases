@@ -88,7 +88,7 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     public static class NewProjectWizardsTest4 extends NewProjectWizardsTest {
 
         public NewProjectWizardsTest4(String testName) {
-            super(testName, "4");
+            super(testName, "1.4");
         }
     }
 
@@ -256,8 +256,6 @@ public class NewProjectWizardsTest extends J2eeTestCase {
         pto.getProjectRootNode("def Web app").performPopupAction("Close");
         if (version.contains("5")) {
             pto.getProjectRootNode("App client" + version).performPopupAction("Close");
-        } else {
-            pto.getProjectRootNode("BadModule").performPopupAction("Close");
         }
         new EventTool().waitNoEvent(2500);
     }
