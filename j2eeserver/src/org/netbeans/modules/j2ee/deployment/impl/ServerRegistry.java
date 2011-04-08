@@ -82,8 +82,6 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
     public static final String URL_ATTR = InstanceProperties.URL_ATTR;
-    public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
-    public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String TARGETNAME_ATTR = "targetName"; //NOI18N
     public static final String SERVER_NAME = "serverName"; //NOI18N
     private static ServerRegistry instance = null;
@@ -390,8 +388,8 @@ public final class ServerRegistry implements java.io.Serializable {
         if (instanceFO == null)
             instanceFO = dir.createData(name);
         instanceFO.setAttribute(URL_ATTR, url);
-        instanceFO.setAttribute(USERNAME_ATTR, username);
-        instanceFO.setAttribute(PASSWORD_ATTR, password);
+        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
+        instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, password);
     }
 
     private synchronized void removeInstanceFromFile(String url) {
@@ -515,8 +513,8 @@ public final class ServerRegistry implements java.io.Serializable {
 
     public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
-        String username = (String) fo.getAttribute(USERNAME_ATTR);
-        String password = (String) fo.getAttribute(PASSWORD_ATTR);
+        String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
+        String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
