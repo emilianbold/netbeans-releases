@@ -1484,7 +1484,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitTypeDisjunction(JCTypeDisjunction that) {
+    public void visitTypeUnion(JCTypeUnion that) {
         boolean first = true;
 
         for (JCExpression c : that.getTypeAlternatives()) {

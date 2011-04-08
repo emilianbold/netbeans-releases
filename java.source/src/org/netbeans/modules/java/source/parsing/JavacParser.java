@@ -360,14 +360,15 @@ public class JavacParser extends Parser {
                 }
                 if (needsFullReparse) {
                     positions.clear();
-                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                    ciImpl = createCurrentInfo (this, file, root, snapshot, null, null);
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
                 break;
             default:
                 init (snapshot, task, false);
                 ciImpl = createCurrentInfo(this, file, root, snapshot,
-                    ciImpl == null ? null : ciImpl.getJavacTask());
+                    ciImpl == null ? null : ciImpl.getJavacTask(),
+                    ciImpl == null ? null : ciImpl.getDiagnosticListener());
         }
         cachedSnapShot = snapshot;
     }
@@ -458,7 +459,7 @@ public class JavacParser extends Parser {
             if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
                 try {
                     nct.setCompilationController(
-                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, true)),
+                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, null, cachedSnapShot, true)),
                         parseId);
                 } catch (IOException ioe) {
                     throw new ParseException ("Javac Failure", ioe);
@@ -615,8 +616,9 @@ public class JavacParser extends Parser {
             final FileObject file,
             final FileObject root,
             final Snapshot snapshot,
-            final JavacTaskImpl javac) throws IOException {
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, javac, snapshot, false);
+            final JavacTaskImpl javac,
+            final DiagnosticListener<JavaFileObject> diagnosticListener) throws IOException {
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, javac, diagnosticListener, snapshot, false);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});
@@ -922,7 +924,7 @@ public class JavacParser extends Parser {
                 final JavaFileObject prevLogged = l.useSource(cu.getSourceFile());
                 JCBlock block;
                 try {
-                    DiagnosticListener dl = ctx.get(DiagnosticListener.class);
+                    DiagnosticListener dl = ci.getDiagnosticListener();
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();

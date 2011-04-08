@@ -85,6 +85,7 @@ public final class CompilationInfoImpl {
     private CompilationUnitTree compilationUnit;
 
     private JavacTaskImpl javacTask;
+    private DiagnosticListener<JavaFileObject> diagnosticListener;
     private final ClasspathInfo cpInfo;
     Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
@@ -111,6 +112,7 @@ public final class CompilationInfoImpl {
                          final FileObject file,
                          final FileObject root,
                          final JavacTaskImpl javacTask,
+                         final DiagnosticListener<JavaFileObject> diagnosticListener,
                          final Snapshot snapshot,
                          final boolean detached) throws IOException {
         assert parser != null;
@@ -123,6 +125,7 @@ public final class CompilationInfoImpl {
         assert file == null || snapshot != null;
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
+        this.diagnosticListener = diagnosticListener;
         this.isClassFile = false;
         this.isDetached = detached;
     }
@@ -244,9 +247,9 @@ public final class CompilationInfoImpl {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
-        Collection<Diagnostic<? extends JavaFileObject>> errors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).getErrors(jfo).values();
-        List<Diagnostic<? extends JavaFileObject>> partialReparseErrors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).partialReparseErrors;
-        List<Diagnostic<? extends JavaFileObject>> affectedErrors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).affectedErrors;
+        Collection<Diagnostic<? extends JavaFileObject>> errors = ((DiagnosticListenerImpl)diagnosticListener).getErrors(jfo).values();
+        List<Diagnostic<? extends JavaFileObject>> partialReparseErrors = ((DiagnosticListenerImpl)diagnosticListener).partialReparseErrors;
+        List<Diagnostic<? extends JavaFileObject>> affectedErrors = ((DiagnosticListenerImpl)diagnosticListener).affectedErrors;
         List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errors.size() + 
                 (partialReparseErrors == null ? 0 : partialReparseErrors.size()) + 
                 (affectedErrors == null ? 0 : affectedErrors.size()));
@@ -367,10 +370,19 @@ public final class CompilationInfoImpl {
      */
     public synchronized JavacTaskImpl getJavacTask() {
         if (javacTask == null) {
+            diagnosticListener = new DiagnosticListenerImpl(this.jfo);
             javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
-                    this.parser, new DiagnosticListenerImpl(this.jfo), null, isDetached);
+                    this.parser, diagnosticListener, null, isDetached);
         }
 	return javacTask;
+    }
+
+    /**
+     * Returns current {@link DiagnosticListener}
+     * @return listener
+     */
+    DiagnosticListener<JavaFileObject> getDiagnosticListener() {
+        return diagnosticListener;
     }
     
     /**

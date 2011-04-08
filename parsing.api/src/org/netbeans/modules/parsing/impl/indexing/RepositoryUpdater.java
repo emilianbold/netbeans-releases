@@ -81,6 +81,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -153,7 +155,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class RepositoryUpdater implements PathRegistryListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
+public final class RepositoryUpdater implements PathRegistryListener, ChangeListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -168,7 +170,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     public void start(boolean force) {
         Work work = null;
-
         synchronized (this) {
             if (state == State.CREATED) {
                 state = State.STARTED;
@@ -179,7 +180,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 EditorRegistry.addPropertyChangeListener(this);
                 IndexerCache.getCifCache().addPropertyChangeListener(this);
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
-
+                VisibilityQuery.getDefault().addChangeListener(this);
                 if (force) {
                     work = new InitialRootsWork(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, false);
                 }
@@ -432,6 +433,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         for (URL rootUrl : includesChanged) {
             scheduleWork(new FileListWork(scannedRoots2Dependencies, rootUrl, false, false, false, sourcesForBinaryRoots.contains(rootUrl)), false);
+        }
+    }
+
+    @Override
+    public void stateChanged (@NonNull final ChangeEvent event) {
+        if (Crawler.listenOnVisibility()) {
+            visibilityChanged.schedule(VISIBILITY_CHANGE_WINDOW);
         }
     }
 
@@ -868,6 +876,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.delay"); //NOI18N
     private static final boolean PERF_TEST = getSystemBoolean("perf.refactoring.test", false); //NOI18N
     private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
     private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
@@ -877,6 +886,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final String PROP_MODIFIED_UNDER_WRITE_LOCK = RepositoryUpdater.class.getName() + "-modified-under-write-lock"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
+    private static final int VISIBILITY_CHANGE_WINDOW = 500;
+
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
     /* test */ static Source unitTestActiveSource;
 
@@ -903,6 +914,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private final FileChangeListener sourceRootsListener = new FCL(useRecursiveListeners ? Boolean.TRUE : null);
     private final FileChangeListener binaryRootsListener = new FCL(Boolean.FALSE);
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
+    private final RequestProcessor.Task visibilityChanged = RP.create(new Runnable() {
+        @Override
+        public void run() {
+            LOGGER.fine ("VisibilityQuery changed, reindexing");    //NOI18N
+            refreshAll(false, false, true);
+        }
+    });
 
     private RepositoryUpdater () {
         LOGGER.log(Level.FINE, "perf.refactoring.test={0}", PERF_TEST); //NOI18N
@@ -3884,9 +3902,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean cancelled = false;
         private List<Long> protectedOwners = new LinkedList<Long>();
         private List<Runnable> followupTasks = null;
-
-        private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.exitProtextedMode.delay"); //NOI18N
-
+        
         private void _run() {
             ProgressHandle progressHandle = null;
             try {

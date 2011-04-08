@@ -111,7 +111,7 @@ public class MultiCatchTest extends GeneratorTestBase {
                 TryTree tt = make.Try(make.Block(Collections.<StatementTree>emptyList(), false),
                                       Collections.singletonList(make.Catch(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)),
                                                                                          "ex",
-                                                                                         make.DisjunctiveType(Arrays.asList(make.Identifier("java.net.MalformedURLException"),
+                                                                                         make.UnionType(Arrays.asList(make.Identifier("java.net.MalformedURLException"),
                                                                                                                             make.Identifier("java.io.IOException"))
                                                                                                           ),
                                                                                          null),
