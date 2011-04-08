@@ -65,6 +65,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -333,10 +334,13 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             boolean showWarning = !cmp
                     && !ProviderUtil.persistenceExists(project);
 
+            boolean isContainerManaged = Util.isContainerManaged(project);
+            boolean canCreate = isContainerManaged || (ConnectionManager.getDefault().getConnections().length>0);//TODO  unhandled case if there is pu creation panel after this one, isn't the case for 7.0
+
             if(initial){
-                createPUCheckbox.setVisible(showWarning);
-                createPUCheckbox.setSelected(showWarning);
-                createPUCheckbox.setEnabled(!puRequired);
+                createPUCheckbox.setVisible(showWarning && canCreate);
+                createPUCheckbox.setSelected(showWarning && canCreate);
+                createPUCheckbox.setEnabled(!puRequired && canCreate);
             }
 
 
