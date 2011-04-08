@@ -46,6 +46,8 @@ package org.netbeans.updater;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -181,7 +183,10 @@ public final class XMLUtil extends Object {
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.6//EN".equals(publicID)) { // NOI18N
                     return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_6.dtd").toString());
                 } else {
-                    return null;
+                    URL u = new URL(systemID);
+                    URLConnection oc = u.openConnection();
+                    oc.setConnectTimeout(5000);
+                    return new InputSource(oc.getInputStream());
                 }
             }
         };
