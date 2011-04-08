@@ -291,6 +291,13 @@ public final class HostInfoFactory {
 
         @Override
         public int[] getAllGroupIDs() {
+            for (int i = 0; i < gids.length; i++) {
+                if(gids[i] == gid) {
+                    int[] copy = new int[gids.length];
+                    System.arraycopy(gids, 0, copy, 0, gids.length);
+                    return copy;
+                }                
+            }
             int[] copy = new int[gids.length+1];
             copy[0] = gid;
             System.arraycopy(gids, 0, copy, 1, gids.length);
