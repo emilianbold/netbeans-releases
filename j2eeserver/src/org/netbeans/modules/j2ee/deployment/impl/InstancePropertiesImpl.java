@@ -119,7 +119,8 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
         try {
             String oldValue = getProperty(propname);
             if (InstanceProperties.PASSWORD_ATTR.equals(propname)) {
-                ServerRegistry.savePassword(url, value);
+                ServerRegistry.savePassword(url, value,
+                        NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_KeyringDefaultDisplayName"));
                 getFO().setAttribute(propname, null);
             } else {
                 getFO().setAttribute(propname, value);

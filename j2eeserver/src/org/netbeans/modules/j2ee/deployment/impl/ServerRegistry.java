@@ -376,7 +376,9 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
+    private synchronized void writeInstanceToFile(String url, String username,
+            String password, String serverName) throws IOException {
+
         if (url == null) {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
@@ -394,7 +396,8 @@ public final class ServerRegistry implements java.io.Serializable {
             instanceFO = dir.createData(name);
         instanceFO.setAttribute(URL_ATTR, url);
         instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
-        savePassword(instanceFO, password);
+        savePassword(instanceFO, password,
+                NbBundle.getMessage(ServerRegistry.class, "MSG_KeyringDisplayName", serverName));
     }
 
     private synchronized void removeInstanceFromFile(String url) {
@@ -454,7 +457,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         instancesMap().put(url, tmp);
                         // try to create a disconnected deployment manager to see
                         // whether the instance is not corrupted - see #46929
-                        writeInstanceToFile(url, username, password);
+                        writeInstanceToFile(url, username, password, server.getDisplayName());
                         tmp.getInstanceProperties().setProperty(
                                 InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                         if (displayName != null) {
@@ -668,14 +671,16 @@ public final class ServerRegistry implements java.io.Serializable {
         return null;
     }    
 
-    static void savePassword(@NonNull String url, @NullAllowed String password) {
+    static void savePassword(@NonNull String url, @NullAllowed String password,
+            String displayName) {
         if (password == null) {
             return;
         }
-        Keyring.save(getPasswordKey(url), password.toCharArray(), "Java EE Server");
+        Keyring.save(getPasswordKey(url), password.toCharArray(), displayName);
     }
     
-    static void savePassword(@NonNull FileObject fo, @NullAllowed String password) throws IOException {
+    static void savePassword(@NonNull FileObject fo, @NullAllowed String password,
+            String displayName) throws IOException {
         if (password == null) {
             return;
         }
@@ -683,7 +688,7 @@ public final class ServerRegistry implements java.io.Serializable {
         if (url == null) {
             return;
         }
-        Keyring.save(getPasswordKey(url), password.toCharArray(), "Java EE Server");
+        Keyring.save(getPasswordKey(url), password.toCharArray(), displayName);
         fo.setAttribute(InstanceProperties.PASSWORD_ATTR, null);
     }    
     
