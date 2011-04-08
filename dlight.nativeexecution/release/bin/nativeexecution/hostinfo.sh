@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PATH=/usr/bin:/bin:$PATH
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
