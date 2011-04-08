@@ -43,29 +43,26 @@
  */
 package org.openide.util;
 
+import java.util.logging.Logger;
 import junit.textui.TestRunner;
 
 
 import org.netbeans.junit.*;
 
-/**
- *
- * @author Jaroslav Tulach
- */
 public class TaskTest extends NbTestCase {
-    /** Creates a new instance of UtilProgressCursorTest */
+    private Logger LOG;
+
     public TaskTest(String testName) {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(new NbTestSuite(TaskTest.class));
+    @Override
+    protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
     }
 
-
-    //
-    // tests
-    //
+    
+    
     public void testPlainTaskWaitsForBeingExecuted () throws Exception {
         R run = new R ();
         Task t = new Task (run);
@@ -97,18 +94,23 @@ public class TaskTest extends NbTestCase {
         assertTrue ("Was successfully finished", Task.EMPTY.waitFinished (0));
     }
 
-    @RandomlyFails
     public void testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll () throws Exception {
-        long time = System.currentTimeMillis ();
-        Task t = new Task (new R ());
-        t.waitFinished (1000);
-        time = System.currentTimeMillis () - time;
+        long time = -1;
         
-        assertFalse ("Still not finished", t.isFinished ());
-        
-        if (time < 900 || time > 1100) {
-            fail ("Something wrong happened the task should wait for 1000ms but it took: " + time);
+        for (int i = 1; i < 100; i++) {
+            time = System.currentTimeMillis ();
+            Task t = new Task (new R ());
+            t.waitFinished (1000);
+            time = System.currentTimeMillis () - time;
+
+            assertFalse ("Still not finished", t.isFinished ());
+            if (time >= 900 && time < 1100) {
+                return;
+            }
+            LOG.info("Round " + i + " took " + time);
         }
+        
+        fail ("Something wrong happened the task should wait for 1000ms but it took: " + time);
     }
     
     public void testWaitOnStrangeTaskThatStartsItsExecutionInOverridenWaitFinishedMethodLikeFolderInstancesDo () throws Exception {
