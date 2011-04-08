@@ -269,8 +269,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
                 throw new IllegalStateException(msg);
             }
-            String username = (String) fo.getAttribute(ServerRegistry.USERNAME_ATTR);
-            String password = (String) fo.getAttribute(ServerRegistry.PASSWORD_ATTR);
+            String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
+            String password = ServerRegistry.readPassword(fo);
             managerTmp = server.getDeploymentManager(url, username, password);
             boolean fire = false;
             synchronized (this) {
