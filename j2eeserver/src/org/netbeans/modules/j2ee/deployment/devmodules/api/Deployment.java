@@ -131,6 +131,28 @@ public final class Deployment {
         return deploy(jmp, debug ? Mode.DEBUG : Mode.RUN, clientModuleUrl, clientUrlPart, forceRedeploy, logger);
     }
 
+    /**
+     * Suspends the deploy on save execution regardless of user selection.
+     *
+     * @param jmp java ee project representation
+     * @since 1.79
+     */
+    public void suspendDeployOnSave(J2eeModuleProvider jmp) {
+        DeployOnSaveManager.getDefault().suspendListening(jmp);
+    }
+    
+    /**
+     * Resumes the deploy on save execution. If it was not preceeded by
+     * {@link #suspendDeployOnSave(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider)}
+     * it is noop.
+     *
+     * @param jmp java ee project representation
+     * @since 1.79
+     */
+    public void resumeDeployOnSave(J2eeModuleProvider jmp) {
+        DeployOnSaveManager.getDefault().resumeListening(jmp);
+    }    
+    
     public String deploy (J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         
         DeploymentTarget deploymentTarget = new DeploymentTarget(jmp, clientModuleUrl);
@@ -167,6 +189,7 @@ public final class Deployment {
             }
 
             // now the server is running
+            DeployOnSaveManager.getDefault().resumeListening(jmp);
             DeploymentHelper.deployServerLibraries(jmp);
             DeploymentHelper.deployDatasources(jmp);
             DeploymentHelper.deployMessageDestinations(jmp);

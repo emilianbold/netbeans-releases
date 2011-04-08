@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -77,6 +78,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Action provider of the Enterprise Application project.
@@ -192,11 +195,22 @@ public class EarActionProvider implements ActionProvider {
                 if (p.keySet().size() == 0) {
                     p = null;
                 }
+                final J2eeApplicationProvider app = EarActionProvider.this.project.getAppModule();
                 try {
-                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
-                }
-                catch (IOException e) {
+                    Deployment.getDefault().suspendDeployOnSave(app);
+                    ActionUtils.runTarget(findBuildXml(), targetNames, p).addTaskListener(new TaskListener() {
+
+                        @Override
+                        public void taskFinished(Task task) {
+                            Deployment.getDefault().resumeDeployOnSave(app);
+                        }
+                    });
+                } catch (IOException e) {
+                    Deployment.getDefault().resumeDeployOnSave(app);
                     Exceptions.printStackTrace(e);
+                } catch (RuntimeException ex) {
+                    Deployment.getDefault().resumeDeployOnSave(app);
+                    throw ex;
                 }
             }
         };
