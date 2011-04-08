@@ -125,8 +125,7 @@ class PluginsPanel extends JPanel implements Constants {
             try {
                 FileObject fo = FileUtil.getConfigFile( "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
                 Action a = (Action)fo.getAttribute( "instanceCreate" ); // NOI18N
-                a.putValue("InitialTab", initialTab); // NOI18N
-                a.actionPerformed( e );
+                a.actionPerformed(new ActionEvent(e.getSource(), 100, initialTab));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
