@@ -54,6 +54,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
@@ -65,6 +66,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -82,8 +87,6 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
     public static final String URL_ATTR = InstanceProperties.URL_ATTR;
-    public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
-    public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String TARGETNAME_ATTR = "targetName"; //NOI18N
     public static final String SERVER_NAME = "serverName"; //NOI18N
     private static ServerRegistry instance = null;
@@ -373,7 +376,9 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
+    private synchronized void writeInstanceToFile(String url, String username,
+            String password, String serverName) throws IOException {
+
         if (url == null) {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
@@ -390,8 +395,9 @@ public final class ServerRegistry implements java.io.Serializable {
         if (instanceFO == null)
             instanceFO = dir.createData(name);
         instanceFO.setAttribute(URL_ATTR, url);
-        instanceFO.setAttribute(USERNAME_ATTR, username);
-        instanceFO.setAttribute(PASSWORD_ATTR, password);
+        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
+        savePassword(instanceFO, password,
+                NbBundle.getMessage(ServerRegistry.class, "MSG_KeyringDisplayName", serverName));
     }
 
     private synchronized void removeInstanceFromFile(String url) {
@@ -400,8 +406,9 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         try {
             instanceFO.delete();
+            Keyring.delete(getPasswordKey(url));
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            LOGGER.log(Level.INFO, null, ioe);
         }
     }
 
@@ -450,7 +457,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         instancesMap().put(url, tmp);
                         // try to create a disconnected deployment manager to see
                         // whether the instance is not corrupted - see #46929
-                        writeInstanceToFile(url, username, password);
+                        writeInstanceToFile(url, username, password, server.getDisplayName());
                         tmp.getInstanceProperties().setProperty(
                                 InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                         if (displayName != null) {
@@ -515,8 +522,8 @@ public final class ServerRegistry implements java.io.Serializable {
 
     public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
-        String username = (String) fo.getAttribute(USERNAME_ATTR);
-        String password = (String) fo.getAttribute(PASSWORD_ATTR);
+        String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
+        String password = readPassword(fo);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
@@ -633,4 +640,61 @@ public final class ServerRegistry implements java.io.Serializable {
     public static Profiler getProfiler() {
         return (Profiler)Lookup.getDefault().lookup(Profiler.class);
     }
+    
+    @CheckForNull
+    static String readPassword(@NonNull String url) {
+        char[] passwordChars = Keyring.read(getPasswordKey(url));
+        if (passwordChars != null) {
+            String password = String.valueOf(passwordChars);
+            Arrays.fill(passwordChars, ' ');
+            return password;
+        }
+        return null;
+    }
+    
+    @CheckForNull
+    static String readPassword(@NonNull FileObject fo) {
+        String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
+        if (password != null) {
+            return password;
+        }
+        String url = (String) fo.getAttribute(InstanceProperties.URL_ATTR);
+        if (url == null) {
+            return null;
+        }
+        char[] passwordChars = Keyring.read(getPasswordKey(url));
+        if (passwordChars != null) {
+            password = String.valueOf(passwordChars);
+            Arrays.fill(passwordChars, ' ');
+            return password;
+        }
+        return null;
+    }    
+
+    static void savePassword(@NonNull String url, @NullAllowed String password,
+            String displayName) {
+        if (password == null) {
+            return;
+        }
+        Keyring.save(getPasswordKey(url), password.toCharArray(), displayName);
+    }
+    
+    static void savePassword(@NonNull FileObject fo, @NullAllowed String password,
+            String displayName) throws IOException {
+        if (password == null) {
+            return;
+        }
+        String url = (String) fo.getAttribute(InstanceProperties.URL_ATTR);
+        if (url == null) {
+            return;
+        }
+        Keyring.save(getPasswordKey(url), password.toCharArray(), displayName);
+        fo.setAttribute(InstanceProperties.PASSWORD_ATTR, null);
+    }    
+    
+    private static String getPasswordKey(String url) {
+        StringBuilder builder = new StringBuilder("j2eeserver:");
+        builder.append(url);
+        return builder.toString();
+    }    
 }
