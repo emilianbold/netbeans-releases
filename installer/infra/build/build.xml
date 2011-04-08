@@ -2163,11 +2163,11 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u16"/>
-	    <param name="jdk.full.version"            value="1.6.0.16.1"/>
-            <param name="bundled.jvm.file.prefix"     value="jre-6u20"/>
-	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
-	</antcall>
+	    <param name="jdk.bundle.files.prefix" value="jdk-6u24"/>
+	    <param name="jdk.full.version" value="1.6.0.24.7"/>
+	    <param name="bundled.jvm.file.prefix" value="jre-6u20"/>
+	    <param name="license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
+	</antcall>	
     </target>
 
     <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
@@ -2178,7 +2178,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk"       version="${jdk.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+	    <!--
             <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
+	    -->
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
     </target>
