@@ -50,6 +50,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
@@ -462,6 +463,24 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
+    protected static void printFile(File file, String prefix, PrintStream out) throws Exception {
+        BufferedReader rdr = new BufferedReader(new FileReader(file));
+        try {
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                if (prefix == null) {
+                    out.printf("%s\n", line);
+                } else {
+                    out.printf("%s: %s\n", prefix, line);
+                }
+            }
+        } finally {
+            if (rdr != null) {
+                rdr.close();                
+            }
+        }
+    }
+    
     /** A convenience wrapper for Thread.sleep */
     protected static void sleep(int millis) {
         try {

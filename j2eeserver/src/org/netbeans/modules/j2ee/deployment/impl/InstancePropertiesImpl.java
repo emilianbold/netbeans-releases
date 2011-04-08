@@ -104,7 +104,11 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
     
     public String getProperty(String propname) throws IllegalStateException {
         Object propValue = getFO().getAttribute(propname);
-        return propValue == null ? null : propValue.toString();
+        String propString = propValue == null ? null : propValue.toString();
+        if (InstanceProperties.PASSWORD_ATTR.equals(propname) && propValue == null) {
+            propString = ServerRegistry.readPassword(url);
+        }
+        return propString;
     }
 
     public java.util.Enumeration propertyNames() throws IllegalStateException {
@@ -114,7 +118,13 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
     public void setProperty(String propname, String value) throws IllegalStateException {
         try {
             String oldValue = getProperty(propname);
-            getFO().setAttribute(propname, value);
+            if (InstanceProperties.PASSWORD_ATTR.equals(propname)) {
+                ServerRegistry.savePassword(url, value,
+                        NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_KeyringDefaultDisplayName"));
+                getFO().setAttribute(propname, null);
+            } else {
+                getFO().setAttribute(propname, value);
+            }
             firePropertyChange(new PropertyChangeEvent(this, propname, oldValue, value));
         } catch (IOException ioe) {
             String message = NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_InstanceNotExists", url);
