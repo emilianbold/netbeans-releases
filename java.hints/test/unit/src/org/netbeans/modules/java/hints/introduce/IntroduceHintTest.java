@@ -972,20 +972,52 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
-//    public void testIntroduceMethod114371() throws Exception {
-//        performFixTest("package test;\n" +
-//                       "public class Test {\n" +
-//                       "    public static void test(boolean arg) {\n" +
-//                       "        int c = 0;\n" +
-//                       "        \n" +
-//                       "        |if (arg) c = 3;|\n" +
-//                       "        \n" +
-//                       "        System.err.println(c);\n" +
-//                       "    }\n" +
-//                       "}",
-//                       "package test; public class Test { public static void test(boolean arg) { int c = 0; c = name(arg); System.err.println(c); } private static int name(boolean arg, int c) { if (arg) { c = 3; } return c; } }",
-//                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
-//    }
+    public void testIntroduceMethod114371() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test(boolean arg) {\n" +
+                       "        int c = 0;\n" +
+                       "        \n" +
+                       "        |if (arg) c = 3;|\n" +
+                       "        \n" +
+                       "        System.err.println(c);\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void test(boolean arg) { int c = 0; c = name(arg, c); System.err.println(c); } private static int name(boolean arg, int c) { if (arg) c = 3; return c; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+
+    public void testIntroduceMethod179258() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test() {\n" +
+                       "        String test = null;\n" +
+                       "        |test = \"foo\";\n" +
+                       "        if (test == null) {\n" +
+                       "            System.err.println(1);\n" +
+                       "        } else {\n" +
+                       "            System.err.println(2);\n" +
+                       "        }|\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void test() {\n" +
+                        "        String test = null;\n" +
+                        "        name();\n" +
+                        "    }\n" +
+                        "    private static void name() {\n" +
+                        "        String test;\n" +
+                        "        test = \"foo\";\n" +
+                        "        if (test == null) {\n" +
+                        "            System.err.println(1);\n" +
+                        "        } else {\n" +
+                        "            System.err.println(2);\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
     
     public void testIntroduceMethod116199() throws Exception {
         performFixTest("package test;\n" +
