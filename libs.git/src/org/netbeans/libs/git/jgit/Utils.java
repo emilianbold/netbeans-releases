@@ -77,7 +77,7 @@ public final class Utils {
     private Utils () {
     }
 
-    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
+    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException, IllegalArgumentException {
          return new FileRepositoryBuilder().setGitDir(getMetadataFolder(workDir)).readEnvironment().findGitDir().build();
     }
 
