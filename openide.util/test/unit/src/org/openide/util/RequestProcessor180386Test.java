@@ -879,6 +879,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertEquals (5, c.runCount);
     }
 
+    @RandomlyFails // http://hudson4qe.czech.sun.com/job/platform-util/165/jdk=JDK%201.6,label=Solaris11-slave1/ expected:<5> but was:<6>
     public void testScheduleRepeatingSanityFixedDelay() throws Exception {
         final CountDownLatch latch = new CountDownLatch(5);
         class C implements Runnable {
