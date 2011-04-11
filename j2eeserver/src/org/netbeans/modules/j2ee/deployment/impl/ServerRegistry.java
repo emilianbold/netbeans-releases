@@ -759,7 +759,6 @@ public final class ServerRegistry implements java.io.Serializable {
                             public void run() {
                                 try {
                                     result.get();
-                                    Thread.sleep(5000);
                                 } catch (InterruptedException ex) {
                                     Thread.currentThread().interrupt();
                                 } catch (ExecutionException ex) {
