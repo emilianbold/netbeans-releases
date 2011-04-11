@@ -637,9 +637,14 @@ public final class DDProvider {
      * @return Application object - root of the deployment descriptor bean graph
      */
     public Resources getResourcesRoot(InputSource is) throws IOException, SAXException {
+        ResourcesProxy proxy = null;
         DDParse parse = new DDParse(is);
         Resources appRoot = createResources(parse);
-        ResourcesProxy proxy = new ResourcesProxy(appRoot, appRoot.getVersion().toString());
+        if (appRoot == null) {
+            proxy = new ResourcesProxy(appRoot);
+        } else {
+            proxy = new ResourcesProxy(appRoot, appRoot.getVersion().toString());
+        }
         setErrorStatus(proxy, parse);
         return proxy;
     }

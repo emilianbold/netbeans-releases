@@ -41,31 +41,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.util;
 
-import junit.textui.TestRunner;
-
-
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class TaskTest extends NbTestCase {
-    /** Creates a new instance of UtilProgressCursorTest */
     public TaskTest(String testName) {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(new NbTestSuite(TaskTest.class));
-    }
-
-
-    //
-    // tests
-    //
     public void testPlainTaskWaitsForBeingExecuted () throws Exception {
         R run = new R ();
         Task t = new Task (run);

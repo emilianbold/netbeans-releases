@@ -12,7 +12,7 @@ src/conf/application-client.xml
 src/conf/glassfish-application-client.xml
 src/conf/MANIFEST.MF
 src/java/
-src/java/appclient4/
-src/java/appclient4/Main.java
+src/java/appclient14/
+src/java/appclient14/Main.java
 test/
 build.xml

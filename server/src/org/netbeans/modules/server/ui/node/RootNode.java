@@ -257,7 +257,13 @@ public final class RootNode extends AbstractNode {
             assert EventQueue.isDispatchThread();
             actionsPropertiesDone = true;
             enableActionsOnExpand();
-            ServerRegistry.getInstance().getProviders();
+            REFRESH_PROCESSOR.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    ServerRegistry.getInstance().getProviders();
+                }
+            });
         }
     } // end of ChildFactory
 

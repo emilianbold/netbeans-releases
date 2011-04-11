@@ -344,12 +344,11 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 return;
             }
 
-            if (serverInstance.getCustomizer() != null) {
-                Component component = serverInstance.getCustomizer();
-                if (component != null) {
-                    addComponent(clientPanel, component);
-                }
+            Component component = serverInstance.getCustomizer();
+            if (component != null) {
+                addComponent(clientPanel, component);
             }
+
             // handle the correct window size
             int height = getHeight();
             int width = getWidth();
