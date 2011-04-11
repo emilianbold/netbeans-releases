@@ -1119,7 +1119,10 @@ public class Utilities {
         }
         public static Visibility forTree(Tree t) {
             switch (t.getKind()) {
-                case CLASS: return forModifiers(((ClassTree) t).getModifiers());
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE: return forModifiers(((ClassTree) t).getModifiers());
                 case VARIABLE: return forModifiers(((VariableTree) t).getModifiers());
                 case METHOD: return forModifiers(((MethodTree) t).getModifiers());
                 default: return null;
