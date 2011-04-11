@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git.jgit.factory;
 
-package org.netbeans.libs.git.jgit;
-
-import org.netbeans.libs.git.GitException;
 import java.io.File;
 import java.io.IOException;
-import org.eclipse.jgit.JGitText;
-import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.JGitClientFactory;
 
 /**
  *
  * @author ondra
  */
-public final class JGitRepository {
-    private final File location;
-    private final Repository repository;
+public class CreateClientTest extends AbstractGitTestCase {
 
-    public JGitRepository (File location) throws GitException {
-        this.location = location;
-        this.repository = getRepository(location);
+    private File workDir;
+
+    public CreateClientTest (String name) throws IOException {
+        super(name);
     }
-
-    private Repository getRepository (File workDir) throws GitException {
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        workDir = getWorkingDirectory();
+    }
+    
+    public void testCorruptedConfigNoEndingLine () throws Exception {
+        File gitFolder = new File(workDir, ".git");
+        File newLocation = new File(workDir.getParentFile(), "newFolder");
+        newLocation.mkdirs();
+        gitFolder.renameTo(new File(newLocation, ".git"));
+        gitFolder = new File(newLocation, ".git");
+        String content = read(new File(gitFolder, "config"));
+        write(new File(gitFolder, "config"), content + "[remote \"origin\"]\n	puttykeyfile = ");
         try {
-            return Utils.getRepositoryForWorkingDir(workDir);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().matches(JGitText.get().repositoryConfigFileInvalid.replaceAll("\\{[0-9]?}", "\\(\\.\\*)"))) { //NOI18N
-                throw new GitException("It seems the config file for the repository at [" + workDir.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex); //NOI18N
-            } else {
-                throw new GitException(ex);
-            }
+            JGitClientFactory.getInstance(null).getClient(newLocation);
+            fail("Should fail");
+        } catch (GitException ex) {
+            assertEquals("It seems the config file for the repository at [" + newLocation.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex.getMessage());
         }
+        write(new File(gitFolder, "config"), read(new File(gitFolder, "config")) + "\n");
     }
-
-    Repository getRepository () {
-        return repository;
-    }
+    
 }
