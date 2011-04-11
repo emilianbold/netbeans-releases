@@ -52,7 +52,6 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -168,10 +167,7 @@ public class DisInfoPanel extends JPanel {
         addressText.removeItem(selectedItem);
         addressText.addItem(selectedItem);
         
-        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-        if (disProvider != null) {
-            disProvider.showAddress(selectedItem);
-        }
+        DisassemblyUtils.showAddress(selectedItem);
     }
     
     public static void setLocation(Location location) {
@@ -194,18 +190,15 @@ public class DisInfoPanel extends JPanel {
     public static final class Factory implements SideBarFactory {
         @Override
         public JComponent createSideBar(JTextComponent target) {
-            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-            if (disProvider != null) {
-                try {
-                    if (disProvider.isDis(NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile().getURL().toString())) {
-                        if (INSTANCE == null) {
-                            INSTANCE = new DisInfoPanel(target);
-                        }
-                        return INSTANCE;
+            try {
+                if (Disassembly.isDisasm(NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile().getURL().toString())) {
+                    if (INSTANCE == null) {
+                        INSTANCE = new DisInfoPanel(target);
                     }
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
+                    return INSTANCE;
                 }
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
             return null;
         }
