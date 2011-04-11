@@ -111,21 +111,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     
     private DocumentEvent incomingEvent;
     
-    private final RequestProcessor.Task rebuildRegionTask = rebuildRegionRP.create(new Runnable() {
-        private boolean insideDocumentRender = false;
-        public @Override void run() {
-            if (insideDocumentRender) {
-                documentView.syncViewsRebuild();
-            } else {
-                insideDocumentRender = true;
-                try {
-                    documentView.getDocument().render(this);
-                } finally {
-                    insideDocumentRender = false;
-                }
-            }
-        }
-    });
+    private final RequestProcessor.Task rebuildRegionTask = rebuildRegionRP.create(new RebuildViews());
 
     public ViewUpdates(DocumentView documentView) {
         this.documentView = documentView;
@@ -516,6 +502,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         synchronized (rebuildRegionLock) {
             documentView.checkDocumentLockedIfLogging();
             boolean postRebuildTask = (rebuildRegion == null);
+            boolean directRebuild = (evt.getPriority() > 0);
             List<EditorViewFactory.Change> changes = evt.getChanges();
             for (EditorViewFactory.Change change : changes) {
                 int startOffset = change.getStartOffset();
@@ -526,8 +513,12 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                     LOG.fine("ViewUpdates.viewFactoryChanged: <" + startOffset + "," + endOffset + ">\n"); // NOI18N
                 }
             }
-            if (postRebuildTask) {
-                rebuildRegionTask.schedule(REBUILD_DELAY);
+            if (directRebuild) {
+                new RebuildViews().run();
+            } else {
+                if (postRebuildTask) {
+                    rebuildRegionTask.schedule(REBUILD_DELAY);
+                }
             }
         }
     }
@@ -638,4 +629,22 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
 
     }
 
+    private final class RebuildViews implements Runnable {
+        
+        private boolean insideDocumentRender = false;
+        
+        public @Override void run() {
+            if (insideDocumentRender) {
+                documentView.syncViewsRebuild();
+            } else {
+                insideDocumentRender = true;
+                try {
+                    documentView.getDocument().render(this);
+                } finally {
+                    insideDocumentRender = false;
+                }
+            }
+        }
+
+    }
 }
