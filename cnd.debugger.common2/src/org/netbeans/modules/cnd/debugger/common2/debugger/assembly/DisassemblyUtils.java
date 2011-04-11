@@ -40,14 +40,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb2;
+package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 
@@ -55,8 +52,11 @@ import org.openide.util.Exceptions;
  *
  * @author Egor Ushakov
  */
-public class GdbDisassemblyService implements DisassemblyService {
-    public int getAddressLine(String address) {
+public class DisassemblyUtils {
+    private DisassemblyUtils() {
+    }
+    
+    private static int getAddressLine(String address) {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return -1;
@@ -64,18 +64,7 @@ public class GdbDisassemblyService implements DisassemblyService {
         return dis.getAddressLine(address);
     }
 
-//    public int getBreakpointLine(AddressBreakpoint b) {
-//        int res = getAddressLine(b.getAddress());
-//        if (res < 1) {
-//            BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
-//            if (bptImpl != null) {
-//                return Disassembly.getCurrent().getAddressLine(bptImpl.getAddress());
-//            }
-//        }
-//        return res;
-//    }
-
-    public String getLineAddress(int lineNo) {
+    public static String getLineAddress(int lineNo) {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return null;
@@ -83,25 +72,12 @@ public class GdbDisassemblyService implements DisassemblyService {
         return dis.getLineAddress(lineNo);
     }
 
-    public boolean isDis(String url) {
-        return Disassembly.isDisasm(url);
-    }
-    
-    public boolean isInDis() {
-        return Disassembly.isInDisasm();
-    }
-
-//    public boolean showBreakpoint(AddressBreakpoint b) {
-//        return showLine(getBreakpointLine(b));
-//    }
-
-    private boolean showLine(int line) {
+    private static boolean showLine(int line) {
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
                 try {
-                    DataObject dobj = DataObject.find(fo);
-                    Line disLine = EditorBridge.lineNumberToLine(dobj, line);
+                    Line disLine = Disassembly.getLine(line);
                     EditorBridge.showInEditor(disLine);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -118,11 +94,11 @@ public class GdbDisassemblyService implements DisassemblyService {
         return false;
     }
 
-    public boolean showAddress(String address) {
+    public static boolean showAddress(String address) {
         return showLine(getAddressLine(address));
     }
 
-    public void movePC(long address, DebuggerAnnotation pcMarker, boolean andShow) {
+    public static void movePC(long address, DebuggerAnnotation pcMarker, boolean andShow) {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return;
@@ -132,8 +108,7 @@ public class GdbDisassemblyService implements DisassemblyService {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
                 try {
-                    DataObject dobj = DataObject.find(fo);
-                    Line disLine = EditorBridge.lineNumberToLine(dobj, line);
+                    Line disLine = Disassembly.getLine(line);
                     if (andShow) {
                         EditorBridge.showInEditor(disLine);
                     }
@@ -143,24 +118,5 @@ public class GdbDisassemblyService implements DisassemblyService {
                 }
             }
         }
-    }
-
-    public Annotation annotateAddress(String address, String annotationType) {
-        Disassembly dis = Disassembly.getCurrent();
-        if (dis == null) {
-            return null;
-        }
-        int line = dis.getAddressLine(address);
-        if (line != -1) {
-            FileObject fo = Disassembly.getFileObject();
-            if (fo != null) {
-//                try {
-//                    return EditorContextBridge.getContext().annotate(DataObject.find(fo), line, annotationType, null);
-//                } catch (DataObjectNotFoundException dex) {
-//                    // do nothing
-//                }
-            }
-        }
-        return null;
     }
 }
