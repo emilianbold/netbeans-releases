@@ -40,17 +40,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analizer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -58,107 +52,79 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
+
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-public class RestrictedTypedFilter extends Filter<TypeElement> {
-
-    @Override
-    void filter( Set<TypeElement> elements ){
-        Set<TypeElement> allImplementors = new HashSet<TypeElement>( elements );
-        for (Iterator<TypeElement> iterator = allImplementors.iterator() ; 
-            iterator.hasNext() ; ) 
-        {
-            TypeElement typeElement = iterator.next();
-            Collection<TypeMirror> restrictedTypes = getRestrictedTypes(typeElement,
-                    getImplementation());
-            if ( restrictedTypes == null ){
-                continue;
-            }
-            boolean hasBeanType = false;
-            TypeElement element = getElement();
-            TypeMirror type = element.asType();
-            Types types= getImplementation().getHelper().getCompilationController().
-                getTypes();
-            for (TypeMirror restrictedType : restrictedTypes) {
-                if ( types.isSameType( types.erasure( type), 
-                        types.erasure( restrictedType)))
-                {
-                    hasBeanType = true;
-                    break;
-                }
-            }
-            if ( !hasBeanType ){
-                iterator.remove();
-            }
-        }
-    }
+public abstract class AbstractTypedAnalyzer {
     
-    static Collection<TypeMirror> getRestrictedTypes( Element element , 
-            WebBeansModelImplementation implementation )
+    private static final String TYPED = "javax.enterprise.inject.Typed";    // NOI18N
+    
+    public void analyze( Element element, TypeMirror elementType, 
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        if ( element == null ){
-            return null;
+        TypeElement typed = compInfo.getElements().getTypeElement(TYPED);
+        if ( typed == null ){
+            return;
         }
-        List<? extends AnnotationMirror> annotationMirrors = 
-                element.getAnnotationMirrors();
-        Map<String, ? extends AnnotationMirror> annotations = 
-            implementation.getHelper().getAnnotationsByType( annotationMirrors );
-        AnnotationMirror typedAnnotation = annotations.get( 
-                WebBeansModelProviderImpl.TYPED_RESTRICTION );
-        if ( typedAnnotation == null ){
-            return null;
+        List<? extends AnnotationMirror> annotations = 
+            compInfo.getElements().getAllAnnotationMirrors( element );
+        AnnotationMirror typedMirror = null;
+        for (AnnotationMirror annotationMirror : annotations) {
+            Element annotationElement = compInfo.getTypes().asElement( 
+                    annotationMirror.getAnnotationType());
+            if ( typed.equals( annotationElement )){
+                typedMirror = annotationMirror;
+                break;
+            }
         }
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = 
-                typedAnnotation.getElementValues();
-        if ( elementValues == null ){
-            return Collections.emptyList();
+        if ( typedMirror == null ){
+            return;
         }
-        AnnotationValue restrictedTypes  = null;
-        for( Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: 
-            elementValues.entrySet())
+        Map<? extends ExecutableElement, ? extends AnnotationValue> values = 
+            typedMirror.getElementValues();
+        AnnotationValue restrictedTypes = null;
+        for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : 
+            values.entrySet() ) 
         {
             ExecutableElement key = entry.getKey();
             AnnotationValue value = entry.getValue();
-            if ( key.getSimpleName().contentEquals("value")){  // NOI18N
+            if ( "value".contentEquals(key.getSimpleName())){       // NOI18N
                 restrictedTypes = value;
                 break;
             }
         }
         if ( restrictedTypes == null ){
-            return Collections.emptyList();
+            return;
         }
         Object value = restrictedTypes.getValue();
-        Collection<TypeMirror> result = new LinkedList<TypeMirror>();
         if ( value instanceof List<?> ){
             for( Object type : (List<?>)value){
                 AnnotationValue annotationValue = (AnnotationValue)type;
                 type = annotationValue.getValue();
                 if (type instanceof TypeMirror){
-                    result.add((TypeMirror) type );
+                    boolean isSubtype = hasBeanType(element, elementType, 
+                            (TypeMirror)type, compInfo);
+                    if ( !isSubtype){
+                        addError(element, compInfo, descriptions);
+                    }
                 }
             }
         }
-        return result;
     }
     
-    void init( TypeElement element, WebBeansModelImplementation modelImpl ) {
-        myImpl = modelImpl;
-        myElement = element;
+    protected boolean hasBeanType( Element subject, TypeMirror elementType, 
+            TypeMirror requiredBeanType,CompilationInfo compInfo )
+    {
+        return compInfo.getTypes().isSubtype(elementType, requiredBeanType);
     }
     
-    private WebBeansModelImplementation getImplementation() {
-        return myImpl;
-    }
+    protected abstract void addError ( Element element , 
+            CompilationInfo compInfo , List<ErrorDescription> descriptions );
     
-    private TypeElement getElement(){
-        return myElement;
-    }
-
-    private TypeElement myElement;
-    private WebBeansModelImplementation myImpl;
 }
