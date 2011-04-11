@@ -509,7 +509,7 @@ public class Flow {
                 if (stt != null) {
                     into.put(e.getKey(), stt.merge(e.getValue()));
                 } else {
-                    into.put(e.getKey(), stt);
+                    into.put(e.getKey(), e.getValue());
                 }
             }
 
