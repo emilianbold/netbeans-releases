@@ -155,6 +155,16 @@ public class ClassEncapsulationTest extends TestBase {
                             "}");
     }
 
+    public void test197590() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private enum A {\n"+
+                            "        E\n"+
+                            "    }\n"+
+                            "}");
+    }
+
     public void testEnumIgnore() throws Exception {
         Preferences p = RulesManager.getPreferences(ClassEncapsulation.class.getName() + ".publicCls", HintsSettings.getCurrentProfileId());
 
