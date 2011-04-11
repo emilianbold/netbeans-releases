@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -180,6 +180,7 @@ public interface NativeDebugger {
     // support for disassemby stuff
     //
     public void requestDisassembly();
+    Disassembly getDisassembly();
 
     public void InstBptEnabled(long addr, NativeBreakpoint bpt);
     public void InstBptDisabled(long addr, NativeBreakpoint bpt);
@@ -190,7 +191,7 @@ public interface NativeDebugger {
     public void stepInst();
     public void runToCursorInst(String addr);
 
-    public void registerDisassemblerWindow(DisassemblerWindow w);
+    public void registerDisassembly(Disassembly dis);
     public void setCurrentDisLine(Line l);
     public Line getCurrentDisLine();
     public void registerRegistersWindow(RegistersWindow w);
