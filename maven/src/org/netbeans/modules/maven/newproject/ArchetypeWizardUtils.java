@@ -123,57 +123,57 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
+        arch.setVersion("1.4"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("webapp-jee5"); //NOI18N
         WEB_APP_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("webapp-j2ee14"); //NOI18N
         WEB_APP_ARCHS[2] = arch;
 
         EJB_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
+        arch.setVersion("1.4"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ejb-jee5"); //NOI18N
         EJB_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ejb-j2ee14"); //NOI18N
         EJB_ARCHS[2] = arch;
 
         EAR_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.3"); //NOI18N
+        arch.setVersion("1.4"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.2"); //NOI18N
+        arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
         EAR_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.2"); //NOI18N
+        arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
         EAR_ARCHS[2] = arch;
 
