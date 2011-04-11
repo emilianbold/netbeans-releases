@@ -42,40 +42,25 @@
 
 package org.netbeans.libs.git.jgit;
 
-import org.netbeans.libs.git.GitException;
-import java.io.File;
-import java.io.IOException;
-import org.eclipse.jgit.JGitText;
-import org.eclipse.jgit.lib.Repository;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.libs.git.jgit.factory.CreateClientTest;
 
 /**
  *
  * @author ondra
  */
-public final class JGitRepository {
-    private final File location;
-    private final Repository repository;
+public class ClientFactoryTestSuite extends NbTestSuite {
 
-    public JGitRepository (File location) throws GitException {
-        this.location = location;
-        this.repository = getRepository(location);
+    public ClientFactoryTestSuite (String testName) {
+        super(testName);
     }
 
-    private Repository getRepository (File workDir) throws GitException {
-        try {
-            return Utils.getRepositoryForWorkingDir(workDir);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().matches(JGitText.get().repositoryConfigFileInvalid.replaceAll("\\{[0-9]?}", "\\(\\.\\*)"))) { //NOI18N
-                throw new GitException("It seems the config file for the repository at [" + workDir.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex); //NOI18N
-            } else {
-                throw new GitException(ex);
-            }
-        }
+    public static Test suite() throws Exception {
+        TestSuite suite = new TestSuite();
+        suite.addTestSuite(CreateClientTest.class);
+        return suite;
     }
 
-    Repository getRepository () {
-        return repository;
-    }
 }
