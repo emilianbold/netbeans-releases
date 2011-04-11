@@ -107,7 +107,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExp
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 
@@ -138,6 +137,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 
 // for rebuildOnNextDebug
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RTCWindowAction;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcTopComponent;
@@ -162,8 +162,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
+    private final DbxDisassembly disassembly;
     private boolean update_dis = true;
-
+    
     /**
      * The last run/step/next/step out command sent to dbx.
      * This is so that we can do something reasonable during fork.
@@ -207,6 +208,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         profileBridge = new DbxDebuggerSettingsBridge(this);
         handlerExpert = new DbxHandlerExpert(this);
+        disassembly = new DbxDisassembly(this, breakpointModel());
     }
 
     // interface NativeDebugger
@@ -242,11 +244,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
             super.activate(redundant);
             
-            disassemblerWindow().setDebugger(this);
-            disassemblerWindow().getView().setModelController(disModel(),
-							  disController(),
-							  disStateModel(),
-							  breakpointModel());
+//            disassemblerWindow().setDebugger(this);
+//            disassemblerWindow().getView().setModelController(disModel(),
+//							  disController(),
+//							  disStateModel(),
+//							  breakpointModel());
 
 	    rtcView.switchTo();
 
@@ -2321,6 +2323,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
 
         stackUpdater.treeChanged();	// causes a pull
+        disassembly.stateUpdated();
     }
 
     public Frame[] getStack() {
@@ -3363,11 +3366,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     @Override
-    public void registerDisassemblerWindow(DisassemblerWindow w) {
+    public void registerDisassembly(Disassembly dis) {
 
-	assert w == null || w == disassemblerWindow();
+	//assert dis == null || dis == disassemblerWindow();
 
-	boolean makeAsmVisible = (w != null);
+	boolean makeAsmVisible = (dis != null);
 	if (makeAsmVisible == isAsmVisible())
 	    return;
 
@@ -3377,13 +3380,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (!isConnected())
             return;
 
-	if (! viaShowLocation) {
-	    // I.e. user clicked on Disassembly tab or some other tab
-	    if (makeAsmVisible)
-		requestDisassembly();
-	    else
-		requestSource(false);
-	}
+//	if (! viaShowLocation) {
+//	    // I.e. user clicked on Disassembly tab or some other tab
+//	    if (makeAsmVisible)
+//		requestDisassembly();
+//	    else
+//		requestSource(false);
+//	}
 
         if (makeAsmVisible) {
 	    setAsmVisible(true);
@@ -3400,10 +3403,14 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     // implement NativeDebuggerImpl
-    protected Controller disController() {
+    public Controller disController() {
 	return disController;
     }
-
+    
+    public DbxDisassembly getDisassembly() {
+        return disassembly;
+    }
+    
     private void requestDisFromDbx(String cmd, String start) {
         if (postedKill || postedKillEngine || dbx == null) {
             return;
@@ -3418,10 +3425,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public void setDis(String dis_codes) {
         disModel.parseData(dis_codes);
+        disassembly.update(disModel);
 	// CR 6582172
-        if (update_dis) {
-            disStateModel().updateStateModel(visitedLocation, false);
-        }
+//        if (update_dis) {
+//            disStateModel().updateStateModel(visitedLocation, false);
+//        }
     }
 
     @Override
@@ -3861,52 +3869,54 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	 */
 
         public void parseData(String mem) {
-            int i, j, k, l, cp, memaddrlen;
-            String s, memaddr, memvalue;
-
             if (mem == null) {
                 return;
             }
             clear();
-            l = 1;
-            for (i = 0; i < mem.length(); i++, l++) {
-                k = mem.indexOf('\n', i);
+            for (int i = 0; i < mem.length(); i++) {
+                int k = mem.indexOf('\n', i);
                 if (k < i) {
                     break;
                 }
-                s = mem.substring(i, k + 1);
+                String s = mem.substring(i, k + 1);
                 i = k;
-                memaddr = null;
-                memvalue = null;
-                memaddrlen = 0;
-                for (j = 0, k = 0; j < s.length(); j++) {
+                
+                String memaddr = null;
+                String memvalue = null;
+                for (int j = 0, m = 0; j < s.length(); j++) {
                     if (s.charAt(j) != ' ') {
-                        if (k == 0) {
-                            k = s.indexOf(' ', j);
-                            if (k < j) {
+                        if (m == 0) {
+                            m = s.indexOf(' ', j);
+                            if (m < j) {
                                 break;
                             }
-                            memaddrlen = k - j;
-                            memaddr = s.substring(j, k);
-                            j = k;
+                            memaddr = s.substring(j, m);
+                            j = m;
                             if (!memaddr.startsWith("0x")) { // NOI18N
-                                k = s.indexOf('\n', j);
-                                if (k < j) {
+                                int lineend = s.indexOf('\n', j);
+                                if (lineend < j) {
                                     memvalue = "";
                                 } else {
-                                    memvalue = s.substring(j, k);
+                                    memvalue = s.substring(j, lineend);
                                 }
                                 break;
                             }
                         } else {
-                            k = s.indexOf('\n', j);
-                            if (k < j) {
+                            m = s.indexOf('\n', j);
+                            if (m < j) {
                                 break;
                             }
-                            memvalue = s.substring(j, k);
+                            memvalue = s.substring(j, m);
                             break;
                         }
                     }
+                }
+                // check for ':' at the end
+                if (memaddr != null && memaddr.endsWith(":")) { //NOI18N
+                    memaddr = memaddr.substring(0, memaddr.length()-1);
+                    memvalue = ":  " + memvalue;
+                } else {
+                    memvalue = "  " + memvalue;
                 }
                 add(memaddr, memvalue);
             }
