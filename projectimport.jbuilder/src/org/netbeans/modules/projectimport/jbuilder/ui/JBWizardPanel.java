@@ -187,7 +187,11 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         }
         File projectFile = (isEmpty(prjFileTextField)) ? null : getFile(prjFileTextField);
         boolean unresolvedReferences = Utils.checkNotFoundUserLibraries(allPrjDefs);
-        if (projectFile != null && ProjectBuilder.isProjectFile(projectFile)) {
+        if (projectFile == null) {
+            projectFileValid = false;
+            enableAdditionalComponents(false);
+            errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_ChooseProject");
+        } else if (ProjectBuilder.isProjectFile(projectFile)) {
             if (!projectFileValid) {
                 projectFileValid = true;
                 parseProjectFile(projectFile);
@@ -214,7 +218,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         } else {
             projectFileValid = false;
             enableAdditionalComponents(false);
-            errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularProject",prjFileTextField.getText()); // NOI18N;
+            errorMessage = NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularProject", projectFile);
         }
         
         if (errorMessage == null) {
@@ -288,6 +292,8 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
                                     fieldUpdate();
                                 }
                             });
+                        } else {
+                            setError(NbBundle.getMessage(JBWizardPanel.class, "MSG_NotRegularProject", projectFile));
                         }
                     }
                 });
