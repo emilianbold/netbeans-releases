@@ -44,8 +44,10 @@
 
 package org.netbeans.api.java.source;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,8 +71,10 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -408,6 +412,72 @@ public class SourceUtilsTest extends NbTestCase {
         handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, new String[] {"Foo"});
         result = SourceUtils.getFile(handle,cpInfo);
         assertNotNull(result);
+    }
+
+    public void testGetMainClasses() throws Exception {
+        final File wd = getWorkDir();
+        final FileObject src = FileUtil.createFolder(new File (wd,"src"));
+        final FileObject userDir = FileUtil.createFolder(new File (wd,"ud"));
+        CacheFolder.setCacheFolder(userDir);
+        final FileObject emptyClass = createFile(src, "C1.java","class C1 {}");
+        assertEquals(0, SourceUtils.getMainClasses(emptyClass).size());
+        final FileObject classWithMethod = createFile(src, "C2.java","class C2 { public static void test (String... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod).size());
+        final FileObject classWithMethod2 = createFile(src, "C3.java","class C3 { static void main (String... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod2).size());
+        final FileObject classWithMethod3 = createFile(src, "C4.java","class C4 { public void main (String... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod3).size());
+        final FileObject classWithMethod4 = createFile(src, "C5.java","class C5 { public static void main (StringBuilder... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod4).size());
+        final FileObject simpleMain = createFile(src, "M1.java","class M1 { public static void main (String... args){} }");
+        assertMain(new String[] {"M1"}, SourceUtils.getMainClasses(simpleMain));
+        final FileObject simpleMain2 = createFile(src, "M2.java","public class M2 { public static void main (String... args){} }");
+        assertMain(new String[] {"M2"}, SourceUtils.getMainClasses(simpleMain2));
+        final FileObject innerMain = createFile(src, "M3.java","class M3 { public static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M3.Inner"}, SourceUtils.getMainClasses(innerMain));
+        final FileObject innerMain2 = createFile(src, "M4.java","class M4 { protected static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M4.Inner"}, SourceUtils.getMainClasses(innerMain2));
+        final FileObject innerMain3 = createFile(src, "M5.java","class M5 { static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M5.Inner"}, SourceUtils.getMainClasses(innerMain3));
+        final FileObject innerMain4 = createFile(src, "M6.java","class M6 { private static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M6.Inner"}, SourceUtils.getMainClasses(innerMain4));
+        final FileObject innerMain5 = createFile(src, "M7.java","class M7 { class Inner { public static void main (String... args){} } }");
+        assertEquals(0, SourceUtils.getMainClasses(innerMain5).size());
+        final FileObject innerMain6 = createFile(src, "M8.java","class M8 { class Inner { static class InnerInner {public static void main (String... args){} } } }");
+        assertEquals(0, SourceUtils.getMainClasses(innerMain6).size());
+        final FileObject innerMain7 = createFile(src, "M9.java","class M9 { static class Inner { static class InnerInner {public static void main (String... args){} } } }");
+        assertMain(new String[] {"M9.Inner.InnerInner"}, SourceUtils.getMainClasses(innerMain7));
+        final FileObject twoTop = createFile(src, "T1.java","class T1 { public static void main (String... args){}} class T1X {public static void main (String... args){}}");
+        assertMain(new String[] {"T1","T1X"}, SourceUtils.getMainClasses(twoTop));
+        final FileObject twoTop2 = createFile(src, "T2.java","class T2 { public static void main (String... args){} static class Inner {public static void main (String... args){}}} class T2X {public static void main (String... args){} static class Inner {public static void main (String... args){}}}");
+        assertMain(new String[] {"T2","T2X", "T2.Inner", "T2X.Inner"}, SourceUtils.getMainClasses(twoTop2));
+        final FileObject inhMain = createFile(src, "D1.java","class D1 { public static void main (String... args){}} class D1X extends D1 {}");
+        assertMain(new String[] {"D1","D1X"}, SourceUtils.getMainClasses(inhMain));
+    }
+
+    private void assertMain(final String[] expected, final Iterable<? extends ElementHandle<TypeElement>> result) {
+        final Set<String> es = new HashSet<String>(Arrays.asList(expected));
+        for (ElementHandle<TypeElement> r : result) {
+            assertTrue(es.remove(r.getQualifiedName()));
+        }
+        assertTrue(es.isEmpty());
+    }
+
+
+    private static FileObject createFile (final FileObject folder, final String name, final String content) throws IOException {
+        final FileObject fo = FileUtil.createData(folder, name);
+        final FileLock lock = fo.lock();
+        try {
+            final OutputStream out = fo.getOutputStream(lock);
+            try {
+                FileUtil.copy(new ByteArrayInputStream(content.getBytes()), out);
+            } finally {
+                out.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        return fo;
     }
     
     
