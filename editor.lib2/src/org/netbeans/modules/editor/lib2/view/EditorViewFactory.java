@@ -240,7 +240,11 @@ public abstract class EditorViewFactory {
     }
 
     protected void fireEvent(List<Change> changes) {
-        EditorViewFactoryEvent evt = new EditorViewFactoryEvent(this, changes);
+        fireEvent(changes, 0);
+    }
+
+    protected void fireEvent(List<Change> changes, int priority) {
+        EditorViewFactoryEvent evt = new EditorViewFactoryEvent(this, changes, priority);
         for (EditorViewFactoryListener listener : listenerList.getListeners()) {
             listener.viewFactoryChanged(evt);
         }

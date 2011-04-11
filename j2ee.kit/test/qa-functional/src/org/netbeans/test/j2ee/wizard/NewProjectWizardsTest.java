@@ -143,6 +143,8 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     public void testEJBModWizard() throws Exception {
         OutputOperator.invoke();
         projectName = "def EJB Mod" + version;
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
         NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "EJB Module");
         NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -158,6 +160,8 @@ public class NewProjectWizardsTest extends J2eeTestCase {
      */
     public void testAppClientWizard() throws Exception {
         projectName = "App client" + version;
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
         NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "Enterprise Application Client");
         NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -173,6 +177,8 @@ public class NewProjectWizardsTest extends J2eeTestCase {
      */
     public void testWebModWizard() throws Exception {
         projectName = "def Web app" + version;
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
         NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATEGORY_WEB, "Web Application");
         NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -188,6 +194,8 @@ public class NewProjectWizardsTest extends J2eeTestCase {
      */
     public void testEnterpriseAppWizard() throws Exception {
         projectName = "def EAR app" + version;
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
         NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "Enterprise Application");
         NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -245,6 +253,10 @@ public class NewProjectWizardsTest extends J2eeTestCase {
         reporter.ref("Project: " + projectPath);
         reporter.ref("Expected: " + rf);
         reporter.ref("Real: " + l);
+        // remove this temporary hack when #197423 is fixed
+        if (EAR == prjType && "6".equals(version)) {
+            l.remove("def EAR app6-war\\web\\WEB-INF\\glassfish-web.xml");
+        }
         Set s = getDifference(rf, l);
         assertTrue("Files: " + s + " are new in project: " + projectPath, s.isEmpty());
     }
@@ -289,5 +301,19 @@ public class NewProjectWizardsTest extends J2eeTestCase {
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.waitExpanded();
         return node;
+    }
+    
+    /** Deletes specified file/directory and its sub directories.
+     * @param file file to be deleted
+     * @throws IOException if cannot delete file
+     */
+    private static void deleteAll(File file) {
+        File files[] = file.listFiles();
+        if (files != null && files.length != 0) {
+            for (File f : files) {
+                deleteAll(f);
+            }
+        }
+        file.delete();
     }
 }

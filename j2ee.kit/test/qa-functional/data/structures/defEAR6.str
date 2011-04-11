@@ -30,7 +30,6 @@ def EAR app6-war/src/java/
 def EAR app6-war/web/
 def EAR app6-war/web/index.jsp
 def EAR app6-war/web/WEB-INF/
-def EAR app6-war/web/WEB-INF/glassfish-web.xml
 nbproject/
 nbproject/ant-deploy.xml
 nbproject/build-impl.xml

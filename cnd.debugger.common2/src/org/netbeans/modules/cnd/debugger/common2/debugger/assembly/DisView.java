@@ -1260,10 +1260,8 @@ public class DisView {
 
 	StringBuilder sb = new StringBuilder();
 
-	int k = model.size();
-	String line = null;
-	for (int i = 0; i < k; i++) {
-	    line = model.getItem(i);
+	for (DisFragModel.Line srcLine : model) {
+	    String line = srcLine.toString();
 
 	    // build modelToViewMap as we go along
 	    String addr = addrFromLine(line);

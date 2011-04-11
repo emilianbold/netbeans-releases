@@ -82,6 +82,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.util.ElementScanner6;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.annotations.common.NonNull;
@@ -748,36 +749,32 @@ public class SourceUtils {
         try {
             final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
             js.runUserActionTask(new Task<CompilationController>() {            
+                @Override
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
-                        new TreePathScanner<Void,Void> () {
-                           public @Override Void visitMethod(MethodTree node, Void p) {
-                               ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
-                               if (method != null && SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
-                                   result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
-                               }
-                               return null;
-                           }
-                        }.scan(control.getCompilationUnit(), null);
-                    }                   
-                }
-
-                private boolean isAccessible (Element element) {
-                    ElementKind kind = element.getKind();
-                    while (kind != ElementKind.PACKAGE) {
-                        if (!kind.isClass() && !kind.isInterface()) {
-                            return false;
-                        }                    
-                        Set<Modifier> modifiers = ((TypeElement)element).getModifiers();
-                        Element parent = element.getEnclosingElement();
-                        if (parent.getKind() != ElementKind.PACKAGE && !modifiers.contains(Modifier.STATIC)) {
-                            return false;
+                        final List<TypeElement>  types = new ArrayList<TypeElement>();
+                        final ElementScanner6<Void,Void> visitor = new ElementScanner6<Void, Void>() {
+                            @Override
+                            public Void visitType(TypeElement e, Void p) {
+                                if (e.getEnclosingElement().getKind() == ElementKind.PACKAGE
+                                   || e.getModifiers().contains(Modifier.STATIC)) {
+                                    types.add(e);
+                                    return super.visitType(e, p);
+                                } else {
+                                    return null;
+                                }
+                            }
+                        };
+                        visitor.scan(control.getTopLevelElements(), null);
+                        for (TypeElement type : types) {
+                            for (ExecutableElement exec :  ElementFilter.methodsIn(control.getElements().getAllMembers(type))) {
+                                if (SourceUtils.isMainMethod(exec)) {
+                                    result.add (ElementHandle.create(type));
+                                }
+                            }
                         }
-                        element = parent;
-                        kind = element.getKind();
                     }
-                    return true;
-                }
+                }                
 
             }, true);
             return result;
