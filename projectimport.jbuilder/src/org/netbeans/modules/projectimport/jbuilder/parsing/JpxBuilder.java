@@ -55,11 +55,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
-import org.netbeans.modules.projectimport.j2seimport.LoggerFactory;
 import org.netbeans.modules.projectimport.j2seimport.ProjectModel;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -77,7 +76,6 @@ import org.xml.sax.SAXException;
  */
 final class JpxBuilder extends ProjectBuilder {
     private static final String ROOT_ELEMENT = "project";//NOI18N
-    private static final String SYS_CATEGORY = "sys";//NOI18N
     
     public static final String SOURCE_PATH = "SourcePath";//NOI18N
     public static final String TEST_PATH = "TestPath";//NOI18N
@@ -90,8 +88,7 @@ final class JpxBuilder extends ProjectBuilder {
     private static final String NAME_ATTR = "name";//NOI18N
     private static final String VALUE_ATTR = "value";//NOI18N
     
-    private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(JpxBuilder.class);
+    private static final Logger logger = Logger.getLogger(JpxBuilder.class.getName());
     
     private String extension;
     
@@ -104,17 +101,16 @@ final class JpxBuilder extends ProjectBuilder {
         return extension;
     }
     
-    protected final Collection/*<ProjectModel>*/ buildImpl(final File file) {
-        Collection retval = new HashSet();
+    protected final Collection<ProjectModel> buildImpl(final File file) {
+        Collection<ProjectModel> retval = new HashSet<ProjectModel>();
         try {
             retval.add(parseAndBuild(file));
         } catch (IOException iex) {
-            ErrorManager.getDefault().notify(iex);
+            logger.log(Level.INFO, "parsing: " + file, iex);
         } catch (SAXException sax) {
-            ErrorManager.getDefault().notify(sax);
+            logger.log(Level.INFO, "parsing: " + file, sax);
         }
         
-        assert retval.size() > 0;
         return retval;
     }
     
