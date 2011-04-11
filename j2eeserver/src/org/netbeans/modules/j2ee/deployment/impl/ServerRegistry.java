@@ -402,9 +402,11 @@ public final class ServerRegistry implements java.io.Serializable {
             if (url.equals(instanceFOs[i].getAttribute(URL_ATTR)))
                 instanceFO = instanceFOs[i];
         }
-        String name = FileUtil.findFreeFileName(dir,"instance",null);
-        if (instanceFO == null)
+        
+        if (instanceFO == null) {
+            String name = FileUtil.findFreeFileName(dir,"instance",null);
             instanceFO = dir.createData(name);
+        }
         instanceFO.setAttribute(URL_ATTR, url);
         instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
         savePassword(instanceFO, password,
@@ -539,7 +541,10 @@ public final class ServerRegistry implements java.io.Serializable {
     public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
         String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
-        String password = readPassword(fo);
+        // this is ok and avoids deadlock - we are adding FO
+        // either it is new FO with password - so we can read it
+        // or it is already existing and password is stored in keyring
+        String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
