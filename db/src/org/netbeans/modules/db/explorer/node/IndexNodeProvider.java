@@ -135,7 +135,7 @@ public class IndexNodeProvider extends NodeProvider {
 
         @Override
         public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+            return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
     }
