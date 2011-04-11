@@ -1279,22 +1279,27 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
-        public final void propertyChange(final PropertyChangeEvent evt) {
+        public @Override final void propertyChange(PropertyChangeEvent evt) {
             if (manager == null) {
                 return; // the tree view has been removed before the event got delivered
             }
+            final String prop = evt.getPropertyName();
+            if (!prop.equals(ExplorerManager.PROP_ROOT_CONTEXT) &&
+                    !prop.equals(ExplorerManager.PROP_EXPLORED_CONTEXT) &&
+                    !prop.equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                return;
+            }
             Children.MUTEX.readAccess(new Runnable() {
-
-                public void run() {
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
+                public @Override void run() {
+                    if (prop.equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
                         synchronizeRootContext();
                     }
 
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
+                    if (prop.equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
                         synchronizeExploredContext();
                     }
 
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                    if (prop.equals(ExplorerManager.PROP_SELECTED_NODES)) {
                         synchronizeSelectedNodes();
                     }
                 }
