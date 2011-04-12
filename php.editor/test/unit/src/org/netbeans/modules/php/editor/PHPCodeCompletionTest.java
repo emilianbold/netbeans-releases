@@ -766,6 +766,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue153707.php", "class property: $this->^", false);
     }
 
+    public void testIssue197571() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue197571.php", "sfWidgetFormSchema::^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

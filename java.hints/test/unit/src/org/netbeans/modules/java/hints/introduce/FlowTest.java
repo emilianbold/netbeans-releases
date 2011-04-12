@@ -172,6 +172,18 @@ public class FlowTest extends NbTestCase {
                     "2");
     }
 
+    public void test197666() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int i) {\n" +
+                    "        int ii = 1;\n" +
+                    "        boolean b = i == 1 && true;\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1");
+    }
+
     private void prepareTest(String code) throws Exception {
         clearWorkDir();
 

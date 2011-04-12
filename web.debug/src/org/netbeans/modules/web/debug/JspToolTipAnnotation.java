@@ -63,6 +63,8 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
     private String toolTipText = null;
 
     private StyledDocument doc;
+    
+    private RequestProcessor rp = new RequestProcessor("JspToolTipAnnotation", 1);
 
     public String getShortDescription() {
         Utils.log("JspTooltip: getShortDescription");
@@ -83,7 +85,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
             if (ec != null) { // Only for editable dataobjects
                 try {
                     doc = ec.openDocument ();                    
-                    RequestProcessor.getDefault().post(this);                    
+                    rp.post(this);                    
                 } catch (IOException e) {
                 }
             }

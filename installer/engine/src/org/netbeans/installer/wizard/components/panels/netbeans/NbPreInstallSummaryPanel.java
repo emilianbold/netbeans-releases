@@ -246,9 +246,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
-                if (product.getUid().equals(NB_JAVASE_UID) &&
-                                product.getProperty(JUNIT_ACCEPTED_PROPERTY).equals("true")) {
-                    junitPresent = true;
+                if (product.getUid().equals(NB_JAVASE_UID)) {
+                    String jUnitAccepted = product.getProperty(JUNIT_ACCEPTED_PROPERTY);
+                    junitPresent = (jUnitAccepted != null  && jUnitAccepted.equals("true"));
                 }
                 try {
                     if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {

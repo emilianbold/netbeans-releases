@@ -63,7 +63,6 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.api.ClientCodeWrapper;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -96,13 +95,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
-import javax.lang.model.util.TypeKindVisitor7;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
-import javax.tools.JavaFileObject;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -111,7 +107,6 @@ import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 
 /**
@@ -538,8 +533,7 @@ public final class GeneratorUtilities {
     static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
-            JavaFileObject jfo = ClientCodeWrapper.instance(info.impl.getJavacTask().getContext()).unwrap(unit.getSourceFile());
-            TokenSequence<JavaTokenId> seq = ((SourceFileObject) jfo).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
             AssignComments translator = new AssignComments(info, original, false, seq, unit);

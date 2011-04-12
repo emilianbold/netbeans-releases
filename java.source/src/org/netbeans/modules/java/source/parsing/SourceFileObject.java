@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,7 +72,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -85,6 +85,7 @@ import org.openide.text.NbDocument;
  *
  * @author Tomas Zezula
  */
+@Trusted
 public class SourceFileObject implements DocumentProvider, InferableJavaFileObject {
 
     final Handle handle;
