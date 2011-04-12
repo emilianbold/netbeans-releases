@@ -213,7 +213,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
 		    || path.get(1) instanceof ArrayElement
 		    || path.get(1) instanceof FormalParameter
-		    || path.get(1) instanceof ReturnStatement
+//		    || path.get(1) instanceof ReturnStatement
                     || path.get(1) instanceof CastExpression) {
 		// when the array is on the beginning of the line, indent items in normal way
 		delta = options.indentArrayItems;
@@ -463,7 +463,9 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(ConditionalExpression node) {
 	scan(node.getCondition());
 	boolean wrap = node.getIfTrue() != null ? true : false;
-	boolean putContinualIndent = !(path.get(1) instanceof Assignment);
+        ASTNode astNode = path.get(1);
+	boolean putContinualIndent = !(astNode instanceof Assignment
+                || astNode instanceof ReturnStatement);
 	if (wrap) {
 	    while (ts.moveNext()
 		    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString()))) {
@@ -928,6 +930,18 @@ public class FormatVisitor extends DefaultVisitor {
         }
     }
 
+    @Override
+    public void visit(ReturnStatement node) {
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_RETURN) {
+            addFormatToken(formatTokens);
+        }
+        // add return
+        addFormatToken(formatTokens);
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        super.visit(node);
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+    }
+    
     @Override
     public void visit(SingleFieldDeclaration node) {
 	scan(node.getName());
