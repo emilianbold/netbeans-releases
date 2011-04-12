@@ -44,6 +44,7 @@
 
 package org.netbeans.qa.form.binding;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -58,14 +59,17 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.BindDialogOperator;
+import org.netbeans.qa.form.OpenTempl_defaultPackTest;
 
 /**
  * Beans Binding advanced tests
  *
  * @author Jiri Vagner
  */
-public class AdvancedBeansBinding extends ExtJellyTestCase {
+public class AdvancedBeansBindingTest extends ExtJellyTestCase {
     private String ACTION_PATH = "Bind|text";  // NOI18N
     private String BIND_EXPRESSION = "${text}";  // NOI18N
     private String FILENAME = "ConvertorAndValidatorTest.java"; // NOI18N
@@ -73,27 +77,23 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     private String CONVERTOR_NAME = "bool2FaceConverter";  // NOI18N    
     
     /** Constructor required by JUnit */
-    public AdvancedBeansBinding(String testName) {
+    public AdvancedBeansBindingTest(String testName) {
         super(testName);
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+   public static Test suite() {
+       //TODO "testUpdateMode"
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AdvancedBeansBindingTest.class).addTest(
+                "testCompileComponents",
+                "testAlternateValues",
+                "testConversion",
+                "testValidation"
+                ).gui(true).enableModules(".*").clusters(".*"));
+
     }
     
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AdvancedBeansBinding("testCompileComponents")); // NOI18N
-//        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
-        suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
-        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
-        suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
-        return suite;
-    }
-
-    /** Form component classes compilation */
+        /** Form component classes compilation */
     public void testCompileComponents() {
         Node beanNode = openFile(CONVERTOR_NAME);
         CompileJavaAction action = new CompileJavaAction();
@@ -108,7 +108,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     public void testUpdateMode() {
         // open frame
         openFile(FILENAME);
-        System.out.println("testicek1");
+        
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         
         // select update modes for jlabels
@@ -134,7 +134,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
 
     /** Tests alternate values */
     public void testAlternateValues() {
-        System.out.println("testicek2");
+        
         String nullLabelPath =  "[JFrame]|jLabel7 [JLabel]"; // NOI18N
         String incompleteLabelPath = "[JFrame]|jLabel8 [JLabel]"; // NOI18N
         String nullMsg = "null foo msg"; // NOI18N
@@ -217,14 +217,22 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         openFile(FILENAME);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
+        
         Action act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         
-        // set Face2Bool converter from list
-        BindDialogOperator bindOp = new BindDialogOperator();
-        bindOp.selectAdvancedTab();
-        bindOp.selectValidator(VALIDATOR_NAME);
-        bindOp.ok();
+        JDialogOperator bindOp = new JDialogOperator("Bind");  // NOI18N
+        JTabbedPaneOperator tabOp = new JTabbedPaneOperator(bindOp);
+        tabOp.selectPage("Advanced");  // NOI18N
+       // bindOp.ok();
+        
+        new JButtonOperator(tabOp, 4).pushNoBlock();
+        NbDialogOperator valOp = new NbDialogOperator("Validator");  // NOI18N
+        JComboBoxOperator jcbOp = new JComboBoxOperator(valOp,0);
+        jcbOp.selectItem(2);
+        JTextFieldOperator jtfOp= new JTextFieldOperator(valOp, 0);
+        jtfOp.setText(VALIDATOR_NAME);
+        new JButtonOperator(valOp, "OK").push();  // NOI18N
         
         // find code in source file
         FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
@@ -232,10 +240,10 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         
         // open bind dialog again and check selected
         act.perform(actNode);
-        bindOp = new BindDialogOperator();
-        bindOp.selectAdvancedTab();
-        String selected = bindOp.getValidator();
-        bindOp.ok();
+        BindDialogOperator bindOp1 = new BindDialogOperator();
+        bindOp1.selectAdvancedTab();
+        String selected = bindOp1.getValidator();
+        bindOp1.ok();
 
         // test name
         assertEquals(selected, VALIDATOR_NAME);

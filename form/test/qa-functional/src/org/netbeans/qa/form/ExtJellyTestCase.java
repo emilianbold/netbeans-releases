@@ -576,6 +576,10 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         if (specVersion.startsWith("1.6")) {
             return "jdk16";
         }
+        
+        if (specVersion.startsWith("1.7")) {
+            return "jdk17";
+        }
 
         throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
     }

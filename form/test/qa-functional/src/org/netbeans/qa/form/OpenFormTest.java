@@ -33,19 +33,20 @@ import org.netbeans.junit.*;
  *
  * @author Marek G.
  */
-public class OpenForm extends JellyTestCase {
+public class OpenFormTest extends JellyTestCase {
     
-    public OpenForm(java.lang.String testName) {
+    public OpenFormTest(java.lang.String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+   
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(OpenForm.class);
-        return suite;
+     public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(OpenFormTest.class).addTest(
+                "testOpenForm")
+                .gui(true).enableModules(".*").clusters(".*"));
+
     }
     
     // Add test methods here, they have to start with 'test' name.
@@ -90,8 +91,8 @@ public class OpenForm extends JellyTestCase {
         System.out.println("XXXXXXXXXXXXX");
         System.out.println("getDataDir          = " + getDataDir());
         System.out.println("getWorkDirPath      = " + getWorkDirPath());
-        
         System.out.println("XXXXXXXXXXXXX");
+        
         String dataDir = getDataDir().getAbsolutePath();
         String workdirpath = getWorkDirPath();
         String formPath = null;
