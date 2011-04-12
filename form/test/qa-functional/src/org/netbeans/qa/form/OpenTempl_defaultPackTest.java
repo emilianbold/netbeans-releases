@@ -46,7 +46,6 @@ package org.netbeans.qa.form;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.DocumentsDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -57,8 +56,8 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+//import org.netbeans.jemmy.Test;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -89,11 +88,10 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public String PROJECT_NAME = "Java";
     public String workdirpath;
     public String jdkVersion = ExtJellyTestCase.getJDKVersionCode();
-        
+    public String pokus;
     MainWindowOperator mainWindow;
     ProjectsTabOperator pto;
     ComponentInspectorOperator cio;
-    
 
     /** Constructor required by JUnit */
     public OpenTempl_defaultPackTest(String name) {
@@ -105,14 +103,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
-                "testApplet",
-                "testDialog",
-                "testFrame", 
-                "testInter", 
-                "testMidi", 
-                "testPanel",
-                "testBean", 
-                "testAppl")
+                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean")
                 .gui(true).enableModules(".*").clusters(".*"));
 
     }
@@ -126,7 +117,6 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     }
 
     /** Called after every test case. */
-    @Override
     public void tearDown() {
     }
 
@@ -180,26 +170,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
             log("File " + DATA_PROJECT_NAME + " was deleted correctly");
         }
     }
-    /*
-     * Close document given in parametr.
-     *Is HIGHLY RECOMMENDED close document, after test is finished.
-     */
-    
-    public void closeDocument(String documentName) throws InterruptedException {
-        FormDesignerOperator fdo= new FormDesignerOperator(documentName);
-        fdo.editor();
-        Thread.sleep(500);
-        DocumentsDialogOperator ddo= DocumentsDialogOperator.invoke();
-        Thread.sleep(500);
-        ddo.selectDocument(documentName);
-        Thread.sleep(500);
-        ddo.btCloseDocuments().doClick();
-        
-       
-    }
 
     public void openTemplate(String templateName) throws InterruptedException {
-               
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DATA_PROJECT_NAME);
         Thread.sleep(10000);
@@ -210,7 +182,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         jcb_package.clearText();
         Thread.sleep(5000);
 
-        if (templateName.equals("Bean Form")) {
+        if ((templateName == "Bean Form")) {
             nfwo.next();
             JTextFieldOperator class_name = new JTextFieldOperator(nfwo);
             class_name.setText("javax.swing.JButton");
@@ -226,20 +198,16 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     /** Test case 1.
      *Create new JApplet template in default package
      */
-    public void testApplet() throws InterruptedException, IOException, Exception {
+    public void testApplet() throws InterruptedException, IOException {
 
-       
+        Thread.sleep(2000);
 //        begin();
 
         openTemplate("JApplet Form");
-        
-        //System.out.println(getWorkDir());
-        testFormFile("NewJApplet");
-        Thread.sleep(1000);
+        Thread.sleep(10000);
+        System.out.println(getWorkDir());
+        //testFormFile("NewJApplet");
         testJavaFile("NewJApplet");
-        Thread.sleep(1000);
-        closeDocument("NewJApplet.java");
-        
 
     }
 
@@ -251,12 +219,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         openTemplate("JDialog Form");
 
         //check if template is generated correctly
-        testFormFile("NewJDialog");
-        Thread.sleep(1000);
+        //testFormFile("NewJDialog");
         testJavaFile("NewJDialog");
-        Thread.sleep(1000);
-        closeDocument("NewJDialog.java");
-        
 
     }
 
@@ -267,13 +231,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
         openTemplate("JFrame Form");
         //check if template is generated correctly
-        
-        
+        //testFormFile("NewJFrame");
         testJavaFile("NewJFrame");
-        Thread.sleep(1000);
-        testFormFile("NewJFrame");
-        Thread.sleep(1000);
-        closeDocument("NewJFrame.java");
     }
 
     /** Test case 4.
@@ -284,39 +243,27 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         openTemplate("JInternalFrame Form");
 
         //check if template is generated correctly
-        testFormFile("NewJInternalFrame");
-        Thread.sleep(1000);
+        //testFormFile("NewJInternalFrame");
         testJavaFile("NewJInternalFrame");
-        Thread.sleep(1000);
-        closeDocument("NewJInternalFrame.java");
-       
     }
 
-    public void testAppl() throws InterruptedException, IOException, Exception {
+    public void testAppl() throws InterruptedException, IOException {
 
         openTemplate("Application Sample Form");
 
         //check if template is generated correctly
-        testFormFile("NewApplication");
-        Thread.sleep(1000);
+        //testFormFile("NewApplication");
         testJavaFile("NewApplication");
-        Thread.sleep(1000);
-        closeDocument("NewApplication.java");
-       
+
     }
 
-    public void testMidi() throws InterruptedException, IOException, Exception {
+    public void testMidi() throws InterruptedException, IOException {
 
         openTemplate("MDI Application Sample Form");
 
         //check if template is generated correctly
-        testFormFile("NewMDIApplication");
-        Thread.sleep(1000);
+        //testFormFile("NewMDIApplication");
         testJavaFile("NewMDIApplication");
-        Thread.sleep(1000);
-        closeDocument("NewMDIApplication.java");
-        
-         
 
     }
 
@@ -328,11 +275,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         openTemplate("JPanel Form");
 
         //check if template is generated correctly
-        testFormFile("NewJPanel");
-        Thread.sleep(1000);
+        //testFormFile("NewJPanel");
         testJavaFile("NewJPanel");
-        Thread.sleep(1000);
-        closeDocument("NewJPanel.java");
 
     }
 
@@ -340,52 +284,52 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      * Create new Bean template in default package
      */
     public void testBean() throws InterruptedException, IOException {
-                
+
         openTemplate("Bean Form");
 
 
-        testFormFile("NewBeanForm");
+        //testFormFile("NewBeanForm");
+        //Bug in generating of new Bean Form template 95403
+        //testJavaFile("NewBeanForm");
         Thread.sleep(1000);
-        testJavaFile("NewBeanForm");
-        Thread.sleep(1000);
-        closeDocument("NewBeanForm.java");
+    //Timeout needed
     }
 
     public void testFormFile(String formfile) throws IOException {
         try {
-            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath() +
-                    File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form");
-                        
-            getLog(formfile+"Form.ref").print(refFile);
-            
-            
+
+            getRef().print(VisualDevelopmentUtil.readFromFile(
+                    getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form"));
+
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
 
-        assertFile(new File(getWorkDir() + File.separator + formfile + "Form.ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
-        
+        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
+        System.out.println(formfile + " is not the same as golden file");
+
+
+
+    //compareReferenceFiles("TestScenario.ref", "testFormFile.pass", null);
     }
 
     public void testJavaFile(String javafile) throws IOException {
 
         try {
-            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath() +
+            pokus = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath() +
                     File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
-            
-            getRef().print(createRefFile(refFile));
-            
-            // golden files are in ${xtest.data}/goldenfiles/${classname}/...
-           
+
+            getRef().print(createRefFile(pokus));
             log("Java reference file was created");
 
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-        
-       
-        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile"+jdkVersion.replaceAll("jdk","") +".pass"), new File(getWorkDir(), javafile + "java.diff"));
-       
+        if (jdkVersion == "jdk15") {
+            assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile15.pass"), new File(getWorkDir(), javafile + ".diff"));
+        } else {
+            assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile.pass"), new File(getWorkDir(), javafile + ".diff"));
+        }
 
     }
 
