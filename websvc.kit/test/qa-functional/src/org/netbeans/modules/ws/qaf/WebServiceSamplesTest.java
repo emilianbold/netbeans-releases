@@ -111,7 +111,7 @@ public class WebServiceSamplesTest extends WebServicesTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3,
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
                 NbModuleSuite.createConfiguration(WebServiceSamplesTest.class),
                 "testCalculatorApp",
                 "testSecureCalculatorApp",

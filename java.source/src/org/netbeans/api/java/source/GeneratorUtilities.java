@@ -63,6 +63,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.api.ClientCodeWrapper;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -98,6 +99,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.TypeKindVisitor7;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
+import javax.tools.JavaFileObject;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -358,10 +360,15 @@ public final class GeneratorUtilities {
         TreeMaker make = copy.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(clazz.getKind() == ElementKind.ENUM ? Modifier.PRIVATE : Modifier.PUBLIC);
         List<VariableTree> parameters = new ArrayList<VariableTree>();
-        List<StatementTree> statements = new ArrayList<StatementTree>();
+        LinkedList<StatementTree> statements = new LinkedList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
         List<ExpressionTree> throwsList = new LinkedList<ExpressionTree>();
         List<TypeParameterTree> typeParams = new LinkedList<TypeParameterTree>();
+        for (VariableElement ve : fields) {
+            TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
+            parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(type), null));
+            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+        }
         if (constructor != null) {
             ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
             if (!constructor.getParameters().isEmpty()) {
@@ -376,7 +383,7 @@ public final class GeneratorUtilities {
                     parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
                     arguments.add(make.Identifier(simpleName));
                 }
-                statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
+                statements.addFirst(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
             }
             constructorType = constructorType != null ? constructorType : (ExecutableType) constructor.asType();
             for (TypeMirror th : constructorType.getThrownTypes()) {
@@ -390,13 +397,8 @@ public final class GeneratorUtilities {
                 typeParams.add(make.TypeParameter(typeParameterElement.getSimpleName(), boundsList));
             }
         }
-        for (VariableElement ve : fields) {
-            TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
-            parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(type), null));
-            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
-        }
         BlockTree body = make.Block(statements, false);
-        return make.Method(make.Modifiers(mods), "<init>", null, typeParams, parameters, throwsList, body, null); //NOI18N
+        return make.Method(make.Modifiers(mods), "<init>", null, typeParams, parameters, throwsList, body, null, constructor!= null ? constructor.isVarArgs() : false); //NOI18N
     }
 
     /**
@@ -535,8 +537,9 @@ public final class GeneratorUtilities {
 
     static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
-            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
-            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
+            JavaFileObject jfo = ClientCodeWrapper.instance(info.impl.getJavacTask().getContext()).unwrap(unit.getSourceFile());
+            TokenSequence<JavaTokenId> seq = ((SourceFileObject) jfo).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
             AssignComments translator = new AssignComments(info, original, false, seq, unit);

@@ -228,7 +228,7 @@ public final class ModificationResult {
             this.sources = null;
         }
     }
-            
+    
     static void commit (final FileObject fo, final List<Difference> differences, final Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
@@ -253,37 +253,28 @@ public final class ModificationResult {
                 return;
             }
         }
-        InputStream ins = null;
-        ByteArrayOutputStream baos = null;           
         Reader in = null;
         Writer out2 = out;
         JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
         try {
             Charset encoding = FileEncodingQuery.getEncoding(fo);
-            ins = fo.getInputStream();
-            baos = new ByteArrayOutputStream();
-            FileUtil.copy(ins, baos);
-
-            ins.close();
-            ins = null;
-            byte[] arr = baos.toByteArray();
-            int arrLength = convertToLF(arr);
-            baos.close();
-            baos = null;
-            in = new InputStreamReader(new ByteArrayInputStream(arr, 0, arrLength), encoding);
+            boolean[] hasReturnChar = new boolean[1];
+            in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fo.asBytes()), encoding));
             if (filter != null) {
                 in = filter.filterReader(in);
             }
+            in = new FilteringReader(in, hasReturnChar);
             // initialize standard commit output stream, if user
             // does not provide his own writer
             boolean ownOutput = out != null;
             if (out2 == null) {
-                out2 = new OutputStreamWriter(fo.getOutputStream(), encoding);
+                out2 = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream(), encoding));
                 //going through filter only when writing to disk. When creating source for getResultingSource,
                 //it is not passed through the write-filter (as that is what refactoring preview expects).
                 if (filter != null) {
                     out2 = filter.filterWriter(out2);
                 }
+                out2 = new FilteringWriter(out2, hasReturnChar);
             }
             int offset = 0;                
             for (Difference diff : differences) {
@@ -324,13 +315,10 @@ public final class ModificationResult {
             }                    
             char[] buff = new char[1024];
             int n;
-            while ((n = in.read(buff)) > 0)
+            while ((n = in.read(buff)) > 0) {
                 out2.write(buff, 0, n);
+            }
         } finally {
-            if (ins != null)
-                ins.close();
-            if (baos != null)
-                baos.close();
             if (in != null)
                 in.close();
             if (out2 != null)
@@ -445,16 +433,6 @@ public final class ModificationResult {
                 }
             }
         }
-    }
-    
-    private static int convertToLF(byte[] buff) {
-        int j = 0;
-        for (int i = 0; i < buff.length; i++) {
-            if (buff[i] != '\r') {
-                buff[j++] = buff[i];
-            }
-        }
-        return j;
     }
     
     /**
@@ -594,5 +572,83 @@ public final class ModificationResult {
         public String toString() {
             return kind + "Create File: " + fileObject.getName() + "; contents = \"\n" + newText + "\"";
         }
+    }
+    
+    private static final class FilteringReader extends Reader {
+        
+        private final Reader delegate;
+        private final boolean[] hasReturnChar;
+        private boolean beforeFirstLine = true;
+
+        public FilteringReader(Reader delegate, boolean[] hasReturnChar) {
+            this.delegate = delegate;
+            this.hasReturnChar = hasReturnChar;
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            len = delegate.read(cbuf, off, len);
+            
+            int j = 0;
+            for (int i = off; i < off + len; i++) {
+                if (cbuf[i] != '\r') {
+                    cbuf[j++] = cbuf[i];
+                    if (beforeFirstLine && cbuf[i] == '\n') {
+                        beforeFirstLine = false;
+                    }
+                } else if (beforeFirstLine) {
+                    hasReturnChar[0] = true;
+                    beforeFirstLine = false;
+                }
+            }
+            return j;
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
+        }
+    }
+    
+    private static final class FilteringWriter extends Writer {
+        private final boolean[] hasReturnChar;
+        private final Writer delegate;
+
+        public FilteringWriter(Writer delegate, boolean[] hasReturnChar) {
+            this.hasReturnChar = hasReturnChar;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) throws IOException {
+            if (hasReturnChar[0]) {
+                char[] buf = new char[len * 2];
+                int j = 0;
+                
+                for (int i = off; i < off + len; i++) {
+                    if (cbuf[i] == '\n') {
+                        buf[j++] = '\r';
+                        buf[j++] = '\n';
+                    } else {
+                        buf[j++] = cbuf[i];
+                    }
+                }
+                
+                delegate.write(buf, 0, j);
+            } else {
+                delegate.write(cbuf, off, len);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            delegate.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
+        }
+        
     }
 }

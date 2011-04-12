@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -190,8 +190,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_KEYWORD_FUNCTIONS = {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
+    final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
+    
     final static String[] PHP_CLASS_KEYWORDS = {
-        "$this->", "self::", "parent::"
+        PHP_CLASS_KEYWORD_THIS, "self::", "parent::" //NOI18N
     };
 
     final static String[] PHP_STATIC_CLASS_KEYWORDS = {
@@ -350,6 +352,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case STRING:
                     // LOCAL VARIABLES
                     completionResult.addAll(getVariableProposals(request, null));
+                    // are we in class?
+                    if (prefix.length() == 0 || startsWith(PHP_CLASS_KEYWORD_THIS, prefix)) {
+                        final ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
+                        if (classDecl != null) {
+                            final String className = CodeUtils.extractClassName(classDecl);
+                            if (className != null) {
+                                completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(className, PHP_CLASS_KEYWORD_THIS, request));
+                            }
+                        }
+                    }
                     break;
                 case CLASS_MEMBER:
                     autoCompleteClassMembers(completionResult, request, false);
@@ -730,8 +742,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return;
             }
             types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+            boolean selfContext  = false;
+            boolean staticLateBindingContext = false;
             if (varName.equals("self")) { //NOI18N
                 staticContext = true;
+                selfContext = true;
             } else if (varName.equals("parent")) { //NOI18N
                 invalidProposalsForClsMembers = Collections.emptyList();
                 staticContext = true;
@@ -739,6 +754,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else if (varName.equals("$this")) { //NOI18N
                 staticContext = false;
                 instanceContext = true;
+            } else if (varName.equals("static")) {
+                staticContext = true;
+                instanceContext = false;
+                staticLateBindingContext = true;
             }
 
             if (types != null) {
@@ -746,7 +765,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (TypeScope typeScope : types) {
                     final StaticOrInstanceMembersFilter staticFlagFilter =
-                            new StaticOrInstanceMembersFilter(staticContext, instanceContext);
+                            new StaticOrInstanceMembersFilter(staticContext, instanceContext, selfContext, staticLateBindingContext);
                     
                     final ElementFilter methodsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.METHOD),
@@ -1221,17 +1240,25 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static class StaticOrInstanceMembersFilter extends ElementFilter {
         private final boolean forStaticContext;
         private final boolean forInstanceContext;
+        private final boolean forSelfContext;
         private final boolean staticAllowed;
         private final boolean nonstaticAllowed;
-        public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext) {
+        private final boolean forStaticLateBinding;
+        public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext, 
+                final boolean forSelfContext, final boolean forStaticLateBinding) {
             this.forStaticContext = forStaticContext;
             this.forInstanceContext = forInstanceContext;
+            this.forSelfContext = forSelfContext;
+            this.forStaticLateBinding = forStaticLateBinding;
             this.staticAllowed = OptionsUtils.codeCompletionStaticMethods();
             this.nonstaticAllowed = OptionsUtils.codeCompletionNonStaticMethods();
         }
 
         @Override
         public boolean isAccepted(final PhpElement element) {
+            if (forSelfContext && isAcceptedForSelfContext(element)) {
+                return true;
+            }
             if (forStaticContext && isAcceptedForStaticContext(element)) {
                 return true;
             }
@@ -1248,7 +1275,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         private boolean isAcceptedForStaticContext(final PhpElement element) {
             final boolean isStatic = element.getPhpModifiers().isStatic();
-            return isStatic || (nonstaticAllowed && element.getPhpElementKind().equals(PhpElementKind.METHOD));
+            return isStatic || (nonstaticAllowed && !forStaticLateBinding && element.getPhpElementKind().equals(PhpElementKind.METHOD));
+        }
+        
+        private boolean isAcceptedForSelfContext(final PhpElement element) {
+            return forSelfContext && nonstaticAllowed && !element.getPhpElementKind().equals(PhpElementKind.FIELD);
         }
     }
 

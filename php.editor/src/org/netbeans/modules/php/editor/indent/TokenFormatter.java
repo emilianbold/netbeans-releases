@@ -591,6 +591,9 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_FIELD:
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
                                         break;
+                                    case WHITESPACE_AFTER_FIELD:
+                                        newLines = docOptions.blankLinesAfterField + 1 > newLines ? docOptions.blankLinesAfterField + 1 : newLines;
+                                        break;
                                     case WHITESPACE_BETWEEN_FIELDS:
                                         indentRule = true;
                                         newLines = 1;
@@ -616,6 +619,16 @@ public class TokenFormatter {
                                     case WHITESPACE_AFTER_USE:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesAfterUse + 1;
+                                        break;
+                                    case WHITESPACE_BEFORE_USES_PART:
+                                        indentRule = true;
+                                        if (formatTokens.get(index -1 ).getId() == FormatToken.Kind.ANCHOR) {
+                                            newLines = 0;
+                                            countSpaces = 1;
+                                        } else {
+                                            newLines = 1;
+                                            countSpaces = lastAnchor.getAnchorColumn();
+                                        }
                                         break;
                                     case WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS:
                                         indentRule = true;

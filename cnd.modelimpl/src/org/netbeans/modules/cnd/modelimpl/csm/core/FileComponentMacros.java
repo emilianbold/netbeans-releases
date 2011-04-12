@@ -187,7 +187,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
     }
 
-    public static class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {
+    public static final class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {
 
         private int start = 0;
         private CharSequence name;

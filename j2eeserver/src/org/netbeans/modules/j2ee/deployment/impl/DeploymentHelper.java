@@ -43,6 +43,7 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.Target;
@@ -79,7 +80,7 @@ public final class DeploymentHelper {
     }
 
     public static void deployJdbcDrivers(J2eeModuleProvider jmp, ProgressUI progress)
-            throws ConfigurationException, TimedOutException {
+            throws ConfigurationException, TimeoutException {
 
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
         if (si != null) {

@@ -179,11 +179,7 @@ public class JarWithModuleAttributes extends Jar {
                     cp = javahelpClassPathExtension;
                 }
             } else {
-                if (classPathExtensions != null) {
-                    cp = classPathExtensions;
-                } else {
-                    cp = null;
-                }
+                cp = classPathExtensions;
             }
             if (cp != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("Class-Path", cp));

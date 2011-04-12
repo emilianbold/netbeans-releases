@@ -7,7 +7,7 @@
   <module>
     <web>
       <web-uri>MultiSrcRootWar.war</web-uri>
-      <context-root>/MultiSrcRootWar</context-root>
+      <context-root>/_MultiSrcRootWar</context-root>
     </web>
   </module>
 </application>

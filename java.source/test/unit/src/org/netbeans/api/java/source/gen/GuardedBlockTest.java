@@ -354,11 +354,11 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
             "\n" +
             "        pack();\n" +
             "    }// </editor-fold>//GEN-END:initComponents\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
             "\n" +
             "    public void actionPerformed(ActionEvent e) {\n" +
             "    }\n" +
-            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
-            "    // End of variables declaration//GEN-END:variables\n" +
             "}";
         
         JavaSource src = getJavaSource(testFile);

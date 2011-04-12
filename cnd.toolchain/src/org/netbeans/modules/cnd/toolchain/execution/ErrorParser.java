@@ -52,12 +52,15 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -67,13 +70,15 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
 
     protected FileObject relativeTo;
     protected final ExecutionEnvironment execEnv;
+    private final PathMap pathMap;
     private NativeProject nativeProject;
     private NativeFileSearch nativeFileSearch;
 
-    public ErrorParser(Project project,ExecutionEnvironment execEnv, FileObject relativeTo) {
+    public ErrorParser(Project project, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super();
         this.relativeTo = relativeTo;
         this.execEnv = execEnv;
+        pathMap = RemoteSyncSupport.getPathMap(execEnv, project);
         init(project);
     }
 
@@ -102,8 +107,8 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
             }
             fileName = fileName.replace('/', '\\'); // NOI18N
         }
-        fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName, true);
-        return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fileName));
+        fileName = pathMap.getLocalPath(fileName, true);
+        return FileSystemProvider.getFileObject(execEnv, FileSystemProvider.normalizeAbsolutePath(fileName, execEnv));
     }
 
     protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {

@@ -44,10 +44,17 @@ package org.netbeans.modules.php.phpdoc;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -57,6 +64,8 @@ import org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 public class PhpDocScript extends PhpProgram {
     public static final String SCRIPT_NAME = "phpdoc"; // NOI18N
@@ -118,6 +127,7 @@ public class PhpDocScript extends PhpProgram {
                 .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .frontWindow(false)
+                .outConvertorFactory(new ErrorFileLineConvertorFactory(phpDocTarget))
                 .optionsPath(getOptionsPath());
 
         try {
@@ -139,6 +149,78 @@ public class PhpDocScript extends PhpProgram {
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
+    }
+    
+    private class ErrorFileLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        
+        private String docTarget;
+        
+        public ErrorFileLineConvertorFactory(String docTarget) {
+            this.docTarget = docTarget;
+        }
+        
+        @Override
+        public LineConvertor newLineConvertor() {
+            Pattern pattern = Pattern.compile("(.*)(" + docTarget + "/errors\\.html)(.*)"); // NOI18N
+            return new ErrorFileLineConvertor(pattern);
+        }
+        
+    }
+    
+    private class ErrorFileLineConvertor implements LineConvertor {
+
+        private final Pattern pattern;
+        
+        public ErrorFileLineConvertor(Pattern pattern) {
+            this.pattern = pattern;
+        }
+        
+        @Override
+        public List<ConvertedLine> convert(String line) {
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.matches()) {
+                try {
+                    URL url = new URL("file://" + matcher.group(2)); // NOI18N
+                    List<ConvertedLine> lines = new LinkedList<ConvertedLine>();
+                    if (!matcher.group(1).trim().isEmpty()) {
+                        lines.add(ConvertedLine.forText(matcher.group(1), null));
+                    }
+                    lines.add(ConvertedLine.forText(matcher.group(2), new ErrorFileOutputListener(url)));
+                    if (!matcher.group(3).trim().isEmpty()) {
+                        lines.add(ConvertedLine.forText(matcher.group(3), null));
+                    }
+                    return lines;
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                }
+            }
+
+            return null;
+        }
+    
+    }
+    
+    private class ErrorFileOutputListener implements OutputListener {
+        
+        private URL url;
+        
+        public ErrorFileOutputListener(URL url) {
+            this.url = url;
+        }
+        
+        @Override
+        public void outputLineSelected(OutputEvent ev) {
+        }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
+        }
+        
     }
 
     public static String validate(String command) {

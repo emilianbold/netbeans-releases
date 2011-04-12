@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 
@@ -170,15 +171,19 @@ public class PHPDocCommentParser {
     }
 
     private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {
-        List<PHPDocNode> docTypes = new ArrayList<PHPDocNode>();
+        List<PHPDocTypeNode> docTypes = new ArrayList<PHPDocTypeNode>();
         if (PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
             for (String stype : getTypes(description)) {
                 stype = removeHTMLTags(stype);
                 int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, start);
                 int index = stype.indexOf("::");    //NOI18N
-                PHPDocNode docType;
+                boolean isArray = (stype.indexOf('[') > 0 && stype.indexOf(']') > 0);
+                if (isArray) {
+                    stype = stype.substring(0, stype.indexOf('[')).trim();
+                }
+                PHPDocTypeNode docType;
                 if (index == -1) {
-                    docType = new PHPDocNode(startDocNode, startDocNode + stype.length(), stype);
+                    docType = new PHPDocTypeNode(startDocNode, startDocNode + stype.length(), stype, isArray);
                 }
                 else {
                     String className = stype.substring(0, index);
@@ -261,7 +266,7 @@ public class PHPDocCommentParser {
     private PHPDocTag.Type findTagOnLine(String line) {
         PHPDocTag.Type type = null;
         if (line.length() > 0 && line.charAt(0) == '@') {
-            String[] tokens = line.trim().split("[ ]+");
+            String[] tokens = line.trim().split("[ \t]+");
             if (tokens.length > 0) {
                 String tag = tokens[0].substring(1).toUpperCase();
                 if (tag.indexOf('-') > -1) {

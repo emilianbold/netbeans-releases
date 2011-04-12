@@ -58,6 +58,45 @@ made subject to such option by the copyright holder.
              Ignore architecture. -->
         <resolver mime="application/x-exe"/>
     </file>
+    
+    <file>
+	<!-- Mach-O executable ppc -->
+	<!--                  v       v       v       v-->
+	<magic   hex="feedface0000000000000000000000020000"
+	        mask="ffffffff0000000000000000000000ff0000"/>
+        <resolver mime="application/x-exe"/>
+    </file>
+
+    <file>
+	<!-- Mach-O core ppc -->
+	<!--                  v       v       v       v-->
+	<magic   hex="feedface0000000000000000000000040000"
+	        mask="ffffffff0000000000000000000000ff0000"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>
+
+<!--
+/* Constant for the magic field of the mach_header (32-bit architectures) */
+MH_MAGIC	0xfeedface	/* the mach magic number */
+MH_CIGAM	0xcefaedfe	/* NXSwapInt(MH_MAGIC) */
+/* Constant for the magic field of the mach_header_64 (64-bit architectures) */
+MH_MAGIC_64	0xfeedfacf	/* the 64-bit mach magic number */
+MH_CIGAM_64	0xcffaedfe	/* NXSwapInt(MH_MAGIC_64) */
+/* Constants for the filetype field of the mach_header */
+MH_OBJECT	0x1		/* relocatable object file */
+MH_EXECUTE	0x2		/* demand paged executable file */
+MH_FVMLIB	0x3		/* fixed VM shared library file */
+MH_CORE		0x4		/* core file */
+MH_PRELOAD	0x5		/* preloaded executable file */
+MH_DYLIB	0x6		/* dynamically bound shared library */
+MH_DYLINKER	0x7		/* dynamic link editor */
+MH_BUNDLE	0x8		/* dynamically bound bundle file */
+MH_DYLIB_STUB	0x9		/* shared library stub for static */
+				/*  linking only, no section contents */
+MH_DSYM		0xa		/* companion file with only debug */
+				/*  sections */
+MH_KEXT_BUNDLE	0xb		/* x86_64 kexts */
+-->    
 
     <file>
 	<!-- Mach-O executable i386 -->
@@ -76,23 +115,29 @@ made subject to such option by the copyright holder.
     </file>
     
     <file>
-	<!-- Mach-O executable ppc -->
-	<!--                  v       v       v       v-->
-	<magic   hex="feedface0000000000000000000000020000"
-	        mask="ffffffff0000000000000000000000ff0000"/>
-        <resolver mime="application/x-exe"/>
-    </file>
-
-    <file>
 	<!-- Mach-O universal binary with 2 architectures-->
-        <!-- FIXUP: this mask matches too many files and doesn't
-                    check for right architecture -->
 	<!--                  v       v       v       v-->
-	<magic   hex="cafebabe0000000000000000000000000000"
+	<magic   hex="cafebabe0000000000000000020000000000"
 	        mask="ffffffff0000000000000000000000000000"/>
         <resolver mime="application/x-exe"/>
     </file>
     
+    <file>
+	<!-- Mach-O core i386 -->
+	<!--                  v       v       v       v-->
+	<magic   hex="cefaedfe0000000000000000040000000000"
+	        mask="ffffffff0000000000000000ff0000000000"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>
+
+    <file>
+	<!-- Mach-O core i386-64 -->
+	<!--                  v       v       v       v-->
+	<magic   hex="cffaedfe0000000000000000040000000000"
+	        mask="ffffffff0000000000000000ff0000000000"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>
+
     <file>
 	<!-- MSB Executable   v       v       v       v-->
 	<magic   hex="7f454C460002000000000000000000000002"

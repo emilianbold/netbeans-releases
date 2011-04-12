@@ -37,6 +37,7 @@ package org.netbeans.modules.templates;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -102,7 +103,7 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
             }
             
             
-            eng.getContext().setWriter(w);
+            eng.getContext().setWriter(new PrintWriter(w));
             //eng.getContext().setBindings(bind, ScriptContext.ENGINE_SCOPE);
             eng.getContext().setAttribute(FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE);
             eng.getContext().setAttribute(ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE);

@@ -40,6 +40,8 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -63,6 +65,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -251,6 +255,23 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     }
                 }
                 if (ar.iconBase().length() > 0) {
+                    boolean found = false;
+                    for (StandardLocation l : StandardLocation.values()) {
+                        try {
+                            processingEnv.getFiler().getResource(l, "", ar.iconBase());
+                            found = true;
+                            break;
+                        } catch (IOException ex) {
+                            continue;
+                        } catch (IllegalArgumentException x) {
+                            throw new LayerGenerationException("Problem with " + ar.iconBase() + " (should be resource path with no leading slash)", e);
+                        }
+                    }
+                    if (!found) {
+                        throw new LayerGenerationException(
+                            "Cannot find iconBase file at " + ar.iconBase(), e
+                        );
+                    }
                     f.stringvalue("iconBase", ar.iconBase());
                 }
                 f.boolvalue("noIconInMenu", !ar.iconInMenu());

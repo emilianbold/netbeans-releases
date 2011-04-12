@@ -83,7 +83,12 @@ public final class ELParser extends Parser {
      * @return the root AST node
      * @throws {@link javax.el.ELException} if the given expression is not valid EL.
      */
-    public static Node parse(String expr) {
+    public static Node parse(ELPreprocessor expr) {
+        return com.sun.el.parser.ELParser.parse(expr.getPreprocessedExpression());
+    }
+    
+    //for unit tests
+    static Node parse(String expr) {
         return com.sun.el.parser.ELParser.parse(expr);
     }
 
@@ -102,11 +107,12 @@ public final class ELParser extends Parser {
            int endOffset = startOffset + expression.length();
            embeddedOffset += (expression.length() + expressionSeparator.length());
            OffsetRange embeddedRange = new OffsetRange(startOffset, endOffset);
+           ELPreprocessor elp = new ELPreprocessor(expression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
            try {
-               Node node = parse(expression);
-               result.addValidElement(node, expression, embeddedRange);
+               Node node = parse(elp);
+               result.addValidElement(node, elp, embeddedRange);
            } catch (ELException ex) {
-               result.addErrorElement(ex, expression, embeddedRange);
+               result.addErrorElement(ex, elp, embeddedRange);
            }
        }
 

@@ -331,6 +331,10 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test extends XX {\nprivate int test;\n}\nclass XX {\npublic XX(boolean b){\n}\n}\n", new ConstructorTask(30), new ConstructorValidator());
     }
 
+    public void testConstructor197192() throws Exception {
+        performTest("package test;\npublic class Test extends XX {\nprivate int test;\n}\nclass XX {\npublic XX(String... args){\n}\n}\n", new ConstructorTask(30), new ConstructorValidator());
+    }
+
     public void testConstructor100341() throws Exception {
         performTest("package test;\npublic class Test extends java.util.ArrayList<String> {\n}\n", new ALConstructorTask(30), null);
     }
@@ -814,6 +818,8 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             ExecutableElement ctor = ctors.get(0);
 
             assertEquals(supCtor == null ? 1 : 2, ctor.getParameters().size());
+            if (supCtor != null)
+                assertEquals(supCtor.isVarArgs(), ctor.isVarArgs());
         }
 
     }

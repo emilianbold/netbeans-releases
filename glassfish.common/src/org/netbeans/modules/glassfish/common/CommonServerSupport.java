@@ -84,6 +84,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -582,23 +583,45 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         instanceFO = fo;
     }
 
-    public static boolean isRunning(final String host, final int port) {
+    public static boolean isRunning(final String host, final int port, String name) {
         if(null == host)
             return false;
         
         try {
             InetSocketAddress isa = new InetSocketAddress(host, port);
             Socket socket = new Socket();
-            socket.connect(isa, 100);
-            socket.close();
+            int timeout = 2000;
+            if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
+                timeout = 100;
+            }
+            socket.connect(isa, timeout);
+            try { socket.close(); } catch (IOException ioe) {
+                Logger.getLogger("glassfish").log(Level.INFO, "closing after test", ioe);
+            }
             return true;
-        } catch(IOException ex) {
+        } catch (java.net.ConnectException ex) {
+            return false;
+        } catch (java.net.SocketTimeoutException ste) {
+            return false;
+        } catch (IOException ioe) {
+            String message = null;
+            if (name == null || "".equals(name.trim())) {
+                message = NbBundle.getMessage(CommonServerSupport.class, 
+                        "MSG_FLAKEY_NETWORK", host, ""+port, ioe.getLocalizedMessage()); // NOI18N
+            } else {
+                message = NbBundle.getMessage(CommonServerSupport.class, 
+                        "MSG_FLAKEY_NETWORK2", host, ""+port, ioe.getLocalizedMessage(), name); // NOI18N
+            }
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            Logger.getLogger("glassfish").log(Level.INFO, "evidence of network flakiness", ioe); // NOI18N
             return false;
         }
     }
     
     public boolean isReallyRunning() {
-        return isRunning(getHostName(), getAdminPortNumber()) && isReady(false,30,TimeUnit.SECONDS);
+        return isRunning(getHostName(), getAdminPortNumber(), properties.get(DISPLAY_NAME_ATTR))
+                && isReady(false,30,TimeUnit.SECONDS);
     }
 
     public boolean isReady(boolean retry, int timeout, TimeUnit units) {
@@ -662,8 +685,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     isReady = result.get(timeout, units) == OperationState.COMPLETED;
                     break;
                 } else {
+                    // keep trying for 10 minutes if the server is stuck between 
+                    // httpLive and server ready state. We have to give up sometime, though.
+                    if (maxtries < 20)
+                        maxtries++;
                     long end = System.nanoTime();
-                    Logger.getLogger("glassfish").log(Level.FINE, "{0} timed out inside server after {1}ms", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO, "{0} returned from server after {1}ms. The server is still getting ready", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
                 }
             } catch(Exception ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " timed out.", ex); // NOI18N
@@ -788,7 +815,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         } catch (ExecutionException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
         } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
         }
 
     }

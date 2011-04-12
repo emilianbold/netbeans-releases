@@ -130,6 +130,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -232,40 +233,6 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         return ret;
     }
     
-    /*
-     * Return true, if debuggee (corefile, <pid>, executable) is 64-bit,
-     * only needed on linux
-     * to compliment the limitation of 64-bit engine can't debug
-     * 32-bit app.
-     * If there is no debuggee, then base on arch of host
-     */
-    public static boolean is64Debuggee(NativeDebuggerInfo ndi, Host host) {
-        int act = ndi.getAction();
-        String debuggee = null;
-        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
-
-        if ((act & DebuggerManager.CORE) != 0) {
-            debuggee = ndi.getCorefile();
-        } else if ((act & DebuggerManager.ATTACH) != 0) {
-	    debuggee = executor.readlink(ndi.getPid());
-	    if (debuggee == null)
-		return false;
-
-        } else {
-            debuggee = ndi.getTarget();
-        }
-
-        // for starting empty engine session, base on host's machine type
-	// for both local and remote
-        if (debuggee == null || debuggee.length() == 0) {
-	    // No debuggee provided
-	    return host.isLinux64();
-
-        } else {
-	    return executor.is_64(debuggee);
-	}
-    }
-
     /**
      * Return true we're using per-debug-target breakpoints.
      * Default is per-debug-target bpts.
@@ -842,8 +809,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             return ret;
         }
         EngineProfile engineProfile = (EngineProfile) configuration.getAuxObject(EngineProfile.PROFILE_ID);
-        // if (engineProfile == null || !DebuggerManager.isChoosableEngine()) {
-        if (engineProfile == null) {
+        if (engineProfile == null || !DebuggerManager.isChoosableEngine()) {
             ret = EngineTypeManager.getInherited();
         } else {
             ret = engineProfile.getEngineType();
@@ -1201,11 +1167,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
      * Start debugging by loading program.
      */
     public void debug(String executable, Configuration configuration, String host,
-            InputOutput io, DbgActionHandler dah) {
+            InputOutput io, DbgActionHandler dah, RunProfile profile) {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(configuration));
         ndi.setTarget(executable);
         ndi.setHostName(host);
         ndi.setConfiguration(configuration);
+        ndi.setProfile(profile);
         ndi.setInputOutput(io);
         ndi.setDah(dah);
         if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
@@ -1236,7 +1203,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	    ndi.setTarget("-"); //NOI18N
         } else {
             String execPath = ndi.getTarget();
-            if (host.getPlatform() != Platform.Windows_x86) {
+            if (host.getPlatform() != Platform.Windows_x86 && host.getPlatform() != Platform.MacOSX_x86) {
                 execPath = executor.readlink(dt.getPid());
             }
             ndi.setTarget(execPath);
@@ -2156,9 +2123,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
                 });
 		return;
 	} else {
-	    ConsoleTopComponent.getDefault().open();
+	    ConsoleTopComponent.findInstance().open();
 	    if (DebuggerOption.FRONT_DBGWIN.isEnabled(globalOptions())) {
-		ConsoleTopComponent.getDefault().requestActive();
+		ConsoleTopComponent.findInstance().requestActive();
 	    }
 	}
     }
@@ -2179,8 +2146,8 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	    });
 	    return;
 	} else {
-	    PioTopComponent.getDefault().open();
-	    PioTopComponent.getDefault().requestActive();
+	    PioTopComponent.findInstance().open();
+	    PioTopComponent.findInstance().requestActive();
 	}
     }
 

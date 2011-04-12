@@ -60,6 +60,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.ErrorManager;
@@ -232,11 +233,11 @@ public final class ManifestManager {
         }
     }
     
-    public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {
+    public static @NonNull ManifestManager getInstance(@NonNull Manifest manifest, boolean loadPublicPackages) {
         return getInstance(manifest, loadPublicPackages, false);
     }
 
-    public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
+    public static @NonNull ManifestManager getInstance(@NonNull Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
         if (codename == null) {

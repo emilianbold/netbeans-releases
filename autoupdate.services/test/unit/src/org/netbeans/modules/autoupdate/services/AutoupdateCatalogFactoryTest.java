@@ -59,6 +59,12 @@ public class AutoupdateCatalogFactoryTest extends NbTestCase {
         super(n);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
+    }
+
     public void testCreateUpdateProviderWithOwnIcon() throws Exception {
         FileObject f = FileUtil.getConfigRoot().createData("whatever.instance");
         f.setAttribute("url", "file:/wherever.xml");

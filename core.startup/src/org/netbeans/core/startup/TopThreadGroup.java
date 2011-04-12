@@ -44,6 +44,7 @@
 
 package org.netbeans.core.startup;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import org.netbeans.TopSecurityManager;
 import org.openide.util.Exceptions;
 
@@ -86,8 +87,15 @@ final class TopThreadGroup extends ThreadGroup implements Runnable {
         super(parent, name);
     }
 
+    @Override
     public void uncaughtException(Thread t, Throwable e) {
         if (!(e instanceof ThreadDeath)) {
+            UncaughtExceptionHandler h = Thread.getDefaultUncaughtExceptionHandler();
+            if (h != null) {
+                h.uncaughtException(t, e);
+                return;
+            }
+            
             if (e instanceof VirtualMachineError) {
                 // Try as hard as possible to get a stack trace from e.g. StackOverflowError
                 e.printStackTrace();
@@ -109,6 +117,7 @@ final class TopThreadGroup extends ThreadGroup implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         try {
             Main.start (args);

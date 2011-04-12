@@ -102,7 +102,6 @@ public class CssGSFParser extends Parser {
 
         List<Error> errors = new ArrayList<Error>();
         errors.addAll(errors(parseExceptions, snapshot, root)); //parser errors
-        errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
         this.lastResult = new CssParserResult(this, snapshot, root, errors);
     }

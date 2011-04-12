@@ -74,8 +74,8 @@ final class SQLStackRequestsProvider {
         return new AddNodeRequest(nodeId, callerId, funcId, offset, lineNumber);
     }
 
-    public AddFunctionRequest addFunction(Long funcId, String funcName, int source_file_index, int line_number) {
-        return new AddFunctionRequest(funcId, funcName, source_file_index, line_number);
+    public AddFunctionRequest addFunction(Long funcId, String funcName, int source_file_index, int line_number, long context_id) {
+        return new AddFunctionRequest(funcId, funcName, source_file_index, line_number, context_id);
     }
 
     public SQLRequest updateNodeMetrics(long id, long bucket) {
@@ -127,24 +127,27 @@ final class SQLStackRequestsProvider {
         public final CharSequence name;
         public final int sourceFileIndex;
         public final int line_number;
+        public final long context_id;
 
-        public AddFunctionRequest(long id, CharSequence name, int sourceFileIndex, int line_number) {
+        public AddFunctionRequest(long id, CharSequence name, int sourceFileIndex, int line_number, long context_id) {
             this.id = id;
             this.name = name;
             this.sourceFileIndex = sourceFileIndex;
             this.line_number = line_number;
+            this.context_id = context_id;
         }
 
         @Override
         public void execute() throws SQLException {
             PreparedStatement stmt = cache.getPreparedStatement(
                     "INSERT INTO Func " + // NOI18N
-                    "(func_id, func_name, func_source_file_id, line_number) " + // NOI18N
-                    "VALUES (?, ?, ?, ?)"); // NOI18N
+                    "(func_id, func_name, func_source_file_id, line_number, context_id) " + // NOI18N
+                    "VALUES (?, ?, ?, ?, ?)"); // NOI18N
             stmt.setLong(1, id);
             stmt.setString(2, truncateString(name.toString()));
             stmt.setInt(3, sourceFileIndex);
             stmt.setLong(4, line_number);
+            stmt.setLong(5, context_id);
             stmt.executeUpdate();
         }
     }

@@ -48,6 +48,7 @@ import java.util.Map;
 import org.apache.lucene.document.Document;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
@@ -81,6 +82,7 @@ import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -188,12 +190,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     
     private Mutex getRepoMutex(String repoId) {
-        Mutex m = repoMutexMap.get(repoId);
-        if (null==m) {
-            m = new Mutex();
-            repoMutexMap.put(repoId, m);
+        synchronized (repoMutexMap) {
+            Mutex m = repoMutexMap.get(repoId);
+            if (m == null) {
+                m = new Mutex();
+                repoMutexMap.put(repoId, m);
+            }
+            return m;
         }
-        return m;
     }
     
     private Lookup lookup;
@@ -258,10 +262,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     //always call from mutex.writeAccess
-    private void loadIndexingContext(final RepositoryInfo... repoids) throws IOException {
-
-        for (RepositoryInfo info : repoids) {
-
+    private void loadIndexingContext(final RepositoryInfo info) throws IOException {
+        LOAD: {
             assert getRepoMutex(info).isWriteAccess();
             initIndexer();
 
@@ -273,23 +275,23 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 File repofile = info.getRepositoryPath() != null ? new File(info.getRepositoryPath()) : null;
                 //try to figure if context reload is necessary
                 if (!Utilities.compareObjects(contexturl, indexUpdateUrl)) {
-                    LOGGER.fine("Remote context changed:" + info.getId() + ", unload/load");//NOI18N
+                    LOGGER.log(Level.FINE, "Remote context changed: {0}, unload/load", info.getId());
                     unloadIndexingContext(info);
                 } else if (!Utilities.compareObjects(contextfile, repofile)) {
-                    LOGGER.fine("Local context changed:" + info.getId() + ", unload/load");//NOI18N
+                    LOGGER.log(Level.FINE, "Local context changed: {0}, unload/load", info.getId());
                     unloadIndexingContext(info);
                 } else {
-                    LOGGER.fine("Skipping Context :" + info.getId() + ", already loaded.");//NOI18N
-                    continue;
+                    LOGGER.log(Level.FINE, "Skipping Context: {0}, already loaded.", info.getId());
+                    break LOAD; // XXX does it suffice to just return here, or is code after block needed?
                 }
             }
-            LOGGER.fine("Loading Context :" + info.getId());//NOI18N
+            LOGGER.log(Level.FINE, "Loading Context: {0}", info.getId());
             if (info.isLocal() || info.isRemoteDownloadable()) {
                 File loc = new File(getDefaultIndexLocation(), info.getId()); // index folder
                 boolean index = false;
                 if (!loc.exists() || loc.listFiles().length <= 0) {
                     index = true;
-                    LOGGER.finer("Index Not Available :" + info.getId() + " At :" + loc.getAbsolutePath());//NOI18N
+                    LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[] {info.getId(), loc.getAbsolutePath()});
                 }
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
@@ -301,7 +303,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (info.isLocal()) { // #164593
                     creators.add(new NbIndexCreator());
                 } else {
-                    creators.add(new NotifyingIndexCreator());
+                    creators.add(new NotifyingIndexCreator(info));
                 }
                 try {
                     indexer.addIndexingContextForced(
@@ -313,10 +315,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
                 } catch (IOException ex) {
-                    LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
-                    LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
+                    LOGGER.log(Level.INFO, "Found a broken index at " + loc.getAbsolutePath(), ex);
                     FileUtils.deleteDirectory(loc);
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NexusRepositoryIndexerImpl.class, "MSG_Reconstruct_Index"));
+                    try {
                     indexer.addIndexingContextForced(
                             info.getId(), // context id
                             info.getId(), // repository id
@@ -325,6 +327,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
+                    } catch (LockObtainFailedException x) {
+                        LOGGER.log(Level.INFO, "#195357: could not clean up from broken index", x);
+                    }
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
@@ -334,8 +339,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         //figure if a repository was removed from list, remove from context.
         Set<String> currents = new HashSet<String>();
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-            currents.add(info.getId());
+        for (RepositoryInfo info2 : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+            currents.add(info2.getId());
         }
         Set<String> toRemove = new HashSet<String>(indexer.getIndexingContexts().keySet());
         toRemove.removeAll(currents);
@@ -406,7 +411,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 toRet.add(context);
             } else {
                 if (info.isLocal() || info.isRemoteDownloadable()) {
-                    LOGGER.info("The context '" + info.getId() + "' isn't loaded. Please file under component: maven in NetBeans issue tracking system");
+                    LOGGER.log(Level.WARNING, "The context ''{0}'' is not loaded.", info.getId());
                 }
                 //else ignore, is not a real nexus repo, is missing any indexing properties..
             }
@@ -415,7 +420,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
-        
+
         int MAX_MAX_CLAUSE = 2048;  // conservative maximum for too general queries, like "c:*class*"
         
         Query q = fsr.getQuery();
@@ -429,35 +434,35 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }
-        
-        FlatSearchResponse response = null;
+
         int oldMax = BooleanQuery.getMaxClauseCount();
         try {
-            BooleanQuery.TooManyClauses tooManyC = null;
-            for (int i = oldMax; i <= MAX_MAX_CLAUSE; i*=2) {
+            int max = oldMax;
+            while (true) {
+                FlatSearchResponse response;
                 try {
-                    BooleanQuery.setMaxClauseCount(i);
+                    BooleanQuery.setMaxClauseCount(max);
                     response = searcher.searchFlatPaged(fsr, contexts);
+                    LOGGER.log(Level.FINE, "passed on {0} clauses processing {1} with {2} hits", new Object[] {max, q, response.getTotalHitsCount()});
+                    return response;
                 } catch (BooleanQuery.TooManyClauses exc) {
-                    tooManyC = exc;
-                    response = null;
-                    LOGGER.finest("TooManyClause on " + i + " clauses"); //NOI18N
+                    LOGGER.log(Level.FINE, "TooManyClauses on {0} clauses processing {1}", new Object[] {max, q});
+                    max *= 2;
+                    if (max > MAX_MAX_CLAUSE) {
+                        if (shouldThrow) {
+                            throw exc;
+                        } else {
+                            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, q});
+                            return null;
+                        }
+                    } else {
+                        continue;
+                    }
                 }
-                if (response != null) {
-                    LOGGER.finest("OK, passed on " + i + " clauses"); //NOI18N
-                    break;
-                }
-            }
-            if (response == null && shouldThrow) {
-                throw tooManyC;
             }
         } finally {
             BooleanQuery.setMaxClauseCount(oldMax);
         }
-        if (response == null) {
-            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, fsr.getQuery()});
-        }
-        return response;
     }
 
 
@@ -465,7 +470,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private void unloadIndexingContext(final RepositoryInfo... repos) throws IOException {
         for (RepositoryInfo repo : repos) {
             assert getRepoMutex(repo).isWriteAccess();
-            LOGGER.finer("Unloading Context :" + repo.getId());//NOI18N
+            LOGGER.log(Level.FINER, "Unloading Context: {0}", repo.getId());
             IndexingContext ic = indexer.getIndexingContexts().get(repo.getId());
             if (ic != null) {
                 indexer.removeIndexingContext(ic, false);
@@ -477,7 +482,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     //always call from mutex.writeAccess
     private void unloadIndexingContext(final String repo) throws IOException {
         assert getRepoMutex(repo).isWriteAccess();
-        LOGGER.fine("Unloading Context :" + repo);//NOI18N
+        LOGGER.log(Level.FINE, "Unloading Context: {0}", repo);
         IndexingContext ic = indexer.getIndexingContexts().get(repo);
         if (ic != null) {
             indexer.removeIndexingContext(ic, false);
@@ -490,34 +495,38 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
             IndexingContext indexingContext = indexingContexts.get(repo.getId());
             if (indexingContext == null) {
-                LOGGER.info("Indexing context could not be found :" + repo.getId());//NOI18N
+                LOGGER.log(Level.WARNING, "Indexing context could not be found: {0}", repo.getId());
                 return;
             }
             if (repo.isRemoteDownloadable()) {
-                LOGGER.finer("Indexing Remote Repository :" + repo.getId());//NOI18N
+                LOGGER.log(Level.FINE, "Indexing Remote Repository: {0}", repo.getId());
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
                     ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
-                    NotifyingIndexCreator.beingIndexed = repo;
-                    NotifyingIndexCreator.handle = null;
-                    NotifyingIndexCreator.canceled.set(false);
+                    NotifyingIndexCreator nic = null;
+                    for (IndexCreator ic : indexingContext.getIndexCreators()) {
+                        if (ic instanceof NotifyingIndexCreator) {
+                            nic = (NotifyingIndexCreator) ic;
+                            break;
+                        }
+                    }
+                    if (nic != null) {
+                        nic.start();
+                    }
                     try {
                         remoteIndexUpdater.fetchAndUpdateIndex(iur);
                     } finally {
-                        NotifyingIndexCreator.beingIndexed = null;
-                        if (NotifyingIndexCreator.handle != null) {
-                            NotifyingIndexCreator.handle.finish();
-                            NotifyingIndexCreator.handle = null;
+                        if (nic != null) {
+                            nic.end();
                         }
-                        NotifyingIndexCreator.canceled.set(false);
                     }
                 } finally {
                     listener.close();
                 }
             } else {
-                LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
+                LOGGER.log(Level.FINE, "Indexing Local Repository: {0}", repo.getId());
                 RepositoryIndexerListener listener = new RepositoryIndexerListener(indexingContext);
                 try {
                     indexer.scan(indexingContext, listener, updateLocal);
@@ -532,6 +541,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             //handle index not found
         } catch (ComponentLookupException x) {
             LOGGER.log(Level.INFO, "could not find protocol handler for " + repo.getRepositoryUrl(), x);
+        } catch (RuntimeException x) {
+            LOGGER.log(Level.WARNING, "could not index " + repo.getId(), x);
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
@@ -539,9 +550,23 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     /** Just tracks what is being unpacked after a remote index has been downloaded. */
     private static final class NotifyingIndexCreator implements IndexCreator {
-        static RepositoryInfo beingIndexed;
-        static ProgressHandle handle;
-        static final AtomicBoolean canceled = new AtomicBoolean();
+        private final RepositoryInfo beingIndexed;
+        private ProgressHandle handle;
+        private final AtomicBoolean canceled = new AtomicBoolean();
+        NotifyingIndexCreator(RepositoryInfo info) {
+            beingIndexed = info;
+        }
+        private void start() {
+            handle = null;
+            canceled.set(false);
+        }
+        private void end() {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+            canceled.set(false);
+        }
         public @Override void updateDocument(ArtifactInfo artifactInfo, Document document) {
             if (canceled.get()) {
                 throw new Cancellation();
@@ -569,7 +594,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     @Override
     public void indexRepo(final RepositoryInfo repo) {
-        LOGGER.finer("Indexing Context :" + repo);//NOI18N
+        LOGGER.log(Level.FINER, "Indexing Context: {0}", repo);
         try {
             RemoteIndexTransferListener.addToActive(Thread.currentThread());
             getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -594,7 +619,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     public void shutdownAll() {
-        LOGGER.finer("Shutting Down All Contexts");//NOI18N
+        LOGGER.fine("Shutting Down All Contexts");
         // Do not acquire write access since that can block waiting for a hung download.
         try {
             if (inited) {
@@ -618,7 +643,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
                     if (indexingContext == null) {
-                        LOGGER.warning("Indexing context could not be created :" + repo.getId());//NOI18N
+                        LOGGER.log(Level.WARNING, "Indexing context could not be created: {0}", repo.getId());
                         return null;
                     }
 
@@ -661,7 +686,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
                     if (indexingContext == null) {
-                        LOGGER.warning("Indexing context chould not be created :" + repo.getId());//NOI18N
+                        LOGGER.log(Level.WARNING, "Indexing context chould not be created: {0}", repo.getId());
                         return null;
                     }
 
@@ -706,6 +731,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         repo.fireChangeIndex();
     }
 
+    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // if mkdirs fails, indexing will just fail later anyway
     private File getDefaultIndexLocation() {
         String userdir = System.getProperty("netbeans.user"); //NOI18N
         File cacheDir;
@@ -806,7 +832,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS + version + ArtifactInfo.FS;
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(new RepositoryInfo[] { repo }));
                         infos.addAll(convertToNBVersionInfo(response.getResults()));
                         return null;
@@ -888,7 +914,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(
                                 indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()))),
                                 ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
                             infos.addAll(convertToNBVersionInfo(postProcessClasses(response.getResults(),
@@ -919,7 +945,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_ARTIFACT, artifactId)), BooleanClause.Occur.MUST));
                         bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_VERSION, version)), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
                             infos.addAll(convertToNBVersionInfo(response.getResults()));
@@ -946,7 +972,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(MAVEN.SHA1, new StringSearchExpression(sha1)))), BooleanClause.Occur.SHOULD));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
                             infos.addAll(convertToNBVersionInfo(response.getResults()));
@@ -974,7 +1000,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         // XXX also consider using NexusArchetypeDataSource
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
                             List<NBVersionInfo> results = convertToNBVersionInfo(response.getResults());
@@ -1008,7 +1034,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                         bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
                             for (ArtifactInfo artifactInfo : response.getResults()) {
@@ -1040,7 +1066,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.GROUP_ID, prefix))), BooleanClause.Occur.MUST));
                         }
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
                             for (ArtifactInfo artifactInfo : response.getResults()) {
@@ -1070,7 +1096,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         String id = groupId + ArtifactInfo.FS + prefix;
                         bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
                         if (response != null) {
                             for (ArtifactInfo artifactInfo : response.getResults()) {
@@ -1122,7 +1148,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             }
                         }
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setAiCount(MAX_RESULT_COUNT);
+                        fsr.setCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), true);
                         infos.addAll(convertToNBVersionInfo(response.getResults()));
                         return null;

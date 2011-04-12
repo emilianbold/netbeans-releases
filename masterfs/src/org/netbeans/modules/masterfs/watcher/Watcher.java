@@ -55,6 +55,7 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -72,7 +73,7 @@ public final class Watcher extends AnnotationProvider {
     static final Logger LOG = Logger.getLogger(Watcher.class.getName());
 
     private final Ext<?> ext;
-
+    
     public Watcher() {
         // Watcher disabled manually or for some tests
         if (Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
@@ -83,6 +84,10 @@ public final class Watcher extends AnnotationProvider {
         ext = make(getNotifierForPlatform());
     }
     
+    public static boolean isEnabled() {
+        return Lookup.getDefault().lookup(Watcher.class).ext != null;
+    }
+
     public static File wrap(File f, FileObject fo) {
         if (f instanceof FOFile) {
             return f;

@@ -46,6 +46,8 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -54,6 +56,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
@@ -64,7 +67,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -74,6 +86,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 public final class ServerRegistry implements java.io.Serializable {
 
@@ -82,10 +95,11 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
     public static final String URL_ATTR = InstanceProperties.URL_ATTR;
-    public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
-    public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String TARGETNAME_ATTR = "targetName"; //NOI18N
     public static final String SERVER_NAME = "serverName"; //NOI18N
+    
+    private static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
+    
     private static ServerRegistry instance = null;
     public synchronized static ServerRegistry getInstance() {
         if(instance == null) instance = new ServerRegistry();
@@ -373,7 +387,9 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
+    private synchronized void writeInstanceToFile(String url, String username,
+            String password, String serverName) throws IOException {
+
         if (url == null) {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
@@ -386,22 +402,31 @@ public final class ServerRegistry implements java.io.Serializable {
             if (url.equals(instanceFOs[i].getAttribute(URL_ATTR)))
                 instanceFO = instanceFOs[i];
         }
-        String name = FileUtil.findFreeFileName(dir,"instance",null);
-        if (instanceFO == null)
+        
+        if (instanceFO == null) {
+            String name = FileUtil.findFreeFileName(dir,"instance",null);
             instanceFO = dir.createData(name);
+        }
         instanceFO.setAttribute(URL_ATTR, url);
-        instanceFO.setAttribute(USERNAME_ATTR, username);
-        instanceFO.setAttribute(PASSWORD_ATTR, password);
+        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
+        savePassword(instanceFO, password,
+                NbBundle.getMessage(ServerRegistry.class, "MSG_KeyringDisplayName", serverName));
     }
 
-    private synchronized void removeInstanceFromFile(String url) {
+    private synchronized void removeInstanceFromFile(final String url) {
         FileObject instanceFO = getInstanceFileObject(url);
         if (instanceFO == null)
             return;
         try {
             instanceFO.delete();
+            KEYRING_ACCESS.post(new Runnable() {
+                @Override
+                public void run() {
+                    Keyring.delete(getPasswordKey(url));
+                }
+            });
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            LOGGER.log(Level.INFO, null, ioe);
         }
     }
 
@@ -450,7 +475,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         instancesMap().put(url, tmp);
                         // try to create a disconnected deployment manager to see
                         // whether the instance is not corrupted - see #46929
-                        writeInstanceToFile(url, username, password);
+                        writeInstanceToFile(url, username, password, server.getDisplayName());
                         tmp.getInstanceProperties().setProperty(
                                 InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                         if (displayName != null) {
@@ -515,8 +540,11 @@ public final class ServerRegistry implements java.io.Serializable {
 
     public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
-        String username = (String) fo.getAttribute(USERNAME_ATTR);
-        String password = (String) fo.getAttribute(PASSWORD_ATTR);
+        String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
+        // this is ok and avoids deadlock - we are adding FO
+        // either it is new FO with password - so we can read it
+        // or it is already existing and password is stored in keyring
+        String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
         boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
@@ -632,5 +660,127 @@ public final class ServerRegistry implements java.io.Serializable {
     /** Return profiler if any is registered in the IDE, null otherwise. */
     public static Profiler getProfiler() {
         return (Profiler)Lookup.getDefault().lookup(Profiler.class);
+    }
+    
+    @CheckForNull
+    static String readPassword(@NonNull final String url) {
+        Callable<String> call = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                char[] passwordChars = Keyring.read(getPasswordKey(url));
+                if (passwordChars != null) {
+                    String password = String.valueOf(passwordChars);
+                    Arrays.fill(passwordChars, ' ');
+                    return password;
+                }
+                return null;
+            }
+        };
+        return readPassword(call);
+    }
+    
+    @CheckForNull
+    static String readPassword(@NonNull final FileObject fo) {
+        Callable<String> call = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
+                if (password != null) {
+                    return password;
+                }
+                String url = (String) fo.getAttribute(InstanceProperties.URL_ATTR);
+                if (url == null) {
+                    return null;
+                }
+                char[] passwordChars = Keyring.read(getPasswordKey(url));
+                if (passwordChars != null) {
+                    password = String.valueOf(passwordChars);
+                    Arrays.fill(passwordChars, ' ');
+                    return password;
+                }
+                return null;
+            }
+        };
+        return readPassword(call);
+    }    
+
+    static void savePassword(@NonNull final String url, @NullAllowed final String password,
+            @NullAllowed final String displayName) {
+        
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                if (password == null) {
+                    return;
+                }
+                Keyring.save(getPasswordKey(url), password.toCharArray(), displayName);
+            }
+        };
+        KEYRING_ACCESS.post(run);
+    }
+    
+    static void savePassword(@NonNull final FileObject fo, @NullAllowed final String password,
+            @NullAllowed final String displayName) {
+        
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                if (password == null) {
+                    return;
+                }
+                String url = (String) fo.getAttribute(InstanceProperties.URL_ATTR);
+                if (url == null) {
+                    return;
+                }
+                Keyring.save(getPasswordKey(url), password.toCharArray(), displayName);
+                try {
+                    fo.setAttribute(InstanceProperties.PASSWORD_ATTR, null);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+        };
+        KEYRING_ACCESS.post(run);
+    }    
+    
+    private static String readPassword(Callable<String> readTask) {
+        try {
+            final Future<String> result = KEYRING_ACCESS.submit(readTask);
+            if (SwingUtilities.isEventDispatchThread()) {
+                if (!result.isDone()) {
+                    try {
+                        // lets wait in awt to avoid flashing dialogs
+                        result.get(50, TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException ex) {
+                        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    result.get();
+                                } catch (InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                } catch (ExecutionException ex) {
+                                    LOGGER.log(Level.INFO, null, ex);
+                                }
+                            }
+                        }, NbBundle.getMessage(ServerRegistry.class, "MSG_KeyringAccess"));
+                    }
+                }
+            }
+            return result.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;         
+    }
+
+    private static String getPasswordKey(String url) {
+        StringBuilder builder = new StringBuilder("j2eeserver:");
+        builder.append(url);
+        return builder.toString();
     }
 }

@@ -71,7 +71,8 @@ import org.openide.windows.InputOutput;
  * @author Milos Kleint
  */
 public class JPDAStart implements Runnable {
-    
+
+    private static final RequestProcessor RP = new RequestProcessor(JPDAStart.class);
     
     /**
      * @parameter expression="${jpda.transport}"
@@ -106,7 +107,7 @@ public class JPDAStart implements Runnable {
 //            getLog().debug("Entering synch lock"); //NOI18N
         synchronized (lock) {
 //                getLog().debug("Entered synch lock"); //NOI18N
-            RequestProcessor.getDefault().post(this);
+            RP.post(this);
 //                    getLog().debug("Entering wait"); //NOI18N
             lock.wait();
 //                    getLog().debug("Wait finished"); //NOI18N
@@ -174,7 +175,7 @@ public class JPDAStart implements Runnable {
                 properties.put("baseDir", FileUtil.toFile(project.getProjectDirectory())); // NOI18N
                 
                 final ListeningConnector flc = lc;
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
 
                     public void run() {
                         try {

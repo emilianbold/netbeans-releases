@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,9 +54,12 @@ import javax.swing.JComponent;
 public class ConnectProgressDialog extends javax.swing.JPanel {
 
     /** Creates new form ConnectProgressDialog */
-    public ConnectProgressDialog(JComponent progressComponent) {
+    public ConnectProgressDialog(JComponent progressComponent, String label) {
         initComponents();
         ((GroupLayout)getLayout()).replace(placeholderLabel, progressComponent);
+        if (label != null) {
+            pleaseWaitLabel.setText(label);
+        }
     }
 
     /** This method is called from within the constructor to

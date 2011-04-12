@@ -420,7 +420,8 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         } finally {
-            postJavaInfrastructureCleanup();
+// issue #195818 - commented out the following cleanup
+//            postJavaInfrastructureCleanup();
         }
         
         return resultSet;

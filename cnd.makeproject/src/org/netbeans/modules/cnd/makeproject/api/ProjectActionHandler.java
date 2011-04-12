@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.openide.windows.InputOutput;
 
@@ -58,7 +60,7 @@ public interface ProjectActionHandler {
      * @param pae  project action event to be handled
      * @param paes the full chain of project action events to be handled
      */
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes);
+    public abstract void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers);
 
     /**
      * Will be called to execute current project action event that was passed

@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -131,9 +131,31 @@ public final class Deployment {
         return deploy(jmp, debug ? Mode.DEBUG : Mode.RUN, clientModuleUrl, clientUrlPart, forceRedeploy, logger);
     }
 
+    /**
+     * Suspends the deploy on save execution regardless of user selection.
+     *
+     * @param jmp java ee project representation
+     * @since 1.79
+     */
+    public void suspendDeployOnSave(J2eeModuleProvider jmp) {
+        DeployOnSaveManager.getDefault().suspendListening(jmp);
+    }
+    
+    /**
+     * Resumes the deploy on save execution. If it was not preceeded by
+     * {@link #suspendDeployOnSave(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider)}
+     * it is noop.
+     *
+     * @param jmp java ee project representation
+     * @since 1.79
+     */
+    public void resumeDeployOnSave(J2eeModuleProvider jmp) {
+        DeployOnSaveManager.getDefault().resumeListening(jmp);
+    }    
+    
     public String deploy (J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         
-        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, clientModuleUrl);
+        DeploymentTarget deploymentTarget = new DeploymentTarget(jmp, clientModuleUrl);
         TargetModule[] modules = null;
         final J2eeModule module = deploymentTarget.getModule();
 
@@ -167,6 +189,7 @@ public final class Deployment {
             }
 
             // now the server is running
+            DeployOnSaveManager.getDefault().resumeListening(jmp);
             DeploymentHelper.deployServerLibraries(jmp);
             DeploymentHelper.deployDatasources(jmp);
             DeploymentHelper.deployMessageDestinations(jmp);
@@ -225,7 +248,7 @@ public final class Deployment {
      * @since 1.52
      */
     public void undeploy(J2eeModuleProvider jmp, boolean startServer, Logger logger) throws DeploymentException {
-        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, null);
+        DeploymentTarget deploymentTarget = new DeploymentTarget(jmp, null);
         final J2eeModule module = deploymentTarget.getModule();
 
         String title = NbBundle.getMessage(Deployment.class, "LBL_Undeploying", jmp.getDeploymentName());

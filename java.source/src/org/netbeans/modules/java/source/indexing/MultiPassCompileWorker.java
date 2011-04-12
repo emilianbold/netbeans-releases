@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.tools.javac.api.ClientCodeWrapper;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -190,6 +191,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 if (jfo2tuples.remove(active.jfo) != null) {
                     final Types ts = Types.instance(jt.getContext());
                     final Indexable activeIndexable = active.indexable;
+                    final ClientCodeWrapper ccw = ClientCodeWrapper.instance(jt.getContext());
                     class ScanNested extends TreeScanner {
                         Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
                         @Override
@@ -198,7 +200,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 Type st = ts.supertype(node.sym.type);
                                 if (st.tag == TypeTags.CLASS) {
                                     ClassSymbol c = st.tsym.outermostClass();
-                                    CompileTuple u = jfo2tuples.get(c.sourcefile);
+                                    CompileTuple u = jfo2tuples.get(ccw.unwrap(c.sourcefile));
                                     if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
                                         dependencies.add(u);
                                     }
@@ -242,9 +244,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
-                }
+                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated) : false;
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
@@ -289,6 +289,10 @@ final class MultiPassCompileWorker extends CompileWorker {
                 previous.finishedFiles.add(active.indexable);
                 active = null;
                 state  = 0;
+                if (aptGenerated) {
+                    dumpSymFiles(fileManager, jt, previous.createdFiles);
+                    jt = null;
+                }
             } catch (CouplingAbort ca) {
                 //Coupling error
                 TreeLoader.dumpCouplingAbort(ca, null);

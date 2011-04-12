@@ -268,7 +268,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
     private boolean moveToOpeningTag(JoinedTokenSequence<T1> tokenSequence) {
-        int originalIndex = tokenSequence.index();
+        int[] originalIndex = tokenSequence.index();
 
         CharSequence searchedTagName = getTokenName(tokenSequence.token());
         int balance = 0;
@@ -430,7 +430,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 setInOpeningTagAttributes(true);
                 lastOpenTagName = getTokenName(token);
             } else if (isTagArgumentToken(token) && getAttributesIndent() == -1) {
-                int index = ts.index();
+                int[] index = ts.index();
                 int offset = ts.offset();
                 ts.movePrevious();
                 Token<T1> tk = findPreviousNonWhiteSpaceToken(ts);

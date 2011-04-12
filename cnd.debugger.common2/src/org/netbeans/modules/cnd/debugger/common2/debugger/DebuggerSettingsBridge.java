@@ -394,9 +394,9 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      *
      */
     public void noteProgLoaded(String progname) {
-
+        
 	if (IpeUtils.sameString("-", tentativeTarget) || // NOI18N
-	    IpeUtils.sameString(progname, IpeUtils.normalizePath(tentativeTarget)) &&
+	    IpeUtils.sameString(progname, IpeUtils.normalizePath(tentativeTarget, EditorBridge.getSourceFileSystem(debugger))) &&
 	    ! isInUse(tentativeSettings.runProfile(), debugger)) {
 
 	    // Nothing to do

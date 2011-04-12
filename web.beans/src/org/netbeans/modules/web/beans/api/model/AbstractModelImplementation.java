@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import java.util.Collection;
+
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProviderFactory;
 import org.openide.util.Lookup;
 
 
@@ -57,16 +59,22 @@ public abstract class AbstractModelImplementation {
     protected AbstractModelImplementation( ModelUnit unit ){
         myUnit = unit;
         myModel = new WebBeansModel( this );
+        Collection<? extends WebBeansModelProviderFactory> factories = 
+            Lookup.getDefault().lookupAll( 
+                WebBeansModelProviderFactory.class);
+        for( WebBeansModelProviderFactory factory : factories ){
+            myProvider = factory.createWebBeansModelProvider(this);
+            if ( myProvider != null ){
+                break;
+            }
+        }
+        
     }
     
     public ModelUnit getModelUnit(){
         return myUnit;
     }
 
-    protected AnnotationModelHelper getHelper(){
-        return getModelUnit().getHelper();
-    }
-    
     protected WebBeansModel getModel(){
         return myModel;
     }
@@ -76,9 +84,10 @@ public abstract class AbstractModelImplementation {
     }
     
     protected WebBeansModelProvider getProvider(){
-        return Lookup.getDefault().lookup( WebBeansModelProvider.class);
+        return myProvider;
     }
     
     private ModelUnit myUnit;
     private WebBeansModel myModel;
+    private WebBeansModelProvider myProvider;
 }

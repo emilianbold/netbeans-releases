@@ -594,6 +594,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return templateDescriptor != null && templateDescriptor.isSpecialization();
     }
 
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
     /**
      * Gets this function body.
      * The same as the following call:

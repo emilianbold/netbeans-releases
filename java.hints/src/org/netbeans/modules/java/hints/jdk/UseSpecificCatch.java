@@ -173,7 +173,7 @@ public class UseSpecificCatch {
 
             VariableTree excVar = ((CatchTree) tp.getLeaf()).getParameter();
 
-            wc.rewrite(excVar.getType(), wc.getTreeMaker().DisjunctiveType(exceptions));
+            wc.rewrite(excVar.getType(), wc.getTreeMaker().UnionType(exceptions));
         }
 
     }

@@ -1066,17 +1066,37 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             synchronized (this) {
                 dir = d;
             }
+            List<File> files = new LinkedList<File>();
             File[] children = dir.listFiles();
+            if (children != null) {
+                for (File f : children) {
+                    if(fileChooser.accept(f)) {
+                        if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
+                            if(f.isDirectory()) {
+                                files.add(f);
+                            }
+                        } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_ONLY) {
+                            if(f.isFile()) {
+                                files.add(f);
+                            }
+                        } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
+                            files.add(f);
+                        }
+                    }
+                }
+            }
             synchronized (this) {
                 lastDir = dir;
-                lastChildren = children;
+                lastChildren = files.toArray(new File[files.size()]);
             }
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    updateCompletions();
-                }
-            });
+            if (lastChildren.length > 0) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateCompletions();
+                    }
+                });
+            }
         }
     }
     
@@ -1085,26 +1105,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         for(int i = children.length - 1; i >= 0; i--) {
             File completion = children[i];
-            
-            if(fileChooser.accept(completion)) {
-                String path = completion.getAbsolutePath();
-                
-                if (path.regionMatches(true, 0, text, 0, text.length())) {
-                    
-                    if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
-                        if(completion.isDirectory()) {
-                            files.add(completion);
-                        }
-                    } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_ONLY) {
-                        if(completion.isFile()) {
-                            files.add(completion);
-                        }
-                    } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
-                        files.add(completion);
-                    }
-                }
+            String path = completion.getAbsolutePath();
+            if (path.regionMatches(true, 0, text, 0, text.length())) {
+                files.add(completion);
             }
-
             if (files.size() >= max) {
                 break;
             }
