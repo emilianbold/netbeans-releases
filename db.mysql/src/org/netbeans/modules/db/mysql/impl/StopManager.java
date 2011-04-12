@@ -162,7 +162,6 @@ public final class StopManager {
                     }
                 } finally {
                     handle.finish();
-                    stopRequested.set(true);
                 }
             }
         });
