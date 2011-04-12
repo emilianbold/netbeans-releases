@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
@@ -242,13 +241,12 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (isConnected()) {
 
             super.activate(redundant);
-//
-//            TODO:fixMe
-//            disassemblerWindow().setDebugger(this);
-//            disassemblerWindow().getView().setModelController(disModel(),
-//							  disController(),
-//							  disStateModel(),
-//							  breakpointModel());
+            
+            disassemblerWindow().setDebugger(this);
+            disassemblerWindow().getView().setModelController(disModel(),
+							  disController(),
+							  disStateModel(),
+							  breakpointModel());
 
 	    rtcView.switchTo();
 
@@ -3362,16 +3360,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
      * Disassembler stuff
      *
      */
-    // TODO:fixMe
-    public Disassembly getDisassembly() {
-        return null;
-    }
 
     // interface NativeDebugger
     @Override
-    public void registerDisassembly(Disassembly w) {
+    public void registerDisassemblerWindow(DisassemblerWindow w) {
 
-	assert w == null || w == getDisassembly();
+	assert w == null || w == disassemblerWindow();
+
 	boolean makeAsmVisible = (w != null);
 	if (makeAsmVisible == isAsmVisible())
 	    return;
@@ -3405,7 +3400,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     // implement NativeDebuggerImpl
-    public Controller disController() {
+    protected Controller disController() {
 	return disController;
     }
 
