@@ -44,6 +44,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Dialog;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -472,7 +473,13 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
         if (isAqua) {
             //Apple UI guidelines recommend against ever using JFileChooser
-            FileDialog fd = new FileDialog((Frame) owner.getTopLevelAncestor(), dlgTtl, FileDialog.SAVE);
+            Container frameOrDialog = owner.getTopLevelAncestor();
+            FileDialog fd;
+            if (frameOrDialog instanceof Frame) {
+                fd = new FileDialog((Frame) frameOrDialog, dlgTtl, FileDialog.SAVE);
+            } else {
+                fd = new FileDialog((Dialog) frameOrDialog, dlgTtl, FileDialog.SAVE);
+            }
             if (lastDir != null && new File(lastDir).exists()) {
                 fd.setDirectory(lastDir);
             }
