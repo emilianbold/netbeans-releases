@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
+import java.util.Vector;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import com.sun.tools.swdev.glue.dbx.GPDbxJN_mode;
@@ -74,6 +75,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 
 public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
     private final OptionSet defaultRtcOptionSet = new RtcOptionSet();
@@ -290,9 +292,37 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 
     protected void applyEnvvars() {
 	// Iterate over the environment variable list
-	dbx().postEnvvars(getMainSettings().runProfile().getEnvironment().getenv());
+	dbx().postEnvvars(getMainSettings().runProfile().getEnvironment().getenv(), null);
     }
 
+    // CR 4887794
+    protected void applyEnvvars(String[][] o, String[][] n) {
+	Vector<String> unset = new Vector<String>();
+	// Find the removed ones, and send unsetcommand to dbx
+	for (int ox = 0; ox < o.length; ox++) {
+	    boolean found = false;
+	    for (int nx = 0; nx < n.length; nx++) {
+		if (o[ox][0].equals(n[nx][0])) {
+		    found = true;
+		    break;
+		}
+	    }
+	    if (!found) {
+		// removed env
+		String env = o[ox][0];
+		unset.add(env); // NOI18N
+	    }
+	}
+	String[] unsetArray = null;
+	if (unset != null) {
+	    // convert to array
+	    unsetArray = new String[unset.size()];
+	    for (int i = 0; i < unset.size(); i++)
+		unsetArray[i] = unset.elementAt((i));
+	}
+	dbx().postEnvvars(getMainSettings().runProfile().getEnvironment().getenv(),
+		unsetArray);
+    }
     protected void applySignals(Signals o, Signals n) {
 	assert n != null : "applySignals: null new value";
 	// OLD assert n.count() > 0 : "applySignals: empty new value";

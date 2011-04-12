@@ -1092,12 +1092,15 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 
     //
 
-    public void postEnvvars(String [] envvars) {
-	if (envvars == null) 
-	    return;
-	for (int i = 0; i < envvars.length; i++) {
-	    sendCommandHelp(0, 0, "export " + envvars[i].toString());//NOI18N
-	}
+    public void postEnvvars(String [] envvars, String[] removed) {
+	if (removed != null)
+	    for (int i = 0; i < removed.length; i++) {
+		sendCommandHelp(0, 0, "unset " + removed[i].toString());//NOI18N
+	    }
+	if (envvars != null)
+	    for (int i = 0; i < envvars.length; i++) {
+		sendCommandHelp(0, 0, "export " + envvars[i].toString());//NOI18N
+	    }
     }
 
     protected void sendCommandHelp(int routingToken, int flags, String cmd) {
