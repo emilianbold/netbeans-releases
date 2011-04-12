@@ -47,15 +47,26 @@ import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
@@ -73,6 +84,9 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.repository.Bundle.*;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -84,10 +98,13 @@ public class VersionNode extends AbstractNode {
     private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"; //NOI18N
     private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencySrcIncluded.png"; //NOI18N
 
+    private static final RequestProcessor RP = new RequestProcessor(VersionNode.class);
+
     private NBVersionInfo record;
     private boolean hasJavadoc;
     private boolean hasSources;
     private RepositoryInfo info;
+    private FileObject localArtifact;
 
     private static String toolTipJavadoc = "<img src=\"" + VersionNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(VersionNode.class, "ICON_JavadocBadge");//NOI18N
@@ -95,11 +112,8 @@ public class VersionNode extends AbstractNode {
             + NbBundle.getMessage(VersionNode.class, "ICON_SourceBadge");//NOI18N
 
     private static FileObject findLocalArtifact(RepositoryInfo info, NBVersionInfo record) {
-        if (info.isLocal()) {
-            return FileUtil.toFileObject(FileUtilities.convertArtifactToLocalRepositoryFile(RepositoryUtil.createArtifact(record)));
-        } else {
-            return null;
-        }
+        // XXX should perhaps use info.repositoryPath when available (in case there are multiple local repos)
+        return FileUtil.toFileObject(FileUtilities.convertArtifactToLocalRepositoryFile(RepositoryUtil.createArtifact(record)));
     }
 
     private static Children createChildren(FileObject fo) {
@@ -133,6 +147,10 @@ public class VersionNode extends AbstractNode {
             setName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
         }
         setIconBaseWithExtension("org/netbeans/modules/maven/repository/DependencyJar.gif"); //NOI18N
+        setLocalArtifact(localArtifact);
+    }
+
+    private void setLocalArtifact(FileObject localArtifact) {
         if (localArtifact != null && localArtifact.isData()) {
             try {
                 OpenCookie oc = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(localArtifact)).getLookup().lookup(OpenCookie.class);
@@ -143,6 +161,7 @@ public class VersionNode extends AbstractNode {
                 Exceptions.printStackTrace(x);
             }
         }
+        this.localArtifact = localArtifact;
     }
 
     @Override
@@ -179,6 +198,9 @@ public class VersionNode extends AbstractNode {
         }
         if (getLookup().lookup(OpenCookie.class) != null) {
             actions.add(OpenAction.get(OpenAction.class));
+        }
+        if (localArtifact == null && info.isRemoteDownloadable()) {
+            actions.add(new DownloadAction(artifact));
         }
         actions.add(CopyAction.get(CopyAction.class));
         return actions.toArray(new Action[actions.size()]);
@@ -238,4 +260,43 @@ public class VersionNode extends AbstractNode {
             ArtifactViewer.showArtifactViewer(info);
         }
     }
+
+    private class DownloadAction extends AbstractAction {
+        private final Artifact art;
+        @Messages("DownloadAction_label=Download")
+        public DownloadAction(Artifact art) {
+            super(DownloadAction_label());
+            this.art = art;
+        }
+        @Messages({"# {0} - artifact ID", "DownloadAction_downloading=Downloading {0}"})
+        public @Override void actionPerformed(ActionEvent e) {
+            RP.post(new Runnable() {
+                public @Override void run() {
+                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(DownloadAction_downloading(art.getId()),
+                            new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("")},
+                            ProgressTransferListener.cancellable(), null);
+                    ProgressTransferListener.setAggregateHandle(hndl);
+                    try {
+                        hndl.start();
+                        online.resolve(art, Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId())), online.getLocalRepository());
+                    } catch (ThreadDeath d) {
+                        return;
+                    } catch (AbstractArtifactResolutionException x) {
+                        return;
+                    } finally {
+                        hndl.finish();
+                        ProgressTransferListener.clearAggregateHandle();
+                    }
+                    RepositoryInfo local = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
+                    if (local != null) {
+                        RepositoryIndexer.updateIndexWithArtifacts(local, Collections.singletonList(art));
+                    }
+                    setLocalArtifact(findLocalArtifact(info, record));
+                    setChildren(createChildren(localArtifact));
+                }
+            });
+        }
+    }
+
 }
