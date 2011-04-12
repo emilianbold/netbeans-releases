@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,26 +54,23 @@ import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.buildsupport.BuildProjectActionHandler.ExecLogWrapper;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -101,8 +99,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         private ProjectActionEvent[] events;
         private int step = -1;
         private BufferedWriter bw;
-        private String name;
-        private File execLog;
+        private ExecLogWrapper execLog;
 
         public ConfigureAction(String ioTabName, ProjectActionEvent[] events) {
             this.ioTabName = ioTabName;
@@ -125,21 +122,26 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             setEnabled(false);
             if (step == 1) {
                 try {
-                    File file = File.createTempFile("tmplog", ".log"); // NOI18N
+                    File file = File.createTempFile("build", ".log"); // NOI18N
                     file.deleteOnExit();
-                    name = file.getAbsolutePath();
+                    if (execLog == null) {
+                        execLog = new ExecLogWrapper(null, null);
+                    }
+                    execLog.setBuildLog(file.getAbsolutePath());
                     bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
                 } catch (IOException ex) {
-                    name = null;
+                    execLog.setBuildLog(null);
                     bw = null;
                     Exceptions.printStackTrace(ex);
                 }
+            } else if (step == 0) {
+                execLog = null;
             }
         }
 
         @Override
         public void executionFinished(int rc) {
-            if (step == 1 && rc == 0 && name != null) {
+            if (step == 1 && rc == 0 && execLog != null && execLog.getBuildLog() != null) {
                 setEnabled(true);
             }
         }
@@ -150,7 +152,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
 
 
-        public void setExecLog(File execLog) {
+        public void setExecLog(ExecLogWrapper execLog) {
             this.execLog = execLog;
         }
 
@@ -159,10 +161,9 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             setEnabled(false);
             if (step >= 0 && step < events.length) {
                 Project project = events[step].getProject();
-                String fileName = name;
-                if (fileName != null) {
-                    name = null;
-                    invokeWizard(project, fileName);
+                if (execLog.getBuildLog() != null) {
+                    invokeWizard(project);
+                    execLog = null;
                 }
             }
         }
@@ -197,25 +198,10 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             }
         }
 
-        private void invokeWizard(Project project, String fileName) {
+        private void invokeWizard(Project project) {
             DiscoveryProvider provider = null;
-            if (execLog != null) {
-                ExecutionEnvironment executionEnvironment = events[1].getConfiguration().getDevelopmentHost().getExecutionEnvironment();
-                if (executionEnvironment.isRemote()) {
-                    try {
-                        HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                        String remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
-                        if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
-                            Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
-                            /*int rc =*/ task.get();
-                            provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
-                        }
-                    } catch (Throwable ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                } else {
-                    provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
-                }
+            if (execLog.getExecLog() != null) {
+                provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
             }
             if (provider == null) {
                 provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
@@ -229,20 +215,23 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION){
                 return;
             }
-            //provider.getProperty("make-log-file").setValue(fileName);
             DiscoveryWizardDescriptor wizardDescriptor = new DiscoveryWizardDescriptor(getPanels());
             wizardDescriptor.setSimpleMode(true);
             wizardDescriptor.setProvider(provider);
             wizardDescriptor.setProject(project);
             wizardDescriptor.setRootFolder(DiscoveryWizardAction.findSourceRoot(project));
-            if (execLog != null) {
-                wizardDescriptor.setExecLog(execLog.getAbsolutePath());
+            if ("exec-log".equals(provider.getID())) { // NOI18N
+                wizardDescriptor.setExecLog(execLog.getExecLog());
             } else {
-                wizardDescriptor.setBuildLog(fileName);
+                wizardDescriptor.setBuildLog(execLog.getBuildLog());
             }
             wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
             wizardDescriptor.setTitle(getString("WIZARD_TITLE_TXT")); // NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+            Rectangle bounds = WindowManager.getDefault().getMainWindow().getBounds();
+            int x = bounds.x+(bounds.width-dialog.getWidth())/2;
+            int y = bounds.y+(bounds.height-dialog.getHeight())/2;
+            dialog.setBounds(Math.max(x,0), Math.max(y,0), dialog.getWidth(), dialog.getHeight());
             dialog.setVisible(true);
             dialog.toFront();
             boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;

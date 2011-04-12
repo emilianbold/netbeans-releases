@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applic
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -230,7 +231,7 @@ public class ImportExecutable implements PropertyChangeListener {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
             map.put("DW:buildResult", binaryPath); // NOI18N
-            map.put("DW:consolidationLevel", "file"); // NOI18N
+            map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
             map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
             OpenProjects.getDefault().setMainProject(lastSelectedProject);
