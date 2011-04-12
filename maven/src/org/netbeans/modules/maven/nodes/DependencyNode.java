@@ -98,7 +98,6 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
@@ -595,20 +594,6 @@ public class DependencyNode extends AbstractNode {
             Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
             Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
             if (prjs.size() != 1) {
-                return;
-            }
-            String msg;
-            if (artifacts.size() == 1) {
-                Artifact art = artifacts.iterator().next();
-                msg = NbBundle.getMessage(DependencyNode.class, "MSG_Remove_Dependency", art.getGroupId() + ":" + art.getArtifactId());
-            } else {
-                msg = NbBundle.getMessage(DependencyNode.class, "MSG_Remove_Dependencies", artifacts.size());
-            }
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    msg, NbBundle.getMessage(DependencyNode.class, "TIT_Remove_Dependency")); //NOI18N
-            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-            Object ret = DialogDisplayer.getDefault().notify(nd);
-            if (ret != NotifyDescriptor.YES_OPTION) {
                 return;
             }
 
