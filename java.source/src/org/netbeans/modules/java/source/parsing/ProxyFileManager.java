@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -57,7 +58,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
@@ -71,6 +71,7 @@ import org.netbeans.modules.java.source.util.Iterators;
  *
  * @author Tomas Zezula
  */
+@Trusted
 public class ProxyFileManager implements JavaFileManager {
 
 
@@ -428,6 +429,7 @@ public class ProxyFileManager implements JavaFileManager {
         }
     }
 
+    @Trusted
     private static final class NullFileObject extends ForwardingInferableJavaFileObject {
         private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
             super (delegate);
