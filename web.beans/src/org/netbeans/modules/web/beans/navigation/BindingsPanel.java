@@ -373,8 +373,7 @@ public class BindingsPanel extends CDIPanel {
             throws CdiException
     {
         if (getResult() instanceof DependencyInjectionResult.ResolutionResult) {
-            String scope = ((DependencyInjectionResult.ResolutionResult)
-                    getResult()).getScope(element);
+            String scope = model.getScope(element);
             if (scope == null) {
                 return;
             }

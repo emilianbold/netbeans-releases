@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -57,6 +60,8 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
@@ -71,6 +76,9 @@ import org.openide.util.NbBundle;
 abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic 
     implements WebBeansModelProvider 
 {
+    
+    static final String CONTEXT_DEPENDENT_ANNOTATION = 
+        "javax.enterprise.context.Dependent";                       // NOI18N
 
     static final String DISPOSES_ANNOTATION = 
             "javax.enterprise.inject.Disposes";                     // NOI18N
@@ -191,6 +199,70 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
             }
         }
         return false;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.ResolutionResult#getScope(javax.lang.model.element.Element)
+     */
+    @Override
+    public String getScope( Element element ) throws CdiException {
+        return getScope(element , getModel().getHelper());
+    }
+    
+    public static String getScope( Element element, AnnotationModelHelper helper )
+            throws CdiException
+    {
+        String scope = getDeclaredScope(element, helper);
+        if (scope != null) {
+            return scope;
+        }
+        List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl
+                .getAllStereotypes(element, helper);
+        for (AnnotationMirror annotationMirror : stereotypes) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            Element annotationElement = annotationType.asElement();
+            String declaredScope = getDeclaredScope(annotationElement, helper);
+            if (declaredScope == null) {
+                continue;
+            }
+            if (scope == null) {
+                scope = declaredScope;
+            }
+            else if (!scope.equals(declaredScope)) {
+                throw new CdiException(NbBundle.getMessage(ParameterInjectionPointLogic.class,
+                        "ERR_DefaultScopeCollision", scope, declaredScope)); // NOI18N
+            }
+        }
+        if (scope != null) {
+            return scope;
+        }
+        return CONTEXT_DEPENDENT_ANNOTATION;
+    }
+    
+    static String getDeclaredScope( Element element , AnnotationModelHelper helper ) {
+        List<? extends AnnotationMirror> annotationMirrors = helper.
+            getCompilationController().getElements().getAllAnnotationMirrors( element );
+        ScopeChecker scopeChecker = ScopeChecker.get();
+        NormalScopeChecker normalScope = NormalScopeChecker.get();
+        List<? extends AnnotationMirror> annotations = new ArrayList<AnnotationMirror>( 
+                annotationMirrors);
+        Collections.reverse( annotations );
+        for (AnnotationMirror annotationMirror : annotations ) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            Element annotationElement = annotationType.asElement();
+            if ( annotationElement instanceof TypeElement ){
+                TypeElement annotation = (TypeElement)annotationElement;
+                scopeChecker.init(annotation, helper );
+                if ( scopeChecker.check() ){
+                    return annotation.getQualifiedName().toString();
+                }
+                normalScope.init( annotation, helper );
+                if ( normalScope.check() ){
+                    return annotation.getQualifiedName().toString();
+                }
+            }
+        }
+        return null;
     }
     
     protected TypeMirror getParameterType( Element element , DeclaredType parentType, 

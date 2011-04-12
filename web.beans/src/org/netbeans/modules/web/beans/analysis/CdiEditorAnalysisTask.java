@@ -84,6 +84,7 @@ class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
      */
     @Override
     public void run( CompilationInfo compInfo ) throws Exception {
+        cancel.set(false);
         List<ErrorDescription> problems = new LinkedList<ErrorDescription>();
         
         List<? extends TypeElement> types = compInfo.getTopLevelElements();

@@ -77,7 +77,7 @@ class ScopeChecker extends RuntimeAnnotationChecker {
      */
     @Override
     protected Logger getLogger() {
-        return ParameterInjectionPointLogic.LOGGER;
+        return Logger.getLogger(ScopeChecker.class.getName());
     }
 
     /* (non-Javadoc)

@@ -330,7 +330,7 @@ class EnableBeansFilter {
             LinkedList<Element> types , Set<Element> elements)
     {
         try {
-            String scope = ResultImpl.getScope(typeElement, 
+            String scope = ParameterInjectionPointLogic.getScope(typeElement, 
                     getWebBeansModel().getHelper());
             Elements elementsUtil = getHelper().getCompilationController().
                 getElements();

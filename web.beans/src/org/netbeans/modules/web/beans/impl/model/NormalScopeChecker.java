@@ -40,7 +40,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
+package org.netbeans.modules.web.beans.impl.model;
+
 
 
 
@@ -48,10 +49,10 @@ package org.netbeans.modules.web.beans.impl.model.results;
  * @author ads
  *
  */
-class NormalScope extends ScopeChecker {
+class NormalScopeChecker extends ScopeChecker {
     
-    static NormalScope get(){
-        return  new NormalScope();
+    static NormalScopeChecker get(){
+        return  new NormalScopeChecker();
     }
     
     /* (non-Javadoc)

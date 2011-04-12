@@ -99,15 +99,15 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.SuperClass" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.SessionScoped");
+                checkScope(model, clazz, "javax.enterprise.context.SessionScoped");
                 
                 mirror = model.resolveType( "foo.ChildClass" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 mirror = model.resolveType( "foo.SubClass" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 return null;
             }
@@ -129,7 +129,7 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Clazz" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.Dependent");
+                checkScope(model, clazz, "javax.enterprise.context.Dependent");
                 return null;
             }
         });
@@ -180,15 +180,15 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Class1" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.SessionScoped");
+                checkScope(model, clazz, "javax.enterprise.context.SessionScoped");
                 
                 mirror = model.resolveType( "foo.Class2" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 mirror = model.resolveType( "foo.Class3" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
                 return null;
             }
         });
@@ -225,7 +225,7 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Clazz" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "foo.CustomScope");
+                checkScope(model, clazz, "foo.CustomScope");
                 return null;
             }
         });
@@ -307,20 +307,18 @@ public class ScopeTest extends CommonTestCase {
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.Class1" );
                 Element clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.SessionScoped");
+                checkScope(model, clazz, "javax.enterprise.context.SessionScoped");
                 
                 mirror = model.resolveType( "foo.Class3" );
                 clazz = ((DeclaredType)mirror).asElement();
-                checkScope(modelImpl, clazz, "javax.enterprise.context.ApplicationScoped");
+                checkScope(model, clazz, "javax.enterprise.context.ApplicationScoped");
                 
                 mirror = model.resolveType( "foo.Class2" );
                 clazz = ((DeclaredType)mirror).asElement();
                 boolean exception = false;
                 
-                AnnotationModelHelper helper = modelImpl.getHelper();
-                ResultImpl result = new ResultImpl(null, null, helper);
                 try {
-                    result.getScope(clazz);
+                    model.getScope(clazz);
                 }
                 catch(CdiException e ){
                     exception = true;
@@ -333,12 +331,10 @@ public class ScopeTest extends CommonTestCase {
         });
     }
 
-    private void checkScope(TestWebBeansModelImpl model , Element element, 
+    private void checkScope(WebBeansModel model , Element element, 
             String fqn ){
         try {
-            AnnotationModelHelper helper = model.getHelper();
-            ResultImpl result = new ResultImpl(null, null, helper);
-            String scope = result.getScope(element);
+            String scope = model.getScope(element);
             assertEquals("Not expected scope type", fqn, scope);
         }
         catch ( CdiException e ){

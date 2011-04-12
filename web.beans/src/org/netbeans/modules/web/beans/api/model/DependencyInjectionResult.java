@@ -116,13 +116,6 @@ public interface DependencyInjectionResult {
          */
         boolean isAlternative( Element element );
         
-        /**
-         * Returns Scope FQN for the specified <code>element</code>.
-         * @param element element which scope needs to be got
-         * @return scope of the element
-         */
-        public String getScope( Element element ) throws CdiException;
-        
         boolean hasAlternative( Element element );
     }
     

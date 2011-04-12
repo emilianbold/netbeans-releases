@@ -50,8 +50,12 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -65,6 +69,7 @@ import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 
@@ -73,6 +78,12 @@ import org.openide.util.NbBundle;
  *
  */
 public class ManagedBeansAnalizer implements ClassAnalyzer {
+    
+    private static final String INJECT = "javax.inject.Inject";                      // NOI18N
+
+    private static final String DECORATOR = "javax.decorator.Decorator";              // NOI18N
+
+    private static final String EXTENSION = "javax.enterprise.inject.spi.Extension";  //NOI18N
     
     private static final Logger LOG = Logger.getLogger( 
             ManagedBeansAnalizer.class.getName() );  
@@ -124,15 +135,44 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
     private void checkImplementsExtension( TypeElement element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        // TODO Auto-generated method stub
-        
+        TypeElement extension = compInfo.getElements().getTypeElement(EXTENSION);
+        if ( extension == null ){
+            return;
+        }
+        TypeMirror elementType = element.asType();
+        if ( compInfo.getTypes().isSubtype( elementType,  extension.asType())){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createNotification( Severity.WARNING, element, compInfo, 
+                        NbBundle.getMessage( ManagedBeansAnalizer.class, 
+                                "WARN_QualifiedElementExtension"));
+            descriptions.add( description );
+        }
     }
 
     private void checkAbstract( TypeElement element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        // TODO Auto-generated method stub
-        
+        TypeElement decorator = compInfo.getElements().getTypeElement(DECORATOR);
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains( Modifier.ABSTRACT )){
+            if (  decorator != null ){
+                List<? extends AnnotationMirror> annotations = 
+                    compInfo.getElements().getAllAnnotationMirrors( element );
+                for (AnnotationMirror annotationMirror : annotations) {
+                    Element annotation = compInfo.getTypes().asElement( 
+                            annotationMirror.getAnnotationType());
+                    if ( decorator.equals( annotation )){
+                        return;
+                    }
+                }
+            }
+            // element is abstract and has no Decorator annotation
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createNotification( Severity.WARNING, element, compInfo, 
+                        NbBundle.getMessage(ManagedBeansAnalizer.class, 
+                                "WARN_QualifierAbstractClass"));
+            descriptions.add( description );    
+        }        
     }
 
     private void checkInner( TypeElement element, TypeElement parent,
@@ -145,20 +185,45 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
         if ( !modifiers.contains( Modifier.STATIC )){
             ErrorDescription description = CdiEditorAnalysisFactory.
             createError( element, compInfo, NbBundle.getMessage(
-                TypedClassAnalizer.class, "ERR_NonStaticInnerType"));
+                    ManagedBeansAnalizer.class, "ERR_NonStaticInnerType"));
             descriptions.add( description );    
-        }
-        Element enclosingParent = parent.getEnclosingElement();
-        if ( enclosingParent instanceof TypeElement ){
-            checkInner(parent, (TypeElement)enclosingParent, compInfo, descriptions);
         }
     }
 
     private void checkCtor( TypeElement element, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        // TODO Auto-generated method stub
-        
+        TypeElement inject = compInfo.getElements().getTypeElement(INJECT);
+        List<ExecutableElement> ctors = ElementFilter.constructorsIn( 
+                element.getEnclosedElements());
+        for (ExecutableElement ctor : ctors) {
+            Set<Modifier> modifiers = ctor.getModifiers();
+            if ( modifiers.contains( Modifier.PRIVATE )){
+                continue;
+            }
+            List<? extends VariableElement> parameters = ctor.getParameters();
+            if ( parameters.size() ==0 ){
+                return;
+            }
+            if ( inject == null){
+                continue;
+            }
+            List<? extends AnnotationMirror> annotations = compInfo.
+                getElements().getAllAnnotationMirrors(ctor);
+            for (AnnotationMirror annotationMirror : annotations) {
+                Element annotation = compInfo.getTypes().asElement( 
+                        annotationMirror.getAnnotationType());
+                if ( inject.equals( annotation )){
+                    return;
+                }
+            }
+        }
+        // there is no non-private ctors without params or annotated with @Inject
+        ErrorDescription description = CdiEditorAnalysisFactory.
+            createNotification( Severity.WARNING, element, compInfo, 
+                    NbBundle.getMessage(ManagedBeansAnalizer.class, 
+                            "WARN_QualifierNoCtorClass"));
+        descriptions.add( description );
     }
 
 }

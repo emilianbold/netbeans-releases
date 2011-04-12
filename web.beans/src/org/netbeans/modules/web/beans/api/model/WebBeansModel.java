@@ -264,6 +264,15 @@ public final class WebBeansModel {
     }
     
     /**
+     * Returns Scope FQN for the specified <code>element</code>.
+     * @param element element which scope needs to be got
+     * @return scope of the element
+     */
+    public String getScope( Element element ) throws CdiException{
+        return getProvider().getScope( element );
+    }
+    
+    /**
      * Returns decorators for given type <code>element</code>.
      * Decorator resolution is described in the 8.3 section of JSR-299 spec:
      * - element bean should be assignable to the @Delegate injection point according special rules

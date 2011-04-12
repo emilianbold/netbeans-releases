@@ -55,6 +55,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
@@ -85,6 +86,8 @@ public interface WebBeansModelProvider {
             DeclaredType parentType);
 
     VariableElement getObserverParameter( ExecutableElement element);
+    
+    String getScope( Element element ) throws CdiException;
 
     CompilationController getCompilationController();
 
