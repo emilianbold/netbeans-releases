@@ -303,7 +303,7 @@ public class Flow {
 
             variable2State = mergeOr(variable2State, oldVariable2State);
 
-            if (right == null) {
+            if (left == null || right == null) {
                 return null;
             }
 
