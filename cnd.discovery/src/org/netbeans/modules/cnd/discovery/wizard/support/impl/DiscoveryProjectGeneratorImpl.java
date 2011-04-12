@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
@@ -113,7 +114,7 @@ public class DiscoveryProjectGeneratorImpl {
         if (TRUNCATE_BEGINNING_PATH) {
             packRoot(sourceRoot);
         }
-        if ("file".equals(level)) {// NOI18N
+        if (ConsolidationStrategy.FILE_LEVEL.equals(level)) {// NOI18N
             // move common file configuration to parent
             upConfiguration(sourceRoot, ItemProperties.LanguageKind.CPP);
             upConfiguration(sourceRoot, ItemProperties.LanguageKind.C);
@@ -180,6 +181,32 @@ public class DiscoveryProjectGeneratorImpl {
         if (isFullNames) {
             // cannot resolve name conflict
             return;
+        }
+        List<Object> elements = root.getElements();
+        if (res.size() == elements.size()) {
+            boolean equals = true;
+            for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
+                if (elements.indexOf(entry.getValue()) < 0) {
+                    equals = false;
+                }
+            }
+            if (equals) {
+                for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
+                    if (entry.getKey().getKind() == Folder.Kind.IMPORTANT_FILES_FOLDER) {
+                        continue;
+                    } else if (entry.getValue().isDiskFolder()) {
+                        continue;
+                    } else {
+                        if (entry.getValue().getRoot() == null) {
+                            File folderFile = getFolderFile(entry.getValue());
+                            if (folderFile != null) {
+                                entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getAbsolutePath()));
+                            }
+                        }
+                    }
+                }
+                return;
+            }
         }
         root.reset();
         for(Map.Entry<Folder,Folder> entry : res.entrySet()) {
@@ -636,7 +663,7 @@ public class DiscoveryProjectGeneratorImpl {
     }
 
     private void setupCompilerConfiguration(ProjectConfiguration config){
-        if ("project".equals(level)){ // NOI18N
+        if (ConsolidationStrategy.PROJECT_LEVEL.equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();
             for(FileConfiguration file : config.getFiles()){
@@ -668,7 +695,7 @@ public class DiscoveryProjectGeneratorImpl {
 
     private void setupFile(FileConfiguration config, Item item, ItemProperties.LanguageKind lang) {
         projectBridge.setSourceTool(item,lang, config.getLanguageStandard());
-        if ("file".equals(level)){ // NOI18N
+        if (ConsolidationStrategy.FILE_LEVEL.equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();
             reConsolidatePaths(set, config);
@@ -736,7 +763,7 @@ public class DiscoveryProjectGeneratorImpl {
         if (orphan.size() > 0) {
             createOrphan(sourceRoot, orphan, lang);
         }
-        if ("folder".equals(level)){ // NOI18N
+        if (ConsolidationStrategy.FOLDER_LEVEL.equals(level)){ // NOI18N
             // reconsolidate folders;
             Map<Folder,Set<FileConfiguration>> folders = new HashMap<Folder,Set<FileConfiguration>>();
             for(Map.Entry<String,Set<Pair>> entry : configurationStructure.entrySet()){

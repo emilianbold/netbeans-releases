@@ -312,7 +312,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return canApply(descriptor);
     }
     
-    /*package-local*/ static DiscoveryProvider findProvider(String providerID){
+    public static DiscoveryProvider findProvider(String providerID){
         for(DiscoveryProvider provider : Lookup.getDefault().lookupAll(DiscoveryProvider.class)){
             if (providerID.equals(provider.getID())) {
                 provider.clean();
