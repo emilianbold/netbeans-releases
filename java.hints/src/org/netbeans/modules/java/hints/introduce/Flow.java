@@ -95,7 +95,7 @@ public class Flow {
         if (cancel.get()) return null;
 
         for (Entry<Tree, State> e : v.use2Values.entrySet()) {
-            result.put(e.getKey(), e.getValue().assignments);
+            result.put(e.getKey(), e.getValue() != null ? e.getValue().assignments : Collections.<TreePath>emptyList());
         }
 
         v.deadBranches.remove(null);
