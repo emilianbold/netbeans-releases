@@ -295,11 +295,13 @@ public class AnalyzeModel implements DiscoveryProvider {
         private List<String> myIncludedFiles;
         private MakeConfigurationDescriptor makeConfigurationDescriptor;
         private CsmProject langProject;
+        private ProjectProxy project;
         private Progress progress;
         
         private MyConfiguration(ProjectProxy project, Progress progress){
             Project makeProject = project.getProject();
             this.progress = progress;
+            this.project =project;
             langProject = CsmModelAccessor.getModel().getProject(makeProject);
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
@@ -307,7 +309,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         
         @Override
         public List<ProjectProperties> getProjectConfiguration() {
-            return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+            return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
         }
        
         @Override

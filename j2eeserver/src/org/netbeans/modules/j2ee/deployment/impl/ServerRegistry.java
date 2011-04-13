@@ -116,9 +116,9 @@ public final class ServerRegistry implements java.io.Serializable {
         return instance != null && instance.servers != null && instance.instances != null;
     }
     private transient Map<String, Server> servers = null;
-    private transient Map instances = null;
-    private transient Collection pluginListeners = new HashSet();
-    private transient Collection instanceListeners = new ArrayList();
+    private transient Map<String, ServerInstance> instances = null;
+    private final transient Collection<PluginListener> pluginListeners = new ArrayList<PluginListener>();
+    private final transient Collection<InstanceListener> instanceListeners = new ArrayList<InstanceListener>();
     private transient InstanceListener[] instanceListenersArray;
     private transient PluginInstallListener pluginL;
     private transient InstanceInstallListener instanceL;
@@ -134,8 +134,8 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         }
 
-        servers = new HashMap();
-        instances = new HashMap();
+        servers = new HashMap<String, Server>();
+        instances = new HashMap<String, ServerInstance>();
 
         FileObject dir = FileUtil.getConfigFile(DIR_JSR88_PLUGINS);
         if (dir != null) {
@@ -176,11 +176,11 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    private Map<String,Server> serversMap() {
+    private Map<String, Server> serversMap() {
         init();
         return servers;
     }
-    private synchronized Map instancesMap() {
+    private synchronized Map<String, ServerInstance> instancesMap() {
         init();
         return instances;
     }
@@ -201,6 +201,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     }
                     server = new Server(fo);
                     serversMap().put(name, server);
+                    configNamesByType = null;
                 }
                 if (server != null) {
                     firePluginListeners(server, true);
@@ -241,6 +242,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
             serversMap().remove(name);
+            configNamesByType = null;
         }
         if (server != null) {
             firePluginListeners(server, false);
@@ -255,12 +257,10 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            super.fileFolderCreated(fe);
             addPlugin(fe.getFile());
         }
         @Override
         public void fileDeleted(FileEvent fe) {
-            super.fileDeleted(fe);
             removePlugin(fe.getFile());
         }
     }
@@ -283,12 +283,12 @@ public final class ServerRegistry implements java.io.Serializable {
         return serversMap().values();
     }
 
-    public synchronized Collection getInstances() {
+    public synchronized Collection<ServerInstance> getInstances() {
         return new ArrayList(instancesMap().values());
     }
 
     public synchronized String[] getInstanceURLs() {
-        return (String[]) instancesMap().keySet().toArray(new String[instancesMap().size()]);
+        return instancesMap().keySet().toArray(new String[instancesMap().size()]);
     }
 
     public void checkInstanceAlreadyExists(String url) throws InstanceCreationException {
@@ -314,7 +314,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     public synchronized ServerInstance getServerInstance(String url) {
-        return (ServerInstance) instancesMap().get(url);
+        return instancesMap().get(url);
     }
 
     public void removeServerInstance(String url) {
@@ -323,7 +323,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
         ServerInstance tmp = null;
         synchronized (this) {
-            tmp = (ServerInstance) instancesMap().remove(url);
+            tmp = instancesMap().remove(url);
         }
         if (tmp != null) {
             fireInstanceListeners(url, false);
@@ -333,8 +333,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
     public synchronized ServerInstance[] getServerInstances() {
         ServerInstance[] ret = new ServerInstance[instancesMap().size()];
-        instancesMap().values().toArray(ret);
-        return ret;
+        return instancesMap().values().toArray(ret);
     }
 
     public static FileObject getInstanceFileObject(String url) {
@@ -555,16 +554,6 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    public Collection getInstances(InstanceListener il) {
-        if (il != null) {
-            synchronized(instanceListeners) {
-                instanceListenersArray = null;
-                instanceListeners.add(il);
-            }
-        }
-        return getInstances();
-    }
-
     public void addInstanceListener(InstanceListener il) {
         synchronized(instanceListeners) {
             instanceListenersArray = null;
@@ -587,10 +576,12 @@ public final class ServerRegistry implements java.io.Serializable {
         LOGGER.log(Level.FINE, "Firing plugin listener"); // NOI18N
         for(Iterator i = pluginListeners.iterator();i.hasNext();) {
             PluginListener pl = (PluginListener)i.next();
-            if(add) pl.serverAdded(server);
-            else pl.serverRemoved(server);
+            if (add) {
+                pl.serverAdded(server);
+            } else {
+                pl.serverRemoved(server);
+            }
         }
-	configNamesByType = null;
     }
 
 
@@ -625,36 +616,40 @@ public final class ServerRegistry implements java.io.Serializable {
 
     }
 
-    private static HashMap configNamesByType = null;
-    private static final J2eeModule.Type[] allTypes = new J2eeModule.Type[] {
+    /* GuardedBy("this") */
+    private Map<J2eeModule.Type, Set<String>> configNamesByType = null;
+    private static final J2eeModule.Type[] ALL_TYPES = new J2eeModule.Type[] {
         J2eeModule.Type.EAR, J2eeModule.Type.RAR, J2eeModule.Type.CAR, J2eeModule.Type.EJB, J2eeModule.Type.WAR };
 
     private void initConfigNamesByType() {
-        if (configNamesByType != null) {
-            return;
-        }
-        configNamesByType = new HashMap();
-        for (int i=0 ; i<allTypes.length; i++) {
-            Set configNames = new HashSet();
-            for (Iterator j=servers.values().iterator(); j.hasNext();) {
-		Server s = (Server) j.next();
-		String[] paths = s.getDeploymentPlanFiles(allTypes[i]);
-                if (paths == null)
-                    continue;
-		for (int k=0 ; k<paths.length; k++) {
-		    File path = new File(paths[k]);
-		    configNames.add(path.getName());
-		}
+        synchronized (this) {
+            if (configNamesByType != null) {
+                return;
             }
-	    configNamesByType.put(allTypes[i], configNames);
+            configNamesByType = new HashMap();
+            for (int i = 0 ; i < ALL_TYPES.length; i++) {
+                Set<String> configNames = new HashSet();
+                for (Iterator j=servers.values().iterator(); j.hasNext();) {
+                    Server s = (Server) j.next();
+                    String[] paths = s.getDeploymentPlanFiles(ALL_TYPES[i]);
+                    if (paths == null)
+                        continue;
+                    for (int k=0 ; k<paths.length; k++) {
+                        File path = new File(paths[k]);
+                        configNames.add(path.getName());
+                    }
+                }
+                configNamesByType.put(ALL_TYPES[i], configNames);
+            }
         }
     }
 
     public boolean isConfigFileName(String name, J2eeModule.Type type) {
 	initConfigNamesByType();
-        Object jsrModuleType = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
-	Set configNames = (Set) configNamesByType.get(jsrModuleType);
-	return (configNames != null && configNames.contains(name));
+        synchronized (this) {
+            Set<String> configNames = configNamesByType.get(type);
+            return (configNames != null && configNames.contains(name));
+        }
     }
 
     /** Return profiler if any is registered in the IDE, null otherwise. */

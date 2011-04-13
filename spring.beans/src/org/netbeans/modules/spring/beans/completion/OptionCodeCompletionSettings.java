@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.List;
+package org.netbeans.modules.spring.beans.completion;
+
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.openide.util.WeakListeners;
 
 /**
- * Represents tags like param, where is defined type of a variable.
- * @author Petr Pisl
+ *
+ * @author Martin Fousek
  */
-public class PHPDocVarTypeTag extends PHPDocTypeTag {
+public final class OptionCodeCompletionSettings {
 
-    private final PHPDocNode variable;
+    private static boolean caseSensitive;
+    private static boolean inited;
+    private static PreferenceChangeListener settingsListener = new SettingsListener();
 
-    public PHPDocVarTypeTag(int start, int end, PHPDocTag.Type kind, String value,
-            List<PHPDocTypeNode> types, PHPDocNode variable) {
-        super(start, end, kind, value, types);
-        this.variable = variable;
+    // prevent OptionCodeCompletionSettings instantiation
+    private OptionCodeCompletionSettings() {}
+
+    public static boolean isCaseSensitive() {
+        lazyInit();
+        return caseSensitive;
     }
 
-    /**
-     *
-     * @return can be null, if the variable is not defined (doesn't start with $)
-     */
-    public PHPDocNode getVariable() {
-        return variable;
+    private static void setCaseSensitive(boolean b) {
+        lazyInit();
+        caseSensitive = b;
     }
 
-    @Override
-    public String getDocumentation() {
-        if (documentation == null) {
-            int index = getValue().indexOf(variable.getValue());
-            if (index > -1) {
-                documentation = getValue().substring(index + variable.getValue().length()).trim();
+    private static void lazyInit() {
+        if (!inited) {
+            inited = true;
+
+            // correctly we should use a proper mime type for the document where the completion runs,
+            // but at the moment this is enough, because completion settings are mainted globaly for all mime types
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, settingsListener, prefs));
+            setCaseSensitive(prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false));
+        }
+    }
+
+    private static class SettingsListener implements PreferenceChangeListener {
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(evt.getKey())) {
+                setCaseSensitive(Boolean.valueOf(evt.getNewValue()));
             }
         }
-        return documentation;
-    }
-    
-    
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
     }
 }

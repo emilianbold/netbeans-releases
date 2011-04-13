@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -208,4 +209,8 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
         return ((ChangeTypeFix) f).getText();
     }
     
+    static {
+        NbBundle.setBranding("test");
+    }
+
 }

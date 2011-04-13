@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package test;
 
 import java.io.Serializable;
@@ -21,12 +20,13 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author cawe
+ * @author jskrivanek
  */
 @Entity
-@Table(name = "TABLE146")
-@NamedQueries({@NamedQuery(name = "Table146.findAll", query = "SELECT t FROM Table146 t")})
-public class Table146 implements Serializable {
+@Table(name = "TABLEN")
+@NamedQueries({
+    @NamedQuery(name = "TableN.findAll", query = "SELECT t FROM TableN t")})
+public class TableN implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -47,6 +47,7 @@ public class Table146 implements Serializable {
     private Date e;
     @Column(name = "F")
     private Integer f;
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "G")
     private Double g;
     @Column(name = "H")
@@ -73,10 +74,10 @@ public class Table146 implements Serializable {
     @Column(name = "Q")
     private String q;
 
-    public Table146() {
+    public TableN() {
     }
 
-    public Table146(Integer id) {
+    public TableN(Integer id) {
         this.id = id;
     }
 
@@ -234,10 +235,10 @@ public class Table146 implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Table146)) {
+        if (!(object instanceof TableN)) {
             return false;
         }
-        Table146 other = (Table146) object;
+        TableN other = (TableN) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -246,7 +247,7 @@ public class Table146 implements Serializable {
 
     @Override
     public String toString() {
-        return "test.Table146[id=" + id + "]";
+        return "test.TableN[ id=" + id + " ]";
     }
 
 }

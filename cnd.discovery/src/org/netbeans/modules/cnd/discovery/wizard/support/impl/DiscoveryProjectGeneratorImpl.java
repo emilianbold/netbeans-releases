@@ -712,22 +712,7 @@ public class DiscoveryProjectGeneratorImpl {
     }
 
     private void reConsolidatePaths(Set<String> set, FileConfiguration file){
-        String compilePath = file.getCompilePath();
-        for (String path : file.getUserInludePaths()){
-            if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
-                if (path.equals(".")) { // NOI18N
-                    path = compilePath;
-                } else {
-                    path = compilePath+File.separator+path;
-                }
-                File f = new File(path);
-                path = CndFileUtils.normalizeFile(f).getAbsolutePath();
-            }
-            set.add(projectBridge.getRelativepath(path));
-        }
-        if (isDifferentCompilePath(file.getFilePath(),compilePath)){
-            set.add(projectBridge.getRelativepath(compilePath));
-        }
+        projectBridge.convertIncludePaths(set, file.getUserInludePaths(), file.getCompilePath(), file.getFilePath());
     }
 
     private boolean isDifferentCompilePath(String name, String path){
