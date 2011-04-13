@@ -93,15 +93,14 @@ public class EntityRelations extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EntityRelations.class);
-        addServerTests(Server.GLASSFISH, conf);//register server
+        conf = addServerTests(Server.GLASSFISH, conf);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
 
-
     @Override
     public void setUp() throws IOException {
-        if (!projectsOpened && isRegistered(Server.ANY)) {
+        if (!projectsOpened) {
             for (File file : getProjectsDirs()) {
                 JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 180000);
                 openProjects(file.getAbsolutePath());
@@ -118,7 +117,7 @@ public class EntityRelations extends J2eeTestCase {
 
     @Override
     protected void tearDown() throws IOException {
-        if (isEmty){
+        if (isEmty) {
             return;
         }
         if (generateGoldenFiles()) {
@@ -134,9 +133,9 @@ public class EntityRelations extends J2eeTestCase {
 
     private File[] getProjectsDirs() {
         return new File[]{
-            new File(getDataDir(), "projects/EntityHintsApp"),
-            new File(getDataDir(), "projects/EntityHintsEJB")                    
-        };
+                    new File(getDataDir(), "projects/EntityHintsApp"),
+                    new File(getDataDir(), "projects/EntityHintsEJB")
+                };
     }
 
     private EditorOperator openFile(String fileName) throws Exception {
@@ -207,7 +206,7 @@ public class EntityRelations extends J2eeTestCase {
 
     public void testAARelation3() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 5, null, 7);;
+        hintTest(f, 5, null, 7);
     }
 
     public void testCreateID() throws Exception {
@@ -255,22 +254,23 @@ public class EntityRelations extends J2eeTestCase {
             final Fix fix = fixes.get(fixOrder);
             RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         fix.implement();
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        ex.printStackTrace(System.err);
                         fail("IMPLEMENT" + ex.toString());
                     }
                 }
             });
-            if (captionDirToClose != null){
+            if (captionDirToClose != null) {
                 new NbDialogOperator(captionDirToClose).ok();
             }
             task.waitFinished(1000);
             int count = 0;
             while (!editorCookie.isModified()) {
-                LOG.fine("wait for modifications :" + count);
+                LOG.log(Level.FINE, "wait for modifications :{0}", count);
                 Thread.sleep(1000);
                 if (++count == 10) {
                     throw new AssertionError("NO CODE EDITED");
@@ -280,8 +280,7 @@ public class EntityRelations extends J2eeTestCase {
             result = operator.getText();
             assertFalse(text.equals(result));
         } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         } finally {
             write(result);
             if (secondFile != null) {
@@ -306,7 +305,7 @@ public class EntityRelations extends J2eeTestCase {
                 goldenWriter.append(str + "\n");
                 goldenWriter.flush();
             } catch (java.io.IOException exc) {
-                exc.printStackTrace();
+                exc.printStackTrace(System.err);
                 fail("IMPOSSIBLE TO GENERATE GOLDENFILES");
             }
         }
@@ -316,6 +315,7 @@ public class EntityRelations extends J2eeTestCase {
         problems = AnnotationHolder.getInstance(fileToTest).getErrors();
         Collections.sort(problems, new Comparator<ErrorDescription>() {
 
+            @Override
             public int compare(ErrorDescription o1, ErrorDescription o2) {
                 return o1.toString().compareTo(o2.toString());
             }
@@ -356,6 +356,7 @@ public class EntityRelations extends J2eeTestCase {
         final Object lock = new Object();
         Runnable posted = new Runnable() {
 
+            @Override
             public void run() {
                 synchronized (lock) {
                     lock.notifyAll();
@@ -388,6 +389,7 @@ public class EntityRelations extends J2eeTestCase {
         }
         Collections.sort(fixes, new Comparator<Fix>() {
 
+            @Override
             public int compare(Fix o1, Fix o2) {
                 return o1.getText().compareTo(o2.getText());
             }
