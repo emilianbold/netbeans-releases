@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.List;
+package org.netbeans.modules.php.editor;
+
+import java.io.File;
+import java.util.*;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Represents tags like param, where is defined type of a variable.
+ *
  * @author Petr Pisl
  */
-public class PHPDocVarTypeTag extends PHPDocTypeTag {
+public class PHPCCDocumentationTest extends PHPTestBase {
 
-    private final PHPDocNode variable;
-
-    public PHPDocVarTypeTag(int start, int end, PHPDocTag.Type kind, String value,
-            List<PHPDocTypeNode> types, PHPDocNode variable) {
-        super(start, end, kind, value, types);
-        this.variable = variable;
-    }
-
-    /**
-     *
-     * @return can be null, if the variable is not defined (doesn't start with $)
-     */
-    public PHPDocNode getVariable() {
-        return variable;
-    }
-
-    @Override
-    public String getDocumentation() {
-        if (documentation == null) {
-            int index = getValue().indexOf(variable.getValue());
-            if (index > -1) {
-                documentation = getValue().substring(index + variable.getValue().length()).trim();
-            }
-        }
-        return documentation;
+    public PHPCCDocumentationTest(String testName) {
+        super(testName);
     }
     
+    public void test197696() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue197696.php", "$this->te^", false, "");
+    }
     
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/documentation"))
+            })
+        );
     }
 }
