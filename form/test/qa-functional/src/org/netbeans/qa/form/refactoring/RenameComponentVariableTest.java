@@ -78,9 +78,7 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-    }
+    
     
     
     /**
@@ -88,9 +86,12 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
      * @return nb test suite
      */
     public static Test suite() {
-       return NbModuleSuite.create(NbModuleSuite.createConfiguration(RenameComponentVariableTest.class)
-               .addTest("testRefactoring", "testChangesInJavaFile", "testChangesInFormFile", "testChangesInPropertiesFile")
-               .clusters(".*").enableModules(".*")
+       return NbModuleSuite.create(NbModuleSuite.createConfiguration(RenameComponentVariableTest.class).addTest(
+               "testRefactoring", 
+               "testChangesInJavaFile", 
+               "testChangesInFormFile", 
+               "testChangesInPropertiesFile"
+               ).clusters(".*").enableModules(".*")
                .gui(true));
     }
     

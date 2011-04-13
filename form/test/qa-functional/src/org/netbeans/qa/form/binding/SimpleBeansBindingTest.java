@@ -51,6 +51,8 @@ import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import java.util.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.BindDialogOperator;
 
 /**
@@ -58,23 +60,20 @@ import org.netbeans.qa.form.BindDialogOperator;
  *
  * @author Jiri Vagner
  */
-public class SimpleBeansBinding extends ExtJellyTestCase {
+public class SimpleBeansBindingTest extends ExtJellyTestCase {
     
     /** Constructor required by JUnit */
-    public SimpleBeansBinding(String testName) {
+    public SimpleBeansBindingTest(String testName) {
         super(testName);
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SimpleBeansBinding("testSimpleBeansBinding")); // NOI18N
-        return suite;
+   public static Test suite() {
+       //TODO "testUpdateMode"
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SimpleBeansBindingTest.class).addTest(
+                "testSimpleBeansBinding"
+                ).gui(true).enableModules(".*").clusters(".*"));
+
     }
     
     /** Tests basic beans binding features */
