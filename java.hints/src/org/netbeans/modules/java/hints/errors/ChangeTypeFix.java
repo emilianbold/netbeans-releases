@@ -124,8 +124,4 @@ final class ChangeTypeFix implements Fix {
         return s;
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
-    
 }
