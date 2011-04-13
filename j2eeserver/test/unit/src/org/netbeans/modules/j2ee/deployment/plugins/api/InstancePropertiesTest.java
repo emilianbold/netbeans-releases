@@ -50,7 +50,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.keyring.Keyring;
@@ -60,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
