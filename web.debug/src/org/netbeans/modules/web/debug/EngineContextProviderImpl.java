@@ -49,9 +49,12 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 
@@ -70,7 +73,8 @@ public class EngineContextProviderImpl extends SourcePathProvider {
         new String[] {
             "org", // NOI18N
             "org/apache", // NOI18N
-            "org/apache/jsp" // NOI18N
+            "org/apache/jsp", // NOI18N
+            "jsp_servlet"
         }
     ));
 
@@ -92,7 +96,8 @@ public class EngineContextProviderImpl extends SourcePathProvider {
         if ((relativePath == null) || (relativePath.endsWith(".java"))) {
            return null; 
         }
-        if (virtualFolders.contains (relativePath) || relativePath.startsWith("org/apache/jsp")) { // NOI18N
+        if (virtualFolders.contains (relativePath)
+                || relativePath.startsWith("org/apache/jsp")) { // NOI18N
             if (verbose) System.out.println ("ECPI(JSP):  fo virtual folder");
 
             String userDir = System.getProperty("netbeans.user"); // NOI18N
@@ -125,9 +130,33 @@ public class EngineContextProviderImpl extends SourcePathProvider {
             LOGGER.log(Level.INFO, "Both netbeans.user and java.io.tmpdir properties are missing, returning null");
             return null;
         }
+        // XXX terrible hack - in addition WL specific code
+        if (relativePath.startsWith("jsp_servlet")) { // NOI18N
+            SourcePathProvider provider = getDefaultContext();
+            if (provider != null) {
+                String path = relativePath.substring(11);
+                path = path.replaceAll("/_", "/"); // NOI8N
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                return provider.getURL(path, global);
+            }
+        }
         return null;
     }
 
+    private static SourcePathProvider getDefaultContext() {
+        List providers = DebuggerManager.getDebuggerManager().
+                lookup("netbeans-JPDASession", SourcePathProvider.class);
+        for (Iterator it = providers.iterator(); it.hasNext(); ) {
+            Object provider = it.next();
+            // Hack - find our provider:
+            if (provider.getClass().getName().equals("org.netbeans.modules.debugger.jpda.projects.SourcePathProviderImpl")) {
+                return (SourcePathProvider) provider;
+            }
+        }
+        return null;
+    }    
     
     /**
      * Returns relative path for given url.
