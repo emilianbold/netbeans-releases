@@ -57,6 +57,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -75,9 +76,9 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     public SimpleConfigurationPanel(SimpleConfigurationWizard wizard) {
         this.wizard = wizard;
         initComponents();
-        configurationComboBox.addItem(new ConfigutationItem("project",getString("CONFIGURATION_LEVEL_project"))); // NOI18N
-        configurationComboBox.addItem(new ConfigutationItem("folder",getString("CONFIGURATION_LEVEL_folder"))); // NOI18N
-        configurationComboBox.addItem(new ConfigutationItem("file",getString("CONFIGURATION_LEVEL_file"))); // NOI18N
+        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.PROJECT_LEVEL ,getString("CONFIGURATION_LEVEL_project"))); // NOI18N
+        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.FOLDER_LEVEL, getString("CONFIGURATION_LEVEL_folder"))); // NOI18N
+        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.FILE_LEVEL, getString("CONFIGURATION_LEVEL_file"))); // NOI18N
         configurationComboBox.setSelectedIndex(2);
         addListeners();
     }

@@ -155,7 +155,12 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
     }
 
     public javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager() {
-        return new DeploymentManager();
+        boolean assertsEnabled = false;
+        //assert assertsEnabled = true;
+        if (assertsEnabled) {
+            return new DeploymentManager();
+        }
+        return getDeploymentManager(url);
     }
 
     public void refreshServerInstance() {
@@ -165,6 +170,12 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
             inst.refresh();
         }
     }
+    
+    private static javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String url) {
+        ServerRegistry registry = ServerRegistry.getInstance();
+        ServerInstance inst = registry.getServerInstance(url);
+        return inst.getDeploymentManager();
+    }    
     
     private class DeploymentManager implements javax.enterprise.deploy.spi.DeploymentManager {
         
@@ -290,9 +301,7 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
                 if (dm != null) {
                     return dm;
                 }
-                ServerRegistry registry = ServerRegistry.getInstance();
-                ServerInstance inst = registry.getServerInstance(url);
-                dm = inst.getDeploymentManager();
+                dm = InstancePropertiesImpl.getDeploymentManager(url);
                 return dm;
             }
         }

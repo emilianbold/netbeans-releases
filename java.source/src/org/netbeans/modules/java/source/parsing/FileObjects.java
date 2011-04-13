@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -716,6 +717,7 @@ public class FileObjects {
         }
     }
 
+    @Trusted
     public static class FileBase extends Base {
 
         protected final File f;
@@ -887,6 +889,7 @@ public class FileObjects {
         return buffer;
     }
 
+    @Trusted
     private static class NewFromTemplateFileObject extends FileBase {
 
         public NewFromTemplateFileObject (File f, String packageName, String baseName, JavaFileFilterImplementation filter, Charset encoding) {
@@ -1071,7 +1074,8 @@ public class FileObjects {
         protected abstract long getSize() throws IOException;
         
     }
-    
+
+    @Trusted
     private static class ZipFileObject extends ZipFileBase {
 	
 
@@ -1157,7 +1161,8 @@ public class FileObjects {
             }
         }
     }
-    
+
+    @Trusted
     private static class FastZipFileObject extends ZipFileObject {
         
         private long offset;
@@ -1201,7 +1206,8 @@ public class FileObjects {
             return super.getSize();
         }
     }
-    
+
+    @Trusted
     private static class CachedZipFileObject extends ZipFileBase {
         
         private ZipFile zipFile;
@@ -1228,7 +1234,8 @@ public class FileObjects {
     
     
     /** Temporay FileObject for parsing input stream.
-     */    
+     */
+    @Trusted
     private static class MemoryFileObject extends Base {
         
         private final long lastModified;
