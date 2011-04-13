@@ -92,7 +92,6 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
     private static final String ACTION_NAME_START = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionNameStart");
     private static final String ACTION_NAME_STOP = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionNameStop");
 //    private static final String ACTION_DESCR = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionDescription");
-    private static final String THREAD_NAME = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ThreadName");
     private static final String NOT_SUPPORTED = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_NotSupported");
     private static final String SAVE_MSG = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_SavedFile");
     private static final String DEBUG_ARG = "-Xdebug"; // NOI18N
@@ -128,7 +127,7 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
     public void actionPerformed(final ActionEvent e) {
         if (SamplesOutputStream.isSupported()) {
             Sampler c;
-            if (RUNNING.compareAndSet(null, c = new InternalSampler(THREAD_NAME))) {
+            if (RUNNING.compareAndSet(null, c = new InternalSampler("Self Sampler"))) { // NOI18N
                 putValue(Action.NAME, ACTION_NAME_STOP);
                 putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_STOP);
                 putValue ("iconBase", "org/netbeans/core/ui/sampler/selfSamplerRunning.png"); // NOI18N
