@@ -279,9 +279,12 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         }
         set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions"))); // NOI18N
 
-        if (this.getMaster() == null) {
-            set1.put(new BooleanNodeProp(getUseLinkerLibraries(), true,
-                    "use-linker-libraries", getString("UseLinkerLibrariesTxt"), getString("UseLinkerLibrariesHint"))); // NOI18N
+        if (this.getMaster() == null) {            
+            final IntConfiguration configurationType = this.getOwner() == null ? null : this.getOwner().getConfigurationType();
+            if (configurationType == null || (configurationType.getValue() != MakeConfiguration.TYPE_MAKEFILE)) {
+                set1.put(new BooleanNodeProp(getUseLinkerLibraries(), true,
+                        "use-linker-libraries", getString("UseLinkerLibrariesTxt"), getString("UseLinkerLibrariesHint"))); // NOI18N
+            }
         }
         return set1;
     }
