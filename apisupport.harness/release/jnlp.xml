@@ -143,7 +143,7 @@ made subject to such option by the copyright holder.
         
         <mkdir dir="${jnlp.signjar.keystore}/../"/>
         <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
-        <genkey 
+        <genkey validity="365"
             alias="${jnlp.signjar.alias}"
             keystore="${jnlp.signjar.keystore}"
             storepass="${jnlp.signjar.password}"
