@@ -50,7 +50,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -68,21 +67,8 @@ public abstract class AbstractTypedAnalyzer {
     public void analyze( Element element, TypeMirror elementType, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        TypeElement typed = compInfo.getElements().getTypeElement(TYPED);
-        if ( typed == null ){
-            return;
-        }
-        List<? extends AnnotationMirror> annotations = 
-            compInfo.getElements().getAllAnnotationMirrors( element );
-        AnnotationMirror typedMirror = null;
-        for (AnnotationMirror annotationMirror : annotations) {
-            Element annotationElement = compInfo.getTypes().asElement( 
-                    annotationMirror.getAnnotationType());
-            if ( typed.equals( annotationElement )){
-                typedMirror = annotationMirror;
-                break;
-            }
-        }
+        AnnotationMirror typedMirror = AnnotationUtil.getAnnotationMirror(element, 
+                TYPED, compInfo);
         if ( typedMirror == null ){
             return;
         }

@@ -52,6 +52,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
@@ -64,6 +65,10 @@ import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 import org.openide.util.NbBundle;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * @author ads
@@ -122,7 +127,7 @@ abstract class FieldInjectionPointLogic {
             TypeElement type = e.getElement();
             return new DefinitionErrorResult(element,  parentType, 
                     NbBundle.getMessage(WebBeansModelProviderImpl.class, 
-                            "ERR_BadParent", element.getSimpleName(),
+                            "ERR_BadParent", element.getSimpleName(),       // NOI18N
                              type!= null? type.toString(): null));
         }
         
@@ -319,24 +324,42 @@ abstract class FieldInjectionPointLogic {
             {
                 hasInject = true;
             }
-            /* TODO : one needs somehow to check absence of initialization
-             * for field... 
-             */
         }
         if ( isProducer ){
             throw new InjectionPointDefinitionError(
                     NbBundle.getMessage( WebBeansModelProviderImpl.class, 
-                            "ERR_ProducerInjectPoint" , element.getSimpleName() ));
+                            "ERR_ProducerInjectPoint" ,     // NOI18N
+                            element.getSimpleName() ));
         }
-        
+        if ( injectRequired ){
+            checkInitialization(element);
+        }
         if ( injectRequired && !hasInject ){
             throw new InjectionPointDefinitionError(
                     NbBundle.getMessage( WebBeansModelProviderImpl.class, 
-                            "ERR_NoInjectPoint" , element.getSimpleName() ));
+                            "ERR_NoInjectPoint" ,           // NOI18N
+                            element.getSimpleName() ));
         }
         return anyQualifier;
     }
     
+    private void checkInitialization( VariableElement element ) 
+        throws InjectionPointDefinitionError
+    {
+        CompilationController compilationController = getModel().getHelper().
+            getCompilationController();
+        Tree tree = compilationController.getTrees().getTree( element );
+        if ( tree instanceof VariableTree ){
+            VariableTree varTree = (VariableTree)tree;
+            ExpressionTree initializer = varTree.getInitializer();
+            if ( initializer != null ){
+                throw new InjectionPointDefinitionError(NbBundle.getMessage( 
+                        FieldInjectionPointLogic.class, 
+                        "ERR_InitializedInjectionPoint"));      // NOI18N
+            }
+        }
+    }
+
     protected <T extends Element> void filterBindingsByMembers(
             Collection<AnnotationMirror> bindingAnnotations,
             Set<T> elementsWithBindings,  Class<T> clazz)

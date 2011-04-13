@@ -49,7 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -66,6 +65,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 public class ManagedBeansAnalizer implements ClassAnalyzer {
     
-    private static final String INJECT = "javax.inject.Inject";                      // NOI18N
+    public  static final String INJECT = "javax.inject.Inject";                      // NOI18N
 
     private static final String DECORATOR = "javax.decorator.Decorator";              // NOI18N
 
@@ -152,20 +152,12 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
     private void checkAbstract( TypeElement element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        TypeElement decorator = compInfo.getElements().getTypeElement(DECORATOR);
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.ABSTRACT )){
-            if (  decorator != null ){
-                List<? extends AnnotationMirror> annotations = 
-                    compInfo.getElements().getAllAnnotationMirrors( element );
-                for (AnnotationMirror annotationMirror : annotations) {
-                    Element annotation = compInfo.getTypes().asElement( 
-                            annotationMirror.getAnnotationType());
-                    if ( decorator.equals( annotation )){
-                        return;
-                    }
-                }
+            if ( AnnotationUtil.hasAnnotation(element, DECORATOR, compInfo) ){
+                return;
             }
+                
             // element is abstract and has no Decorator annotation
             ErrorDescription description = CdiEditorAnalysisFactory.
                 createNotification( Severity.WARNING, element, compInfo, 
@@ -193,7 +185,6 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
     private void checkCtor( TypeElement element, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        TypeElement inject = compInfo.getElements().getTypeElement(INJECT);
         List<ExecutableElement> ctors = ElementFilter.constructorsIn( 
                 element.getEnclosedElements());
         for (ExecutableElement ctor : ctors) {
@@ -205,17 +196,8 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             if ( parameters.size() ==0 ){
                 return;
             }
-            if ( inject == null){
-                continue;
-            }
-            List<? extends AnnotationMirror> annotations = compInfo.
-                getElements().getAllAnnotationMirrors(ctor);
-            for (AnnotationMirror annotationMirror : annotations) {
-                Element annotation = compInfo.getTypes().asElement( 
-                        annotationMirror.getAnnotationType());
-                if ( inject.equals( annotation )){
-                    return;
-                }
+            if ( AnnotationUtil.hasAnnotation(ctor, INJECT, compInfo)){
+                return;
             }
         }
         // there is no non-private ctors without params or annotated with @Inject

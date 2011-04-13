@@ -51,6 +51,7 @@ import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analizer.type.ManagedBeansAnalizer;
+import org.netbeans.modules.web.beans.analysis.analizer.type.ScopedProxyabilityAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.type.TypedClassAnalizer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -89,5 +90,6 @@ public class ClassElementAnalyzer implements ElementAnalyzer {
     static {
         ANALIZERS.add( new TypedClassAnalizer() );
         ANALIZERS.add( new ManagedBeansAnalizer());
+        ANALIZERS.add( new ScopedProxyabilityAnalyzer());
     }
 }

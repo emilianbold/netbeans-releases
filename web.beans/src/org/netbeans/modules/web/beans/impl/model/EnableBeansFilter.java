@@ -56,8 +56,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -362,15 +365,7 @@ class EnableBeansFilter {
             elements.remove( typeElement );
             return;
         }
-        List<ExecutableElement> methods = ElementFilter.methodsIn(
-                typeElement.getEnclosedElements()) ;
-        for (ExecutableElement executableElement : methods) {
-            if ( hasModifier(executableElement, Modifier.FINAL)){
-                types.remove(typeElement);
-                elements.remove( typeElement );
-                return;
-            }
-        }
+        checkFinalMethods(typeElement, types, elements);
         
         List<ExecutableElement> constructors = ElementFilter.constructorsIn(
                 typeElement.getEnclosedElements()) ;
@@ -389,6 +384,56 @@ class EnableBeansFilter {
             types.remove(typeElement);
             elements.remove( typeElement );
         }
+    }
+
+    private void checkFinalMethods( TypeElement typeElement,
+            LinkedList<Element> types, Set<Element> elements )
+    {
+        TypeMirror variableType = getResult().getVariableType();
+        DeclaredType beanType = getDeclaredType( variableType );
+        if ( beanType == null ){
+            return;
+        }
+        Element beanElement = beanType.asElement();
+        if ( !( beanElement instanceof TypeElement )){
+            return;
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                getHelper().getCompilationController().getElements().getAllMembers(
+                        (TypeElement)beanElement)) ;
+        for (ExecutableElement executableElement : methods) {
+            if ( hasModifier(executableElement, Modifier.FINAL)){
+                types.remove(typeElement);
+                elements.remove( typeElement );
+                return;
+            }
+            Element overloaded = getHelper().getCompilationController().
+                getElementUtilities().getImplementationOf(executableElement, 
+                        typeElement);
+            if ( overloaded == null ){
+                continue;
+            }
+            if ( hasModifier(overloaded, Modifier.FINAL)){
+                types.remove(typeElement);
+                elements.remove( typeElement );
+                return;
+            }
+        }
+    }
+    
+    private DeclaredType getDeclaredType( TypeMirror type ){
+        if ( type instanceof DeclaredType ){
+            return (DeclaredType)type;
+        }
+        if ( type instanceof TypeVariable ){
+            TypeMirror upperBound = ((TypeVariable)type).getUpperBound();
+            return getDeclaredType( upperBound );
+        }
+        else if ( type instanceof WildcardType ){
+            TypeMirror extendsBound = ((WildcardType)type).getExtendsBound();
+            return getDeclaredType( extendsBound );
+        }
+        return null;
     }
     
     private boolean hasModifier ( Element element , Modifier mod){

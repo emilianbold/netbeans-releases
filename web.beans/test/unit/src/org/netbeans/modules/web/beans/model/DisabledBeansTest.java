@@ -306,11 +306,18 @@ public class DisabledBeansTest extends CommonTestCase {
     public void testProxyability() throws IOException{
         createQualifier("Binding1");
         
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                "public interface Iface {" +
+                " void method(); "+
+                "}" );
+        
         TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
                 "@Binding1 "+
-                "public final class One {" +
+                "public final class One implements Iface {" +
+                " public final void method() {} "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
@@ -319,7 +326,8 @@ public class DisabledBeansTest extends CommonTestCase {
                 "import javax.enterprise.context.ApplicationScoped; "+
                 "@Binding1 "+
                 "@ApplicationScoped "+
-                "public final class Two extends One {" +
+                "public final class Two implements Iface {" +
+                " public void method() {} "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
@@ -328,7 +336,7 @@ public class DisabledBeansTest extends CommonTestCase {
                 "import javax.enterprise.context.SessionScoped; "+
                 "@Binding1 "+
                 "@SessionScoped "+
-                "public class Three extends One {" +
+                "public class Three implements Iface {" +
                 " public final void method() {} "+
                 "}" );
         
@@ -338,9 +346,10 @@ public class DisabledBeansTest extends CommonTestCase {
                 "import javax.enterprise.context.RequestScoped; "+
                 "@Binding1 "+
                 "@RequestScoped "+
-                "public class Four extends One {" +
+                "public class Four implements Iface {" +
                 " private Four() {}  "+
                 " public Four( int arg ) {}  "+
+                " public void method() {} "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
@@ -348,7 +357,7 @@ public class DisabledBeansTest extends CommonTestCase {
                 "import javax.enterprise.inject.*; "+
                 "import javax.inject.*; "+
                 "public class TestClass {" +
-                " @Inject @Binding1 One myField1; "+
+                " @Inject @Binding1 Iface myField1; "+
                 "}" );
         
         TestWebBeansModelImpl modelImpl = createModelImpl(true );
