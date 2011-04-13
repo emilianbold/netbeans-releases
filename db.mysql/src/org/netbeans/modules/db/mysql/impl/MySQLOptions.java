@@ -246,6 +246,10 @@ public final class MySQLOptions {
         // Clear the password from the persistent file if saving
         // passwords is turned off; save the password to the persistent
         // file if saving passwords is turned on
+        if (adminPassword == null) {
+            // nothing for save
+            return ;
+        }
         if ( ! savePassword ) {
             clearAdminPassword();
         } else {
