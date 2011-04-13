@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
@@ -1243,33 +1244,18 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
-        ImportExecutable.fixExcludedHeaderFiles(makeProject, TRACE ? logger : null);
+        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, TRACE ? logger : null);
         importResult.put(Step.FixExcluded, State.Successful);
     }
 
     private Map<String,Item> normalizedItems;
     private Item findByNormalizedName(File file){
         if (normalizedItems == null) {
-            normalizedItems = initNormalizedNames(makeProject);
+            normalizedItems = DiscoveryManagerImpl.initNormalizedNames(makeProject);
         }
         String path = CndFileUtils.normalizeFile(file).getAbsolutePath();
         return normalizedItems.get(path);
     }
-
-    static HashMap<String,Item> initNormalizedNames(Project makeProject) {
-        HashMap<String,Item> normalizedItems = new HashMap<String,Item>();
-        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp != null) {
-            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            if (makeConfigurationDescriptor != null) {
-                for(Item item : makeConfigurationDescriptor.getProjectItems()){
-                    normalizedItems.put(item.getNormalizedPath(),item);
-                }
-            }
-        }
-        return normalizedItems;
-    }
-
 
     private void modelDiscovery() {
         if (!isProjectOpened()) {

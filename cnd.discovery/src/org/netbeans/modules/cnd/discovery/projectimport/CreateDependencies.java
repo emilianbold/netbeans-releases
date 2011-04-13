@@ -57,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -185,7 +186,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         addReqProject(aProject);
                     }
                 }
-                ImportExecutable.saveMakeConfigurationDescriptor(mainProject);
+                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(mainProject);
                 for(Project aProject : projects) {
                     String executable = null;
                     if (createdProjects.containsKey(aProject)){
@@ -234,7 +235,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         if (extension.canApply(map, lastSelectedProject)) {
                             try {
                                 extension.apply(map, lastSelectedProject);
-                                ImportExecutable.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
