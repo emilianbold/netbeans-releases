@@ -45,7 +45,6 @@ package org.netbeans.test.j2ee.cmp;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.HashSet;
 import java.util.Set;
 import junit.framework.AssertionFailedError;
 import org.netbeans.api.project.Project;
@@ -69,7 +68,6 @@ import org.netbeans.test.j2ee.multiview.DDTestCase;
 import org.openide.actions.SaveAllAction;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 
 /**
