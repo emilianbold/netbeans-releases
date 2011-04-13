@@ -104,11 +104,12 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         this.provider = provider;
         String postfix = "";
         if (folder != null && folder.getRoot() != null) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
-            AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, provider.getProject());
-            FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, provider.getProject());
-            if (folderFile != null) {
-                postfix = " - " + folderFile.getPath(); // NOI18N
+            String absPath = folder.getAbsolutePath();
+//            String AbsRootPath = CndPathUtilitities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
+//            AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, provider.getProject());
+//            FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, provider.getProject());
+            if (absPath != null) {
+                postfix = " - " + absPath; // NOI18N
             }
         }
         pathPostfix = postfix;
