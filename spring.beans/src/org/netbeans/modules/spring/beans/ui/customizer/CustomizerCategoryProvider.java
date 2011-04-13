@@ -149,7 +149,7 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
                 assert SwingUtilities.isEventDispatchThread();
                 files = panel.getConfigFiles();
                 groups = panel.getConfigFileGroups();
-            } else if (files.size() > 0 || groups.size() > 0) {
+            } else {
                 // Store listener called.
                 manager.mutex().writeAccess(new Runnable() {
                     public void run() {

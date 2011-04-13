@@ -616,11 +616,9 @@ public final class ProjectEar extends J2eeApplicationProvider
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (this) {
-            if (propertyChangeSupport == null) {
-                return;
-            }
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (propertyChangeSupport == null) {
+            return;
         }
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
