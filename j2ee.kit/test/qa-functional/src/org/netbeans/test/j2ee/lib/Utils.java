@@ -142,7 +142,7 @@ public class Utils {
                         file,
                         goldenFile,
                         new File(nbtestcase.getWorkDir(), fileNames[i] + ".diff"),
-                        new TrimmingLineDiff());
+                        new FilteringLineDiff());
             } catch (AssertionFailedError e) {
                 if (firstExc == null) {
                     firstExc = e;
