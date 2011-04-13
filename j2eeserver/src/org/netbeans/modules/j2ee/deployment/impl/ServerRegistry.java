@@ -117,8 +117,8 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     private transient Map<String, Server> servers = null;
     private transient Map instances = null;
-    private transient Collection pluginListeners = new HashSet();
-    private transient Collection instanceListeners = new ArrayList();
+    private final transient Collection pluginListeners = new ArrayList();
+    private final transient Collection instanceListeners = new ArrayList();
     private transient InstanceListener[] instanceListenersArray;
     private transient PluginInstallListener pluginL;
     private transient InstanceInstallListener instanceL;
@@ -555,16 +555,6 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    public Collection getInstances(InstanceListener il) {
-        if (il != null) {
-            synchronized(instanceListeners) {
-                instanceListenersArray = null;
-                instanceListeners.add(il);
-            }
-        }
-        return getInstances();
-    }
-
     public void addInstanceListener(InstanceListener il) {
         synchronized(instanceListeners) {
             instanceListenersArray = null;
@@ -587,10 +577,12 @@ public final class ServerRegistry implements java.io.Serializable {
         LOGGER.log(Level.FINE, "Firing plugin listener"); // NOI18N
         for(Iterator i = pluginListeners.iterator();i.hasNext();) {
             PluginListener pl = (PluginListener)i.next();
-            if(add) pl.serverAdded(server);
-            else pl.serverRemoved(server);
+            if (add) {
+                pl.serverAdded(server);
+            } else {
+                pl.serverRemoved(server);
+            }
         }
-	configNamesByType = null;
     }
 
 
