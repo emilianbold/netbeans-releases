@@ -1340,8 +1340,8 @@ public final class ModuleManager extends Modules {
             for (int i = 0; i < depenencies.length; i++) {
                 Dependency dep = depenencies[i];
                 if (dep.getType() == Dependency.TYPE_MODULE) {
-                    if (dep.getName().equals(m.getCodeName())) {
-                        addToDisableList(willDisable, other);
+                    if (Util.parseCodeName(dep.getName())[0].equals(m.getCodeNameBase())) {
+                        addToJaveleonDisableList(willDisable, other);
                         break;
                     }
                 }
