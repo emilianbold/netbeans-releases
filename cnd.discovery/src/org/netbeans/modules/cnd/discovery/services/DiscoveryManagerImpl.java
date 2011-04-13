@@ -85,7 +85,6 @@ import org.openide.util.Utilities;
  */
 public final class DiscoveryManagerImpl {
 
-    public static final boolean INCREMENTAL_CONFIGURE_CA = false;
     public static final String BUILD_LOG_KEY = "build-log"; //NOI18N 
     public static final String BUILD_EXEC_KEY = "exec-log"; //NOI18N 
     private static final RequestProcessor RP = new RequestProcessor("Discovery Manager Worker", 1); //NOI18N
@@ -95,10 +94,6 @@ public final class DiscoveryManagerImpl {
     }
 
     public static void projectBuilt(Project project, Map<String, Object> artifacts, boolean isIncremental) {
-        if (isIncremental && !INCREMENTAL_CONFIGURE_CA) {
-            // TODO implement incremental configure code assistance
-            return;
-        }
         RP.post(new DiscoveryWorker(project, artifacts, isIncremental));
     }
 
@@ -126,6 +121,9 @@ public final class DiscoveryManagerImpl {
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
                 map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, artifact);
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
+                if (isIncremental) {
+                    map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
+                }
                 if (extension.canApply(map, project)) {
                     try {
                         postModelTask();
@@ -142,6 +140,9 @@ public final class DiscoveryManagerImpl {
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
                 map.put(DiscoveryWizardDescriptor.LOG_FILE, artifact);
                 map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
+                if (isIncremental) {
+                    map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
+                }
                 if (extension.canApply(map, project)) {
                     try {
                         postModelTask();
