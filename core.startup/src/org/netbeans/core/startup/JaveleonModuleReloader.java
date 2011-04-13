@@ -133,8 +133,9 @@ class JaveleonModuleReloader {
             setupClassLoaderForJaveleonModule(mgr, toRefresh);
             refreshLayer(m3, toRefresh, installer, mgr);
         }
-        // done...
+        // done...      
         System.err.println("Javeleon finished module update...");
+        MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
         ev.log(Events.FINISH_DEPLOY_TEST_MODULE, jar);
         return true;
     }
@@ -247,7 +248,7 @@ class JaveleonModuleReloader {
                 installer.dispose(registeredModule);
             }
             mgr.replaceJaveleonModule(original, newModule);
-            MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
+            
             if (changed) {
                 installer.prepare(newModule);
                 loadLayers(installer, newModule, true);
