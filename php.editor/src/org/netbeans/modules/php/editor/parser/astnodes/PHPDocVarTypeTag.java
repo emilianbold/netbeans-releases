@@ -64,6 +64,18 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
     public PHPDocNode getVariable() {
         return variable;
     }
+
+    @Override
+    public String getDocumentation() {
+        if (documentation == null) {
+            int index = getValue().indexOf(variable.getValue());
+            if (index > -1) {
+                documentation = getValue().substring(index + variable.getValue().length()).trim();
+            }
+        }
+        return documentation;
+    }
+    
     
     @Override
     public void accept(Visitor visitor) {

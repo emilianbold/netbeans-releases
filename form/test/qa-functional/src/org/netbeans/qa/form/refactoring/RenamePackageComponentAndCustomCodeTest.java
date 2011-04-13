@@ -77,14 +77,8 @@ public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /** 
-     * Opening default project
-     */
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-        
-    }
-    
+   
+   
     /**
      * Creates suite from particular test cases.
      * @return nb test suite

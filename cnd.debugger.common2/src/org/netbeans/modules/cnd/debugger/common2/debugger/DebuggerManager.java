@@ -1166,7 +1166,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     /**
      * Start debugging by loading program.
      */
-    public void debug(String executable, Configuration configuration, String host,
+    public NativeDebuggerInfo debug(String executable, Configuration configuration, String host,
             InputOutput io, DbgActionHandler dah, RunProfile profile) {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(configuration));
         ndi.setTarget(executable);
@@ -1182,6 +1182,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         }
 
         startDebugger(Start.NEW, ndi);
+        return ndi;
     }
 
     /**

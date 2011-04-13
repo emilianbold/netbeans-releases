@@ -216,6 +216,38 @@ public class ProjectBridge {
         }
     }
     
+    public void convertIncludePaths(Set<String> set, List<String> paths, String compilePath, String filePath){
+        for (String path : paths){
+            if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
+                if (path.equals(".")) { // NOI18N
+                    path = compilePath;
+                } else {
+                    path = compilePath+File.separator+path;
+                }
+                File f = new File(path);
+                path = CndFileUtils.normalizeFile(f).getAbsolutePath();
+            }
+            set.add(getRelativepath(path));
+        }
+        if (isDifferentCompilePath(filePath, compilePath)){
+            set.add(getRelativepath(compilePath));
+        }
+    }
+
+    private boolean isDifferentCompilePath(String name, String path){
+        if (Utilities.isWindows()) {
+            name = name.replace('\\', '/'); // NOI18N
+        }
+        int i = name.lastIndexOf('/'); // NOI18N
+        if (i > 0) {
+            name = name.substring(0,i);
+            if (!name.equals(path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Convert absolute path to relative.
      * Converter does some simplifications:

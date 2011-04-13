@@ -28,24 +28,23 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.*;
+import org.netbeans.qa.form.actions.actionsTest;
 
 /**
  *
  * @author Marek G.
  */
-public class OpenForm extends JellyTestCase {
+public class OpenFormTest extends JellyTestCase {
     
-    public OpenForm(java.lang.String testName) {
+    public OpenFormTest(java.lang.String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(OpenForm.class);
-        return suite;
+      public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(OpenFormTest.class).addTest(
+                "testOpenForm"
+                ).gui(true).enableModules(".*").clusters(".*"));
     }
     
     // Add test methods here, they have to start with 'test' name.

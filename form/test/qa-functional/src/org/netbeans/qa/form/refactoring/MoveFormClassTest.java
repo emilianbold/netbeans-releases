@@ -82,14 +82,14 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         super(testName);
     }
 
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(MoveFormClassTest.class)
-                .addTest("testCreatePackage", "testRefactoring", "testChangesInJavaFile", "testChangesInPropertiesFile" )
-                .clusters(".*").enableModules(".*").gui(true));
+    
+      public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(MoveFormClassTest.class).addTest(
+                "testCreatePackage", 
+                "testRefactoring", 
+                "testChangesInJavaFile", 
+                "testChangesInPropertiesFile" 
+                ).clusters(".*").enableModules(".*").gui(true));
 
     }
 

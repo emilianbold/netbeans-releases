@@ -267,7 +267,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
                 }
 
                 @Override

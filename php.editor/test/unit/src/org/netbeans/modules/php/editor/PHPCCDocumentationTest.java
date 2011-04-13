@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,73 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.api;
+package org.netbeans.modules.php.editor;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import java.io.File;
+import java.util.*;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Alexander Simon
+ * @author Petr Pisl
  */
-public interface DiscoveryDescriptor {
+public class PHPCCDocumentationTest extends PHPTestBase {
 
-    Project getProject();
-    void setProject(Project project);
+    public PHPCCDocumentationTest(String testName) {
+        super(testName);
+    }
     
-    DiscoveryProvider getProvider();
-    String getProviderID();
-    void setProvider(DiscoveryProvider provider);
-
-    String getRootFolder();
-    void setRootFolder(String root);
-
-    List<String> getErrors();
-    void setErrors(List<String> errors);
-
-    String getBuildResult();
-    void setBuildResult(String binaryPath);
-
-    String getAditionalLibraries();
-    void setAditionalLibraries(String binaryPath);
-
-    String getBuildLog();
-    void setBuildLog(String logFile);
-
-    String getExecLog();
-    void setExecLog(String logFile);
-
-    String getLevel();
-    void setLevel(String level);
-
-    List<ProjectConfiguration> getConfigurations();
-    void setConfigurations(List<ProjectConfiguration> configuration);
-
-    List<String> getIncludedFiles();
-    void setIncludedFiles(List<String> includedFiles);
-
-    boolean isInvokeProvider();
-    void setInvokeProvider(boolean invoke);
+    public void test197696() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue197696.php", "$this->te^", false, "");
+    }
     
-    boolean isSimpleMode();
-    void setSimpleMode(boolean simple);
-
-    boolean isIncrementalMode();
-    void setIncrementalMode(boolean incremental);
-
-    String getCompilerName();
-    void setCompilerName(String compiler);
-
-    List<String> getDependencies();
-    void setDependencies(List<String> dependencies);
-
-    List<String> getSearchPaths();
-    void setSearchPaths(List<String> searchPaths);
-
-    void setMessage(String message);
-
-    void clean();
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/documentation"))
+            })
+        );
+    }
 }

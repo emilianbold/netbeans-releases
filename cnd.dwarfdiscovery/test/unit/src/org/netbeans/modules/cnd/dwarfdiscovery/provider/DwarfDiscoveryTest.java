@@ -348,6 +348,11 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             public String getWorkingFolder() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
+
+            @Override
+            public boolean mergeProjectProperties() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
         });
         String compilerName = canAnalyze.getCompilerName();
         String sourceRoot = canAnalyze.getSourceRoot();
@@ -406,6 +411,11 @@ public class DwarfDiscoveryTest  extends NbTestCase {
 
             @Override
             public String getWorkingFolder() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         }, null);
