@@ -53,13 +53,16 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildProjectActionHandler.ExecLogWrapper;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -215,48 +218,18 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION){
                 return;
             }
-            DiscoveryWizardDescriptor wizardDescriptor = new DiscoveryWizardDescriptor(getPanels());
-            wizardDescriptor.setSimpleMode(true);
-            wizardDescriptor.setProvider(provider);
-            wizardDescriptor.setProject(project);
-            wizardDescriptor.setRootFolder(DiscoveryWizardAction.findSourceRoot(project));
+            Map<String, Object> artifacts = new HashMap<String, Object>();
             if ("exec-log".equals(provider.getID())) { // NOI18N
-                wizardDescriptor.setExecLog(execLog.getExecLog());
+                artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
             } else {
-                wizardDescriptor.setBuildLog(execLog.getBuildLog());
+                artifacts.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
             }
-            wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
-            wizardDescriptor.setTitle(getString("WIZARD_TITLE_TXT")); // NOI18N
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
-            Rectangle bounds = WindowManager.getDefault().getMainWindow().getBounds();
-            int x = bounds.x+(bounds.width-dialog.getWidth())/2;
-            int y = bounds.y+(bounds.height-dialog.getHeight())/2;
-            dialog.setBounds(Math.max(x,0), Math.max(y,0), dialog.getWidth(), dialog.getHeight());
-            dialog.setVisible(true);
-            dialog.toFront();
-            boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-            if (!cancelled) {
-                // do something
-            }
-            dialog.dispose();
+            
+            DiscoveryManagerImpl.projectBuilt(project, artifacts, false);
         }
         
         private String getString(String key) {
             return NbBundle.getBundle(BuildActionsProviderImpl.class).getString(key);
-        }
-
-        private InstantiatingIterator<WizardDescriptor> getPanels() {
-            @SuppressWarnings("unchecked")
-            WizardDescriptor.Panel<WizardDescriptor>[] simple = new WizardDescriptor.Panel[] {
-                new SimpleConfigurationWizard()
-            };
-            String[] steps = new String[simple.length];
-            for (int i = 0; i < simple.length; i++) {
-                Component c = simple[i].getComponent();
-                steps[i] = c.getName();
-                DiscoveryWizardAction.setupComponent(steps, null, i, c);
-            }
-            return new DiscoveryWizardIterator(simple, simple);
         }
     }
 }
