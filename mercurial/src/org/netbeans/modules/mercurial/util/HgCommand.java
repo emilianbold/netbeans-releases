@@ -2857,8 +2857,8 @@ public class HgCommand {
         }
         logCommand(command);
         File outputStyleFile = null;
-        File repository = null;
         final String hgCommand = getHgCommandName(command); // command name
+        final File repository = getRepositoryFromCommand(command, hgCommand);
         try {
             try {
                 outputStyleFile = createOutputStyleFile(command);
@@ -2874,28 +2874,37 @@ public class HgCommand {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
             }
-            if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
-                // indexing is supposed to be disabled for the time the command is running
-                return runWithoutIndexing(new Callable<List<String>>() {
+            try {
+                Callable<List<String>> callable = new Callable<List<String>>() {
                     @Override
-                    public List<String> call() throws Exception {
-                        return exec(commandLine, pb);
+                    public List<String> call () throws HgException {
+                        if (isGuardedCommand(hgCommand) && repository != null) {
+                            // indexing is supposed to be disabled for the time the command is running
+                            return runWithoutIndexing(new Callable<List<String>>() {
+                                @Override
+                                public List<String> call() throws Exception {
+                                    return exec(commandLine, pb);
+                                }
+                            }, Collections.singletonList(repository), hgCommand);
+                        } else {
+                            return exec(commandLine, pb);
+                        }
                     }
-                }, Collections.singletonList(repository), hgCommand);
-            } else {
-                return exec(commandLine, pb);
+                };
+                if (modifiesRepository(hgCommand) && repository != null) {
+                    return Mercurial.getInstance().runWithoutExternalEvents(repository, callable);
+                } else {
+                    return callable.call();
+                }
+            } catch (HgException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                Mercurial.LOG.log(Level.WARNING, null, ex);
+                return null;
             }
         } finally{
             if (outputStyleFile != null) {
                 outputStyleFile.delete();
-            }
-            if (modifiesRepository(hgCommand)) {
-                if (repository == null) {
-                    repository = getRepositoryFromCommand(command, hgCommand);
-                }
-                if (repository != null) {
-                    Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
-                }
             }
         }
     }
@@ -3466,7 +3475,7 @@ public class HgCommand {
             return;
         }
 
-        List<String> command = new ArrayList<String>();
+        final List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_RESOLVE_CMD);
@@ -3476,9 +3485,17 @@ public class HgCommand {
         command.add(FileUtil.normalizeFile(file).getAbsolutePath());
         List<String> list;
         try {
-            list = exec(command);
-        } finally {
-            Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+            list = Mercurial.getInstance().runWithoutExternalEvents(repository, new Callable<List<String>>() {
+                @Override
+                public List<String> call () throws Exception {
+                    return exec(command);
+                }
+            });
+        } catch (HgException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.WARNING, null, ex);
+            return;
         }
 
         if (!list.isEmpty()) {

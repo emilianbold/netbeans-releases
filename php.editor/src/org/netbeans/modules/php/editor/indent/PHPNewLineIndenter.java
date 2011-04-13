@@ -234,6 +234,9 @@ public class PHPNewLineIndenter {
                                     case ',':
                                         continualIndent = true;
                                         break;
+                                    case '.':
+                                        continualIndent = true;
+                                        break;
                                     case ':':
                                         indent = true;
                                         break;

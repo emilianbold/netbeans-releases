@@ -691,9 +691,11 @@ public final class DatabaseConnection implements DBConnection {
                 try {
                     toRun.run();
                 } finally {
-                    d.setVisible(false);
-                    d.dispose();
-                    d = null;
+                    if (d != null) {
+                        d.setVisible(false);
+                        d.dispose();
+                        d = null;
+                    }
                 }
             }
         });

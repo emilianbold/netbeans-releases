@@ -325,6 +325,9 @@ public abstract class InstanceProperties {
     
     /**
      * Return DeploymentManager associated with this instance.
+     *
+     * @deprecated without replacement - this method should not be used as there
+     * is no api use case for it
      */
     public abstract DeploymentManager getDeploymentManager();
     

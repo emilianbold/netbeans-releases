@@ -52,7 +52,6 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -68,7 +67,7 @@ public class DisInfoPanel extends JPanel {
     
     private final JComboBox addressText;
     private final JTextField fileText;
-    private final JTextField functionText;
+//    private final JTextField functionText;
 
     public DisInfoPanel(final JTextComponent component) {
         this.component = component;
@@ -128,31 +127,31 @@ public class DisInfoPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(fileText, gridBagConstraints);
 
-        JLabel functionLabel = new JLabel();
-        functionLabel.setText(Catalog.get("LBL_Function")); // NOI18N
-        functionLabel.setToolTipText(Catalog.get("TIP_DisFunction"));//NOI18N
+//        JLabel functionLabel = new JLabel();
+//        functionLabel.setText(Catalog.get("LBL_Function")); // NOI18N
+//        functionLabel.setToolTipText(Catalog.get("TIP_DisFunction"));//NOI18N
+//
+//        functionText = new JTextField();
+//        functionText.setColumns(15);
+//        functionText.setHorizontalAlignment(JTextField.LEFT);
+//        functionText.setEditable(false);
+//        functionLabel.setLabelFor(functionText);
 
-        functionText = new JTextField();
-        functionText.setColumns(15);
-        functionText.setHorizontalAlignment(JTextField.LEFT);
-        functionText.setEditable(false);
-        functionLabel.setLabelFor(functionText);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = gridx++;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.weightx = 0.0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
-        add(functionLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = gridx++;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        add(functionText, gridBagConstraints);
+//        gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = gridx++;
+//        gridBagConstraints.gridy = 0;
+//        gridBagConstraints.weightx = 0.0;
+//        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+//        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
+//        add(functionLabel, gridBagConstraints);
+//
+//        gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = gridx++;
+//        gridBagConstraints.gridy = 0;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+//        add(functionText, gridBagConstraints);
         
         addressText.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -168,10 +167,7 @@ public class DisInfoPanel extends JPanel {
         addressText.removeItem(selectedItem);
         addressText.addItem(selectedItem);
         
-        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-        if (disProvider != null) {
-            disProvider.showAddress(selectedItem);
-        }
+        DisassemblyUtils.showAddress(selectedItem);
     }
     
     public static void setLocation(Location location) {
@@ -183,7 +179,7 @@ public class DisInfoPanel extends JPanel {
                 src = "";
             }
             INSTANCE.fileText.setText(src);
-            INSTANCE.functionText.setText(location.func());
+//            INSTANCE.functionText.setText(location.func());
             INSTANCE.addressText.getEditor().setItem(Address.toHexString0x(location.pc(), true));
         }
     }
@@ -194,18 +190,15 @@ public class DisInfoPanel extends JPanel {
     public static final class Factory implements SideBarFactory {
         @Override
         public JComponent createSideBar(JTextComponent target) {
-            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-            if (disProvider != null) {
-                try {
-                    if (disProvider.isDis(NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile().getURL().toString())) {
-                        if (INSTANCE == null) {
-                            INSTANCE = new DisInfoPanel(target);
-                        }
-                        return INSTANCE;
+            try {
+                if (Disassembly.isDisasm(NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile().getURL().toString())) {
+                    if (INSTANCE == null) {
+                        INSTANCE = new DisInfoPanel(target);
                     }
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
+                    return INSTANCE;
                 }
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
             return null;
         }

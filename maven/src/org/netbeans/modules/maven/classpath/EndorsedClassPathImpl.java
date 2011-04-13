@@ -50,8 +50,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -62,7 +64,6 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -74,6 +75,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * NO listening on changes here, let the BootClassPath deal with it..
@@ -81,12 +83,15 @@ import org.openide.filesystems.FileUtil;
  */
 public final class EndorsedClassPathImpl implements ClassPathImplementation, FileChangeListener {
 
+    static final RequestProcessor RP = new RequestProcessor(EndorsedClassPathImpl.class);
+
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final NbMavenProjectImpl project;
     private BootClassPathImpl bcp;
     private String[] current;
     private final File endorsed;
+    private final Map<File,File/*|null*/> endorsed2Repo = new HashMap<File,File>();
 
     @SuppressWarnings("LeakingThisInConstructor")
     EndorsedClassPathImpl(NbMavenProjectImpl project) {
@@ -108,17 +113,40 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                 }
                 File[] jars = endorsed.listFiles();
                 if (jars != null) {
-                    for (File jar : jars) {
+                    for (final File jar : jars) {
                         if (jar.isFile()) {
-                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar, RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]))) {
-                                File jar2 = RepositoryUtil.createArtifact(analogue).getFile();
-                                if (jar2.isFile()) {
-                                    jar = jar2;
-                                    break;
+                            if (endorsed2Repo.containsKey(jar)) {
+                                File toScan = endorsed2Repo.get(jar);
+                                if (toScan == null) {
+                                    toScan = jar;
                                 }
+                                result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(toScan)));
+                            } else {
+                                // #197510: blocking, must do this asynch
+                                RP.post(new Runnable() {
+                                    public @Override void run() {
+                                        synchronized (bcp.LOCK) {
+                                            if (endorsed2Repo.containsKey(jar)) {
+                                                // Another task beat us to it.
+                                                return;
+                                            }
+                                        }
+                                        File toScan = null;
+                                        for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar)) {
+                                            toScan = RepositoryUtil.createArtifact(analogue).getFile();
+                                            if (toScan.isFile()) {
+                                                break;
+                                            }
+                                        }
+                                        synchronized (bcp.LOCK) {
+                                            endorsed2Repo.put(jar, toScan);
+                                            resourcesCache = null;
+                                        }
+                                        support.firePropertyChange(PROP_RESOURCES, null, null);
+                                    }
+                                });
                             }
                         }
-                        result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(jar)));
                     }
                 }
                 current = boot;

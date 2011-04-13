@@ -108,7 +108,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
@@ -122,6 +121,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
@@ -134,7 +134,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
-    public final class GdbDebuggerImpl extends NativeDebuggerImpl 
+public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
 
     private GdbEngineProvider engineProvider;
@@ -149,7 +149,7 @@ import org.openide.util.Exceptions;
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
-    private final Disassembly disassembly;
+    private final GdbDisassembly disassembly;
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
@@ -279,7 +279,7 @@ import org.openide.util.Exceptions;
 
         profileBridge = new GdbDebuggerSettingsBridge(this);
         handlerExpert = new GdbHandlerExpert(this);
-        disassembly = new Disassembly(this, breakpointModel());
+        disassembly = new GdbDisassembly(this, breakpointModel());
         disStateModel().addListener(disassembly);
     }
 
@@ -611,7 +611,6 @@ import org.openide.util.Exceptions;
      * was: sessionExited() and if(cleanup) portion of finishDebugger()
      */
     public final void kill() {
-        Disassembly.close();
         super.preKill();
 
         optionLayers().save();
@@ -2758,11 +2757,6 @@ import org.openide.util.Exceptions;
 	gdb.sendCommand(cmd);
     }
 
-    @Override
-    protected void openDis() {
-        Disassembly.open();
-    }
-    
     /**
      * Continuation from genericStopped().
      *
@@ -3522,10 +3516,10 @@ import org.openide.util.Exceptions;
     }
 
     // interface NativeDebugger
-    public void registerDisassemblerWindow(DisassemblerWindow w) {
-	assert w == null || w == disassemblerWindow();
+    public void registerDisassembly(Disassembly dis) {
+	//assert w == null || w == disassemblerWindow();
 
-	boolean makeAsmVisible = (w != null);
+	boolean makeAsmVisible = (dis != null);
 	if (makeAsmVisible == isAsmVisible())
 	    return;
 
@@ -3535,13 +3529,13 @@ import org.openide.util.Exceptions;
         if (!isConnected())
             return;
 
-	if (! viaShowLocation) {
-	    // I.e. user clicked on Disassembly tab or some other tab
-	    if (makeAsmVisible)
-		requestDisassembly();
-	    else
-		requestSource(false);
-	}
+//	if (! viaShowLocation) {
+//	    // I.e. user clicked on Disassembly tab or some other tab
+//	    if (makeAsmVisible)
+//		requestDisassembly();
+//	    else
+//		requestSource(false);
+//	}
 
         if (makeAsmVisible) {
 	    setAsmVisible(true);
@@ -3556,14 +3550,14 @@ import org.openide.util.Exceptions;
     }
 
     // implement NativeDebuggerImpl
-    protected Controller disController() {
+    public Controller disController() {
 	return disController;
     }
-    
-    Disassembly getDisassembly() {
+
+    public GdbDisassembly getDisassembly() {
         return disassembly;
     }
-
+    
     private void requestDisFromGdb(String cmd) {
 	// DEBUG System.out.printf("requestDisFromGdb(%s)\n", cmd);
 	if (postedKill || postedKillEngine || gdb == null || cmd == null)
@@ -3580,11 +3574,6 @@ import org.openide.util.Exceptions;
 //	    disStateModel().updateStateModel(visitedLocation, false);
     }
 
-    @Override
-    public void requestDisassembly() {
-        Disassembly.open();
-    }
-    
     public FormatOption[] getMemoryFormats() {
         return GdbMemoryFormat.values();
     }

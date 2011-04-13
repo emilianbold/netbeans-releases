@@ -160,6 +160,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         bcp.addPropertyChangeListener(pcl2);
         assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
         FileObject jar = TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
+        EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp, jar);
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);

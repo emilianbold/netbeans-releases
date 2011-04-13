@@ -380,8 +380,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         if (tpe != null)
                             return tpe.getSimpleName().toString();
                     }
-                    if (tm.getKind() == TypeKind.TYPEVAR)
-                        tm = ((TypeVariable)tm).getUpperBound();
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, TYPE);
@@ -395,8 +393,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (ITERABLE_ELEMENT_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = iterableElementType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
-                    if (tm.getKind() == TypeKind.TYPEVAR)
-                        tm = ((TypeVariable)tm).getUpperBound();
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
@@ -408,8 +404,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (LEFT_SIDE_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, true);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
-                    if (tm.getKind() == TypeKind.TYPEVAR)
-                        tm = ((TypeVariable)tm).getUpperBound();
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
@@ -421,8 +415,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (RIGHT_SIDE_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, false);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
-                    if (tm.getKind() == TypeKind.TYPEVAR)
-                        tm = ((TypeVariable)tm).getUpperBound();
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
@@ -457,8 +449,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (UNCAUGHT_EXCEPTION_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = uncaughtExceptionType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
-                    if (tm.getKind() == TypeKind.TYPEVAR)
-                        tm = ((TypeVariable)tm).getUpperBound();
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, UNCAUGHT_EXCEPTION_TYPE);

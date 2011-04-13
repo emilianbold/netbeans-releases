@@ -128,6 +128,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
+import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -565,13 +566,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Element methodEl = info.getTrees().getElement(method);
         List<? extends StatementTree> parentStatements = CopyFinder.getStatements(block);
         List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);
-        Map<Tree, Iterable<? extends TreePath>> assignmentsForUse = Flow.assignmentsForUse(info, method, cancel).getAssignmentsForUse();
+        FlowResult flow = Flow.assignmentsForUse(info, method, cancel);
 
-        if (assignmentsForUse == null) {
-            assert cancel.get();
+        if (flow == null || cancel.get()) {
             return null;
         }
-        
+
+        Map<Tree, Iterable<? extends TreePath>> assignmentsForUse = flow.getAssignmentsForUse();
         ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), typeVar2Def, assignmentsForUse, cancel);
         Set<TypeMirror> exceptions = new HashSet<TypeMirror>();
         int index = 0;

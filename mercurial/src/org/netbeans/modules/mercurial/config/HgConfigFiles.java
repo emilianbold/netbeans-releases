@@ -57,7 +57,6 @@ import java.util.logging.Level;
 import org.ini4j.Config;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
-import org.ini4j.Profile.Section;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -145,10 +144,10 @@ public class HgConfigFiles {
         if (name.equals(HG_USERNAME)) { 
             setProperty(HG_UI_SECTION, HG_USERNAME, value);
         } else if (name.equals(HG_DEFAULT_PUSH)) { 
-            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, value);
+            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, removeTrailingBackslahes(value));
             HgRepositoryContextCache.getInstance().reset();
         } else if (name.equals(HG_DEFAULT_PULL)) { 
-            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, value);
+            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, removeTrailingBackslahes(value));
             HgRepositoryContextCache.getInstance().reset();
         } else if (name.equals(HG_EXTENSIONS_HGK)) { 
             // Allow hgext.hgk to be set to some other user defined value if required
@@ -489,6 +488,13 @@ public class HgConfigFiles {
         userprofile = System.getenv("USERPROFILE");// NOI18N
 
         return userprofile!= null? userprofile: ""; // NOI18N
+    }
+
+    private static String removeTrailingBackslahes (String value) {
+        while (value.endsWith("\\")) {
+            value = value.substring(0, value.length() - 1);
+        }
+        return value;
     }
 
 }

@@ -45,9 +45,15 @@ package org.netbeans.modules.cnd.discovery.buildsupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.BuildActionsProviderImpl;
+import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -55,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
@@ -64,7 +71,7 @@ import org.openide.windows.InputOutput;
  *
  * @author Alexander Simon
  */
-/* package-local */ class BuildProjectActionHandler implements ProjectActionHandler {
+public class BuildProjectActionHandler implements ProjectActionHandler {
 
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
@@ -109,34 +116,17 @@ import org.openide.windows.InputOutput;
 
     @Override
     public void execute(InputOutput io) {
-        final ExecutionListener listener = new ExecutionListener() {
-            @Override
-            public void executionStarted(int pid) {
-            }
-            @Override
-            public void executionFinished(int rc) {
-                delegate.removeExecutionListener(this);
-            }
-        };
-        delegate.addExecutionListener(listener);
         File execLog = null;
         String remoteExecLog = null;
         try {
             execLog = File.createTempFile("exec", ".log"); // NOI18N
             execLog.deleteOnExit();
-            if (outputHandlers != null) {
-                for(OutputStreamHandler handler : outputHandlers) {
-                    if (handler instanceof BuildActionsProviderImpl.ConfigureAction) {
-                        BuildActionsProviderImpl.ConfigureAction myHandler = (BuildActionsProviderImpl.ConfigureAction) handler;
-                        myHandler.setExecLog(execLog);
-                    }
-                }
-            }
             if (execEnv.isRemote()) {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
                 remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
             }
         } catch (IOException ex) {
+            execLog = null;
         }
         if (execLog != null) {
             Env env = pae.getProfile().getEnvironment();
@@ -167,13 +157,105 @@ import org.openide.windows.InputOutput;
                 Exceptions.printStackTrace(ex);
             }
         }
+        final ExecLogWrapper wrapper = new ExecLogWrapper(execLog, execEnv);
+        if (outputHandlers != null) {
+            for(OutputStreamHandler handler : outputHandlers) {
+                if (handler instanceof BuildActionsProviderImpl.ConfigureAction) {
+                    BuildActionsProviderImpl.ConfigureAction myHandler = (BuildActionsProviderImpl.ConfigureAction) handler;
+                    myHandler.setExecLog(wrapper);
+                }
+            }
+        }
+        final ExecutionListener listener = new ExecutionListener() {
+            @Override
+            public void executionStarted(int pid) {
+            }
+            @Override
+            public void executionFinished(int rc) {
+                delegate.removeExecutionListener(this);
+                reconfigureCodeAssistance(rc, wrapper);
+                
+            }
+        };
+        delegate.addExecutionListener(listener);
         delegate.execute(io);
     }
 
+    private void reconfigureCodeAssistance(int rc, ExecLogWrapper execLog) {
+        if (DiscoveryManagerImpl.INCREMENTAL_CONFIGURE_CA) {
+            DiscoveryProvider provider = null;
+            if (execLog.getExecLog() != null) {
+                provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+            }
+            if (provider == null) {
+                provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
+            }
+            if (provider == null) {
+                return;
+            }
+            HashMap map = new HashMap();
+            if ("exec-log".equals(provider.getID())) { // NOI18N
+                map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
+            } else {
+                map.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
+            }
+            DiscoveryManagerImpl.projectBuilt(pae.getProject(), map);
+        }
+    }
+    
     private static final class BuildTraceHelper extends HelperLibraryUtility {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
         private BuildTraceHelper() {
             super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
+        }
+    }
+    
+    public static final class ExecLogWrapper {
+        private File execLog;
+        private String buildLog;
+        private final ExecutionEnvironment execEnv;
+        private final AtomicBoolean downloadedExecLog = new AtomicBoolean(false);
+        
+        public ExecLogWrapper(File execLog, ExecutionEnvironment execEnv){
+            this.execLog = execLog;
+            this.execEnv = execEnv;
+        }
+
+        private synchronized void downloadExecLog() {
+            if (execLog != null && !downloadedExecLog.get()) {
+                if (execEnv.isRemote()) {
+                    try {
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                        String remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
+                        if (HostInfoUtils.fileExists(execEnv, remoteExecLog)){
+                            Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, execEnv, execLog.getAbsolutePath(), null);
+                            /*int rc =*/ task.get();
+                        } else {
+                            execLog = null;
+                        }
+                    } catch (Throwable ex) {
+                        execLog = null;
+                        Exceptions.printStackTrace(ex);
+                    }
+                    downloadedExecLog.set(true);
+                }
+            }
+        }
+        
+        public void setBuildLog(String buildLog) {
+            this.buildLog = buildLog;
+        }
+
+        public String getBuildLog() {
+            return buildLog;
+        }
+        
+        public String getExecLog() {
+            downloadExecLog();
+            if (execLog != null) {
+                return execLog.getAbsolutePath();
+            }
+            return null;
         }
     }
 }

@@ -41,13 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.util;
 
 import java.util.logging.Logger;
-import junit.textui.TestRunner;
-
-
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 
 public class TaskTest extends NbTestCase {
     private Logger LOG;

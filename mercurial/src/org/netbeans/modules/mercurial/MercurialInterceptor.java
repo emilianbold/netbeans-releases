@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
@@ -384,16 +385,25 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     /**
-     * Refreshes cached modification timestamp of hg administrative folder file for the given repository
+     * Runs a given callable and disable listening for external repository events for the time the callable is running.
+     * Refreshes cached modification timestamp of hg administrative folder file for the given repository after.
+     * @param callable code to run
      * @param repository
      */
-    void refreshHgFolderTimestamp(File repository) {
+    <T> T runWithoutExternalEvents(File repository, Callable<T> callable) throws Exception {
         assert repository != null;
-        if (repository == null) {
-            return;
+        try {
+            if (repository != null) {
+                hgFolderEventsHandler.enableEvents(repository, false);
+            }
+            return callable.call();
+        } finally {
+            if (repository != null) {
+                hgFolderEventsHandler.enableEvents(repository, true);
+                File hgFolder = HgUtils.getHgFolderForRoot(repository);
+                hgFolderEventsHandler.refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+            }
         }
-        File hgFolder = HgUtils.getHgFolderForRoot(repository);
-        hgFolderEventsHandler.refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
     }
 
     /**
@@ -429,6 +439,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         private final HashMap<File, Long> hgFolders = new HashMap<File, Long>(5);
         private final HashMap<File, FileChangeListener> hgFolderRLs = new HashMap<File, FileChangeListener>(5);
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>(5);
+        private final HashSet<File> disabledEvents = new HashSet<File>(5);
 
         private final HashSet<File> filesToInitialize = new HashSet<File>();
         private RequestProcessor rp = new RequestProcessor("MercurialInterceptorEventsHandlerRP", 1); //NOI18N
@@ -489,6 +500,9 @@ public class MercurialInterceptor extends VCSInterceptor {
                 synchronized (hgFolders) {
                     lastCachedModified = hgFolders.get(hgFolder);
                     if (lastCachedModified == null || lastCachedModified < lastModified || lastModified == 0) {
+                        if (!isEnabled(hgFolder)) {
+                            return lastModified;
+                        }
                         refreshHgFolderTimestamp(hgFolder, lastModified);
                         lastCachedModified = null;
                     }
@@ -583,6 +597,23 @@ public class MercurialInterceptor extends VCSInterceptor {
                         }
                     }
                 }
+            }
+        }
+
+        private void enableEvents (File repository, boolean enabled) {
+            File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repository));
+            synchronized (disabledEvents) {
+                if (enabled) {
+                    disabledEvents.remove(hgFolder);
+                } else {
+                    disabledEvents.add(hgFolder);
+                }
+            }
+        }
+
+        private boolean isEnabled (File hgFolder) {
+            synchronized (disabledEvents) {
+                return !disabledEvents.contains(hgFolder);
             }
         }
     }
