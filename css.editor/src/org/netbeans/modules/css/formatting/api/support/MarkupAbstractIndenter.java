@@ -517,7 +517,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         int index = fileStack.size();
         addTags(lineItems);
-
+        
         // if first item on line is closing/opening tag then test whether line needs back-indent:
         if (!context.isBlankLine()) {
             ts.move(context.getLineNonWhiteStartOffset());
@@ -566,7 +566,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
             }
         }
-
+        
         return iis;
     }
 
@@ -833,7 +833,28 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
     private void removeFullyProcessedTags() {
-        // XXX: TODO: impl this
+        Stack<MarkupItem> fileStack = getStack();
+        for (int i=fileStack.size()-1; i>=0; i--) {
+            MarkupItem item = getStack().get(i);
+            if (!item.openingTag && item.processed) {
+                // if close tag was processed then whole tag and its content
+                // can be removed:
+                int index = indexOfOpenTag(getStack(), item, i);
+                if (index != -1) {
+                    discardProcessedMarkupItems(fileStack, index, i);
+                    i = index;
+                }
+            }
+        }
+        
+    }
+    
+    private void discardProcessedMarkupItems(Stack<MarkupItem> stack, int startIndex, int endIndex) {
+        for (int index = endIndex; index >= startIndex; index--) {
+            MarkupItem item = stack.get(index);
+            assert item.processed || item.virtual : "assumption here is that a tag within process tag must be either processed or perhaps virtual: item="+item+" stack="+(getStack().size() < 30 ? getStack() : "[too many items]");
+            stack.remove(index);
+        }
     }
 
     private boolean isInOpeningTagAttributes() {
