@@ -201,6 +201,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     }
                     server = new Server(fo);
                     serversMap().put(name, server);
+                    configNamesByType = null;
                 }
                 if (server != null) {
                     firePluginListeners(server, true);
@@ -241,6 +242,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
             serversMap().remove(name);
+            configNamesByType = null;
         }
         if (server != null) {
             firePluginListeners(server, false);
@@ -255,12 +257,10 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            super.fileFolderCreated(fe);
             addPlugin(fe.getFile());
         }
         @Override
         public void fileDeleted(FileEvent fe) {
-            super.fileDeleted(fe);
             removePlugin(fe.getFile());
         }
     }
@@ -625,35 +625,40 @@ public final class ServerRegistry implements java.io.Serializable {
 
     }
 
-    private static Map<J2eeModule.Type, Set<String>> configNamesByType = null;
+    /* GuardedBy("this") */
+    private Map<J2eeModule.Type, Set<String>> configNamesByType = null;
     private static final J2eeModule.Type[] ALL_TYPES = new J2eeModule.Type[] {
         J2eeModule.Type.EAR, J2eeModule.Type.RAR, J2eeModule.Type.CAR, J2eeModule.Type.EJB, J2eeModule.Type.WAR };
 
     private void initConfigNamesByType() {
-        if (configNamesByType != null) {
-            return;
-        }
-        configNamesByType = new HashMap();
-        for (int i = 0 ; i < ALL_TYPES.length; i++) {
-            Set<String> configNames = new HashSet();
-            for (Iterator j=servers.values().iterator(); j.hasNext();) {
-		Server s = (Server) j.next();
-		String[] paths = s.getDeploymentPlanFiles(ALL_TYPES[i]);
-                if (paths == null)
-                    continue;
-		for (int k=0 ; k<paths.length; k++) {
-		    File path = new File(paths[k]);
-		    configNames.add(path.getName());
-		}
+        synchronized (this) {
+            if (configNamesByType != null) {
+                return;
             }
-	    configNamesByType.put(ALL_TYPES[i], configNames);
+            configNamesByType = new HashMap();
+            for (int i = 0 ; i < ALL_TYPES.length; i++) {
+                Set<String> configNames = new HashSet();
+                for (Iterator j=servers.values().iterator(); j.hasNext();) {
+                    Server s = (Server) j.next();
+                    String[] paths = s.getDeploymentPlanFiles(ALL_TYPES[i]);
+                    if (paths == null)
+                        continue;
+                    for (int k=0 ; k<paths.length; k++) {
+                        File path = new File(paths[k]);
+                        configNames.add(path.getName());
+                    }
+                }
+                configNamesByType.put(ALL_TYPES[i], configNames);
+            }
         }
     }
 
     public boolean isConfigFileName(String name, J2eeModule.Type type) {
 	initConfigNamesByType();
-	Set<String> configNames = configNamesByType.get(type);
-	return (configNames != null && configNames.contains(name));
+        synchronized (this) {
+            Set<String> configNames = configNamesByType.get(type);
+            return (configNames != null && configNames.contains(name));
+        }
     }
 
     /** Return profiler if any is registered in the IDE, null otherwise. */
