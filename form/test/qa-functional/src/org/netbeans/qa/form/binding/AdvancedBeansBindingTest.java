@@ -84,9 +84,10 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(AdvancedBeansBindingTest.class).addTest(
                 "testCompileComponents",
-                "testAlternateValues",
+                "testUpdateMode",
                 "testConversion",
-                "testValidation"
+                "testValidation",
+                "testAlternateValues"
                 ).gui(true).enableModules(".*").clusters(".*"));
 
     }
