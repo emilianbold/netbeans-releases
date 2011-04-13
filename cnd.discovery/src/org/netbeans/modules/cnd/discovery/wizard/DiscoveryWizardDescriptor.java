@@ -76,6 +76,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
     public static final String SEARCH_PATHS = "DW:searchPaths"; // NOI18N
     public static final String ERRORS = "DW:errors"; // NOI18N
+    public static final String INCREMENTAL = "DW:incremental"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -288,6 +289,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setSearchPaths(List<String> searchPaths) {
         putProperty(SEARCH_PATHS, searchPaths);
+    }
+
+    @Override
+    public boolean isIncrementalMode() {
+        return Boolean.TRUE.equals(getProperty(INCREMENTAL));
+    }
+
+    @Override
+    public void setIncrementalMode(boolean incremental) {
+        putProperty(INCREMENTAL, incremental);
     }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
@@ -502,6 +513,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setSearchPaths(List<String> searchPaths) {
             wizard.putProperty(SEARCH_PATHS, searchPaths);
+        }
+
+        @Override
+        public boolean isIncrementalMode() {
+            return Boolean.TRUE.equals(wizard.getProperty(INCREMENTAL));
+        }
+
+        @Override
+        public void setIncrementalMode(boolean incremental) {
+            wizard.putProperty(INCREMENTAL, incremental);
         }
     }
 
@@ -718,6 +739,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setSearchPaths(List<String> searchPaths) {
             map.put(SEARCH_PATHS, searchPaths);
+        }
+
+        @Override
+        public boolean isIncrementalMode() {
+            return Boolean.TRUE.equals(map.get(INCREMENTAL));
+        }
+
+        @Override
+        public void setIncrementalMode(boolean incremental) {
+            map.put(INCREMENTAL, incremental);
         }
     }
 }

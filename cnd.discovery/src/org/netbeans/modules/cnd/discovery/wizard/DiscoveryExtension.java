@@ -367,6 +367,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         public String getWorkingFolder() {
             return null;
         }
+
+        @Override
+        public boolean mergeProjectProperties() {
+            return false;
+        }
     };
 
 }

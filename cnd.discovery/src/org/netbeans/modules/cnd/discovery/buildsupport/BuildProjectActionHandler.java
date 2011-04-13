@@ -182,25 +182,26 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     }
 
     private void reconfigureCodeAssistance(int rc, ExecLogWrapper execLog) {
-        if (DiscoveryManagerImpl.INCREMENTAL_CONFIGURE_CA) {
-            DiscoveryProvider provider = null;
-            if (execLog.getExecLog() != null) {
-                provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
-            }
+        DiscoveryProvider provider = null;
+        if (execLog.getExecLog() != null) {
+            provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+        }
+        if (false) {
+            // use incremental configure code assistance only for interceptor.
             if (provider == null) {
                 provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
             }
-            if (provider == null) {
-                return;
-            }
-            HashMap map = new HashMap();
-            if ("exec-log".equals(provider.getID())) { // NOI18N
-                map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
-            } else {
-                map.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
-            }
-            DiscoveryManagerImpl.projectBuilt(pae.getProject(), map, true);
         }
+        if (provider == null) {
+            return;
+        }
+        HashMap map = new HashMap();
+        if ("exec-log".equals(provider.getID())) { // NOI18N
+            map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
+        } else {
+            map.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
+        }
+        DiscoveryManagerImpl.projectBuilt(pae.getProject(), map, true);
     }
     
     private static final class BuildTraceHelper extends HelperLibraryUtility {

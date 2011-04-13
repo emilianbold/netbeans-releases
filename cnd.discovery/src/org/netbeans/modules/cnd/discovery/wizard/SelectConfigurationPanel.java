@@ -360,6 +360,11 @@ public final class SelectConfigurationPanel extends JPanel {
             public String getWorkingFolder() {
                 return null;
             }
+
+            @Override
+            public boolean mergeProjectProperties() {
+                return wizardDescriptor.isIncrementalMode();
+            }
         }, new MyProgress());
         List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
         List<String> includedFiles = new ArrayList<String>();

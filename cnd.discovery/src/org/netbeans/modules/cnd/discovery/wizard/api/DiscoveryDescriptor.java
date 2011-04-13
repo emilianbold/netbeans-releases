@@ -94,6 +94,9 @@ public interface DiscoveryDescriptor {
     boolean isSimpleMode();
     void setSimpleMode(boolean simple);
 
+    boolean isIncrementalMode();
+    void setIncrementalMode(boolean incremental);
+
     String getCompilerName();
     void setCompilerName(String compiler);
 
