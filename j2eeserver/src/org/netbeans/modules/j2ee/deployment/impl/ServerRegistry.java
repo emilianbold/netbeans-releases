@@ -116,9 +116,9 @@ public final class ServerRegistry implements java.io.Serializable {
         return instance != null && instance.servers != null && instance.instances != null;
     }
     private transient Map<String, Server> servers = null;
-    private transient Map instances = null;
-    private final transient Collection pluginListeners = new ArrayList();
-    private final transient Collection instanceListeners = new ArrayList();
+    private transient Map<String, ServerInstance> instances = null;
+    private final transient Collection<PluginListener> pluginListeners = new ArrayList<PluginListener>();
+    private final transient Collection<InstanceListener> instanceListeners = new ArrayList<InstanceListener>();
     private transient InstanceListener[] instanceListenersArray;
     private transient PluginInstallListener pluginL;
     private transient InstanceInstallListener instanceL;
@@ -134,8 +134,8 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         }
 
-        servers = new HashMap();
-        instances = new HashMap();
+        servers = new HashMap<String, Server>();
+        instances = new HashMap<String, ServerInstance>();
 
         FileObject dir = FileUtil.getConfigFile(DIR_JSR88_PLUGINS);
         if (dir != null) {
@@ -176,11 +176,11 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    private Map<String,Server> serversMap() {
+    private Map<String, Server> serversMap() {
         init();
         return servers;
     }
-    private synchronized Map instancesMap() {
+    private synchronized Map<String, ServerInstance> instancesMap() {
         init();
         return instances;
     }
@@ -283,12 +283,12 @@ public final class ServerRegistry implements java.io.Serializable {
         return serversMap().values();
     }
 
-    public synchronized Collection getInstances() {
+    public synchronized Collection<ServerInstance> getInstances() {
         return new ArrayList(instancesMap().values());
     }
 
     public synchronized String[] getInstanceURLs() {
-        return (String[]) instancesMap().keySet().toArray(new String[instancesMap().size()]);
+        return instancesMap().keySet().toArray(new String[instancesMap().size()]);
     }
 
     public void checkInstanceAlreadyExists(String url) throws InstanceCreationException {
@@ -314,7 +314,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     public synchronized ServerInstance getServerInstance(String url) {
-        return (ServerInstance) instancesMap().get(url);
+        return instancesMap().get(url);
     }
 
     public void removeServerInstance(String url) {
@@ -323,7 +323,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
         ServerInstance tmp = null;
         synchronized (this) {
-            tmp = (ServerInstance) instancesMap().remove(url);
+            tmp = instancesMap().remove(url);
         }
         if (tmp != null) {
             fireInstanceListeners(url, false);
@@ -333,8 +333,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
     public synchronized ServerInstance[] getServerInstances() {
         ServerInstance[] ret = new ServerInstance[instancesMap().size()];
-        instancesMap().values().toArray(ret);
-        return ret;
+        return instancesMap().values().toArray(ret);
     }
 
     public static FileObject getInstanceFileObject(String url) {
