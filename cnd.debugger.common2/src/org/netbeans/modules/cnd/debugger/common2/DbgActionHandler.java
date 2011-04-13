@@ -57,6 +57,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -70,7 +72,8 @@ import org.openide.windows.IOSelect;
 public class DbgActionHandler implements ProjectActionHandler {
     private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
-    protected ProjectActionEvent pae;
+    private ProjectActionEvent pae;
+    private NativeDebuggerInfo ndi;
 
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
@@ -85,14 +88,20 @@ public class DbgActionHandler implements ProjectActionHandler {
     }
 
     public boolean canCancel() {
-        return false;
+        return true;
     }
 
     /*
      * Called when user cancels execution from progressbar in output window
      */
     public void cancel() {
-        // Do nothing for now. See IZ 130827 Cancel running task does not work
+        // find dbugger using ndi and kill it
+        for (NativeDebugger debugger: DebuggerManager.get().nativeDebuggers()) {
+            if (ndi == debugger.getNDI()) {
+                debugger.postKill();
+                break;
+            }
+        }
     }
 
     // interface CustomProjectActionHandler
@@ -139,7 +148,7 @@ public class DbgActionHandler implements ProjectActionHandler {
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
 		    dm.setAction(DebuggerManager.RUN);
 		    dm.removeAction(DebuggerManager.STEP);
-		    DebuggerManager.get().debug(executable,
+		    ndi = DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
@@ -149,7 +158,7 @@ public class DbgActionHandler implements ProjectActionHandler {
                 } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
 		    dm.setAction(DebuggerManager.STEP);
 		    dm.removeAction(DebuggerManager.RUN);
-		    DebuggerManager.get().debug(executable,
+		    ndi = DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
