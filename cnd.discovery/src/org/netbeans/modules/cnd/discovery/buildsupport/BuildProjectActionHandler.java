@@ -199,7 +199,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             } else {
                 map.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
             }
-            DiscoveryManagerImpl.projectBuilt(pae.getProject(), map);
+            DiscoveryManagerImpl.projectBuilt(pae.getProject(), map, true);
         }
     }
     
