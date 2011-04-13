@@ -1418,7 +1418,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top;
-        top = folder.findFolderByName(dir.getNameExt());
+        top = folder.findFolderByAbsolutePath(dir.getPath());
         if (top == null) {
             top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
             folder.addFolder(top, true);
