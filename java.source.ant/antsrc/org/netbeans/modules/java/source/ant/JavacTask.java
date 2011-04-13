@@ -46,6 +46,8 @@ package org.netbeans.modules.java.source.ant;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -62,10 +64,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  */
 public class JavacTask extends Javac {
 
+    private static final String CLASS_ZIP_FILE_INDEX = "com.sun.tools.javac.zip.ZipFileIndex";  //NOI18N
+    private static final String METHOD_CLOSE = "clearCache";    //NOI18N
+
     @Override
     public void execute() throws BuildException {
-        Project p = getProject();
-        
+        final Project p = getProject();
         p.log("Overridden Javac task called", Project.MSG_DEBUG);
 
         boolean ensureBuilt =    p.getProperty("ensure.built.source.roots") != null
@@ -105,7 +109,11 @@ public class JavacTask extends Javac {
             }
 
             if (!wasBuilt) {
-                super.execute();
+                try {
+                    super.execute();
+                } finally {
+                    cleanUp(p);
+                }
             }
         } else {
             if (CheckForCleanBuilds.cleanBuild.get() && getSrcdir() != null) {
@@ -132,8 +140,35 @@ public class JavacTask extends Javac {
                     }
                 }
             }
+            try {
+                super.execute();
+            } finally {
+                cleanUp(p);
+            }
+        }
+    }
 
-            super.execute();
+
+    private static void cleanUp (final Project p) {
+        try {
+            p.log("Cleaning ZipFileIndex cache", Project.MSG_DEBUG);    //NOI18N
+            final Class<?> zipFileIndex = Class.forName(CLASS_ZIP_FILE_INDEX);
+            final Method clean = zipFileIndex.getDeclaredMethod(METHOD_CLOSE);
+            clean.setAccessible(true);
+            clean.invoke(null);
+            p.log("ZipFileIndex cache cleaned", Project.MSG_DEBUG);    //NOI18N
+        } catch (ClassNotFoundException e) {
+            p.log("ZipFileIndex clearCache failed", e, Project.MSG_VERBOSE);    //NOI18N
+        } catch (NoSuchMethodException e) {
+            p.log("ZipFileIndex clearCache failed", e, Project.MSG_VERBOSE);    //NOI18N
+        } catch (SecurityException e) {
+            p.log("ZipFileIndex clearCache failed", e, Project.MSG_WARN);    //NOI18N
+        } catch (InvocationTargetException e) {
+            p.log("ZipFileIndex clearCache failed", e, Project.MSG_WARN);    //NOI18N
+        } catch (IllegalArgumentException e) {
+            p.log("ZipFileIndex clearCache failed", e, Project.MSG_WARN);    //NOI18N
+        } catch (IllegalAccessException e) {
+            p.log("ZipFileIndex clearCache failed", e, Project.MSG_WARN);    //NOI18N
         }
     }
 
