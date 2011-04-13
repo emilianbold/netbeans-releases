@@ -57,13 +57,13 @@ public class SmartyFramework extends PhpProgram {
     /**
      * Open delimiter in SMARTY templates
      */
-    public static String DELIMITER_DEFAULT_OPEN = SmartyOptions.getInstance().getDefaultOpenDelimiter();
+    static String delimiterDefaultOpen = SmartyOptions.getInstance().getDefaultOpenDelimiter();
     /**
      * Close delimiter in SMARTY templates
      */
-    public static String DELIMITER_DEFAULT_CLOSE = SmartyOptions.getInstance().getDefaultCloseDelimiter();
+    static String delimiterDefaultClose = SmartyOptions.getInstance().getDefaultCloseDelimiter();
 
-    public static int DEPTH_OF_SCANNING_FOR_TPL = SmartyOptions.getInstance().getScanningDepth();
+    public static int depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
 
     public SmartyFramework() {
         super(null);
@@ -92,7 +92,7 @@ public class SmartyFramework extends PhpProgram {
         if (!SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(PhpModule.forFileObject(fileObject)).isEmpty()) {
             return SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(PhpModule.forFileObject(fileObject));
         } else {
-            return DELIMITER_DEFAULT_CLOSE;
+            return delimiterDefaultClose;
         }
     }
 
@@ -100,9 +100,20 @@ public class SmartyFramework extends PhpProgram {
         if (!SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(PhpModule.forFileObject(fileObject)).isEmpty()) {
             return SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(PhpModule.forFileObject(fileObject));
         } else {
-            return DELIMITER_DEFAULT_OPEN;
+            return delimiterDefaultOpen;
         }
         
     }
 
+    public static void setDelimiterDefaultClose(String delimiterDefaultClose) {
+        SmartyFramework.delimiterDefaultClose = delimiterDefaultClose;
+    }
+
+    public static void setDelimiterDefaultOpen(String delimiterDefaultOpen) {
+        SmartyFramework.delimiterDefaultOpen = delimiterDefaultOpen;
+    }
+
+    public static void setDepthOfScanningForTpl(int depthOfScanningForTpl) {
+        SmartyFramework.depthOfScanningForTpl = depthOfScanningForTpl;
+    }
 }

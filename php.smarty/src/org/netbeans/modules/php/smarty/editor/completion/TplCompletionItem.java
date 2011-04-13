@@ -115,7 +115,6 @@ public class TplCompletionItem implements CompletionItem {
                 Completion.get().hideDocumentation();
                 Completion.get().hideCompletion();
             }
-            int caretOffset = component.getSelectionEnd();
             substituteText(component, CodeCompletionUtils.getSubstitutionLenght(component.getDocument(), component.getCaretPosition()));
         }
 

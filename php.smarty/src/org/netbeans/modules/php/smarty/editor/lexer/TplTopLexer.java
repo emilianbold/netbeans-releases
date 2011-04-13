@@ -61,7 +61,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
     private final InputAttributes inputAttributes;
     private final TplMetaData tplMetaData;
 
-    private class CompoundState {
+    private static class CompoundState {
         private State lexerState;
         private SubState lexerSubState;
 
@@ -164,7 +164,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         LITERAL
     }
 
-    private class TplTopColoringLexer {
+    private static class TplTopColoringLexer {
 
         private State state;
         private final LexerInput input;

@@ -77,8 +77,6 @@ public class TplCompletionQuery extends UserTask {
 
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
-        Snapshot snapshot = resultIterator.getSnapshot();
-        int embeddedOffset = snapshot.getEmbeddedOffset(offset);
         String resultMimeType = resultIterator.getSnapshot().getMimeType();
         if (resultMimeType.equals("text/x-tpl")) {
             this.completionResult = query(resultIterator);

@@ -91,7 +91,7 @@ public final class SmartyOptions {
 
     public void setDefaultOpenDelimiter(String delimiter) {
         getPreferences().put(OPEN_DELIMITER, delimiter);
-        SmartyFramework.DELIMITER_DEFAULT_OPEN = delimiter;
+        SmartyFramework.setDelimiterDefaultOpen(delimiter);
     }
 
     public String getDefaultCloseDelimiter() {
@@ -100,7 +100,7 @@ public final class SmartyOptions {
 
     public void setDefaultCloseDelimiter(String delimiter) {
         getPreferences().put(CLOSE_DELIMITER, delimiter);
-        SmartyFramework.DELIMITER_DEFAULT_CLOSE = delimiter;
+        SmartyFramework.setDelimiterDefaultClose(delimiter);
     }
 
     private Preferences getPreferences() {
@@ -113,6 +113,6 @@ public final class SmartyOptions {
 
     public void setScanningDepth(int depth) {
         getPreferences().put(String.valueOf(TPL_SCANNING_DEPTH), String.valueOf(depth));
-        SmartyFramework.DEPTH_OF_SCANNING_FOR_TPL = depth;
+        SmartyFramework.setDepthOfScanningForTpl(depth);
     }
 }

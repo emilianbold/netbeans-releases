@@ -282,7 +282,9 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
         }
         
         private boolean checkVersion() {
-            return this.version == EmbeddingHighlightsContainer.this.version;
+            synchronized(EmbeddingHighlightsContainer.this) {
+                return this.version == EmbeddingHighlightsContainer.this.version;
+            }
         }
     }
 }

@@ -139,10 +139,8 @@ public class TplCompletionProvider implements CompletionProvider {
 
             //check the items
             for (CompletionItem item : items) {
-                if (item instanceof TplCompletionItem) {
-                    if (CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem) item).getItemText(), prefix)) {
-                        return true; //at least one item will remain
-                    }
+                if (CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem) item).getItemText(), prefix)) {
+                    return true; //at least one item will remain
                 }
             }
 
@@ -155,10 +153,8 @@ public class TplCompletionProvider implements CompletionProvider {
 
             //check the items
             for (CompletionItem item : items) {
-                if (item instanceof TplCompletionItem) {
-                    if (CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem) item).getItemText(), prefix)) {
-                        resultSet.addItem(item);
-                    }
+                if (CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem) item).getItemText(), prefix)) {
+                    resultSet.addItem(item);
                 }
             }
             resultSet.finish();

@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 public class SmartyOptionsPanel extends JPanel {
     private static final long serialVersionUID = -1384644114740L;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final transient ChangeSupport changeSupport = new ChangeSupport(this);
 
     public SmartyOptionsPanel() {
         initComponents();

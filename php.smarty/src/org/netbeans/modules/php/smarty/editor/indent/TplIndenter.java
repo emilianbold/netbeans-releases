@@ -300,8 +300,6 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
-            if (isActionReturnUsed) {
-            }
             if (preliminaryNextLineIndent.isEmpty()) {
                 preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
             }

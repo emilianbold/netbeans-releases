@@ -98,19 +98,19 @@ public class CodeCompletionEntries {
     private static String generateHelpForFunctions(String desc, NodeList attributesRoot) {
         Element parent = (Element) (attributesRoot.item(0));
         if (parent != null) {
-            String help = desc + "<br><br><table border=1>"
-                    + "<tr style=\"font-weight:bold\"><td>Attribute name</td><td>Type</td><td>Required</td><td>Default</td><td>Description</td></tr>";
+            StringBuilder help = new StringBuilder(desc);
+            help.append("<br><br><table border=1><tr style=\"font-weight:bold\"><td>Attribute name</td><td>Type</td><td>Required</td><td>Default</td><td>Description</td></tr>");
             NodeList attributes = parent.getChildNodes();
             for (int i = 0; i < attributes.getLength(); i++) {
                 if (attributes.item(i).getNodeType() == Node.ELEMENT_NODE) {
                     Element attribute = (Element) attributes.item(i);
-                    help += "<tr><td>" + attribute.getAttribute("name") + "</td>";
-                    help += getRestOfAttributeParams(attribute);
-                    help += "</tr>";
+                    help.append("<tr><td>").append(attribute.getAttribute("name")).append("</td>");
+                    help.append(getRestOfAttributeParams(attribute));
+                    help.append("</tr>");
                 }
             }
-            help += "</table>";
-            return help;
+            help.append("</table>");
+            return help.toString();
         } else {
             return desc;
         }
@@ -119,19 +119,19 @@ public class CodeCompletionEntries {
     private static String generateHelpForVariableModifiers(String desc, NodeList attributesRoot) {
         Element parent = (Element) (attributesRoot.item(0));
         if (parent != null) {
-            String help = desc + "<br><br><table border=1>"
-                    + "<tr style=\"font-weight:bold\"><td>Parameter Position</td><td>Type</td><td>Required</td><td>Default</td><td>Description</td></tr>";
+            StringBuilder help = new StringBuilder(desc);
+            help.append("<br><br><table border=1><tr style=\"font-weight:bold\"><td>Parameter Position</td><td>Type</td><td>Required</td><td>Default</td><td>Description</td></tr>");
             NodeList attributes = parent.getChildNodes();
             for (int i = 0; i < attributes.getLength(); i++) {
                 if (attributes.item(i).getNodeType() == Node.ELEMENT_NODE) {
                     Element attribute = (Element) attributes.item(i);
-                    help += "<tr><td>" + attribute.getAttribute("position") + "</td>";
-                    help += getRestOfAttributeParams(attribute);
-                    help += "</tr>";
+                    help.append("<tr><td>").append(attribute.getAttribute("position")).append("</td>");
+                    help.append(getRestOfAttributeParams(attribute));
+                    help.append("</tr>");
                 }
             }
-            help += "</table>";
-            return help;
+            help.append("</table>");
+            return help.toString();
         } else {
             return desc;
         }

@@ -67,7 +67,7 @@ public class TplLexer implements Lexer<TplTokenId> {
     private final InputAttributes inputAttributes;
     private int lexerState = INIT;
 
-    private class CompoundState {
+    private static class CompoundState {
 
         private int lexerState;
         private boolean isArgumentValue;
