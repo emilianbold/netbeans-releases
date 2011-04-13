@@ -625,8 +625,8 @@ public final class ServerRegistry implements java.io.Serializable {
 
     }
 
-    private static HashMap configNamesByType = null;
-    private static final J2eeModule.Type[] allTypes = new J2eeModule.Type[] {
+    private static Map<J2eeModule.Type, Set<String>> configNamesByType = null;
+    private static final J2eeModule.Type[] ALL_TYPES = new J2eeModule.Type[] {
         J2eeModule.Type.EAR, J2eeModule.Type.RAR, J2eeModule.Type.CAR, J2eeModule.Type.EJB, J2eeModule.Type.WAR };
 
     private void initConfigNamesByType() {
@@ -634,11 +634,11 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         }
         configNamesByType = new HashMap();
-        for (int i=0 ; i<allTypes.length; i++) {
-            Set configNames = new HashSet();
+        for (int i = 0 ; i < ALL_TYPES.length; i++) {
+            Set<String> configNames = new HashSet();
             for (Iterator j=servers.values().iterator(); j.hasNext();) {
 		Server s = (Server) j.next();
-		String[] paths = s.getDeploymentPlanFiles(allTypes[i]);
+		String[] paths = s.getDeploymentPlanFiles(ALL_TYPES[i]);
                 if (paths == null)
                     continue;
 		for (int k=0 ; k<paths.length; k++) {
@@ -646,14 +646,13 @@ public final class ServerRegistry implements java.io.Serializable {
 		    configNames.add(path.getName());
 		}
             }
-	    configNamesByType.put(allTypes[i], configNames);
+	    configNamesByType.put(ALL_TYPES[i], configNames);
         }
     }
 
     public boolean isConfigFileName(String name, J2eeModule.Type type) {
 	initConfigNamesByType();
-        Object jsrModuleType = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
-	Set configNames = (Set) configNamesByType.get(jsrModuleType);
+	Set<String> configNames = configNamesByType.get(type);
 	return (configNames != null && configNames.contains(name));
     }
 
