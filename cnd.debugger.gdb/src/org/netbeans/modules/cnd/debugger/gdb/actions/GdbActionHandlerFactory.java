@@ -46,19 +46,21 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=5000)
 public class GdbActionHandlerFactory extends CndDebuggerActionHandlerFactory {
 
     @Override
-    public boolean canHandle(Type type, Configuration conf) {
-        if (!super.canHandle(type, conf)) {
+    public boolean canHandle(Type type, Lookup context, Configuration conf) {
+        if (!super.canHandle(type, context, conf)) {
             return false;
         }
 
@@ -74,7 +76,13 @@ public class GdbActionHandlerFactory extends CndDebuggerActionHandlerFactory {
         return false;
     }
 
+    @Override
     public ProjectActionHandler createHandler() {
         return new GdbActionHandler();
+    }
+
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
     }
 }

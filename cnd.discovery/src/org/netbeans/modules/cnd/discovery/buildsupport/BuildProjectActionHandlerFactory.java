@@ -65,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-    public boolean canHandle(Type type, Configuration configuration) {
+    public boolean canHandle(Type type, Lookup context, Configuration configuration) {
         if (type == PredefinedType.BUILD) {
             if (configuration instanceof MakeConfiguration) {
                 MakeConfiguration conf = (MakeConfiguration) configuration;
@@ -111,6 +111,6 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
 
     @Override
     public boolean canHandle(ProjectActionEvent pae) {
-        return canHandle(pae.getType(), pae.getConfiguration());
+        return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
     }
 }
