@@ -939,6 +939,47 @@ public class Folder implements FileChangeListener, ChangeListener {
         return null;
     }
 
+    public Folder findFolderByAbsolutePath(String path) {
+        if (path == null) {
+            return null;
+        }
+        for (Folder folder : getFolders()) {
+            String absPath = folder.getAbsolutePath();
+
+            if (absPath != null && path.equals(absPath)) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    public Folder findFolderByRelativePath(String path) {
+        if (path == null) {
+            return null;
+        }
+        for (Folder folder : getFolders()) {
+            String relPath = folder.getRoot();
+
+            if (relPath != null && path.equals(relPath)) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    public String getAbsolutePath() {
+        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRoot());
+        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
+        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
+        if (folderFile != null) {
+            return folderFile.getPath();
+        }
+        return null;
+    }
+
+    /*
+     * FIXUP: not sure this method is working as intended.....
+     */
     public Folder findFolderByPath(String path) {
         int i = path.indexOf('/');
         if (i >= 0) {

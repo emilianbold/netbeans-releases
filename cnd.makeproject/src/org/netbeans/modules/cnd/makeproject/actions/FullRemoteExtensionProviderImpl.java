@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -110,6 +109,11 @@ public class FullRemoteExtensionProviderImpl implements FullRemoteExtensionProvi
     @Override
     public boolean canChangeHost(MakeConfiguration makeConfiguration) {
         return Boolean.getBoolean("cnd.full.remote.change.host");
+    }
+
+    @Override
+    public void importProject(FileObject remoteProject, String localProjectPath, ExecutionEnvironment env) throws IOException, SAXException {
+        new ShadowProjectSynchronizer(remoteProject, localProjectPath, env).createShadowProject();
     }
     
     private void updateRemoteProject(MakeConfigurationDescriptor mkd) {        
