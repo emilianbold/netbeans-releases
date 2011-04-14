@@ -796,7 +796,21 @@ class FilesystemHandler extends VCSInterceptor {
                             SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
                             if (repositorySource.equals(repositoryTarget)) {
                                 // use client.move only for a single repository
-                                client.move(from, to, force);
+                                try {
+                                    client.move(from, to, force);
+                                } catch (SVNClientException ex) {
+                                    if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
+                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                        File temp = FileUtils.generateTemporaryFile(to.getParentFile(), from.getName());
+                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                        client.move(from, temp, force);
+                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 2: {0} -> {1}", new Object[] { temp, to }); //NOI18N
+                                        client.move(temp, to, force);
+                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround completed"); //NOI18N
+                                    } else {
+                                        throw ex;
+                                    }
+                                }
                             } else {
                                 if (from.isDirectory()) {
                                     // tree should be moved separately, otherwise the metadata from the source WC will be copied too

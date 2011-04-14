@@ -63,6 +63,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -240,6 +241,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("renameVersionedFolder_FO"));
         suite.addTest(new InteceptorTest("renameFileTree_FO"));
         suite.addTest(new InteceptorTest("renameA2CB2A_FO"));
+        suite.addTest(new InteceptorTest("renameA2a_FO"));
         return(suite);
     }
     
@@ -2629,6 +2631,31 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileC));
+    }
+    
+    public void renameA2a_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        commit(wc);
+
+        File fileB = new File(wc, "a");
+
+        // move
+        renameFO(fileA, fileB);
+
+        // test
+        // test
+        if (!Utilities.isMac() && !Utilities.isWindows()) {
+            assertFalse(fileA.exists());
+        }
+        assertTrue(fileB.exists());
+
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());
+
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileB));
     }
     
     public void moveA2B2C2A_DO() throws Exception {
