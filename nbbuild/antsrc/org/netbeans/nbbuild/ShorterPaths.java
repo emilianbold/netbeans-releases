@@ -302,15 +302,9 @@ public class ShorterPaths extends Task {
             return null;
         }
         File copy = new File(extraLibsDir, file.getName());
-        if (FileUtils.getFileUtils().contentEquals(file, copy)) {
-            return file.getName();
-        } else if (copy.isFile()) {
-            // Could try to copy to a different name, but this is probably something that should be fixed anyway:
-            throw new IOException(file + " is not the same as " + copy + "; will not overwrite");
-        }
-        log("Copying " + file + " to extralibs despite " + replacements);
-        FileUtils.getFileUtils().copyFile(file, copy);
-        if (file.getName().endsWith(".jar")) {
+        boolean wasCopied = copyMissing(file, copy);
+        // copy Class-Path extensions if available
+        if (wasCopied && file.getName().endsWith(".jar")) {
             String cp;
             try {
                 JarFile jf = new JarFile(file);
@@ -326,11 +320,32 @@ public class ShorterPaths extends Task {
             }
             if (cp != null) {
                 for (String ext : cp.split(" ")) {
-                    copyExtraLib(new File(file.getParentFile(), ext));
+                    // copy CP extension with relative path to keep link dependency from manifest
+                    copyMissing(new File(file.getParentFile(), ext), new File(extraLibsDir, ext));
                 }
             }
         }
         return copy.getName();
+    }
+    
+    /** Copies source file to target location only if it is missing there.
+     * @param file source file
+     * @param copy target file
+     * @return true if file was successfully copied, false if source is the same
+     * as target
+     * @throws IOException if target file exists and it is not the same as 
+     * source file
+     */
+    private boolean copyMissing(File file, File copy) throws IOException {
+        if (FileUtils.getFileUtils().contentEquals(file, copy)) {
+            return false;
+        } else if (copy.isFile()) {
+            // Could try to copy to a different name, but this is probably something that should be fixed anyway:
+            throw new IOException(file + " is not the same as " + copy + "; will not overwrite");
+        }
+        log("Copying " + file + " to extralibs despite " + replacements);
+        FileUtils.getFileUtils().copyFile(file, copy);
+        return true;
     }
 
     /**

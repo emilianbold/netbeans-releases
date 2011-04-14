@@ -86,7 +86,7 @@ public class RenameTestCase extends RemoteFileTestBase  {
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);
         } finally {
-            tmpDir.delete();
+            removeDirectory(tmpDir);
         }
     }
 
