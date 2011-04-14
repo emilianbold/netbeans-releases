@@ -195,9 +195,8 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUID(scope, output);
-
         // save cache
-        CsmUID<CsmClassifier> toSave = UIDs.get(this.resolvedClassifier);
+        CsmUID<CsmClassifier> toSave = UIDCsmConverter.objectToUID(resolvedClassifier);
         if (!UIDProviderIml.isPersistable(toSave)) {
             toSave = null;
         }
