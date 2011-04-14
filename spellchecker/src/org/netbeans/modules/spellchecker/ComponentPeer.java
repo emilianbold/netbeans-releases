@@ -146,9 +146,9 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private JTextComponent pane;
     private Document document;
 
-    private RequestProcessor WORKER = new RequestProcessor("Spellchecker");
+    private static final RequestProcessor WORKER = new RequestProcessor("Spellchecker", 1, false, false);
     
-    private RequestProcessor.Task checker = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task checker = WORKER.create(new Runnable() {
         public void run() {
             try {
                 process();
@@ -158,7 +158,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     });
 
-    private RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
         public void run() {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -175,7 +175,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     });
 
-    private RequestProcessor.Task computeHint = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task computeHint = WORKER.create(new Runnable() {
         public void run() {
             computeHint();
         }
