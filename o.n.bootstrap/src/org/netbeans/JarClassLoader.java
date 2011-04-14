@@ -474,7 +474,7 @@ public class JarClassLoader extends ProxyClassLoader {
                                         return ret;
                                     } catch (ZipException zip) {
                                         if (file.exists() && retry++ < 3) {
-                                            LOGGER.log(Level.WARNING, "Error opening " + file + " retry: " + retry, zip); // NOI18N
+                                            LOGGER.log(Level.WARNING, "Error opening " + file + " (exists=" + file.exists() + ") retry: " + retry, zip); // NOI18N
                                             opened(JarClassLoader.JarSource.this, "ziperror");
                                             continue;
                                         }

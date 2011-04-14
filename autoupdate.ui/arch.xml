@@ -499,7 +499,13 @@
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   <api category="devel" group="property" name="org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction.initialTab" type="export">
+   There is an action registered with
+   <code>@ActionID(id = "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction", category = "System")</code>
+   that opens the plugin manager dialog and reacts to a special event:
+   <code>new ActionEvent(this, 100, nameOfTabToOpen)</code>. The tab names
+   include <code>{ "update", "available", "local", "installed" }</code>.
+   </api>
   </p>
  </answer>
 

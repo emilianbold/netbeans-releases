@@ -975,7 +975,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean hasDebugger() {
-        return ProjectActionSupport.getInstance().canHandle(this, PredefinedType.DEBUG);
+        return ProjectActionSupport.getInstance().canHandle(this, null, PredefinedType.DEBUG);
     }
 
     public String expandMacros(String val) {
