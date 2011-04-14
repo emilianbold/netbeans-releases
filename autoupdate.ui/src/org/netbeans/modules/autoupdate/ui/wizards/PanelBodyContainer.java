@@ -65,6 +65,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -193,26 +194,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
             handle.progress (progressDisplayName, 0);
 
-            Installer.RP.post(new Runnable () {
-                @Override
-                public void run () {
-                    int i = 0;
-                    while (isWaiting) {
-                        try {
-                            if (friendlyEstimatedTime * 10 > i++) {
-                                handle.progress (progressDisplayName, i);
-                            } else {
-                                handle.switchToIndeterminate ();
-                                handle.progress (progressDisplayName);
-                                return ;
-                            }
-                            Thread.sleep (100);
-                        } catch (InterruptedException ex) {
-                            // no worries
-                        }
-                    }
-                }
-            });
+            new UpdateProgress (friendlyEstimatedTime, progressDisplayName).start();
         }
     }
 
@@ -312,5 +294,36 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private javax.swing.JScrollPane spPanelHeader;
     private javax.swing.JTextPane tpPanelHeader;
     // End of variables declaration//GEN-END:variables
+
+    private final class UpdateProgress implements Runnable {
+        private final long friendlyEstimatedTime;
+        private final String progressDisplayName;
+        private final Task task;
+
+        public UpdateProgress(long friendlyEstimatedTime, String progressDisplayName) {
+            this.friendlyEstimatedTime = friendlyEstimatedTime;
+            this.progressDisplayName = progressDisplayName;
+            this.task = Installer.RP.post(this);
+        }
+
+        @Override
+        public void run () {
+            int i = 0;
+            if (isWaiting && isShowing()) {
+                if (friendlyEstimatedTime * 10 > i++) {
+                    handle.progress (progressDisplayName, i);
+                } else {
+                    handle.switchToIndeterminate ();
+                    handle.progress (progressDisplayName);
+                    return ;
+                }
+                task.schedule(100);
+            }
+        }
+
+        final void start() {
+            task.schedule(0);
+        }
+    }
     
 }

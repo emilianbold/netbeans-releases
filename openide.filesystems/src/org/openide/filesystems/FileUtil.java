@@ -1845,6 +1845,10 @@ public final class FileUtil extends Object {
 
     private static File normalizeFileOnWindows(final File file) {
         File retVal = null;
+        
+        if (file.getClass().getName().startsWith("sun.awt.shell")) { // NOI18N
+            return file;
+        }
 
         try {
             retVal = file.getCanonicalFile();

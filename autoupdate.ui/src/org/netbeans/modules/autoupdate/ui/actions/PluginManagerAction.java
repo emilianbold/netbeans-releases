@@ -57,7 +57,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction", category = "System")
@@ -73,11 +72,16 @@ public final class PluginManagerAction extends AbstractAction {
             JButton close = new JButton ();
             close.setDefaultCapable(false);
             Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
+            
+            String initialTab = null;
+            if (ev.getID() == 100) {
+                initialTab = ev.getActionCommand();
+            }
+            
             pluginManagerUI = new PluginManagerUI (
                 close,
-                getValue("InitialTab")//NOI18N
+                initialTab
             );
-            putValue("InitialTab", null); //NOI18N
             DialogDescriptor dd = new DialogDescriptor (
                                         pluginManagerUI,
                                         NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
