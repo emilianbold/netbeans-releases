@@ -117,15 +117,23 @@ public class ShadowProjectSynchronizer {
     private static final String TMP_NBPROJECT_SUBFOLDER_PATH = "private/" + TMP_NBPROJECT_SUBFOLDER_NAME; // NOI18N
 
     private final ExecutionEnvironment env;
-    private final String remoteProjectPath;
     private final String localProjectPath;
-    private FileObject remoteProject;
+    private final FileObject remoteProject;
     private FileObject localProject;
     
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
-    public ShadowProjectSynchronizer(String remoteProjectPath, String localProjectPath, ExecutionEnvironment env) {
-        this.remoteProjectPath = remoteProjectPath;
+    public ShadowProjectSynchronizer(String remoteProjectPath, String localProjectPath, ExecutionEnvironment env) throws IOException {
+        this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProjectPath);
+        if (remoteProject == null || ! remoteProject.isValid()) {
+            throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", remoteProjectPath));
+        }
+        this.localProjectPath = localProjectPath;
+        this.env = env;
+    }
+    
+    public ShadowProjectSynchronizer(FileObject remoteProject, String localProjectPath, ExecutionEnvironment env) throws IOException {
+        this.remoteProject = remoteProject;
         this.localProjectPath = localProjectPath;
         this.env = env;
     }
@@ -133,16 +141,15 @@ public class ShadowProjectSynchronizer {
     public FileObject createShadowProject() throws IOException, SAXException {
         File localProjectFile = new File(localProjectPath);
         if (localProjectFile.exists()) {
-            throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirAlreadyExists", localProjectFile.getAbsolutePath()));
+            String[] children = localProjectFile.list();
+            if (children != null && children.length > 0) {
+                throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirAlreadyExists", localProjectFile.getAbsolutePath()));
+            }
         }        
         this.localProject = FileUtil.createFolder(FileUtil.normalizeFile(localProjectFile));
 
         boolean success = false;
-        try {
-            this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProjectPath);
-            if (remoteProject == null || ! remoteProject.isValid()) {
-                throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", remoteProjectPath));
-            }
+        try {            
             FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
             remoteNbprojectFO.refresh();
             copy(remoteNbprojectFO, localProject, "nbproject", null); //NOI18N
@@ -269,7 +276,6 @@ public class ShadowProjectSynchronizer {
     public void updateRemoteProjectImpl(ProgressHandle progress) throws IOException, SAXException, InterruptedException {
         FileObject localNbprojectFO = getFileObject(localProject, "nbproject"); // NOI18N
         
-        this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProjectPath);
         if (remoteProject == null || !remoteProject.isValid()) {
             return;
         }
@@ -385,7 +391,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         };
-        return new RequestProcessor("Preparing to sync back project " + remoteProjectPath, 1).post(r);
+        return new RequestProcessor("Preparing to sync back project " + remoteProject.getPath(), 1).post(r);
     }
         
     private static FileObject createTempDir(String prefix, String suffix) throws IOException {
