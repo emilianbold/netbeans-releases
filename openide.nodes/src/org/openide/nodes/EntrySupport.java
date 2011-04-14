@@ -1368,7 +1368,7 @@ abstract class EntrySupport {
             assert (entryToInfoSize = entryToInfo.size()) >= 0;
             assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() // NOI18N
                     + "; vis. entries: " + notNull(visibleEntries).size() + "; Infos: " + entryToInfo.size() // NOI18N
-                    + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize; // NOI18N
+                    + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + dumpEntriesInfos(entries, entryToInfo); // NOI18N
 
             if (!mustNotifySetEntries && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
@@ -1538,6 +1538,25 @@ abstract class EntrySupport {
             } else {
                 return it;
             }
+        }
+
+        private static String dumpEntriesInfos(List<Entry> entries, Map<Entry, EntryInfo> entryToInfo) {
+            StringBuilder sb = new StringBuilder();
+            int cnt = 0;
+            for (Entry entry : entries) {
+                sb.append("\n").append(++cnt).append(" entry ") // NOI18N
+                  .append(entry).append(" -> ").append(entryToInfo.get(entry)); // NOI18N
+            }
+            sb.append("\n\n"); // NOI18N
+            for (Map.Entry<Entry,EntryInfo> e : entryToInfo.entrySet()) {
+                if (entries.contains(e.getKey())) {
+                    sb.append("\n").append(" contained ").append(e.getValue()); // NOI18N
+                } else {
+                    sb.append("\n").append(" missing   ").append(e.getValue()) // NOI18N
+                      .append(" for ").append(e.getKey()); // NOI18N
+                }
+            }
+            return sb.toString();
         }
         
         /** holds node for entry; 1:1 mapping */
