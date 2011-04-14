@@ -232,8 +232,13 @@ public final class NbModuleProject implements Project {
         for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
             Element pkgrootEl = XMLUtil.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = XMLUtil.findText(pkgrootEl);
-            sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA)
-                    .displayName(/* XXX should schema incl. display name? */entry.getKey().getNameExt()).add();
+            FileObject root = entry.getKey();
+            // #192773: try to make a unique display name; a schema addition might be better
+            String displayName = FileUtil.getRelativePath(getProjectDirectory(), root);
+            if (displayName == null) {
+                displayName = root.getNameExt();
+            }
+            sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA).displayName(displayName).add();
         }
         // #56457: support external source roots too.
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
