@@ -40,58 +40,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analizer;
+package org.netbeans.modules.web.beans.analysis.analizer.type;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.type.AnnotationsAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.type.ManagedBeansAnalizer;
-import org.netbeans.modules.web.beans.analysis.analizer.type.ScopedProxyabilityAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.type.TypedClassAnalizer;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class ClassElementAnalyzer implements ElementAnalyzer {
-
-
+public class AnnotationsAnalyzer implements ClassAnalyzer {
+    
+    public static final String INTERCEPTOR = "javax.interceptor.Interceptor";  // NOI18N
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+    public void analyze( TypeElement element, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        TypeElement subject = (TypeElement) element;
-        for( ClassAnalyzer analyzer : ANALIZERS ){
-            if ( cancel.get() ){
-                return;
-            }
-            analyzer.analyze( subject, parent, compInfo, descriptions);
+        checkDecoratorInterceptor( element , compInfo , descriptions );
+    }
+
+    private void checkDecoratorInterceptor( TypeElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        boolean isDecorator = AnnotationUtil.hasAnnotation(element, 
+                ManagedBeansAnalizer.DECORATOR, compInfo);
+        boolean isInterceptor = AnnotationUtil.hasAnnotation(element, 
+                INTERCEPTOR, compInfo);
+        if ( isDecorator && isInterceptor ){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, compInfo, NbBundle.getMessage(
+                ManagedBeansAnalizer.class, "ERR_DecoratorInterceptor"));
+            descriptions.add( description );
         }
     }
 
-    public interface ClassAnalyzer {
-        void analyze( TypeElement element , TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
-    }
-
-    private static final List<ClassAnalyzer> ANALIZERS= new LinkedList<ClassAnalyzer>(); 
-    
-    static {
-        ANALIZERS.add( new TypedClassAnalizer() );
-        ANALIZERS.add( new ManagedBeansAnalizer());
-        ANALIZERS.add( new ScopedProxyabilityAnalyzer());
-        ANALIZERS.add( new AnnotationsAnalyzer());
-    }
 }

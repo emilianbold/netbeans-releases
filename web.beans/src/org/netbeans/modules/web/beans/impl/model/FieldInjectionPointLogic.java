@@ -44,6 +44,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -331,8 +332,14 @@ abstract class FieldInjectionPointLogic {
                             "ERR_ProducerInjectPoint" ,     // NOI18N
                             element.getSimpleName() ));
         }
+        if ( element.asType().getKind() == TypeKind.TYPEVAR ){
+            throw new InjectionPointDefinitionError(
+                    NbBundle.getMessage( WebBeansModelProviderImpl.class, 
+                            "ERR_InjectPointTypeVar" ,           // NOI18N
+                            element.getSimpleName() ));
+        }
         if ( injectRequired ){
-            checkInitialization(element);
+            checkInjectionPoint(element);
         }
         if ( injectRequired && !hasInject ){
             throw new InjectionPointDefinitionError(
@@ -343,7 +350,7 @@ abstract class FieldInjectionPointLogic {
         return anyQualifier;
     }
     
-    private void checkInitialization( VariableElement element ) 
+    private void checkInjectionPoint( VariableElement element ) 
         throws InjectionPointDefinitionError
     {
         CompilationController compilationController = getModel().getHelper().
@@ -357,6 +364,17 @@ abstract class FieldInjectionPointLogic {
                         FieldInjectionPointLogic.class, 
                         "ERR_InitializedInjectionPoint"));      // NOI18N
             }
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains(Modifier.STATIC)){
+            throw new InjectionPointDefinitionError(NbBundle.getMessage( 
+                    FieldInjectionPointLogic.class, 
+                    "ERR_StaticInjectionPoint"));      // NOI18N
+        }
+        if ( modifiers.contains(Modifier.FINAL)){
+            throw new InjectionPointDefinitionError(NbBundle.getMessage( 
+                    FieldInjectionPointLogic.class, 
+                    "ERR_FinalInjectionPoint"));      // NOI18N
         }
     }
 

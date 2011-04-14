@@ -79,9 +79,9 @@ import org.openide.util.NbBundle;
  */
 public class ManagedBeansAnalizer implements ClassAnalyzer {
     
-    public  static final String INJECT = "javax.inject.Inject";                      // NOI18N
+    public static final String INJECT = "javax.inject.Inject";                      // NOI18N
 
-    private static final String DECORATOR = "javax.decorator.Decorator";              // NOI18N
+    public static final String DECORATOR = "javax.decorator.Decorator";              // NOI18N
 
     private static final String EXTENSION = "javax.enterprise.inject.spi.Extension";  //NOI18N
     
@@ -176,7 +176,7 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
         Set<Modifier> modifiers = element.getModifiers();
         if ( !modifiers.contains( Modifier.STATIC )){
             ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+                createError( element, compInfo, NbBundle.getMessage(
                     ManagedBeansAnalizer.class, "ERR_NonStaticInnerType"));
             descriptions.add( description );    
         }
