@@ -143,8 +143,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     protected final ExecutionEnvironment execEnv;
 
     protected String sharedLibExt;
-    private String[] mkTempArgsPlain;
-    private String[] mkTempArgsDir;
 
     public RemoteFileTestBase(String testName) {
         super(testName);
@@ -176,15 +174,10 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         ConnectionManager.getInstance().connectTo(env);
         if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
             sharedLibExt = ".dylib";
-            mkTempArgsPlain = new String[] { "-t", "/tmp" };
-            mkTempArgsDir = new String[] { "-t", "/tmp", "-d" };
         } else {
             sharedLibExt = ".so";
-            mkTempArgsPlain = new String[0];
-            mkTempArgsDir = new String[] { "-d" };
         }
     }
-
     
     protected String mkTempAndRefreshParent() throws Exception {
         return mkTempAndRefreshParent(false);
@@ -284,10 +277,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     }
 
     protected String mkTempAndRefreshParent(boolean directory) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp",
-                directory ? mkTempArgsDir : mkTempArgsPlain);
-        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
-        String path = res.output;
+        String path = mkTemp(execEnv, directory);
         refreshParent(path);
         return path;
     }
