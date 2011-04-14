@@ -131,7 +131,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         this.ec   = ec;        
         Logger.getLogger("TIMER").log(Level.FINE, "Overridden AnnotationsHolder", new Object[] {file.getPrimaryFile(), this}); //NOI18N
 
-        task = new RequestProcessor("name", 1).create(this);
+        task = new RequestProcessor("C/C++ Annotations Holder", 1).create(this); //NOI18N
 
         ec.addPropertyChangeListener(this);        
         SwingUtilities.invokeLater(new Runnable() {
@@ -151,7 +151,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
 
     @Override
     public void run() {
-        long currentTimeMillis = System.currentTimeMillis();
+        //long currentTimeMillis = System.currentTimeMillis();
         // First, clear old annotations.
         // This should be done even if annotations are to be updated again.
         attachedAnnotationsLock.readLock().lock();
@@ -162,7 +162,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         } finally {
             attachedAnnotationsLock.readLock().unlock();
         }
-        System.err.println("Removing " + attachedAnnotations.size()+ " annotations.");
+        //System.err.println("Removing " + attachedAnnotations.size()+ " annotations.");
         attachedAnnotationsLock.writeLock().lock();
         try {
             attachedAnnotations.clear();
@@ -181,7 +181,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         }
         for (BaseAnnotation a : toAdd) {
             if (cancelled.get()) {
-                System.err.println("Cancelled after adding " + attachedAnnotations.size() + " from " + toAdd.size() + "; took " + (System.currentTimeMillis() - currentTimeMillis) + "ms");
+                //System.err.println("Cancelled after adding " + attachedAnnotations.size() + " from " + toAdd.size() + "; took " + (System.currentTimeMillis() - currentTimeMillis) + "ms");
                 return;
             }
             a.attach();
@@ -192,7 +192,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
                 attachedAnnotationsLock.writeLock().unlock();
             }
         }
-        System.err.println("Adding " + toAdd.size() + " annotations took " + (System.currentTimeMillis() - currentTimeMillis) + "ms");
+        //System.err.println("Adding " + toAdd.size() + " annotations took " + (System.currentTimeMillis() - currentTimeMillis) + "ms");
     }
         
     private void checkForReset() {
