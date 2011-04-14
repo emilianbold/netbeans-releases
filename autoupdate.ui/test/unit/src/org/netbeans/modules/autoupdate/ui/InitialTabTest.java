@@ -39,76 +39,36 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fs;
+package org.netbeans.modules.autoupdate.ui;
 
-import java.io.File;
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.filesystems.FileObject;
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vk155633
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class RenameTestCase extends RemoteFileTestBase  {
+public class InitialTabTest extends NbTestCase {
 
-    public RenameTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
-
-    public RenameTestCase(String testName) {
-        super(testName);
+    public InitialTabTest(String name) {
+        super(name);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected boolean runInEQ() {
+        return true;
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+    public void testInitialTab() throws Exception {
+        Action action = (Action) FileUtil.getConfigFile(
+            "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"
+        ).getAttribute("instanceCreate");
+        assertNotNull("Action found", action);
+        action.actionPerformed(new ActionEvent(this, 100, "local"));
         
-    public void testLocalRename() throws Exception {
-        File tmpDir = createTempFile("testLocalRename", "dat", true);
-        try {
-            FileObject tmpDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpDir));
-            assertNotNull(tmpDirFO);
-            FileObject oldFO = tmpDirFO.createData("file_1");
-            String newName = "file_1_renamed";
-            oldFO.rename(oldFO.lock(), newName, null);
-            FileObject newFO = tmpDirFO.getFileObject(newName);
-            assertNotNull(newFO);
-            assertTrue(newFO == oldFO);
-        } finally {
-            removeDirectory(tmpDir);
-        }
-    }
-
-    @ForAllEnvironments
-    public void testRemoteRename() throws Exception {
-        String tmpDir = null;
-        try {
-            tmpDir = mkTempAndRefreshParent(true);
-            FileObject tmpDirFO = getFileObject(tmpDir);
-            FileObject oldFO = tmpDirFO.createData("file_1");
-            String newName = "file_1_renamed";
-            oldFO.rename(oldFO.lock(), newName, null);
-            FileObject newFO = tmpDirFO.getFileObject(newName);
-            assertNotNull(newFO);
-            assertTrue(newFO == oldFO);
-        } finally {
-            removeRemoteDirIfNotNull(tmpDir);
-        }
-    }
-
-    public static Test suite() {
-        return RemoteApiTest.createSuite(RenameTestCase.class);
+        assertEquals("local", PluginManagerAction.getPluginManagerUI().getSelectedTabName());
     }
     
 }

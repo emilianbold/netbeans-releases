@@ -65,7 +65,6 @@ import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 import static org.junit.Assert.*;
 
@@ -204,8 +203,9 @@ public class FileChooserBuilderTest extends NbTestCase {
         SA sa = new SA();
         instance.setSelectionApprover(sa);
         JFileChooser ch = instance.createFileChooser();
+        ch.setSelectedFile(sel);
         ch.approveSelection();
-        sa.assertApproveInvoked();
+        sa.assertApproveInvoked(sel);
     }
 
     public void testAddFileFilter() {
@@ -241,14 +241,17 @@ public class FileChooserBuilderTest extends NbTestCase {
     }
 
     private static final class SA implements FileChooserBuilder.SelectionApprover {
-        private boolean approveInvoked;
+        private File[] selection;
+        @Override
         public boolean approve(File[] selection) {
-            approveInvoked = true;
+            this.selection = selection;
             return true;
         }
 
-        void assertApproveInvoked() {
-            assertTrue (approveInvoked);
+        void assertApproveInvoked(File selected) {
+            assertNotNull ("approve method called", selection);
+            assertEquals("One selected file", 1, selection.length);
+            assertEquals("It is the one", selected, selection[0]);
         }
     }
 
