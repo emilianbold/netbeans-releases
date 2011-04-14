@@ -170,18 +170,18 @@ public class ProjectActionSupport {
      * @param type
      * @return
      */
-    public boolean canHandle(MakeConfiguration conf, ProjectActionEvent.Type type) {
+    public boolean canHandle(MakeConfiguration conf, Lookup context, ProjectActionEvent.Type type) {
         if (conf != null) {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
             CustomizerNode node = chooser.getNode();
             if (node instanceof ProjectActionHandlerFactory) {
-                if (((ProjectActionHandlerFactory) node).canHandle(type, conf)) {
+                if (((ProjectActionHandlerFactory) node).canHandle(type, context, conf)) {
                     return true;
                 }
             }
         }
         for (ProjectActionHandlerFactory factory : handlerFactories) {
-            if (factory.canHandle(type, conf)) {
+            if (factory.canHandle(type, context, conf)) {
                 return true;
             }
         }
