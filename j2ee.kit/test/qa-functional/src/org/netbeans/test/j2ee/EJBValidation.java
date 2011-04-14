@@ -132,10 +132,12 @@ public class EJBValidation extends J2eeTestCase {
         TestRunner.run(suite());
     }
 
+    @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
     }
 
+    @Override
     public void tearDown() {
     }
 
@@ -202,8 +204,9 @@ public class EJBValidation extends J2eeTestCase {
         File dir = new File(EJB_PROJECT_FILE, "src/java/test");
         String deletedFiles[] = dir.list(new FilenameFilter() {
 
+            @Override
             public boolean accept(File dir, String name) {
-                return name.endsWith(".java") && name.startsWith("TestingEntity") && !name.equals("TestingEntityDTO.java");
+                return name.endsWith(".java") && name.startsWith("TestingEntity") && !name.equals("TestingEntityDTO.java") && !name.endsWith(".nblh~");
             }
         });
         if (deletedFiles != null && deletedFiles.length > 0) {
