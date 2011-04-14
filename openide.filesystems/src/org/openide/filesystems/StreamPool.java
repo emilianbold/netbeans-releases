@@ -379,12 +379,15 @@ final class StreamPool extends Object {
             if (!closed) {
                 closed = true;
                 ex = null;
-                super.out.flush();
-                super.close();
-                closeOutputStream(fo, this, fireFileChanged);
+                try {
+                    super.out.flush();
+                    super.close();
+                } finally {
+                    closeOutputStream(fo, this, fireFileChanged);
 
-                synchronized (StreamPool.class) {
-                    StreamPool.class.notifyAll();
+                    synchronized (StreamPool.class) {
+                        StreamPool.class.notifyAll();
+                    }
                 }
             }
         }
