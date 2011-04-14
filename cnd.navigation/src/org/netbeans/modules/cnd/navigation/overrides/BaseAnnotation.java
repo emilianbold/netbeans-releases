@@ -51,8 +51,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
@@ -68,9 +70,9 @@ import org.openide.util.NbBundle;
 /**
  * @author Vladimir Kvashin
  */
-/*package*/ abstract class BaseAnnotation extends Annotation {
+public abstract class BaseAnnotation extends Annotation {
 
-    /*package*/ enum AnnotationType {
+    public enum AnnotationType {
         IS_OVERRIDDEN,
         OVERRIDES,
         OVERRIDEN_COMBINED,
@@ -97,7 +99,7 @@ import org.openide.util.NbBundle;
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
         assert decl != null;
         this.document = document;
-        this.pos = new DeclarationPosition(decl);
+        this.pos = getPosition(document, decl.getStartOffset());
         if (baseTemplates.isEmpty() && templateSpecializations.isEmpty()) {
             // overrides only 
             if (baseDecls.isEmpty()) {
@@ -227,6 +229,33 @@ import org.openide.util.NbBundle;
         return pos;
     }
 
+    private static Position getPosition(final StyledDocument doc, final int offset) {
+        class Impl implements Runnable {
+
+            private Position pos;
+
+            @Override
+            public void run() {
+                if (offset < 0 || offset >= doc.getLength()) {
+                    return;
+                }
+
+                try {
+                    pos = doc.createPosition(offset - NbDocument.findLineColumn(doc, offset));
+                } catch (BadLocationException ex) {
+                    //should not happen?
+                    Logger.getLogger(BaseAnnotation.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+        }
+
+        Impl i = new Impl();
+
+        doc.render(i);
+
+        return i.pos;
+    }
+    
     protected abstract CharSequence debugTypeString();
 
     /** for test/debugging purposes */
