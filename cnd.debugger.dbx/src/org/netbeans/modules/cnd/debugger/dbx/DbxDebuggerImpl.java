@@ -3914,9 +3914,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 // check for ':' at the end
                 if (memaddr != null && memaddr.endsWith(":")) { //NOI18N
                     memaddr = memaddr.substring(0, memaddr.length()-1);
-                    memvalue = ":  " + memvalue;
+                    memvalue = ":  " + memvalue; //NOI18N
                 } else {
-                    memvalue = "  " + memvalue;
+                    memvalue = "  " + memvalue; //NOI18N
                 }
                 add(memaddr, memvalue);
             }

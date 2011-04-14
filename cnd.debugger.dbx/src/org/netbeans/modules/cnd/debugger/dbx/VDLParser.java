@@ -530,7 +530,7 @@ class VDLParser {
 	    // still needs to create a var for struct member struct
 	    acts.newSmplval(name, deref_name,
 			    type, atype, stat,
-			    " ", null, null, null, delta);
+			    " ", null, null, null, delta); //NOI18N
 	    // CR 5032536, empty struct show <unset type> in local view
 	    // acts.setType(type, atype);
 	    // CR 4925431, 6218025, struct with no child is not expandable
