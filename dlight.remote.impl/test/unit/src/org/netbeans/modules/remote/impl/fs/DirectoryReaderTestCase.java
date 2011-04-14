@@ -118,6 +118,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
                 "cd " + remoteDir + "\n" +
                 "echo \"123\" > just_a_file\n" +
                 "echo \"123\" > \"file with a space\"\n" +
+                "mkdir -p \"dir with a space\"\n" +
                 "mkdir -p dir_1\n" +
                 "ln -s just_a_file just_a_link\n" +
                 "ln -s dir_1 link_to_dir\n" +
@@ -131,6 +132,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         referenceEntries = new RefEntry[] {
             new RefEntry('d', "rwxr-xr-x", user, group, 0, "dir_1", null),
             new RefEntry('p', "rw-r--r--", user, group, 0, "fifo", null),
+            new RefEntry('d', "rwxr-xr-x", user, group, 4, "dir with a space", null),
             new RefEntry('-', "rw-r--r--", user, group, 4, "file with a space", null),
             new RefEntry('-', "rw-r--r--", user, group, 4, "just_a_file", null),
             new RefEntry('l', "rwxrwxrwx", user, group, 0, "just_a_link", "just_a_file"),

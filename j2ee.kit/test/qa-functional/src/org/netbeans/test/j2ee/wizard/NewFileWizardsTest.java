@@ -43,7 +43,6 @@
  */
 package org.netbeans.test.j2ee.wizard;
 
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -54,8 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
@@ -110,6 +107,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
         }
         reporter = Reporter.getReporter((NbTestCase) this);
+        System.out.println("########  " + getName() + "  #######");
     }
 
     @Override
@@ -746,7 +744,8 @@ public class NewFileWizardsTest extends JellyTestCase {
 
         @Override
         public boolean accept(File dir, String name) {
-            return name.startsWith(start);
+            // include files with specified prefix and exclude local history temporary files
+            return name.startsWith(start) && !name.endsWith(".nblh~");
         }
     }
 }

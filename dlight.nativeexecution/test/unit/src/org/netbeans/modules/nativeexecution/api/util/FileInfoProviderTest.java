@@ -63,6 +63,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     private String remoteFile;
     private String remoteLink;
     private String remoteSubdir;
+    private String remoteSubdirWithSpace;
     private String remoteSubdirLink;
     private Date creationDate;
     
@@ -83,15 +84,19 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         clearRemoteTmpDir();
         remoteTmpDir = createRemoteTmpDir();
         File localFile = File.createTempFile("test_stat_", ".dat");
+        File dirNameFile = File.createTempFile("test dir with a space", ".dat");
         localFile.delete();
+        dirNameFile.delete();
         remoteFile = remoteTmpDir + "/" + localFile.getName();
         remoteLink = remoteFile + ".link";
         remoteSubdir = remoteFile + ".subdir";
+        remoteSubdirWithSpace = remoteTmpDir + "/" + dirNameFile.getName();
         remoteSubdirLink = remoteFile + ".subdir.link";                
         String script = 
                 "echo 123 > " + remoteFile + ";" +
                 "ln -s " + remoteFile + ' ' + remoteLink + ";"  +
                 " mkdir -p " + remoteSubdir + ";" + 
+                " mkdir -p \"" + remoteSubdirWithSpace + "\";" + 
                 "ln -s " + remoteSubdir + ' ' + remoteSubdirLink;
         runScript(script);
         creationDate = new Date();
@@ -118,6 +123,10 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         statInfo = getStatInfo(remoteSubdir);
         System.err.printf("Stat for %s: %s\n", remoteSubdir, statInfo);
         assertExpected(statInfo, remoteSubdir, true, null);
+        
+        statInfo = getStatInfo(remoteSubdirWithSpace);
+        System.err.printf("Stat for %s: %s\n", remoteSubdirWithSpace, statInfo);
+        assertExpected(statInfo, remoteSubdirWithSpace, true, null);
         
         statInfo = getStatInfo(remoteSubdirLink);
         System.err.printf("Stat for %s: %s\n", remoteSubdirLink, statInfo);
@@ -228,15 +237,16 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         statInfo = find(res, getBaseName(remoteFile));
         assertExpected(statInfo, remoteFile, false, null);
         
-        statInfo = getStatInfo(remoteLink);
         statInfo = find(res, getBaseName(remoteLink));
         assertExpected(statInfo, remoteLink, false, remoteFile);
 
-        statInfo = getStatInfo(remoteSubdir);
         statInfo = find(res, getBaseName(remoteSubdir));
         assertExpected(statInfo, remoteSubdir, true, null);
         
-        statInfo = getStatInfo(remoteSubdirLink);
+        statInfo = find(res, getBaseName(remoteSubdirWithSpace));
+        System.err.printf("Stat for %s: %s\n", remoteSubdirWithSpace, statInfo);
+        assertExpected(statInfo, remoteSubdirWithSpace, true, null);
+        
         statInfo = find(res, getBaseName(remoteSubdirLink));
         assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir);
     }
