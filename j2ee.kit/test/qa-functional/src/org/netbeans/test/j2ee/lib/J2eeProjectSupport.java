@@ -46,6 +46,7 @@ package org.netbeans.test.j2ee.lib;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -310,7 +311,14 @@ public class J2eeProjectSupport {
     private static void visitAllDirsAndFiles(File dir, Set<String> s) {
         s.add(dir.isDirectory() ? dir.getPath() + File.separatorChar : dir.getPath());
         if (dir.isDirectory()) {
-            String[] children = dir.list();
+            String[] children = dir.list(new FilenameFilter() {
+
+                @Override
+                public boolean accept(File dir, String name) {
+                    // exclude local history temporary files
+                    return !name.endsWith(".nblh~");
+                }
+            });
             for (int i = 0; i < children.length; i++) {
                 visitAllDirsAndFiles(new File(dir, children[i]), s);
             }

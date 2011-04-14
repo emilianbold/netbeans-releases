@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -68,12 +69,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.spi.model.UIDProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
@@ -100,6 +100,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
     private CsmUID<CsmClassifier> classifierUID;
+    private CsmObject owner;
 
     // package-local - for facory only
     TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
@@ -516,6 +517,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 lastCache = newCachePair;
             }
             classifier = _getClassifier();
+            putTypeOwner();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
@@ -541,6 +543,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return classifier;
     }
 
+    void setOwner(CsmObject owner) {
+        this.owner = owner;
+    }
+
+    private void putTypeOwner() {
+        if (owner != null) {
+            if (UIDProviderIml.isPersistable(UIDs.get(owner))) {
+                RepositoryUtils.put(owner);
+            }
+        }
+    }
+    
     protected CsmClassifier renderClassifier(CharSequence[] qname) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(this);

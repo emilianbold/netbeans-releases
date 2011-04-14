@@ -90,20 +90,20 @@ public class FileObjectsTest extends NbTestCase {
     public void testRegularGetCharContent () throws Exception {
         final File wd = this.getWorkDir();
         final File testFile = createTestFile (wd);
-        JavaFileObject jfo = FileObjects.fileFileObject(testFile, wd, null);
+        JavaFileObject jfo = FileObjects.fileFileObject(testFile, wd, null, null);
         CharSequence content = jfo.getCharContent(true);
         String expectedData = DATA+"\n";
         assertTrue (expectedData.contentEquals(content));
         
         Filter f = new Filter (null);
-        jfo = FileObjects.fileFileObject(testFile, wd, f);
+        jfo = FileObjects.fileFileObject(testFile, wd, f, null);
         content = jfo.getCharContent(true);
         expectedData = DATA+"\n";
         assertTrue (expectedData.contentEquals(content));
         assertEquals(EnumSet.of(Call.READER), f.calls);
         
         f = new Filter (PAD);
-        jfo = FileObjects.fileFileObject(testFile, wd, f);
+        jfo = FileObjects.fileFileObject(testFile, wd, f, null);
         content = jfo.getCharContent(true);
         expectedData = PAD + DATA+"\n";
         assertTrue (expectedData.contentEquals(content));
