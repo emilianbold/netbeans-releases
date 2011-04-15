@@ -216,6 +216,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         String[] output = {
             "drwxr-xr-x   2 user_1563 staff        117 2010-12-05 22:16:11.949363229 +0300 dir_1",
             "prw-r--r--   1 user_1563 staff          0 2010-12-05 22:16:11.000000000 +0300 fifo",
+            "drwxr-xr-x   2 user_1563 staff        117 2010-12-05 22:16:11.949363229 +0300 dir with a space",
             "-rw-r--r--   1 user_1563 staff          4 2010-12-05 22:16:11.946278740 +0300 file with a space",
             "-rw-r--r--   1 user_1563 staff          4 2010-12-05 22:16:11.945924156 +0300 just_a_file",
             "lrwxrwxrwx   1 user_1563 staff         11 2010-12-05 22:16:11.952178110 +0300 just_a_link -> just_a_file",
@@ -230,6 +231,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         String[] output = {
             "drwxr-xr-x 2 user_1563 staff 4096 2010-12-06 00:10:47.000000000 +0300 dir_1",
             "prw-r--r-- 1 user_1563 staff    0 2010-12-06 00:10:47.000000000 +0300 fifo",
+            "drwxr-xr-x 2 user_1563 staff 4096 2010-12-06 00:10:47.000000000 +0300 dir with a space",
             "-rw-r--r-- 1 user_1563 staff    4 2010-12-06 00:10:47.000000000 +0300 file with a space",
             "-rw-r--r-- 1 user_1563 staff    4 2010-12-06 00:10:47.000000000 +0300 just_a_file",
             "lrwxrwxrwx 1 user_1563 staff   11 2010-12-06 00:10:47.000000000 +0300 just_a_link -> just_a_file",
@@ -249,6 +251,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         String[] output = {
             "drwxr-xr-x   2 user_1563  staff  68 Dec  5 22:12:17 2010 dir_1",
             "prw-r--r--   1 user_1563  staff   0 Dec  5 22:12:17 2010 fifo",
+            "drwxr-xr-x   2 user_1563  staff  68 Dec  5 22:12:17 2010 dir with a space",
             "-rw-r--r--   1 user_1563  staff   4 Dec  5 22:12:17 2010 file with a space",
             "-rw-r--r--   1 user_1563  staff   4 Dec  5 22:12:17 2010 just_a_file",
             "lrwxrwxrwx   1 user_1563  staff  11 Dec  5 22:12:17 2010 just_a_link -> just_a_file",
@@ -264,6 +267,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         String[] output = {
             "drwxr-xr-x  2 user_1563  staff  68 Dec  5 22:12:17 2010 dir_1",
             "prw-r--r--  1 user_1563  staff   0 Dec  5 22:12:17 2010 fifo",
+            "drwxr-xr-x  2 user_1563  staff  68 Dec  5 22:12:17 2010 dir with a space",
             "-rw-r--r--  1 user_1563  staff   4 Dec  5 22:12:17 2010 file with a space",
             "-rw-r--r--  1 user_1563  staff   4 Dec  5 22:12:17 2010 just_a_file",
             "lrwxrwxrwx  1 user_1563  staff  11 Dec  5 22:12:17 2010 just_a_link -> just_a_file",
