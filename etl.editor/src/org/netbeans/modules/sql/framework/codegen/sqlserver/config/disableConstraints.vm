@@ -1,4 +1,0 @@
-#if($isDisableConstraint)
-    ALTER TABLE $targetTable NOCHECK CONSTRAINT ALL
-    ${statementSeparator}
-#end
