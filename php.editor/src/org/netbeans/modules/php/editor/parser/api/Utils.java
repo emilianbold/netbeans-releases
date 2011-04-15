@@ -165,8 +165,7 @@ public class Utils {
         protected ASTNode node = null;
 
         public ASTNode locate(ASTNode beginNode, int astOffset) {
-            offset = astOffset;
-            scan(beginNode);
+            offset = astOffset;            scan(beginNode);
             if (node instanceof Program) {
                 // probably no node was found except whole file. 
                 // try to look for a documentation node

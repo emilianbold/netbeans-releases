@@ -52,7 +52,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
-import org.openide.util.Exceptions;
 
 /**
  * @author Radek Matous
@@ -205,7 +204,11 @@ public final class NamingFactory {
             }
         }
 
-        if (cachedElement != null && Utils.equals(cachedElement.getFile(), file)) {
+        Boolean filesEqual = null;
+        if (
+            cachedElement != null && 
+            (filesEqual = Utils.equals(cachedElement.getFile(), file))
+        ) {
             retVal = cachedElement;
         } else {
             retVal = (newValue == null) ? NamingFactory.createFileNaming(file, key, parentName, type) : newValue;
@@ -225,7 +228,11 @@ public final class NamingFactory {
                     if (nr.next() == ref) {
                         FileNaming orig = ref.get();
                         if (orig instanceof FileName) {
-                            ((FileName)orig).recordCleanup();
+                            ((FileName)orig).recordCleanup(
+                                "cachedElement: " + cachedElement + // NOI18N 
+                                " file: " + file + // NOI18N
+                                " filesEqual: " + filesEqual // NOI18N
+                            );
                         }
                         ref.clear();
                         nr.skip(ref);
