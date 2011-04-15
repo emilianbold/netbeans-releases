@@ -44,9 +44,6 @@
 
 package org.netbeans.core;
 
-import java.awt.Frame;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
@@ -61,6 +58,7 @@ import org.netbeans.core.startup.Splash;
 import org.netbeans.core.startup.StartLog;
 import org.netbeans.swing.plaf.Startup;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -206,9 +204,13 @@ public class GuiRunLevel implements RunLevel {
         // close IDE
         if (System.getProperty("netbeans.close") != null) {
             if (Boolean.getBoolean("netbeans.warm.close")) {
-                // Do other stuff related to startup, to measure the effect.
-                // Useful for performance testing.
-                new WarmUpSupport().run(); // synchronous
+                try {
+                    // Do other stuff related to startup, to measure the effect.
+                    // synchronous
+                    MainLookup.warmUp(0).waitFinished(); // synchronous
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             if (o != null) {
                 StartLog.logMeasuredStartupTime((Long) o);
@@ -228,15 +230,6 @@ public class GuiRunLevel implements RunLevel {
 
         public @Override void run() {
             StartLog.logProgress("Window system initialization");
-            if (System.getProperty("netbeans.warmup.skip") == null && System.getProperty("netbeans.close") == null) {
-                final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                mainWindow.addComponentListener(new ComponentAdapter() {
-                    public @Override void componentShown(ComponentEvent evt) {
-                        mainWindow.removeComponentListener(this);
-                        WarmUpSupport.warmUp();
-                    }
-                });
-            }
             if (phase == 0) {
                 if (windowSystem != null) {
                     windowSystem.load();
@@ -259,6 +252,14 @@ public class GuiRunLevel implements RunLevel {
                 StartLog.logProgress("Window system shown");
                 if (!StartLog.willLog()) {
                     maybeDie(null);
+                }
+                if (System.getProperty("netbeans.warmup.skip") == null && System.getProperty("netbeans.close") == null) {
+                    WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                        @Override
+                        public void run() {
+                            MainLookup.warmUp(1500);
+                        }
+                    });
                 }
                 return;
             }

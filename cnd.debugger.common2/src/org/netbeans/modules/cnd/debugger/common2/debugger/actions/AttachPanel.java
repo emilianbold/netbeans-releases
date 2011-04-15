@@ -355,7 +355,7 @@ public final class AttachPanel extends TopComponent {
 
         hostLabel.setText(Catalog.get("AttachProcDiag_HostColon")); // NOI18N
         hostLabel.setDisplayedMnemonic(
-                Catalog.getMnemonic("MNEM_AttachProcDiag_Host")); // NOI18N
+                Catalog.getMnemonic("MNEM_Host")); // NOI18N
 
         hostLabel.setLabelFor(hostCombo);
         hostCombo.setToolTipText(Catalog.get("HostName")); //NOI18N
@@ -595,7 +595,15 @@ public final class AttachPanel extends TopComponent {
         Object cmdobj = processModel.getValueAt(selectedRow, cmdIndex);
 
         if (cmdobj instanceof String) {
-            executableProjectPanel.setExecutablePath((String) cmdobj);
+            String cmdstring = (String) cmdobj;
+	    if ( cmdstring != null) {
+		int i = cmdstring.indexOf(" "); // NOI18N
+		if (i == -1) // EOL
+		    i = cmdstring.length();
+		String executablePath = cmdstring.substring(0,i);
+
+		executableProjectPanel.setExecutablePath(executablePath);
+	    }
 	}
     }
     
