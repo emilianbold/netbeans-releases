@@ -108,6 +108,7 @@ public final class ModuleManager extends Modules {
     // or null if this has not been computed yet
     private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblemsWithoutNeeds = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
     private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblemsWithNeeds = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
+    private static final Set<Union2<Dependency,InvalidException>> EMPTY_COLLECTION = Collections.<Union2<Dependency, InvalidException>>emptySet();
 
     // modules providing a given requires token; set may never be empty
     private final Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>(25);
@@ -944,6 +945,10 @@ public final class ModuleManager extends Modules {
                 if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
                 if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
                 // Record for posterity.
+                if (probs == EMPTY_COLLECTION) {
+                    probs = new HashSet<Union2<Dependency,InvalidException>>(8);
+                    moduleProblemsWithNeeds.put(bad, probs);
+                }
                 if (failedPackageDep != null) {
                     // Structured package dependency failed, track this.
                     probs.add(Union2.<Dependency,InvalidException>createFirst(failedPackageDep));
@@ -1635,6 +1640,9 @@ public final class ModuleManager extends Modules {
                     }
                 }
                 probs.remove(PROBING_IN_PROCESS);
+                if (probs.isEmpty()) {
+                    mP.put(probed, EMPTY_COLLECTION);
+                }
             }
             return probs;
         }

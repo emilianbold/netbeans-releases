@@ -788,7 +788,8 @@ class OccurenceBuilder {
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self")) {//NOI18N
+            if (clzName.getName().equalsIgnoreCase("self")          //NOI18N
+                    || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
@@ -1246,7 +1247,8 @@ class OccurenceBuilder {
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                        if (clzName.getName().equalsIgnoreCase("self")) {
+                        if (clzName.getName().equalsIgnoreCase("self")  //NOI18N
+                                || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                             clzName = ((ClassScope) scope).getSuperClassName();
