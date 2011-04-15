@@ -230,4 +230,9 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
         return inRedir;
     }
+
+    @Override
+    protected void applyEnvvars(String[][] o, String[][] n) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }        
 }
