@@ -336,8 +336,19 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             nextOperationLocations = expr.findNextOperationLocations(codeIndex);
         } else {
             Location[] locations = expr.getLocations();
-            nextOperationLocations = new ExpressionPool.OperationLocation[] {
-                new ExpressionPool.OperationLocation(ops[opIndex], locations[opIndex], opIndex) };
+            ExpressionPool.OperationLocation[] opLoc = new ExpressionPool.OperationLocation[ops.length - opIndex];
+            int opLocIndex = 0;
+            for (int i = opIndex; i < opLoc.length; i++) {
+                if (i == opIndex || locations[i].codeIndex() > locations[opIndex].codeIndex()) {
+                    opLoc[opLocIndex++] = new ExpressionPool.OperationLocation(ops[i], locations[i], i);
+                }
+            }
+            if (opLocIndex == opLoc.length) {
+                nextOperationLocations = opLoc;
+            } else {
+                nextOperationLocations = new ExpressionPool.OperationLocation[opLocIndex];
+                System.arraycopy(opLoc, 0, nextOperationLocations, 0, opLocIndex);
+            }
         }
         boolean isNextOperationFromDifferentExpression = false;
         if (nextOperationLocations != null) {
