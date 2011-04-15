@@ -75,12 +75,12 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
-import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -291,45 +291,12 @@ public class TaskProcessor {
      */ 
     public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
             boolean bridge, Class<? extends Scheduler> schedulerType) {
-        addPhaseCompletionTasks(tasks, cache, cache.getSnapshot().getSource(), bridge, true, schedulerType);
-    }
-
-    /**
-     * Adds the task, used by addPhaseCompletionTasks and updatePhaseCompletionTask, can be called under
-     * INTERNAL_LOCK. The original addPhaseCompletionTasks cannot be called under INTERNAL_LOCK as it
-     * calls {@link SourceCache#getSnapshot()} which takes private SourceCache lock.
-     * @param tasks
-     * @param cache
-     * @param source
-     * @param bridge
-     * @param cancelRunningTask
-     * @param schedulerType
-     */
-    private static void addPhaseCompletionTasks(
-            final Collection<SchedulerTask> tasks,
-            final SourceCache cache,
-            final Source source, 
-            final boolean bridge,
-            final boolean cancelRunningTask,
-            final Class<? extends Scheduler> schedulerType) {
-        Parameters.notNull("task", tasks);   //NOI18N
-        Parameters.notNull("source", source);   //NOI18N
-        Parameters.notNull("cache", cache);   //NOI18N
-        List<Request> _requests = new ArrayList<Request> ();
-        for (SchedulerTask task : tasks) {
-            final String taskClassName = task.getClass().getName();
-            if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
-                if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
-                    continue;
-            }
-            _requests.add (new Request (task, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, schedulerType));
-        }
-        if (!_requests.isEmpty ()) {
-            handleAddRequests (source, _requests, cancelRunningTask);
+        final Collection<? extends Request> rqs = toRequests(tasks, cache, bridge, schedulerType);
+        if (handleAddRequests(cache.getSource(), rqs)) {
+            cancelLowPriorityTask(rqs);
         }
     }
-    
-    
+        
     /**
      * Removes a task from scheduled requests.
      * @param task The task to be removed.
@@ -444,30 +411,25 @@ public class TaskProcessor {
         }
     }
 
-    public static void updatePhaseCompletionTask (final Collection<SchedulerTask>add, final Collection<SchedulerTask>remove,
-            final Source source, SourceCache cache, Class<? extends Scheduler> schedulerType) {
+    public static void updatePhaseCompletionTask (
+            final @NonNull Collection<SchedulerTask>add,
+            final @NonNull Collection<SchedulerTask>remove,
+            final @NonNull Source source,
+            final @NonNull SourceCache cache,
+            final @NullAllowed Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("add", add);
         Parameters.notNull("remove", remove);
         Parameters.notNull("source", source);
-        Parameters.notNull("cache", cache);        
+        Parameters.notNull("cache", cache);
+        if (add.isEmpty() && remove.isEmpty()) {
+            return;
+        }
+        final Collection<? extends Request> rqs = toRequests(add, cache, false, schedulerType);
         synchronized (INTERNAL_LOCK) {
             removePhaseCompletionTasks(remove, source);
-            addPhaseCompletionTasks(add, cache, source, false, false, schedulerType);
+            handleAddRequests (source, rqs);
         }
-        final int priority = findPriority(add, new Convertor<SchedulerTask, Integer>(){
-            @Override
-            public Integer convert(final @NonNull SchedulerTask t) {
-                return t.getPriority();
-            }
-        });
-        final Request request = currentRequest.getTaskToCancel(priority);
-        try {
-            if (request != null) {
-                request.task.cancel();
-            }
-        } finally {
-            currentRequest.cancelCompleted(request);
-        }
+        cancelLowPriorityTask(rqs);
     }
     
     //Changes handling
@@ -535,19 +497,39 @@ public class TaskProcessor {
     
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
-        final Request rq = new Request(task, null, ReschedulePolicy.NEVER, null);
-        handleAddRequests (null,Collections.<Request>singletonList (rq), true);
+        final Collection<? extends Request> rqs = Collections.<Request>singleton(new Request(task, null, ReschedulePolicy.NEVER, null));
+        if (handleAddRequests (null, rqs)) {
+            cancelLowPriorityTask(rqs);
+        }
     }
     
     
     //Private methods
-    private static void handleAddRequests (
-            final Source source,
-            final List<Request> requests,
-            final boolean cancelRunningTask) {
-        assert requests != null;
+    private static @NonNull Collection<? extends Request> toRequests (
+            final @NonNull Collection<? extends SchedulerTask> tasks,
+            final @NonNull SourceCache cache,
+            final boolean bridge,
+            final @NullAllowed Class<? extends Scheduler> schedulerType) {
+        Parameters.notNull("task", tasks);   //NOI18N
+        Parameters.notNull("cache", cache);   //NOI18N
+        List<Request> _requests = new ArrayList<Request> ();
+        for (SchedulerTask task : tasks) {
+            final String taskClassName = task.getClass().getName();
+            if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+                if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
+                    continue;
+            }
+            _requests.add (new Request (task, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, schedulerType));
+        }
+        return _requests;
+    }
+
+    private static boolean handleAddRequests (
+            final @NullAllowed Source source,
+            final @NonNull Collection<? extends Request> requests) {
+        Parameters.notNull("requests", requests);
         if (requests.isEmpty()) {
-            return;
+            return false;
         }
         if (source != null) {
             SourceAccessor.getINSTANCE().assignListeners(source);
@@ -556,35 +538,24 @@ public class TaskProcessor {
         synchronized (INTERNAL_LOCK) {
             TaskProcessor.requests.addAll (requests);
         }
-        if (cancelRunningTask) {
-            final int priority = findPriority(requests,
-                    new Convertor<Request, Integer>() {
-                        public Integer convert (final @NonNull Request r) {
-                            return r.task.getPriority();
-                        }
-            });
-            final Request request = currentRequest.getTaskToCancel(priority);
-            try {
-                if (request != null) {
-                    request.task.cancel();
-                }
-            } finally {
-                currentRequest.cancelCompleted(request);
-            }
-        }
+        return true;
     }
 
-    private static <T> int findPriority(
-            final @NonNull Iterable<? extends T> requests,
-            final @NonNull Convertor<T,Integer> convertor) {
-        Parameters.notNull("requests", requests);       //NOI18N
-        Parameters.notNull("convertor", convertor);     //NOI18N
+
+    private static void cancelLowPriorityTask(final @NonNull Iterable<? extends Request> requests) {
         int priority = Integer.MAX_VALUE;
-        for (T r : requests) {
-            priority = Math.min(priority, convertor.convert(r));
+        for (Request r : requests) {
+            priority = Math.min(priority, r.task.getPriority());
         }
-        return priority;
-    }
+        final Request request = currentRequest.getTaskToCancel(priority);
+        try {
+            if (request != null) {
+                request.task.cancel();
+            }
+        } finally {
+            currentRequest.cancelCompleted(request);
+        }
+     }
     
     /**
      * Checks if the current thread holds a document write lock on some of given files
