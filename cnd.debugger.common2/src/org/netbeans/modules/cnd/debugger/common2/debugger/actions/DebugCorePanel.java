@@ -399,7 +399,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(guidanceTextArea, gridBagConstraints);
 
-        hostLabel.setText(Catalog.get("HOST_LBL")); 
+        hostLabel.setText(Catalog.get("HOST_LBL")); //NOI18N
         hostLabel.setLabelFor(hostComboBox);
 	hostLabel.setDisplayedMnemonic(
 	           Catalog.getMnemonic("MNEM_Host")); // NOI18N
