@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="SiebelInterface" 
+				targetNamespace="http://j2ee.netbeans.org/wsdl/SiebelInterface" 
+				xmlns:tns="http://j2ee.netbeans.org/wsdl/SiebelInterface" 
+				xmlns="http://schemas.xmlsoap.org/wsdl/" 
+				xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+				xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+				xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+				xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+				xmlns:plink="http://schemas.xmlsoap.org/ws/2004/03/partner-link/">
+    <!-- Type definitions -->
+    <types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
+            <xsd:annotation>
+                <xsd:documentation>Copyright (C) 2001-2004 Siebel Systems, Inc. All rights reserved. Siebel XSD Generation</xsd:documentation>
+            </xsd:annotation>
+            <xsd:element name="SiebelMessage" type="SiebelMessage"/>
+            <xsd:complexType name="SiebelMessage">
+                <xsd:sequence>
+                    <xsd:element name="ListOfSampleAccount" type="ListOfSampleAccount" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+                <xsd:attribute name="MessageId" type="xsd:string"/>
+                <xsd:attribute name="MessageType" type="xsd:string"/>
+                <xsd:attribute name="IntObjectName" type="xsd:string"/>
+                <xsd:attribute name="IntObjectFormat" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:complexType name="ListOfSampleAccount">
+                <xsd:sequence>
+                    <xsd:element name="Account" type="Account" minOccurs="1" maxOccurs="1"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Account">
+                <xsd:sequence>
+                    <xsd:element name="System" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Culture" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="CurrencyCode" type="string15" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Description" type="string255" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Division" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="HomePage" type="string100" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="IntegrationId" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="LineofBusiness" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Location" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Name" type="string100" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="ProjectName" type="string100" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Type" type="string255" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="ListOfAccount_Organization" type="ListOfAccount_Organization" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="ListOfAccountAttachment" type="ListOfAccountAttachment" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="ListOfBusinessAddress" type="ListOfBusinessAddress" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="ListOfContact" type="ListOfContact" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+                <xsd:attribute name="operation" type="xsd:string"/>
+                <xsd:attribute name="searchspec" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:complexType name="ListOfAccount_Organization">
+                <xsd:sequence>
+                    <xsd:element name="Account_Organization" type="Account_Organization" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Account_Organization">
+                <xsd:sequence>
+                    <xsd:element name="IntegrationId" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Organization" type="string50" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+                <xsd:attribute name="IsPrimaryMVG" type="xsd:string"/>
+                <xsd:attribute name="operation" type="xsd:string"/>
+                <xsd:attribute name="searchspec" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:complexType name="ListOfAccountAttachment">
+                <xsd:sequence>
+                    <xsd:element name="AccountAttachment" type="AccountAttachment" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="AccountAttachment">
+                <xsd:sequence>
+                    <xsd:element name="AccntFileExt" type="string10" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="AccntFileName" type="string220" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Comment" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="AttachmentId" type="xsd:base64Binary" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+                <xsd:attribute name="operation" type="xsd:string"/>
+                <xsd:attribute name="searchspec" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:complexType name="ListOfBusinessAddress">
+                <xsd:sequence>
+                    <xsd:element name="BusinessAddress" type="BusinessAddress" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="BusinessAddress">
+                <xsd:sequence>
+                    <xsd:element name="AddressName" type="string100" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="City" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Country" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="FaxNumber" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="IntegrationId" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="PhoneNumber" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="PostalCode" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Province" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="State" type="string10" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="StreetAddress" type="string200" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+                <xsd:attribute name="operation" type="xsd:string"/>
+                <xsd:attribute name="searchspec" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:complexType name="ListOfContact">
+                <xsd:sequence>
+                    <xsd:element name="Contact" type="Contact" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Contact">
+                <xsd:sequence>
+                    <xsd:element name="CellularPhone" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Comment2" type="string255" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="FirstName" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="HomePhone" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="IntegrationId" type="string30" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="JobTitle" type="string75" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="LastName" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="MiddleName" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="Organization" type="string50" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="PersonalContact" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+                <xsd:attribute name="operation" type="xsd:string"/>
+                <xsd:attribute name="searchspec" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:simpleType name="string50">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="50"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string10">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="10"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string255">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="255"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string75">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="75"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string15">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="15"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string30">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="30"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string200">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="200"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string100">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="100"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="string220">
+                <xsd:restriction base="xsd:string">
+                    <xsd:maxLength value="220"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:schema>
+        <xsd:schema>
+        </xsd:schema>
+    </types>
+    <!-- Message definitions -->
+    <!-- TODO: write one or more messages here -->
+    <message name="SiebelInterfaceRequest">
+        <!-- specify one or more message parts here -->
+        <part name="SWEExtCmd" type="xsd:string"/>
+        <part name="UserName" type="xsd:string"/>
+        <part name="Password" type="xsd:string"/>
+        <part name="SWEExtSource" type="xsd:string"/>
+        <part name="SWEExtData" element="SiebelMessage"/>
+    </message>
+    <!-- Port type definitions -->
+    <!-- TODO: write one or more port types here (usually just one) -->
+    <portType name="SiebelInterfacePortType">
+        <operation name="SiebelInterfaceOperation">
+            <input name="SiebelInterfaceOperationRequest" message="tns:SiebelInterfaceRequest"/>
+        </operation>
+    </portType>
+    <!-- Binding definitions -->
+    <!-- TODO: write one or more bindings here (usually just one) -->
+    <binding name="SiebelInterfaceBinding" type="tns:SiebelInterfacePortType">
+        <!-- Example of SOAP binding -->
+        <!--
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <operation name="SiebelInterfaceOperation">
+        <soap:operation soapAction="REPLACE_WITH_ACTION_URL"/>
+        <input>
+        <soap:body use="literal"/>
+        </input>
+        <output>
+        <soap:body use="literal"/>
+        </output>
+        </operation>
+        -->
+        <http:binding verb="GET"/>
+        <operation name="SiebelInterfaceOperation">
+            <http:operation location="eai_enu/start.swe"/>
+            <input name="SiebelInterfaceOperationRequest">
+                <http:urlEncoded/>
+            </input>
+        </operation>
+    </binding>
+    <!-- Service and Port (network address) definitions -->
+    <!-- TODO: write one or more service elements here (usually just one) -->
+    <service name="SiebelInterfaceService">
+        <port name="SiebelInterfacePort" binding="tns:SiebelInterfaceBinding">
+            <http:address location="http://pmdbbox5/"/>
+        </port>
+    </service>
+    <plink:partnerLinkType name="partnerlinktype1">
+        <plink:role name="partnerlinktyperole1" portType="tns:SiebelInterfacePortType"/>
+    </plink:partnerLinkType>
+</definitions>

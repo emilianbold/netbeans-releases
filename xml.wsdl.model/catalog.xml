@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="BpelModule1/newLoanApplication.xsd" uri="test/unit/src/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/newLoanApplication.xsd"/>
+</catalog>
