@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.Map;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -477,6 +478,9 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      *
      */
 
+    // word around IZ 197299
+    Env savedEnv;
+
     // interface PropertyChangeListener
     public void propertyChange(PropertyChangeEvent evt) {
 	String name = evt.getPropertyName();
@@ -495,7 +499,19 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 		applyRunDirectory();
 
 	    } else if (RunProfile.PROP_ENVVARS_CHANGED.equals(name)) {
-		applyEnvvars();
+		String o = (String) evt.getOldValue();
+		Env n = (Env) evt.getNewValue();
+		// CR 4887794
+		if (savedEnv != null) {
+		    String savedEnvString = savedEnv.toString();
+		    if (savedEnvString.equals(o)) {
+			applyEnvvars(savedEnv.getenvAsPairs(), n.getenvAsPairs());
+		    } else
+			applyEnvvars();
+		}  else
+		    // initial phase
+		    applyEnvvars();
+		savedEnv = n.clone();
 
 	    // Debugging portion
 	    } else if (DbgProfile.PROP_OPTIONS.equals(name)) {
@@ -637,6 +653,8 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
     protected abstract void applyClasspath();
 
     protected abstract void applyEnvvars();
+
+    protected abstract void applyEnvvars(String[][] o, String[][] n);
 
     protected abstract void applySignals(Signals o, Signals n);
 
