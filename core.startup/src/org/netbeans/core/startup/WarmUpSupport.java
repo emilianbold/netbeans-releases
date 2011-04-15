@@ -42,14 +42,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.startup;
 
 import java.util.Collection;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.StartLog;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -62,20 +65,24 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Pavek
  */
 
-class WarmUpSupport implements Runnable {
-
-    private static final int WARMUP_DELAY = 1500; // 1.5 sec after main window is shown
-    
+final class WarmUpSupport implements Runnable {
+    private static final RequestProcessor.Task TASK;
+    static {
+        RequestProcessor RP = new RequestProcessor("Warm Up");
+        TASK = RP.create(new WarmUpSupport());
+    } // NOI18N
     static boolean finished = false;    // usefull for testability
 
-    private Logger err = Logger.getLogger("org.netbeans.core.WarmUpSupport");
+    private static final Logger err = Logger.getLogger("org.netbeans.core.WarmUpSupport");
 
-    static void warmUp() {
-        RequestProcessor.getDefault().post(new WarmUpSupport(), WARMUP_DELAY);
+    static Task warmUp(long delay) {
+        TASK.schedule((int)delay);
+        return TASK;
     }
 
     // -------
 
+    @Override
     public void run() {
         err.fine("Warmup starting..."); // NOI18N
         StartLog.logStart("Warmup"); // NOI18N
