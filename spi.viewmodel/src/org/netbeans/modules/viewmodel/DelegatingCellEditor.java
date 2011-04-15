@@ -180,8 +180,10 @@ class DelegatingCellEditor implements TableCellEditor {
     public boolean stopCellEditing() {
         if (currentEditor != null) {
             boolean status = currentEditor.stopCellEditing();
-            canceledEditorRef = new WeakReference<TableCellEditor>(currentEditor);
-            currentEditor = null;
+            if (status) {
+                canceledEditorRef = new WeakReference<TableCellEditor>(currentEditor);
+                currentEditor = null;
+            }
             return status;
         }
         Exceptions.printStackTrace(new IllegalStateException("No current editor."));

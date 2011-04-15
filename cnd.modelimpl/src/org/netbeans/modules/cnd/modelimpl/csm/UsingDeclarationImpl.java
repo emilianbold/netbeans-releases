@@ -60,13 +60,16 @@ import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 
 /**
  * Implements CsmUsingDeclaration
@@ -234,6 +237,13 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 synchronized (this) {
                     lastParseCount = newParseCount;
                     _setReferencedDeclaration(referencedDeclaration);
+                    if (referencedDeclaration != null) {
+                        if (UIDProviderIml.isPersistable(UIDs.get(this))) {
+                            if (UIDProviderIml.isPersistable(UIDs.get(referencedDeclaration))) {
+                                RepositoryUtils.put(this);
+                            }
+                        }
+                    }
                 }
             }            
         }
