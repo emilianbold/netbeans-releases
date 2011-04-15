@@ -40,14 +40,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics.fod;
+package org.netbeans.modules.ide.ergonomics;
 
-import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 
 /** Special ergonomics warm up extension that listens on changes in set of
  * enabled features and re-runs the warm up to make newly added features
@@ -55,31 +53,16 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
-public final class WarmUp implements Runnable, ChangeListener {
-    private static RequestProcessor RP = new RequestProcessor("FoD Warm Up"); // NOI18N
-    private RequestProcessor.Task task;
-
-    public void run() {
-        FoDFileSystem.LOG.log(Level.FINE, "FoD Warmup Init {0}", task); // NOI18N
-        if (task == null) {
-            task = RP.create(this);
-            FeatureManager.getInstance().addChangeListener(this);
-        }
-        if (RP.isRequestProcessorThread()) {
-            FoDFileSystem.LOG.fine("Warmup starting..."); // NOI18N
-            for (Runnable r : Lookups.forPath("WarmUp").lookupAll(Runnable.class)) { // NOI18N
-                if (r == this) {
-                    continue;
-                }
-                r.run();
-            }
-            FoDFileSystem.LOG.fine("Warmup done."); // NOI18N
-        }
+final class WarmUp implements ChangeListener {
+    private WarmUp() {
+    }
+    
+    static void init() {
+        FeatureManager.getInstance().addChangeListener(new WarmUp());
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
-        // schedule warm up
-        task.schedule(5000);
+        MainLookup.warmUp(5000);
     }
 }
