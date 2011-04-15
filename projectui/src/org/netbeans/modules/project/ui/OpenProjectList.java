@@ -105,6 +105,8 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -570,22 +572,12 @@ public final class OpenProjectList {
                 return;
             }
 	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
-	    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-	    final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true);
-            final OpeningProjectPanel panel = new OpeningProjectPanel(handle);
-            
-	    dialog.getContentPane().add(panel);
+        final OpeningProjectPanel panel = new OpeningProjectPanel(handle);
+        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true, null);
+        dd.setOptions(new Object[0]);
+	    final JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(
+            dd);
 	    dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-	    dialog.pack();
-	    
-	    Rectangle bounds = mainWindow.getBounds();
-	    
-	    int middleX = bounds.x + bounds.width / 2;
-	    int middleY = bounds.y + bounds.height / 2;
-	    
-	    Dimension size = dialog.getPreferredSize();
-	    
-	    dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
 	    
 	    OPENING_RP.post(new Runnable() {
 		public void run() {
