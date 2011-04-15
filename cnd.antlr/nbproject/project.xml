@@ -6,6 +6,7 @@
             <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
             <module-dependencies/>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>

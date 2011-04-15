@@ -594,8 +594,13 @@ class InstallPanelVisual extends javax.swing.JPanel {
             try {
                 if (!TomcatUsers.userExists(tomcatUsersXml, jTextFieldUsername.getText())) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserDoesNotExist");
-                } else if (!TomcatUsers.hasManagerRole(tomcatUsersXml, jTextFieldUsername.getText())) {
-                    errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserHasNotManagerRole");
+                    infoMessage = true;
+                } else if (!TomcatUsers.hasManagerRole(tomcatVersion, tomcatUsersXml, jTextFieldUsername.getText())) {
+                    errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserHasNotManagerRole",
+                            TomcatVersion.TOMCAT_70.equals(tomcatVersion)
+                                ? "manager-script"
+                                : "manager");
+                    infoMessage = true;
                 }
             } catch (IOException e) {
                 errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_MissingOrInvalidTomcatUsersXml", tomcatUsersXml.getPath());

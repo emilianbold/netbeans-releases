@@ -482,22 +482,24 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             final Element platformElement = doc.getDocumentElement();
             platformElement.setAttribute(ATTR_PLATFORM_NAME,instance.getDisplayName());
             platformElement.setAttribute(ATTR_PLATFORM_DEFAULT,defaultPlatform ? "yes" : "no"); //NOI18N
-            final Element propsElement = doc.createElement(ELEMENT_PROPERTIES);
-            writeProperties(props, propsElement, doc);
-            platformElement.appendChild(propsElement);
             if (!defaultPlatform) {
-                final Element sysPropsElement = doc.createElement(ELEMENT_SYSPROPERTIES);
-                writeProperties(sysProps, sysPropsElement, doc);
-                platformElement.appendChild(sysPropsElement);
                 final Element jdkHomeElement = doc.createElement(ELEMENT_JDKHOME);
                 for (Iterator<FileObject> it = instance.getInstallFolders().iterator(); it.hasNext();) {
                     URL url = it.next ().getURL();
                     final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
                     resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
                     jdkHomeElement.appendChild(resourceElement);
-                }                
-                platformElement.appendChild(jdkHomeElement);                
-            }            
+                }
+                platformElement.appendChild(jdkHomeElement);
+            }
+            final Element propsElement = doc.createElement(ELEMENT_PROPERTIES);
+            writeProperties(props, propsElement, doc);
+            platformElement.appendChild(propsElement);
+            if (!defaultPlatform) {
+                final Element sysPropsElement = doc.createElement(ELEMENT_SYSPROPERTIES);
+                writeProperties(sysProps, sysPropsElement, doc);
+                platformElement.appendChild(sysPropsElement);                                                
+            }
             final List<ClassPath.Entry> psl = this.instance.getSourceFolders().entries();
             if (psl.size()>0 && shouldWriteSources ()) {                
                 final Element sourcesElement = doc.createElement (ELEMENT_SOURCEPATH);

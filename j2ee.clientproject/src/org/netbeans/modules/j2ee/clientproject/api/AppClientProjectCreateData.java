@@ -174,4 +174,8 @@ public final class AppClientProjectCreateData {
         this.cdiEnabled = cdiEnabled;
     }
 
+    public boolean skipTests() {
+        return testFolders == null || testFolders.length == 0;
+    }
+    
 }

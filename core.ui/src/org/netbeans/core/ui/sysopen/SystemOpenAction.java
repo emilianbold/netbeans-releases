@@ -97,7 +97,7 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
             files = new HashSet<File>();
             for (DataObject d : context.lookupAll(DataObject.class)) {
                 File f = FileUtil.toFile(d.getPrimaryFile());
-                if (f == null || /* #144575 */Utilities.isWindows() && !f.getName().contains(".")) {
+                if (f == null || /* #144575 */Utilities.isWindows() && f.isFile() && !f.getName().contains(".")) {
                     files.clear();
                     break;
                 }

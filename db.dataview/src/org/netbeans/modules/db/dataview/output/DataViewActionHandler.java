@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.awt.Dimension;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -155,8 +154,6 @@ class DataViewActionHandler {
     void insertActionPerformed() {
         InsertRecordDialog dialog = new InsertRecordDialog(dataView);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
-        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        dialog.setMinimumSize(new Dimension((screenSize.width - 50) / 2, (screenSize.height - 50) / 2));
         dialog.setVisible(true);
     }
 

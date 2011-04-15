@@ -44,7 +44,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.test.j2ee.lib.TrimmingLineDiff;
+import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 
 /**
  *
@@ -174,7 +174,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
 
         try {
             File goldenFile = getGoldenFile(goldenFilePrefix + "persistence.xml");
-            nbtestcase.assertFile("File " + targetFile.getAbsolutePath() + " is different than golden file " + goldenFile.getAbsolutePath() + ".", targetFile, goldenFile, new File(getWorkDir(), targetFile.getName() + ".diff"), new TrimmingLineDiff());
+            nbtestcase.assertFile("File " + targetFile.getAbsolutePath() + " is different than golden file " + goldenFile.getAbsolutePath() + ".", targetFile, goldenFile, new File(getWorkDir(), targetFile.getName() + ".diff"), new FilteringLineDiff());
         } catch (AssertionFailedError e) {
             if (!getWorkDir().exists()) {
                 if (getWorkDir().mkdir()) {

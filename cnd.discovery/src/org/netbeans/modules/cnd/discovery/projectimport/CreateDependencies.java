@@ -57,7 +57,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -184,7 +186,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         addReqProject(aProject);
                     }
                 }
-                ImportExecutable.saveMakeConfigurationDescriptor(mainProject);
+                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(mainProject);
                 for(Project aProject : projects) {
                     String executable = null;
                     if (createdProjects.containsKey(aProject)){
@@ -197,7 +199,7 @@ public class CreateDependencies implements PropertyChangeListener {
                     if (extension != null) {
                         Map<String, Object> map = new HashMap<String, Object>();
                         map.put("DW:buildResult", executable); // NOI18N
-                        map.put("DW:consolidationLevel", "file"); // NOI18N
+                        map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
                         map.put("DW:rootFolder", aProject.getProjectDirectory().getPath()); // NOI18N
                         process((DiscoveryExtension)extension, aProject, map);
                     }
@@ -233,7 +235,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         if (extension.canApply(map, lastSelectedProject)) {
                             try {
                                 extension.apply(map, lastSelectedProject);
-                                ImportExecutable.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }

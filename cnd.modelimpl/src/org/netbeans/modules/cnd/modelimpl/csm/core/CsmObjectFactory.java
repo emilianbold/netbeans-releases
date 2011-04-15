@@ -48,6 +48,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplFunctionSpecialization;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionInstantiationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
@@ -281,6 +283,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             } else {
                 throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N            
             }
+        } else if (object instanceof CsmFunctionInstantiation) {
+            aHandler = FUNCTION_INSTANTIATION_IMPL;
         } else if (object instanceof ProgramImpl<?>) {
             aHandler = PROGRAM_IMPL;
         } else if (object instanceof SubroutineImpl<?>) {
@@ -410,6 +414,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FunctionImplEx(stream);
                 break;
 
+            case FUNCTION_INSTANTIATION_IMPL:
+                obj = new FunctionInstantiationImpl(stream);
+                break;
+                
             case DESTRUCTOR_DEF_IMPL:
                 obj = new DestructorDefinitionImpl(stream);
                 break;
@@ -612,9 +620,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     // functions
     private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
     private static final int FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
+    private static final int FUNCTION_INSTANTIATION_IMPL    = FUNCTION_IMPL_EX + 1;
 
     //// function definitons 
-    private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_IMPL_EX + 1;
+    private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_INSTANTIATION_IMPL + 1;
     private static final int CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
     private static final int FUNCTION_DEF_IMPL              = CONSTRUCTOR_DEF_IMPL + 1;
 

@@ -70,6 +70,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
@@ -250,7 +251,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * Get the default platform.
      * @return the default platform, if there is one (usually should be)
      */
-    public static NbPlatform getDefaultPlatform() {
+    public static @CheckForNull NbPlatform getDefaultPlatform() {
         return NbPlatform.getPlatformByID(PLATFORM_ID_DEFAULT);
     }
     
@@ -265,15 +266,32 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             LOG.warning("no core/core.jar");
             return null;
         }
+        File platformCluster = bootJar.getParentFile().getParentFile();
+        if (!platformCluster.getName().startsWith("platform")) { // NOI18N
+            LOG.log(Level.WARNING, "{0} found in unexpected cluster", bootJar);
+            return null;
+        }
         // Semi-arbitrary harness component.
         File harnessJar = InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-apisupport-harness.jar", "org.netbeans.modules.apisupport.harness", false); // NOI18N
         if (harnessJar == null) {
             LOG.warning("Cannot resolve default platform. Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted.");
             return null;
         }
+        if (!harnessJar.getParentFile().getParentFile().getName().startsWith("harness")) { // NOI18N
+            LOG.log(Level.WARNING, "{0} found in unexpected cluster", harnessJar);
+            return null;
+        }
         File loc = harnessJar.getParentFile().getParentFile().getParentFile();
         try {
-            if (!loc.getCanonicalFile().equals(bootJar.getParentFile().getParentFile().getParentFile().getCanonicalFile())) {
+            String netbeansHomeS = System.getProperty("netbeans.home"); // NOI18N
+            if (netbeansHomeS != null) {
+                File netbeansHome = new File(netbeansHomeS);
+                if (!platformCluster.getCanonicalFile().equals(netbeansHome.getCanonicalFile())) {
+                    LOG.log(Level.WARNING, "{0} does not match {1}", new Object[] {platformCluster, netbeansHome});
+                    return null;
+                }
+            }
+            if (!loc.getCanonicalFile().equals(platformCluster.getParentFile().getCanonicalFile())) {
                 // Unusual installation structure, punt.
                 LOG.log(Level.WARNING, "core.jar & harness.jar locations do not match: {0} vs. {1}", new Object[] {bootJar, harnessJar});
                 return null;
@@ -290,7 +308,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * @param id an ID (as in {@link #getID})
      * @return the platform with that ID, or null
      */
-    public static NbPlatform getPlatformByID(String id) {
+    public @CheckForNull static NbPlatform getPlatformByID(String id) {
         for (NbPlatform p : getPlatformsInternal()) {
             if (p.getID().equals(id)) {
                 return p;
@@ -746,7 +764,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     /**
      * Gets a module from the platform by name.
      */
-    public ModuleEntry getModule(String cnb) {
+    public @CheckForNull ModuleEntry getModule(String cnb) {
         if (nbdestdir.isDirectory()) {
             try {
                 return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getEntry(cnb);

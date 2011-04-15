@@ -51,10 +51,6 @@
                   <Component id="classNamesScrollPane" alignment="0" pref="428" max="32767" attributes="2"/>
               </Group>
           </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="createPUWarningLabel" pref="500" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="generateJAXBCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -71,6 +67,7 @@
               <Component id="cmpFieldsInInterfaceCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Component id="createPUWarningLabel" alignment="0" pref="510" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -80,7 +77,7 @@
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classNamesLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="classNamesScrollPane" pref="30" max="32767" attributes="0"/>
+                  <Component id="classNamesScrollPane" pref="80" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="spacerPanel" min="-2" pref="24" max="-2" attributes="0"/>
@@ -107,8 +104,8 @@
               <Component id="cmpFieldsInInterfaceCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="createPUCheckbox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-              <Component id="createPUWarningLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="createPUWarningLabel" min="-2" pref="16" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -130,6 +127,11 @@
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="classNamesScrollPane">
+      <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[23, 80]"/>
+        </Property>
+      </Properties>
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>

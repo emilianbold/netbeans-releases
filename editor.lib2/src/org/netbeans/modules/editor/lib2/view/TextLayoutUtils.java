@@ -82,23 +82,28 @@ final class TextLayoutUtils {
         if (layout instanceof TextLayoutPart) {
             TextLayoutPart part = (TextLayoutPart) layout;
             TextLayout textLayout = part.textLayout();
-            // Ceil the last part to whole number to prevent horizontal white lines inside selection.
-            // The individual parts should be fine since they are computed by getVisualHighlightShape().
-            float endX = part.isLast()
-                    ? getWidth(textLayout)
-                    : index2X(textLayout, part.offsetShift() + textLength);
-            return endX - part.xShift();
+            float x0 = index2X(textLayout, part.offsetShift());
+            float x1 = index2X(textLayout, part.offsetShift() + textLength);
+            return x1 - x0;
         } else {
             return getWidth((TextLayout) layout);
         }
     }
     
     public static float getWidth(TextLayout textLayout) {
-        // Ceil the width to whole number to prevent horizontal white lines inside selection.
-//        float width = (float) Math.ceil(textLayout.getAdvance());
         // Since textLayout.getAdvance() includes some extra blank space for italic fonts
         // we instead use getCaretInfo() which seems to produce more appropriate result.
-        float width = (float) Math.ceil(index2X(textLayout, textLayout.getCharacterCount()));
+        //
+        // For RTL text the hit-info of the first char is above the hit-info of ending char.
+        // However textLayout.isLeftToRight() returns true in case of mixture of LTR and RTL text
+        // in a single textLayout so it can't be used easily.
+        // Therefore both indices for zero and character-count are computed
+        // and compared and their difference returned.
+        float x0 = index2X(textLayout, 0);
+        float x1 = index2X(textLayout, textLayout.getCharacterCount());
+        float width = Math.abs(x1 - x0); // Could be negative for RTL text => abs()
+        // Ceil the width to whole number to prevent horizontal white bars inside selection.
+        width = (float) Math.ceil(x1 - x0);
         return width;
     }
     
@@ -106,13 +111,6 @@ final class TextLayoutUtils {
         TextHitInfo hit = TextHitInfo.leading(index);
         float[] info = textLayout.getCaretInfo(hit);
         return info[0];
-    }
-
-    public static Rectangle2D.Double textLayoutBounds(TextLayoutPart part, Shape alloc) {
-        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
-        allocBounds.x -= part.xShift();
-        allocBounds.width = part.textLayoutWidth();
-        return allocBounds;
     }
 
     /**

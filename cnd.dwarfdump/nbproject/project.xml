@@ -6,11 +6,22 @@
             <code-name-base>org.netbeans.modules.cnd.dwarfdump</code-name-base>
             <module-dependencies/>
             <friend-packages>
+                <friend>com.sun.tools.analytics.codemodel.bridge</friend>
+                <friend>com.sun.tools.analytics.indicators</friend>
+                <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.lint</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>

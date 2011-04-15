@@ -50,7 +50,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -79,21 +78,30 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
 
             private boolean valid = true;
 
+            @Override
             public void run(Phase phase) {
                 valid = !enabled();
                 // rest
             }
 
+            @Override
             public boolean isValid() {
                 return valid;
             }
             
+            @Override
             public void cancel() {
                 valid = !enabled();
             }
 
+            @Override
             public boolean isHighPriority() {
                 return false;
+            }
+
+            @Override
+            public String toString() {
+                return "MarkOccurrencesHighlighterFactory runner"; //NOI18N
             }
         };
     }

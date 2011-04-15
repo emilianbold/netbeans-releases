@@ -57,10 +57,12 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -75,15 +77,16 @@ import org.openide.util.CharSequences;
  *
  * @author Alexander Simon
  */
-public final class FileReferencesContext {
+public final class FileReferencesContext extends CsmProgressAdapter {
+    private static final class Lock{}
+    private final Lock lock = new Lock();
     private CsmFile csmFile;
     private int lastOffset;
     private boolean isClened = false;
     private Map<String,List<CsmUID<CsmVariable>>> fileLocalVars;
     private Map<String,Collection<CsmEnumerator>> libEnumerators;
     private Map<String,CsmEnumerator> hotSpotEnumerators;
-    private List<Offsets> fileObjectOffsets;
-    private List<Offsets> fileDeclarationsOffsets;
+    private OffsetsObjects offsets;
     private Map<CharSequence,CsmUID<CsmMacro>> projectMacros;
     private SymTabCache symTabCache = new SymTabCache();
     
@@ -96,6 +99,7 @@ public final class FileReferencesContext {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
         }
         lastOffset = 0;
+        CsmListeners.getDefault().addProgressListener(this);
     }
 
     public void clean(){
@@ -104,14 +108,13 @@ public final class FileReferencesContext {
     }
 
     private void _clean(){
-        if (fileLocalVars != null) {
+        synchronized(lock) {
             fileLocalVars = null;
-            fileDeclarationsOffsets = null;
-            fileObjectOffsets = null;
+            offsets = null;
             projectMacros = null;
             libEnumerators = null;
+            symTabCache.clear();
         }
-        symTabCache.clear();
     }
     
     public boolean isCleaned(){
@@ -181,10 +184,7 @@ public final class FileReferencesContext {
         if (isCleaned()){
             return null;
         }
-        if (fileLocalVars == null) {
-            fillFileLocalIncludeVariables();
-        }
-        List<CsmUID<CsmVariable>> vars = fileLocalVars.get(name);
+        List<CsmUID<CsmVariable>> vars = getFileLocalIncludeVariables().get(name);
         if (vars == null || vars.isEmpty()){
             return Collections.<CsmVariable>emptyList();
         }
@@ -202,21 +202,17 @@ public final class FileReferencesContext {
         if (isCleaned()){
             return null;
         }
-        if (fileDeclarationsOffsets == null) {
-            fileDeclarationsOffsets = new ArrayList<Offsets>();
-            fileObjectOffsets = new ArrayList<Offsets>();
-            fillFileOffsets();
-        }
+        OffsetsObjects anOffsets = getFileOffsets();
         Offsets key = new Offsets(offset);
-        int res = Collections.binarySearch(fileDeclarationsOffsets, key);
+        int res = Collections.binarySearch(anOffsets.fileDeclarationsOffsets, key);
         if (res >= 0) {
-            if (res < fileDeclarationsOffsets.size()-1) {
-                Offsets next = fileDeclarationsOffsets.get(res+1);
+            if (res < anOffsets.fileDeclarationsOffsets.size()-1) {
+                Offsets next = anOffsets.fileDeclarationsOffsets.get(res+1);
                 if (next.compareTo(key) == 0) {
                     return next.object;
                 }
             }
-            return fileDeclarationsOffsets.get(res).object;
+            return anOffsets.fileDeclarationsOffsets.get(res).object;
         }
         return null;
     }
@@ -225,21 +221,17 @@ public final class FileReferencesContext {
         if (isCleaned()){
             return null;
         }
-        if (fileDeclarationsOffsets == null) {
-            fileDeclarationsOffsets = new ArrayList<Offsets>();
-            fileObjectOffsets = new ArrayList<Offsets>();
-            fillFileOffsets();
-        }
+        OffsetsObjects anOffsets = getFileOffsets();
         Offsets key = new Offsets(offset);
-        int res = Collections.binarySearch(fileObjectOffsets, key);
+        int res = Collections.binarySearch(anOffsets.fileObjectOffsets, key);
         if (res >=0) {
-            if (res < fileObjectOffsets.size()-1) {
-                Offsets next = fileObjectOffsets.get(res+1);
+            if (res < anOffsets.fileObjectOffsets.size()-1) {
+                Offsets next = anOffsets.fileObjectOffsets.get(res+1);
                 if (next.compareTo(key) == 0) {
                     return next.object;
                 }
             }
-            return fileObjectOffsets.get(res).object;
+            return anOffsets.fileObjectOffsets.get(res).object;
         }
         return null;
     }
@@ -259,80 +251,62 @@ public final class FileReferencesContext {
         return null;
     }
 
-    private synchronized void fillFileLocalIncludeVariables() {
-        if (fileLocalVars != null) {
-            return;
-        }
-        fileLocalVars = new HashMap<String, List<CsmUID<CsmVariable>>>();
-        CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[] {
-                        CsmDeclaration.Kind.VARIABLE,
-                        CsmDeclaration.Kind.VARIABLE_DEFINITION};
-        CsmFilter filter = CsmContextUtilities.createFilter(kinds,
-                           null, true, true, false);
-        List<CsmVariable> allVars = new ArrayList<CsmVariable>(10);
-        CsmProjectContentResolver.fillFileLocalVariablesByFilter(filter, csmFile, allVars);
-        for (CsmVariable var : allVars) {
-            String name = var.getName().toString();
-            List<CsmUID<CsmVariable>> list = fileLocalVars.get(name);
-            if (list == null) {
-                list = new ArrayList<CsmUID<CsmVariable>>();
-                fileLocalVars.put(name, list);
+    private Map<String,List<CsmUID<CsmVariable>>> getFileLocalIncludeVariables() {
+        synchronized(lock) {
+            if (fileLocalVars == null) {
+                fileLocalVars = new HashMap<String, List<CsmUID<CsmVariable>>>();
+                CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[] {
+                                CsmDeclaration.Kind.VARIABLE,
+                                CsmDeclaration.Kind.VARIABLE_DEFINITION};
+                CsmFilter filter = CsmContextUtilities.createFilter(kinds,
+                                   null, true, true, false);
+                List<CsmVariable> allVars = new ArrayList<CsmVariable>(10);
+                CsmProjectContentResolver.fillFileLocalVariablesByFilter(filter, csmFile, allVars);
+                for (CsmVariable var : allVars) {
+                    String name = var.getName().toString();
+                    List<CsmUID<CsmVariable>> list = fileLocalVars.get(name);
+                    if (list == null) {
+                        list = new ArrayList<CsmUID<CsmVariable>>();
+                        fileLocalVars.put(name, list);
+                    }
+                    list.add(UIDs.get(var));
+                }
             }
-            list.add(UIDs.get(var));
+            return fileLocalVars;
         }
     }
     
-    private void fillFileOffsets(){
-        for(CsmOffsetableDeclaration declaration : csmFile.getDeclarations()){
-            fileDeclarationsOffsets.add(new Offsets(declaration));
+    private OffsetsObjects getFileOffsets(){
+        synchronized(lock) {
+            if (offsets == null) {
+                offsets = new OffsetsObjects(new ArrayList<Offsets>(), new ArrayList<Offsets>());
+
+                for(CsmOffsetableDeclaration declaration : csmFile.getDeclarations()){
+                    offsets.fileDeclarationsOffsets.add(new Offsets(declaration));
+                }
+                for(CsmInclude declaration : csmFile.getIncludes()){
+                    offsets.fileObjectOffsets.add(new Offsets(declaration));
+                }
+                for(CsmMacro declaration : csmFile.getMacros()){
+                    offsets.fileObjectOffsets.add(new Offsets(declaration));
+                }
+                Collections.sort(offsets.fileObjectOffsets);
+            }
+            return offsets;
         }
-        for(CsmInclude declaration : csmFile.getIncludes()){
-            fileObjectOffsets.add(new Offsets(declaration));
+    }
+
+    @Override
+    public void fileParsingFinished(CsmFile file) {
+        if (file.equals(csmFile)) {
+            synchronized(lock) {
+                fileLocalVars = null;
+                offsets = null;
+                symTabCache.clear();
+            }
         }
-        for(CsmMacro declaration : csmFile.getMacros()){
-            fileObjectOffsets.add(new Offsets(declaration));
-        }
-        Collections.sort(fileObjectOffsets);
     }
     
-    private static class Offsets implements Comparable<Offsets> {
-        private int startOffset;
-        private int endOffset;
-        private CsmObject object;
-        Offsets(CsmOffsetableDeclaration declaration){
-            startOffset = declaration.getStartOffset();
-            endOffset = declaration.getEndOffset();
-            object = declaration;
-        }
-        Offsets(CsmMacro macros){
-            startOffset = macros.getStartOffset();
-            endOffset = macros.getEndOffset();
-            object = macros;
-        }
-        Offsets(CsmInclude include){
-            startOffset = include.getStartOffset();
-            endOffset = include.getEndOffset();
-            object = include;
-        }
-        Offsets(int offset){
-            startOffset = offset;
-            endOffset = offset;
-        }
-
-        public int compareTo(Offsets o) {
-            if (object != null && o.object == null) {
-                if (startOffset <= o.startOffset && o.startOffset < endOffset) {
-                    return 0;
-                }
-            } else if (object == null && o.object != null){
-                if (o.startOffset <= startOffset && startOffset < o.endOffset) {
-                    return 0;
-                }
-            }
-            return startOffset - o.startOffset;
-        }
-    }
-
     private void fillProjectMacros() {
         gatherIncludeMacros(csmFile, new HashSet<CsmFile>());
     }
@@ -359,6 +333,54 @@ public final class FileReferencesContext {
             if (uid == null) {
                 projectMacros.put(name, UIDs.get(macro));
             }
+        }
+    }
+
+    private static final class OffsetsObjects {
+        private final List<Offsets> fileObjectOffsets;
+        private final List<Offsets> fileDeclarationsOffsets;
+        private OffsetsObjects(List<Offsets> fileObjectOffsets, List<Offsets> fileDeclarationsOffsets) {
+            this.fileObjectOffsets = fileObjectOffsets;
+            this.fileDeclarationsOffsets = fileDeclarationsOffsets;
+        }
+    }
+
+    private static class Offsets implements Comparable<Offsets> {
+        private int startOffset;
+        private int endOffset;
+        private CsmObject object;
+        Offsets(CsmOffsetableDeclaration declaration){
+            startOffset = declaration.getStartOffset();
+            endOffset = declaration.getEndOffset();
+            object = declaration;
+        }
+        Offsets(CsmMacro macros){
+            startOffset = macros.getStartOffset();
+            endOffset = macros.getEndOffset();
+            object = macros;
+        }
+        Offsets(CsmInclude include){
+            startOffset = include.getStartOffset();
+            endOffset = include.getEndOffset();
+            object = include;
+        }
+        Offsets(int offset){
+            startOffset = offset;
+            endOffset = offset;
+        }
+
+        @Override
+        public int compareTo(Offsets o) {
+            if (object != null && o.object == null) {
+                if (startOffset <= o.startOffset && o.startOffset < endOffset) {
+                    return 0;
+                }
+            } else if (object == null && o.object != null){
+                if (o.startOffset <= startOffset && startOffset < o.endOffset) {
+                    return 0;
+                }
+            }
+            return startOffset - o.startOffset;
         }
     }
 }

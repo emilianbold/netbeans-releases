@@ -95,7 +95,8 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
     public DiffPanel() {
 //        this.diff = diff;
         initComponents ();
-
+        aquaBackgroundWorkaround();
+        
         // my init components that radically modifies initComponents()
         // so all (including this toolbar) is clickable in form editor
         commandPanel.remove(prevButton);
@@ -121,6 +122,15 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
     }
 
+    private void aquaBackgroundWorkaround() {
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color); 
+            filePanel1.setBackground(color); 
+            filePanel2.setBackground(color); 
+        }
+    }
+        
     public void addNotify() {
         super.addNotify();
 

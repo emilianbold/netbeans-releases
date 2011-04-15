@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
@@ -59,7 +60,6 @@ import org.openide.util.test.MockLookup;
  */
 public class PackageRenameHandlerTest extends NbTestCase {
 
-    private FileObject fo;
     private Node n;
     private PackageRenameHandlerImpl frh = new PackageRenameHandlerImpl();
     
@@ -68,12 +68,12 @@ public class PackageRenameHandlerTest extends NbTestCase {
         super(testName);
     }
     
-    public void setUp() throws Exception {
-        super.setUp();
-        FileObject root = TestUtil.makeScratchDir(this);
-        fo = FileUtil.createFolder(root, "test");// NOI18N
+    public @Override void setUp() throws Exception {
+        final FileObject root = TestUtil.makeScratchDir(this);
+        root.createFolder("testproject");
+        MockLookup.setInstances(TestUtil.testProjectFactory());
         
-        SourceGroup group = GenericSources.group(null, root.createFolder("src"), "testGroup", "Test Group", null, null);
+        SourceGroup group = GenericSources.group(ProjectManager.getDefault().findProject(root), root.createFolder("src"), "testGroup", "Test Group", null, null);
         Children ch = PackageView.createPackageView(group).getChildren();
         
         // Create folder
@@ -101,7 +101,7 @@ public class PackageRenameHandlerTest extends NbTestCase {
     
     private static final class PackageRenameHandlerImpl implements PackageRenameHandler {
         boolean called = false;
-        public void handleRename(Node n, String newName) throws IllegalArgumentException {
+        public @Override void handleRename(Node n, String newName) throws IllegalArgumentException {
             called = true;
         }
     }

@@ -59,6 +59,8 @@ public class CustomUpdateProviderTest extends NbTestCase {
     
     @Override
     public void setUp () throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
     }
 
     @Override

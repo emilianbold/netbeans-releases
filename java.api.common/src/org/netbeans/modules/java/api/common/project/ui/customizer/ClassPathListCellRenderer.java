@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.api.common.project.ui.customizer;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.beans.BeanInfo;
 import java.io.File;
@@ -57,8 +58,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.api.project.Project;
@@ -140,7 +143,9 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
 
             case ClassPathSupport.Item.TYPE_LIBRARY:
                 if ( item.isBroken() ) {
-                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_LIBRARY", getLibraryName( item ) );
+                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_LIBRARY",
+                        Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
+                        getLibraryName( item ));
                 }
                 else {
                     return item.getLibrary().getDisplayName();
@@ -150,7 +155,9 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 return name == null ? item.getReference() : name;
             case ClassPathSupport.Item.TYPE_ARTIFACT:
                 if ( item.isBroken() ) {
-                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_PROJECT", getProjectName( item ) );
+                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_PROJECT",
+                        Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
+                        getProjectName( item ) );
                 } else {
                     Project p = item.getArtifact().getProject();
                     String projectName;
@@ -163,7 +170,9 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 }
            case ClassPathSupport.Item.TYPE_JAR:
                 if ( item.isBroken() ) {
-                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_FILE", getFileRefName( item ) );
+                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_FILE",
+                        Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
+                        getFileRefName( item ) );
                 }
                 else {
                     if (item.getVariableBasedProperty() != null) {
@@ -177,6 +186,14 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
         }
 
         return item.getReference(); // XXX
+    }
+
+    private static @NonNull Color getErrorForeground() {
+        Color result = UIManager.getDefaults().getColor("nb.errorForeground");  //NOI18N
+        if (result == null) {
+            result = Color.RED;
+        }
+        return result;
     }
 
     static Icon getIcon( ClassPathSupport.Item item ) {

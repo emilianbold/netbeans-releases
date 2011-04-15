@@ -91,6 +91,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.editor.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.api.LocaleQuery;
 import org.netbeans.modules.spellchecker.hints.AddToDictionaryHint;
@@ -144,9 +146,9 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private JTextComponent pane;
     private Document document;
 
-    private RequestProcessor WORKER = new RequestProcessor("Spellchecker");
+    private static final RequestProcessor WORKER = new RequestProcessor("Spellchecker", 1, false, false);
     
-    private RequestProcessor.Task checker = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task checker = WORKER.create(new Runnable() {
         public void run() {
             try {
                 process();
@@ -156,7 +158,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     });
 
-    private RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
         public void run() {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -173,7 +175,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     });
 
-    private RequestProcessor.Task computeHint = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task computeHint = WORKER.create(new Runnable() {
         public void run() {
             computeHint();
         }
@@ -409,10 +411,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     });
                 }
                 
-                FileObject file = getFile(_document);
+                FileObject file = NbEditorUtilities.getFileObject(_document);
 
-                Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
-                        new Object[] {file, System.currentTimeMillis() - startTime});
+                if (file != null) {
+                    Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
+                            new Object[] {file, System.currentTimeMillis() - startTime});
+                }
             }
         }
     }

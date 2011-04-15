@@ -334,16 +334,29 @@ introduced by support for multiple source roots. -jglick
                         <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                     </and>
                 </condition>
+                <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
+                    <and>
+                        <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
+                        <not>
+                            <os family="unix"/>
+                        </not>
+                    </and>
+                </condition>
+                <property name="javac.fork" value="${{jdkBug6558476}}"/>
             </target>
             
             <!-- COS feature - used in run-deploy -->
+            <!-- compiler use deploy.on.save flag to fire changes -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
                     <xsl:attribute name="property">deploy.on.save</xsl:attribute>
                     <xsl:attribute name="value">true</xsl:attribute>
-                    <istrue value="${{j2ee.deploy.on.save}}"/>
+                    <or>
+                        <istrue value="${{j2ee.deploy.on.save}}"/>
+                        <istrue value="${{j2ee.compile.on.save}}"/>
+                    </or>
                 </condition>            
             </target>
             
@@ -477,8 +490,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:attribute name="fork">${javac.fork}</xsl:attribute> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                                 <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             </xsl:if>
@@ -1227,6 +1240,9 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
             </target>
             
+            <property name="jspc.schemas" value="/resources/schemas/"/><!-- #192308 -->
+            <property name="jspc.dtds" value="/resources/dtds/"/><!-- #192308 -->
+            
             <target name="compile-jsps">
                 <xsl:attribute name="depends">compile</xsl:attribute>
                 <xsl:attribute name="if">do.compile.jsps</xsl:attribute>
@@ -1242,9 +1258,12 @@ exists or setup the property manually. For example like this:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
+                    <arg value="-schemas ${{jspc.schemas}}"/>
+                    <arg value="-dtds ${{jspc.dtds}}"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
                     <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
+                    <arg value="-sysClasspath ${{libs.jsp-compilation-syscp.classpath}}"/><!-- #192308 -->
                     <classpath path="${{java.home}}/../lib/tools.jar:${{libs.jsp-compiler.classpath}}:${{libs.jsp-compilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
@@ -1270,6 +1289,9 @@ exists or setup the property manually. For example like this:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
+                    <arg value="-schemas ${{jspc.schemas}}"/>
+                    <arg value="-dtds ${{jspc.dtds}}"/>
+                    <arg value="-sysClasspath ${{libs.jsp-compilation-syscp.classpath}}"/><!-- #192308 -->
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
@@ -2182,15 +2204,18 @@ exists or setup the property manually. For example like this:
             <xsl:attribute name="depends">init</xsl:attribute>
             
             <xsl:choose>
-                <xsl:when test="$ear">
-                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
+                <xsl:when test="$type">
+                    <xsl:choose>
+                        <xsl:when test="$ear">
+                            <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
-                </xsl:otherwise>
             </xsl:choose>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">

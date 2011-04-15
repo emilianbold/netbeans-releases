@@ -167,67 +167,13 @@
             <file name="JsTestStubs.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsTestStubs.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JsContainerStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsContainerStub.template">
+            <file name="JsStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsStub.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JsContainerItemStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsContainerItemStub.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JsGenericStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsGenericStub.template">
+            <file name="JsEntity.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsEntity.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="JsReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsReadme.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="DojoRestStore.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoRestStore.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="DojoCollectionStore.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoCollectionStore.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="DojoResourcesTable.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoResourcesTable.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="DojoSupport.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoSupport.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="DojoTestResourcesTable.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoTestResourcesTable.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadme.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiComponent.css" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiComponentCss.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiComponent.htm" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiComponentHtm.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiComponent.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiComponentJs.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiRestBundle.properties" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiRestBundle.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiTemplatesBundle.properties" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiTemplatesBundle.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiTemplates.ejs" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiTemplatesEjs.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiTemplates.jsp" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiTemplatesJsp.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiTemplates.php" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiTemplatesPhp.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiTemplates.rhtml" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiTemplatesRhtml.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiTestResourcesTable.jsp" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiTestResourcesTableJsp.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="JmakiWidget.json" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiWidgetJson.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="RestProxyServlet.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestProxyServlet.template">

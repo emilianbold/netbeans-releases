@@ -59,7 +59,7 @@ import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationA
 import org.netbeans.installer.wizard.components.actions.netbeans.NbServiceTagCreateAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbShowUninstallationSurveyAction;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbJUnitLicensePanel;
 
 /**
  *
@@ -72,6 +72,7 @@ public class NbMainSequence extends WizardSequence {
 
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
     private LicensesPanel licensesPanel;
+    private NbJUnitLicensePanel nbJUnitLicensePanel;
     private NbPreInstallSummaryPanel nbPreInstallSummaryPanel;
     private UninstallAction uninstallAction;
     private DownloadInstallationDataAction downloadInstallationDataAction;
@@ -86,6 +87,7 @@ public class NbMainSequence extends WizardSequence {
     public NbMainSequence() {
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
         licensesPanel = new LicensesPanel();
+        nbJUnitLicensePanel = new NbJUnitLicensePanel();
         nbPreInstallSummaryPanel = new NbPreInstallSummaryPanel();
         uninstallAction = new UninstallAction();
         downloadInstallationDataAction = new DownloadInstallationDataAction();
@@ -121,6 +123,7 @@ public class NbMainSequence extends WizardSequence {
         if (toInstall.size() > 0) {
             addChild(downloadConfigurationLogicAction);
             addChild(licensesPanel);
+            addChild(nbJUnitLicensePanel);
 
             for (Product product : toInstall) {
                 if (!productSequences.containsKey(product)) {

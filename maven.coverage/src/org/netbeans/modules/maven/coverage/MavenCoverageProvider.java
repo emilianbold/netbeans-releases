@@ -182,7 +182,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
 
     private @CheckForNull synchronized org.w3c.dom.Document parse() {
         if (report != null) {
-            return report;
+            return (org.w3c.dom.Document) report.cloneNode(true);
         }
         File r = report();
         CoverageManager.INSTANCE.setEnabled(p, true); // XXX otherwise it defaults to disabled?? not clear where to call this
@@ -212,7 +212,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
             return null;
         }
         try {
-            return report = XMLUtil.parse(new InputSource(r.toURI().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
+            report = XMLUtil.parse(new InputSource(r.toURI().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
                 public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     if (systemId.equals("http://cobertura.sourceforge.net/xml/coverage-04.dtd")) {
                         return new InputSource(MavenCoverageProvider.class.getResourceAsStream("coverage-04.dtd")); // NOI18N
@@ -221,6 +221,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
                     }
                 }
             });
+            return (org.w3c.dom.Document) report.cloneNode(true);
         } catch (/*IO,SAX*/Exception x) {
             LOG.log(Level.INFO, "Could not parse " + r, x);
             return null;

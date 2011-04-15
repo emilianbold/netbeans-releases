@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.editor.fortran;
 
 import javax.swing.text.BadLocationException;
@@ -56,7 +55,7 @@ import org.openide.util.Exceptions;
  *
  * @author Alexander Simon
  */
-@MimeRegistration(mimeType=MIMENames.FORTRAN_MIME_TYPE, service=TypedTextInterceptor.Factory.class)
+@MimeRegistration(mimeType = MIMENames.FORTRAN_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
 public class FortranTTIFactory implements TypedTextInterceptor.Factory {
 
     @Override
@@ -77,27 +76,33 @@ public class FortranTTIFactory implements TypedTextInterceptor.Factory {
 
         @Override
         public void insert(MutableContext context) throws BadLocationException {
-            FortranBracketCompletion.INSTANCE.charInserted((BaseDocument)context.getDocument(),
+            FortranBracketCompletion.INSTANCE.charInserted((BaseDocument) context.getDocument(),
                     context.getOffset(), context.getComponent().getCaret(), context.getText().charAt(0));
         }
 
         @Override
-        public void afterInsert(Context context) throws BadLocationException {
-            BaseDocument doc = (BaseDocument) context.getDocument();
-            int offset = context.getOffset();
-            if (FortranHotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, context.getText())) {
-                Indent indent = Indent.get(doc);
-                indent.lock();
-                try {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                    indent.reindent(offset);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally{
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                    indent.unlock();
+        public void afterInsert(final Context context) throws BadLocationException {
+            final BaseDocument doc = (BaseDocument) context.getDocument();
+            doc.runAtomicAsUser(new Runnable() {
+
+                @Override
+                public void run() {
+                    int offset = context.getOffset();
+                    if (FortranHotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, context.getText())) {
+                        Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
+                            doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
+                            indent.reindent(offset);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
+                            indent.unlock();
+                        }
+                    }
                 }
-            }
+            });
         }
 
         @Override

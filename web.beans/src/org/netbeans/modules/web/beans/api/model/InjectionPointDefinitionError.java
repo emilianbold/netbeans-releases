@@ -54,6 +54,8 @@ import javax.lang.model.element.Element;
  */
 public class InjectionPointDefinitionError extends Exception {
 
+    private static final long serialVersionUID = -6893993336079352757L;
+
     public InjectionPointDefinitionError(Element errorElement, String msg) {
         super( msg );
         myElement = errorElement;

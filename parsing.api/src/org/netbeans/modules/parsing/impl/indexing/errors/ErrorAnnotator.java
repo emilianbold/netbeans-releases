@@ -94,20 +94,6 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
 
     private static final String ERROR_BADGE_URL = "org/netbeans/modules/parsing/impl/resources/error-badge.gif";
     
-    private static final Image ERROR_BADGE_SINGLE;
-    private static final Image ERROR_BADGE_FOLDER;
-    
-    static {
-        URL errorBadgeIconURL = ErrorAnnotator.class.getResource("/" + ERROR_BADGE_URL);
-        assert errorBadgeIconURL != null : "Note in bug #166236";
-        String errorBadgeSingleTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeSingle");
-        Image errorBadge = loadImage(ERROR_BADGE_URL);
-        assert errorBadge != null : "Note in bug #166236";
-        ERROR_BADGE_SINGLE = assignToolTipToImage( errorBadge, errorBadgeSingleTP); // NOI18N
-        String errorBadgeFolderTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeFolder");
-        ERROR_BADGE_FOLDER = assignToolTipToImage( errorBadge, errorBadgeFolderTP); // NOI18N
-    }
-    
     public ErrorAnnotator() {
     }
 
@@ -155,7 +141,13 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         
         if (inError) {
             //badge:
-            Image i = mergeImages(icon, singleFile ? ERROR_BADGE_SINGLE : ERROR_BADGE_FOLDER, 0, 8);
+            URL errorBadgeIconURL = ErrorAnnotator.class.getResource("/" + ERROR_BADGE_URL);
+            assert errorBadgeIconURL != null;
+            String errorBadgeSingleTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeSingle");
+            Image errorBadge = loadImage(ERROR_BADGE_URL);
+            assert errorBadge != null;
+            String errorBadgeFolderTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeFolder");
+            Image i = mergeImages(icon, singleFile ? assignToolTipToImage(errorBadge, errorBadgeSingleTP) : assignToolTipToImage(errorBadge, errorBadgeFolderTP), 0, 8);
             Iterator<? extends AnnotationProvider> it = Lookup.getDefault().lookupAll(AnnotationProvider.class).iterator();
             boolean found = false;
             
@@ -393,7 +385,9 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         }
 
         private void update(FileEvent fe) {
-            if (RepositoryUpdater.getDefault().getOwningSourceRoot(fe.getFile()) == null) {
+            final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+            final FileObject fo = fe.getFile();
+            if (!ru.isCacheFile(fo) && ru.getOwningSourceRoot(fo) == null) {
                 try {
                     update(fe.getFile().getURL());
                 } catch (FileStateInvalidException ex) {

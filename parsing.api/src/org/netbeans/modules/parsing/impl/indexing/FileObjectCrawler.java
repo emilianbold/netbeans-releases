@@ -53,6 +53,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
@@ -163,7 +164,7 @@ public final class FileObjectCrawler extends Crawler {
             if (isCancelled()) {
                 return false;
             }
-            if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
+            if (!fo.isValid() || !isVisible(fo)) {
                 continue;
             }
 
@@ -211,6 +212,14 @@ public final class FileObjectCrawler extends Crawler {
             return null;
         }
     }
+
+    private boolean isVisible (final @NonNull FileObject fo) {
+        try {
+            return VisibilityQuery.getDefault().isVisible(fo);
+        } finally {
+            setListenOnVisibility(true);
+        }
+    }
     
     //Todo: Not exaclty correct. The correct implementation should find if whole root content
     //is covered by files. But correct implementation will be very very slow and probably no one
@@ -223,7 +232,7 @@ public final class FileObjectCrawler extends Crawler {
         }
         return false;
     }
-
+    
     private static final class Stats {
         public int filesCount;
         public Map<String, Integer> extensions = new HashMap<String, Integer>();

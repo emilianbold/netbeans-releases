@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -192,6 +193,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
             } else if (type.equals("6")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
+            } else if (type.equals("7")) {// FIXUP // NOI18N
+                confType = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType);
 
@@ -852,7 +855,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLibrariesConfiguration.add(new LibraryItem.LibItem(getString(currentText)));
             }
         } else if (element.equals(LINKER_LIB_STDLIB_ITEM_ELEMENT)) {
-            LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getDevelopmentHost().getBuildPlatform()).getStandardLibrarie(currentText);
+            LibraryItem.StdLibItem stdLibItem = StdLibraries.getStandardLibary(currentText);
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
             }
@@ -897,28 +900,24 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         }
     }
 
-    private String toAbsoluteRemotePath(String path) {
-        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            path = remoteProject.resolveRelativeRemotePath(path);
-            path = RemoteFileUtil.normalizeAbsolutePath(path, remoteProject.getSourceFileSystemHost());
-        }
-        return path;
-    }
-
     private Item createItem(String path) {
         Project project = projectDescriptor.getProject();
-        FileObject projectDirFO = project.getProjectDirectory();
         if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            path = toAbsoluteRemotePath(path);
+            FileObject baseDirFO = remoteProject.getSourceBaseDirFileObject();
             if (FileSystemProvider.isAbsolute(path)) {
                 FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
                 if (itemFO == null) {
                     return new Item(path); //XXX:fullRemote
                 } else {
-                    return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
+                    return new Item(itemFO, baseDirFO, ProjectSupport.getPathMode(project));
                 }
-            } else {
-                return new Item(path); //XXX:fullRemote
+            } else {                
+                FileObject itemFO = RemoteFileUtil.getFileObject(baseDirFO, path);
+                if (itemFO != null) {
+                    return new Item(itemFO, baseDirFO, ProjectSupport.getPathMode(project));
+                } else {
+                    return new Item(path);
+                }
             }
         } else {
             return new Item(path); //XXX:fullRemote convert this to use of file items as well
@@ -929,7 +928,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (relativeOffset != null && path.startsWith("..")) { // NOI18N
             path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
-        return toAbsoluteRemotePath(path);
+        return path;
     }
 
     private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {

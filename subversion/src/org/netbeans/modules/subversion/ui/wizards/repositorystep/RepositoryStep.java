@@ -243,6 +243,12 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     SVNRevision revision = rc.getSvnRevision();
                     String[] repositorySegments = repositoryUrl.getPathSegments();
                     String[] selectedSegments = rc.getSvnUrl().getPathSegments();
+                    if (selectedSegments.length < repositorySegments.length && rc.getSvnUrl().toString().contains("\\")) { //NOI18N
+                        // WA for bug #196830 with svnkit: the entered url contains backslashes. While javahl does not like backslashes and a warning is reported earlier, svnkit internally 
+                        // translates them into normal slashes and does not complain. However rc.getUrl still returns the url with backslashes
+                        invalidMsg = new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", rc.getUrl()), false); // NOI18N
+                        return;
+                    }
                     String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
                     System.arraycopy(selectedSegments, repositorySegments.length,
                                      repositoryFolder, 0,

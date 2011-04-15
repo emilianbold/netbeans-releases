@@ -177,6 +177,10 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public boolean isDeployOnSaveSupported() {
+        if (dm.isWebProfile()) {
+            // at least for now, reevaluate later
+            return false;
+        }
         return true;
     }
 

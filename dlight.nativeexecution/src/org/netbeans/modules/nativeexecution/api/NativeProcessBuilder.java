@@ -130,6 +130,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @param commandLine
      * @return
      */
+    @SuppressWarnings("deprecation")
     public NativeProcessBuilder setCommandLine(String commandLine) {
         info.setCommandLine(commandLine);
         return this;

@@ -133,7 +133,7 @@ public class VersionsCache {
      * @return null if the file does not exit in given revision
      */
     public File getFileRevision(File base, String revision) throws IOException {
-        return getFileRevision(base, revision, revision);
+        return getFileRevision(base, revision, Setup.REVISION_BASE);
     }
 
     /**
@@ -174,11 +174,30 @@ public class VersionsCache {
             try {
                 SvnClient client = Subversion.getInstance().getClient(base);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                InputStream in;
+                InputStream in = null;
                 try {
+                    boolean gotContent = false;
                     if ((cache.getStatus(base).getStatus() & FileInformation.STATUS_VERSIONED) != 0)  {
-                        in = client.getContent(base, svnrevision);
-                    } else {
+                        try {
+                            in = client.getContent(base, svnrevision);
+                            gotContent = true;
+                        } catch (SVNClientException e) {
+                            if(svnrevision.getKind() != SVNRevision.Kind.number 
+                                    || !(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) || SvnClientExceptionHandler.isPathNotFound(e.getMessage()))) {
+                                throw e;
+                            }
+                        }
+                    }
+                    if (!gotContent) {
+                        if (Setup.REVISION_BASE.equals(pegRevision)) {
+                            try {
+                                // we can't contact server with BASE being peg revision
+                                ISVNStatus st = client.getSingleStatus(base);
+                                if (st != null && st.getRevision() != null) {
+                                    pegRevision = st.getRevision().toString();
+                                }
+                            } catch (SVNClientException e) {}
+                        }
                         SVNUrl url = SvnUtils.getRepositoryUrl(base);
                         if (url != null) {
                             in = getInputStream(client, url, revision, pegRevision);

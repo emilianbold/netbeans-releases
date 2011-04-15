@@ -22,9 +22,13 @@
  */
 package org.netbeans.modules.html.validation;
 
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import org.netbeans.api.progress.ProgressHandle;
@@ -171,6 +175,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/table/", "http://c.validator.nu/nfc/",
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
+    
+    private static String INTERNAL_ERROR_MSG = "Validation of the code failed unexpectedly, the validator results may be inaccurate. See the IDE log for more information"; //NOI18N
+    
     protected String document = null;
     ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
@@ -361,7 +368,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 for (int j = 0; j < urls1.length; j++) {
                     String url = urls1[j];
                     if (schemaMap.get(url) == null && !isCheckerUrl(url)) {
-                        Schema sch = schemaByUrl(url, er, pMap);
+                        Schema sch = proxySchemaByUrl(url, er, pMap);
                         schemaMap.put(url, sch);
 //                        progress.progress(10);
                     }
@@ -507,7 +514,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
         if (version.isXhtml()) {
-            return ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION;
+            return ParserMode.XML_NO_EXTERNAL_ENTITIES; //we do not use the parser for validation, no need to load external entities
         } else {
             switch (version) {
                 case HTML41_STRICT:
@@ -644,7 +651,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } catch (TooManyErrorsException e) {
             LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
@@ -657,26 +664,66 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
+            reportRuntimeExceptionOnce(e);
+            errorHandler.internalError(
+                    e,
+                    INTERNAL_ERROR_MSG);
+        } catch (Error e) {
             LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
-        } catch (Error e) {
-            LOGGER.log(Level.SEVERE, getDocumentInternalErrorMsg(), e);
-            errorHandler.internalError(
-                    e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
     }
 
+    private static final Set<Marker> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Marker>();
+
+    //report REs only once per ide session and use lower log levels for known issues
+    private void reportRuntimeExceptionOnce(RuntimeException e) {
+        int hash = document.hashCode();
+        hash = 21 * hash + e.getClass().hashCode();
+        if(e.getMessage() != null) {
+            hash = 21 * hash + e.getMessage().hashCode();
+        } else {
+            //no message provided, so use the whole stacktrace hashcode
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.flush();
+            sw.flush();
+            hash = 21 * hash + sw.toString().hashCode();
+        }
+
+        Marker marker = new Marker(hash);
+        if(REPORTED_RUNTIME_EXCEPTIONS.add(marker)) {
+            Level level = isKnownProblem(e) ? Level.FINE : Level.INFO;
+            LOGGER.log(level, getDocumentInternalErrorMsg(), e);
+        }
+    }
+
+    private static boolean isKnownProblem(RuntimeException e) {
+        //issue #194939
+        if(e.getClass().equals(StringIndexOutOfBoundsException.class)) {
+            StackTraceElement[] stelements = e.getStackTrace();
+            if(stelements.length >= 1) {
+                if(stelements[1].getClassName().equals("com.thaiopensource.validate.schematron.OutputHandler") //NOI18N
+                        && stelements[1].getMethodName().equals("startElement")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private String getDocumentErrorMsg() {
-        return new StringBuilder().append("An error occured during validation of ").append(document).toString();
+        return new StringBuilder().append("An error occurred during validation of ").append(document).toString(); //NOI18N
     }
 
     private String getDocumentInternalErrorMsg() {
-        return new StringBuilder().append("An internal error occured during validation of ").append(document).toString();
+        return new StringBuilder().append("An internal error occurred during validation of ").append(document).toString(); //NOI18N
     }
 
     /**
@@ -1008,7 +1055,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         if (i > -1) {
             Schema rv = preloadedSchemas[i];
             if (options.contains(WrapProperty.ATTRIBUTE_OWNER)) {
-                if (rv instanceof CheckerSchema) {
+                if(rv instanceof ProxySchema && ((ProxySchema)rv).getWrappedSchema() instanceof CheckerSchema) {
                     errorHandler.error(new SAXParseException(
                             "A non-schema checker cannot be used as an attribute schema.",
                             null, url, -1, -1));
@@ -1021,6 +1068,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
         }
 
+        //this code line should not normally be encountered since the necessary
+        //schemas have been preloaded
+        LOGGER.log(Level.INFO, "Going to create a non preloaded Schema for {0}", url); //NOI18N
+        
         TypedInputSource schemaInput = (TypedInputSource) entityResolver.resolveEntity(
                 null, url);
         SchemaReader sr = null;
@@ -1033,6 +1084,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return sch;
     }
 
+    private static Schema proxySchemaByUrl(String uri, EntityResolver resolver, PropertyMap pMap) {
+        return new ProxySchema(uri, resolver, pMap);
+    }
+    
     /**
      * @param url
      * @return
@@ -1456,6 +1511,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     static int PATTERN_LEN_LIMIT = 10; //consider backward match PATTER_LEN_LIMIT long as OK
 
     static int findBackwardDiff(CharSequence text, int tlen, char[] pattern, int pstart, int plen) {
+        assert text.length() >= tlen;
         assert plen > 0;
         int pend = pstart + plen - 1;
         int limitedpstart = plen - PATTERN_LEN_LIMIT > 0 ? pstart + (plen - PATTERN_LEN_LIMIT) : pstart;
@@ -1485,4 +1541,84 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
         return tlen - point;
     }
+    
+    /**
+     * A Schema instance delegate, the delegated instance if softly reachable so it should 
+     * not be GCed so often. If the delegate is GCed a new instance is recreated.
+     */
+    private static class ProxySchema implements Schema {
+    
+        private String uri;
+        private EntityResolver resolver;
+        private PropertyMap pMap;
+        
+        private SoftReference<Schema> delegateWeakRef;
+        
+        private ProxySchema(String uri, EntityResolver resolver, PropertyMap pMap) {
+            this.uri = uri;
+            this.resolver = resolver;
+            this.pMap = pMap;
+        }
+
+        //exposing just because of some instanceof test used in the code
+        private Schema getWrappedSchema() throws SAXException, IOException, IncorrectSchemaException {
+            return getSchemaDelegate();
+        }
+        
+        public Validator createValidator(PropertyMap pm) {
+            try {
+                return getSchemaDelegate().createValidator(pm);
+            } catch (Exception ex) { //SAXException, IOException, IncorrectSchemaException
+                LOGGER.log(Level.INFO, "Cannot create schema delegate", ex); //NOI18N
+            }
+            return null;
+        }
+
+        public PropertyMap getProperties() {
+            try {
+                return getSchemaDelegate().getProperties();
+            } catch (Exception ex) { //SAXException, IOException, IncorrectSchemaException
+                LOGGER.log(Level.INFO, "Cannot create schema delegate", ex); //NOI18N
+            }
+            return null;
+        }
+        
+        private synchronized Schema getSchemaDelegate() throws SAXException, IOException, IncorrectSchemaException {
+            Schema delegate = delegateWeakRef != null ? delegateWeakRef.get() : null;
+            if(delegate == null) {
+                long a = System.currentTimeMillis();
+                delegate = schemaByUrl(uri, resolver, pMap);
+                long b = System.currentTimeMillis();
+                delegateWeakRef = new SoftReference<Schema>(delegate);
+                LOGGER.log(Level.FINE, "Created new Schema instance for {0} in {1}ms.", new Object[]{uri, (b-a)});
+            } else {
+                LOGGER.log(Level.FINE, "Using cached Schema instance for {0}", uri);
+            }
+            return delegate;
+        }
+        
+        
+    }
+    
+    private static final class Marker {
+        
+        private final int hashCode;
+
+        public Marker(int hashCode) {
+            this.hashCode = hashCode;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            return o.hashCode() == hashCode();
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        
+    }
+    
 }

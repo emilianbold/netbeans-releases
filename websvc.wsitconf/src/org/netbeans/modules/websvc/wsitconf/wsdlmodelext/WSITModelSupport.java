@@ -651,6 +651,9 @@ public class WSITModelSupport {
             return;
         }
         traversedModels.add(modelFO);
+        if ( model == null || model.getDefinitions() == null ){
+            return ;
+        }
         Collection<Binding> importedBindings = model.getDefinitions().getBindings();
         bindings.addAll(importedBindings);
         

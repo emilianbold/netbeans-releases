@@ -174,7 +174,7 @@ public final class ClasspathInfo {
             final boolean allowAptRoots = true; //todo: Set by PROCESSOR_PATH != null
             this.cachedUserSrcClassPath = SourcePath.sources(srcCp, backgroundCompilation);
             this.cachedAptSrcClassPath = allowAptRoots ? SourcePath.apt(srcCp, backgroundCompilation) : null;
-            this.cachedSrcClassPath =    allowAptRoots ? ClassPathSupport.createProxyClassPath(this.cachedUserSrcClassPath,this.cachedAptSrcClassPath) : this.cachedUserSrcClassPath;
+            this.cachedSrcClassPath = this.cachedUserSrcClassPath;
             this.outputClassPath = CacheClassPath.forSourcePath (this.cachedUserSrcClassPath);
 	    this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
         }
