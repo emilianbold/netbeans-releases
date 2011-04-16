@@ -2172,4 +2172,11 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         }
         return view;
     }
+    public static boolean isComponentOpened(String viewName) {
+        TopComponent view = WindowManager.getDefault().findTopComponent(viewName);
+        if (view == null) {
+            throw new IllegalArgumentException(viewName);
+        }
+        return view.isOpened();
+    }
 }
