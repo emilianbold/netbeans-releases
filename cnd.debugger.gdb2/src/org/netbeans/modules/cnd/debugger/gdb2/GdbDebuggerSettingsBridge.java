@@ -187,6 +187,9 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
             gdbDebugger.setEnv(entry.getKey() + '=' + entry.getValue());
         }
     }
+    protected void applyEnvvars(String[][] o, String[][] n) {
+	// TBD;
+    }
 
     protected void applySignals(Signals o, Signals n) {
 	// System.out.println("GdbDebuggerSettingsBridge.applySignals(): NOT IMPLEMENTED");
