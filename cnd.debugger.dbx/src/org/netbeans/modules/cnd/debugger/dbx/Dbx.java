@@ -99,11 +99,12 @@ public final class Dbx extends CommonDbx {
                           String dbxName,
                           InputOutput io,
                           NativeDebuggerInfo ndi) {
-	    super(executor, additionalArgv, listener, exec32, shortNames, dbxInit, host, connectExisting, dbxName, io, ndi);
+	    super(executor, additionalArgv, listener, exec32, shortNames,
+		    dbxInit, host, connectExisting, dbxName, io, ndi);
 	}
 
-	protected Dbx getDbx(Factory factory,
-			     Notifier n, int flags, boolean connectExisting, Master master) {
+	protected Dbx getDbx(Factory factory, Notifier n, int flags,
+			      boolean connectExisting, Master master) {
 	    return new Dbx(factory, n, flags, connectExisting, master);
 	}
     }
@@ -214,7 +215,8 @@ public final class Dbx extends CommonDbx {
 
     }
 
-    public Dbx(Factory factory, Notifier n, int flags, boolean connectExisting, Master master) {
+    public Dbx(Factory factory, Notifier n, int flags, boolean connectExisting,
+	    						Master master) {
 	super(factory, n, flags, connectExisting, master);
     }
 
@@ -319,7 +321,7 @@ public final class Dbx extends CommonDbx {
 	    // - too many bunched up actions and the glue socket might fill up
 	    //   increasing the potential for deadlocks.
 
-	    DebuggerManager.warning(Catalog.get("ActionIgnored"));	// NOI18N
+	    DebuggerManager.warning(Catalog.get("ActionIgnored")); // NOI18N
 	    return;
 	}
 
@@ -411,7 +413,7 @@ public final class Dbx extends CommonDbx {
 
 	if (!isReceptive()) {
 	    // See comment in sendCommand()
-	    DebuggerManager.warning(Catalog.get("ActionIgnored"));	// NOI18N
+	    DebuggerManager.warning(Catalog.get("ActionIgnored")); // NOI18N
 	    return null;
 	}
 
@@ -503,7 +505,8 @@ public final class Dbx extends CommonDbx {
 	debugger.session().setSessionState(debugger.state());
 	debugger.session().setTarget(progname);
 	debugger.session().update();
-	debugger.session().setSessionEngine(DbxEngineCapabilityProvider.getDbxEngineType());
+	debugger.session().setSessionEngine(
+		DbxEngineCapabilityProvider.getDbxEngineType());
 
 	if (!factory().connectExisting())
 	    startProgressManager().updateProgress('<', 0, null, 0, 0);
@@ -606,7 +609,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final int popup(int rt, String title, int nitems, String item[], boolean cancelable) {
+    protected final int popup(int rt, String title, int nitems, String item[],
+	    						boolean cancelable) {
 	/*
 	 * This is for really old dbx's there's nothing to do now.
 	 */
@@ -614,7 +618,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final int popup2(int rt, String title, int nitems, String item[], boolean cancelable, boolean multiple_selection, String cookie) {
+    protected final int popup2(int rt, String title, int nitems, String item[],
+	    	boolean cancelable, boolean multiple_selection, String cookie) {
 
 	ItemSelectorResult result;
         if ("eventspec".equals(cookie)) { // NOI18N
@@ -723,9 +728,9 @@ public final class Dbx extends CommonDbx {
 	debugger.state().capabilities = capabs.capabilities;
 	debugger.stateChanged();
 
-    if (debugger.isMultiThreading() && !DebuggerManager.isComponentOpened("threadsView")) {
-    DebuggerManager.openComponent("threadsView", false); // NOI18N
-    }
+	if (debugger.isMultiThreading() &&
+		!DebuggerManager.isComponentOpened("threadsView"))
+	    DebuggerManager.openComponent("threadsView", false); // NOI18N
 
     }
 
@@ -763,7 +768,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void rconnect(com.sun.tools.swdev.glue.NetAddr addrNetAddr, String hostnameString) {
+    protected final void rconnect(com.sun.tools.swdev.glue.NetAddr addrNetAddr,
+						    String hostnameString) {
     }
 
     @Override
@@ -788,7 +794,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void bpt_set(int id, String filename, int line, GPDbxLocation loc) {
+    protected final void bpt_set(int id, String filename, int line,
+						GPDbxLocation loc) {
 	// see dbx bug 1232137 for a history of handlers vs bpts
 	Handler h = debugger.bm().findHandler(id);
 	if (h != null) {
@@ -880,7 +887,9 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void display_item_new(int id, String plain_lhs, int rt, String qualified_lhs, String static_type, int is_a_pointer, String reevaluable_lhs, boolean unrestricted) {
+    protected final void display_item_new(int id, String plain_lhs, int rt, 
+	    String qualified_lhs, String static_type, int is_a_pointer,
+	    String reevaluable_lhs, boolean unrestricted) {
 	/* OLD
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Watch.pathway)
 	    System.out.println("display_item_new(, rt %d)\n", rt);
@@ -951,7 +960,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void expanded_nodes(boolean is_local, int nitems, GPDbxLocalItem items[]) {
+    protected final void expanded_nodes(boolean is_local, int nitems,
+					    GPDbxLocalItem items[]) {
 	debugger.setExpandedNodes(is_local, items);
     }
 
@@ -1069,7 +1079,8 @@ public final class Dbx extends CommonDbx {
 
 	debugger.session().setSessionState(debugger.state());
 	debugger.session().setPid(pid);
-	debugger.session().setSessionEngine(DbxEngineCapabilityProvider.getDbxEngineType());
+	debugger.session().setSessionEngine(
+		DbxEngineCapabilityProvider.getDbxEngineType());
 	debugger.session().update();
 	debugger.pidChanged();
 
@@ -1090,7 +1101,8 @@ public final class Dbx extends CommonDbx {
 
 	debugger.session().setSessionState(debugger.state());
 	debugger.session().setPid(pid);
-	debugger.session().setSessionEngine(DbxEngineCapabilityProvider.getDbxEngineType());
+	debugger.session().setSessionEngine(
+		DbxEngineCapabilityProvider.getDbxEngineType());
 	debugger.session().update();
 	debugger.pidChanged();
 
@@ -1112,7 +1124,8 @@ public final class Dbx extends CommonDbx {
 	debugger.stateChanged();
 
 	debugger.session().setSessionState(debugger.state());
-	debugger.session().setSessionEngine(DbxEngineCapabilityProvider.getDbxEngineType());
+	debugger.session().setSessionEngine(
+		DbxEngineCapabilityProvider.getDbxEngineType());
 	debugger.session().setCorefile(corefilename);
 	debugger.session().update();
 
@@ -1152,7 +1165,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void proc_stopped(GPDbxLocation hl, int nevents, GPDbxEventRecord events[]) {
+    protected final void proc_stopped(GPDbxLocation hl, int nevents,
+					GPDbxEventRecord events[]) {
 
 	Location hloc = GlueLocation.make(debugger, hl);
 
@@ -1234,7 +1248,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void proc_thread(int tid, GPDbxLocation hl, GPDbxLocation vl, int htid) {
+    protected final void proc_thread(int tid, GPDbxLocation hl, GPDbxLocation vl,
+								int htid) {
 
 	if (hl != null) {
 	    Location hloc = GlueLocation.make(debugger, hl);
@@ -1292,7 +1307,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void expr_type_result(int rt, String expr, String stype, String dtype) {
+    protected final void expr_type_result(int rt, String expr, String stype,
+	    						String dtype) {
     }
 
     @Override
@@ -1304,12 +1320,14 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void expr_line_eval_result(int rt1, int rt2, int flags, String lhs, String rhs) {
+    protected final void expr_line_eval_result(int rt1, int rt2, int flags,
+	    					String lhs, String rhs) {
 	expr_line_evalall_result(rt1, rt2, flags, lhs, rhs, null, null);
     }
 
     @Override
-    protected final void expr_line_evalall_result(int rt1, int rt2, int flags, String lhs, String rhs, String type, String rhs_deref) {
+    protected final void expr_line_evalall_result(int rt1, int rt2, int flags,
+	    		String lhs, String rhs, String type, String rhs_deref) {
 	debugger.balloonResult(rt1, rt2, flags, lhs, rhs, type, rhs_deref);
     }
 
@@ -1325,7 +1343,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void threads(int tot, int shown, GPDbxThread thread[], int flags) {
+    protected final void threads(int tot, int shown, GPDbxThread thread[],
+	    							int flags) {
 	debugger.setThreads(thread);
     }
 
