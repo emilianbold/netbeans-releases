@@ -47,6 +47,7 @@ package org.netbeans.core.startup.layers;
 import java.awt.Image;
 import java.awt.image.ImageObserver;
 import java.beans.BeanInfo;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -59,11 +60,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.util.test.TestFileUtils;
 /** Test layer cache managers generally.
  * @author Jesse Glick
  */
 public abstract class CacheManagerTestBaseHid extends NbTestCase implements ImageObserver {
-    private long initTime = System.currentTimeMillis ();
+    private static Long initTime;
     
     /**
      * Called from layer, do not rename!
@@ -93,6 +95,17 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
     protected static interface ManagerFactory {
         LayerCacheManager createManager() throws Exception;
         boolean supportsTimestamps ();
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        if (initTime == null) {
+            File f = new File(getWorkDir(), "test");
+            f.createNewFile();
+            TestFileUtils.touch(f, null);
+            initTime = f.lastModified();
+        }
+        clearWorkDir();
     }
     
     public void testCacheManager() throws Exception {
