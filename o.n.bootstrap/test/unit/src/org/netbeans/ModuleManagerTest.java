@@ -107,6 +107,7 @@ public class ModuleManagerTest extends SetupHid {
         new URLConnection(ModuleManagerTest.class.getResource("ModuleManagerTest.class")) {
             public @Override void connect() throws IOException {}
         }.setDefaultUseCaches(false);
+        ProxyURLStreamHandlerFactory.register();
     }
 
     public ModuleManagerTest(String name) {
@@ -117,7 +118,7 @@ public class ModuleManagerTest extends SetupHid {
     protected Level logLevel() {
         return Level.FINE;
     }
-
+    
     /** Load simple-module and depends-on-simple-module.
      * Make sure they can be installed and in a sane order.
      * Make sure a class from one can depend on a class from another.
