@@ -1794,6 +1794,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     final ClusteredIndexables ci = new ClusteredIndexables(resources);
                     ClusteredIndexables allCi = null;
+                    boolean ae = false;
+                    assert ae = true;
                     for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : indexers.cifInfos) {
                         Set<String> rootMimeTypes = PathRegistry.getDefault().getMimeTypesFor(root);
                         if (rootMimeTypes != null && !cifInfo.isAllMimeTypesIndexer() && !Util.containsAny(rootMimeTypes, cifInfo.getMimeTypes())) {
@@ -1817,9 +1819,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                             contexts.put(key,value);
                         }
-                        boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
-                        boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
-                        boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
+                        final boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
+                        final boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
+                        final boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
+                        if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
+                            LOGGER.log(Level.INFO, "Refresh of custom indexer ({0}) for root: {1} forced by: {2}",    //NOI18N
+                                    new Object[]{
+                                        cifInfo.getMimeTypes(),
+                                        root.toExternalForm(),
+                                        factory
+                                    });
+                        }
                         SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                         for(String mimeType : cifInfo.getMimeTypes()) {
@@ -1867,20 +1877,32 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (allResources != null) {
                         boolean containsNewIndexers = false;
                         boolean forceReindex = false;
+                        final Set<EmbeddingIndexerFactory> reindexVoters = new HashSet<EmbeddingIndexerFactory>();
                         for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 if (indexers.changedEifs != null && indexers.changedEifs.contains(eifInfo)) {
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
-                                forceReindex = votes.get(eif) == Boolean.FALSE;
+                                boolean indexerVote = votes.get(eif) == Boolean.FALSE;
+                                if (indexerVote) {
+                                    reindexVoters.add(eif);
+                                }
+                                forceReindex |= indexerVote;
                             }
                         }
                         if ((containsNewIndexers||forceReindex) && resources.size() != allResources.size()) {
                             if (allCi == null) {
                                 allCi = new ClusteredIndexables(allResources);
                             }
-                            useAllCi = true;
+                            useAllCi = true;                            
+                            if (ae && !reindexVoters.isEmpty() && LOGGER.isLoggable(Level.INFO)) {
+                                LOGGER.log(Level.INFO, "Refresh of embedded indexers for root: {0} forced by: {1}",    //NOI18N
+                                        new Object[]{
+                                            root.toExternalForm(),
+                                            reindexVoters.toString()
+                                        });
+                            }
                         }
                         final boolean allFiles = containsNewIndexers || forceReindex || allResources.size() == resources.size();
                         if (allFiles) {
