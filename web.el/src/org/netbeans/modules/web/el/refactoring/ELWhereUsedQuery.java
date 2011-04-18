@@ -363,6 +363,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         List<ELElement> result = new ArrayList<ELElement>();
         for (IndexResult ir : indexResult) {
             FileObject file = ir.getFile();
+            if(file == null) {
+                continue; //looks like a deleted file hasn't been removed from the index properly
+            }
             ParserResultHolder parserResultHolder = getParserResult(file);
             if (parserResultHolder.parserResult == null) {
                 continue;
