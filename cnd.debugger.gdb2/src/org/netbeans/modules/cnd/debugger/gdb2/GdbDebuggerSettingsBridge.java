@@ -178,7 +178,10 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         MacroMap macroMap = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());
         RunProfile mainRunProfile = getMainSettings().runProfile();
         macroMap.putAll(mainRunProfile.getEnvironment().getenvAsMap());
-        
+        applyEnvvars(macroMap);
+    }
+
+    private void applyEnvvars(MacroMap macroMap) {
         // init unbuffer if needed
         gdbDebugger.getIOPack().updateEnv(macroMap);
         
@@ -187,6 +190,15 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
             gdbDebugger.setEnv(entry.getKey() + '=' + entry.getValue());
         }
     }
+    
+    @Override
+    protected void applyEnvvars(String[][] o, String[][] n) {
+        MacroMap macroMap = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());        
+        for (int i = 0; i < o.length; i++) {
+            macroMap.put(o[i][0], o[i][1]);
+        }
+        applyEnvvars(macroMap);
+    }    
 
     protected void applySignals(Signals o, Signals n) {
 	// System.out.println("GdbDebuggerSettingsBridge.applySignals(): NOT IMPLEMENTED");
@@ -230,9 +242,4 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
         return inRedir;
     }
-
-    @Override
-    protected void applyEnvvars(String[][] o, String[][] n) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }        
 }
