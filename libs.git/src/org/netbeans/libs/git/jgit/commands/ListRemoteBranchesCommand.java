@@ -82,7 +82,7 @@ public class ListRemoteBranchesCommand extends TransportCommand {
         FetchConnection conn = null;
         Collection<Ref> refs = null;
         try {
-            t = openTransport();
+            t = openTransport(false);
             conn = t.openFetch();
             refs = conn.getRefs();
         } catch (URISyntaxException ex) {

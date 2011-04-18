@@ -116,6 +116,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "listRemoteBranches", //NOI18N
             "log", //NOI18N
             "unignore", //NOI18N
+            "push", //NOI18N - does not manipulate with index
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - does not update index or files in WT
             "setCallback", //NOI18N
