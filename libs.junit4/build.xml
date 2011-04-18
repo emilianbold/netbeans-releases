@@ -44,5 +44,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="libs.junit4" default="netbeans" basedir=".">
+    <property name="license.file" location="../nbbuild/licenses/CPL-1.0"/>
+    <target name="-create-license.file"/>
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>

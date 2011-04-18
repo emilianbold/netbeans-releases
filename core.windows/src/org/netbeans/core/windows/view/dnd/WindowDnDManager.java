@@ -59,6 +59,7 @@ import javax.swing.*;
 import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.*;
 import org.netbeans.core.windows.view.ui.*;
+import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 
@@ -825,11 +826,16 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * Helper utility method. */
     private static DataFlavor getDataFlavorForDropAction(boolean clone) {
         // Create needed dataflavor.
-        DataFlavor df;
-        if(clone) {
-            df = new DataFlavor(TopComponentDragSupport.MIME_TOP_COMPONENT_CLONEABLE, null);
-        } else {
-            df = new DataFlavor(TopComponentDragSupport.MIME_TOP_COMPONENT, null);
+        DataFlavor df = null;
+        ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+        try {
+            if(clone) {
+                df = new DataFlavor(TopComponentDragSupport.MIME_TOP_COMPONENT_CLONEABLE, null, cl);
+            } else {
+                df = new DataFlavor(TopComponentDragSupport.MIME_TOP_COMPONENT, null, cl);
+            }
+        } catch( ClassNotFoundException cnfE ) {
+            Logger.getLogger(WindowDnDManager.class.getName()).log(Level.INFO, null, cnfE);
         }
         
         return df;

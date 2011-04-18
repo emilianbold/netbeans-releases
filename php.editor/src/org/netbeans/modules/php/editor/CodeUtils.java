@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -372,6 +373,34 @@ public class CodeUtils {
                 return scalar.getStringValue();
         } else if (expr instanceof ArrayCreation) {
             return "array()";//NOI18N
+        } else if (expr instanceof StaticConstantAccess) {
+            StaticConstantAccess staticConstantAccess = (StaticConstantAccess) expr;
+            Expression className = staticConstantAccess.getClassName();
+            
+            if (className instanceof Identifier) {
+                Identifier i = (Identifier) className;
+                
+                return i.getName() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
+            } else if (className instanceof NamespaceName) {
+                NamespaceName namespace = (NamespaceName) className;
+                List<Identifier> segments = namespace.getSegments();
+                StringBuilder sb = new StringBuilder();
+                
+                if (namespace.isGlobal()) {
+                    sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+                }
+                
+                for (Iterator<Identifier> iter = segments.iterator(); iter.hasNext(); ) {
+                    Identifier namespaceSegment = iter.next();
+                    sb.append(namespaceSegment.getName());
+                    
+                    if (iter.hasNext()) {
+                        sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+                    }
+                }
+                
+                return sb.toString() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
+            }
         }
         return expr == null ? null : " ";//NOI18N
     }

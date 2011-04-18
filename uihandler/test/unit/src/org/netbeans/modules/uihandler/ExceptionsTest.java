@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.exceptions.ExceptionsSettings;
 import org.netbeans.modules.exceptions.ReportPanel;
 
 /**
@@ -73,7 +74,8 @@ public class ExceptionsTest extends NbTestCase {
     
     public void testSetReportPanelSummary(){
         String str = "RETEZEC SUMMARY";
-        ReportPanel panel = new ReportPanel(false, null);
+        ExceptionsSettings s = new ExceptionsSettings();
+        ReportPanel panel = new ReportPanel(false, s);
         panel.setSummary(str);
         assertEquals(str, panel.getSummary());
     }

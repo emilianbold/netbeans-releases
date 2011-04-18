@@ -55,19 +55,19 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 
-public class MakeProjectConfigurationProvider implements ProjectConfigurationProvider, PropertyChangeListener {
+public class MakeProjectConfigurationProvider implements ProjectConfigurationProvider<Configuration>, PropertyChangeListener {
 
     private final Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    public static final boolean ASYNC_LOAD = Boolean.getBoolean("cnd.async.root");// NOI18N
+    public static final boolean ASYNC_LOAD = Boolean.getBoolean("cnd.async.root"); // NOI18N
 
-    public MakeProjectConfigurationProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
+    public MakeProjectConfigurationProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider, PropertyChangeListener info) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
+        this.pcs.addPropertyChangeListener(info);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     }
 
     @Override
-    public ProjectConfiguration getActiveConfiguration() {
+    public Configuration getActiveConfiguration() {
         if (projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) == null) {
             return null;
         }
@@ -87,9 +87,9 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     }
 
     @Override
-    public void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
+    public void setActiveConfiguration(Configuration configuration) throws IllegalArgumentException, IOException {
         if (configuration instanceof Configuration && projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
-            projectDescriptorProvider.getConfigurationDescriptor().getConfs().setActive((Configuration) configuration);
+            projectDescriptorProvider.getConfigurationDescriptor().getConfs().setActive(configuration);
         }
     }
 
@@ -145,12 +145,5 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
 
         pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
         pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
-    /*
-    if (evt.getNewValue() != evt.getOldValue()) {
-    ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider) p.getLookup().lookup(ConfigurationDescriptorProvider.class );
-    if (pdp != null)
-    pdp.getConfigurationDescriptor().setModified();
-    }
-     */
     }
 }

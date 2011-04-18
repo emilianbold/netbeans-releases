@@ -690,7 +690,8 @@ public final class AppClientProject implements Project, FileChangeListener {
             }
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(WebServicesClientSupport.isBroken(AppClientProject.this)) {
                 WebServicesClientSupport.showBrokenAlert(AppClientProject.this);

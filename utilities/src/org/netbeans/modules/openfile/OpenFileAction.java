@@ -52,8 +52,11 @@ import javax.swing.filechooser.FileSystemView;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.UserCancelException;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -146,21 +149,25 @@ public class OpenFileAction implements ActionListener {
         }
     }
     
-    /**
-     * Returns an abstract representation of the current directory pathname that
-     * is intended to be used in the file chooser.
-     *
-     * @return a directory pathname that refers to a directory last time
-     *         selected after successful opening of the file(s) via the file
-     *         chooser if such directory is defined and exists, otherwise to
-     *         the user's default directory for the file chooser (see
-     *         {@link ​JFileChooser#setCurrentDirectory(File dir)}
-     *         for more info about the user's default directory).
-     */
     private static File getCurrentDirectory() {
+        if (Boolean.getBoolean("netbeans.openfile.197063")) {
+            // Prefer to open from parent of active editor, if any.
+            TopComponent activated = TopComponent.getRegistry().getActivated();
+            if (activated != null && WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
+                DataObject d = activated.getLookup().lookup(DataObject.class);
+                if (d != null) {
+                    File f = FileUtil.toFile(d.getPrimaryFile());
+                    if (f != null) {
+                        return f.getParentFile();
+                    }
+                }
+            }
+        }
+        // Otherwise, use last-selected directory, if any.
         if(currentDirectory != null && currentDirectory.exists()) {
             return currentDirectory;
         }
+        // Fall back to default location ($HOME or similar).
         currentDirectory =
                 FileSystemView.getFileSystemView().getDefaultDirectory();
         return currentDirectory;

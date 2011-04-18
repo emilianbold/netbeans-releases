@@ -305,6 +305,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             }
             if (active) { // Wishing to be active
                 if (incTokenList.updateLanguagePath()) {
+                    invalidatePath2TokenListList();
                     incTokenList.reinit(); // Initialize lazy lexing
                     change = doFire ? new TokenListChange<T>(incTokenList) : null;
                 } else { // No valid top language => no change in activity

@@ -51,6 +51,8 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
@@ -68,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -177,8 +180,8 @@ import org.openide.util.RequestProcessor;
                 executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
-        // A workaround for remote instable tests failure
-        int sleep = Integer.getInteger("rfs.instable.sleep", 0); // NOI18N
+        // A workaround for #196453 - Can not build remote project: protocol error
+        int sleep = Integer.getInteger("rfs.instable.sleep", 200); // NOI18N
         if (sleep > 0) {
             Thread.sleep(sleep);
         }
@@ -247,11 +250,29 @@ import org.openide.util.RequestProcessor;
     public void shutdown() {
         remoteControllerCleanup();
         localControllerCleanup();
+        refreshRemoteFs();
     }
 
     @Override
     public boolean cancel() {
         return false;
+    }
+
+    private void refreshRemoteFs() {
+        RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
+        Collection<String> remoteDirs = new ArrayList<String>(files.length);
+        for (File file : files) {
+            if (!file.isDirectory()) {
+                file = file.getParentFile();
+            }            
+            if (file != null) {
+                String path = mapper.getRemotePath(file.getAbsolutePath());
+                if (path != null) {
+                    remoteDirs.add(path);
+                }
+            }
+        }
+        FileSystemProvider.scheduleRefresh(executionEnvironment, remoteDirs);
     }
 
     private void localControllerCleanup() {

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -101,7 +102,8 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
             
             String propertyName;
             Object searchPattern;
-            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+            if (abilitiesSupport.isRemoteManagementSupported()
+                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
                 propertyName = "name"; // NOI18N
                 searchPattern = new ObjectName("jboss.management.local:j2eeType=EJBModule,J2EEApplication=null,*"); // NOI18N
             }
@@ -109,7 +111,10 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
                 propertyName = "module"; // NOI18N
                 searchPattern = new ObjectName("jboss.j2ee:service=EjbModule,*"); // NOI18N
             }
-            Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null}); // NOI18N
+            
+            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+            method = Util.fixJava4071957(method);
+            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null}); // NOI18N
 
             Iterator it = managedObj.iterator();
 
@@ -127,6 +132,7 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
         }
     }
     
+    // JBoss 5 only ?
     private void addEJB3Modules(Object server, List keys) {
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         
@@ -134,7 +140,9 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
             Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
             
             ObjectName searchPattern = new ObjectName("jboss.j2ee:service=EJB3,*"); // NOI18N
-            Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null}); // NOI18N
+            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+            method = Util.fixJava4071957(method);
+            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null}); // NOI18N
 
             Iterator it = managedObj.iterator();
 
@@ -143,7 +151,9 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
                 try {
                     ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
                     String name = elem.getKeyProperty("module"); // NOI18N
-                    keys.add(new JBEjbModuleNode(name, lookup, true));
+                    if (name != null) {
+                        keys.add(new JBEjbModuleNode(name, lookup, true));
+                    }
                 } catch (Exception ex) {
                     Logger.getLogger("global").log(Level.INFO, null, ex);
                 }

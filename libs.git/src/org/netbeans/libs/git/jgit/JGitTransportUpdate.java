@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit;
 
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
@@ -69,7 +70,17 @@ public class JGitTransportUpdate implements GitTransportUpdate {
         this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
         this.result = GitRefUpdateResult.valueOf(update.getResult().name());
         this.uri = uri.toString();
-        this.type = getType(update);
+        this.type = getType(update.getLocalName());
+    }
+
+    public JGitTransportUpdate (URIish uri, RemoteRefUpdate update) {
+        this.localName = stripRefs(update.getSrcRef());
+        this.remoteName = stripRefs(update.getRemoteName());
+        this.oldObjectId = update.getExpectedOldObjectId() == null || ObjectId.zeroId().equals(update.getExpectedOldObjectId()) ? null : update.getExpectedOldObjectId().getName();
+        this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+        this.result = GitRefUpdateResult.valueOf(update.getStatus().name());
+        this.uri = uri.toString();
+        this.type = getType(update.getRemoteName());
     }
 
     @Override
@@ -108,7 +119,9 @@ public class JGitTransportUpdate implements GitTransportUpdate {
     }
 
     private static String stripRefs (String refName) {
-        if (refName.startsWith(Constants.R_HEADS)) {
+        if (refName == null) {
+            
+        } else if (refName.startsWith(Constants.R_HEADS)) {
             refName = refName.substring(Constants.R_HEADS.length());
         } else if (refName.startsWith(Constants.R_TAGS)) {
             refName = refName.substring(Constants.R_TAGS.length());
@@ -122,12 +135,13 @@ public class JGitTransportUpdate implements GitTransportUpdate {
         return refName;
     }
 
-    private Type getType (TrackingRefUpdate update) {
-        String refName = update.getLocalName();
+    private Type getType (String refName) {
         Type retval;
         if (refName.startsWith(Constants.R_TAGS)) {
             retval = Type.TAG;
         } else if (refName.startsWith(Constants.R_REMOTES)) {
+            retval = Type.BRANCH;
+        } else if (refName.startsWith(Constants.R_HEADS)) {
             retval = Type.BRANCH;
         } else {
             throw new IllegalArgumentException("Unknown type for: " + refName);

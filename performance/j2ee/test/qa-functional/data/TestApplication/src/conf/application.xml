@@ -3,11 +3,11 @@
   <display-name>TestApplication</display-name>
   <module>
     <web>
-      <web-uri>TestApplication-WebModule.war</web-uri>
-      <context-root>/TestApplication-WebModule</context-root>
+      <web-uri>TestApplication-war.war</web-uri>
+      <context-root>/TestApplication-war</context-root>
     </web>
   </module>
   <module>
-    <ejb>TestApplication-EJBModule.jar</ejb>
+    <ejb>TestApplication-ejb.jar</ejb>
   </module>
 </application>

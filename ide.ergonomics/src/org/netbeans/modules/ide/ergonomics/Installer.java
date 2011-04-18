@@ -54,6 +54,11 @@ import org.openide.util.Exceptions;
 public class Installer extends ModuleInstall {
 
     @Override
+    public void restored() {
+        WarmUp.init();
+    }
+    
+    @Override
     public void close() {
         try {
             FeatureManager.incrementUnused(OpenProjects.getDefault().getOpenProjects());

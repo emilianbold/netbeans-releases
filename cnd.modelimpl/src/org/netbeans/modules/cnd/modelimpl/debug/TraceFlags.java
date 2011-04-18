@@ -72,6 +72,7 @@ public class TraceFlags {
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors"); // NOI18N
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast"); // NOI18N
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
+    public static final boolean DUMP_NATIVE_FILE_ITEM_USER_INCLUDE_PATHS = DebugUtils.getBoolean("cnd.dump.native.file.item.paths", false); // NOI18N
 
     public static final String TRACE_FILE_NAME = System.getProperty("cnd.modelimpl.trace.file");
 

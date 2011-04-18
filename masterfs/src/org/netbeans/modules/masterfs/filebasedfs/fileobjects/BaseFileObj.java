@@ -94,6 +94,7 @@ public abstract class BaseFileObj extends FileObject {
         attribs = new Attributes(attrBridge, attrBridge, attrBridge);
     }
 
+    private static final Object EVENT_SUPPORT_LOCK = new Object();
     //private fields
     private EventListenerList eventSupport;
     private FileNaming fileName;
@@ -116,7 +117,11 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final String getNameExt() {
-        return getFileName().getName();
+        String ne = getFileName().getName();
+        while (ne.endsWith("\\")) {
+            ne = ne.substring(0, ne.length() - 1);
+        }
+        return ne;
     }
 
     /** Returns true is file is \\ComputerName\sharedFolder. */
@@ -351,6 +356,11 @@ public abstract class BaseFileObj extends FileObject {
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
         if (Utils.equals(file2Rename, file)) {
+            if (!file.renameTo(file2Rename)) {
+                FileObject parentFo = getExistingParent();
+                String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+                FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
+            }
             // just a case sensitive update of the file name
             NamingFactory.checkCaseSensitivity(fileName, file2Rename);
             fireFileRenamedEvent(file.getName(), file2Rename.getName());
@@ -476,10 +486,12 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     private Enumeration<FileChangeListener> getListeners() {
-        if (eventSupport == null) {
-            return Enumerations.empty();
+        synchronized (EVENT_SUPPORT_LOCK) {
+            if (eventSupport == null) {
+                return Enumerations.empty();
+            }
+            return Enumerations.array(eventSupport.getListeners(FileChangeListener.class));
         }
-        return org.openide.util.Enumerations.array(getEventSupport().getListeners(FileChangeListener.class));
     }
 
 
@@ -920,11 +932,13 @@ public abstract class BaseFileObj extends FileObject {
 
     }
 
-    private synchronized EventListenerList getEventSupport() {
-        if (eventSupport == null) {
-            eventSupport = new EventListenerList();
+    private EventListenerList getEventSupport() {
+        synchronized (EVENT_SUPPORT_LOCK) {
+            if (eventSupport == null) {
+                eventSupport = new EventListenerList();
+            }
+            return eventSupport;
         }
-        return eventSupport;
     }
 
     final ProvidedExtensions getProvidedExtensions() {

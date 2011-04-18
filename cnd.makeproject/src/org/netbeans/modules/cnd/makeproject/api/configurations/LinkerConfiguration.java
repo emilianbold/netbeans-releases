@@ -455,9 +455,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     private String getOutputDefault() {
-        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getSourceBaseDir());
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_DB_APPLICATION:
                 outputName = outputName.toLowerCase();
                 break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
@@ -470,7 +471,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     public String getOutputDefault27() {
         String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
-        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
+        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
+            getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
             outputName = outputName.toLowerCase();
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             outputName = "lib" + outputName + ".so"; // NOI18N

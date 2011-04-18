@@ -326,6 +326,31 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             return environment;
         }
 
+        @Override
+        public int getUserId() {
+            return 0; // no implementation for Windows so far
+        }
+        
+        @Override
+        public int getGroupId() {
+            return 0; // no implementation for Windows so far
+        }
+        
+        @Override
+        public int[] getAllGroupIDs() {
+            return new int[0]; // no implementation for Windows so far
+        }
+
+        @Override
+        public String getGroup() {
+            return ""; // no implementation for Windows so far
+        }
+
+        @Override
+        public String[] getAllGroups() {
+            return new String[0]; // no implementation for Windows so far
+        }
+        
         private boolean checkForNonLatin(String str) {
             if (str == null) {
                 // NULL is OK?

@@ -775,6 +775,8 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         public String getExecutable() { return null; }
                         @Override
                         public String getWorkingFolder() { return null; }
+                        @Override
+                        public boolean mergeProjectProperties() { return false;}
                     }){
                         @Override
                         public Map<String, String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {

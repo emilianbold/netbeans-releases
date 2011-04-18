@@ -236,11 +236,10 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
                 abortTimer();
                 return false;
             }
-        }
-
-        if (!wasFocusOwner) {
-            wasFocusOwner = true;
-            return false;
+            if (!wasFocusOwner) {
+                wasFocusOwner = true;
+                return false;
+            }
         }
 
         if (lastPath != null) {

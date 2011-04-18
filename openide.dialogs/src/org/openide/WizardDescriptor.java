@@ -2629,18 +2629,28 @@ public class WizardDescriptor extends DialogDescriptor {
             }
         }
 
-        private void prepareMessage(String msg, ImageIcon icon, Color fgColor) {
-            messagePane.setToolTipText (msg);
-            if (msg != null) {
-                msg = msg.replaceAll("\\s", "&nbsp;"); // NOI18N
-                if (! msg.toUpperCase().startsWith("<HTML>")) { // NOI18N
-                    msg = "<HTML>" + msg; // NOI18N
+        private void prepareMessage(final String msg, final ImageIcon icon, final Color fgColor) {
+            if( !SwingUtilities.isEventDispatchThread() ) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        prepareMessage( msg, icon, fgColor );
+                    }
+                } );
+                return;
+            }
+            String message = msg;
+            messagePane.setToolTipText (message);
+            if (message != null) {
+                message = message.replaceAll("\\s", "&nbsp;"); // NOI18N
+                if (! message.toUpperCase().startsWith("<HTML>")) { // NOI18N
+                    message = "<HTML>" + message; // NOI18N
                 }
             }
             iconLabel.setIcon(icon);
             iconLabel.setForeground(fgColor);
             messagePane.setForeground(fgColor);
-            messagePane.setText(msg);
+            messagePane.setText(message);
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {

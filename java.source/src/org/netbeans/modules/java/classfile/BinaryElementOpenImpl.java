@@ -31,11 +31,17 @@
 
 package org.netbeans.modules.java.classfile;
 
+import com.sun.source.util.TreePath;
+import java.io.IOException;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -45,18 +51,44 @@ import org.openide.filesystems.FileObject;
 public class BinaryElementOpenImpl implements BinaryElementOpen {
 
     @Override
-    public boolean open(ClasspathInfo cpInfo, ElementHandle<? extends Element> toOpen) {
+    public boolean open(ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpen) {
         FileObject source = CodeGenerator.generateCode(cpInfo, toOpen);
         if (source != null) {
-            return open(source, toOpen);
+            final int[] pos = new int[] {-1};
+
+            try {
+                JavaSource.create(cpInfo, source).runUserActionTask(new Task<CompilationController>() {
+                    @Override public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.RESOLVED);
+
+                        Element el = toOpen.resolve(parameter);
+
+                        if (el == null) return ;
+
+                        TreePath p = parameter.getTrees().getPath(el);
+
+                        if (p == null) return ;
+
+                        pos[0] = (int) parameter.getTrees().getSourcePositions().getStartPosition(p.getCompilationUnit(), p.getLeaf());
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            if (pos[0] != (-1)) {
+                return open(source, pos[0]);
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
     }
 
     @SuppressWarnings("deprecation")
-    private boolean open(FileObject source, ElementHandle<? extends Element> toOpen) {
-        return org.netbeans.api.java.source.UiUtils.open(source, toOpen);
+    private boolean open(FileObject source, int pos) {
+        return org.netbeans.api.java.source.UiUtils.open(source, pos);
     }
 
 }

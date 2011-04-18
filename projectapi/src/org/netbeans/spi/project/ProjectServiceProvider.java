@@ -48,6 +48,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -104,6 +105,7 @@ public @interface ProjectServiceProvider {
 
     /**
      * Token(s) denoting one or more project types, e.g. {@code "org-netbeans-modules-java-j2seproject"}
+     * {@link LookupProviderSupport#createCompositeLookup} may be used with the path {@code Projects/TYPE/Lookup}.
      */
     String[] projectType() default {};
 

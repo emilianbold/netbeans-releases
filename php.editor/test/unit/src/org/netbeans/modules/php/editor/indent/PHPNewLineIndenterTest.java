@@ -744,6 +744,14 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testSwitch_09()throws Exception {
         testIndentInFile("testfiles/indent/switch_09.php");
     }
+    
+    public void testIssue197583_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue197583_01.php");
+    }
+    
+    public void testIssue197583_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue197583_02.php");
+    }
 
     @Override
     protected boolean runInEQ() {

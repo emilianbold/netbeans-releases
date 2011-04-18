@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -96,13 +97,20 @@ public class ComputeAnnotations {
             Collection<BaseAnnotation> toAdd) {
 
         for (CsmOffsetableDeclaration decl : toProcess) {
-            if (CsmKindUtilities.isFunction(decl)) {
-                computeAnnotation((CsmFunction) decl, toAdd);
-            } else if (CsmKindUtilities.isClass(decl)) {
-                computeAnnotation((CsmClass) decl, toAdd);
-                computeAnnotations(((CsmClass) decl).getMembers(), toAdd);
-            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd);
+            if (this.csmFile.equals(decl.getContainingFile())) {
+                if (CsmKindUtilities.isFunction(decl)) {
+                    computeAnnotation((CsmFunction) decl, toAdd);
+                } else if (CsmKindUtilities.isClass(decl)) {
+                    if (CsmKindUtilities.isTemplate(decl)) {
+                        if (((CsmTemplate)decl).isExplicitSpecialization()) {
+                            continue;
+                        }
+                    }
+                    computeAnnotation((CsmClass) decl, toAdd);
+                    computeAnnotations(((CsmClass) decl).getMembers(), toAdd);
+                } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                    computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd);
+                }
             }
         }
     }

@@ -61,8 +61,8 @@ public class SelectHostWizardProviderFactoryImpl implements SelectHostWizardProv
     }
 
     @Override
-    public SelectHostWizardProvider createHostWizardProvider(boolean allowLocal, ChangeListener changeListener) {
-        return new SelectHostWizardProviderImpl(allowLocal, changeListener);
+    public SelectHostWizardProvider createHostWizardProvider(boolean allowLocal, boolean allowToCreateNewHostDirectly, ChangeListener changeListener) {
+        return new SelectHostWizardProviderImpl(allowLocal, allowToCreateNewHostDirectly, changeListener);
     }
 
 
@@ -70,8 +70,8 @@ public class SelectHostWizardProviderFactoryImpl implements SelectHostWizardProv
 
         private SelectHostWizardPanel panel;
 
-        public SelectHostWizardProviderImpl(boolean allowLocal, ChangeListener changeListener) {
-            panel = new SelectHostWizardPanel(allowLocal, changeListener);
+        public SelectHostWizardProviderImpl(boolean allowLocal, boolean allowToCreateNewHostDirectly, ChangeListener changeListener) {
+            panel = new SelectHostWizardPanel(allowLocal, allowToCreateNewHostDirectly, changeListener);
         }
 
         @Override

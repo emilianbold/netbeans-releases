@@ -131,6 +131,11 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         return true;
     }
 
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
 //    public String getTemplateSignature() {
 //	return qualifiedNameSuffix;
 //    }

@@ -106,9 +106,8 @@ public class HttpMethodNode extends AbstractNode{
         return desc;
     }
     
-    public static String getKey(HttpMethod method) {
-        return method.getName() + ":" + method.getReturnType() + ":" +
-                method.getConsumeMime() +  ":" + method.getProduceMime();  //NOI18N
+    public String getKey() {
+        return methodName + ":" + returnType + ":" +consumeMime +  ":" + produceMime;  //NOI18N
     }
     
     private static final java.awt.Image METHOD_BADGE =

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +83,9 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.loaders.CreateFromTemplateHandler;
 
@@ -236,16 +239,11 @@ public class MakeProjectGenerator {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        //Element minant = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        //minant.appendChild(doc.createTextNode("1.6")); // NOI18N
-        //data.appendChild(minant);
-        Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "make-project-type"); // NOI18N
-        nativeProjectType.appendChild(doc.createTextNode("" + 0)); // NOI18N
-        data.appendChild(nativeProjectType);
 
+        FileObject sourceBaseFO;
         if (prjParams.getFullRemote()) {
             // mode
             Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE);
@@ -256,9 +254,17 @@ public class MakeProjectGenerator {
             rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID()));
             data.appendChild(rfsHostNode);
             // mount point
+            String remoteProjectPath = prjParams.getFullRemoteNativeProjectPath();
             Element rfsBaseDir = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
-            rfsHostNode.appendChild(doc.createTextNode(dirFO.getPath()));
+            rfsBaseDir.appendChild(doc.createTextNode(remoteProjectPath));
             data.appendChild(rfsBaseDir);
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID());
+            sourceBaseFO = FileSystemProvider.getFileObject(env, remoteProjectPath);
+            if (sourceBaseFO == null) {
+                throw new FileNotFoundException("File does not exist: " + env + ':' + remoteProjectPath); //NOI18N
+            }
+        } else {
+            sourceBaseFO = dirFO;
         }
 
         h.putPrimaryConfigurationData(data, true);
@@ -271,8 +277,10 @@ public class MakeProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk.
-        final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
-        projectDescriptor.setProjectMakefileName(makefileName);
+        final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO, sourceBaseFO);
+        if (makefileName != null) {
+            projectDescriptor.setProjectMakefileName(makefileName);
+        }
         projectDescriptor.init(confs);
         projectDescriptor.setState(State.READY);
 

@@ -133,7 +133,7 @@ public class PhysicalView {
         
         if ( projectDirGroup == null ) {
             // Illegal project
-            LOG.log(Level.WARNING,"Project {0} either does not contain it''s project directory under generic source groups or the directory is under more than one source group", p);
+            LOG.log(Level.WARNING, "Project {0} either does not contain its project directory under generic source groups or the directory is under more than one source group", p);
             return new Node[0];
         }
 
@@ -370,7 +370,7 @@ public class PhysicalView {
     private static final class ProjectIconNode extends FilterNode { // #194068
         private final boolean root;
         public ProjectIconNode(Node orig, boolean root) {
-            super(orig, new ProjectBadgingChildren(orig));
+            super(orig, orig.isLeaf() ? Children.LEAF : new ProjectBadgingChildren(orig));
             this.root = root;
         }
         public @Override Image getIcon(int type) {

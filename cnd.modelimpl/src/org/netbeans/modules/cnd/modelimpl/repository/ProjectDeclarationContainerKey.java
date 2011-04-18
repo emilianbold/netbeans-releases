@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * Key for DeclarationContainer data
  * @author Vladimir Kvashin
  */
-public class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
+public final class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
 
     public ProjectDeclarationContainerKey(CharSequence project) {
         super(project);

@@ -66,6 +66,9 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -169,6 +172,23 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
     }
 
     @Override
+    public void updateUI() {
+        super.updateUI();
+        //#179323 - disable ctrl+page up/down actions if there's just one tab,
+        //parent container, e.g. TopComponent tabs, may want to handle these keys itself
+        ActionMap am = getActionMap();
+        Action a = am.get("navigatePageUp");
+        if( null != a && !(a instanceof MyNavigateAction) ) {
+            am.put("navigatePageUp", new MyNavigateAction(a));
+        }
+        a = am.get("navigatePageDown");
+        if( null != a && !(a instanceof MyNavigateAction) ) {
+            am.put("navigatePageDown", new MyNavigateAction(a));
+        }
+    }
+
+
+    @Override
     public void removeTabAt(int index) {
         Component c = getComponentAt(index);
         c.removePropertyChangeListener(TabbedPaneFactory.NO_CLOSE_BUTTON, this);
@@ -183,7 +203,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 return true;
             }
         }
-        if( version.startsWith("1.6.0_22") && isAquaLaF() )
+        if( version.startsWith("1.6.0_24") && isAquaLaF() )
             return true;
         return false;
     }
@@ -568,6 +588,25 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                     fireCloseRequest(CloseButtonTabbedPane.this.getComponentAt(i));
                 }
             }
+        }
+    }
+
+    private class MyNavigateAction extends AbstractAction {
+
+        private final Action orig;
+
+        public MyNavigateAction( Action orig ) {
+            this.orig = orig;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            orig.actionPerformed(e);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return getTabCount() > 1;
         }
     }
 }

@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.api.elements;
 
 
+import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -54,6 +55,7 @@ public interface ClassElement extends TypeElement {
     public final static PhpElementKind KIND = PhpElementKind.CLASS;
     @CheckForNull
     QualifiedName getSuperClassName();
+    Collection<QualifiedName> getPossibleFQSuperClassNames();
     boolean isFinal();
     boolean isAbstract();
 }

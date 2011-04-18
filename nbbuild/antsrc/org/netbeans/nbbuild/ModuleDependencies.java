@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -147,6 +148,8 @@ public class ModuleDependencies extends Task {
                     generateKitDependencies(o.file);
                 } else if ("plugins".equals(o.type.getValue())) {
                     generatePlugins(o.file);
+                } else if ("reverse-dependencies".equals(o.type.getValue())) {
+                    generateReverseDependencies(o.file);
                 } else {
                     assert false : o.type;
                 }
@@ -785,6 +788,45 @@ public class ModuleDependencies extends Task {
         }
     }
 
+    private void generateReverseDependencies(File output) throws BuildException, IOException {
+        FileWriter fw = new FileWriter(output);
+        try {
+            PrintWriter w = new PrintWriter(fw);
+            for (ModuleInfo m : modules) {
+                if (m.group.equals("extra")) {
+                    continue;
+                }
+                String clusterDeps = getProject().getProperty("nb.cluster." + m.group + ".depends");
+                if (clusterDeps == null) {
+                    throw new BuildException("no property ${nb.cluster." + m.group + ".depends} defined");
+                }
+                Set<String> allowed = new HashSet<String>();
+                allowed.add(m.group);
+                for (String piece : clusterDeps.split(",")) {
+                    allowed.add(piece.replaceFirst("^nb[.]cluster[.]", ""));
+                }
+                for (Dependency d : m.depends) {
+                    if (d.type != Dependency.Type.requires) {
+                        continue;
+                    }
+                    ModuleInfo o = findModuleInfo(d, m);
+                    if (o == null) {
+                        continue;
+                    }
+                    if (o.codebasename.equals("org.netbeans.libs.junit4")) {
+                        continue; // special case
+                    }
+                    if (!allowed.contains(o.group)) {
+                        w.println(m.getName(false) + " -> " + o.getName(false));
+                    }
+                }
+            }
+            w.flush();
+        } finally {
+            fw.close();
+        }
+    }
+
     private void generateSharedPackages (File output) throws BuildException, IOException {
         TreeMap<String,List<ModuleInfo>> packages = new TreeMap<String,List<ModuleInfo>>();
         
@@ -1094,6 +1136,7 @@ public class ModuleDependencies extends Task {
                 "kits",
                 "kit-dependencies",
                 "plugins",
+                "reverse-dependencies",
             };
         }
     }

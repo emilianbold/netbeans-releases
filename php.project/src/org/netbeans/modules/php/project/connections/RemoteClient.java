@@ -674,7 +674,7 @@ public final class RemoteClient implements Cancellable {
                 }
             } finally {
                 os.close();
-                FileObject FO = FileUtil.toFileObject(tmpLocalFile);
+                FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
                 if (FO != null) FO.refresh();
                 if (success) {
                     // move the file
@@ -688,7 +688,7 @@ public final class RemoteClient implements Cancellable {
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                     try {
-                        FileUtil.toFileObject(tmpLocalFile).delete();
+                        FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile)).delete();
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
                         }
@@ -709,54 +709,53 @@ public final class RemoteClient implements Cancellable {
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
-                File oldPath = new File(target.getAbsolutePath() + LOCAL_TMP_OLD_SUFFIX);
+                FileObject foSource = FileUtil.toFileObject(FileUtil.normalizeFile(source));
+                FileObject foTarget = FileUtil.toFileObject(FileUtil.normalizeFile(target)); 
                 String tmpLocalFileName = source.getName();
                 String localFileName = target.getName();
-                String oldPathName = oldPath.getName();
 
                 if (!target.exists()) {
-                    moved[0] = renameLocalFileTo(source, target);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
-                    }
-                    if (moved[0]) {
+                    try {
+                        foTarget = foSource.getParent().createData(foSource.getName());
+                    } catch (IOException ex) {
+                        moved[0] = false;
                         return;
                     }
-                }
-                // possible cleanup
-                deleteLocalFile(oldPath, ""); // NOI18N
-
-                // try to move the old file, move the new file, delete the old file
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Renaming in chain: (1) <file> -> <file>.old~ ; (2) <file>.new~ -> <file> ; (3) rm <file>.old~");
-                }
-                // intentional usage of java.io.File!!
-                //  (if the file is opened in the editor, it's not closed, just refreshed)
-                moved[0] = target.renameTo(oldPath);
-                FileObject FO = FileUtil.toFileObject(target);
-                if (FO != null) FO.refresh();
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
-                    }
-                if (!moved[0]) {
-                    return;
-                }
-                moved[0] = renameLocalFileTo(source, target);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
-                }
-                if (!moved[0] && oldPath.exists() && !target.exists()) {
-                    // try to restore the original file
-                    boolean restored = renameLocalFileTo(oldPath, target);
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPathName, localFileName, restored));
+                        LOGGER.fine(String.format("Data file %s created.", localFileName, moved[0]));
                     }
-                    return;
                 }
-                    deleteLocalFile(oldPath, "(3) "); // NOI18N
+
+                //replace content of the target file with the source file
+                FileLock lock = null;
+                InputStream in = null;
+                OutputStream out = null;
+                try {
+                    lock = foTarget.lock();
+                    in = foSource.getInputStream();
+                    // lock the target file. 
+                    // TODO the doewnload action shoudln't save all file before 
+                    // executing, then the ide will ask, whether user wants 
+                    // to replace currently editted file.
+                    out = foTarget.getOutputStream(lock);
+                    FileUtil.copy(in, out);
+                    moved[0] = true;
+                    in.close();
+                    out.close();
+                    foSource.delete();
+                } catch (IOException e) {
+                    moved[0] = false;
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
                 }
+             
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("(2) Content of %s copied into %s: %s", tmpLocalFileName, localFileName, moved[0]));
+                }
+            }
         });
-        assert moved[0] || !moved[0];
         return moved[0];
     }
 
@@ -765,7 +764,7 @@ public final class RemoteClient implements Cancellable {
             return localFile;
         }
         File newFile = new File(localFile, transferFile.getRelativePath(true));
-        FileObject FO = FileUtil.toFileObject(newFile);
+        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
         if (FO != null) FO.refresh();
         return newFile;
     }
@@ -773,7 +772,7 @@ public final class RemoteClient implements Cancellable {
     // #169778
     private File getLocalFile(File localFile, TransferFile parent, RemoteFile file) {
         File newFile = new File(getLocalFile(localFile, parent), file.getName());
-        FileObject FO = FileUtil.toFileObject(newFile);
+        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
         if (FO != null) FO.refresh();
         return newFile;
     }
@@ -1055,25 +1054,23 @@ public final class RemoteClient implements Cancellable {
      * @param target a target file, cannot exist.
      * @return <code>true</code> if the rename was successful, <code>false</code> otherwise.
      */
-    private static boolean renameLocalFileTo(File source, File target) {
+    private static boolean renameLocalFileTo(FileObject source, File target) {
         long start = 0L;
         if (LOGGER.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
         }
-        assert source.exists() : "Source file must exist " + source;
+        assert source.isValid() : "Source file must exist " + source;
         assert !target.exists() : "Target file cannot exist " + target;
-
-        FileObject sourceFO = FileUtil.toFileObject(source);
-        assert sourceFO != null : "Source fileobject must exist " + source;
-
+        
+        
         String name = getName(target.getName());
         String ext = FileUtil.getExtension(target.getName());
 
         boolean moved = false;
         try {
-            FileLock lock = sourceFO.lock();
+            FileLock lock = source.lock();
             try {
-                sourceFO.rename(lock, name, ext);
+                source.rename(lock, name, ext);
                 moved = true;
             } catch (IOException exc) {
                 LOGGER.log(Level.INFO, null, exc);
@@ -1089,18 +1086,18 @@ public final class RemoteClient implements Cancellable {
         return moved;
     }
 
-    private void deleteLocalFile(File file, String logMsgPrefix) {
-        if (!file.exists()) {
+    private void deleteLocalFile(FileObject fileObject, String logMsgPrefix) {
+        if (fileObject == null || !fileObject.isValid()) {
             return;
         }
         try {
-            FileUtil.toFileObject(file).delete();
+            fileObject.delete();
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", file.getName()));
+                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", fileObject.getName()));
             }
         } catch (IOException e) {
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: FALSE", file.getName()));
+                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: FALSE", fileObject.getName()));
             }
         }
     }

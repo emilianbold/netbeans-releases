@@ -1067,6 +1067,25 @@ public class Utilities {
             }
             return super.catchClause();
         }
+
+        @Override
+        protected JCTree resource() {
+            if (S.token() == Token.IDENTIFIER && S.stringVal().startsWith("$")) {
+                //XXX: should inspect the next token, not next character:
+                char[] maybeSemicolon = S.getRawCharacters(S.endPos(), S.endPos() + 1);
+                
+                if (maybeSemicolon[0] == ';' || maybeSemicolon[0] == ')') {
+                    int pos = S.pos();
+                    com.sun.tools.javac.util.Name name = S.name();
+                    
+                    S.nextToken();
+                    
+                    return F.at(pos).Ident(name);
+                }
+            }
+            return super.resource();
+        }
+        
     }
 
     private static final class PushbackLexer implements Lexer {

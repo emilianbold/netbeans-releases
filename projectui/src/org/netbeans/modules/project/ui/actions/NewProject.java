@@ -59,7 +59,7 @@ import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectUtilities;
-import org.netbeans.modules.project.ui.TemplatesPanel;
+import org.netbeans.modules.project.ui.ProjectTemplatePanel;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
@@ -110,12 +110,12 @@ public class NewProject extends BasicAction {
             
         if ( isPreselect ) {
             // XXX make the properties public ?
-            wizard.putProperty(TemplatesPanel.PRESELECT_CATEGORY, getValue(TemplatesPanel.PRESELECT_CATEGORY));
-            wizard.putProperty(TemplatesPanel.PRESELECT_TEMPLATE, getValue(TemplatesPanel.PRESELECT_TEMPLATE));
+            wizard.putProperty(ProjectTemplatePanel.PRESELECT_CATEGORY, getValue(ProjectTemplatePanel.PRESELECT_CATEGORY));
+            wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, getValue(ProjectTemplatePanel.PRESELECT_TEMPLATE));
         }
         else {
-            wizard.putProperty(TemplatesPanel.PRESELECT_CATEGORY, null);
-            wizard.putProperty(TemplatesPanel.PRESELECT_TEMPLATE, null);
+            wizard.putProperty(ProjectTemplatePanel.PRESELECT_CATEGORY, null);
+            wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, null);
         }
 
         FileObject folder = (FileObject) getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);

@@ -2,14 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ejbs.entity.bean;
 
 import javax.ejb.EJBLocalObject;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface LRBELocal extends EJBLocalObject {
     

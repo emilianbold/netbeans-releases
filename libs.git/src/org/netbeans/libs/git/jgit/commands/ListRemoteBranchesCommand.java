@@ -43,10 +43,10 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
@@ -54,6 +54,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.FetchConnection;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
@@ -65,12 +66,12 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  * TODO merge with listRemoteTagsCommand when it's implemented
  * @author ondra
  */
-public class ListRemoteBranchesCommand extends GitCommand {
+public class ListRemoteBranchesCommand extends TransportCommand {
     private HashMap<String, GitBranch> remoteBranches;
-    private final URL remoteUrl;
+    private final String remoteUrl;
 
-    public ListRemoteBranchesCommand (Repository repository, URL remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
+        super(repository, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
 
@@ -79,17 +80,17 @@ public class ListRemoteBranchesCommand extends GitCommand {
         Repository repository = getRepository();
         Transport t = null;
         FetchConnection conn = null;
-        Map<String, Ref> refs;
+        Collection<Ref> refs = null;
         try {
-            t = Transport.open(repository, new URIish(remoteUrl.toString()));
+            t = openTransport(false);
             conn = t.openFetch();
-            refs = conn.getRefsMap();
+            refs = conn.getRefs();
         } catch (URISyntaxException ex) {
             throw new GitException(ex);
         } catch (NotSupportedException ex) {
             throw new GitException(ex);
-        } catch (TransportException ex) {
-            throw new GitException(ex);
+        } catch (TransportException e) {
+            handleException(e);
         } finally {
             if (conn != null) {
                 conn.close();
@@ -99,16 +100,33 @@ public class ListRemoteBranchesCommand extends GitCommand {
             }
         }
         remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(getRefs(refs.values(), Constants.R_HEADS));
+        remoteBranches.putAll(getRefs(refs, Constants.R_HEADS));
     }
 
     private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix) {
         Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+        
+        // try to find the head first - it usually is the active remote branch
+        Ref head = null;
+        for (final Ref ref : allRefs) {
+            if (ref.getLeaf().getName().equals(Constants.HEAD)) {
+                head = ref;
+                break;
+            }
+        }
+        
+        // get all refs/heads
         for (final Ref ref : RefComparator.sort(allRefs)) {
             String refName = ref.getLeaf().getName();
             if (refName.startsWith(prefix)) {
                 String name = refName.substring(refName.indexOf('/', 5) + 1);
-                branches.put(name, new JGitBranch(name, false, false, ref.getLeaf().getObjectId()));
+                branches.put(
+                    name, 
+                    new JGitBranch(
+                        name, 
+                        false, 
+                        head != null && ref.getObjectId().equals(head.getObjectId()), 
+                        ref.getLeaf().getObjectId()));
             }
         }
         return branches;

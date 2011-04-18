@@ -64,7 +64,6 @@ import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 import org.netbeans.test.j2ee.lib.Reporter;
 import org.netbeans.test.j2ee.lib.RequiredFiles;
 
-
 /**
  * Test creation of new projects via API
  * These tests are part of J2EE Functional test suite.
@@ -73,21 +72,24 @@ import org.netbeans.test.j2ee.lib.RequiredFiles;
  * @see <a href="http://qa.netbeans.org/modules/j2ee/promo-f/testspec/j2ee-wizards-testspec.html">J2EE Wizards Test Specification</a>
  */
 public class J2eeProjectsTest extends J2eeTestCase {
-    
+
     private Reporter reporter;
     private static final File projectsHome = new File(System.getProperty("nbjunit.workdir"));
-    
+
     /**
      * Creates a new instance of J2eeProjectsTest
      */
     public J2eeProjectsTest(String name) {
         super(name);
     }
-    
-        public static Test suite() {
+
+    public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(J2eeProjectsTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf,"testCreateEjbProject","testCreateWebProject",
-                "testCreateEmptyJ2eeProject","testAddModulesToJ2eeProject");
+        conf = addServerTests(Server.GLASSFISH, conf,
+                "testCreateEjbProject",
+                "testCreateWebProject",
+                "testCreateEmptyJ2eeProject",
+                "testAddModulesToJ2eeProject");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -95,9 +97,9 @@ public class J2eeProjectsTest extends J2eeTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        reporter = Reporter.getReporter((NbTestCase)this);
+        reporter = Reporter.getReporter((NbTestCase) this);
     }
-    
+
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -105,7 +107,7 @@ public class J2eeProjectsTest extends J2eeTestCase {
             reporter.close();
         }
     }
-    
+
     /**
      * Creates EJB Module project and checks if all files are created
      * succesfully (including server specific deployment descriptor)
@@ -115,7 +117,7 @@ public class J2eeProjectsTest extends J2eeTestCase {
         assertTrue(projectsHome.exists() && projectsHome.isDirectory());
         RequiredFiles rf = null;
         try {
-            rf = new RequiredFiles(new File(getDataDir(), "structures/ejbProject.str"));
+            rf = new RequiredFiles(new File(getDataDir(), "structures/ejbProject6.str"));
         } catch (IOException ioe) {
             ioe.printStackTrace(reporter.getLogStream());
         }
@@ -124,7 +126,7 @@ public class J2eeProjectsTest extends J2eeTestCase {
         assertNotNull(p);
         checkProjectStructure(p, rf);
     }
-    
+
     /**
      * Creates Web Application project and checks if all files are created
      * succesfully (including server specific deployment descriptor)
@@ -134,7 +136,7 @@ public class J2eeProjectsTest extends J2eeTestCase {
         assertTrue(projectsHome.exists() && projectsHome.isDirectory());
         RequiredFiles rf = null;
         try {
-            rf = new RequiredFiles(new File(getDataDir(), "structures/webProject.str"));
+            rf = new RequiredFiles(new File(getDataDir(), "structures/webProject6.str"));
         } catch (IOException ioe) {
             ioe.printStackTrace(reporter.getLogStream());
         }
@@ -143,7 +145,7 @@ public class J2eeProjectsTest extends J2eeTestCase {
         assertNotNull(p);
         checkProjectStructure(p, rf);
     }
-    
+
     /**
      * Creates empty Enterprise Application project and checks if all files
      * are created succesfully (including server specific deployment descriptor)
@@ -160,10 +162,9 @@ public class J2eeProjectsTest extends J2eeTestCase {
         assertNotNull(rf);
         Project p = (Project) J2eeProjectSupport.createProject(projectsHome, "J2eePrj", J2eeProjectSupport.J2EE_PROJECT, null);
         assertNotNull(p);
-        waitForSunDD(p, "sun-application.xml");
         checkProjectStructure(p, rf);
     }
-    
+
     /**
      * Add war and jar to ear.
      */
@@ -179,28 +180,28 @@ public class J2eeProjectsTest extends J2eeTestCase {
             AntProjectHelper h = earPrj.getAntProjectHelper();
             AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
             ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
-            EarProjectProperties.addJ2eeSubprojects(earPrj, new Project[] {warPrj, ejbPrj});
+            EarProjectProperties.addJ2eeSubprojects(earPrj, new Project[]{warPrj, ejbPrj});
         } catch (IOException ioe) {
             ioe.printStackTrace(reporter.getLogStream());
             fail("IOEx while adding modules to EAR project.");
         }
     }
-    
+
     protected void checkProjectStructure(Project p, RequiredFiles r) {
         Set<String> l = J2eeProjectSupport.getFileSet(p);
         Set<String> rf = r.getRequiredFiles();
         reporter.ref("Project: " + p.toString());
         reporter.ref("Expected: " + rf);
         reporter.ref("Real: " + l);
-        assertTrue("Files: " + getDifference(l, rf) + " are missing in project: " + p.toString() , l.containsAll(rf));
+        assertTrue("Files: " + getDifference(l, rf) + " are missing in project: " + p.toString(), l.containsAll(rf));
         rf = r.getRequiredFiles();
         reporter.ref("Project: " + p.toString());
         reporter.ref("Expected: " + rf);
         reporter.ref("Real: " + l);
         Set s = getDifference(rf, l);
-        assertTrue("Files: " + s + " are new in project: " + p.toString() , s.isEmpty());
+        assertTrue("Files: " + s + " are new in project: " + p.toString(), s.isEmpty());
     }
-    
+
     private Set getDifference(Set s1, Set s2) {
         Set result = new HashSet();
         s2.removeAll(s1);
@@ -213,16 +214,5 @@ public class J2eeProjectsTest extends J2eeTestCase {
             }
         }
         return result;
-    }
-    
-    private void waitForSunDD(Project p, String ddName) {
-        long MAX_WAITING_TIME = 10000;
-        long t1 = System.currentTimeMillis();
-        File f = new File(FileUtil.toFile(p.getProjectDirectory().getFileObject("src/conf")), ddName);
-        while (!f.exists() && System.currentTimeMillis() - t1 < MAX_WAITING_TIME) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {}
-        }
     }
 }

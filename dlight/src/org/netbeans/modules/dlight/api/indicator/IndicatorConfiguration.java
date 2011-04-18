@@ -42,6 +42,7 @@
 package org.netbeans.modules.dlight.api.indicator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -57,8 +58,8 @@ public abstract class IndicatorConfiguration {
     private final IndicatorMetadata metadata;
     private final int position;
     private final List<VisualizerConfiguration> visualizerConfigurations;
-    private String actionDisplayName;
-    private String actionTooltip;
+    private final List<IndicatorActionDescriptor> actionDescriptors;
+    private IndicatorActionDescriptor defaultActionDescriptor;
     private boolean visible;
 
     static {
@@ -67,7 +68,7 @@ public abstract class IndicatorConfiguration {
 
     /**
      * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
-     * @param metadata metadata to create Indicator configuration for
+     * @param metadata meta-data to create Indicator configuration for
      * @param position indicator position
      */
     public IndicatorConfiguration(IndicatorMetadata metadata, int position, boolean visible) {
@@ -75,11 +76,12 @@ public abstract class IndicatorConfiguration {
         this.position = position;
         this.visible = visible;
         visualizerConfigurations = new ArrayList<VisualizerConfiguration>();
+        actionDescriptors = new ArrayList<IndicatorActionDescriptor>();
     }
 
     /**
      * Created new Indicator Configuration on the base of {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
-     * @param metadata metadata to create Indicator configuration for
+     * @param metadata meta-data to create Indicator configuration for
      */
     public IndicatorConfiguration(IndicatorMetadata metadata) {
         this(metadata, 0, true);
@@ -104,17 +106,96 @@ public abstract class IndicatorConfiguration {
         }
     }
 
-    public final void setActionDisplayName(String actionDisplayName) {
-        this.actionDisplayName = actionDisplayName;
-    }
-
-    public final void setActionTooltip(String actionTooltip) {
-        this.actionTooltip = actionTooltip;
+    /**
+     * Appends specified {@link org.netbeans.modules.dlight.api.indicator.IndicatorActionDescriptor} 
+     * to a list of "open-visualizer" actions associated with the 
+     * {@link org.netbeans.modules.dlight.spi.indicator.Indicator}.
+     * <p>
+     * Current design prohibits to provide an arbitrary action accessible via 
+     * indicator's UI. Instead it gives a way to provide one or several 
+     * "open-visualizer" actions based on 
+     * {@link org.netbeans.modules.dlight.api.indicator.IndicatorActionDescriptor} list.
+     * <p>
+     * When an action associated with the descriptor is performed an attempt to 
+     * open a Visualizer for specified by the descriptor 
+     * {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration}
+     * is performed.
+     * <p>
+     * If descriptor contains no reference to a <code>VisualizerConfiguration</code> 
+     * (i.e. it is null), then action will open a first 'suitable' visualizer 
+     * identified by a configuration from a list constructed with 
+     * {@link addVisualizerConfiguration(VisualizerConfiguration)}.
+     * 
+     * @param descr descriptor to be used for creating an "open-visualizer" action 
+     * associated with the {@link org.netbeans.modules.dlight.spi.indicator.Indicator}.
+     */
+    public final void addActionDescription(final IndicatorActionDescriptor descr) {
+        if (descr != null && !actionDescriptors.contains(descr)) {
+            this.actionDescriptors.add(descr);
+        }
     }
 
     /**
-     * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
-     * @return indicator metadata
+     * Sets a description of a default action associated with an indicator and 
+     * adds it (if not there yet) to a list of all registered descriptions.
+     * <p>
+     * If default descriptor is not registered implicitly, the first added 
+     * description is treated as a default one.
+     * 
+     * @param descr descriptor to be used for creating a default action 
+     * associated with an indicator.
+     * 
+     * @see addActionDescription(IndicatorActionDescriptor)
+     */
+    public final void setDefaultActionDescription(final IndicatorActionDescriptor descr) {
+        defaultActionDescriptor = descr;
+        // will be added if not registered yet only
+        addActionDescription(descr);
+    }
+    
+    /**
+     * Deprecated API for specifying default action's display name.
+     * 
+     * @param actionDisplayName - visible name of a default action
+     * @see setDefaultActionDescription(IndicatorActionDescriptor)
+     * @deprecated
+     */
+    @Deprecated
+    public final void setActionDisplayName(String actionDisplayName) {
+        String tooltip = null;
+        
+        if (defaultActionDescriptor != null) {
+            actionDescriptors.remove(defaultActionDescriptor);
+            tooltip = defaultActionDescriptor.getTooltip();
+        }
+        
+        defaultActionDescriptor = new IndicatorActionDescriptor(actionDisplayName, tooltip, null);
+        setDefaultActionDescription(defaultActionDescriptor);
+    }
+
+    /**
+     * Deprecated API for specifying default action's tooltip text.
+     * 
+     * @param actionTooltip - tooltip of a default action
+     * @see setDefaultActionDescription(IndicatorActionDescriptor)
+     * @deprecated
+     */
+    @Deprecated
+    public final void setActionTooltip(String actionTooltip) {
+        String displayName = null;
+        
+        if (defaultActionDescriptor != null) {
+            actionDescriptors.remove(defaultActionDescriptor);
+            displayName = defaultActionDescriptor.getDisplayName();
+        }
+        
+        defaultActionDescriptor = new IndicatorActionDescriptor(displayName, actionTooltip, null);
+        setDefaultActionDescription(defaultActionDescriptor);
+    }
+
+    /**
+     * Returns indicator meta-data, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
+     * @return indicator meta-data
      */
     protected final IndicatorMetadata getIndicatorMetadata() {
         return metadata;
@@ -132,14 +213,25 @@ public abstract class IndicatorConfiguration {
      * Returns  a list of {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration} used
      * by the indicator as a configuration of Detailed View which will be opened by clicking on the
      * indicator created on the base of this configuration
-     * @return visualizer configuraions list
+     * @return visualizer configurations list
      */
     protected final List<VisualizerConfiguration> getVisualizerConfigurations() {
-        return visualizerConfigurations;
+        return Collections.unmodifiableList(visualizerConfigurations);
     }
 
-    private final String getActionDisplayName() {
-        return actionDisplayName;
+    private IndicatorActionDescriptor getDefaultActionDescriptor() {
+        // If default is initialized, return it
+        
+        if (defaultActionDescriptor != null) {
+            return defaultActionDescriptor;
+        }
+                
+        // If here - return first entry from the list of actionDescriptors
+        if (!actionDescriptors.isEmpty()) {
+            return actionDescriptors.get(0);
+        }
+        
+        return null;
     }
 
     public boolean isVisible() {
@@ -164,16 +256,13 @@ public abstract class IndicatorConfiguration {
         }
 
         @Override
-        public String getActionDisplayName(IndicatorConfiguration configuration) {
-            return configuration.getActionDisplayName();
+        public List<IndicatorActionDescriptor> getActionDescriptors(IndicatorConfiguration configuration) {
+            return Collections.unmodifiableList(configuration.actionDescriptors);
         }
 
         @Override
-        public String getActionTooltip(IndicatorConfiguration configuration) {
-            return configuration.actionTooltip;
+        public IndicatorActionDescriptor getDefaultActionDescriptor(IndicatorConfiguration configuration) {
+            return configuration.getDefaultActionDescriptor();
         }
-
-        
     }
-
 }
