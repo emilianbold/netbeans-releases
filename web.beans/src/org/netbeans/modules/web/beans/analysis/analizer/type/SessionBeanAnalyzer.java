@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analizer;
+package org.netbeans.modules.web.beans.analysis.analizer.type;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,30 +59,41 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public abstract class AbstractScopedAnalyzer  {
+public class SessionBeanAnalyzer implements ClassAnalyzer{
     
     private static final Logger LOG = Logger.getLogger( 
-            AbstractScopedAnalyzer.class.getName() );  
+            SessionBeanAnalyzer.class.getName() );  
 
-    public void analyze( Element element, 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    public void analyze( TypeElement element, TypeElement parent,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
             return ;
         }
+        boolean isSingleton = AnnotationUtil.hasAnnotation(element, AnnotationUtil.SINGLETON, 
+                compInfo);
+        boolean isStateless = AnnotationUtil.hasAnnotation(element, AnnotationUtil.STATELESS, 
+                compInfo);
         MetaModelSupport support = new MetaModelSupport(project);
         MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<Element> handle = ElementHandle.create( element);
+        final ElementHandle<TypeElement> handle = ElementHandle.create( element);
         try {
             String scope = metaModel.runReadAction( 
                     new MetadataModelAction<WebBeansModel, String>() 
@@ -90,34 +101,51 @@ public abstract class AbstractScopedAnalyzer  {
 
                 @Override
                 public String run( WebBeansModel model ) throws Exception {
-                    Element element = handle.resolve( model.getCompilationController());
-                    if ( element == null ){
+                    TypeElement clazz = handle.resolve( model.getCompilationController());
+                    if ( clazz == null ){
                         return null;
                     }
-                    return model.getScope( element );
+                    return model.getScope( clazz );
                 }
             });
-            TypeElement scopeElement = compInfo.getElements().getTypeElement( scope );
-            if ( scopeElement == null ){
+            if ( scope == null ){
                 return;
             }
-            checkScope( scopeElement , element , compInfo, descriptions );
+            if ( isSingleton ) {
+                if ( AnnotationUtil.APPLICATION_SCOPED.equals( scope ) || 
+                        AnnotationUtil.DEPENDENT.equals( scope ) )
+                {
+                    return;
+                }
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, 
+                    NbBundle.getMessage(SessionBeanAnalyzer.class, 
+                            "ERR_InvalidSingletonBeanScope"));              // NOI18N
+                descriptions.add( description );
+            }
+            else if ( isStateless ) {
+                if ( !AnnotationUtil.DEPENDENT.equals( scope ) )
+                {
+                    ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                        NbBundle.getMessage(SessionBeanAnalyzer.class, 
+                                "ERR_InvalidStatelessBeanScope"));              // NOI18N
+                    descriptions.add( description );
+                }
+            }
         }
         catch (MetadataModelException e) {
-            if ( !informCdiException(e, element, compInfo, descriptions) ){
+            if ( !informCdiException(e, element, compInfo, descriptions)){
                 LOG.log( Level.INFO , null , e);
             }
         }
         catch (IOException e) {
-            if ( !informCdiException(e, element, compInfo, descriptions) ){
+            if ( !informCdiException(e, element, compInfo, descriptions)){
                 LOG.log( Level.INFO , null , e);
             }
         }
     }
     
-    protected abstract void checkScope( TypeElement scopeElement, Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions );
-
     private boolean informCdiException(Exception exception , Element element, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions)
     {
@@ -131,4 +159,5 @@ public abstract class AbstractScopedAnalyzer  {
         }
         return false;
     }
+
 }

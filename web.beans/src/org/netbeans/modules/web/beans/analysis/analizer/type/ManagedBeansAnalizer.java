@@ -79,10 +79,6 @@ import org.openide.util.NbBundle;
  */
 public class ManagedBeansAnalizer implements ClassAnalyzer {
     
-    public static final String INJECT = "javax.inject.Inject";                      // NOI18N
-
-    public static final String DECORATOR = "javax.decorator.Decorator";              // NOI18N
-
     private static final String EXTENSION = "javax.enterprise.inject.spi.Extension";  //NOI18N
     
     private static final Logger LOG = Logger.getLogger( 
@@ -154,7 +150,8 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
     {
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.ABSTRACT )){
-            if ( AnnotationUtil.hasAnnotation(element, DECORATOR, compInfo) ){
+            if ( AnnotationUtil.hasAnnotation(element, 
+                    AnnotationUtil.DECORATOR, compInfo) ){
                 return;
             }
                 
@@ -196,7 +193,7 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             if ( parameters.size() ==0 ){
                 return;
             }
-            if ( AnnotationUtil.hasAnnotation(ctor, INJECT, compInfo)){
+            if ( AnnotationUtil.hasAnnotation(ctor, AnnotationUtil.INJECT_FQN, compInfo)){
                 return;
             }
         }

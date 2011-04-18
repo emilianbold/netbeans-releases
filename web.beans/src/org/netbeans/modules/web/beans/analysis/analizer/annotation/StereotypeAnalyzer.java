@@ -40,18 +40,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analizer;
+package org.netbeans.modules.web.beans.analysis.analizer.annotation;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -60,33 +65,52 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class CtorAnalyzer implements ElementAnalyzer {
-
+public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements AnnotationAnalyzer {
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+    public void analyze( TypeElement element, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
     {
-        ExecutableElement ctor = (ExecutableElement)element;
-        List<? extends VariableElement> parameters = ctor.getParameters();
-        for (VariableElement param : parameters) {
-            boolean isDisposer = AnnotationUtil.hasAnnotation(param, 
-                    AnnotationUtil.DISPOSES_FQN, compInfo);
-            boolean isObserver = AnnotationUtil.hasAnnotation(param, 
-                    AnnotationUtil.OBSERVES_FQN, compInfo);
-            if ( isDisposer || isObserver ){
-                String annotation = isDisposer ? AnnotationUtil.DISPOSES : 
-                    AnnotationUtil.OBSERVES;
+        boolean isStereotype = AnnotationUtil.hasAnnotation(element, 
+                AnnotationUtil.STEREOTYPE, compInfo);
+        if ( !isStereotype ){
+            return;
+        }
+        analyze((Element)element, compInfo, descriptions);
+        checkName( element, compInfo, descriptions);
+    }
+
+    private void checkName( TypeElement element, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
+    {
+        AnnotationMirror named = AnnotationUtil.getAnnotationMirror(element, 
+                AnnotationUtil.NAMED , compInfo);
+        Map<? extends ExecutableElement, ? extends AnnotationValue> members = 
+            named.getElementValues();
+        for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: 
+            members.entrySet()) 
+        {
+            ExecutableElement member = entry.getKey();
+            if ( member.getSimpleName().contentEquals("value")){        // NOI18N
                 ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
-                    CtorAnalyzer.class, "ERR_BadAnnotationParamCtor", annotation)); // NOI18N 
+                createError( element, compInfo, 
+                    NbBundle.getMessage(StereotypeAnalyzer.class, 
+                            "ERR_NonEmptyNamedStereotype"));            // NOI18N
                 descriptions.add( description );
-                break;
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void checkScope( TypeElement scopeElement, Element element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
     }
 
 }

@@ -44,7 +44,10 @@ package org.netbeans.modules.web.beans.analysis.analizer.type;
 
 import java.util.List;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
@@ -60,8 +63,6 @@ import org.openide.util.NbBundle;
  */
 public class AnnotationsAnalyzer implements ClassAnalyzer {
     
-    public static final String INTERCEPTOR = "javax.interceptor.Interceptor";  // NOI18N
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
@@ -76,14 +77,119 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         boolean isDecorator = AnnotationUtil.hasAnnotation(element, 
-                ManagedBeansAnalizer.DECORATOR, compInfo);
+                AnnotationUtil.DECORATOR, compInfo);
         boolean isInterceptor = AnnotationUtil.hasAnnotation(element, 
-                INTERCEPTOR, compInfo);
+                AnnotationUtil.INTERCEPTOR, compInfo);
         if ( isDecorator && isInterceptor ){
             ErrorDescription description = CdiEditorAnalysisFactory.
             createError( element, compInfo, NbBundle.getMessage(
-                ManagedBeansAnalizer.class, "ERR_DecoratorInterceptor"));
+                AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));
             descriptions.add( description );
+        }
+        if ( isDecorator || isInterceptor ){
+            checkProducerFields( element , isDecorator , compInfo , descriptions );
+            checkMethods( element , isDecorator , compInfo , descriptions );
+            checkSession( element , compInfo , descriptions);
+        }
+    }
+
+    private void checkSession( TypeElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        if ( AnnotationUtil.getAnnotationMirror(element, compInfo, 
+                AnnotationUtil.STATEFUL, AnnotationUtil.STATELESS, 
+                AnnotationUtil.SINGLETON)!= null )
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, compInfo, NbBundle.getMessage(
+                AnnotationsAnalyzer.class,  "ERR_SesssionBeanID")); // NOI18N
+            descriptions.add( description );
+        }
+    }
+
+    private void checkMethods( TypeElement element, boolean isDecorator,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        List<ExecutableElement> methods = ElementFilter.methodsIn( 
+                element.getEnclosedElements());
+        for (ExecutableElement method : methods) {
+            boolean isProducer = AnnotationUtil.hasAnnotation(method, 
+                    AnnotationUtil.PRODUCES_FQN, compInfo);     
+            boolean isDisposer = false;
+            boolean isObserver = false;
+            List<? extends VariableElement> parameters = method.getParameters();
+            for (VariableElement param : parameters) {
+                if ( AnnotationUtil.hasAnnotation( param , AnnotationUtil.DISPOSES_FQN, 
+                        compInfo))
+                {
+                    isDisposer = true;
+                    break;
+                }
+                if ( AnnotationUtil.hasAnnotation( param , AnnotationUtil.OBSERVES_FQN, 
+                        compInfo))
+                {
+                    isObserver = true;
+                    break;
+                }
+            }
+            if ( isProducer || isDisposer || isObserver ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, NbBundle.getMessage(
+                    AnnotationsAnalyzer.class, getMethodErrorKey(isDecorator, 
+                            isProducer, isDisposer) , 
+                            method.getSimpleName().toString()));
+                descriptions.add( description );
+                break;
+            }
+        }
+    }
+    
+    private String getMethodErrorKey(boolean isDecorator, boolean isProducer,
+            boolean isDisposer )
+    {
+        String key= null;
+        if ( isDecorator ){
+            if ( isProducer ){
+                key = "ERR_DecoratorHasProducerMethod";             //  NOI18N
+            }
+            else if ( isDisposer ){
+                key = "ERR_DecoratorHasDisposerMethod";             //  NOI18N
+            }
+            else {
+                key = "ERR_DecoratorHasObserverMethod";             //  NOI18N
+            }
+        }
+        else {
+            if ( isProducer ){
+                key = "ERR_InterceptorHasProducerMethod";             //  NOI18N
+            }
+            else if ( isDisposer ){
+                key = "ERR_InterceptorHasDisposerMethod";             //  NOI18N
+            }
+            else {
+                key = "ERR_InterceptorHasObserverMethod";             //  NOI18N
+            }
+        }
+        return key;
+    }
+
+    private void checkProducerFields( TypeElement element, boolean isDecorator,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        List<VariableElement> fields = ElementFilter.fieldsIn( 
+                element.getEnclosedElements() );
+        for (VariableElement field : fields) {
+            if ( AnnotationUtil.hasAnnotation(field, AnnotationUtil.PRODUCES_FQN, 
+                    compInfo))
+            {
+                String key= isDecorator ? "ERR_DecoratorHasProducerField":
+                    "ERR_IntrerceptorHasProducerField";                 // NOI18N
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, NbBundle.getMessage(
+                        AnnotationsAnalyzer.class, key , field.getSimpleName().toString()));
+                descriptions.add( description );
+                break;
+            }
         }
     }
 

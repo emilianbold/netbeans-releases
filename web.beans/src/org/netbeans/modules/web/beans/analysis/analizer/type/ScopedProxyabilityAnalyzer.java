@@ -69,8 +69,6 @@ public class ScopedProxyabilityAnalyzer extends AbstractScopedAnalyzer
     implements ClassAnalyzer 
 {
     
-    private static final String NORMAL_SCOPE = "javax.enterprise.context.NormalScope"; // NOI18N
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
@@ -89,7 +87,7 @@ public class ScopedProxyabilityAnalyzer extends AbstractScopedAnalyzer
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
-                NORMAL_SCOPE, compInfo);
+                AnnotationUtil.NORMAL_SCOPE, compInfo);
         if ( isNormal ){
             checkFinal( element , compInfo , descriptions );
         }                

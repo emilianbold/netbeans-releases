@@ -63,7 +63,6 @@ public class TypedClassAnalizer extends AbstractTypedAnalyzer implements
     ClassAnalyzer
 {
     
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */

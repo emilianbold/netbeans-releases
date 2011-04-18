@@ -54,6 +54,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analizer.method.AnnotationsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.method.ScopedMethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.method.TypedMethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -98,6 +99,7 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
     static {
         ANALIZERS.add( new TypedMethodAnalyzer() );
         ANALIZERS.add( new ScopedMethodAnalyzer() );
+        ANALIZERS.add( new AnnotationsAnalyzer() );
     }
 
 }

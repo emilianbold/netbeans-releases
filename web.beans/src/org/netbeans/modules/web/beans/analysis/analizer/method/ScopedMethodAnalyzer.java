@@ -51,6 +51,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -63,8 +64,6 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
         MethodAnalyzer
 {
     
-    public static final String PRODUCES = "javax.enterprise.inject.Produces"; // NOI18N
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
@@ -73,8 +72,11 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
             TypeElement parent, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        
-        analyze(element, compInfo, descriptions);
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
+                compInfo))
+        {
+            analyze(element, compInfo, descriptions);
+        }
     }
 
     /* (non-Javadoc)

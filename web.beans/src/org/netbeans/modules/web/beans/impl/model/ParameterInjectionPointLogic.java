@@ -239,30 +239,66 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         return CONTEXT_DEPENDENT_ANNOTATION;
     }
     
-    static String getDeclaredScope( Element element , AnnotationModelHelper helper ) {
-        List<? extends AnnotationMirror> annotationMirrors = helper.
-            getCompilationController().getElements().getAllAnnotationMirrors( element );
+    static String getDeclaredScope( Element element , 
+            AnnotationModelHelper helper ) throws CdiException
+    {
+        List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
         ScopeChecker scopeChecker = ScopeChecker.get();
-        NormalScopeChecker normalScope = NormalScopeChecker.get();
-        List<? extends AnnotationMirror> annotations = new ArrayList<AnnotationMirror>( 
-                annotationMirrors);
-        Collections.reverse( annotations );
+        NormalScopeChecker normalScopeChecker = NormalScopeChecker.get();
+        String scope = getDeclaredScope(helper, annotationMirrors, scopeChecker, 
+                normalScopeChecker, true);
+        if ( scope != null ){
+            return scope;
+        }
+        
+        annotationMirrors = helper.getCompilationController().getElements().
+            getAllAnnotationMirrors( element );
+        return getDeclaredScope(helper, annotationMirrors, scopeChecker, 
+                normalScopeChecker, false );
+    }
+
+    private static String getDeclaredScope( AnnotationModelHelper helper,
+            List<? extends AnnotationMirror> annotationMirrors,
+            ScopeChecker scopeChecker , NormalScopeChecker normalScopeChecker ,
+            boolean singleScopeRequired ) throws CdiException
+    {
+        List<? extends AnnotationMirror> annotations = annotationMirrors;
+        if ( !singleScopeRequired ){
+            annotations = new ArrayList<AnnotationMirror>( 
+                    annotationMirrors);
+            Collections.reverse( annotations );
+        }
+        String scope = null;
         for (AnnotationMirror annotationMirror : annotations ) {
+            String declaredScope = null;
             DeclaredType annotationType = annotationMirror.getAnnotationType();
             Element annotationElement = annotationType.asElement();
             if ( annotationElement instanceof TypeElement ){
                 TypeElement annotation = (TypeElement)annotationElement;
                 scopeChecker.init(annotation, helper );
                 if ( scopeChecker.check() ){
-                    return annotation.getQualifiedName().toString();
+                    declaredScope = annotation.getQualifiedName().toString();
                 }
-                normalScope.init( annotation, helper );
-                if ( normalScope.check() ){
-                    return annotation.getQualifiedName().toString();
+                normalScopeChecker.init( annotation, helper );
+                if ( normalScopeChecker.check() ){
+                    declaredScope = annotation.getQualifiedName().toString();
+                }
+                if ( declaredScope != null ){
+                    if ( !singleScopeRequired ){
+                        return declaredScope;
+                    }
+                    if ( scope != null ){
+                        throw new CdiException(NbBundle.getMessage(
+                                ParameterInjectionPointLogic.class, 
+                                "ERR_SeveralScopes"));                      // NOI18N
+                    }
+                    else {
+                        scope = declaredScope;
+                    }
                 }
             }
         }
-        return null;
+        return scope;
     }
     
     protected TypeMirror getParameterType( Element element , DeclaredType parentType, 

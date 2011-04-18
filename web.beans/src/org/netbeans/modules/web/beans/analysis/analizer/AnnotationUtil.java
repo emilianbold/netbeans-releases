@@ -42,7 +42,9 @@
  */
 package org.netbeans.modules.web.beans.analysis.analizer;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -57,6 +59,51 @@ import org.netbeans.api.java.source.CompilationInfo;
  */
 public final class AnnotationUtil {
     
+    public static final String INJECT = "Inject";                                   // NOI18N
+    
+    public static final String INJECT_FQN = "javax.inject."+INJECT;                 // NOI18N
+
+    public static final String DECORATOR = "javax.decorator.Decorator";             // NOI18N
+    
+    public static final String PRODUCES = "Produces";
+    
+    public static final String PRODUCES_FQN = "javax.enterprise.inject."+           // NOI18N
+        PRODUCES;       
+    
+    public static final String INTERCEPTOR = "javax.interceptor.Interceptor";       // NOI18N
+    
+    public static final String NORMAL_SCOPE 
+                                          = "javax.enterprise.context.NormalScope"; // NOI18N
+    
+    public static String SCOPE = "javax.inject.Scope";                              // NOI18N
+    
+    public static final String DISPOSES = "Disposes";                               // NOI18N
+    
+    public static final String DISPOSES_FQN  = "javax.enterprise.inject."+          // NOI18N
+                                        DISPOSES;
+    
+    public static final String OBSERVES = "Observes";                               // NOI18N
+    
+    public static final String OBSERVES_FQN = "javax.enterprise.event."+            // NOI18N
+                                            OBSERVES;        
+    
+    public static final String STATELESS = "javax.ejb.Stateless";                   // NOI18N
+
+    public static final String STATEFUL = "javax.ejb.Stateful";                     // NOI18N 
+    
+    public static final String  SINGLETON   = "javax.ejb.Singleton";                // NOI18N
+    
+    public static final String APPLICATION_SCOPED 
+                    = "javax.enterprise.context.ApplicationScoped";                 // NOI18N
+    
+    public static final String DEPENDENT 
+                            = "javax.enterprise.context.Dependent";                 // NOI18N
+    
+    public static final String STEREOTYPE = 
+                    "javax.enterprise.inject.Stereotype";                           // NOI18N
+    
+    public static final String NAMED = "javax.inject.Named";                        // NOI18N
+    
     private AnnotationUtil(){
     }
     
@@ -69,9 +116,19 @@ public final class AnnotationUtil {
     public static AnnotationMirror getAnnotationMirror(Element element, 
             String annotation,CompilationInfo info )
     {
-        TypeElement annotationElement = info.getElements().getTypeElement(annotation);
-        if ( annotationElement == null ){
-            return null;
+        return getAnnotationMirror(element, info, annotation); 
+    }
+    
+    public static AnnotationMirror getAnnotationMirror(Element element, 
+            CompilationInfo info , String... annotationFqns)
+    {
+        Set<TypeElement> set = new HashSet<TypeElement>();
+        for( String annotation : annotationFqns){
+            TypeElement annotationElement = info.getElements().getTypeElement(
+                    annotation);
+            if ( annotationElement != null ){
+                set.add( annotationElement );
+            }
         }
         
         List<? extends AnnotationMirror> annotations = 
@@ -79,7 +136,7 @@ public final class AnnotationUtil {
         for (AnnotationMirror annotationMirror : annotations) {
             Element declaredAnnotation = info.getTypes().asElement( 
                     annotationMirror.getAnnotationType());
-            if ( annotationElement.equals( declaredAnnotation )){
+            if ( set.contains( declaredAnnotation ) ){
                 return annotationMirror;
             }
         }

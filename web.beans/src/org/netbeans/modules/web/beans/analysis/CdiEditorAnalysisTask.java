@@ -57,7 +57,7 @@ import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.AnnotationAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.CtorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer;
@@ -150,6 +150,6 @@ class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
         ANALIZERS.put(ElementKind.FIELD, new FieldElementAnalyzer());
         ANALIZERS.put(ElementKind.METHOD, new MethodElementAnalyzer());
         ANALIZERS.put(ElementKind.CONSTRUCTOR, new CtorAnalyzer());
-        ANALIZERS.put(ElementKind.ANNOTATION_TYPE, new AnnotationAnalyzer());
+        ANALIZERS.put(ElementKind.ANNOTATION_TYPE, new AnnotationElementAnalyzer());
     }
 }
