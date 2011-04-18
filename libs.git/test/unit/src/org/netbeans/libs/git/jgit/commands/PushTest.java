@@ -216,6 +216,14 @@ public class PushTest extends AbstractGitTestCase {
         branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(newid, branches.get("origin/master").getId());
+        
+        // and what about adding a new branch, does it show among remotes?
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/newbranch" }), Arrays.asList(new String[] { "refs/heads/newbranch:refs/remotes/origin/newbranch" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, remoteBranches.size());
+        branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(3, branches.size());
+        assertEquals(newid, branches.get("origin/newbranch").getId());
     }
     
     public void testPushRejectNonFastForward () throws Exception {
