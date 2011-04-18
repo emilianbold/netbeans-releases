@@ -241,8 +241,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    public static final JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
-        return new InitializeAllConstructorItem(info, fields, parent, substitutionOffset);
+    public static final JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
+        return new InitializeAllConstructorItem(info, fields, superConstructor, parent, substitutionOffset);
     }
 
     public static final String COLOR_END = "</font>"; //NOI18N
@@ -3148,12 +3148,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private List<ElementHandle<VariableElement>> fieldHandles;
         private ElementHandle<TypeElement> parentHandle;
+        private ElementHandle<ExecutableElement> superConstructorHandle;
         private String simpleName;
         private List<ParamDesc> params;
         private String sortText;
         private String leftText;
         
-        private InitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
+        private InitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
             this.parentHandle = ElementHandle.create(parent);
@@ -3161,6 +3162,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
                 this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+            }
+            this.superConstructorHandle = ElementHandle.create(superConstructor);
+            for (VariableElement ve : superConstructor.getParameters()) {
+                this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));                
             }
             this.simpleName = parent.getSimpleName().toString();
         }
@@ -3256,11 +3261,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 else
                                     break;
                             }
+                            ExecutableElement superConstructor = superConstructorHandle.resolve(copy);
                             
                             TreeMaker make = copy.getTreeMaker();
                             ClassTree clazz = (ClassTree) tp.getLeaf();
                             GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                            ClassTree decl = make.insertClassMember(clazz, idx, gu.createConstructor(parent, fieldElements, null)); //NOI18N
+                            ClassTree decl = make.insertClassMember(clazz, idx, gu.createConstructor(parent, fieldElements, superConstructor)); //NOI18N
                             
                             copy.rewrite(clazz, decl);
                         }

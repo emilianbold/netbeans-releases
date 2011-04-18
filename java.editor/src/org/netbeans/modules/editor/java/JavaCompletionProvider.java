@@ -3733,27 +3733,52 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (e.getKind().isField())
                         initializedFields.add((VariableElement)e);
                 }
+                Map<ExecutableElement, boolean[]> ctors2generate = new LinkedHashMap<ExecutableElement, boolean[]>();
                 GeneratorUtils.scanForFieldsAndConstructors(controller, clsPath, initializedFields, uninitializedFields, constructors);
-                boolean hasDefaultConstructor = false;
-                boolean hasConstrutorForAllUnintialized = false;
-                for (ExecutableElement ee : constructors) {
-                    List<? extends VariableElement> parameters = ee.getParameters();
-                    if (parameters.isEmpty() && !controller.getElementUtilities().isSynthetic(ee))
-                        hasDefaultConstructor = true;
-                    if (parameters.size() == uninitializedFields.size() && !uninitializedFields.isEmpty()) {
-                        Iterator<? extends VariableElement> proposed = uninitializedFields.iterator();
-                        Iterator<? extends VariableElement> original = parameters.iterator();                        
-                        boolean same = true;
-                        while (same && proposed.hasNext() && original.hasNext())
-                            same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
-                        if (same)
-                            hasConstrutorForAllUnintialized = true;
+                for (ExecutableElement ctor : ElementFilter.constructorsIn(((DeclaredType)te.getSuperclass()).asElement().getEnclosedElements())) {
+                    if (!ctor.getModifiers().contains(Modifier.PRIVATE)) {
+                        ctors2generate.put(ctor, new boolean[] {true, !uninitializedFields.isEmpty()});
                     }
                 }
-                if (!uninitializedFields.isEmpty() && !hasConstrutorForAllUnintialized)
-                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), uninitializedFields, te, anchorOffset));
-                if (!hasDefaultConstructor)
-                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), Collections.<VariableElement>emptySet(), te, anchorOffset));
+                for (ExecutableElement ee : constructors) {
+                    if (!controller.getElementUtilities().isSynthetic(ee)) {
+                        List<? extends VariableElement> parameters = ee.getParameters();
+                        for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
+                            int size = entry.getKey().getParameters().size();
+                            if (size >= 0 && parameters.size() == size) {
+                                Iterator<? extends VariableElement> proposed = entry.getKey().getParameters().iterator();
+                                Iterator<? extends VariableElement> original = parameters.iterator();                        
+                                boolean same = true;
+                                while (same && proposed.hasNext() && original.hasNext())
+                                    same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
+                                if (same)
+                                    entry.getValue()[0] = false;
+                            } else if (!uninitializedFields.isEmpty()) {
+                                size += uninitializedFields.size();
+                                if (size > 0 && parameters.size() == size) {
+                                    Iterator<? extends VariableElement> proposed = uninitializedFields.iterator();
+                                    Iterator<? extends VariableElement> original = parameters.iterator();                        
+                                    boolean same = true;
+                                    while (same && proposed.hasNext() && original.hasNext())
+                                        same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
+                                    if (same) {
+                                        proposed = entry.getKey().getParameters().iterator();
+                                        while (same && proposed.hasNext() && original.hasNext())
+                                            same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
+                                        if (same)
+                                            entry.getValue()[1] = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
+                    if (entry.getValue()[0])
+                        results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), Collections.<VariableElement>emptySet(), entry.getKey(), te, anchorOffset));
+                    if (entry.getValue()[1])
+                        results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), uninitializedFields, entry.getKey(), te, anchorOffset));
+                }
             }
         }
         
