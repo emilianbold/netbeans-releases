@@ -189,6 +189,13 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                             Exceptions.printStackTrace(exception);
                         }
                     }
+
+                    // if maven, exclude user defined libraries
+                    Properties properties = panel.getController().getProperties();
+                    Boolean isMaven = (Boolean) properties.getProperty("maven");
+                    if (isMaven != null && isMaven.booleanValue()) {
+                        removeUserDefinedLibraries(registeredItems);
+                    }
                     
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -223,6 +230,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfComponentsInitialized = true;
         if (currentJSFVersion !=null) {
             updateJsfComponentsModel(currentJSFVersion);
+        }
+    }
+
+    private void removeUserDefinedLibraries(Vector<String> registeredItems) {
+        for (LibraryItem item : jsfLibraries) {
+            if (item.getLibrary().getContent("maven-pom").isEmpty()) { //NOI18N
+                registeredItems.remove(item.getLibrary().getDisplayName());
+            }
         }
     }
     

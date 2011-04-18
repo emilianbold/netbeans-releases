@@ -118,8 +118,8 @@ abstract class TransportCommand extends GitCommand {
         }
     }
     
-    protected Transport openTransport () throws URISyntaxException, NotSupportedException {
-        URIish uri = getUriWithUsername(false);
+    protected Transport openTransport (boolean openPush) throws URISyntaxException, NotSupportedException {
+        URIish uri = getUriWithUsername(openPush);
         Transport transport = Transport.open(getRepository(), uri);
         RemoteConfig config = getRemoteConfig();
         if (config != null) {
