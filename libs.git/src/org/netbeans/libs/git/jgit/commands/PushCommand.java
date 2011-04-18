@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.IOException;
 import org.netbeans.libs.git.jgit.JGitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate;
 import java.net.URISyntaxException;
@@ -54,10 +55,10 @@ import org.netbeans.libs.git.jgit.DelegatingProgressMonitor;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.TagOpt;
-import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.Transport;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -66,50 +67,55 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  *
  * @author ondra
  */
-public class FetchCommand extends TransportCommand {
+public class PushCommand extends TransportCommand {
 
     private final ProgressMonitor monitor;
-    private final List<String> refSpecs;
+    private final List<String> pushRefSpecs;
     private final String remote;
     private Map<String, GitTransportUpdate> updates;
-    private FetchResult result;
-    
-    public FetchCommand (Repository repository, String remoteName, ProgressMonitor monitor) {
-        this(repository, remoteName, Collections.<String>emptyList(), monitor);
-    }
+    private PushResult result;
+    private final List<String> fetchRefSpecs;
 
-    public FetchCommand (Repository repository, String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
+    public PushCommand (Repository repository, String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
         super(repository, remote, monitor);
         this.monitor = monitor;
         this.remote = remote;
-        this.refSpecs = fetchRefSpecifications;
+        this.pushRefSpecs = pushRefSpecifications;
+        this.fetchRefSpecs = fetchRefSpecifications;
     }
 
     @Override
     protected void run () throws GitException.AuthorizationException, GitException {
-        Repository repository = getRepository();
-        List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
-        for (String refSpec : refSpecs) {
-            specs.add(new RefSpec(refSpec));
+        List<RefSpec> specs = new ArrayList<RefSpec>(pushRefSpecs.size());
+        for (String refSpec : pushRefSpecs) {
+            RefSpec sp = new RefSpec(refSpec);
+            sp.setForceUpdate(false);
+            specs.add(sp);
+        }
+        // this will ensure that refs/remotes/abc/branch will be updated, too
+        List<RefSpec> fetchSpecs = new ArrayList<RefSpec>(fetchRefSpecs == null ? 0 : fetchRefSpecs.size());
+        for (String refSpec : fetchRefSpecs) {
+            RefSpec sp = new RefSpec(refSpec);
+            fetchSpecs.add(sp);
         }
         Transport transport = null;
         try {
-            transport = openTransport(false);
-            transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
+            transport = openTransport(true);
             transport.setDryRun(false);
-            transport.setFetchThin(true);
-            transport.setTagOpt(TagOpt.FETCH_TAGS);
-            result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
+            transport.setPushThin(true);
+            transport.setRemoveDeletedRefs(true);
+            transport.setTagOpt(TagOpt.AUTO_FOLLOW);
+            result = transport.push(new DelegatingProgressMonitor(monitor), fetchSpecs.isEmpty() ? transport.findRemoteRefUpdatesFor(specs) : Transport.findRemoteRefUpdatesFor(getRepository(), specs, fetchSpecs));
             for (String msg : result.getMessages().split("\n")) { //NOI18N
                 if (!msg.isEmpty()) {
                     // these are not warnings, i guess, just plain informational messages
 //                    monitor.notifyWarning(msg);
                 }
             }
-            updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
-            for (TrackingRefUpdate update : result.getTrackingRefUpdates()) {
+            updates = new HashMap<String, GitTransportUpdate>(result.getRemoteUpdates().size());
+            for (RemoteRefUpdate update : result.getRemoteUpdates()) {
                 GitTransportUpdate upd = new JGitTransportUpdate(transport.getURI(), update);
-                updates.put(upd.getLocalName(), upd);
+                updates.put(upd.getRemoteName(), upd);
             }
         } catch (NotSupportedException e) {
             throw new GitException(e);
@@ -117,6 +123,8 @@ public class FetchCommand extends TransportCommand {
             throw new GitException(e);
         } catch (TransportException e) {
             handleException(e);
+        } catch (IOException e) {
+            throw new GitException(e);
         } finally {
             if (transport != null) {
                 transport.close();
@@ -127,7 +135,7 @@ public class FetchCommand extends TransportCommand {
     @Override
     protected String getCommandDescription () {
         StringBuilder sb = new StringBuilder("git fetch ").append(remote); //NOI18N
-        for (String refSpec : refSpecs) {
+        for (String refSpec : pushRefSpecs) {
             sb.append(' ').append(refSpec);
         }
         return sb.toString();
@@ -137,7 +145,7 @@ public class FetchCommand extends TransportCommand {
         return Collections.unmodifiableMap(updates);
     }
     
-    public FetchResult getResult () {
+    public PushResult getResult () {
         return result;
     }
 }

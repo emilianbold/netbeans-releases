@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TagCommand;
-import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate.Result;
@@ -107,6 +106,12 @@ public class FetchTest extends AbstractGitTestCase {
         cfg.addURI(new URIish(otherWT.toURI().toURL().toString()));
         cfg.update(repository.getConfig());
         repository.getConfig().save();
+    }
+
+    public void testUpdateResult () {
+        for (Result result : Result.values()) {
+            assertNotNull(GitRefUpdateResult.valueOf(result.name()));
+        }
     }
 
     public void testFetchAllBranches () throws Exception {

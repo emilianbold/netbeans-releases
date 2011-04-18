@@ -384,7 +384,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             public void run () {
                                 java.util.Map<File, RepositoryNode> nodes = new HashMap<File, RepositoryNode>();
                                 for (File r : newValues) {
-                                    nodes.put(r, new RepositoryNode(r, RepositoryInfo.getInstance(r)));
+                                    RepositoryInfo info = RepositoryInfo.getInstance(r);
+                                    if (info == null) {
+                                        LOG.log(Level.INFO, "RepositoriesChildren.propertyChange() : Null info for {0}", r); //NOI18N
+                                    } else {
+                                        nodes.put(r, new RepositoryNode(r, info));
+                                    }
                                 }
                                 putAll(nodes);
                             }
@@ -419,8 +424,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public void run () {
                         RepositoryInfo info = RepositoryInfo.getInstance(repository);
-                        setName(info);
-                        info.addPropertyChangeListener(list = WeakListeners.propertyChange(RepositoryNode.this, info));
+                        if (info == null) {
+                            LOG.log(Level.INFO, "RepositoryNode() : Null info for {0}", repository); //NOI18N
+                        } else {
+                            setName(info);
+                            info.addPropertyChangeListener(list = WeakListeners.propertyChange(RepositoryNode.this, info));
+                        }
                     }
                 });
             } else {
