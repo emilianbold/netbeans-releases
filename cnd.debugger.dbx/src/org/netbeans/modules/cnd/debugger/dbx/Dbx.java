@@ -729,7 +729,7 @@ public final class Dbx extends CommonDbx {
 	debugger.stateChanged();
 
 	if (debugger.isMultiThreading() &&
-		!DebuggerManager.isComponentOpened("threadsView"))
+		!DebuggerManager.isComponentOpened("threadsView")) //NOI18N
 	    DebuggerManager.openComponent("threadsView", false); // NOI18N
 
     }
