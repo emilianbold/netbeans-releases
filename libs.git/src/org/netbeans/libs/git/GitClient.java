@@ -307,6 +307,18 @@ public interface GitClient {
             GitException.CheckoutConflictException, GitException.MissingObjectException, GitException;
     
     /**
+     * Pushes changes for given reference specifications.
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
+     * @param pushRefSpecifications 
+     * @param fetchRefSpecifications 
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
+     */
+    public Map<String, GitTransportUpdate> push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+
+    /**
      * Removes given files/folders from the index and/or from the working tree
      * @param roots files/folders to remove, can not be empty
      * @param cached if <code>true</code> the working tree will not be affected

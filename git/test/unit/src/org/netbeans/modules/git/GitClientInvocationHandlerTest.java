@@ -125,6 +125,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "log",
                 "merge",
                 "pull",
+                "push",
                 "remove",
                 "removeNotificationListener",
                 "removeRemote",
@@ -196,6 +197,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "log",
                 "merge",
                 "pull",
+                "push",
                 "remove",
                 "removeNotificationListener",
                 "removeRemote",
@@ -225,6 +227,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "setCallback",
                 "setRemote",
+                "push",
                 "unignore"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
         f.setAccessible(true);
@@ -280,6 +283,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "log",
                 "merge",
                 "pull",
+                "push",
                 "remove",
                 "removeNotificationListener",
                 "removeRemote",
@@ -399,6 +403,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "log",
                 "merge",
                 "pull",
+                "push",
                 "remove",
                 "removeNotificationListener",
                 "removeRemote",

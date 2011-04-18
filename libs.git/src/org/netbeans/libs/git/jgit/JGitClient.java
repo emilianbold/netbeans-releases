@@ -87,6 +87,7 @@ import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.PullCommand;
+import org.netbeans.libs.git.jgit.commands.PushCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
@@ -369,6 +370,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getResult();
+    }
+
+    @Override
+    public Map<String, GitTransportUpdate> push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
+        PushCommand cmd = new PushCommand(gitRepository.getRepository(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getUpdates();
     }
 
     /**
