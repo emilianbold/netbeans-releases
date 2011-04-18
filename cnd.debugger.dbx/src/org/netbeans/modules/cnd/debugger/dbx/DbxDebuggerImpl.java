@@ -2400,6 +2400,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         if (changed) {
             stackUpdater.treeChanged();	// causes a pull
+            disassembly.stateUpdated();
         }
     }
     public void moreFrame() {
