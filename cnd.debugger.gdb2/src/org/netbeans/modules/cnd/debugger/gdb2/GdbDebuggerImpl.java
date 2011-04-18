@@ -824,6 +824,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         String cmdString = "-exec-until " + src + ":" + line; // NOI18N
         sendResumptive(cmdString);
     }
+    
+    // interface NativeDebugger
+    public void runToCursorInst(String addr) {
+        sendResumptive("-exec-until *" + addr); //NOI18N
+    }
 
     public GdbVersionPeculiarity getGdbVersionPeculiarity() {
         return peculiarity;
@@ -4362,12 +4367,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void stepInst() {
         sendResumptive("-exec-step-instruction"); // NOI18N
     }
-
-    // interface NativeDebugger
-    public void runToCursorInst(String addr) {
-        notImplemented("runToCursorInst");	// NOI18N
-    }
-
 
     // interface NativeDebugger
     public void postRestoring(boolean restoring) {
