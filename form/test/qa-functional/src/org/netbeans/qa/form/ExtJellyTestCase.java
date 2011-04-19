@@ -556,9 +556,9 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         NewProjectWizardOperator op = new NewProjectWizardOperator();
         op.selectProject("Java Desktop Application"); // NOI18N
         op.next();
-
+        op.next();
         NbDialogOperator newJDAOp = new NbDialogOperator("New Desktop Application"); // NOI18N
-        new JTextFieldOperator(newJDAOp, 3).typeText(getTestProjectName());
+        new JTextFieldOperator(newJDAOp, 2).typeText(getTestProjectName());
         new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
     }
     // Method for checking jdk version
