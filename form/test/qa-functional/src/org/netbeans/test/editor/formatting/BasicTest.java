@@ -49,11 +49,13 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 //import org.netbeans.test.editor.LineDiff;
 
@@ -78,11 +80,17 @@ public class BasicTest extends EditorTestCase{
         
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(BasicTest.class);
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BasicTest.class).addTest(
+               "testBasicIndentation",
+               "testAdvancedIndentation",
+               "testReformat",
+               "testReformat2"
+               ).clusters(".*").enableModules(".*").gui(true));
+
     }
     
+    @Override
     public File getGoldenFile() {
         String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
         File f = new java.io.File(getDataDir(),fileName);
@@ -214,9 +222,7 @@ public class BasicTest extends EditorTestCase{
         new Action(sourceMenu+"|"+reformat, null).perform();
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(BasicTest.class));
-    }
+    
     
     
 }
