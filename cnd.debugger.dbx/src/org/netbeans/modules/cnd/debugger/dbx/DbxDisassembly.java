@@ -42,16 +42,10 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
-import javax.swing.text.Document;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,19 +63,7 @@ public class DbxDisassembly extends Disassembly {
     }
     
     public void update(DisFragModel model) {
-        DataObject dobj;
-        try {
-            dobj = DataObject.find(getFileObject());
-        } catch (DataObjectNotFoundException doe) {
-            // we failed, no need to do anything else
-            Exceptions.printStackTrace(doe);
-            return;
-        }
-        Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
-        if (doc != null) {
-            doc.removeDocumentListener(this);
-            doc.addDocumentListener(this);
-        }
+        attachUpdateListener();
 
         DisText text = new DisText();
 
