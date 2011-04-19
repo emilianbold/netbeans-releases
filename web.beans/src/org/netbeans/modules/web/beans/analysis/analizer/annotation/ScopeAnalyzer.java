@@ -47,9 +47,11 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -66,12 +68,60 @@ public class ScopeAnalyzer implements AnnotationAnalyzer {
             List<ErrorDescription> descriptions )
     {
         boolean isScope = AnnotationUtil.hasAnnotation(element, 
-                AnnotationUtil.SCOPE, compInfo);
+                AnnotationUtil.SCOPE_FQN , compInfo);
         boolean isNormalScope = AnnotationUtil.hasAnnotation(element, 
-                AnnotationUtil.NORMAL_SCOPE, compInfo);
+                AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
         if ( isScope || isNormalScope ){
-            
+            ScopeTargetAnalyzer analyzer = new ScopeTargetAnalyzer(element, 
+                    compInfo, descriptions, isNormalScope);
+            if ( !analyzer.hasRuntimeRetention() ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                            NbBundle.getMessage(ScopeAnalyzer.class, 
+                                    INCORRECT_RUNTIME));
+                descriptions.add( description );
+            }
+            if ( !analyzer.hasTarget()){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                            NbBundle.getMessage(ScopeAnalyzer.class, 
+                                    "ERR_IncorrectTarget"));                // NOI18N
+                descriptions.add( description );
+            }
         }
+    }
+    
+    private static class ScopeTargetAnalyzer extends CdiAnnotationAnalyzer {
+        
+        ScopeTargetAnalyzer(TypeElement element, CompilationInfo compInfo,
+                List<ErrorDescription> descriptions, boolean normalScope )
+        {
+            super( element , compInfo, descriptions );
+            isNormalScope = normalScope;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+         */
+        @Override
+        protected TargetVerifier getTargetVerifier() {
+            return new ScopeVerifier(getHelper());
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.CdiAnnotationAnalyzer#getCdiMetaAnnotation()
+         */
+        @Override
+        protected String getCdiMetaAnnotation() {
+            if ( isNormalScope ){
+                return AnnotationUtil.NORMAL_SCOPE;
+            }
+            else {
+                return AnnotationUtil.SCOPE;
+            }
+        }
+
+        private boolean isNormalScope; 
     }
 
 }

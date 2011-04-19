@@ -94,7 +94,7 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
             members.entrySet()) 
         {
             ExecutableElement member = entry.getKey();
-            if ( member.getSimpleName().contentEquals("value")){        // NOI18N
+            if ( member.getSimpleName().contentEquals(AnnotationUtil.VALUE)){ 
                 ErrorDescription description = CdiEditorAnalysisFactory.
                 createError( element, compInfo, 
                     NbBundle.getMessage(StereotypeAnalyzer.class, 

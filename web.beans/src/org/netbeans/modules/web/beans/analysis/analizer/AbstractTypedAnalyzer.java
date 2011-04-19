@@ -80,7 +80,7 @@ public abstract class AbstractTypedAnalyzer {
         {
             ExecutableElement key = entry.getKey();
             AnnotationValue value = entry.getValue();
-            if ( "value".contentEquals(key.getSimpleName())){       // NOI18N
+            if ( AnnotationUtil.VALUE.contentEquals(key.getSimpleName())){ 
                 restrictedTypes = value;
                 break;
             }

@@ -87,7 +87,7 @@ public class ScopedProxyabilityAnalyzer extends AbstractScopedAnalyzer
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
-                AnnotationUtil.NORMAL_SCOPE, compInfo);
+                AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
         if ( isNormal ){
             checkFinal( element , compInfo , descriptions );
         }                

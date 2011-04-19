@@ -40,59 +40,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analizer.annotation;
 
 import java.lang.annotation.ElementType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
 
 
 /**
  * @author ads
  *
  */
-class InterceptorBindingChecker extends RuntimeAnnotationChecker {
+public class ScopeVerifier implements TargetVerifier {
     
-    static final String INTERCEPTOR_BINDING = "javax.interceptor.InterceptorBinding"; // NOI18N
-    
-    InterceptorBindingChecker(AnnotationModelHelper helper){
-        init( null,  helper );
-    }
-    
-    void init(TypeElement element){
-        init( element , getHelper() );
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
-     */
-    @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(InterceptorBindingChecker.class.getName());
+    public ScopeVerifier( AnnotationModelHelper helper ){
+        myHelper = helper;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return INTERCEPTOR_BINDING;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
      */
     @Override
     public boolean hasReqiredTarget( AnnotationMirror target ) {
@@ -100,8 +75,8 @@ class InterceptorBindingChecker extends RuntimeAnnotationChecker {
         AnnotationParser parser;
         parser = AnnotationParser.create(getHelper());
         final Set<String> elementTypes = new HashSet<String>();
-        parser.expectEnumConstantArray( VALUE, getHelper().resolveType(
-                ElementType.class.getCanonicalName()), 
+        parser.expectEnumConstantArray( AnnotationUtil.VALUE, getHelper().
+                resolveType(ElementType.class.getCanonicalName()), 
                 new ArrayValueHandler() {
                     
                     @Override
@@ -115,38 +90,16 @@ class InterceptorBindingChecker extends RuntimeAnnotationChecker {
                 } , null);
         
         parser.parse( target );
-        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
-                        elementTypes.contains( ElementType.TYPE.toString())
-                        && elementTypes.size() == 2)
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 1 && 
-                elementTypes.contains( ElementType.TYPE.toString()) )
-        {
-            hasRequiredTarget = true;
-        }
-        else {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Interceptor Binding but has wrong target values." +
-                    " Correct target values are {METHOD, TYPE} or" +
-                    " or TYPE ");// NOI18N
-        }
+        hasRequiredTarget = elementTypes.contains( 
+                ElementType.METHOD.toString()) &&
+                    elementTypes.contains(ElementType.FIELD.toString()) &&
+                        elementTypes.contains( ElementType.TYPE.toString());
         return hasRequiredTarget;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
-     */
-    @Override
-    protected TargetVerifier getTargetVerifier() {
-        // TODO Auto-generated method stub
-        return null;
+    private AnnotationModelHelper getHelper(){
+        return myHelper;
     }
 
-    void clean() {
-        init( null , getHelper() );
-    }
-
+    private AnnotationModelHelper myHelper;
 }

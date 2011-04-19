@@ -60,7 +60,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  */
 public class AnnotationElementAnalyzer implements ElementAnalyzer {
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
@@ -79,6 +79,8 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
     }
 
     public interface AnnotationAnalyzer {
+        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
+        
         void analyze( TypeElement element , CompilationInfo compInfo,
                 List<ErrorDescription> descriptions);
     }

@@ -59,6 +59,8 @@ import org.netbeans.api.java.source.CompilationInfo;
  */
 public final class AnnotationUtil {
     
+    public static final String VALUE = "value";                                     // NOI18N
+    
     public static final String INJECT = "Inject";                                   // NOI18N
     
     public static final String INJECT_FQN = "javax.inject."+INJECT;                 // NOI18N
@@ -72,10 +74,14 @@ public final class AnnotationUtil {
     
     public static final String INTERCEPTOR = "javax.interceptor.Interceptor";       // NOI18N
     
-    public static final String NORMAL_SCOPE 
-                                          = "javax.enterprise.context.NormalScope"; // NOI18N
+    public static final String NORMAL_SCOPE = "NormalScope";                        // NOI18N
     
-    public static String SCOPE = "javax.inject.Scope";                              // NOI18N
+    public static final String NORMAL_SCOPE_FQN 
+                                          = "javax.enterprise.context."+NORMAL_SCOPE;// NOI18N
+    
+    public static String SCOPE =    "Scope";                                        // NOI18N
+    
+    public static String SCOPE_FQN = "javax.inject."+SCOPE;                         // NOI18N
     
     public static final String DISPOSES = "Disposes";                               // NOI18N
     

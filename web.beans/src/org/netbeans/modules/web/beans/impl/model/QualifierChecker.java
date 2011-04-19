@@ -44,10 +44,8 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +55,7 @@ import javax.lang.model.element.AnnotationValue;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
 
 
 /**
@@ -118,11 +117,10 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#checkTarget(java.util.Map)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
      */
     @Override
-    protected boolean checkTarget( Map<String, ? extends AnnotationMirror> types )
-    {
+    public boolean hasReqiredTarget( AnnotationMirror target ) {
         boolean hasRequiredTarget = false;
         AnnotationParser parser;
         parser = AnnotationParser.create(getHelper());
@@ -141,7 +139,7 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
                     }
                 } , null);
         
-        parser.parse( types.get(Target.class.getCanonicalName() ));
+        parser.parse( target );
         if ( isEvent ){
             boolean hasFieldParameterTarget = elementTypes.contains(
                     ElementType.FIELD.toString()) &&
@@ -178,6 +176,16 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
         
         return hasRequiredTarget;
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+     */
+    @Override
+    protected TargetVerifier getTargetVerifier() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();
     
     static {
@@ -188,4 +196,5 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
     }
 
     private boolean isEvent;
+
 }

@@ -44,10 +44,8 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +57,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
 
 
 /**
@@ -84,11 +83,10 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#checkTarget(java.util.Map)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
      */
     @Override
-    protected boolean checkTarget( Map<String, ? extends AnnotationMirror> types )
-    {
+    public boolean hasReqiredTarget( AnnotationMirror target ) {
         boolean hasRequiredTarget = false;
         AnnotationParser parser;
         parser = AnnotationParser.create(getHelper());
@@ -107,7 +105,7 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
                     }
                 } , null);
         
-        parser.parse( types.get(Target.class.getCanonicalName() ));
+        parser.parse( target );
         if ( elementTypes.contains( ElementType.METHOD.toString()) &&
                 elementTypes.contains(ElementType.FIELD.toString()) &&
                         elementTypes.contains( ElementType.TYPE.toString())
@@ -135,6 +133,15 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
         }
         return hasRequiredTarget;
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+     */
+    @Override
+    protected TargetVerifier getTargetVerifier() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
@@ -151,5 +158,5 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
     protected Logger getLogger() {
         return Logger.getLogger(StereotypeChecker.class.getName());
     }
-    
+
 }
