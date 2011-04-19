@@ -692,8 +692,11 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.INFO, "{0} returned from server after {1}ms. The server is still getting ready", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
                 }
-            } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " timed out.", ex); // NOI18N
+            } catch(TimeoutException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " timed out. "+tries+" of "+maxtries, ex); // NOI18N
+                isReady = false;
+            } catch (Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " failed at  "+tries+" of "+maxtries, ex); // NOI18N
                 isReady = false;
                 break;
             }
