@@ -48,23 +48,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisProgressPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.StateModel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -72,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Egor Ushakov
  */
-public class GdbDisassembly extends Disassembly implements StateModel.Listener {
+public class GdbDisassembly extends Disassembly {
     private String functionName = "";
     private String intFileName = "";
     private String resolvedFileName = "";
@@ -127,20 +122,8 @@ public class GdbDisassembly extends Disassembly implements StateModel.Listener {
 
         String currentAddr = getDebugger().getCurrentFrame().getCurrentPC();
 
-        DataObject dobj;
-        try {
-            dobj = DataObject.find(getFileObject());
-        } catch (DataObjectNotFoundException doe) {
-            // we failed, no need to do anything else
-            Exceptions.printStackTrace(doe);
-            return;
-        }
-        Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
-        if (doc != null) {
-            doc.removeDocumentListener(this);
-            doc.addDocumentListener(this);
-        }
-
+        attachUpdateListener();
+        
         DisText text = new DisText();
 
         int pos = RESPONSE_HEADER.length();
@@ -209,7 +192,7 @@ public class GdbDisassembly extends Disassembly implements StateModel.Listener {
                 GdbDisLine line = new GdbDisLine(msg, addressPos);
                 if (!nameSet && currentAddr.equals(line.getAddress())) {
                     functionName = line.getFunction();
-                    dobj.getNodeDelegate().setDisplayName(getHeader());
+                    getDataObject().getNodeDelegate().setDisplayName(getHeader());
                     text.addLine(new CommentLine(functionName + "()\n")); // NOI18N
                     nameSet = true;
                 }

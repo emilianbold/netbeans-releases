@@ -346,10 +346,10 @@ public class NewFileWizardsTest extends JellyTestCase {
         Project p = (hasMoreSrcRoots)
                 ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
                 : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
-        File remoteJavaProjectDir = new File(FileUtil.toFile(p.getProjectDirectory().getParent()), REMOTE_JAVA_PROJECT_NAME);
+        File remoteJavaProjectDir = new File(FileUtil.toFile(p.getProjectDirectory().getParent()), REMOTE_JAVA_PROJECT_NAME + version);
         if (!remoteJavaProjectDir.exists()) {
             // create java project needed for remote beans
-            J2SEProjectGenerator.createProject(remoteJavaProjectDir, REMOTE_JAVA_PROJECT_NAME, null, null, null, true);
+            J2SEProjectGenerator.createProject(remoteJavaProjectDir, REMOTE_JAVA_PROJECT_NAME + version, null, null, null, true);
             J2eeProjectSupport.openProject(remoteJavaProjectDir);
         }
         String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
@@ -381,8 +381,8 @@ public class NewFileWizardsTest extends JellyTestCase {
         }
         nop.finish();
         Ejb ejb = (hasMoreSrcRoots)
-                ? new Ejb(ejbPkg + "." + ejbName, p, local, remote, srcRoot)
-                : new Ejb(ejbPkg + "." + ejbName, p, local, remote);
+                ? new Ejb(ejbPkg + "." + ejbName, p, remoteJavaProjectDir, local, remote, srcRoot)
+                : new Ejb(ejbPkg + "." + ejbName, p, remoteJavaProjectDir, local, remote);
         if ("1.4".equals(version)) {
             String[] err = ejb.checkExistingFiles();
             assertTrue(Arrays.asList(err).toString(), err.length == 0);

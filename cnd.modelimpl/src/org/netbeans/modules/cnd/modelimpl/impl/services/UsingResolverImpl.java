@@ -313,7 +313,23 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     
     private static final class Lock {}
     private final Object lock = new Lock();
-    private Reference<SearchInfo> lastSearch = new SoftReference<SearchInfo>(null);
+    private Set<Reference<SearchInfo>> allThreadsCache = new HashSet<Reference<SearchInfo>>();
+    private ThreadLocal<Reference<SearchInfo>> lastSearch = new ThreadLocal<Reference<SearchInfo>>() {
+
+        @Override
+        protected Reference<SearchInfo> initialValue() {
+            return new SoftReference<SearchInfo>(null);
+        }
+        
+    };
+    
+    private ThreadLocal<Reference<SearchInfo>> lastSearchInProject = new ThreadLocal<Reference<SearchInfo>>() {
+
+        @Override
+        protected Reference<SearchInfo> initialValue() {
+            return new SoftReference<SearchInfo>(null);
+        }
+    };
     
     private final boolean cache = true;
     private FileElementsCollector getCollector(CsmFile file, int offset, CsmProject onlyInProject) {
@@ -321,13 +337,30 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
             return new FileElementsCollector(file, offset, onlyInProject);
         } else {
             synchronized (lock) {
-                SearchInfo search = lastSearch.get();
-                if (search == null || !search.valid(file, offset, onlyInProject)) {
-                    FileElementsCollector collector = new FileElementsCollector(file, offset, onlyInProject);
-                    search = new SearchInfo(file, offset, onlyInProject, collector);
-                    lastSearch = new SoftReference<SearchInfo>(search);
+                Reference<SearchInfo> ref;
+                if (onlyInProject == null) {
+                    ref = lastSearch.get();
                 } else {
-                    search.offset = offset;
+                    ref = lastSearchInProject.get();
+                }
+                SearchInfo search = null;
+                if (ref != null) {
+                    search = ref.get();
+                }
+                if (search == null || !search.valid(file, offset, onlyInProject)) {
+                    if (ref != null) {
+                        allThreadsCache.remove(ref);
+                    }
+                    FileElementsCollector collector = new FileElementsCollector(file, offset, onlyInProject);
+                    search = new SearchInfo(file, onlyInProject, collector);
+                    ref = new SoftReference<SearchInfo>(search);
+                    allThreadsCache.add(ref);
+                    if (onlyInProject == null) {
+                        lastSearch.set(ref);
+                    } else {
+                        lastSearchInProject.set(ref);
+                    }
+                } else {
                     search.collector.incrementOffset(offset);
                 }
                 assert search != null;
@@ -339,18 +372,16 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     
     private static final class SearchInfo {
         private final CsmFile file;
-        private int offset;
         private final FileElementsCollector collector;
         private final CsmProject onlyInProject;
-        public SearchInfo(CsmFile file, int offset, CsmProject onlyInProject, FileElementsCollector collector) {
+        public SearchInfo(CsmFile file, CsmProject onlyInProject, FileElementsCollector collector) {
             this.file = file;
-            this.offset = offset;
             this.collector = collector;
             this.onlyInProject = onlyInProject;
         }
         
         private boolean valid(CsmFile file, int offset, CsmProject onlyInProject) {
-            return this.file.equals(file) && this.offset <= offset && this.onlyInProject == onlyInProject;
+            return this.file.equals(file) && collector.getReturnPoint() <= offset && this.onlyInProject == onlyInProject;
         }
     }
     
@@ -398,7 +429,9 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     
     private void cleanCache() {
         synchronized (lock) {
-            lastSearch.clear();
+            for(Reference<SearchInfo> ref : allThreadsCache) {
+                ref.clear();
+            }
         }
     }
 }

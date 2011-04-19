@@ -85,6 +85,7 @@ public class EntityRelations extends J2eeTestCase {
     private static boolean projectsOpened = false;
     private static final Logger LOG = Logger.getLogger(EntityRelations.class.getName());
     private boolean isEmty = false;
+    private static final RequestProcessor RP = new RequestProcessor(EntityRelations.class.getName());
 
     /** Creates a new instance of EntityRelations */
     public EntityRelations(String name) {
@@ -252,7 +253,7 @@ public class EntityRelations extends J2eeTestCase {
             }
             assertTrue("All fixes should be initialized", fixes.size() >= size);
             final Fix fix = fixes.get(fixOrder);
-            RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+            RequestProcessor.Task task = RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -363,7 +364,7 @@ public class EntityRelations extends J2eeTestCase {
                 }
             }
         };
-        final RequestProcessor.Task task = RequestProcessor.getDefault().create(posted);
+        final RequestProcessor.Task task = RP.create(posted);
         HintsHandler handl = new HintsHandler(delay, task);
         Logger logger = Logger.getLogger(AnnotationHolder.class.getName());
         logger.setLevel(Level.FINE);

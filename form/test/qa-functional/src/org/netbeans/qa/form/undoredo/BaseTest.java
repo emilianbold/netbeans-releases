@@ -83,7 +83,7 @@ public class BaseTest extends ExtJellyTestCase {
             System.out.println("Solaris is not supported");
         } else {
 
-            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").clusters(".*").gui(true));
         }
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testNoScenario"));
 
