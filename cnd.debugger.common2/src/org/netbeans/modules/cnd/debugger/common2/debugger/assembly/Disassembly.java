@@ -51,6 +51,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
@@ -68,6 +69,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -76,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author Egor Ushakov
  */
-public abstract class Disassembly implements DocumentListener {
+public abstract class Disassembly implements StateModel.Listener {
     private final NativeDebuggerImpl debugger;
     protected boolean opened = false;
     protected boolean opening = false;
@@ -243,7 +245,7 @@ public abstract class Disassembly implements DocumentListener {
         }
     }
     
-    private static DataObject getDataObject() {
+    protected static DataObject getDataObject() {
         return DataObjectHolder.DOBJ;
     }
     
@@ -341,26 +343,37 @@ public abstract class Disassembly implements DocumentListener {
         }
     }
     
-    public void changedUpdate(DocumentEvent e) {
-    }
-
-    public void insertUpdate(DocumentEvent e) {
-        // update anything on full load only
-        if (e.getOffset() + e.getLength() >= disLength) {
-            final boolean dis = opening;
-            opening = false;
-            if (opened) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        updateAnnotations(dis);
-                    }
-                });
-            }
+    protected void attachUpdateListener() {
+        DataObject dobj = getDataObject();
+        Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
+        if (doc != null) {
+            doc.removeDocumentListener(updateListener);
+            doc.addDocumentListener(updateListener);
         }
     }
+    
+    private final DocumentListener updateListener = new DocumentListener() {
+        public void changedUpdate(DocumentEvent e) {
+        }
 
-    public void removeUpdate(DocumentEvent e) {
-    }
+        public void insertUpdate(DocumentEvent e) {
+            // update anything on full load only
+            if (e.getOffset() + e.getLength() >= disLength) {
+                final boolean dis = opening;
+                opening = false;
+                if (opened) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateAnnotations(dis);
+                        }
+                    });
+                }
+            }
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+        }
+    };
     
     protected final void setText(DisText text) {
         this.disText = text;
