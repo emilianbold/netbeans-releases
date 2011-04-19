@@ -70,18 +70,20 @@ public final class Ejb extends AbstractJ2eeFile {
     private boolean isLocal;
     private boolean isRemote;
     private String beanImpl;
+    private File remoteJavaProjectDir;
     
     /** Creates a new instance of Ejb */
-    public Ejb(String fqName, Project p, boolean local, boolean remote) {
+    public Ejb(String fqName, Project p, File remoteJavaProjectDir, boolean local, boolean remote) {
         super(fqName, p);
+        this.remoteJavaProjectDir = remoteJavaProjectDir;
         isLocal = local;
         isRemote = remote;
         beanImpl = name;
     }
     
-    public Ejb(String fqName, Project p, boolean local,
-            boolean remote, String srcRoot) {
+    public Ejb(String fqName, Project p, File remoteJavaProjectDir, boolean local, boolean remote, String srcRoot) {
         super(fqName, p, srcRoot);
+        this.remoteJavaProjectDir = remoteJavaProjectDir;
         isLocal = local;
         isRemote = remote;
         beanImpl = name;
@@ -141,5 +143,19 @@ public final class Ejb extends AbstractJ2eeFile {
         String res = pkgName.replace('.', File.separatorChar) + name + REMOTE + HOME + ".java";
         //System.err.println("intf: " + res);
         return srcFileExistInJavaProject(res) || srcFileExist(res);
+    }
+    
+    /** Checks remote sources created in JavaProject next to main project. */
+    protected boolean srcFileExistInJavaProject(String name) {
+        boolean retVal = false;
+        File f = new File(remoteJavaProjectDir, srcRoot.replace("java", "").replace("beans", ""));
+        try {
+            File ff = new File(f, name);
+            //System.err.println(ff.getAbsolutePath());
+            //System.err.println("srcEx: " + ff.exists());
+            retVal = ff.exists();
+        } catch (Exception e) {
+        }
+        return retVal;
     }
 }
