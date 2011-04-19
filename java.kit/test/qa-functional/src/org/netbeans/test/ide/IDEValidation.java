@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.ide;
 
 import java.awt.Component;
@@ -56,7 +55,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
-import javax.swing.JMenuBar;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -98,8 +96,6 @@ import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jellytools.properties.Property;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
@@ -118,7 +114,6 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
@@ -127,11 +122,10 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-
 /**
  * Overall validation suite for IDE.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class IDEValidation extends JellyTestCase {
 
@@ -143,17 +137,16 @@ public class IDEValidation extends JellyTestCase {
     /** Setup called before every test case. */
     @Override
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.
         closeHelpWindow();
     }
-    
+
     /** Tear down called after every test case. */
     @Override
     public void tearDown() {
     }
-    
     // name of sample project
     private static final String SAMPLE_PROJECT_NAME = "SampleProject"; // NOI18N
     // name of first sample package
@@ -161,21 +154,20 @@ public class IDEValidation extends JellyTestCase {
     // name of sample class
     private static final String SAMPLE1_CLASS_NAME = "SampleClass1"; // NOI18N
     // name of sample file
-    private static final String SAMPLE1_FILE_NAME = SAMPLE1_CLASS_NAME+".java"; // NOI18N
+    private static final String SAMPLE1_FILE_NAME = SAMPLE1_CLASS_NAME + ".java"; // NOI18N
     // name of sample class 2
     private static final String SAMPLE2_CLASS_NAME = "SampleClass2"; // NOI18N
     // name of sample file 2
-    private static final String SAMPLE2_FILE_NAME = SAMPLE2_CLASS_NAME+".java"; // NOI18N
-    
-    
+    private static final String SAMPLE2_FILE_NAME = SAMPLE2_CLASS_NAME + ".java"; // NOI18N
+
     public void testWriteAccess() throws Exception {
-        String msg = "No writes during startup.\n" +
-            "Writing any files to disk during start is inefficient and usualy unnecessary.\n" +
-            "Consider using declarative registration in your layer.xml file, or delaying\n" +
-            "the initialization of the whole subsystem till it is really used.\n" +
-            "In case it is necessary to perform the write, you can modify the\n" +
-            "'allowed-file-write.txt' file in ide.kit module. More details at\n" +
-            "http://wiki.netbeans.org/FitnessViaWhiteAndBlackList";
+        String msg = "No writes during startup.\n"
+                + "Writing any files to disk during start is inefficient and usualy unnecessary.\n"
+                + "Consider using declarative registration in your layer.xml file, or delaying\n"
+                + "the initialization of the whole subsystem till it is really used.\n"
+                + "In case it is necessary to perform the write, you can modify the\n"
+                + "'allowed-file-write.txt' file in ide.kit module. More details at\n"
+                + "http://wiki.netbeans.org/FitnessViaWhiteAndBlackList";
 
         CountingSecurityManager.assertCounts(msg, 0);
         // disable further collecting of
@@ -236,11 +228,11 @@ public class IDEValidation extends JellyTestCase {
         }
         // confirm properties dialog
         propertiesDialogOper.ok();
-        
+
         // wait classpath scanning finished
         WatchProjects.waitScanFinished();
     }
-    
+
     /** Test new file wizard. 
      * - open New File wizard from main menu (File|New File)
      * - select sample project as target
@@ -262,9 +254,9 @@ public class IDEValidation extends JellyTestCase {
         NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
         // wait package node is created
         Node sample1Node = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), SAMPLE1_PACKAGE_NAME);
-        
+
         // create a new classes
-        
+
         // "Java Main Class"
         String mainClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Main.java"); // NOI18N
         NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
@@ -280,7 +272,7 @@ public class IDEValidation extends JellyTestCase {
         // check class is opened in Editor and then close all documents
         new EditorOperator(SAMPLE2_FILE_NAME).closeAllDocuments();
     }
-    
+
     /** Test Projects view 
      * - expand source hierarchy and find sample class (SampleClass1.java)
      * - copy sample class and paste it to the same package
@@ -308,8 +300,8 @@ public class IDEValidation extends JellyTestCase {
         String refactorItem = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_Action");
         // "Copy..."
         String copyItem = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_CopyAction");
-        new ActionNoBlock(null, pasteAction.getPopupPath()+"|"+refactorItem+" "+copyItem).perform(sample1Node);
-        
+        new ActionNoBlock(null, pasteAction.getPopupPath() + "|" + refactorItem + " " + copyItem).perform(sample1Node);
+
         String copyClassTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_CopyClass");
         NbDialogOperator copyClassDialog = new NbDialogOperator(copyClassTitle);
         // "Refactor"
@@ -317,7 +309,7 @@ public class IDEValidation extends JellyTestCase {
         new JButtonOperator(copyClassDialog, refactorLabel).push();
         // refactoring is done asynchronously => need to wait until dialog dismisses
         copyClassDialog.waitClosed();
-        
+
         Node newClassNode = new Node(sample1Node, "SampleClass11"); // NOI18N
         newClassNode.select();
         // "Cut"
@@ -327,7 +319,7 @@ public class IDEValidation extends JellyTestCase {
         Node sampleProjectPackage = new Node(sourcePackagesNode, SAMPLE_PROJECT_NAME.toLowerCase());
         // "Move..."
         String moveItem = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_MoveAction");
-        new ActionNoBlock(null, pasteAction.getPopupPath()+"|"+refactorItem+" "+moveItem).perform(sampleProjectPackage);
+        new ActionNoBlock(null, pasteAction.getPopupPath() + "|" + refactorItem + " " + moveItem).perform(sampleProjectPackage);
         // confirm refactoring
         // "Move Class"
         String moveClassTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_MoveClass");
@@ -369,7 +361,6 @@ public class IDEValidation extends JellyTestCase {
         // it is redundant IMO
     }
 
-    
     /** Test of DB module.
      * It only tests whether the Databases node is present in Runtime view, 
      * Add Driver action is enabled on Drivers node and Connect action is available
@@ -392,18 +383,18 @@ public class IDEValidation extends JellyTestCase {
         } catch (JemmyException e) {
             // Ignore and try to continue. Sometimes it happens "Please, wait" node
             // is still available (maybe some threading issue).
-            log("Timeout expired: "+e.getMessage());
+            log("Timeout expired: " + e.getMessage());
         }
         // "Drivers"
         String driversLabel = Bundle.getString("org.netbeans.modules.db.explorer.node.Bundle", "DriverListNode_DISPLAYNAME");
-        Node driversNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel+"|"+driversLabel);
+        Node driversNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel + "|" + driversLabel);
         // "Add Driver ..."
         String addDriverItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddNewDriver");
         // open a dialog to add a new JDBC driver
         new ActionNoBlock(null, addDriverItem).perform(driversNode);
         String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "AddDriverDialogTitle");
         new NbDialogOperator(addDriverTitle).cancel();
-        
+
         // wait until the wait node dismiss and after that start waiting for JDBC_ODBC Bridge node
         // (see issue http://www.netbeans.org/issues/show_bug.cgi?id=43910 - Creation of 
         // children under Databases node is not properly synchronized)
@@ -412,9 +403,9 @@ public class IDEValidation extends JellyTestCase {
         } catch (JemmyException e) {
             // Ignore and try to continue. Sometimes it happens "Please, wait" node
             // is still available (maybe some threading issue).
-            log("Timeout expired: "+e.getMessage());
+            log("Timeout expired: " + e.getMessage());
         }
-        if(System.getProperty("os.name").toLowerCase().indexOf("mac") == -1) { // NOI18N
+        if (System.getProperty("os.name").toLowerCase().indexOf("mac") == -1) { // NOI18N
             // node JDBC-ODBC Bridge should be present always but not on mac
             Node jdbcOdbcNode = new Node(driversNode, "JDBC-ODBC Bridge"); // NOI18N
             // "Connect Using ..."
@@ -425,7 +416,7 @@ public class IDEValidation extends JellyTestCase {
             new NbDialogOperator(newDatabaseConnectionTitle).cancel();
         }
     }
-    
+
     /** Test Help 
      * - open Help window from main menu (Help|Help Contents)
      */
@@ -438,8 +429,8 @@ public class IDEValidation extends JellyTestCase {
         // title is "Help - All"
         helpOper.close();
     }
-    
-   /** Test Main Menu 
+
+    /** Test Main Menu 
      * - open and close New Project wizard (main menu item File|New Project...)
      * - open and close Javadoc Index Search top component (main menu item Tools|Javadoc Index Search)
      */
@@ -447,13 +438,14 @@ public class IDEValidation extends JellyTestCase {
         MainWindowOperator.getDefault().maximize();
         // open and close New Project wizard
         NewProjectWizardOperator.invoke().close();
-        
+
         //workaround for issue 166989
-        if (System.getProperty("os.name").equals("Mac OS X"))
+        if (System.getProperty("os.name").equals("Mac OS X")) {
             try {
                 new NbDialogOperator("Warning").close();
             } catch (TimeoutExpiredException e) {
             }
+        }
         /*
         // open Tools|Javadoc Index Search
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
@@ -464,7 +456,7 @@ public class IDEValidation extends JellyTestCase {
         new TopComponentOperator(javadocTitle).close();
          */
     }
-    
+
     /** Test global shortcuts. 
      * - open and close new file wizard (CTRL+N)
      * - open and close Javadoc Index Search top component (Shift+F1)
@@ -495,8 +487,8 @@ public class IDEValidation extends JellyTestCase {
         }
         // open Javadoc Index Search (Shift+F1)
         // "Javadoc Index Search"
-        String javadocTitle = Bundle.getString("org.netbeans.modules.javadoc.search.Bundle", 
-                                               "CTL_SEARCH_WindowTitle");
+        String javadocTitle = Bundle.getString("org.netbeans.modules.javadoc.search.Bundle",
+                "CTL_SEARCH_WindowTitle");
         Action searchAction = new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.SHIFT_MASK));
         try {
             searchAction.perform(MainWindowOperator.getDefault());
@@ -526,7 +518,7 @@ public class IDEValidation extends JellyTestCase {
             new NbDialogOperator(newBreakpointTitle).close();
         }
     }
-    
+
     /** Test Source Editor
      * - opens sample class in Editor (context menu Open on the node)
      * - type abbreviation 'sout' into main method and then 'Hello'
@@ -546,7 +538,7 @@ public class IDEValidation extends JellyTestCase {
         // find open file in editor
         EditorOperator eo = new EditorOperator(SAMPLE1_FILE_NAME);
         eo.setCaretPosition("public static void main", true);
-        int insertLine = eo.getLineNumber()+2;
+        int insertLine = eo.getLineNumber() + 2;
         eo.insert("\n", insertLine, 1); // NOI18N
         // Need to disable verification because shortcut "sout" is replaced
         // by "System.out.println("");" and "sout" is not found in Editor
@@ -575,11 +567,13 @@ public class IDEValidation extends JellyTestCase {
         // wait until clipboard contains text to copy
         try {
             new Waiter(new Waitable() {
+
+                @Override
                 public Object actionProduced(Object obj) {
                     try {
                         String text = Toolkit.getDefaultToolkit().getSystemClipboard().
-                                        getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
-                        return textToCopy.equals(text) ? Boolean.TRUE:null;
+                                getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
+                        return textToCopy.equals(text) ? Boolean.TRUE : null;
                     } catch (UnsupportedFlavorException e) {
                         // The following exception can be thrown when clipboard is empty.
                         // java.awt.datatransfer.UnsupportedFlavorException: Unicode String
@@ -590,14 +584,16 @@ public class IDEValidation extends JellyTestCase {
                         throw new JemmyException("Failed getting clipboard content.", ioe);
                     }
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Clipboard contains "+textToCopy); // NOI18N
+                    return ("Clipboard contains " + textToCopy); // NOI18N
                 }
             }).waitAction(null);
         } catch (Exception ie) {
             throw new JemmyException("Interrupted.", ie);
         }
-        eo.insert("int xxxx;\n", insertLine+1, 1); // NOI18N
+        eo.insert("int xxxx;\n", insertLine + 1, 1); // NOI18N
         eo.select("int xxxx;"); // NOI18N
         PasteAction pasteAction = new PasteAction();
         try {
@@ -646,7 +642,7 @@ public class IDEValidation extends JellyTestCase {
             JemmyProperties.setCurrentDispatchingModel(oldDispatchingModel);
         }
     }
-    
+
     /** Test build and run.
      * - select sample class node and call "Build|Compile "SampleClass1.java"" main menu item
      * - wait until compilation finishes (track status bar)
@@ -673,12 +669,12 @@ public class IDEValidation extends JellyTestCase {
         String compileSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "TITLE_output_target",
-                new Object[] {SAMPLE_PROJECT_NAME, null, "compile-single"});  // NOI18N
+                new Object[]{SAMPLE_PROJECT_NAME, null, "compile-single"});  // NOI18N
         // "Finished building SampleProject (compile-single)"
         String finishedCompileSingleLabel = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "FMT_finished_target_status",
-                new String[] {compileSingleTarget});
+                new String[]{compileSingleTarget});
         // wait message "Finished building SampleProject (compile-single)"
         stt.waitText(finishedCompileSingleLabel);
 
@@ -686,21 +682,21 @@ public class IDEValidation extends JellyTestCase {
         // TODO bundle property name should be changed back to Menu/RunProject after updating bundle
         String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Run File"
-        String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
-                                                     "LBL_RunSingleAction_Name",
-                                                     new Object[] {new Integer(1), SAMPLE1_FILE_NAME});
+        String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle",
+                "LBL_RunSingleAction_Name",
+                new Object[]{new Integer(1), SAMPLE1_FILE_NAME});
         // call "Run|Run File|Run "SampleClass1.java""
-        new Action(runItem+"|"+runFileItem, null).perform(sampleClass1Node);
+        new Action(runItem + "|" + runFileItem, null).perform(sampleClass1Node);
         // "SampleProject (run-single)"
         String runSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "TITLE_output_target",
-                new Object[] {SAMPLE_PROJECT_NAME, null, "run-single"});  // NOI18N
+                new Object[]{SAMPLE_PROJECT_NAME, null, "run-single"});  // NOI18N
         // "Finished building SampleProject (run-single)"
         String finishedRunSingleLabel = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "FMT_finished_target_status",
-                new String[] {runSingleTarget});
+                new String[]{runSingleTarget});
         // wait message "Finished building SampleProject (run-single)"
         stt.waitText(finishedRunSingleLabel); // NOI18N
         // check Hello and Good bye was printed out to the output window
@@ -708,7 +704,7 @@ public class IDEValidation extends JellyTestCase {
         OutputTabOperator outputOper = new OutputTabOperator("run-single"); //NOI18N
         outputOper.waitText("Hello"); //NOI18N
         outputOper.waitText("Good bye"); //NOI18N
-        
+
         // "Set as Main Project"
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME));
@@ -717,40 +713,40 @@ public class IDEValidation extends JellyTestCase {
         // "Build Main Project"
         String buildMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_BuildMainProjectAction_Name");
         // call "Run|Build Main Project" main menu item
-        new Action(buildItem+"|"+buildMainProjectItem, null).perform();
+        new Action(buildItem + "|" + buildMainProjectItem, null).perform();
         // "SampleProject (jar)"
         String jarTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "TITLE_output_target",
-                new Object[] {SAMPLE_PROJECT_NAME, null, "jar"});  // NOI18N
+                new Object[]{SAMPLE_PROJECT_NAME, null, "jar"});  // NOI18N
         // "Finished building SampleProject (jar)"
         String finishedJarLabel = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "FMT_finished_target_status",
-                new String[] {jarTarget});
+                new String[]{jarTarget});
         // wait message "Finished building SampleProject (jar)"
         stt.waitText(finishedJarLabel);
-        
+
         // Run Main Project
         String runMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunMainProjectAction_Name");
         // call "Run|Run Main Project" main menu item
-        new Action(runItem+"|"+runMainProjectItem, null).perform();
+        new Action(runItem + "|" + runMainProjectItem, null).perform();
         // "SampleProject (run)"
         String runTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "TITLE_output_target",
-                new Object[] {SAMPLE_PROJECT_NAME, null, "run"});  // NOI18N
+                new Object[]{SAMPLE_PROJECT_NAME, null, "run"});  // NOI18N
         // "Finished building SampleProject (run)"
         String finishedRunLabel = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "FMT_finished_target_status",
-                new String[] {runTarget});
+                new String[]{runTarget});
         // wait message "Finished building SampleProject (run)"
         stt.waitText(finishedRunLabel);
 
         stt.stop();
     }
-    
+
     /** Test JUnit support
      * - add methods to sample class
      * - from context menu on sample class node call "Tools|Create JUnit Tests" item
@@ -783,16 +779,16 @@ public class IDEValidation extends JellyTestCase {
         // find open sample file in editor
         EditorOperator eo = new EditorOperator(SAMPLE2_FILE_NAME);
         eo.setCaretPosition("public static void main", true);
-        int insertLine = eo.getLineNumber()+3;
+        int insertLine = eo.getLineNumber() + 3;
         // add methods declarations to sample file
         String publicMethod = "\n    public void publicMethod() {\n    }\n";  // NOI18N
         eo.insert(publicMethod, insertLine, 1);
         String privateMethod = "\n    private void privateMethod() {\n    }\n";  //NOI18N
-        eo.insert(privateMethod, insertLine+3, 1);
+        eo.insert(privateMethod, insertLine + 3, 1);
         String protectedMethod = "\n    protected void protectedMethod() {\n    }\n";  //NOI18N
-        eo.insert(protectedMethod, insertLine+3, 1);
+        eo.insert(protectedMethod, insertLine + 3, 1);
         String defaultMethod = "\n    void defaultMethod() {\n    }\n";  //NOI18N
-        eo.insert(defaultMethod, insertLine+3, 1);
+        eo.insert(defaultMethod, insertLine + 3, 1);
         eo.save();
         // need to wait until new methods are parsed
         WatchProjects.waitScanFinished();
@@ -801,7 +797,7 @@ public class IDEValidation extends JellyTestCase {
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
         // "Create JUnit Tests"
         String createTestsItem = Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle", "LBL_Action_CreateTest"); // NOI18N
-        ActionNoBlock createTestsAction = new ActionNoBlock(null, toolsItem+"|"+createTestsItem);
+        ActionNoBlock createTestsAction = new ActionNoBlock(null, toolsItem + "|" + createTestsItem);
         createTestsAction.perform(sampleClass2Node);
         // "Select JUnit Version"
         String selectJUnitVersionTitle = Bundle.getString("org.netbeans.modules.junit.Bundle", "LBL_title_select_generator");
@@ -815,95 +811,95 @@ public class IDEValidation extends JellyTestCase {
         // "Create Tests"
         String createTestsTitle = Bundle.getString("org.netbeans.modules.junit.Bundle", "JUnitCfgOfCreate.Title");
         new NbDialogOperator(createTestsTitle).ok();
-        
+
         // wait until test node is created
         // "Test Packages"
         String testPackagesLabel = Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
         Node testPackagesNode = new Node(new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME), testPackagesLabel);
         // Test Packages|sample1|SampleClass1Test.java
-        new JavaNode(testPackagesNode, SAMPLE1_PACKAGE_NAME+"|"+SAMPLE2_CLASS_NAME+"Test.java"); // NOI18N
+        new JavaNode(testPackagesNode, SAMPLE1_PACKAGE_NAME + "|" + SAMPLE2_CLASS_NAME + "Test.java"); // NOI18N
 
         // check default, protected and public method tests created and private is not created
-        EditorOperator eoTest = new EditorOperator(SAMPLE2_CLASS_NAME+"Test.java");    // NOI18N
+        EditorOperator eoTest = new EditorOperator(SAMPLE2_CLASS_NAME + "Test.java");    // NOI18N
         // wait code is generated
         eoTest.txtEditorPane().waitText("testDefaultMethod"); // NOI18N
         eoTest.txtEditorPane().waitText("testProtectedMethod"); // NOI18N
         eoTest.txtEditorPane().waitText("testPublicMethod"); // NOI18N
         assertFalse("Created test should not include test of private method.", eoTest.contains("testPrivateMethod")); // NOI18N
         eoTest.close();
-        
+
         // go to test
         // "Navigate"
         String navigateItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/GoTo"); // NOI18N
         // "Go to Test"
         String goToTestItem = Bundle.getString("org.netbeans.modules.junit.Bundle", "LBL_Action_GoToTest");  // NOI18N
         // go to test ("Navigate|Go to Test") - main menu action
-        Action gotoTestAction = new Action(navigateItem+"|"+goToTestItem, null);
+        Action gotoTestAction = new Action(navigateItem + "|" + goToTestItem, null);
         gotoTestAction.perform(sampleClass2Node);
         // wait until test is opened in editor
-        new EditorOperator(SAMPLE2_CLASS_NAME+"Test.java");    // NOI18N
-        
+        new EditorOperator(SAMPLE2_CLASS_NAME + "Test.java");    // NOI18N
+
         // run generated test
-        
+
         // "Run" 
         // TODO bundle property name should be changed back to Menu/RunProject after updating bundle
         String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Test File"
-        String testFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
-                                                     "LBL_TestSingleAction_Name",
-                                                     new Object[] {new Integer(1), SAMPLE2_FILE_NAME});
+        String testFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle",
+                "LBL_TestSingleAction_Name",
+                new Object[]{new Integer(1), SAMPLE2_FILE_NAME});
         // "Test Project"
-        String testProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", 
-                                                     "LBL_TestProjectAction_Name",
-                                                     new Object[] {new Integer(1), SAMPLE_PROJECT_NAME});
-                                                     
+        String testProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle",
+                "LBL_TestProjectAction_Name",
+                new Object[]{new Integer(1), SAMPLE_PROJECT_NAME});
+
         // increase timeout to 60 seconds
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000); // NOI18N
         // start to track Main Window status bar
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
-         // call "Run|Test "SampleClass2.java""
-        new Action(runItem+"|"+testFileItem, null).perform(sampleClass2Node);
-     
+        // call "Run|Test "SampleClass2.java""
+        new Action(runItem + "|" + testFileItem, null).perform(sampleClass2Node);
+
         // check status line
         // "SampleProject (test-single)"
         String testSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "TITLE_output_target",
-                new Object[] {SAMPLE_PROJECT_NAME, null, "test-single"});  // NOI18N
+                new Object[]{SAMPLE_PROJECT_NAME, null, "test-single"});  // NOI18N
         String testTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
                 "TITLE_output_target",
-                new Object[] {SAMPLE_PROJECT_NAME, null, "test"});  // NOI18N
+                new Object[]{SAMPLE_PROJECT_NAME, null, "test"});  // NOI18N
         // "Build of SampleProject (test-single) failed."
         String failedMessage = Bundle.getString(
-                "org.apache.tools.ant.module.run.Bundle", 
+                "org.apache.tools.ant.module.run.Bundle",
                 "FMT_target_failed_status",
-                new Object[] {testSingleTarget});
+                new Object[]{testSingleTarget});
         // wait message "Build of SampleProject (test-single) failed."
         stt.waitText(failedMessage);
 
-         // call "Run|Test "SampleProject""
-        new Action(runItem+"|"+testProjectItem, null).perform(sampleClass2Node);
+        // call "Run|Test "SampleProject""
+        new Action(runItem + "|" + testProjectItem, null).perform(sampleClass2Node);
         // "Build of SampleProject (test) failed."
         failedMessage = Bundle.getString(
-                "org.apache.tools.ant.module.run.Bundle", 
+                "org.apache.tools.ant.module.run.Bundle",
                 "FMT_target_failed_status",
-                new Object[] {testTarget});
+                new Object[]{testTarget});
         // wait message "Build of SampleProject (test) failed."
         stt.waitText(failedMessage);
         stt.stop();
-        
+
         // test JUnit on folder
         createTestsAction.perform(sample1Node);
         new NbDialogOperator(createTestsTitle).ok();
         // wait until test node is created
         // Test Packages|sample1|Sample1Suite.java
-        JavaNode suiteNode = new JavaNode(testPackagesNode, SAMPLE1_PACKAGE_NAME+"|Suite.java"); // NOI18N
+        JavaNode suiteNode = new JavaNode(testPackagesNode, SAMPLE1_PACKAGE_NAME + "|Suite.java"); // NOI18N
         suiteNode.open();
         // check suite is open in editor and it conteins generated test class
-        assertTrue("Created suite should include test of public method.", 
-                   new EditorOperator("Suite").contains(SAMPLE2_CLASS_NAME+"Test")); // NOI18N
+        assertTrue("Created suite should include test of public method.",
+                new EditorOperator("Suite").contains(SAMPLE2_CLASS_NAME + "Test")); // NOI18N
         EditorOperator.closeDiscardAll();
     }
 
@@ -921,46 +917,50 @@ public class IDEValidation extends JellyTestCase {
         // Status bar tracer
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         SourcePackagesNode sourcePackagesNode = new SourcePackagesNode(SAMPLE_PROJECT_NAME);
-        JavaNode sampleClass1Node = new JavaNode(sourcePackagesNode, SAMPLE1_PACKAGE_NAME+"|"+SAMPLE1_FILE_NAME);
+        JavaNode sampleClass1Node = new JavaNode(sourcePackagesNode, SAMPLE1_PACKAGE_NAME + "|" + SAMPLE1_FILE_NAME);
         // flag to stop debugger in finally
         boolean debuggerStarted = false;
         try {
             // find sample file in Editor
             EditorOperator eo = new EditorOperator(SAMPLE1_FILE_NAME);
             eo.setCaretPosition("public static void main", true);
-            final int insertLine = eo.getLineNumber()+2;
+            final int insertLine = eo.getLineNumber() + 2;
 
             // if file not contains brpText from previous test cases, insert it
             String brpText = "System.out.println(\"Hello\");"; // NOI18N
-            if(!eo.contains(brpText)) {
-                eo.insert(brpText+"\n", insertLine, 1);
+            if (!eo.contains(brpText)) {
+                eo.insert(brpText + "\n", insertLine, 1);
             }
             eo.select(brpText);
-            
+
             ToggleBreakpointAction toggleBreakpointAction = new ToggleBreakpointAction();
             // toggle breakpoint via Shift+F8
             toggleBreakpointAction.performShortcut(eo);
 
             // wait breakpoint established
             new Waiter(new Waitable() {
+
+                @Override
                 public Object actionProduced(Object editorOper) {
-                    Object[] annotations = ((EditorOperator)editorOper).getAnnotations(insertLine);
+                    Object[] annotations = ((EditorOperator) editorOper).getAnnotations(insertLine);
                     for (int i = 0; i < annotations.length; i++) {
-                        if("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
+                        if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
                             return Boolean.TRUE;
                         }
                     }
                     return null;
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Wait breakpoint established on line "+insertLine); // NOI18N
+                    return ("Wait breakpoint established on line " + insertLine); // NOI18N
                 }
             }).waitAction(eo);
-            
+
             // if file not contains second brpText from previous test cases, insert it
             brpText = "System.out.println(\"Good bye\");"; // NOI18N
-            if(!eo.contains(brpText)) {
-                eo.insert(brpText+"\n", insertLine+1, 1);
+            if (!eo.contains(brpText)) {
+                eo.insert(brpText + "\n", insertLine + 1, 1);
             }
             eo.select(brpText);
             // toggle breakpoint via pop-up menu
@@ -970,17 +970,21 @@ public class IDEValidation extends JellyTestCase {
             toggleBreakpointAction.perform(eo.txtEditorPane());
             // wait second breakpoint established
             new Waiter(new Waitable() {
+
+                @Override
                 public Object actionProduced(Object editorOper) {
-                    Object[] annotations = ((EditorOperator)editorOper).getAnnotations(insertLine+1);
+                    Object[] annotations = ((EditorOperator) editorOper).getAnnotations(insertLine + 1);
                     for (int i = 0; i < annotations.length; i++) {
-                        if("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
+                        if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
                             return Boolean.TRUE;
                         }
                     }
                     return null;
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Wait breakpoint established on line "+(insertLine+1)); // NOI18N
+                    return ("Wait breakpoint established on line " + (insertLine + 1)); // NOI18N
                 }
             }).waitAction(eo);
             // start to track Main Window status bar
@@ -994,7 +998,7 @@ public class IDEValidation extends JellyTestCase {
             MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
             String labelLine = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle",
                     "CTL_Thread_stopped",
-                    new String[] {"main", SAMPLE1_FILE_NAME, null, String.valueOf(insertLine)}); // NOI18N
+                    new String[]{"main", SAMPLE1_FILE_NAME, null, String.valueOf(insertLine)}); // NOI18N
             stt.waitText(labelLine);
             // continue debugging
             new ContinueAction().perform();
@@ -1002,7 +1006,7 @@ public class IDEValidation extends JellyTestCase {
             // wait status text "Thread main stopped at SampleClass1.java:"
             String labelLine1 = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle",
                     "CTL_Thread_stopped",
-                    new String[] {"main", SAMPLE1_FILE_NAME, null, String.valueOf(insertLine)}); // NOI18N
+                    new String[]{"main", SAMPLE1_FILE_NAME, null, String.valueOf(insertLine)}); // NOI18N
             stt.waitText(labelLine1);
             // check "Hello" was printed out in Output
             OutputTabOperator oto = new OutputTabOperator("debug-single"); // NOI18N
@@ -1011,14 +1015,14 @@ public class IDEValidation extends JellyTestCase {
         } catch (Throwable th) {
             try {
                 // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screenBeforeCleanup.png");
             } catch (Exception e1) {
                 // ignore it
             }
             th.printStackTrace(getLog());
             throw th;
         } finally {
-            if(debuggerStarted) {
+            if (debuggerStarted) {
                 // finish debugging
                 new FinishDebuggerAction().perform();
                 // check status line
@@ -1026,12 +1030,12 @@ public class IDEValidation extends JellyTestCase {
                 String outputTarget = Bundle.getString(
                         "org.apache.tools.ant.module.run.Bundle",
                         "TITLE_output_target",
-                        new Object[] {SAMPLE_PROJECT_NAME, null, "debug-single"});  // NOI18N
+                        new Object[]{SAMPLE_PROJECT_NAME, null, "debug-single"});  // NOI18N
                 // "Finished building SampleProject (debug-single)"
                 String finishedMessage = Bundle.getString(
                         "org.apache.tools.ant.module.run.Bundle",
                         "FMT_finished_target_status",
-                        new Object[] {outputTarget});
+                        new Object[]{outputTarget});
                 stt.waitText(finishedMessage);
             }
             stt.stop();
@@ -1043,15 +1047,15 @@ public class IDEValidation extends JellyTestCase {
             new JButtonOperator(new NbDialogOperator(confirmTitle), confirmButton).push();
         }
     }
-	
-     /** Test Options  
-      * - open Options window from main menu Tools|Options
-      * - select General category
-      * - pick HTTP Proxy
-      * - set Proxy Host to webcache
-      * - set Proxy Port to 8080
-      * - click OK to confirm and close Options window
-      */
+
+    /** Test Options  
+     * - open Options window from main menu Tools|Options
+     * - select General category
+     * - pick HTTP Proxy
+     * - set Proxy Host to webcache
+     * - set Proxy Port to 8080
+     * - click OK to confirm and close Options window
+     */
     public void testOptions() {
         OptionsOperator optionsOper = OptionsOperator.invoke();
         optionsOper.selectGeneral();
@@ -1063,50 +1067,50 @@ public class IDEValidation extends JellyTestCase {
         String proxyHostLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Host");
         JLabelOperator jloHost = new JLabelOperator(optionsOper, proxyHostLabel);
-        new JTextFieldOperator((JTextField)jloHost.getLabelFor()).typeText("webcache"); // NOI18N
+        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("webcache"); // NOI18N
         // "Proxy Port"
         String proxyPortLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Port");
         JLabelOperator jloPort = new JLabelOperator(optionsOper, proxyPortLabel);
-        new JTextFieldOperator((JTextField)jloPort.getLabelFor()).setText("8080"); // NOI18N
+        new JTextFieldOperator((JTextField) jloPort.getLabelFor()).setText("8080"); // NOI18N
         optionsOper.ok();
     }
 
-     /** Test Advanced Options (former Classic view). Options in Classic view should be gradually 
-      * replaced by basic options (former Modern view). When it happens this test case
-      * can be removed.
-      * - open Options window from main menu Tools|Options
-      * - select IDE Configuration|System|Print Settings node
-      * - set Page Footer Alignment to "LEFT"
-      * - set Line Ascent Correction to "2.0"
-      * - set Wrap Lines to "false"
-      * - close Options window
-      */
-/*    public void testOptionsClassicView() {
-        OptionsOperator optionsOper = OptionsOperator.invoke();
-        optionsOper.switchToClassicView();
-        // set exact comparator because in Japanese there is conflict with Filesystem settings
-        optionsOper.treeTable().tree().setComparator(new Operator.DefaultStringComparator(true, true));
-        // "IDE Configuration|System|Print Settings"
-        String printSettingsPath = Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration") + "|" +
-                                   Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-                                   Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
-        optionsOper.selectOption(printSettingsPath);
-        PropertySheetOperator pso = new PropertySheetOperator(optionsOper);
-        // "Page Footer Alignment"
-        String footerALLabel = Bundle.getString("org.openide.text.Bundle", "PROP_FOOTER_ALIGNMENT");
-        // "LEFT"
-        String leftLabel = Bundle.getString("org.openide.util.Bundle", "LEFT");
-        new Property(pso, footerALLabel).setValue(leftLabel);
-        // "Line Ascent Correction"
-        String lineACLabel = Bundle.getString("org.openide.text.Bundle", "PROP_LINE_ASCENT_CORRECTION");
-        new Property(pso, lineACLabel).setValue("2.0");
-        // "Wrap Lines"
-        String wrapLinesLabel = Bundle.getString("org.openide.text.Bundle", "PROP_WRAP");
-        new Property(pso, wrapLinesLabel).setValue("false");
-        optionsOper.close();
+    /** Test Advanced Options (former Classic view). Options in Classic view should be gradually 
+     * replaced by basic options (former Modern view). When it happens this test case
+     * can be removed.
+     * - open Options window from main menu Tools|Options
+     * - select IDE Configuration|System|Print Settings node
+     * - set Page Footer Alignment to "LEFT"
+     * - set Line Ascent Correction to "2.0"
+     * - set Wrap Lines to "false"
+     * - close Options window
+     */
+    /*    public void testOptionsClassicView() {
+    OptionsOperator optionsOper = OptionsOperator.invoke();
+    optionsOper.switchToClassicView();
+    // set exact comparator because in Japanese there is conflict with Filesystem settings
+    optionsOper.treeTable().tree().setComparator(new Operator.DefaultStringComparator(true, true));
+    // "IDE Configuration|System|Print Settings"
+    String printSettingsPath = Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration") + "|" +
+    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
+    optionsOper.selectOption(printSettingsPath);
+    PropertySheetOperator pso = new PropertySheetOperator(optionsOper);
+    // "Page Footer Alignment"
+    String footerALLabel = Bundle.getString("org.openide.text.Bundle", "PROP_FOOTER_ALIGNMENT");
+    // "LEFT"
+    String leftLabel = Bundle.getString("org.openide.util.Bundle", "LEFT");
+    new Property(pso, footerALLabel).setValue(leftLabel);
+    // "Line Ascent Correction"
+    String lineACLabel = Bundle.getString("org.openide.text.Bundle", "PROP_LINE_ASCENT_CORRECTION");
+    new Property(pso, lineACLabel).setValue("2.0");
+    // "Wrap Lines"
+    String wrapLinesLabel = Bundle.getString("org.openide.text.Bundle", "PROP_WRAP");
+    new Property(pso, wrapLinesLabel).setValue("false");
+    optionsOper.close();
     }
-*/
+     */
     /** Test CVS Lite
      * - from main menu invoke "Versioning|CVS|Checkout"
      * - wait for Checkout dialog and close it
@@ -1124,14 +1128,14 @@ public class IDEValidation extends JellyTestCase {
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle",
                 "CTL_MenuItem_Checkout_Label");
         //new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem);
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock(versioningItem + "|" + cvsItem + "|" + checkoutItem);
         String checkoutTitle = Bundle.getString(
                 "org.netbeans.modules.versioning.system.cvss.ui.wizards.Bundle",
                 "BK0007");
         NbDialogOperator checkoutOper = new NbDialogOperator(checkoutTitle);
         checkoutOper.close();
     }
-    
+
     /** Test XML
      * - open "Tools|DTDs and XML Schemas"
      * - select "NetBeans Catalog|-//DTD XMLCatalog//EN"
@@ -1154,27 +1158,27 @@ public class IDEValidation extends JellyTestCase {
      */
     public void testXML() {
         // check XML Entity Catalogs
-        
+
         // "Tools"
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
         // "DTDs and XML Schemas"
         String dtdsItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.catalog.Bundle", "LBL_CatalogAction_Name");
-        new Action(toolsItem+"|"+dtdsItem, null).perform();
+        new Action(toolsItem + "|" + dtdsItem, null).perform();
         // "DTDs and XML Schemas"
         String dtdsTitle = Bundle.getString("org.netbeans.modules.xml.catalog.Bundle", "LBL_CatalogPanel_Title");
         NbDialogOperator dtdsOper = new NbDialogOperator(dtdsTitle);
-        
+
         // "NetBeans Catalog"
         String netbeansCatalogLabel = Bundle.getString("org.netbeans.modules.xml.catalog.impl.Bundle", "NAME_system_catalog");
         String publicID = "-//DTD XMLCatalog//EN";
-        Node catalogNode = new Node(new JTreeOperator(dtdsOper), 
-                                    netbeansCatalogLabel+"|"+
-                                    publicID);
+        Node catalogNode = new Node(new JTreeOperator(dtdsOper),
+                netbeansCatalogLabel + "|"
+                + publicID);
         // view and close it
         new ViewAction().perform(catalogNode);
         new EditorOperator(publicID).close();
         dtdsOper.close();
-  
+
         // create an XML file
 
         // create xml package
@@ -1201,7 +1205,7 @@ public class IDEValidation extends JellyTestCase {
         new EditorOperator("XMLDocument.xml").close();  // NOI18N
 
         // "Check XML"
-        
+
         String checkXMLItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Check_XML");
         // invoke context action to check xml
         new Action(null, checkXMLItem).perform(xmlDocumentNode);
@@ -1209,17 +1213,17 @@ public class IDEValidation extends JellyTestCase {
         String xmlCheckTitle = Bundle.getString("org.netbeans.modules.xml.actions.Bundle", "TITLE_XML_check_window");
         // find and close an output with the result of xml check
         new OutputTabOperator(xmlCheckTitle).close();
-        
+
         // "Validate XML"
-        
+
         String validateItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Validate_XML");
         // invoke context action to validate xml
         new Action(null, validateItem).perform(xmlDocumentNode);
         // find and close an output with the result of xml validation
         new OutputTabOperator(xmlCheckTitle).close();
-        
+
         // "Generate DTD..."
-        
+
         String generateDTDItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.generator.Bundle", "PROP_GenerateDTD");
         new ActionNoBlock(null, generateDTDItem).perform(xmlDocumentNode);
         // "Select File Name"
@@ -1232,9 +1236,9 @@ public class IDEValidation extends JellyTestCase {
         // wait DTD is open in editor
         new EditorOperator("DTD.dtd").close();  // NOI18N
         Node dtdNode = new Node(xmlNode, "DTD.dtd"); // NOI18N
-        
+
         // "Check DTD"
-        
+
         String checkDTDItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Validate_DTD");
         new Action(null, checkDTDItem).perform(dtdNode);
         // find and close an output with the result of dtd check
@@ -1265,33 +1269,41 @@ public class IDEValidation extends JellyTestCase {
     public void testWindowSystem() {
         final ProjectsTabOperator projectsOper = ProjectsTabOperator.invoke();
         final FavoritesOperator favoritesOper = FavoritesOperator.invoke();
-        
+
         // test attaching
         favoritesOper.attachTo(new OutputOperator(), AttachWindowAction.AS_LAST_TAB);
         favoritesOper.attachTo(projectsOper, AttachWindowAction.TOP);
         favoritesOper.attachTo(new OutputOperator(), AttachWindowAction.RIGHT);
         favoritesOper.attachTo(projectsOper, AttachWindowAction.AS_LAST_TAB);
         // wait until TopComponent is in new location and is showing
-        final TopComponent projectsTc = (TopComponent)projectsOper.getSource();
-        final TopComponent favoritesTc = (TopComponent)favoritesOper.getSource();
+        final TopComponent projectsTc = (TopComponent) projectsOper.getSource();
+        final TopComponent favoritesTc = (TopComponent) favoritesOper.getSource();
         try {
             new Waiter(new Waitable() {
+
+                @Override
                 public Object actionProduced(Object tc) {
                     // run in dispatch thread
-                    Mode mode1 = (Mode)projectsOper.getQueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+                    Mode mode1 = (Mode) projectsOper.getQueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+
+                        @Override
                         public Object launch() {
                             return WindowManager.getDefault().findMode(projectsTc);
                         }
                     });
-                    Mode mode2 = (Mode)favoritesOper.getQueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+                    Mode mode2 = (Mode) favoritesOper.getQueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+
+                        @Override
                         public Object launch() {
                             return WindowManager.getDefault().findMode(favoritesTc);
                         }
                     });
-                    return (mode1==mode2 && favoritesTc.isShowing()) ? Boolean.TRUE : null;
+                    return (mode1 == mode2 && favoritesTc.isShowing()) ? Boolean.TRUE : null;
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Favorites TopComponent is next to Projects TopComponent."); // NOI18N
+                    return ("Favorites TopComponent is next to Projects TopComponent."); // NOI18N
                 }
             }).waitAction(null);
         } catch (InterruptedException e) {
@@ -1341,9 +1353,9 @@ public class IDEValidation extends JellyTestCase {
         PluginsOperator pluginsOper = null;
         try {
             pluginsOper = PluginsOperator.invoke();
-            
+
             // Install
-            
+
             pluginsOper.selectAvailablePlugins();
             pluginsOper.search(SOURCE_BROWSER_LABEL);
             pluginsOper.install(SOURCE_BROWSER_LABEL);
@@ -1354,7 +1366,7 @@ public class IDEValidation extends JellyTestCase {
             pluginsOper.selectPlugin(SOURCE_BROWSER_LABEL);
             pluginsOper.deactivate();
             pluginsOper.installer().cancel();
-            
+
             /* Because it needs restart to deactivate module (probably can be changed in 
              * future releases), we skip this part.
              * 
@@ -1367,9 +1379,9 @@ public class IDEValidation extends JellyTestCase {
             // click Finish button
             String finishLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_Finish");
             new JButtonOperator(installerOper, finishLabel).push();
-
+            
             // Activate module
-
+            
             pluginsOper.selectInstalled();
             pluginsOper.selectPlugin(SOURCE_BROWSER_LABEL);
             pluginsOper.activate();
@@ -1384,18 +1396,18 @@ public class IDEValidation extends JellyTestCase {
             MainWindowOperator.getDefault().waitStatusText(turningOnLabel);
             // click Finish button
             pluginsOper.installer().finish();
-            */
-            
+             */
+
             pluginsOper.close();
         } catch (JemmyException e) {
             // close possible error dialog
             // "Error"
             String errorTitle = Bundle.getString("org.netbeans.modules.autoupdate.ui.Bundle", "CTL_Error");
-            if(JDialogOperator.findJDialog(errorTitle, true, true) != null) {
+            if (JDialogOperator.findJDialog(errorTitle, true, true) != null) {
                 new NbDialogOperator(errorTitle).close();
             }
             // close Plugins dialog
-            if(pluginsOper != null) {
+            if (pluginsOper != null) {
                 pluginsOper.close();
             }
             throw e;
@@ -1410,7 +1422,7 @@ public class IDEValidation extends JellyTestCase {
     public void testGCDocuments() throws Exception {
         WatchProjects.assertTextDocuments();
     }
-    
+
     public void testGCProjects() throws Exception {
         WatchProjects.assertProjects();
     }
@@ -1418,29 +1430,37 @@ public class IDEValidation extends JellyTestCase {
     public void testReflectionUsage() throws Exception {
         CountingSecurityManager.assertReflection(0, "allowed-reflection.txt");
     }
-    
+
     /** Closes help window if any. It should not stay open between test cases.
      *  Otherwise it can break next tests.
      */
     private static void closeHelpWindow() {
         Window helpWindow = WindowOperator.findWindow(new ComponentChooser() {
+
+            @Override
             public boolean checkComponent(Component comp) {
-                WindowOperator winOper = new WindowOperator((Window)comp);
+                WindowOperator winOper = new WindowOperator((Window) comp);
                 winOper.setOutput(TestOut.getNullOutput());
-                return  null != winOper.findSubComponent(new ComponentChooser() {
+                return null != winOper.findSubComponent(new ComponentChooser() {
+
+                    @Override
                     public boolean checkComponent(Component comp) {
                         return comp.getClass().getName().startsWith("javax.help.JHelp"); //NOI18N
                     }
+
+                    @Override
                     public String getDescription() {
-                        return("any javax.help");  //NOI18N
+                        return ("any javax.help");  //NOI18N
                     }
                 });
             }
+
+            @Override
             public String getDescription() {
                 return "containing any javax.help.JHelp component";  //NOI18N
             }
         });
-        if(helpWindow != null) {
+        if (helpWindow != null) {
             new WindowOperator(helpWindow).close();
         }
     }

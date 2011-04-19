@@ -50,6 +50,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import org.netbeans.jellytools.DocumentsDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -582,5 +583,18 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         }
 
         throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
+    }
+    
+    public void closeDocument(String documentName) throws InterruptedException {
+        FormDesignerOperator fdo= new FormDesignerOperator(documentName);
+        fdo.editor();
+        Thread.sleep(500);
+        DocumentsDialogOperator ddo= DocumentsDialogOperator.invoke();
+        Thread.sleep(500);
+        ddo.selectDocument(documentName);
+        Thread.sleep(500);
+        ddo.btCloseDocuments().doClick();
+        
+       
     }
 }
