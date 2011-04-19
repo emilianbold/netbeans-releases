@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.qa.form.suites;
+package org.netbeans;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.qa.form.ExtJellyTestCase;
-import org.netbeans.qa.form.OpenTempl_defaultPackTest;
-import org.netbeans.qa.form.actions.actionsTest;
-import org.netbeans.qa.form.beans.AddAndRemoveBeansTest;
-import org.netbeans.qa.form.beans.AddBeanFormsTest;
-import org.netbeans.qa.form.undoredo.BaseTest;
-import org.netbeans.qa.form.visualDevelopment.AddComponents_SWING;
+import java.io.File;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 
 /**
  *
- * @author Pavel Pribyl
- * 
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class StableSuite extends TestCase {
-
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(StableSuite.class)
-
-                .addTest(OpenTempl_defaultPackTest.class,
-                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean")
-
-                .addTest(AddAndRemoveBeansTest.class,
-                "testAddingBeans",
-                "testRemovingBeans")
-
-//                .addTest (AddBeanFormsTest.class,
-//                "testCompileBeanClasses",
-//                "testAddingBeanFormWithVisualBeanSuperclass",
-//                "testAddingBeanFormWithNonVisualBeanSuperclass")
-                
-                .addTest(actionsTest.class,
-                "testDummy",
-                "testDuplicate",
-                "testEditContainer",
-                "testResizing",
-                "testBeans")
-
-                .addTest(BaseTest.class,
-                "testScenario")
-
-                .addTest(AddComponents_SWING.class,
-                "testAddAndCompile")
-
-                .clusters(".*").enableModules(".*") 
-                );
+public class URLsAreEqualTest extends NbTestCase {
+    public URLsAreEqualTest(String n) {
+        super(n);
     }
+    
+    public void testURLsAreEqual() throws Exception {
+        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        
+        URL orig = new URL("jar:" + jar.toURI() + "!/package/resource.txt");
+        URLConnection conn = orig.openConnection();
+        assertFalse("JDK connection: " + conn, conn.getClass().getName().startsWith("org.netbeans"));
+        
+        
+        TestFileUtils.writeZipFile(jar, "package/resource.txt:content", "root.txt:empty");
+        JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
 
-    public void testEmpty() {
-        //Empty test. Just to be able to use StableSuite.class for createConfiguration method
+        URL root = jcl.getResource("root.txt");
+        URL u = new URL(root, "/package/resource.txt");
+        assertNotNull("Resource found", u);
+        URLConnection uC = u.openConnection();
+        assertTrue("Our connection: " + uC, uC.getClass().getName().startsWith("org.netbeans"));
+
+        assertEquals("Both URLs are equal", u, orig);
+        assertEquals("Equality is symetrical", orig, u);
     }
 }

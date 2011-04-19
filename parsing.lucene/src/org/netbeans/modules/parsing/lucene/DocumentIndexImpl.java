@@ -142,12 +142,13 @@ public final class DocumentIndexImpl implements DocumentIndex {
     
     /**
      * Checks if the Lucene index is valid.
-     * @return true when index is valid
+     * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
+     * when the index does not exist or {@link  Status#VALID} if the index is valid
      * @throws IOException when index is already closed
      */
     @Override
-    public boolean isValid() throws IOException {
-        return luceneIndex.isValid(true);
+    public Index.Status getStatus() throws IOException {
+        return luceneIndex.getStatus(true);
     }
     
     @Override

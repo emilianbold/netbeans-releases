@@ -125,7 +125,8 @@ public class ModuleTestDependencies extends Task {
                             if (targetCnb == null || targetCnb.equals(myCnb)) {
                                 continue;
                             }
-                            String targetCluster = mlp.findByCodeNameBase(targetCnb).getClusterName();
+                            ModuleListParser.Entry depEntry = mlp.findByCodeNameBase(targetCnb);
+                            String targetCluster = depEntry != null ? depEntry.getClusterName() : "extra";
                             String targetCnbAndCluster = targetCnb + " (" + targetCluster + ")";
                             if (ParseProjectXml.TestDeps.UNIT.equals(testType) && ParseProjectXml.findNBMElement(dep, "test") != null && ParseProjectXml.findNBMElement(dep, "compile-dependency") != null) {
                                 SortedSet<String> depsForMe = deps.get(myCnbAndCluster);

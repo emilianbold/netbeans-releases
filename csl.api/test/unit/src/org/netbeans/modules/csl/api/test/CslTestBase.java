@@ -112,6 +112,7 @@ import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.ErrorManager;
@@ -4250,8 +4251,8 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         @Override
-        public boolean isValid() throws IOException {
-            return true;
+        public Status getStatus() throws IOException {
+            return Status.VALID;
         }
 
         // --------------------------------------------------------------------
