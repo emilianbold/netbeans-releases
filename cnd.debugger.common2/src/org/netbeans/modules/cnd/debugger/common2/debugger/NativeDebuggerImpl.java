@@ -137,9 +137,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     protected Location visitedLocation = null;
 
-    protected DebuggerAnnotation visitMarker = null;
-    protected DebuggerAnnotation currentPCMarker = null;
-    protected DebuggerAnnotation currentDisPCMarker = null;
+    protected final DebuggerAnnotation visitMarker;
+    protected final DebuggerAnnotation currentPCMarker;
+    protected final DebuggerAnnotation currentDisPCMarker;
 
     private boolean srcOOD;
     private String srcOODMessage = null;
@@ -926,6 +926,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public final void setVisitedLocation(Location loc) {
 	this.visitedLocation = loc;
 	requestAutos();
+        getDisassembly().stateUpdated();
 	updateLocation(true);
     }
 
