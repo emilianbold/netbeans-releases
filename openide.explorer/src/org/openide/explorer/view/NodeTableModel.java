@@ -140,6 +140,7 @@ public class NodeTableModel extends AbstractTableModel {
     public void setProperties(Property[] props) {
         int size = props.length;
         sortColumn = -1;
+        treeColumnProperty = null;
 
         int treePosition = -1;
 
