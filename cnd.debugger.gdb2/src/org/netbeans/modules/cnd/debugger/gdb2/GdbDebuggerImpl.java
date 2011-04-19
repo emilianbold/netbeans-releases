@@ -4249,7 +4249,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     void setEnv(String envVar) {
-        sendSilent("-gdb-set environment " + envVar); // NOI18N
+        sendSilent("set environment " + envVar); // NOI18N
+    }
+
+    void unSetEnv(String envVar) {
+        sendSilent("unset environment " + envVar); // NOI18N
     }
     
     private static String quoteValue(String value) {
