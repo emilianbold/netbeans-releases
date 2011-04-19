@@ -52,7 +52,9 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.form.FormPropertyContext.Component;
 import org.netbeans.qa.form.ExtJellyTestCase;
+import org.openide.util.Exceptions;
 
 /**
  * Automatic internationalization test
@@ -67,9 +69,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
     }
     
     /**Steps which should be done before starting of test */
-    public void setUp() throws IOException{
-        openProject(_testProjectName);   
-    }
+   
      
      
     /** Creates suite from particular test cases. */
@@ -99,6 +99,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
      * @param local "Automatic Internationalization" settings 
      */
     private void testAutomaticInternationalization(Boolean enabled) {
+        
         OptionsOperator.invoke();
         //add timeout
         waitNoEvent(2000);
@@ -109,11 +110,15 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(2000);
         
-        options.selectOption("Editing|GUI Builder"); // NOI18N
+        options.selectMiscellaneous(); // NOI18N
         //add timeout
         waitNoEvent(2000);
-
-        Property property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Automatic Resource Management"); // NOI18N
+        
+        java.awt.Component[] c=options.getComponents();
+        for(int i=0;i<c.length;i++){
+            java.awt.Component component = c[i];
+        }
+        Property property = new Property(options.getPropertySheet(""), "Automatic Internationalization"); // NOI18N
         property.setValue(String.valueOf( enabled ? "On" : "Off"));
         options.close();
         //add timeout

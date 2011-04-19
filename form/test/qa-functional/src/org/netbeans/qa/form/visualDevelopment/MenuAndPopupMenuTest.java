@@ -81,7 +81,7 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
     
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(MenuAndPopupMenuTest.class).addTest(
-               //"testMenuCreation",
+               "testMenuCreation",
                "testPopupMenuCreation"
                ).clusters(".*").enableModules(".*").gui(true));
 
@@ -120,11 +120,8 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
         lines.add("jMenuBar1.add(jMenu1);"); // NOI18N
         lines.add("setJMenuBar(jMenuBar1);"); // NOI18N
         findInCode(lines, designer);
-        try {
-            closeDocument(frameName);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        
+        removeFile(frameName);
     }
 
     public void testPopupMenuCreation() {
@@ -140,13 +137,8 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
         new Action(null, menuPalettePath + "Popup Menu").perform(node); // NOI18N
         findInCode("jPopupMenu1 = new javax.swing.JPopupMenu();", designer); // NOI18N
         
-        try {
-            closeDocument(frameName);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        new JButtonOperator(new JDialogOperator(), "Discard").doClick();
         
+                
         ArrayList<String> items = new ArrayList<String>();
         items.add(popupMenuPalettePath + "Menu Item"); // NOI18N
         items.add(popupMenuPalettePath + "Menu Item / CheckBox"); // NOI18N
@@ -159,7 +151,6 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
 
         runPopupOverNode(items, node, comparator);
         
-        // TODO: tady to zkontrolovat, az ten test pojede
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("jPopupMenu1.add(jMenuItem1);"); // NOI18N
         lines.add("jPopupMenu1.add(jCheckBoxMenuItem1)"); // NOI18N
@@ -167,12 +158,8 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
         lines.add("jPopupMenu1.add(jSeparator1);"); // NOI18N
         lines.add("jPopupMenu1.add(jMenu1);"); // NOI18N
         findInCode(lines, designer);
-        try {
-            closeDocument(frameName);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        new QuestionDialogOperator().btNo();
+        
+        removeFile(frameName);
         
     }
   }
