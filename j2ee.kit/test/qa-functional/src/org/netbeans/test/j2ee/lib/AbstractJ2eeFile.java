@@ -113,20 +113,6 @@ abstract class AbstractJ2eeFile {
         return retVal;
     }
 
-    /** Checks remote sources created in JavaProject next to main project. */
-    protected boolean srcFileExistInJavaProject(String name) {
-        boolean retVal = false;
-        File f = new File(FileUtil.toFile(prjRoot.getParent().getFileObject("JavaProject")), srcRoot.replace("java", "").replace("beans", ""));
-        try {
-            File ff = new File(f, name);
-            //System.err.println(ff.getAbsolutePath());
-            //System.err.println("srcEx: " + ff.exists());
-            retVal = ff.exists();
-        } catch (Exception e) {
-        }
-        return retVal;
-    }
-    
     /**
      * empty array iff there'are no errors, otherwise array of error messages
      *
