@@ -178,26 +178,50 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         MacroMap macroMap = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());
         RunProfile mainRunProfile = getMainSettings().runProfile();
         macroMap.putAll(mainRunProfile.getEnvironment().getenvAsMap());
-        applyEnvvars(macroMap);
+        applyEnvvars(macroMap, null);
     }
 
-    private void applyEnvvars(MacroMap macroMap) {
+    private void applyEnvvars(MacroMap setEnvs, MacroMap unSetEnvs) {
         // init unbuffer if needed
-        gdbDebugger.getIOPack().updateEnv(macroMap);
+        gdbDebugger.getIOPack().updateEnv(setEnvs);
         
-        // Iterate over the environment variable list
-        for (Map.Entry<String, String> entry : macroMap.entrySet()) {
-            gdbDebugger.setEnv(entry.getKey() + '=' + entry.getValue());
-        }
+        // Iterate over the set environment variable list
+	if (setEnvs != null)
+	    for (Map.Entry<String, String> entry : setEnvs.entrySet()) {
+		gdbDebugger.setEnv(entry.getKey() + '=' + entry.getValue());
+	    }
+
+        // Iterate over the unset environment variable list
+	if (unSetEnvs != null)
+	    for (Map.Entry<String, String> entry : unSetEnvs.entrySet()) {
+		gdbDebugger.unSetEnv(entry.getKey() );
+	    }
     }
     
     @Override
     protected void applyEnvvars(String[][] o, String[][] n) {
-        MacroMap macroMap = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());        
-        for (int i = 0; i < o.length; i++) {
-            macroMap.put(o[i][0], o[i][1]);
+        MacroMap setEnvs = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());
+        for (int i = 0; i < n.length; i++) {
+            setEnvs.put(n[i][0], n[i][1]);
         }
-        applyEnvvars(macroMap);
+
+        MacroMap unSetEnvs = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());
+	// go through old env list and pick the ones that are not on new env list
+	for (int ox = 0; ox < o.length; ox++) {
+	    boolean found = false;
+	    for (int nx = 0; nx < n.length; nx++) {
+		if (o[ox][0].equals(n[nx][0])) {
+		    found = true;
+		    break;
+		}
+	    }
+	    if (!found) {
+		// removed env
+		unSetEnvs.put(o[ox][0], o[ox][1]);
+	    }
+	}
+
+        applyEnvvars(setEnvs, unSetEnvs);
     }    
 
     protected void applySignals(Signals o, Signals n) {
