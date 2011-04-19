@@ -60,6 +60,8 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.qa.form.*;
 import java.io.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
@@ -85,7 +87,7 @@ import java.io.*;
  * @author  Marian.Mirilovic@czech.sun.com
  * @version
  */
-public class AddComponents_AWT extends JellyTestCase {
+public class AddComponents_AWT extends ExtJellyTestCase {
     
     public String FILE_NAME = "clear_Frame";
     public String PACKAGE_NAME = "data";
@@ -100,6 +102,20 @@ public class AddComponents_AWT extends JellyTestCase {
         super(testName);
     }
     
+    
+     @Override
+    public void setUp() throws IOException {
+        openDataProjects(_testProjectName);
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponents_AWT.class).addTest(
+                "testAddAndCompile",
+                "testJavaFile",
+                "testFormFile"
+                ).clusters(".*").enableModules(".*").gui(true));
+
+    }
     /** Run test.
      */
     public void testAddAndCompile() {
@@ -213,16 +229,16 @@ public class AddComponents_AWT extends JellyTestCase {
     /** Suite
      * @param args arguments from command line
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AddComponents_AWT("testAddAndCompile"));
+    //public static NbTestSuite suite() {
+     //   NbTestSuite suite = new NbTestSuite();
+     //   suite.addTest(new AddComponents_AWT("testAddAndCompile"));
         //suite.addTest(new AddComponents_AWT("testFormFile"));
-        suite.addTest(new AddComponents_AWT("testJavaFile"));
+     //   suite.addTest(new AddComponents_AWT("testJavaFile"));
         //suite.addTest(new AddComponents_AWT("testCloseDataProject"));
-        return suite;
-    }
+      //  return suite;
+   // }
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+    //public static void main(String[] args) {
+       // junit.textui.TestRunner.run(suite());
+    //}
 }
