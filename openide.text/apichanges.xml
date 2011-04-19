@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="NbDocument-Annotatable">
         <api name="text"/>
-        <summary></summary>
+        <summary><code>NbDocument.Annotatable</code> threading changes</summary>
         <version major="6" minor="35"/>
         <date day="7" month="2" year="2011"/>
         <author login="mmetelka"/>
