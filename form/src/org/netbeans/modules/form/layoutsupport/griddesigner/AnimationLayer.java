@@ -69,7 +69,7 @@ import javax.swing.Timer;
  */
 public class AnimationLayer implements ActionListener {
     /** The length of the animation (in milliseconds). */
-    private static final int ANIMATION_LENGTH_MILLIS = 500;
+    private static final long ANIMATION_LENGTH_MILLIS = Math.max(1, Integer.getInteger("netbeans.modules.form.grid.animationlength", 300)); // NOI18N
     /** Initial bounds of components in the animated container. */
     private Map<Component, Rectangle> startBounds = new HashMap<Component, Rectangle>();
     /** Final bounds of components in the animated container. */
