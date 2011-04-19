@@ -85,7 +85,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     private String _testPackageName = "data"; // NOI18N
     public static String DELETE_OBJECT_CONFIRM = "Confirm Object Deletion"; // NOI18N
     /* Skip file (JFrame,Frame, JDialog, ...) delete in the end of each test */
-    public Boolean DELETE_FILES = false;
+    public Boolean DELETE_FILES = true;
     public static String OS = System.getProperty("os.name").toLowerCase();
 
     public String getTestProjectName() {
@@ -209,8 +209,8 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
             act.performPopup(node);
 
             //new NbDialogOperator(DELETE_OBJECT_CONFIRM).yes();
-            NbDialogOperator op = new NbDialogOperator("Safe Delete");
-            new JButtonOperator(op, "Refactor").clickMouse();
+            NbDialogOperator op = new NbDialogOperator("Delete");
+            new JButtonOperator(op, "Ok").clickMouse();
         }
     }
 
@@ -585,16 +585,5 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
     }
     
-    public void closeDocument(String documentName) throws InterruptedException {
-        FormDesignerOperator fdo= new FormDesignerOperator(documentName);
-        fdo.editor();
-        Thread.sleep(500);
-        DocumentsDialogOperator ddo= DocumentsDialogOperator.invoke();
-        Thread.sleep(500);
-        ddo.selectDocument(documentName);
-        Thread.sleep(500);
-        ddo.btCloseDocuments().doClick();
-        
-       
-    }
+   
 }
