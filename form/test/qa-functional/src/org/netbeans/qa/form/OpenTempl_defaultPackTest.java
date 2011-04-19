@@ -185,18 +185,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      *Is HIGHLY RECOMMENDED close document, after test is finished.
      */
     
-    public void closeDocument(String documentName) throws InterruptedException {
-        FormDesignerOperator fdo= new FormDesignerOperator(documentName);
-        fdo.editor();
-        Thread.sleep(500);
-        DocumentsDialogOperator ddo= DocumentsDialogOperator.invoke();
-        Thread.sleep(500);
-        ddo.selectDocument(documentName);
-        Thread.sleep(500);
-        ddo.btCloseDocuments().doClick();
-        
-       
-    }
+    
 
     public void openTemplate(String templateName) throws InterruptedException {
                

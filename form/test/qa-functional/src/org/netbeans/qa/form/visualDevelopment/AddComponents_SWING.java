@@ -95,6 +95,7 @@ public class AddComponents_SWING extends ExtJellyTestCase {
 
     /** Run test.
      */
+    @Override
     public void setUp() throws IOException {
         openDataProjects(_testProjectName);
     }
