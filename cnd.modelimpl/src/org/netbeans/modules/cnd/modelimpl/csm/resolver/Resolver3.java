@@ -445,7 +445,9 @@ public final class Resolver3 implements Resolver {
                 //assert o instanceof CsmScopeElement;
                 if( o instanceof CsmScopeElement ) {
                     if (!inLocalContext && CsmKindUtilities.isFunctionDefinition(o)) {
-                        gatherMaps((CsmScopeElement) o, end, true, offset);
+                        if (end >= offset) {
+                            gatherMaps((CsmScopeElement) o, end, true, offset);
+                        }
                     } else {
                         gatherMaps((CsmScopeElement) o, end, inLocalContext, offset);
                     }
