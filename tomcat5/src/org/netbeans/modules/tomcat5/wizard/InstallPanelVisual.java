@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -81,8 +82,9 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     private static final String SERVER_XML = "conf/server.xml"; // NOI18N
     
-    private final List listeners = new ArrayList();
-    private final TomcatVersion tomcatVersion;
+    private static final Logger LOGGER = Logger.getLogger(InstallPanelVisual.class.getName());
+
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     
     private String errorMessage;
     private boolean infoMessage;
@@ -92,10 +94,10 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     private RequestProcessor.Task validationTask;
     
+    private TomcatVersion version;
     
     /** Creates new form JPanel */
-    public InstallPanelVisual(TomcatVersion tomcatVersion) {
-        this.tomcatVersion = tomcatVersion;
+    public InstallPanelVisual() {
         initComponents();
         DocumentListener updateListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -224,7 +226,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
 
         jTextFieldUsername.setColumns(20);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(InstallPanelVisual.class, "LBL_Credentials", new Object[] {TomcatVersion.TOMCAT_70.equals(tomcatVersion) ? "manager-script" : "manager"})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(InstallPanelVisual.class, "LBL_Credentials")); // NOI18N
         jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(InstallPanelVisual.class, "LBL_CreateUserToolTip")); // NOI18N
 
         createUserCheckBox.setSelected(true);
@@ -253,8 +255,8 @@ class InstallPanelVisual extends javax.swing.JPanel {
                     .add(createUserCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldBaseDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldHomeDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldBaseDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldHomeDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jButtonHomeBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -367,13 +369,13 @@ class InstallPanelVisual extends javax.swing.JPanel {
         return p;
     }
     
-    public TomcatVersion getTomcatVersion() {
-        return tomcatVersion;
+    public synchronized TomcatVersion getTomcatVersion() {
+        return version;
     }
     
     public String getUrl() {
         String url;
-        switch (tomcatVersion) {
+        switch (getTomcatVersion()) {
             case TOMCAT_70:
                 url = TomcatFactory.TOMCAT_URI_PREFIX_70;
                 break;
@@ -477,7 +479,8 @@ class InstallPanelVisual extends javax.swing.JPanel {
         }
 
         // check the lib directory
-        File libDir = TomcatVersion.TOMCAT_60.equals(tomcatVersion) || TomcatVersion.TOMCAT_70.equals(tomcatVersion)
+        File libDir = TomcatVersion.TOMCAT_60.equals(getTomcatVersion())
+                || TomcatVersion.TOMCAT_70.equals(getTomcatVersion())
             ? new File(homeDir, "lib") // NOI18N
             : new File(homeDir, "common" + File.separator + "lib"); // NOI18N
         if (!(libDir.exists() && libDir.isDirectory())) {
@@ -595,9 +598,9 @@ class InstallPanelVisual extends javax.swing.JPanel {
                 if (!TomcatUsers.userExists(tomcatUsersXml, jTextFieldUsername.getText())) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserDoesNotExist");
                     infoMessage = true;
-                } else if (!TomcatUsers.hasManagerRole(tomcatVersion, tomcatUsersXml, jTextFieldUsername.getText())) {
+                } else if (!TomcatUsers.hasManagerRole(getTomcatVersion(), tomcatUsersXml, jTextFieldUsername.getText())) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserHasNotManagerRole",
-                            TomcatVersion.TOMCAT_70.equals(tomcatVersion)
+                            TomcatVersion.TOMCAT_70.equals(getTomcatVersion())
                                 ? "manager-script"
                                 : "manager");
                     infoMessage = true;
@@ -644,17 +647,15 @@ class InstallPanelVisual extends javax.swing.JPanel {
                         SwingUtilities.invokeLater(this);
                         return;
                     }
-                    
-                    ChangeEvent event = new ChangeEvent(this);
-                    ArrayList tempList;
-                    
-                    synchronized(listeners) {
-                        tempList = new ArrayList(listeners);
+
+                    synchronized (InstallPanelVisual.this) {
+                        version = TomcatFactory.getTomcatVersion(new File(jTextFieldHomeDir.getText()));
+                        LOGGER.log(Level.FINE, "Detected Tomcat version {0}", version);
                     }
                     
-                    Iterator iter = tempList.iterator();
-                    while (iter.hasNext()) {
-                        ((ChangeListener)iter.next()).stateChanged(event);
+                    ChangeEvent event = new ChangeEvent(this);                    
+                    for (ChangeListener listener : listeners) {
+                        listener.stateChanged(event);
                     }
                 }
             });
