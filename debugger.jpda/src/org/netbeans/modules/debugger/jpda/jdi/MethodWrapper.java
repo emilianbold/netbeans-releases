@@ -480,7 +480,9 @@ public final class MethodWrapper {
             return ret;
         } catch (com.sun.jdi.InternalException ex) {
             retValue = ex;
-            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            if (ex.errorCode() != 101) { // Ignore ABSENT_INFORMATION
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
