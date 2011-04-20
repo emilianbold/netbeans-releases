@@ -58,6 +58,7 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -83,6 +84,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     private static final byte MASK_VALID = 1;
     private static final byte CHECK_CAN_WRITE = 2;
+    
+    private static final boolean RETURN_JAVA_IO_FILE = 
+            Boolean.getBoolean("remote.java.io.file") || Boolean.getBoolean("full.remote.direct.open");
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
@@ -381,6 +385,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public Object getAttribute(String attrName) {
+        if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) {
+            return new FileObjectBasedFile(getExecutionEnvironment(), this);
+        }
         return getFileSystem().getAttribute(this, attrName);
     }
 

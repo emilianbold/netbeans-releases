@@ -786,8 +786,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     
     public void annotateDis(boolean andShow) {
         if (visitedLocation != null) {
-            DisInfoPanel.setLocation(visitedLocation);
-            DisassemblyUtils.movePC(visitedLocation.pc(), currentDisPCMarker, andShow);
+            DisassemblyUtils.annotatePC(visitedLocation, currentDisPCMarker, andShow);
         }
     }
    
