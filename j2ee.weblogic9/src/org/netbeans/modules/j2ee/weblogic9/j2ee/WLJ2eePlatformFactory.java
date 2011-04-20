@@ -634,6 +634,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
                 if (middleware != null) {
                     File modules = new File(middleware, "modules"); // NOI18N
+                    if (!modules.exists() || !modules.isDirectory()) {
+                        // TODO this has been changed in daily builds, we
+                        // might simplify this for release
+                        modules = new File(new File(middleware, "oracle_common"), "modules"); // NOI18N
+                    }
                     if (modules.exists() && modules.isDirectory()) {
                         File[] apis = modules.listFiles(DWP_LIBRARY_FILTER);
                         if (apis != null) {
