@@ -118,7 +118,12 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     @Override
     protected String getCanonicalPathImpl(FileObject fo) throws IOException {
         return FileSystemProvider.getCanonicalPath(fo);
-    }    
+    }
+
+    @Override
+    protected String normalizeAbsolutePathImpl(FileSystem fs, String absPath) {
+        return FileSystemProvider.normalizeAbsolutePath(absPath, fs);
+    }
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {

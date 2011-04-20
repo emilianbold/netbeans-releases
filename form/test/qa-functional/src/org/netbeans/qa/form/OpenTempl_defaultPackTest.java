@@ -81,6 +81,9 @@ import org.netbeans.junit.NbModuleSuite;
  * @author Jana Maleckova
  * Created on 29 January 2007, 15:59
  * Test is only for java 1.6 for now
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
@@ -233,7 +236,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
         openTemplate("JApplet Form");
         
-        //System.out.println(getWorkDir());
+        System.out.println(getWorkDir());
         testFormFile("NewJApplet");
         Thread.sleep(1000);
         testJavaFile("NewJApplet");
