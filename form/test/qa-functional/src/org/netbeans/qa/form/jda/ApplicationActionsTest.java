@@ -64,6 +64,9 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * Testing properties of JDA FrameView node
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class ApplicationActionsTest extends ExtJellyTestCase {
     private static String FOO_SIMPLEMETHOD = "FooSimpleMethod";

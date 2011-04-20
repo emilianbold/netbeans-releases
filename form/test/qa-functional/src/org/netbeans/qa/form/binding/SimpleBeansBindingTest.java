@@ -45,12 +45,9 @@ package org.netbeans.qa.form.binding;
 
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.actions.*;
-import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import java.util.*;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.BindDialogOperator;
@@ -59,6 +56,9 @@ import org.netbeans.qa.form.BindDialogOperator;
  * Beans Binding basic test
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class SimpleBeansBindingTest extends ExtJellyTestCase {
     

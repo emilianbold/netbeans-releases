@@ -75,6 +75,9 @@ import org.netbeans.junit.NbModuleSuite;
  * 
  * @author Pavel Pribyl
  * @version 0.9 (not finished)
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class actionsTest extends JellyTestCase {
 

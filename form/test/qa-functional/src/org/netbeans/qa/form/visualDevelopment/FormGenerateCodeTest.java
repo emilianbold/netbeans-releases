@@ -73,6 +73,9 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * @see <a href="http://qa.netbeans.org/modules/form/promo-f/testspecs/visualDevelopment.html">Test specification</a>
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class FormGenerateCodeTest extends ExtJellyTestCase {
     

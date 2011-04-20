@@ -49,16 +49,11 @@ import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import java.util.*;
 import junit.framework.Test;
-import org.netbeans.jellytools.QuestionDialogOperator;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import org.openide.util.Exceptions;
 
 /**
  * Menu and popup menu tests from NetBeans 5.5.1 Form Test Specification
@@ -66,6 +61,9 @@ import org.openide.util.Exceptions;
  * @see <a href="http://qa.netbeans.org/modules/form/promo-f/testspecs/visualDevelopment.html">Test specification</a>
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class MenuAndPopupMenuTest extends ExtJellyTestCase {
     
