@@ -91,6 +91,7 @@ import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.navigator.POMModelVisitor.POMCutHolder;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
@@ -100,6 +101,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -221,7 +223,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (dobj == null) {
                     return;
                 }
-                dobj = ROUtil.checkPOMFileObjectReadOnly(dobj);
+                try {
+                    dobj = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(dobj.getPrimaryFile()));
+                } catch (DataObjectNotFoundException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
                 EditorCookie.Observable ec = dobj.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
                     return;

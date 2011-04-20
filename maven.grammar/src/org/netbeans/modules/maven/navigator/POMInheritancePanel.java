@@ -56,6 +56,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -251,7 +252,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
             if (fo != null) {
                 try {
-                    return new POMNode(fl, mdl, DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl)), version);
+                    return new POMNode(fl, mdl, DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(fo)), version);
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }

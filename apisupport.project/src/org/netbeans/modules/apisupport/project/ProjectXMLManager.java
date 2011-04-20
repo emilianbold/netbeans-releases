@@ -74,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -83,10 +84,10 @@ import org.netbeans.modules.apisupport.project.universe.NonexistentModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import static org.netbeans.modules.apisupport.project.Bundle.*;
 
 /**
  * Convenience class for managing project's <em>project.xml</em> file. You
@@ -408,6 +409,7 @@ public final class ProjectXMLManager {
      * @return Localized warning message about introduced dependency cycle,
      * <code>null</code> otherwise.
      */
+    @Messages({"# {0} - candidate project name", "# {1} - this project name", "MSG_cyclic_dep=Adding project {0} as dependency to {1} would introduce cyclic dependency! Dependency was not added."})
     public String getDependencyCycleWarning(final Set<ModuleDependency> candidates) {
         for (ModuleDependency md : candidates) {
             File srcLoc = md.getModuleEntry().getSourceLocation();
@@ -435,7 +437,7 @@ public final class ProjectXMLManager {
                 } else {
                     String c = ProjectUtils.getInformation(candidate).getDisplayName();
                     String m = ProjectUtils.getInformation(project).getDisplayName();
-                    return NbBundle.getMessage(ProjectXMLManager.class, "MSG_cyclic_dep", c, m);
+                    return MSG_cyclic_dep(c, m);
                 }
             }
         }
