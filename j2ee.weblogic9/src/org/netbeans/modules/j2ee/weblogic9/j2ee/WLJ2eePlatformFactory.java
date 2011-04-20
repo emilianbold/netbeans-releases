@@ -120,9 +120,12 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final String ECLIPSELINK_JPA_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider"; // NOI18N
 
     // always prefer JPA 1.0 see #189205
-    private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile("^.*javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
+    private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile(
+            "^.*javax\\.persistence.*_1-\\d+-\\d+\\.jar$");
 
-    private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile("^.*javax\\.persistence.*_2-\\d+-\\d+\\.jar$");
+    // _2.0 is for javax.persistence.dwp_2.0.jar
+    private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile(
+            "^.*javax\\.persistence.*((_2-\\d+-\\d+)|(_2.0))\\.jar$");
     
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
     
@@ -309,7 +312,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         if (middleware != null) {
-            File modules = new File(middleware, "modules"); // NOI18N
+            File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
                 File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
                     @Override
@@ -329,6 +332,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
     }     
     
+    private static File getMiddlewareModules(File middleware) {
+        File modules = new File(middleware, "modules"); // NOI18N
+        if (!modules.exists() || !modules.isDirectory()) {
+            modules = new File(new File(middleware, "oracle_common"), "modules"); // NOI18N
+        }
+        return modules;
+    }
+
     public static class J2eePlatformImplImpl extends J2eePlatformImpl2 {
 
         /**
@@ -633,12 +644,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File middleware = getMiddlewareHome();
 
                 if (middleware != null) {
-                    File modules = new File(middleware, "modules"); // NOI18N
-                    if (!modules.exists() || !modules.isDirectory()) {
-                        // TODO this has been changed in daily builds, we
-                        // might simplify this for release
-                        modules = new File(new File(middleware, "oracle_common"), "modules"); // NOI18N
-                    }
+                    File modules = getMiddlewareModules(middleware);
                     if (modules.exists() && modules.isDirectory()) {
                         File[] apis = modules.listFiles(DWP_LIBRARY_FILTER);
                         if (apis != null) {
@@ -648,6 +654,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         }
                     }
                 }
+
+                addPersistenceLibrary(list, middleware, this);
 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
@@ -708,7 +716,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
             if (newDefaultJpaProvider == null) {
-                newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
+                if (dm.isWebProfile()) {
+                    newDefaultJpaProvider = ECLIPSELINK_JPA_PROVIDER;
+                } else {
+                    newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
+                }
             }
 
             synchronized (this) {
