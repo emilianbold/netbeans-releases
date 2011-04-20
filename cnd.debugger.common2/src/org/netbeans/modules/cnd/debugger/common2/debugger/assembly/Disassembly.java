@@ -82,7 +82,7 @@ public abstract class Disassembly implements StateModel.Listener {
     private final NativeDebuggerImpl debugger;
     protected boolean opened = false;
     protected boolean opening = false;
-    private final List<DebuggerAnnotation> annotations = new ArrayList<DebuggerAnnotation>();
+    private final List<DebuggerAnnotation> bptAnnotations = new ArrayList<DebuggerAnnotation>();
     private final BreakpointModel breakpointModel;
     private int disLength = 0;
     private DisText disText;
@@ -112,10 +112,10 @@ public abstract class Disassembly implements StateModel.Listener {
     
     private void updateAnnotations(boolean open) {
         debugger.annotateDis(open);
-        for (DebuggerAnnotation debuggerAnnotation : annotations) {
-            debuggerAnnotation.detach();
+        for (DebuggerAnnotation annotation : bptAnnotations) {
+            annotation.detach();
         }
-        annotations.clear();
+        bptAnnotations.clear();
         
         NativeBreakpoint[] bs = breakpointModel.getBreakpoints();
         for (NativeBreakpoint bpt : bs) {
@@ -131,7 +131,7 @@ public abstract class Disassembly implements StateModel.Listener {
                     int addressLine = getAddressLine(parseAddr);
                     if (addressLine >= 0) {
                         Line line = getLine(addressLine);
-                        annotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, 0, true, ibpt));
+                        bptAnnotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, 0, true, ibpt));
                     }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
