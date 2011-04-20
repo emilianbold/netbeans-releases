@@ -770,8 +770,10 @@ public final class ParserQueue {
             }
         }
         if (fire) {
-            int cnt = getProjectFiles(project).size();
-            ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
+            //int cnt = getProjectFiles(project).size();
+            ProjectData pd = getProjectData(project, true);
+            int cnt = pd.filesInQueue.size() + pd.filesBeingParsed.size();
+            ProgressSupport.instance().fireProjectFilesCounted(project, pd.filesInQueue.size());
             if (cnt == 0) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
             }

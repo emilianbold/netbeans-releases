@@ -546,12 +546,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                     }
                                 }
                             } finally {
+                                postParse();
                                 synchronized (changeStateLock) {
                                     if (parsingState == ParsingState.BEING_PARSED) {
                                         state = State.PARSED;
                                     } // if not, someone marked it with new state
                                 }
-                                postParse();
                                 stateLock.notifyAll();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
