@@ -104,6 +104,7 @@ public final class FileReferencesContext extends CsmProgressAdapter {
 
     public void clean(){
         isClened = true;
+        CsmListeners.getDefault().removeProgressListener(this);
         _clean();
     }
 
