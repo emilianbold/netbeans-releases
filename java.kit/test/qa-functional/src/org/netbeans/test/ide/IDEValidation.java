@@ -58,6 +58,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FavoritesOperator;
@@ -118,6 +119,7 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.Log;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -132,6 +134,40 @@ public class IDEValidation extends JellyTestCase {
     /** Need to be defined because of JUnit */
     public IDEValidation(String name) {
         super(name);
+    }
+    
+    public static Test suite() throws IOException {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+            IDECommitValidationTest.class
+        ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
+        .failOnException(Level.INFO)
+        .failOnMessage(Level.SEVERE);
+        
+        CountingSecurityManager.initWrites();
+        
+        //conf = conf.addTest("testReflectionUsage");  // too easy to break:
+        conf = conf.addTest("testWriteAccess");
+        //conf = conf.addTest("testInitGC");
+        conf = conf.addTest("testMainMenu");
+        conf = conf.addTest("testHelp");
+        conf = conf.addTest("testOptions");
+        conf = conf.addTest("testNewProject");
+        conf = conf.addTest("testShortcuts"); // sample project must exist before testShortcuts
+        conf = conf.addTest("testNewFile");
+        conf = conf.addTest("testCVSLite");
+        conf = conf.addTest("testProjectsView");
+        conf = conf.addTest("testFilesView");
+        conf = conf.addTest("testEditor");
+        conf = conf.addTest("testBuildAndRun");
+        conf = conf.addTest("testDebugging");
+        conf = conf.addTest("testPlugins"); //needs net connectivity
+        conf = conf.addTest("testJUnit");  //needs JUnit installed in testPlugins
+        conf = conf.addTest("testXML");
+        conf = conf.addTest("testDb");
+        conf = conf.addTest("testWindowSystem");
+        //conf = conf.addTest("testGCDocuments");
+        //conf = conf.addTest("testGCProjects");
+        return NbModuleSuite.create(conf);
     }
 
     /** Setup called before every test case. */
@@ -329,7 +365,7 @@ public class IDEValidation extends JellyTestCase {
         moveClassDialog.waitClosed();
         // "Delete"
         newClassNode = new Node(sampleProjectPackage, "SampleClass11"); // NOI18N
-        new EventTool().waitNoEvent(5000);
+        new EventTool().waitNoEvent(2000);
         new DeleteAction().perform(newClassNode);
         // "Safe Delete"
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
@@ -412,8 +448,9 @@ public class IDEValidation extends JellyTestCase {
             String connectUsingItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "ConnectUsing");
             // open a dialog to create a new connection
             new ActionNoBlock(null, connectUsingItem).perform(jdbcOdbcNode);
-            String newDatabaseConnectionTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "NewConnectionDialogTitle");
-            new NbDialogOperator(newDatabaseConnectionTitle).cancel();
+            // "New Connection Wizard"
+            String connectionDialogTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "PredefinedWizard.WizardTitle");
+            new NbDialogOperator(connectionDialogTitle).cancel();
         }
     }
 
@@ -435,7 +472,6 @@ public class IDEValidation extends JellyTestCase {
      * - open and close Javadoc Index Search top component (main menu item Tools|Javadoc Index Search)
      */
     public void testMainMenu() {
-        MainWindowOperator.getDefault().maximize();
         // open and close New Project wizard
         NewProjectWizardOperator.invoke().close();
 
@@ -446,15 +482,6 @@ public class IDEValidation extends JellyTestCase {
             } catch (TimeoutExpiredException e) {
             }
         }
-        /*
-        // open Tools|Javadoc Index Search
-        String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
-        String javadocItem = Bundle.getStringTrimmed("org.netbeans.modules.javadoc.search.Bundle", "CTL_SEARCH_MenuItem");
-        new Action(toolsItem+"|"+javadocItem, null).perform();
-        // "Javadoc Index Search"
-        String javadocTitle = Bundle.getString("org.netbeans.modules.javadoc.search.Bundle", "CTL_SEARCH_WindowTitle");
-        new TopComponentOperator(javadocTitle).close();
-         */
     }
 
     /** Test global shortcuts. 
@@ -705,9 +732,6 @@ public class IDEValidation extends JellyTestCase {
         outputOper.waitText("Hello"); //NOI18N
         outputOper.waitText("Good bye"); //NOI18N
 
-        // "Set as Main Project"
-        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
-        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME));
         // "Run"
         String buildItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
         // "Build Main Project"
@@ -881,13 +905,13 @@ public class IDEValidation extends JellyTestCase {
 
         // call "Run|Test "SampleProject""
         new Action(runItem + "|" + testProjectItem, null).perform(sampleClass2Node);
-        // "Build of SampleProject (test) failed."
-        failedMessage = Bundle.getString(
+        // "Finished building SampleProject (test)"
+        String finishedMessage = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
-                "FMT_target_failed_status",
+                "FMT_finished_target_status",
                 new Object[]{testTarget});
-        // wait message "Build of SampleProject (test) failed."
-        stt.waitText(failedMessage);
+        // wait message "Finished building SampleProject (test)"
+        stt.waitText(finishedMessage);
         stt.stop();
 
         // test JUnit on folder
@@ -1050,74 +1074,45 @@ public class IDEValidation extends JellyTestCase {
 
     /** Test Options  
      * - open Options window from main menu Tools|Options
+     * - select Editor category
+     * - select Fonts & Colors category
+     * - select Keymap category
      * - select General category
-     * - pick HTTP Proxy
-     * - set Proxy Host to webcache
-     * - set Proxy Port to 8080
+     * - pick Manual Proxy Setting
+     * - set Proxy Host to emea-proxy.uk.oracle.com
+     * - set Proxy Port to 80
      * - click OK to confirm and close Options window
      */
     public void testOptions() {
         OptionsOperator optionsOper = OptionsOperator.invoke();
+        optionsOper.selectEditor();
+        optionsOper.selectFontAndColors();
+        optionsOper.selectKeymap();
         optionsOper.selectGeneral();
-        // "HTTP Proxy"
+        // "Manual Proxy Setting"
         String hTTPProxyLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Use_HTTP_Proxy");
         new JRadioButtonOperator(optionsOper, hTTPProxyLabel).push();
-        // "Proxy Host:"
+        // "HTTP Proxy:"
         String proxyHostLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Host");
         JLabelOperator jloHost = new JLabelOperator(optionsOper, proxyHostLabel);
-        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("webcache"); // NOI18N
-        // "Proxy Port"
+        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("emea-proxy.uk.oracle.com"); // NOI18N
+        // "Port:"
         String proxyPortLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Port");
         JLabelOperator jloPort = new JLabelOperator(optionsOper, proxyPortLabel);
-        new JTextFieldOperator((JTextField) jloPort.getLabelFor()).setText("8080"); // NOI18N
+        new JTextFieldOperator((JTextField) jloPort.getLabelFor()).setText("80"); // NOI18N
         optionsOper.ok();
     }
 
-    /** Test Advanced Options (former Classic view). Options in Classic view should be gradually 
-     * replaced by basic options (former Modern view). When it happens this test case
-     * can be removed.
-     * - open Options window from main menu Tools|Options
-     * - select IDE Configuration|System|Print Settings node
-     * - set Page Footer Alignment to "LEFT"
-     * - set Line Ascent Correction to "2.0"
-     * - set Wrap Lines to "false"
-     * - close Options window
-     */
-    /*    public void testOptionsClassicView() {
-    OptionsOperator optionsOper = OptionsOperator.invoke();
-    optionsOper.switchToClassicView();
-    // set exact comparator because in Japanese there is conflict with Filesystem settings
-    optionsOper.treeTable().tree().setComparator(new Operator.DefaultStringComparator(true, true));
-    // "IDE Configuration|System|Print Settings"
-    String printSettingsPath = Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration") + "|" +
-    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
-    optionsOper.selectOption(printSettingsPath);
-    PropertySheetOperator pso = new PropertySheetOperator(optionsOper);
-    // "Page Footer Alignment"
-    String footerALLabel = Bundle.getString("org.openide.text.Bundle", "PROP_FOOTER_ALIGNMENT");
-    // "LEFT"
-    String leftLabel = Bundle.getString("org.openide.util.Bundle", "LEFT");
-    new Property(pso, footerALLabel).setValue(leftLabel);
-    // "Line Ascent Correction"
-    String lineACLabel = Bundle.getString("org.openide.text.Bundle", "PROP_LINE_ASCENT_CORRECTION");
-    new Property(pso, lineACLabel).setValue("2.0");
-    // "Wrap Lines"
-    String wrapLinesLabel = Bundle.getString("org.openide.text.Bundle", "PROP_WRAP");
-    new Property(pso, wrapLinesLabel).setValue("false");
-    optionsOper.close();
-    }
-     */
     /** Test CVS Lite
-     * - from main menu invoke "Versioning|CVS|Checkout"
+     * - from main menu invoke "Team|CVS|Checkout"
      * - wait for Checkout dialog and close it
      * TODO - when better support for local repository implemented, we can add more tests
      */
     public void testCVSLite() {
-        // "Versioning"
+        // "Team"
         String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
         // "CVS"
         String cvsItem = Bundle.getStringTrimmed(
@@ -1330,8 +1325,8 @@ public class IDEValidation extends JellyTestCase {
      * - click "Reload Catalog" button
      * - wait until "Available Plugins" tab is enabled
      * - switch to "Available Plugins" tab
-     * - type "Source Browser" into Search field
-     * - wait until table contains "Source Browser" module in the first row
+     * - type "JUnit" into Search field
+     * - wait until table contains "JUnit" module in the first row
      * - select that row
      * - click check box for the module
      * - click Install button
@@ -1349,21 +1344,26 @@ public class IDEValidation extends JellyTestCase {
      * - close Plugins dialog
      */
     public void testPlugins() {
-        final String SOURCE_BROWSER_LABEL = "netbeans.org Source Browser"; //NOI18N
+        final String PLUGIN_LABEL = "JUnit"; //NOI18N
         PluginsOperator pluginsOper = null;
         try {
             pluginsOper = PluginsOperator.invoke();
-
+            pluginsOper.reloadCatalog();
             // Install
 
             pluginsOper.selectAvailablePlugins();
-            pluginsOper.search(SOURCE_BROWSER_LABEL);
-            pluginsOper.install(SOURCE_BROWSER_LABEL);
+            pluginsOper.search(PLUGIN_LABEL);
+            pluginsOper.install(PLUGIN_LABEL);
 
             // Deactivate
 
             pluginsOper.selectInstalled();
-            pluginsOper.selectPlugin(SOURCE_BROWSER_LABEL);
+            try {
+                pluginsOper.cbShowDetails().setSelected(true);
+            } catch (JemmyException e) {
+                log("Show Details check box not found - details already shown.");
+            }
+            pluginsOper.selectPlugin(PLUGIN_LABEL);
             pluginsOper.deactivate();
             pluginsOper.installer().cancel();
 
@@ -1383,7 +1383,7 @@ public class IDEValidation extends JellyTestCase {
             // Activate module
             
             pluginsOper.selectInstalled();
-            pluginsOper.selectPlugin(SOURCE_BROWSER_LABEL);
+            pluginsOper.selectPlugin(PLUGIN_LABEL);
             pluginsOper.activate();
             // "Activate"
             String activateInDialogLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "UninstallUnitWizardModel_Buttons_TurnOn");
