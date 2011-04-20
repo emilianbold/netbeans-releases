@@ -216,6 +216,11 @@ public class WLDatasourceSupport {
                     String driverClass = getDriverClass(ds);
                     String password = getPassword(ds);
 
+                    // the default JNDI name is datasource name
+                    // TODO should we just add ds name to jndi names
+                    if (names.length == 0) {
+                        names = new String[] {name};
+                    }
                     for (String jndiName : names) {
                         datasources.add(new WLDatasource(name, connectionURl,
                                 jndiName, userName, password, driverClass, dsFile, entry.getValue()));
