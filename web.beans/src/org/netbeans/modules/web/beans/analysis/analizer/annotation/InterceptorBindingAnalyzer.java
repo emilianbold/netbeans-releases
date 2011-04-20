@@ -40,52 +40,79 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analizer.method;
+package org.netbeans.modules.web.beans.analysis.analizer.annotation;
 
 import java.util.List;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
-        MethodAnalyzer
-{
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
-    @Override
-    public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
-    {
-        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
-                compInfo))
-        {
-            analyzeScope(element, compInfo, descriptions);
-        }
-    }
+public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    public void analyze( TypeElement element, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
     {
+        if ( AnnotationUtil.hasAnnotation(element, 
+                AnnotationUtil.INTERCEPTOR_BINDING_FQN , compInfo))
+        {
+            InterceptorTargetAnalyzer analyzer = new InterceptorTargetAnalyzer(
+                    element, compInfo, descriptions);
+            if ( !analyzer.hasRuntimeRetention() ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                        NbBundle.getMessage(InterceptorBindingAnalyzer.class, 
+                                INCORRECT_RUNTIME));
+                descriptions.add( description );
+            }
+            if ( !analyzer.hasTarget()){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                            NbBundle.getMessage(InterceptorBindingAnalyzer.class, 
+                                    "ERR_IncorrectInterceptorBindingTarget"));  // NOI18N
+                descriptions.add( description );
+            }
+        }
+    }
+    
+    private static class InterceptorTargetAnalyzer extends CdiAnnotationAnalyzer {
+        
+        InterceptorTargetAnalyzer( TypeElement element , CompilationInfo info ,
+                List<ErrorDescription> descriptions)
+        {
+            super( element, info , descriptions );
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.CdiAnnotationAnalyzer#getCdiMetaAnnotation()
+         */
+        @Override
+        protected String getCdiMetaAnnotation() {
+            return AnnotationUtil.INTERCEPTOR_BINDING;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+         */
+        @Override
+        protected TargetVerifier getTargetVerifier() {
+            return new InterceptorBindingVerifier( getHelper() );
+        }
+        
     }
 
 }

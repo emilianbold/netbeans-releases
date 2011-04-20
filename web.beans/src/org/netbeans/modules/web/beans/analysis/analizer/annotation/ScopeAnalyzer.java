@@ -85,7 +85,7 @@ public class ScopeAnalyzer implements AnnotationAnalyzer {
                 ErrorDescription description = CdiEditorAnalysisFactory.
                     createError( element, compInfo, 
                             NbBundle.getMessage(ScopeAnalyzer.class, 
-                                    "ERR_IncorrectTarget"));                // NOI18N
+                                    "ERR_IncorrectScopeTarget"));                // NOI18N
                 descriptions.add( description );
             }
         }

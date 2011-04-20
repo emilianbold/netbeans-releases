@@ -73,7 +73,7 @@ public abstract class AbstractScopedAnalyzer  {
     private static final Logger LOG = Logger.getLogger( 
             AbstractScopedAnalyzer.class.getName() );  
 
-    public void analyze( Element element, 
+    public void analyzeScope( Element element, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );

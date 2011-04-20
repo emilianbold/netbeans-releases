@@ -75,12 +75,34 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
             List<ErrorDescription> descriptions )
     {
         boolean isStereotype = AnnotationUtil.hasAnnotation(element, 
-                AnnotationUtil.STEREOTYPE, compInfo);
+                AnnotationUtil.STEREOTYPE_FQN, compInfo);
         if ( !isStereotype ){
             return;
         }
-        analyze((Element)element, compInfo, descriptions);
+        analyzeScope((Element)element, compInfo, descriptions);
         checkName( element, compInfo, descriptions);
+        checkDefinition( element , compInfo, descriptions );
+    }
+
+    private void checkDefinition( TypeElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        StereotypeTargetAnalyzer analyzer = new StereotypeTargetAnalyzer(element, 
+                compInfo, descriptions);
+        if ( !analyzer.hasRuntimeRetention()){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, 
+                    NbBundle.getMessage(StereotypeAnalyzer.class, 
+                            INCORRECT_RUNTIME));
+            descriptions.add( description );
+        }
+        if ( !analyzer.hasTarget()){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, 
+                        NbBundle.getMessage(StereotypeAnalyzer.class, 
+                                "ERR_IncorrectStereotypeTarget"));                // NOI18N
+            descriptions.add( description );
+        }
     }
 
     private void checkName( TypeElement element, CompilationInfo compInfo,
@@ -113,4 +135,29 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
     {
     }
 
+    private static class StereotypeTargetAnalyzer extends CdiAnnotationAnalyzer{
+
+        StereotypeTargetAnalyzer( TypeElement element,
+                CompilationInfo compInfo, List<ErrorDescription> descriptions )
+        {
+            super(element, compInfo, descriptions);
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.CdiAnnotationAnalyzer#getCdiMetaAnnotation()
+         */
+        @Override
+        protected String getCdiMetaAnnotation() {
+            return AnnotationUtil.STEREOTYPE;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+         */
+        @Override
+        protected TargetVerifier getTargetVerifier() {
+            return new StereotypeVerifier( getHelper() );
+        }
+        
+    }
 }

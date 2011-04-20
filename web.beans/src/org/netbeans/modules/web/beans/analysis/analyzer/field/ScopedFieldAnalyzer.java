@@ -75,7 +75,7 @@ public class ScopedFieldAnalyzer extends AbstractScopedAnalyzer implements
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 compInfo))
         {
-            analyze(element, compInfo, descriptions);
+            analyzeScope(element, compInfo, descriptions);
         }
     }
 

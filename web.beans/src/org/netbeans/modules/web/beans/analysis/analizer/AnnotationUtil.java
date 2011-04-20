@@ -70,7 +70,12 @@ public final class AnnotationUtil {
     public static final String PRODUCES = "Produces";
     
     public static final String PRODUCES_FQN = "javax.enterprise.inject."+           // NOI18N
-        PRODUCES;       
+        PRODUCES;     
+    
+    public static final String INTERCEPTOR_BINDING = "InterceptorBinding";          // NOI18N
+    
+    public static final String INTERCEPTOR_BINDING_FQN 
+                = "javax.interceptor."+INTERCEPTOR_BINDING;                         // NOI18N
     
     public static final String INTERCEPTOR = "javax.interceptor.Interceptor";       // NOI18N
     
@@ -105,10 +110,17 @@ public final class AnnotationUtil {
     public static final String DEPENDENT 
                             = "javax.enterprise.context.Dependent";                 // NOI18N
     
-    public static final String STEREOTYPE = 
-                    "javax.enterprise.inject.Stereotype";                           // NOI18N
+    public static final String STEREOTYPE = "Stereotype";                           // NOI18N
+    
+    public static final String STEREOTYPE_FQN = 
+                    "javax.enterprise.inject."+STEREOTYPE;                          // NOI18N
     
     public static final String NAMED = "javax.inject.Named";                        // NOI18N
+    
+    public static final String QUALIFIER = "Qualifier";                             // NOI18N
+    
+    public static final String QUALIFIER_FQN=
+                            "javax.inject."+QUALIFIER;                              // NOI18N
     
     private AnnotationUtil(){
     }

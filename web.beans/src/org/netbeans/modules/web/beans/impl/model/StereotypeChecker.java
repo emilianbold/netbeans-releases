@@ -43,20 +43,14 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.lang.annotation.ElementType;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.web.beans.analysis.analizer.annotation.StereotypeVerifier;
 import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
 
 
@@ -87,44 +81,8 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
      */
     @Override
     public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = false;
-        AnnotationParser parser;
-        parser = AnnotationParser.create(getHelper());
-        final Set<String> elementTypes = new HashSet<String>();
-        parser.expectEnumConstantArray( VALUE, getHelper().resolveType(
-                ElementType.class.getCanonicalName()), 
-                new ArrayValueHandler() {
-                    
-                    @Override
-                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
-                        for (AnnotationValue arrayMember : arrayMembers) {
-                            String value = arrayMember.getValue().toString();
-                            elementTypes.add(value);
-                        }
-                        return null;
-                    }
-                } , null);
-        
-        parser.parse( target );
-        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()) &&
-                        elementTypes.contains( ElementType.TYPE.toString())
-                        && elementTypes.size() == 3)
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 2 && 
-                elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()))
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 1 ){
-            hasRequiredTarget = elementTypes.contains( ElementType.METHOD.toString()) ||
-                    elementTypes.contains( ElementType.FIELD.toString()) ||
-                            elementTypes.contains( ElementType.TYPE.toString());
-        }
-        else {
+        boolean hasRequiredTarget = super.hasReqiredTarget(target);
+        if(!hasRequiredTarget){
             getLogger().log(Level.WARNING,
                     "Annotation "+getElement().getQualifiedName()+
                     "declared as Qualifier but has wrong target values." +
@@ -139,8 +97,7 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
      */
     @Override
     protected TargetVerifier getTargetVerifier() {
-        // TODO Auto-generated method stub
-        return null;
+        return new StereotypeVerifier( getHelper());
     }
 
     /* (non-Javadoc)

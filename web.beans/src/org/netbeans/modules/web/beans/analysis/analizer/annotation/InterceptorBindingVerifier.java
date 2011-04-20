@@ -40,52 +40,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analizer.method;
+package org.netbeans.modules.web.beans.analysis.analizer.annotation;
 
+import java.lang.annotation.ElementType;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
-        MethodAnalyzer
-{
+public class InterceptorBindingVerifier implements TargetVerifier {
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
-    @Override
-    public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
-    {
-        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
-                compInfo))
-        {
-            analyzeScope(element, compInfo, descriptions);
-        }
+    public InterceptorBindingVerifier(AnnotationModelHelper helper ){
+        myHelper = helper;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
      */
     @Override
-    protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
-    {
+    public boolean hasReqiredTarget( AnnotationMirror target ) {
+        boolean hasRequiredTarget = false;
+        AnnotationParser parser = AnnotationParser.create(getHelper());
+        final Set<String> elementTypes = new HashSet<String>();
+        parser.expectEnumConstantArray( AnnotationUtil.VALUE, 
+                getHelper().resolveType(
+                        ElementType.class.getCanonicalName()), 
+                new ArrayValueHandler() {
+                    
+                    @Override
+                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
+                        for (AnnotationValue arrayMember : arrayMembers) {
+                            String value = arrayMember.getValue().toString();
+                            elementTypes.add(value);
+                        }
+                        return null;
+                    }
+                } , null);
+        
+        parser.parse( target );
+        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
+                        elementTypes.contains( ElementType.TYPE.toString())
+                        && elementTypes.size() == 2)
+        {
+            hasRequiredTarget = true;
+        }
+        else if ( elementTypes.size() == 1 && 
+                elementTypes.contains( ElementType.TYPE.toString()) )
+        {
+            hasRequiredTarget = true;
+        }
+        return hasRequiredTarget;
     }
+    
+    private AnnotationModelHelper getHelper(){
+        return myHelper;
+    }
+    
+    private AnnotationModelHelper myHelper;
 
 }

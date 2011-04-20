@@ -76,7 +76,7 @@ public class ScopedProxyabilityAnalyzer extends AbstractScopedAnalyzer
     public void analyze( TypeElement element, TypeElement parent,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        analyze(element, compInfo, descriptions);
+        analyzeScope(element, compInfo, descriptions);
     }
 
     /* (non-Javadoc)
