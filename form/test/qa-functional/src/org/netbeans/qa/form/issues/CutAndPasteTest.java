@@ -46,12 +46,8 @@ package org.netbeans.qa.form.issues;
 import java.io.IOException;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import java.util.*;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -60,6 +56,9 @@ import org.netbeans.junit.NbModuleSuite;
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103199">issue</a>
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class CutAndPasteTest extends ExtJellyTestCase {
     
@@ -69,7 +68,9 @@ public class CutAndPasteTest extends ExtJellyTestCase {
     }
     
   public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(CutAndPasteTest.class).addTest("testCutAndPaste").gui(true).clusters(".*").enableModules(".*"));
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(CutAndPasteTest.class).addTest(
+                "testCutAndPaste"
+                ).gui(true).clusters(".*").enableModules(".*"));
 
     }
 

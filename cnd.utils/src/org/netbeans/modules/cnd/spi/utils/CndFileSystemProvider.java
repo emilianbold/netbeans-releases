@@ -144,8 +144,11 @@ public abstract class CndFileSystemProvider {
     }
     
     public static String getCanonicalPath(FileObject fo) throws IOException {
-        return getDefault().getCanonicalPathImpl(fo);
-        
+        return getDefault().getCanonicalPathImpl(fo);        
+    }
+    
+    public static String normalizeAbsolutePath(FileSystem fs, String absPath) {
+        return getDefault().normalizeAbsolutePathImpl(fs, absPath);
     }
     
     /**
@@ -171,6 +174,8 @@ public abstract class CndFileSystemProvider {
     protected abstract CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException;
     protected abstract FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException;
     protected abstract String getCanonicalPathImpl(FileObject fo) throws IOException;
+    
+    protected abstract String normalizeAbsolutePathImpl(FileSystem fs, String absPath);
 
     private static class DefaultProvider extends CndFileSystemProvider {
 
@@ -325,6 +330,17 @@ public abstract class CndFileSystemProvider {
                 }
             }
             return fo.getPath();
-        }        
+        }
+
+        @Override
+        protected String normalizeAbsolutePathImpl(FileSystem fs, String absPath) {
+            for (CndFileSystemProvider provider : cache) {
+                String normalized = provider.normalizeAbsolutePathImpl(fs, absPath);
+                if (normalized != null) {
+                    return normalized;
+                }
+            }
+            return absPath;
+        }
     }
 }

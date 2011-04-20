@@ -1293,6 +1293,16 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         @Override
+        public FileSystem getSourceFileSystem() {
+            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                return FileSystemProvider.getFileSystem(remoteFileSystemHost);
+            } else {
+                return CndFileUtils.getLocalFileSystem();
+            }
+        }
+
+        
+        @Override
         public Mode getRemoteMode() {
             return remoteMode;
         }

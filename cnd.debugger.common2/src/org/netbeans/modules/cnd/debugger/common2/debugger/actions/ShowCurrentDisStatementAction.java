@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.test.web;
+package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import javax.swing.JTextField;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.common2.debugger.State;
+import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author jindra
+ * @author Egor Ushakov
  */
-public class RenameDialogOperator extends JDialogOperator {
+@ServiceProvider(service=StateListener.class)
+public class ShowCurrentDisStatementAction extends CallableSystemAction implements StateListener {
 
-    public RenameDialogOperator() {
-        super("Rename");
+    private final String menu_name;
+
+    public ShowCurrentDisStatementAction() {
+	menu_name=Catalog.get("Dis_ACT_Show_Current_Statement"); // NOI18N
     }
 
-    public void preview(){
-        new JButtonOperator(this, "Preview").push();
+    // interface SystemAction
+    public String getName() {
+	return menu_name;
     }
 
-    public void refactor(){
-        new JButtonOperator(this, "Refactor").push();
+    // interface SystemAction
+    @Override
+    protected void initialize() {
+        super.initialize();
+        setEnabled(false);
     }
 
-    public void cancel(){
-        new JButtonOperator(this, "Cancel").push();
+    // interface StateListener
+    public void update(State state) {
+        boolean enable;
+        if (!state.isLoaded) {
+            enable = false;
+        } else {
+            enable = state.isListening();
+        }
+
+        setEnabled(enable);
+    }
+    
+    // interface CallableSystemAction
+    public void performAction() {
+        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	if (debugger instanceof NativeDebuggerImpl) {
+            ((NativeDebuggerImpl)debugger).showCurrentDis();
+        }
     }
 
-    public String getNewName(){
-        return getNewNameFieldOperator().getText();
+    // interface CallableSystemAction
+    @Override
+    public boolean asynchronous() {
+	return false;
     }
 
-    public void setNewName(String name){
-        getNewNameFieldOperator().setText(name);
+    // interface SystemAction
+    public HelpCtx getHelpCtx() {
+        return null;
     }
 
-    public JTextFieldOperator getNewNameFieldOperator(){
-        JTextField jtf = (JTextField) new JLabelOperator(this, "New Name:").getLabelFor();
-        return new JTextFieldOperator(jtf);
-    }
-
-    public void setEnabledUnrelatedOccurences(boolean enabled){
-        getUnrelatedOccurencesOperator().changeSelection(enabled);
-    }
-
-    private JCheckBoxOperator getUnrelatedOccurencesOperator(){
-        return new JCheckBoxOperator(this, "Unrelated Occurrences");
+    // interface SystemAction
+    @Override
+    protected String iconResource() {
+        return null;
     }
 }

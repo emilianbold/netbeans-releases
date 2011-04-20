@@ -253,7 +253,7 @@ public class DisView {
 		new ImageIcon("open.gif"));			// NOI18N
 	}
 	public void actionPerformed(ActionEvent ev) {
-	    controller.goToSource();
+	    //controller.goToSource();
 	}
     }
 

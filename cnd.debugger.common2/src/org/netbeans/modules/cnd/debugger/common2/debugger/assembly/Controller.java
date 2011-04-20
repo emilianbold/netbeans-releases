@@ -55,8 +55,6 @@ public interface Controller {
     public void addStateListenerInst(StateListener sl);
     public void removeStateListenerInst(StateListener sl);
 
-    public void goToSource();
-
     // ask for disassembly for current visiting location
     public void requestDis(boolean withSource);
 
