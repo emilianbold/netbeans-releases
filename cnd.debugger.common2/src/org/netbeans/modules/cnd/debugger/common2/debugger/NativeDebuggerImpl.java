@@ -856,7 +856,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Else, if user has requested disassembly or no source information is
      * available, bring up the disassembler.
      */
-    private void updateLocation(final boolean andShow) {
+    private void updateLocation(final boolean andShow, final ShowMode showModeOverride) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (isSrcRequested() && haveSource()) {
@@ -867,7 +867,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 		    if (l != null) {
                         ShowMode showMode = ShowMode.NONE;
                         if (andShow) {
-                            showMode = ShowMode.AUTO;
+                            showMode = showModeOverride;
                             NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
                             if (breakpoint != null) {
                                 if (breakpoint instanceof InstructionBreakpoint) {
@@ -914,20 +914,25 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 //	disassemblerWindow().requestActive();
     }
 
-    public void requestSource(boolean andShow) {
+    public void showCurrentSource() {
 	if (!haveSource()) {
 	    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 	    return;
 	}
 	setSrcRequested(true);
-	updateLocation(andShow);
+	updateLocation(true, ShowMode.SOURCE);
+    }
+    
+    public void showCurrentDis() {
+        Disassembly.open();
+        updateLocation(true, ShowMode.DIS);
     }
 
     public final void setVisitedLocation(Location loc) {
 	this.visitedLocation = loc;
 	requestAutos();
         getDisassembly().stateUpdated();
-	updateLocation(true);
+	updateLocation(true, ShowMode.AUTO);
     }
 
     public FileMapper fmap() {
@@ -1001,7 +1006,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 //							  disController(),
 //							  disStateModel(),
 //							  breakpointModel());
-	updateLocation(true);
+	updateLocation(true, ShowMode.AUTO);
 	// CR 6986846
 	//if (!(isSrcRequested() || haveSource())) {
 	if ((getVisitedLocation() != null) && !haveSource()) {
@@ -1327,11 +1332,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // interface Controller
         public final void runToCursor(String addr) {
             runToCursorInst(addr);
-        }
-
-        // interface Controller
-        public final void goToSource() {
-	    requestSource(true);
         }
 
         // interface Controller
