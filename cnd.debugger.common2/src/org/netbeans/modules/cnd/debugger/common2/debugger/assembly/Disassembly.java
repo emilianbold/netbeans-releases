@@ -93,7 +93,7 @@ public abstract class Disassembly implements StateModel.Listener {
                 if (opened) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            updateAnnotations(true);
+                            updateAnnotations(false);
                         }
                     });
                 }
@@ -110,8 +110,8 @@ public abstract class Disassembly implements StateModel.Listener {
         return debugger;
     }
     
-    private void updateAnnotations(boolean open) {
-        debugger.annotateDis(open);
+    private void updateAnnotations(boolean andShow) {
+        debugger.annotateDis(andShow);
         for (DebuggerAnnotation annotation : bptAnnotations) {
             annotation.detach();
         }
