@@ -48,14 +48,7 @@ import java.util.logging.Level;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.RandomlyFails;
 
-/**
- * Overall sanity check suite for IDE before commit.<br>
- * Look at IDEValidation.java for test specification and implementation.
- *
- * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
- */
 public class MemoryValidationTest extends IDEValidation {
     /** Need to be defined because of JUnit */
     public MemoryValidationTest(String name) {
