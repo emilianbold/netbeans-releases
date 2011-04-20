@@ -52,7 +52,10 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Exceptions;
@@ -63,15 +66,12 @@ import org.openide.util.Exceptions;
  */
 public class DisInfoPanel extends JPanel {
     private static DisInfoPanel INSTANCE;
-    private final JTextComponent component;
     
     private final JComboBox addressText;
     private final JTextField fileText;
 //    private final JTextField functionText;
 
-    public DisInfoPanel(final JTextComponent component) {
-        this.component = component;
-        
+    public DisInfoPanel() {
         setLayout(new GridBagLayout());
         setToolTipText(Catalog.get("TIP_DisStatus")); // NOI18N
 
@@ -164,10 +164,22 @@ public class DisInfoPanel extends JPanel {
         String selectedItem = (String)addressText.getSelectedItem();
         
         // Avoid duplication
-        addressText.removeItem(selectedItem);
-        addressText.addItem(selectedItem);
+        boolean found = false;
+        for (int i = 0; i < addressText.getItemCount(); i++ ) {
+            if (addressText.getItemAt(i).equals(selectedItem)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            addressText.addItem(selectedItem);
+        }
         
-        DisassemblyUtils.showAddress(selectedItem);
+        DisassemblyUtils.showLine(1);
+        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	if (debugger instanceof NativeDebuggerImpl) {
+            ((NativeDebuggerImpl)debugger).disController().requestDis(selectedItem, 100, true);
+        }
     }
     
     public static void setLocation(Location location) {
@@ -180,7 +192,7 @@ public class DisInfoPanel extends JPanel {
             }
             INSTANCE.fileText.setText(src);
 //            INSTANCE.functionText.setText(location.func());
-            INSTANCE.addressText.getEditor().setItem(Address.toHexString0x(location.pc(), true));
+//            INSTANCE.addressText.getEditor().setItem(Address.toHexString0x(location.pc(), true));
         }
     }
     
@@ -193,7 +205,7 @@ public class DisInfoPanel extends JPanel {
             try {
                 if (Disassembly.isDisasm(NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile().getURL().toString())) {
                     if (INSTANCE == null) {
-                        INSTANCE = new DisInfoPanel(target);
+                        INSTANCE = new DisInfoPanel();
                     }
                     return INSTANCE;
                 }
