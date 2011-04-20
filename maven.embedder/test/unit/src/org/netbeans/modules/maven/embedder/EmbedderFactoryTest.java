@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.util.List;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.test.TestFileUtils;
 
@@ -54,13 +55,13 @@ public class EmbedderFactoryTest extends NbTestCase {
         super(n);
     }
 
-    public void testCreateProjectLikeEmbedder() throws Exception {
-        MavenEmbedder embedder = EmbedderFactory.createProjectLikeEmbedder();
-        // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
+    protected @Override void setUp() throws Exception {
+        clearWorkDir();
     }
 
+    // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
+
     public void testCreateModelLineage() throws Exception {
-        clearWorkDir();
         File pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
             "<modelVersion>4.0.0</modelVersion>" +
             "<groupId>grp</groupId>" +
@@ -115,6 +116,23 @@ public class EmbedderFactoryTest extends NbTestCase {
         assertEquals("grp", lineage.get(0).getParent().getGroupId());
         assertEquals("1.0", lineage.get(0).getParent().getVersion());
         assertEquals("grp:parent:pom:1.0", lineage.get(1).getId());
+    }
+
+    public void testInvalidRepositoryException() throws Exception { // #197831
+        File pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+            "<modelVersion>4.0.0</modelVersion>" +
+            "<groupId>grp</groupId>" +
+            "<artifactId>art</artifactId>" +
+            "<packaging>jar</packaging>" +
+            "<version>1.0-SNAPSHOT</version>" +
+            "<repositories><repository><url>http://nowhere.net/</url></repository></repositories>" +
+            "</project>");
+        try {
+            EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+            fail();
+        } catch (ModelBuildingException x) {
+            // right
+        }
     }
 
 }

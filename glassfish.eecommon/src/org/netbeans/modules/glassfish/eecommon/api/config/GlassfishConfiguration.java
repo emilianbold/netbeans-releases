@@ -145,7 +145,7 @@ public abstract class GlassfishConfiguration implements
                 if (dex < 0) {
                     defaultcr = null;
                 } else {
-                    defaultcr = path.substring(dex);
+                    defaultcr = "/"+path.substring(dex+1);
                 }
 
             } else {
