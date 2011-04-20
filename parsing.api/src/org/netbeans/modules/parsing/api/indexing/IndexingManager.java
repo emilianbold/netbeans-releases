@@ -51,10 +51,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -241,13 +243,18 @@ public final class IndexingManager {
      * @since 1.40
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            //Prevent AWT deadlock refreshIndexAndWait posted by SwingUtilities.invokeLater
-            //in between completion-active = true and completion-active = false.
-            EventSupport.releaseCompletionCondition();
-        }
-        if (!RepositoryUpdater.getDefault().isIndexer()) {
-            RepositoryUpdater.getDefault().addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
+        inRefreshIndexAndWait.set(Boolean.TRUE);
+        try {
+            if (IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock()) {
+                //Prevent AWT deadlock refreshIndexAndWait posted by SwingUtilities.invokeLater
+                //in between completion-active = true and completion-active = false.
+                EventSupport.releaseCompletionCondition();
+            }
+            if (!RepositoryUpdater.getDefault().isIndexer()) {
+                RepositoryUpdater.getDefault().addIndexingJob(root, files, false, checkEditor, true, fullRescan, false);
+            }
+        } finally {
+            inRefreshIndexAndWait.remove();
         }
     }
 
@@ -390,9 +397,23 @@ public final class IndexingManager {
 
     private static IndexingManager instance;
 
+    private final ThreadLocal<Boolean> inRefreshIndexAndWait = new ThreadLocal<Boolean>();
+
     private IndexingManager() {
         // Start ReporistoryUpdater if it has not been already started
         RepositoryUpdater.getDefault().start(false);
+    }
+    
+    static {
+        IndexingManagerAccessor.setInstance(new MyAccessor());
+    }
+
+    private static class MyAccessor extends IndexingManagerAccessor {
+        @Override
+        public boolean isCalledFromRefreshIndexAndWait(final @NonNull IndexingManager manager) {
+            Parameters.notNull("manager", manager);
+            return manager.inRefreshIndexAndWait.get() == Boolean.TRUE;
+        }
     }
 
 }
