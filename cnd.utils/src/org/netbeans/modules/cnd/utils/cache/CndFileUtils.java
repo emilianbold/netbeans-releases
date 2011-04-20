@@ -269,17 +269,12 @@ public final class CndFileUtils {
             return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
+            return fo.getPath();
         }
-        return fo.getPath();
     }
 
     public static String normalizeAbsolutePath(FileSystem fs, String path) {
-        if (isLocalFileSystem(fs)) {
-            return normalizeAbsolutePath(path);
-        } else {
-            FileObject fo = fs.findResource(path);
-            return (fo == null) ? normalizeAbsolutePath(path) : fo.getPath();
-        }
+        return CndFileSystemProvider.normalizeAbsolutePath(fs, path);
     }
     
     /**
