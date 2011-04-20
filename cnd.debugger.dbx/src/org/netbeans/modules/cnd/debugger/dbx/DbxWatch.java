@@ -144,7 +144,7 @@ class DbxWatch extends DbxVariable implements WatchVariable {
     @Override
     public Action[] getActions(boolean isWatch) {
 	assert isWatch;
-
+        
 	return new Action[] {
             WatchModel.NEW_WATCH_ACTION,
 	    null,
@@ -154,7 +154,7 @@ class DbxWatch extends DbxVariable implements WatchVariable {
 	    VariableModel.Action_INHERITED_MEMBERS,
 	    VariableModel.Action_DYNAMIC_TYPE,
 	    VariableModel.Action_STATIC_MEMBERS,
-	    VariableModel.Action_OUTPUT_FORMAT,
+	    VariableModel.getOutputFormatAction(this),
 	    SystemAction.get(MaxObjectAction.class),
 	    null,
 	};

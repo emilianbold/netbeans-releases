@@ -735,11 +735,6 @@ class DbxVariable extends Variable {
 
     // interface Variable
     public Action[] getActions(boolean isWatch) {
-	VariableModel.OutputFormatAction outputFormatAction =
-	    (VariableModel.OutputFormatAction) VariableModel.Action_OUTPUT_FORMAT;
-
-	outputFormatAction.setVar(this);
-
 	if (isWatch) {
 	    return new Action[] {
                 WatchModel.NEW_WATCH_ACTION,
@@ -749,7 +744,7 @@ class DbxVariable extends Variable {
 		VariableModel.Action_INHERITED_MEMBERS,
 		VariableModel.Action_DYNAMIC_TYPE,
 		VariableModel.Action_STATIC_MEMBERS,
-		outputFormatAction,
+		VariableModel.getOutputFormatAction(this),
 		null
 	    };
 
@@ -760,7 +755,7 @@ class DbxVariable extends Variable {
                     VariableModel.Action_INHERITED_MEMBERS,
                     VariableModel.Action_DYNAMIC_TYPE,
 		    VariableModel.Action_STATIC_MEMBERS,
-                    outputFormatAction,
+                    VariableModel.getOutputFormatAction(this),
                     new VariableModel.BrowseArrayAction(this),
                     SystemAction.get(MaxObjectAction.class),
                     null,
@@ -770,7 +765,7 @@ class DbxVariable extends Variable {
                     VariableModel.Action_INHERITED_MEMBERS,
                     VariableModel.Action_DYNAMIC_TYPE,
 		    VariableModel.Action_STATIC_MEMBERS,
-                    outputFormatAction,
+                    VariableModel.getOutputFormatAction(this),
                     SystemAction.get(MaxObjectAction.class),
                     null,
                 };
