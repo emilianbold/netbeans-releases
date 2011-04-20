@@ -62,14 +62,13 @@ import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard.ImportedProject;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -79,6 +78,8 @@ import org.xml.sax.SAXException;
 
 public final class RemoteProjectImportWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
+    private static final boolean DIRECT_OPEN = Boolean.getBoolean("full.remote.direct.open");
+    
     // To invoke this wizard, copy-paste and run the following code, e.g. from
     // SomeAction.performAction():
     /*
@@ -267,10 +268,15 @@ public final class RemoteProjectImportWizardIterator implements WizardDescriptor
                         if (handle != null) {
                             handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.import", CndPathUtilitities.getDirName(remoteProjectFolder)));
                         }
-                        ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteProjectFolder, importedProject.getLocalProjectDestinationFolder(), remoteEnvironment);
-                        FileObject localProject = synchronizer.createShadowProject();
-                        assert localProject != null;
-                        Project findProject = ProjectManager.getDefault().findProject(localProject);
+                        Project findProject;
+                        if (DIRECT_OPEN) {
+                            findProject = ProjectManager.getDefault().findProject(FileSystemProvider.getFileObject(remoteEnvironment, remoteProjectFolder));
+                        } else {
+                            ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteProjectFolder, importedProject.getLocalProjectDestinationFolder(), remoteEnvironment);
+                            FileObject localProject = synchronizer.createShadowProject();
+                            assert localProject != null;
+                            findProject = ProjectManager.getDefault().findProject(localProject);
+                        }
                         if (findProject != null) {
                             OpenProjects.getDefault().open(new Project[]{findProject}, false);
                         } else {

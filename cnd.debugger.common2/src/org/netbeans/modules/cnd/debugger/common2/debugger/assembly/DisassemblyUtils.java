@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -72,7 +73,7 @@ public class DisassemblyUtils {
         return dis.getLineAddress(lineNo);
     }
 
-    private static boolean showLine(int line) {
+    public static boolean showLine(int line) {
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
@@ -98,12 +99,12 @@ public class DisassemblyUtils {
         return showLine(getAddressLine(address));
     }
 
-    public static void movePC(long address, DebuggerAnnotation pcMarker, boolean andShow) {
+    public static void annotatePC(Location location, DebuggerAnnotation pcMarker, boolean andShow) {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return;
         }
-        int line = dis.getAddressLine(address);
+        int line = dis.getAddressLine(location.pc());
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
@@ -116,7 +117,10 @@ public class DisassemblyUtils {
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
+                DisInfoPanel.setLocation(location);
             }
+        } else {
+            pcMarker.detach();
         }
     }
 }
