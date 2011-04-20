@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.api.remote;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -66,6 +67,8 @@ public interface RemoteProject {
     ExecutionEnvironment getDevelopmentHost();
     
     ExecutionEnvironment getSourceFileSystemHost();
+    
+    FileSystem getSourceFileSystem();
 
     Mode getRemoteMode();
 
