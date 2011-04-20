@@ -88,6 +88,6 @@ public class RenameDialogOperator extends JDialogOperator {
     }
 
     private JCheckBoxOperator getUnrelatedOccurencesOperator(){
-        return new JCheckBoxOperator(this, "Unrelated Occurances");
+        return new JCheckBoxOperator(this, "Unrelated Occurrences");
     }
 }

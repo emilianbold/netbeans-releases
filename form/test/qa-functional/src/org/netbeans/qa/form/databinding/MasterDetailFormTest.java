@@ -43,7 +43,6 @@
  */
 package org.netbeans.qa.form.databinding;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import java.util.*;
@@ -61,6 +60,9 @@ import org.netbeans.junit.NbModuleSuite;
  * Basic test of Master/Detail form wizard
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class MasterDetailFormTest extends ExtJellyTestCase {
    
