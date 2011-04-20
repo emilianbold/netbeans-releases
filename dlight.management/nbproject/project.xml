@@ -97,6 +97,7 @@
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.web.managment</friend>
+                <friend>com.sun.tools.analytics.ui.lib</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
