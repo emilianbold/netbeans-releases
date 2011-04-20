@@ -53,13 +53,15 @@ import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
 /**
  * Testing properties of JDA FrameView node
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class FrameViewPropertiesTest extends ExtJellyTestCase {
     private String _frameViewName;

@@ -58,6 +58,15 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
+/**
+ * Testing if Undo/Redo
+ *
+ * @author Unknown
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
+ */
+
 public class BaseTest extends ExtJellyTestCase {
 
     public String FILE_NAME = "clear_JFrame";

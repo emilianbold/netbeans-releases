@@ -66,6 +66,9 @@ import org.netbeans.qa.form.BindDialogOperator;
  * Beans Binding advanced tests
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class AdvancedBeansBindingTest extends ExtJellyTestCase {
     private String ACTION_PATH = "Bind|text";  // NOI18N

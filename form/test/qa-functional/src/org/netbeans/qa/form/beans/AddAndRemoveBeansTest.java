@@ -44,7 +44,6 @@
 package org.netbeans.qa.form.beans;
 
 import java.awt.Component;
-import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.actions.*;
@@ -61,6 +60,9 @@ import org.netbeans.junit.NbModuleSuite;
  * Tests adding and removing beans into/from palette
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class AddAndRemoveBeansTest extends ExtJellyTestCase {
 
@@ -80,7 +82,10 @@ public class AddAndRemoveBeansTest extends ExtJellyTestCase {
      * Creates suite from particular test cases.
      */
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddAndRemoveBeansTest.class).addTest("testAddingBeans", "testRemovingBeans").gui(true).clusters(".*").enableModules(".*"));
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddAndRemoveBeansTest.class).addTest(
+                "testAddingBeans", 
+                "testRemovingBeans"
+                ).gui(true).clusters(".*").enableModules(".*"));
 
     }
 
