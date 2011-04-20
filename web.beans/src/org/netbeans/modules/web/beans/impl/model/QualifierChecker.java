@@ -43,18 +43,14 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.lang.annotation.ElementType;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.web.beans.analysis.analizer.annotation.QualifierVerifier;
 import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
 
 
@@ -121,59 +117,22 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
      */
     @Override
     public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = false;
-        AnnotationParser parser;
-        parser = AnnotationParser.create(getHelper());
-        final Set<String> elementTypes = new HashSet<String>();
-        parser.expectEnumConstantArray( VALUE, getHelper().resolveType(
-                ElementType.class.getCanonicalName()), 
-                new ArrayValueHandler() {
-                    
-                    @Override
-                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
-                        for (AnnotationValue arrayMember : arrayMembers) {
-                            String value = arrayMember.getValue().toString();
-                            elementTypes.add(value);
-                        }
-                        return null;
-                    }
-                } , null);
-        
-        parser.parse( target );
-        if ( isEvent ){
-            boolean hasFieldParameterTarget = elementTypes.contains(
-                    ElementType.FIELD.toString()) &&
-                        elementTypes.contains(ElementType.PARAMETER.toString());
-            if ( !hasFieldParameterTarget){
-                hasRequiredTarget = false;
+        boolean hasRequiredTarget = super.hasReqiredTarget(target);
+        if (!hasRequiredTarget) {
+            if ( isEvent ) {
+                getLogger().log(Level.WARNING, "Annotation "
+                        + getElement().getQualifiedName()
+                        + "declared as Qualifier but has wrong target values."
+                        + " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}"
+                        + " or {FIELD, PARAMETER}");// NOI18N
             }
             else {
-                hasRequiredTarget = elementTypes.contains( 
-                        ElementType.METHOD.toString()) &&
-                                elementTypes.contains( ElementType.TYPE.toString());
-            }
-            if (!hasRequiredTarget) {
-                getLogger().log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        "declared as Qualifier but has wrong target values." +
-                        " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}" +
-                        " or {FIELD, PARAMETER}");// NOI18N
+                getLogger().log(Level.WARNING, "Annotation "
+                        + getElement().getQualifiedName()
+                        + "declared as Qualifier but has wrong target values."
+                        + " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}");// NOI18N
             }
         }
-        else {
-            hasRequiredTarget = elementTypes.contains( 
-                    ElementType.METHOD.toString()) &&
-                        elementTypes.contains(ElementType.FIELD.toString()) &&
-                            elementTypes.contains(ElementType.PARAMETER.toString())&&
-                                elementTypes.contains( ElementType.TYPE.toString());
-            if (!hasRequiredTarget) {
-                getLogger().log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        "declared as Qualifier but has wrong target values." +
-                        " Correct target values are {METHOD, FIELD, PARAMETER, TYPE}");// NOI18N
-            }
-        }
-        
         return hasRequiredTarget;
     }
     
@@ -182,8 +141,7 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
      */
     @Override
     protected TargetVerifier getTargetVerifier() {
-        // TODO Auto-generated method stub
-        return null;
+        return new QualifierVerifier( getHelper(), isEvent );
     }
     
     private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();

@@ -53,6 +53,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.TypedFieldAnalyzer;
@@ -93,5 +94,6 @@ public class FieldElementAnalyzer implements ElementAnalyzer {
         ANALIZERS.add( new TypedFieldAnalyzer() );
         ANALIZERS.add( new ScopedFieldAnalyzer() );
         ANALIZERS.add( new InjectionPointAnalyzer());
+        ANALIZERS.add( new DelegateFieldAnalizer());
     }
 }

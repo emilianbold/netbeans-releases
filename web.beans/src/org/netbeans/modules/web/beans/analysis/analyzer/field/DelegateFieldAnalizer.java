@@ -40,62 +40,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analizer;
+package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.InterceptorBindingAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.QualifierAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.ScopeAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.StereotypeAnalyzer;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class AnnotationElementAnalyzer implements ElementAnalyzer {
-    
+public class DelegateFieldAnalizer implements FieldAnalyzer {
+
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+    public void analyze( VariableElement element, TypeMirror elementType,
+            TypeElement parent, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
     {
-        TypeElement subject = (TypeElement) element;
-        for( AnnotationAnalyzer analyzer : ANALIZERS ){
-            if ( cancel.get() ){
-                return;
+        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
+                compInfo))
+        {
+            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
+                    compInfo))
+            {
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, 
+                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
+                            "ERR_DelegateHasNoInject"));                    // NOI18N
+                descriptions.add( description );
             }
-            analyzer.analyze( subject, compInfo, descriptions);
+            Element clazz = element.getEnclosingElement();
+            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
+                    compInfo))
+            {
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, 
+                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
+                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
+                descriptions.add( description );
+            }
         }
-    }
-
-    public interface AnnotationAnalyzer {
-        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
-        
-        void analyze( TypeElement element , CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
-    }
-
-    private static final List<AnnotationAnalyzer> ANALIZERS = 
-        new LinkedList<AnnotationAnalyzer>(); 
-    
-    static {
-        ANALIZERS.add( new ScopeAnalyzer() );
-        ANALIZERS.add( new StereotypeAnalyzer());
-        ANALIZERS.add( new InterceptorBindingAnalyzer() );
-        ANALIZERS.add( new StereotypeAnalyzer());
-        ANALIZERS.add( new QualifierAnalyzer() );
     }
 
 }

@@ -44,6 +44,8 @@ package org.netbeans.modules.web.beans.analysis.analizer.type;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -91,6 +93,58 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             checkMethods( element , isDecorator , compInfo , descriptions );
             checkSession( element , compInfo , descriptions);
         }
+        if ( isDecorator ){
+            checkDelegateInjectionPoint(element , compInfo , descriptions);
+        }
+    }
+
+    private void checkDelegateInjectionPoint( TypeElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        List<? extends Element> enclosedElements = element.getEnclosedElements();
+        int count = 0;
+        for (Element child : enclosedElements) {
+            if ( child.getKind() == ElementKind.CONSTRUCTOR )
+            {
+                count +=delegateInjectionPointCount(element, compInfo);
+            }
+            else if ( ! AnnotationUtil.hasAnnotation(child, AnnotationUtil.INJECT_FQN, 
+                    compInfo ))
+            {
+                continue;
+            }
+            if ( child.getKind() == ElementKind.FIELD && AnnotationUtil.
+                    hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, compInfo ))
+            {
+                count++;
+            }
+            else if (  child.getKind() ==ElementKind.METHOD )
+            {
+                count+=delegateInjectionPointCount(element, compInfo);
+            }
+        }
+        if ( count != 1){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, compInfo, NbBundle.getMessage(
+                AnnotationsAnalyzer.class,  "ERR_IncorrectDelegateCount")); // NOI18N
+            descriptions.add( description );
+        }
+    }
+    
+    private int delegateInjectionPointCount(Element element , 
+            CompilationInfo compInfo)
+    {
+        int result=0;
+        ExecutableElement method = (ExecutableElement)element;
+        List<? extends VariableElement> parameters = method.getParameters();
+        for (VariableElement par : parameters) {
+            if ( AnnotationUtil.hasAnnotation(par, AnnotationUtil.DELEGATE_FQN, 
+                    compInfo))
+            {
+                return result++;
+            }
+        }
+        return result;
     }
 
     private void checkSession( TypeElement element,
