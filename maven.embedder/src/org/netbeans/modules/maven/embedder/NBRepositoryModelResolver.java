@@ -91,7 +91,7 @@ class NBRepositoryModelResolver
             remoteRepositories.add(repo);
             remoteRepositories = repositorySystem.getEffectiveRepositories( remoteRepositories );
         } catch (org.apache.maven.artifact.InvalidRepositoryException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new InvalidRepositoryException(ex.toString(), repository, ex);
         }
     }
 
