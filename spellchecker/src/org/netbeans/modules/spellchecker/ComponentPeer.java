@@ -71,6 +71,8 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -121,7 +123,7 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Lahoda
  */
-public class ComponentPeer implements PropertyChangeListener, DocumentListener, ChangeListener, CaretListener {
+public class ComponentPeer implements PropertyChangeListener, DocumentListener, ChangeListener, CaretListener, AncestorListener {
 
     private static final Logger LOG = Logger.getLogger(ComponentPeer.class.getName());
     
@@ -196,8 +198,11 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 //        reschedule();
         pane.addPropertyChangeListener(this);
         pane.addCaretListener(this);
+        pane.addAncestorListener(this);
         document = pane.getDocument();
         document.addDocumentListener(this);
+
+        ancestorAdded(null);
     }
     
     private Component parentWithListener;
@@ -706,6 +711,15 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             
         }
     };
+
+    public void ancestorAdded(AncestorEvent event) {
+        if (pane.getParent() != null)
+            doUpdateCurrentVisibleSpan();
+    }
+
+    public void ancestorRemoved(AncestorEvent event) {}
+
+    public void ancestorMoved(AncestorEvent event) {}
     
     private class ErrorHighlightPainter implements HighlightPainter {
         private ErrorHighlightPainter() {

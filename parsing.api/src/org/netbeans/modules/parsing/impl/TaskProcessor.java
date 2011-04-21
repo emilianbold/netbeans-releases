@@ -76,9 +76,13 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -89,6 +93,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -186,7 +191,7 @@ public class TaskProcessor {
         final Request request = currentRequest.getTaskToCancel();
         try {
             if (request != null) {
-                request.task.cancel();
+                cancelTask(request.task);
             }            
             parserLock.lock();
             try {
@@ -252,7 +257,7 @@ public class TaskProcessor {
                         return sync;
                     }
                     if (request[0] != null) {
-                        request[0].task.cancel();
+                        cancelTask(request[0].task);
                     }
                     if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
@@ -444,7 +449,7 @@ public class TaskProcessor {
         TaskProcessor.Request r = currentRequest.getTaskToCancel (mayInterruptParser);
         if (r != null) {
             try {
-                r.task.cancel();
+                cancelTask(r.task);
             } finally {
                 if (sync) {
                     Request oldR = rst.getAndSet(r);
@@ -550,12 +555,85 @@ public class TaskProcessor {
         final Request request = currentRequest.getTaskToCancel(priority);
         try {
             if (request != null) {
-                request.task.cancel();
+                cancelTask(request.task);
             }
         } finally {
             currentRequest.cancelCompleted(request);
         }
      }
+
+    /*test*/ static void cancelTask (final @NonNull SchedulerTask task) {
+        assert task != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        task.cancel();
+    }
+
+    /*test*/ static void cancelParser(
+            final @NonNull Parser parser,
+            final boolean callDeprecatedCancel,
+            final @NonNull Parser.CancelReason cancelReason,
+            final @NullAllowed SourceModificationEvent event) {
+        assert parser != null;
+        assert cancelReason != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        if (callDeprecatedCancel) {
+            parser.cancel();
+        }
+        parser.cancel(cancelReason,event);
+    }
+
+    /*test*/ static <T extends Parser.Result> void callParserResultTask (
+            final @NonNull ParserResultTask<T> task,
+            final @NullAllowed T result,
+            final @NullAllowed SchedulerEvent event) {
+            assert task != null;
+            assert !Thread.holdsLock(INTERNAL_LOCK);
+            assert parserLock.isHeldByCurrentThread();
+            task.run(result, event);
+    }
+
+    static List<Embedding> callEmbeddingProvider(
+            final @NonNull EmbeddingProvider embeddingProvider,
+            final @NonNull Snapshot snapshot) {
+        assert embeddingProvider != null;
+        assert snapshot != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        //EmbeddingProvider does not do parsing no need of parserLock
+        return embeddingProvider.getEmbeddings(snapshot);
+    }
+
+    public static void callUserTask(
+            final @NonNull UserTask task,
+            final @NonNull ResultIterator resultIterator) throws Exception {
+        assert task != null;
+        assert resultIterator != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        assert parserLock.isHeldByCurrentThread();
+        task.run(resultIterator);
+    }
+
+    public static void callParse(
+        final @NonNull Parser parser,
+        final @NullAllowed Snapshot snapshot,
+        final @NonNull Task task,
+        final @NullAllowed SourceModificationEvent event) throws ParseException {
+        assert parser != null;
+        assert task != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        assert parserLock.isHeldByCurrentThread();
+        parser.parse(snapshot, task, event);
+    }
+
+    public static Parser.Result callGetResult(
+            final @NonNull Parser parser,
+            final @NonNull Task task) throws ParseException {
+        assert parser !=  null;
+        assert task != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        assert parserLock.isHeldByCurrentThread();
+        return parser.getResult(task);
+
+    }
     
     /**
      * Checks if the current thread holds a document write lock on some of given files
@@ -616,8 +694,7 @@ public class TaskProcessor {
                                             if (LOGGER.isLoggable(Level.FINE)) {
                                                 LOGGER.log(Level.FINE, "Running Special Task: {0}", r.toString());
                                             }
-                                            // needs some description!!!! (tzezula)
-                                            ((ParserResultTask) r.task).run (null, null);
+                                            callParserResultTask((ParserResultTask) r.task, null, null);
                                         } finally {
                                             currentRequest.clearCurrentTask();
                                             boolean cancelled = requests.contains(r);
@@ -683,7 +760,7 @@ public class TaskProcessor {
                                                                             LOGGER.log(Level.FINE, "Running Task: {0}", r);
                                                                             ParserResultTask parserResultTask = (ParserResultTask) r.task;
                                                                             SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
-                                                                            parserResultTask.run (currentResult, schedulerEvent);                                                                        
+                                                                            callParserResultTask(parserResultTask,currentResult, schedulerEvent);
                                                                         }
                                                                         else {
                                                                             assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
@@ -1002,7 +1079,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.PARSER_RESULT_TASK, null);
+                    cancelParser (parser, false, Parser.CancelReason.PARSER_RESULT_TASK, null);
                 }
             }
             return request;
@@ -1025,7 +1102,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.PARSER_RESULT_TASK, null);
+                    cancelParser(parser, false, Parser.CancelReason.PARSER_RESULT_TASK, null);
                 }
             }
             return request;
@@ -1047,7 +1124,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.USER_TASK, null);
+                    cancelParser (parser, false, Parser.CancelReason.USER_TASK, null);
                 }
             }
             return request;
@@ -1081,11 +1158,10 @@ public class TaskProcessor {
                     if (request != null && (sc = request.cache)!= null) {
                         src = sc.getSnapshot().getSource();
                     }
-                    if (src != null) {
-                        if (mayCancelParser) {
-                            parser.cancel();
-                        }
-                        parser.cancel(
+                    if (src != null) {                        
+                        cancelParser(
+                            parser,
+                            mayCancelParser,
                             Parser.CancelReason.SOURCE_MODIFICATION_EVENT,
                             SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
                     }
@@ -1115,7 +1191,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.USER_TASK, null);
+                    cancelParser(parser, false, Parser.CancelReason.USER_TASK, null);
                 }
             }
             return result;
