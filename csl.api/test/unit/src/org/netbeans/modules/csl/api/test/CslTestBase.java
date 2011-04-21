@@ -2831,11 +2831,21 @@ public abstract class CslTestBase extends NbTestCase {
         isSmart = proposal.isSmart();
         sb.append("</pre>");
         sb.append("<h2>Documentation:</h2>");
-        sb.append(documentation);
+        sb.append(alterDocumentationForTest(documentation));
 
         sb.append("</body>");
         sb.append("</html>");
         return sb.toString();
+    }
+    
+    /**
+     * Sometimes the documentation can contain absolute path. When you overwrite
+     * this method, you can exclude such thinks from it.
+     * @param documentation
+     * @return changed documentation
+     */
+    protected String alterDocumentationForTest(String documentation) {
+        return documentation;
     }
     
     protected void assertAutoQuery(QueryType queryType, String source, String typedText) {

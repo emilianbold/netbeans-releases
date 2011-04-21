@@ -64,6 +64,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
@@ -214,14 +215,15 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         }
                         remoteBranches = client.listRemoteBranches(uri, this);
                     } catch (GitException ex) {
+                        GitModuleConfig.getDefault().removeRecentGitURI(repository.getURI());
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
                         message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
-                    }                
+                    }
                 }
             };
             supp.start(Git.getInstance().getRequestProcessor(repositoryFile), repositoryFile, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
             if (message[0] != null) {
-                setValid(true, message[0]);
+                setValid(false, message[0]);
             }
             //enable input
             EventQueue.invokeLater(new Runnable() {
