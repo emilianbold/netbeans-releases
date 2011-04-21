@@ -53,6 +53,7 @@ import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -131,8 +132,8 @@ public final class ResultIterator {
         if (result == null) {
             if (parser != null) {
                 SourceModificationEvent event = SourceAccessor.getINSTANCE ().getSourceModificationEvent (getSnapshot ().getSource ());
-                parser.parse (getSnapshot (), task, event);
-                result = parser.getResult (task);
+                TaskProcessor.callParse(parser, getSnapshot (), task, event);
+                result = TaskProcessor.callGetResult(parser, task);
             } else
                 result = sourceCache.getResult (task);
         }
