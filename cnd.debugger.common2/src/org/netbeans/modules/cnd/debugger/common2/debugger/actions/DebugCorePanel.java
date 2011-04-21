@@ -606,7 +606,10 @@ final class DebugCorePanel extends javax.swing.JPanel {
         final String hostname = (String)hostComboBox.getSelectedItem();
         String startFolder = getExecutablePath();
         if (startFolder.isEmpty()) {
-            startFolder = System.getProperty("user.home");
+            startFolder = getCorefilePath();
+            if (startFolder.isEmpty()) {
+                startFolder = System.getProperty("user.home");
+            }
         }
         if (startFolder.equals(autoString)) {
 	    startFolder = getCorefilePath();
