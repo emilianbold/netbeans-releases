@@ -44,6 +44,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
@@ -110,5 +111,10 @@ public class TemplatesPanelGUITest extends NbTestCase implements TemplatesPanelG
     }
 
     public void fireChange() {
+    }
+
+    @Override
+    public void actionPerformed( ActionEvent e ) {
+        throw new UnsupportedOperationException( "Not supported yet." );
     }
 }
