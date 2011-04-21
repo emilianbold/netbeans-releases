@@ -134,7 +134,7 @@ public class PushCommand extends TransportCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git fetch ").append(remote); //NOI18N
+        StringBuilder sb = new StringBuilder("git push ").append(remote); //NOI18N
         for (String refSpec : pushRefSpecs) {
             sb.append(' ').append(refSpec);
         }
