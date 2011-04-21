@@ -70,6 +70,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -176,8 +177,10 @@ public final class EventSupport {
      * AWT deadlock. Never call this method in other cases.
      */
     public static void releaseCompletionCondition() {
-        assert SwingUtilities.isEventDispatchThread();
-        assert validRCCCaller();
+        if (!IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock() ||
+            !IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait()) {
+            throw new IllegalStateException();
+        }
         final boolean wask24 = EditorRegistryListener.k24.getAndSet(false);
         if (wask24) {
             TaskProcessor.resetStateImpl(null);
@@ -185,19 +188,6 @@ public final class EventSupport {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
-
-
-    private static boolean validRCCCaller() {
-        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        for (int i = 0; i<stackTrace.length; i++) {
-            if (EventSupport.class.getName().equals(stackTrace[i].getClassName()) &&
-                "releaseCompletionCondition".equals(stackTrace[i].getMethodName())) {   //NOI18N
-                return IndexingManager.class.getName().equals(stackTrace[i+1].getClassName()) &&
-                       "refreshIndexAndWait".equals(stackTrace[i+1].getMethodName());  //NOI18N
-            }
-        }
-        return false;
-    }
 
     /**
      * Not synchronized, only sets the atomic state and clears the listeners
