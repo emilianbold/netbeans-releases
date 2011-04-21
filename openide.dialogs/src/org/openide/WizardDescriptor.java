@@ -1568,26 +1568,49 @@ public class WizardDescriptor extends DialogDescriptor {
         return original.deriveFont(style);
     }
 
-    // support methods for xtesting
-    final void doNextClick() {
+    /**
+     * Moves the wizard to its next panel - if Next button is enabled.
+     * Always call this method from EDT thread.
+     * @since 7.19
+     */
+    public final void doNextClick() {
+        assert SwingUtilities.isEventDispatchThread();
         if (nextButton.isEnabled()) {
             nextButton.doClick();
         }
     }
 
-    final void doPreviousClick() {
+    /**
+     * Moves the wizard to its previous panel - if Previous button is enabled.
+     * Always call this method from EDT thread.
+     * @since 7.19
+     */
+    public final void doPreviousClick() {
+        assert SwingUtilities.isEventDispatchThread();
         if (previousButton.isEnabled()) {
             previousButton.doClick();
         }
     }
 
-    final void doFinishClick() {
+    /**
+     * Finishes the wizard - if Finish button is enabled.
+     * Always call this method from EDT thread.
+     * @since 7.19
+     */
+    public final void doFinishClick() {
+        assert SwingUtilities.isEventDispatchThread();
         if (finishButton.isEnabled()) {
             finishButton.doClick();
         }
     }
 
-    final void doCancelClick() {
+    /**
+     * Cancels the wizard - if Cancel button is enabled.
+     * Always call this method from EDT thread.
+     * @since 7.19
+     */
+    public final void doCancelClick() {
+        assert SwingUtilities.isEventDispatchThread();
         if (cancelButton.isEnabled()) {
             cancelButton.doClick();
         }
