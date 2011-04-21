@@ -79,6 +79,8 @@ import org.openide.util.Utilities;
  * into new file wizard
  */
 
+
+    // #89393: GTK needs cell renderer to implement UIResource to look "natively"
 /**
  * Provides the GUI for the template chooser panel.
  * @author Jesse Glick
@@ -102,7 +104,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private boolean isWarmUp = true;
     private ListCellRenderer projectCellRenderer;
     private boolean firstTime = true;
-    
+    private ActionListener defaultActionListener;
+
     public TemplateChooserPanelGUI() {
         this.builder = new FileChooserBuilder ();
         initComponents();
@@ -167,8 +170,11 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private void fireChange() {
         changeSupport.fireChange();
     }
-    
-    
+
+    void setDefaultActionListener( ActionListener al ) {
+        this.defaultActionListener = al;
+    }
+
     public Project getProject() {
         boolean wf;
         synchronized (this) {
@@ -384,7 +390,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         public String getTemplatesName() {
             return NbBundle.getMessage (TemplateChooserPanelGUI.class,"CTL_Files");
         }
-        
+
+        @Override
+        public void actionPerformed( ActionEvent e ) {
+            if( null != defaultActionListener ) {
+                defaultActionListener.actionPerformed( e );
+            }
+        }
     }
     
     // #89393: GTK needs cell renderer to implement UIResource to look "natively"

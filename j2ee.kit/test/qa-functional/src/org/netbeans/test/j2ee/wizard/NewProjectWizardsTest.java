@@ -253,10 +253,6 @@ public class NewProjectWizardsTest extends J2eeTestCase {
         reporter.ref("Project: " + projectPath);
         reporter.ref("Expected: " + rf);
         reporter.ref("Real: " + l);
-        // remove this temporary hack when #197423 is fixed
-        if (EAR == prjType && "6".equals(version)) {
-            l.remove("def EAR app6-war\\web\\WEB-INF\\glassfish-web.xml");
-        }
         Set s = getDifference(rf, l);
         assertTrue("Files: " + s + " are new in project: " + projectPath, s.isEmpty());
     }

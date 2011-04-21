@@ -132,7 +132,8 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
         for (GitBranch branch : branches.values()) {
-            l.add(new BranchMapping(branch, localBranches.get(remote.getRemoteName() + "/" + branch.getName()), remote));
+            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getName());
+            l.add(new BranchMapping(branch.getName(), localBranch == null ? null : localBranch.getName(), remote, false));
         }
         for (GitBranch branch : localBranches.values()) {
             if (branch.isActive()) {
@@ -168,8 +169,8 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     private void markMergingBranch () {
         mergingBranch = null;
         for (BranchMapping mapping : branches.getSelectedBranches()) {
-            if (currentBranch.equals(mapping.getRemoteBranch().getName()) || mergingBranch == null) {
-                mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { mapping.getRemoteName(), mapping.getRemoteBranch().getName() });
+            if (currentBranch.equals(mapping.getRemoteBranchName()) || mergingBranch == null) {
+                mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { mapping.getRemoteName(), mapping.getRemoteBranchName() });
             }
         }
     }

@@ -46,6 +46,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -76,12 +77,14 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     private WarmupJob warmUp;
     private boolean warmUpActive;
     private boolean needsReselect = false;   // WelcomeScreen hack, XXX Delete after WS is redesigned
+    private WizardDescriptor wizard;
         
     /** Creates a new instance of ProjectTemplatePanel */
     public ProjectTemplatePanel() {
     }
     
     public void readSettings(WizardDescriptor settings) {
+        this.wizard = settings;
         TemplateWizard wd = (TemplateWizard) settings;
         wd.putProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (0));
         wd.putProperty (WizardDescriptor.PROP_CONTENT_DATA, new String[] {
@@ -327,5 +330,11 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
             changeSupport.fireChange();
         }
 
+        @Override
+        public void actionPerformed( ActionEvent e ) {
+            if( null != wizard ) {
+                wizard.doNextClick();
+            }
+        }
     }
 }

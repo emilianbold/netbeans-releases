@@ -56,8 +56,10 @@ import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.LinkButton;
 import org.netbeans.modules.welcome.content.Utils;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -124,7 +126,7 @@ class PluginsPanel extends JPanel implements Constants {
         public void actionPerformed(ActionEvent e) {
             try {
                 FileObject fo = FileUtil.getConfigFile( "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
-                Action a = (Action)fo.getAttribute( "instanceCreate" ); // NOI18N
+                Action a = (Action) DataObject.find(fo).getLookup().lookup(InstanceCookie.class).instanceCreate();
                 a.actionPerformed(new ActionEvent(e.getSource(), 100, initialTab));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
