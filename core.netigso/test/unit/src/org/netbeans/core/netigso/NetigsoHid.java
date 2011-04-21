@@ -51,20 +51,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.netbeans.Events;
-import org.netbeans.JarClassLoader;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
 import org.openide.filesystems.FileUtil;
@@ -98,7 +91,7 @@ public class NetigsoHid extends SetupHid {
         jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
         File simpleModule = createTestJAR("simple-module", null);
-        File dependsOnSimpleModule = createTestJAR("depends-on-simple-module", null, simpleModule);
+        createTestJAR("depends-on-simple-module", null, simpleModule);
 
         File ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
@@ -139,60 +132,5 @@ public class NetigsoHid extends SetupHid {
         os.close();
 
         return f;
-    }
-    private static final class DummyModule extends Module {
-        private final Manifest manifest;
-        public DummyModule(ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
-            super(mgr, ev, history, reloadable, autoload, eager);
-            manifest = new Manifest();
-            manifest.getMainAttributes().putValue("OpenIDE-Module", "boom");
-            parseManifest();
-        }
-        @Override
-        public List<File> getAllJars() {
-            return Collections.emptyList();
-        }
-        @Override
-        public void setReloadable(boolean r) {
-        }
-        @Override
-        public void reload() throws IOException {
-        }
-        @Override
-        protected void classLoaderUp(Set parents) throws IOException {
-            classloader = new JarClassLoader(Collections.<File>emptyList(), new ClassLoader[] {new NoOpClassLoader()});
-        }
-        @Override
-        protected void classLoaderDown() {
-        }
-        @Override
-        protected void cleanup() {
-        }
-        @Override
-        protected void destroy() {
-        }
-        @Override
-        public boolean isFixed() {
-            return true;
-        }
-        @Override
-        public Object getLocalizedAttribute(String attr) {
-            return null;
-        }
-        public @Override Manifest getManifest() {
-            return manifest;
-        }
-    }
-    
-    private static final class NoOpClassLoader extends ClassLoader {
-        NoOpClassLoader() {
-	    super(ClassLoader.getSystemClassLoader());
-	}
-        protected @Override Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            if ("java.lang.String".equals(name)) {
-                throw new ClassNotFoundException("NoOpClassLoader cannot load " + name);
-            }
-            return super.loadClass(name, resolve);
-        }
     }
 }

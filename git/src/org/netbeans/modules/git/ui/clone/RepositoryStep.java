@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.utils.WizardStepProgressSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -105,6 +106,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 support = new RepositoryStepProgressSupport(panel.progressPanel, uri);        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
+                GitModuleConfig.getDefault().removeRecentGitURI(repository.getURI());
             }    
         } finally {
             support = null;
@@ -177,7 +179,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
-                setValid(true, new Message(ex.getMessage(), false));
+                setValid(false, new Message(ex.getMessage(), false));
                 return;
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
