@@ -98,6 +98,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     public GraphContainer(final DataInput input) throws IOException {
         super(input);
         assert input != null;
+        CsmListeners.getDefault().addProgressListener(this);
         readUIDToNodeLinkMap(input, graph);
     }
 
@@ -560,22 +561,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
 
     @Override
     public void fileParsingFinished(CsmFile sourceFile) {
-        CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(sourceFile);
-        if (keyFrom != null) {
-            synchronized (hotSpot) {
-                Iterator<WeakReference<HotSpotFile>> iterator = hotSpot.iterator();
-                while(iterator.hasNext()) {
-                    WeakReference<HotSpotFile> ref = iterator.next();
-                    HotSpotFile file = ref.get();
-                    if (file != null) {
-                        if (file.from.equals(keyFrom)) {
-                            iterator.remove();
-                        }
-                    } else {
-                        iterator.remove();
-                    }
-                }
-            }
+        synchronized (hotSpot) {
+            hotSpot.clear();
         }
     }
 
