@@ -40,23 +40,27 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.fetch;
+package org.netbeans.modules.git.ui.push;
 
+import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.fetch.BranchMapping;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
@@ -68,40 +72,38 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class PullBranchesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
-    private GitRemoteConfig remote;
+public class UpdateBranchReferencesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private final File repository;
     private final ItemSelector<BranchMapping> branches;
-    private String mergingBranch;
-    private String currentBranch;
-    private static final String REMOTE_BRANCH_NAME_WITH_REMOTE = "{0}/{1}"; //NOI18N
+    private final JPanel panel;
+    private boolean lastPanel;
+    private GitRemoteConfig remote;
 
-    public PullBranchesStep (File repository) {
+    public UpdateBranchReferencesStep (File repository) {
         this.repository = repository;
-        this.branches = new ItemSelector<BranchMapping>(NbBundle.getMessage(PullBranchesStep.class, "FetchBranchesPanel.jLabel1.text")); //NOI18N
+        this.branches = new ItemSelector<BranchMapping>(NbBundle.getMessage(UpdateBranchReferencesStep.class, "UpdateBranchReferencesPanel.jLabel1.text")); //NOI18N
         this.branches.addChangeListener(this);
+        this.panel = new JPanel();
+        initializePanel();
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run () {
                 validateBeforeNext();
             }
         });
-        getJComponent().setName(NbBundle.getMessage(PullBranchesStep.class, "LBL_FetchBranches.remoteBranches")); //NOI18N
     }
     
     @Override
     protected final void validateBeforeNext () {
         setValid(true, null);
         if (branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
-        } else {
-            setValid(true, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_PullBranchesStep.mergingBranch", mergingBranch), true)); //NOI18N
+            setValid(true, new Message(NbBundle.getMessage(UpdateBranchReferencesStep.class, "MSG_PushBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
         }
     }
 
     @Override
     protected final JComponent getJComponent () {
-        return branches.getPanel();
+        return panel;
     }
 
     public void setRemote (GitRemoteConfig remote) {
@@ -111,7 +113,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
         validateBeforeNext();
     }
 
-    public void fillRemoteBranches (final Map<String, GitBranch> branches) {
+    public void fillRemoteBranches (final Set<String> branches) {
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
@@ -126,31 +128,23 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
                     }
                 });
             }
-        }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PullBranchesStep.class, "MSG_FetchBranchesPanel.loadingLocalBranches")); //NOI18N
+        }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(UpdateBranchReferencesStep.class, "MSG_PushBranchesPanel.loadingLocalBranches")); //NOI18N
     }
 
-    private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
+    private void fillRemoteBranches (Set<String> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
-        for (GitBranch branch : branches.values()) {
-            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getName());
-            l.add(new BranchMapping(branch.getName(), localBranch == null ? null : localBranch.getName(), remote, false));
+        for (String branch : branches) {
+            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch);
+            BranchMapping mapping = new BranchMapping(branch, localBranch == null ? null : localBranch.getName(), remote, true);
+            l.add(mapping);
         }
-        for (GitBranch branch : localBranches.values()) {
-            if (branch.isActive()) {
-                currentBranch = branch.getName();
-            }
-        }
-        this.branches.setBranches(l);        
+        this.branches.setBranches(l);
+        validateBeforeNext();
     }
     
     @Override
     public void stateChanged(ChangeEvent ce) {
-        markMergingBranch();
         validateBeforeNext();
-    }
-
-    public String getBranchToMerge () {
-        return mergingBranch;
     }
 
     public List<String> getSelectedRefSpecs () {
@@ -163,15 +157,17 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     @Override
     public boolean isFinishPanel () {
-        return true;
+        return lastPanel;
     }
 
-    private void markMergingBranch () {
-        mergingBranch = null;
-        for (BranchMapping mapping : branches.getSelectedBranches()) {
-            if (currentBranch.equals(mapping.getRemoteBranchName()) || mergingBranch == null) {
-                mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { mapping.getRemoteName(), mapping.getRemoteBranchName() });
-            }
-        }
+    void setAsLastPanel (boolean isLastPanel) {
+        this.lastPanel = isLastPanel;
+    }
+
+    private void initializePanel () {
+        panel.setLayout(new BorderLayout());
+        panel.add(new JLabel(NbBundle.getMessage(UpdateBranchReferencesStep.class, "LBL_UpdateBranchReferences.description")), BorderLayout.NORTH); //NOI18N
+        panel.add(branches.getPanel(), BorderLayout.CENTER);
+        panel.setName(NbBundle.getMessage(UpdateBranchReferencesStep.class, "LBL_UpdateBranchReferences.remoteBranches")); //NOI18N
     }
 }
