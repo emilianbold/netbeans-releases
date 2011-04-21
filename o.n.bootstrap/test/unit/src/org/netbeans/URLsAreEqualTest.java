@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.test.TestFileUtils;
 
@@ -55,6 +56,11 @@ import org.openide.util.test.TestFileUtils;
 public class URLsAreEqualTest extends NbTestCase {
     public URLsAreEqualTest(String n) {
         super(n);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
     }
     
     public void testURLsAreEqual() throws Exception {
@@ -75,6 +81,6 @@ public class URLsAreEqualTest extends NbTestCase {
         assertTrue("Our connection: " + uC, uC.getClass().getName().startsWith("org.netbeans"));
 
         assertEquals("Both URLs are equal", u, orig);
-        assertEquals("Equality is symetrical", orig, u);
+        assertEquals("Equality is symetrical", orig, u);fail("OK");
     }
 }
