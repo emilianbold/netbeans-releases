@@ -81,6 +81,6 @@ public class URLsAreEqualTest extends NbTestCase {
         assertTrue("Our connection: " + uC, uC.getClass().getName().startsWith("org.netbeans"));
 
         assertEquals("Both URLs are equal", u, orig);
-        assertEquals("Equality is symetrical", orig, u);fail("OK");
+        assertEquals("Equality is symetrical", orig, u);
     }
 }
