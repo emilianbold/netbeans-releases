@@ -156,6 +156,39 @@ public final class WebApplicationModel extends BaseDescriptorModel {
     public void setContextRoot(String root) {
         bean.setContextRoot(new String [] {root});
     }
+    
+    public void setReference(String referenceName, String jndiName) {
+        for (ResourceDescriptionType type : bean.getResourceDescription()) {
+            String refName = type.getResRefName();
+            if (referenceName.equals(refName)) {
+                type.setJndiName(jndiName);
+                return;
+            }
+        }
+        
+        ResourceDescriptionType type = null;
+        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.ResourceDescriptionType();
+        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1030.WeblogicWebApp) {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.web1030.ResourceDescriptionType();
+        } else {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.web90.ResourceDescriptionType();
+        }        
+        
+        type.setResRefName(referenceName);
+        type.setJndiName(jndiName);
+        bean.addResourceDescription(type);
+    }
+    
+    public String getReferenceJndiName(String referenceName) {
+        for (ResourceDescriptionType type : bean.getResourceDescription()) {
+            String refName = type.getResRefName();
+            if (referenceName.equals(refName)) {
+                return type.getJndiName();
+            }
+        }
+        return null;
+    }
       
     public Set<ServerLibraryDependency> getLibraries() {
         Set<ServerLibraryDependency> ranges = new HashSet<ServerLibraryDependency>();
