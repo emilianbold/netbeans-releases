@@ -120,15 +120,16 @@ public class PropertiesProviderTest extends NbTestCase {
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         {
             OutputStream os = fo.getOutputStream();
-            String txt = "<html><h1>${name}</h1>" +
-                "<h2>${date}</h2>" +
-                "<h3>${time}</h3>" +
-                "<h4>${user}</h4>" +
-                "</html>";
+            String txt = 
+                "print('<html><h1>');print(name);print('</h1>');" +
+                "print('<h2>');print(date);print('</h2>');" +
+                "print('<h3>');print(time);print('</h3>');" +
+                "print('<h4>');print(user);print('</h4>');" +
+                "print('</html>');";
             os.write(txt.getBytes());
             os.close();
         }
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
         
         
         FileObject props = FileUtil.createData(FileUtil.getConfigRoot(),

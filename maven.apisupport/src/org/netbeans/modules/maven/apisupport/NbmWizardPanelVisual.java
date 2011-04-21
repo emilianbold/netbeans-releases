@@ -51,7 +51,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -91,7 +90,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
         }
-        final RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans"); // NOI18N
+        final RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
         if (info != null) {
             versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
             RequestProcessor.getDefault().post(new Runnable() {

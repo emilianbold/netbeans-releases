@@ -12,11 +12,11 @@
     </ejb>
     <ejb>
       <ejb-name>ExpandTest002Bean</ejb-name>
-      <jndi-name>ejb/ExpandTest001Bean</jndi-name>
+      <jndi-name>ejb/ExpandTest002Bean</jndi-name>
     </ejb>
     <ejb>
       <ejb-name>ExpandTest003Bean</ejb-name>
-      <jndi-name>ejb/ExpandTest001Bean</jndi-name>
+      <jndi-name>ejb/ExpandTest003Bean</jndi-name>
     </ejb>
     <ejb>
       <ejb-name>ExpandTest004Bean</ejb-name>
@@ -52,11 +52,11 @@
     </ejb>
     <ejb>
       <ejb-name>ExpandTest012Bean</ejb-name>
-      <jndi-name>ejb/ExpandTest011Bean</jndi-name>
+      <jndi-name>ejb/ExpandTest012Bean</jndi-name>
     </ejb>
     <ejb>
       <ejb-name>ExpandTest013Bean</ejb-name>
-      <jndi-name>ejb/ExpandTest011Bean</jndi-name>
+      <jndi-name>ejb/ExpandTest013Bean</jndi-name>
     </ejb>
     <ejb>
       <ejb-name>ExpandTest014Bean</ejb-name>
@@ -92,11 +92,11 @@
     </ejb>
     <ejb>
       <ejb-name>ExpandTest022Bean</ejb-name>
-      <jndi-name>ejb/ExpandTest021Bean</jndi-name>
+      <jndi-name>ejb/ExpandTest022Bean</jndi-name>
     </ejb>
     <ejb>
       <ejb-name>ExpandTest023Bean</ejb-name>
-      <jndi-name>ejb/ExpandTest021Bean</jndi-name>
+      <jndi-name>ejb/ExpandTest023Bean</jndi-name>
     </ejb>
     <ejb>
       <ejb-name>ExpandTest024Bean</ejb-name>

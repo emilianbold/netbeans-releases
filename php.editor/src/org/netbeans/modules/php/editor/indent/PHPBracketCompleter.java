@@ -431,7 +431,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 // don't put php close tag iside. see #167816
                 sb.append("\n"); //NOI18N
                 sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
-                
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
@@ -442,15 +441,14 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 doc.remove(offset, restOfLine.length());
             }
 
+            if (id == PHPTokenId.PHP_CLOSETAG && offset > tokenOffsetOnCaret) {
+                token = LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_OPENTAG));
+                String begin = token != null ? token.text().toString() : "<?php"; //NOI18N
+                sb.append(begin);
+                sb.append(" "); // NOI18N
+            }
             if (completeIn == PHPTokenId.PHP_CURLY_OPEN || completeIn == PHPTokenId.PHP_CLASS || completeIn == PHPTokenId.PHP_FUNCTION) {
-                if (id == PHPTokenId.PHP_CLOSETAG && offset > tokenOffsetOnCaret) {
-                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_OPENTAG));
-                    String begin = token != null ? token.text().toString() : "<?php"; //NOI18N
-                    sb.append(begin);
-                    sb.append(" } ?>"); // NOI18N
-                } else {
-                    sb.append("}"); // NOI18N
-                }
+                sb.append("}"); // NOI18N
             } else if (completeIn == PHPTokenId.PHP_IF || completeIn == PHPTokenId.PHP_ELSE || completeIn == PHPTokenId.PHP_ELSEIF) {
                 sb.append("endif;"); // NOI18N
             } else if (completeIn == PHPTokenId.PHP_FOR) {
@@ -463,6 +461,10 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 sb.append("endswitch;"); // NOI18N
             }
 
+            if (id == PHPTokenId.PHP_CLOSETAG && offset > tokenOffsetOnCaret) {
+                sb.append(" ?>");  //NOI18N
+            }
+            
             if (id == PHPTokenId.PHP_CLOSETAG) {
                 // place the close tag on the new line.
                 sb.append("\n"); //NOI18N

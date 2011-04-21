@@ -67,7 +67,6 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.repository.LocalArtifactRepository;
-import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -365,6 +364,15 @@ public final class EmbedderFactory {
         return null;
     }
 
+    /**
+     * Creates a list of POM models in an inheritance lineage.
+     * Each resulting model is "raw", so contains no interpolation or inheritance.
+     * In particular beware that groupId and/or version may be null if inherited from a parent; use {@link Model#getParent} to resolve.
+     * @param pom a POM to inspect
+     * @param embedder an embedder to use
+     * @return a list of models, starting with the specified POM, going through any parents, finishing with the Maven superpom (with a null artifactId)
+     * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
+     */
     public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
         ModelBuilder mb = embedder.lookupComponent(ModelBuilder.class);
         assert mb!=null : "ModelBuilder component not found in maven";
@@ -372,7 +380,8 @@ public final class EmbedderFactory {
         req.setPomFile(pom);
         req.setProcessPlugins(false);
         req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        req.setModelResolver(new NBRepositoryModelResolver(embedder.lookupComponent(RepositorySystem.class)));
+        req.setModelResolver(new NBRepositoryModelResolver(embedder));
+        req.setSystemProperties(embedder.getSystemProperties());
         
         ModelBuildingResult res = mb.build(req);
         List<Model> toRet = new ArrayList<Model>();

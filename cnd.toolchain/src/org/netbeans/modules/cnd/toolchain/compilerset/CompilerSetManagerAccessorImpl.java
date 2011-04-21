@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -129,7 +130,7 @@ public class CompilerSetManagerAccessorImpl {
                 if (csm != null && csm.getDefaultCompilerSet() == null) {
                     CompilerSetPreferences.saveToDisk(csm);
                 }
-                if (csm != null) {
+                if (csm != null && !CndUtils.isUnitTestMode()) {
                     ToolchainValidator.INSTANCE.validate(env, csm);
                 }
             }

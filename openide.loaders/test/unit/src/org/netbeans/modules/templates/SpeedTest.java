@@ -73,7 +73,7 @@ public class SpeedTest extends NbTestCase {
         clearWorkDir();
         
         FileWriter w = new FileWriter(new File(getWorkDir(), "template.txt"));
-        w.write("<html><h1>${title}</h1></html>");
+        w.write("print('<html><h1>'); print(title); print('</h1></html>');");
         w.close();
         
         
@@ -87,10 +87,10 @@ public class SpeedTest extends NbTestCase {
         FileObject fo = lfs.findResource("template.txt");
         obj = DataObject.find(fo);
         obj.setTemplate(true);
-        obj.getPrimaryFile().setAttribute("javax.script.ScriptEngine", "freemarker");
+        obj.getPrimaryFile().setAttribute("javax.script.ScriptEngine", "js");
         
         ScriptEngineManager mgr = new ScriptEngineManager();
-        eng = mgr.getEngineByName("freemarker");
+        eng = mgr.getEngineByName("js");
         assertNotNull("We do have such engine", eng);
         eng.getContext().setAttribute(FileObject.class.getName(), fo, ScriptContext.ENGINE_SCOPE);
         eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE).putAll(parameters);

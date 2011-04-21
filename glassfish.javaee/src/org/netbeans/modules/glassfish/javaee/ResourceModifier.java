@@ -102,7 +102,7 @@ public class ResourceModifier {
             "\"http://glassfish.org/dtds/glassfish-resources_1_5.dtd\">\n" +
 //            "\"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" " +
 //            "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
-        "<resources/>";
+        "<resources>\n";
     private static final String SUN_RESOURCES_XML_FOOTER =
         "</resources>\n";
 

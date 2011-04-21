@@ -73,10 +73,7 @@ public class RenameFormClassTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-    }
-    
+        
     /**
      * Creates suite from particular test cases.
      * @return nb test suite

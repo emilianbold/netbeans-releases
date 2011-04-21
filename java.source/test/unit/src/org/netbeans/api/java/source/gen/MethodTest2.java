@@ -73,7 +73,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author  Jan Becicka
  */
-public class MethodTest2 extends GeneratorTest {
+public class MethodTest2 extends GeneratorTestBase {
     
     /** Need to be defined because of JUnit */
     public MethodTest2(String name) {

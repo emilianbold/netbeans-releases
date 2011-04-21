@@ -45,6 +45,7 @@
 package org.netbeans;
 
 import java.io.Closeable;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -124,6 +125,7 @@ public abstract class CLIHandler extends Object {
      /** Extra set of inits.
      */
     public static final int WHEN_EXTRA = 3;
+    private static final RequestProcessor secureCLIPort = new RequestProcessor("Secure CLI Port");
     
     /** reference to our server.
      */
@@ -260,7 +262,19 @@ public abstract class CLIHandler extends Object {
             args.reset(consume);
         }
     }
-    
+    private static int processInitLevelCLI(final Args args, final Collection<? extends CLIHandler> handlers, final boolean failOnUnknownOptions) {
+        return registerFinishInstallation(new Execute() {
+            @Override
+            public int exec() {
+                return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
+            }
+
+            public @Override
+            String toString() {
+                return handlers.toString();
+            }
+        });
+    }    
     /**
      * Represents result of initialization.
      * @see #initialize(String[], ClassLoader)
@@ -333,7 +347,7 @@ public abstract class CLIHandler extends Object {
     
     private static FileLock tryLock(RandomAccessFile raf) throws IOException {
         try {
-            return raf.getChannel().tryLock();
+            return raf.getChannel().tryLock(333L, 1L, false);
         } catch (OverlappingFileLockException ex) {
             OUTPUT.log(Level.INFO, "tryLock fails in the same VM", ex);
             // happens in CLIHandlerTest as it simulates running multiple
@@ -455,6 +469,10 @@ public abstract class CLIHandler extends Object {
         return doLater == null;
     }
     
+    static void waitSecureCLIOver() {
+        secureCLIPort.post(Task.EMPTY).waitFinished();
+    }
+    
     /** Stops the server.
      */
     public static synchronized void stopServer () {
@@ -512,7 +530,8 @@ public abstract class CLIHandler extends Object {
         }
     
         if ("memory".equals(home)) { // NOI18N
-            return new Status(0);
+            int execCode = processInitLevelCLI(args, handlers, failOnUnknownOptions);
+            return new Status(execCode);
         }
 
         File lockFile = new File(home, "lock"); // NOI18N
@@ -595,7 +614,8 @@ public abstract class CLIHandler extends Object {
                 
                 enterState(20, block);
                 
-                Task parael = new RequestProcessor("Secure CLI Port").post(new Runnable() { // NOI18N
+                Task parael = secureCLIPort.post(new Runnable() { // NOI18N
+                    @Override
                     public void run() {
                         SecureRandom random = null;
                         enterState(95, block);
@@ -651,14 +671,7 @@ public abstract class CLIHandler extends Object {
                     }
                 });
                 
-                int execCode = registerFinishInstallation (new Execute () {
-                    public int exec () {
-                        return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
-                    }
-                    public @Override String toString() {
-                        return handlers.toString();
-                    }
-                });
+                int execCode = processInitLevelCLI (args, handlers, failOnUnknownOptions);
                 
                 enterState(0, block);
                 return new Status(lockFile, server.getLocalPort(), execCode, parael);
@@ -670,13 +683,13 @@ public abstract class CLIHandler extends Object {
                 byte[] key = null;
                 byte[] serverAddress = null;
                 int port = -1;
-                DataInputStream is = null;
+                DataInput is = null;
                 try {
                     enterState(21, block);
                     if (OUTPUT.isLoggable(Level.FINER)) {
                         OUTPUT.log(Level.FINER, "Reading lock file {0}", lockFile); // NOI18N
                     }
-                    is = new DataInputStream(new FileInputStream(lockFile));
+                    is = raf;
                     port = is.readInt();
                     enterState(22, block);
                     key = new byte[KEY_LENGTH];
@@ -710,9 +723,9 @@ public abstract class CLIHandler extends Object {
                     // ok, try to read it once more
                     enterState(26, block);
                 } finally {
-                    if (is != null) {
+                    if (is instanceof Closeable) {
                         try {
-                            is.close();
+                            ((Closeable)is).close();
                         } catch (IOException ex3) {
                             // ignore here
                         }

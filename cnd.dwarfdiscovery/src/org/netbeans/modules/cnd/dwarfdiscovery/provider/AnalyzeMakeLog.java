@@ -280,7 +280,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 private List<String> myIncludedFiles;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
                 }
                 
                 @Override

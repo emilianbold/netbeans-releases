@@ -133,10 +133,10 @@ public class ProxyAutoConfig {
             eng = evalPAC(pacIS, utils);
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
-            throw new IllegalArgumentException(ex);
+            return ;
         } catch (ScriptException ex) {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
-            throw new IllegalArgumentException(ex);
+            return ;
         } finally {
             if (pacIS != null) {
                 try {
@@ -148,7 +148,8 @@ public class ProxyAutoConfig {
         }
         assert eng != null : "JavaScri5pt engine cannot be null";
         if (eng == null) {
-            throw new IllegalArgumentException("JavaScript engine cannot be null");
+            LOGGER.log(Level.WARNING, "JavaScript engine cannot be null");
+            return ;
         }
         inv = (Invocable) eng;
     }
@@ -182,7 +183,11 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.FINE, "While invoking FindProxyForURL(" + u + ", " + u.getHost() + " thrown " + ex, ex);
         }
         List<Proxy> res = analyzeResult(u, proxies);
-        LOGGER.fine("findProxyForURL(" + u + ") returns " + (res == null ? "null!" : Arrays.asList(res)));
+        if (res == null) {
+            LOGGER.info("findProxyForURL(" + u + ") returns null.");
+            res = Collections.emptyList();
+        }
+        LOGGER.fine("findProxyForURL(" + u + ") returns " + Arrays.asList(res));
         return res;
     }
 
@@ -211,7 +216,7 @@ public class ProxyAutoConfig {
 
     private List<Proxy> analyzeResult(URI uri, Object proxiesString) {
         if (proxiesString == null) {
-            LOGGER.info("Null result for " + uri);
+            LOGGER.fine("Null result for " + uri);
             return null;
         }
         Proxy.Type proxyType;

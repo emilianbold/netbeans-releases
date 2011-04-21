@@ -236,6 +236,10 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
         changeSupport.fireChange();
     }
 
+    private void configFileChnaged() {
+        changeSupport.fireChange();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -310,6 +314,11 @@ public class HibernateCodeGenerationPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(chkEjb, org.openide.util.NbBundle.getMessage(HibernateCodeGenerationPanel.class, "HibernateCodeGenerationPanel.chkEjb.text")); // NOI18N
 
         cmbConf.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbConf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbConfActionPerformed(evt);
+            }
+        });
 
         cmbReveng.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -406,6 +415,10 @@ private void chkJavaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 private void txtProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtProjectActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_txtProjectActionPerformed
+
+private void cmbConfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbConfActionPerformed
+    configFileChnaged();
+}//GEN-LAST:event_cmbConfActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox chkDomain;

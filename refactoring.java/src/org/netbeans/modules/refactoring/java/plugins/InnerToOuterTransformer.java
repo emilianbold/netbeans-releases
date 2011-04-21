@@ -100,17 +100,17 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             return null;
         }
-        if (inner.equals(getCurrentElement())) {
+        Element current = getCurrentElement();
+        if (inner.equals(current)) {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);
-        } else if (isThisReferenceToOuter()) {
-            Element current = getCurrentElement();
+        } else if (isThisReferenceToOuter() && isThisInInner()) {
             if (current.getModifiers().contains(Modifier.PRIVATE)) {
-                referencedPrivateElement.add(getCurrentElement());
+                referencedPrivateElement.add(current);
             }
-            if (!workingCopy.getTypes().isSubtype(inner.asType(), getCurrentElement().getEnclosingElement().asType())) {
+            if (!workingCopy.getTypes().isSubtype(inner.asType(), workingCopy.getElementUtilities().enclosingTypeElement(current).asType())) {
                 IdentifierTree m;
-                if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC)) {
+                if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC) || current.getKind().isClass() ||  current.getKind().isInterface() ) {
                     m = make.Identifier(outer.getSimpleName().toString() + "." + node.getName().toString()); // NOI18N
                 } else {
                     m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N
@@ -131,8 +131,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitNewClass(NewClassTree arg0, Element arg1) {
-        Element currentElement = workingCopy.getTrees().getElement(getCurrentPath());
-        if (refactoring.getReferenceName()!=null && currentElement!=null && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
+        Element currentElement = getCurrentElement();
+        if (refactoring.getReferenceName()!=null && currentElement!=null && workingCopy.getTypes().isSubtype(workingCopy.getElementUtilities().enclosingTypeElement(currentElement).asType(), inner.asType())) {
             String thisString;
             if (getCurrentClass()==inner) {
                 thisString = refactoring.getReferenceName();
@@ -361,7 +361,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
                 rewrite(memberSelect,m);
             }
-        } else if (isThisReferenceToOuter()) {
+        } else if (isThisReferenceToOuter() && isThisInInner()) {
             if (current.getModifiers().contains(Modifier.PRIVATE)) {
                 referencedPrivateElement.add(getCurrentElement());
             }
@@ -374,7 +374,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                             : make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
                     rewrite(memberSelect, m);
                 } else {
-                    if (inner.getKind()!=ElementKind.INTERFACE) {
+                    if (inner.getKind()!=ElementKind.INTERFACE && !inner.getModifiers().contains(Modifier.STATIC)) {
                         problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
                     }
                 }
@@ -527,5 +527,17 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
         }        
         return newInnerClass;
+    }
+
+    private boolean isThisInInner() {
+        TreePath t=getCurrentPath();
+        Tree innerTree = workingCopy.getTrees().getTree(inner);
+        while (t!=null) {
+            if (t.getLeaf().equals(innerTree)) {
+                return true;
+            }
+            t = t.getParentPath();
+        }
+        return false;
     }
 }

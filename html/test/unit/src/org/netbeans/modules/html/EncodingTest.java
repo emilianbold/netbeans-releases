@@ -123,12 +123,7 @@ public class EncodingTest extends NbTestCase {
      */
     public void testLoadOfWrongEncoding () throws Exception {
         HtmlEditorSupport.showConfirmationDialog = false;
-        try {
-            checkEncoding (null, "wrongencoding.html", false);
-            assertTrue(false); //fail
-        } catch (UserQuestionException e) {
-            //OK
-        }
+        checkEncoding (null, "wrongencoding.html", false);
     }
     
     /** Test load of UTF-8 encoding.

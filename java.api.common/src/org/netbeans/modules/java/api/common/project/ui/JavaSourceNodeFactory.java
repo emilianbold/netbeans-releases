@@ -55,6 +55,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -89,6 +91,9 @@ import org.openide.xml.XMLUtil;
  * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class JavaSourceNodeFactory implements NodeFactory {
+
+    private static final Logger LOG = Logger.getLogger(JavaSourceNodeFactory.class.getName());
+
     public JavaSourceNodeFactory() {
     }
     
@@ -153,7 +158,13 @@ public final class JavaSourceNodeFactory implements NodeFactory {
                 return Collections.<SourceGroupKey>emptyList();
             }
             List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>();
-            for (SourceGroup group : getSources().getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            final SourceGroup[] groups = getSources().getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE,
+                        "Java source groups: {0}",  //NOI18N
+                        Arrays.toString(groups));
+            }
+            for (SourceGroup group : groups) {
                 result.add(new SourceGroupKey(group, true));
             }
             File[] removeFrom;

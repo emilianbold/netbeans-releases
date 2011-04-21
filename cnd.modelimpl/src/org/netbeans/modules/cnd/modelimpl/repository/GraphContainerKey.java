@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * Key for GraphContainer data
  * @author Vladimir Kvashin
  */
-final public class GraphContainerKey extends ProjectNameBasedKey {
+public final class GraphContainerKey extends ProjectNameBasedKey {
 
     public GraphContainerKey(CharSequence project) {
         super(project);

@@ -283,7 +283,7 @@ public class Controller {
                 return true;
             }
         }
-        if( version.startsWith("1.6.0_22") && "Aqua".equals( UIManager.getLookAndFeel().getID() ) )
+        if( version.startsWith("1.6.0_24") && "Aqua".equals( UIManager.getLookAndFeel().getID() ) )
             return true;
         return false;
     }

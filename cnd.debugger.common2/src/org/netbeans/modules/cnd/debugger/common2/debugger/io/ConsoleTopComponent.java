@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import org.netbeans.modules.terminal.api.IOTopComponent;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -93,8 +94,9 @@ public final class ConsoleTopComponent extends TopComponent implements IOTopComp
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
      * To obtain the singleton instance, use {@link #findInstance}.
      */
-    public static synchronized ConsoleTopComponent getDefault() {
+    private static synchronized ConsoleTopComponent getDefault() {
 	if (instance == null) {
+            assert SwingUtilities.isEventDispatchThread();
 	    instance = new ConsoleTopComponent();
 	}
 	return instance;

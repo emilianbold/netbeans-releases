@@ -174,7 +174,9 @@ public class ChildrenArrayNodeAtShouldNotBeSlowTest extends NbTestCase {
                     max = l.longValue ();
                     maxIndex = ((Integer)en.getKey ()).intValue ();
                 }
-                if (l.longValue () < min) min = l.longValue ();
+                if (l.longValue () < min && l.longValue() > 0) {
+                    min = l.longValue ();
+                }
                 error.append (" ms\n");
                 
                 cnt++;

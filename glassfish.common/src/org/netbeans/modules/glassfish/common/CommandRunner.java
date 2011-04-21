@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -221,25 +221,30 @@ public class CommandRunner extends BasicTask<OperationState> {
      * @return String array of names of deployed applications.
      */
     public Map<String, List<AppDesc>> getApplications(String container) {
+        CommandRunner inner = new CommandRunner(isReallyRunning, cf, ip, new OperationStateListener() {
+
+            @Override
+            public void operationStateChanged(OperationState newState, String message) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        });
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
             Map<String, List<String>> apps = Collections.emptyMap();
             Commands.ListComponentsCommand cmd = new Commands.ListComponentsCommand(container);
-            serverCmd = cmd;
-            Future<OperationState> task = executor().submit(this);
-            OperationState state = task.get();
+            OperationState state = inner.execute(cmd).get();
             if (state == OperationState.COMPLETED) {
                 apps = cmd.getApplicationMap();
             }
+            if (null == apps || apps.isEmpty()) {
+                return result;
+            }
             ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*");
-            serverCmd = getCmd;
-            task = executor().submit(this);
-            state = task.get();
+            state = inner.execute(getCmd).get();
             if (state == OperationState.COMPLETED) {
                 ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.server.application-ref.*");
-                serverCmd = getRefs;
-                task = executor().submit(this);
-                state = task.get();
+                state = inner.execute(getRefs).get();
                 if (OperationState.COMPLETED == state) {
                     result = processApplications(apps, getCmd.getData(),getRefs.getData());
                 }
@@ -279,6 +284,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                 }
                 if (path.startsWith("file:")) {  // NOI18N
                     path = path.substring(5);
+                    path = (new File(path)).getAbsolutePath();
                 }
 
                 String enabledKey = "servers.server.server.application-ref."+name+".enabled";
@@ -509,6 +515,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         boolean commandSucceeded = false;
         URL urlToConnectTo = null;
         URLConnection conn = null;
+        HttpURLConnection hconn = null;
         String commandUrl;
         
         try {
@@ -531,7 +538,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
-                        HttpURLConnection hconn = (HttpURLConnection) conn;
+                        hconn = (HttpURLConnection) conn;
 
                         if (conn instanceof HttpsURLConnection) {
                             // let's just trust any server that we connect to...
@@ -642,6 +649,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                         fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
                                 ex.getLocalizedMessage());
                     }
+                } finally {
+                    if (null != hconn) hconn.disconnect();
                 }
                 
                 if(!httpSucceeded && retries > 0) {

@@ -303,6 +303,9 @@ public class UpdateAction extends ContextAction {
                     svnRevision = new SVNRevision.Number(revision);
                 }
 
+                for (int i = 0; i < fileArray.length; ++i) {
+                    fileArray[i] = FileUtil.normalizeFile(fileArray[i]);
+                }
                 Subversion.getInstance().getStatusCache().patchRevision(fileArray, svnRevision);
 
                 // the cache fires status change events to trigger the annotation refresh.

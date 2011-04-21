@@ -220,6 +220,8 @@ public final class SlideBarContainer extends AbstractModeContainer {
                 setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
                 setOpaque(true);
             }
+            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+                setOpaque( false);
         }
         
         public ModeView getModeView() {

@@ -658,22 +658,11 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
         }
     }
     
-    /** the class that needs to be non accessible */
-    private static Class transferHandlerTransferAction;
     /** Throws exception if accessed from javax.swing.TransferHandler class
      */
     private void checkWhetherAccessedFromSwingTransfer () throws SecurityException {
-        if (transferHandlerTransferAction == null) {
-            try {
-                transferHandlerTransferAction = Class.forName ("javax.swing.TransferHandler$TransferAction"); // NOI18N
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-                throw new SecurityException (ex.getMessage ());
-            }
-        }
-        Class[] arr = getClassContext ();
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == transferHandlerTransferAction) {
+        for (Class<?> c : getClassContext()) {
+            if (c.getName().equals("javax.swing.TransferHandler$TransferAction")) {
                 throw new SecurityException ("All swing access to clipboard should be redirected to ExClipboard"); // NOI18N
             }
         }

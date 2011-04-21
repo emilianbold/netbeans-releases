@@ -49,38 +49,68 @@ public class ${name} extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        fileMenu.setMnemonic('f');
         fileMenu.setText("File");
+
+        openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
         fileMenu.add(openMenuItem);
+
+        saveMenuItem.setMnemonic('s');
         saveMenuItem.setText("Save");
         fileMenu.add(saveMenuItem);
+
+        saveAsMenuItem.setMnemonic('a');
         saveAsMenuItem.setText("Save As ...");
+        saveAsMenuItem.setDisplayedMnemonicIndex(5);
         fileMenu.add(saveAsMenuItem);
+
+        exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitMenuItemActionPerformed(evt);
             }
         });
-
         fileMenu.add(exitMenuItem);
+
         menuBar.add(fileMenu);
+
+        editMenu.setMnemonic('e');
         editMenu.setText("Edit");
+
+        cutMenuItem.setMnemonic('t');
         cutMenuItem.setText("Cut");
         editMenu.add(cutMenuItem);
+
+        copyMenuItem.setMnemonic('y');
         copyMenuItem.setText("Copy");
         editMenu.add(copyMenuItem);
+
+        pasteMenuItem.setMnemonic('p');
         pasteMenuItem.setText("Paste");
         editMenu.add(pasteMenuItem);
+
+        deleteMenuItem.setMnemonic('d');
         deleteMenuItem.setText("Delete");
         editMenu.add(deleteMenuItem);
+
         menuBar.add(editMenu);
+
+        helpMenu.setMnemonic('h');
         helpMenu.setText("Help");
+
+        contentsMenuItem.setMnemonic('c');
         contentsMenuItem.setText("Contents");
         helpMenu.add(contentsMenuItem);
+
+        aboutMenuItem.setMnemonic('a');
         aboutMenuItem.setText("About");
         helpMenu.add(aboutMenuItem);
+
         menuBar.add(helpMenu);
+
         setJMenuBar(menuBar);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -102,9 +132,33 @@ public class ${name} extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(${name}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(${name}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(${name}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(${name}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new ${name}().setVisible(true);

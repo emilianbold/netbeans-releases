@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 6.10
-OpenIDE-Module: org.netbeans.modules.xml.wsdlui
-OpenIDE-Module-Layer: org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/Bundle.properties
-OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help

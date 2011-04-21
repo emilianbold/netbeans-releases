@@ -100,8 +100,7 @@ final class TextFetcher implements Runnable {
                 return;
             }
             
-            FileObject fob = FileUtil.toFileObject(
-                                                source.matchingObj.getFile());
+            FileObject fob = source.matchingObj.getFileObject(); 
             String mimeType = fob.getMIMEType();
             //We don't want the swing html editor kit, and even if we 
             //do get it, it will frequently throw a random NPE 
@@ -166,8 +165,8 @@ final class TextFetcher implements Runnable {
             return false;
         }
         
-        boolean result = source.matchingObj.getFile()
-                         .equals(item.matchingObj.getFile());
+        boolean result = source.matchingObj.getFileObject()
+                         .equals(item.matchingObj.getFileObject());
         if (result) {
             setLocation(item.getLocation());
             task.schedule(50);

@@ -48,14 +48,13 @@ import java.io.FileOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupportTest;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RefreshSlowTest;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
@@ -71,6 +70,7 @@ public class SlowRefreshAndPriorityIOTest extends NbTestCase {
         // Just pre load the classes
         FileChangedManagerTest.assertNoLock();
         ChildrenSupportTest.assertNoLock();
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
     }
     private Logger LOG;
     private FileObject testFolder;
@@ -142,7 +142,7 @@ public class SlowRefreshAndPriorityIOTest extends NbTestCase {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
         }
 
-        Object obj = RefreshSlowTest.findSlowRefresh(testFolder);
+        Object obj = TestUtils.findSlowRefresh(testFolder);
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 

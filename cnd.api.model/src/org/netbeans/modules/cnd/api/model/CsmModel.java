@@ -100,7 +100,7 @@ public interface CsmModel {
      *
      * @param absPath absolute file path
      */
-    public abstract CsmFile findFile(CharSequence absPath, boolean snapShot);
+    public abstract CsmFile findFile(CharSequence absPath, boolean createIfPossible, boolean snapShot);
     
     /**
      * Returns the state of the model

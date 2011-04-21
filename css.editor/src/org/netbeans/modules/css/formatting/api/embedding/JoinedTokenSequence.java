@@ -64,10 +64,15 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         return currentTokenSequence().embedded();
     }
 
-    public int index() {
+    /**
+     * 
+     * @return array of integers representing index in joined token sequence; 
+     *  do not try to interpret or modify individual values; for performance
+     *  reasons array integers is returned instead of instance of a class
+     */
+    public int[] index() {
         checkCurrentTokenSequence();
-        int index = (currentTokenSequence+1) *100000;
-        return index + currentTokenSequence().index();
+        return new int[]{currentTokenSequence, currentTokenSequence().index()};
     }
 
     private void setCurrentTokenSequenceIndex(int index) {
@@ -75,18 +80,15 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         currentTSW = null;
     }
 
-    public void moveIndex(int ind) {
+    public void moveIndex(int[] ind) {
         checkCurrentTokenSequence();
-        String s = ""+ind;
-        assert s.length() > 5 : s;
-        s = s.substring(s.length()-5);
-        int tokenIndex = Integer.parseInt(s);
-        int tokenSequence = ((ind - tokenIndex) / 100000)-1;
+        assert ind != null && ind.length == 2 : "not a valid index: "+ind;
+        int tokenSequence = ind[0];
         if (tokenSequence < 0 || tokenSequence >= tss.size()) {
-            throw new IllegalStateException("index "+ind+" is out of boundaries "+tss.size() );
+            throw new IllegalStateException("token sequence index "+tokenSequence+" is out of boundaries "+tss.size() );
         }
         setCurrentTokenSequenceIndex(tokenSequence);
-        currentTokenSequence().moveIndex(tokenIndex);
+        currentTokenSequence().moveIndex(ind[1]);
     }
 
     public TokenSequence<T1> currentTokenSequence() {

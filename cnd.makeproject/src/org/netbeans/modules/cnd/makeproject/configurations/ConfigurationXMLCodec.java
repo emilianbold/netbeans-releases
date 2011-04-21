@@ -51,7 +51,6 @@ import java.util.Stack;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
@@ -79,7 +78,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -87,12 +85,15 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 
@@ -140,6 +141,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
         this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
+        if (this.remoteProject == null) {
+            throw new IllegalStateException("RemoteProject not found in lookup for" + projectDescriptor.getProject().getProjectDirectory().getPath()); //NOI18N
+        }
         this.relativeOffset = relativeOffset;
     }
 
@@ -192,6 +196,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
             } else if (type.equals("6")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
+            } else if (type.equals("7")) {// FIXUP // NOI18N
+                confType = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType);
 
@@ -852,7 +858,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLibrariesConfiguration.add(new LibraryItem.LibItem(getString(currentText)));
             }
         } else if (element.equals(LINKER_LIB_STDLIB_ITEM_ELEMENT)) {
-            LibraryItem.StdLibItem stdLibItem = Platforms.getPlatform(((MakeConfiguration) currentConf).getDevelopmentHost().getBuildPlatform()).getStandardLibrarie(currentText);
+            LibraryItem.StdLibItem stdLibItem = StdLibraries.getStandardLibary(currentText);
             if (currentLibrariesConfiguration != null && stdLibItem != null) {
                 currentLibrariesConfiguration.add(stdLibItem);
             }
@@ -897,39 +903,23 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         }
     }
 
-    private String toAbsoluteRemotePath(String path) {
-        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            path = remoteProject.resolveRelativeRemotePath(path);
-            path = RemoteFileUtil.normalizeAbsolutePath(path, remoteProject.getSourceFileSystemHost());
-        }
-        return path;
-    }
-
     private Item createItem(String path) {
         Project project = projectDescriptor.getProject();
-        FileObject projectDirFO = project.getProjectDirectory();
-        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            path = toAbsoluteRemotePath(path);
-            if (FileSystemProvider.isAbsolute(path)) {
-                FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
-                if (itemFO == null) {
-                    return new Item(path); //XXX:fullRemote
-                } else {
-                    return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
-                }
-            } else {
-                return new Item(path); //XXX:fullRemote
-            }
-        } else {
-            return new Item(path); //XXX:fullRemote convert this to use of file items as well
+        FileSystem fs = remoteProject.getSourceFileSystem();
+        String absPath;
+        if (FileSystemProvider.isAbsolute(path)) {
+            absPath = path;                
+        } else {                
+            absPath = CndPathUtilitities.toAbsolutePath(remoteProject.getSourceBaseDir(), path);
         }
+        return new Item(fs, absPath, remoteProject.getSourceBaseDir(), ProjectSupport.getPathMode(project));
     }
 
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) { // NOI18N
             path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
-        return toAbsoluteRemotePath(path);
+        return path;
     }
 
     private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {

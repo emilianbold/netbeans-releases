@@ -392,10 +392,14 @@ class DocRenderer {
                 }
 
                 header.appendHtml("<br/><br/>"); //NOI18N
-                Comment comment = Utils.getCommentForNode(program, node);
+                if (node instanceof PHPDocTag) {
+                    phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                } else {
+                    Comment comment = Utils.getCommentForNode(program, node);
 
-                if (comment instanceof PHPDocBlock) {
-                    extractPHPDoc((PHPDocBlock) comment);
+                    if (comment instanceof PHPDocBlock) {
+                        extractPHPDoc((PHPDocBlock) comment);
+                    }
                 }
             }
 

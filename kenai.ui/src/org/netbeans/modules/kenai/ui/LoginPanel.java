@@ -445,7 +445,8 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public Kenai getKenai() {
-        return (Kenai) kenaiCombo.getSelectedItem();
+        Object item = kenaiCombo.getSelectedItem();
+        return item instanceof Kenai? (Kenai) item : null;
     }
 
     public interface Credentials {

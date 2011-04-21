@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -71,7 +72,7 @@ public class J2eeProjectCapabilitiesTest extends NbTestCase {
         super(testName);
     }
 
-    public void testIsEjbSupported() {
+    public void testIsEjbSupported() throws Exception {
         Project p = createProject(Profile.JAVA_EE_5, Type.EJB);
         J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(p);
         assertTrue(cap.isEjb30Supported());
@@ -109,8 +110,10 @@ public class J2eeProjectCapabilitiesTest extends NbTestCase {
         assertFalse(cap.isEjb31LiteSupported());
     }
 
-    private Project createProject(final Profile profile, final Type type) {
-        return new FakeProject(type, profile);
+    private Project createProject(final Profile profile, final Type type) throws IOException {
+        // just a fake project dir for now:
+        FileObject projDir = FileUtil.toFileObject(getWorkDir());
+        return new FakeProject(type, profile, projDir);
     }
 
     public static class FakeProject implements Project {
@@ -118,17 +121,19 @@ public class J2eeProjectCapabilitiesTest extends NbTestCase {
         private Type type;
         private Profile profile;
         private Lookup l;
+        private FileObject projDir;
 
-        public FakeProject(Type type, Profile profile) {
+        public FakeProject(Type type, Profile profile, FileObject projDir) {
             this.type = type;
             this.profile = profile;
+            this.projDir = projDir;
             FakeEjbJarsInProject f = new FakeEjbJarsInProject(new FakeEjbJarImplementation2(profile));
             FakeJ2eeModuleProvider f2 = new FakeJ2eeModuleProvider(new FakeJ2eeModuleImpl(type));
             l = Lookups.fixed(f, f2);
         }
 
         public FileObject getProjectDirectory() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return projDir;
         }
 
         public Lookup getLookup() {

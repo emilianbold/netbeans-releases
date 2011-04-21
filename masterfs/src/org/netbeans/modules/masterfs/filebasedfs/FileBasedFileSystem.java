@@ -54,6 +54,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
@@ -72,6 +74,7 @@ import org.openide.util.actions.SystemAction;
  * @author Radek Matous
  */
 public final class FileBasedFileSystem extends FileSystem {
+    private static final Logger LOG = Logger.getLogger(FileBasedFileSystem.class.getName());
     private static FileBasedFileSystem INSTANCE = new FileBasedFileSystem();
     transient private RootObj<? extends FileObject> root;
     transient private final StatusImpl status = new StatusImpl();
@@ -200,13 +203,16 @@ public final class FileBasedFileSystem extends FileSystem {
             }
         }  else {
             name = (name.startsWith("/")) ? name : ("/"+name);    
-        }             
+        }               
+        File f = new File(name);
         if (name.contains("..")) {
-            if (("/" + name + "/").contains("/../")) {
-                return null;
+            try {
+                f = f.getCanonicalFile();
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Cannot canonicalize " + f, ex);
             }
         }
-        return getFileObject(new File(name));
+        return getFileObject(f);
     }
 
     @Override

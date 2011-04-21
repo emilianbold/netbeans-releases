@@ -151,17 +151,20 @@ public class ProjectUtilities {
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
             WindowManager wm = WindowManager.getDefault();
+            ERR.finer("Closing TCs");
             for (Mode mode : wm.getModes()) {
                 //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
                 if (!wm.isEditorMode(mode)) {
                     continue;
                 }
+                ERR.log(Level.FINER, "Closing TCs in mode {0}", mode.getName());
                 for (TopComponent tc : wm.getOpenedTopComponents(mode)) {
                 DataObject dobj = tc.getLookup().lookup(DataObject.class);
 
                 if (dobj != null) {
                     FileObject fobj = dobj.getPrimaryFile();
                     Project owner = FileOwnerQuery.getOwner(fobj);
+                    ERR.log(Level.FINER, "Found {0} owned by {1} in {2} of {3}", new Object[] {fobj, owner, tc.getName(), tc.getClass()});
 
                     if (listOfProjects.contains(owner)) {
                         if (notifyUI) {
@@ -186,6 +189,8 @@ public class ProjectUtilities {
                                            dobj.getPrimaryFile();
                         }
                     }
+                } else {
+                    ERR.log(Level.FINE, "#194243: no DataObject in lookup of {0} of {1}", new Object[] {tc.getName(), tc.getClass()});
                 }
             }
             }

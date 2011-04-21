@@ -20,11 +20,11 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-When working with web services on the Tomcat Web Server, you are recommended to use
+<p>When working with web services on the Tomcat Web Server, you are recommended to use
 the <a href="tomcat_websvc_jwsdp.html">Java Web Services Developer Pack 1.6</a> (JWSDP 1.6). However,
 the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Therefore,
  if you want to use a version of the Tomcat Web Server that is higher than 5.0.19, you
- cannot use JWSDP 1.6. Instead, you need to write Ant targets in the IDE, as described below. 
+ cannot use JWSDP 1.6. Instead, you need to write Ant targets in the IDE, as described below. </p>
 
 <p><b>To prepare to use Ant targets to deploy a web service on the Tomcat Web Server:</b>
 
@@ -33,7 +33,7 @@ the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Ther
 	<li>Copy all JAR files from <i>$NB_HOME</i><tt>/ide/modules/ext/jaxrpc16</tt> to
 	<i>$NB_HOME</i><tt>/enterprise/apache-tomcat-5.5.17/common/lib</tt>.
 
-	<li>Make sure that the Sun Java System Application Server/GlassFish is <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">registered</a> in the IDE.
+	<li>Make sure that the GlassFish server is <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">registered</a> in the IDE.
 	<li>In the Services window (Ctrl-5), expand the Servers node, right-click the Tomcat Web Server node,
 	and choose Start. Doing this creates the <i>full_path_to_$NB_USER_DIR/</i><tt>5.0/apache-tomcat-5.5.17_base</tt> folder.	
 	In this folder, enable the Tomcat Web Server's auto deploy functionality by switching <tt>autoDeploy="false"</tt>
@@ -45,19 +45,22 @@ the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Ther
 <p><b>To create the web service or client files:</b>
 
 <ol>
-	<li>Create a web application project. Set the Sun Java System Application Server/GlassFish 
-	as your target server.
+    <li>Create a web application project. Set the GlassFish server as your target server.</li>
 
-	<li>Do one of the following:
-	<ul><li>If you want to deploy a web service, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/create/about_implement_ws.html">create the web service</a>. For deployment, follow the instructions in 'To write Ant targets to deploy a web service on the Tomcat Web Server' below.
-		<li>If you want to consume a web service, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_create.html">create the web service client</a>. Make sure
-		that you select IDE-generated static stub in the Specify Web Service Client information page. Now add 
-		the following target to the <tt>build.xml</tt> file and then follow the instructions in 'To deploy a web service 
-		or web service client on the Tomcat Web Server' below:
+    <li>Do one of the following:
+    <ul>
+        <li>If you want to deploy a web service, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/create/about_implement_ws.html">create the web service</a>. For deployment, follow the instructions 
+        in 'To write Ant targets to deploy a web service on the Tomcat Web Server' below.
+        <li>If you want to consume a web service, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_create.html">create the web service client</a>. 
+        Make sure that you select IDE-generated static stub in the Specify Web Service Client information page. Now add 
+        the following target to the <tt>build.xml</tt> file and then follow the instructions in 'To deploy a web service 
+        or web service client on the Tomcat Web Server' below:
 
 <pre>&lt;target name="-pre-init"&gt;
   &lt;property name="j2ee.platform.wscompile.classpath" value="${libs.jaxrpc16.classpath}"/&gt;
-&lt;/target&gt;</pre></ul>
+&lt;/target&gt;</pre>
+    </ul>
+    </li>
 </ol>
 
 <p><b>To write Ant targets to deploy a web service on the Tomcat Web Server:</b>
