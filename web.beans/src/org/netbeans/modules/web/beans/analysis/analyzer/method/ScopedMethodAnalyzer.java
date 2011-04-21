@@ -40,68 +40,52 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
-import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeVerifier;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-class ScopeChecker extends RuntimeAnnotationChecker {
-    
-    static String SCOPE = "javax.inject.Scope";                         // NOI18N
-    
-    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
-    
-    static ScopeChecker get(){
-        return new ScopeChecker();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
-     */
-    @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(ScopeChecker.class.getName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return SCOPE;
-    }
+public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
+        MethodAnalyzer
+{
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    protected TargetVerifier getTargetVerifier() {
-        return new ScopeVerifier( getHelper() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
-    @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Scope but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
+    public void analyze( ExecutableElement element, TypeMirror returnType,
+            TypeElement parent, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
+    {
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
+                compInfo))
+        {
+            analyzeScope(element, compInfo, descriptions);
         }
-        return hasRequiredTarget;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void checkScope( TypeElement scopeElement, Element element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
     }
 
 }

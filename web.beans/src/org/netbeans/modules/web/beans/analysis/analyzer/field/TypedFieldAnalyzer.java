@@ -51,8 +51,8 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analizer.AbstractTypedAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 

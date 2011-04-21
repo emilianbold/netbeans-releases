@@ -53,7 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer;
 
 
 /**

@@ -40,11 +40,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -52,7 +53,8 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -61,38 +63,57 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class DelegateFieldAnalizer implements FieldAnalyzer {
+public class DelegateMethodAnalyzer implements MethodAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
+    public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
+        List<? extends VariableElement> parameters = element.getParameters();
+        for (VariableElement param : parameters) {
+            if( AnnotationUtil.hasAnnotation(param, AnnotationUtil.DELEGATE_FQN, 
+                    compInfo))
+            {
+                checkMethodDefinition(element , param, compInfo , descriptions );
+                checkClassDefinition( parent , element, param, compInfo , descriptions );
+            }
+        }
+    }
+
+    private void checkClassDefinition( TypeElement parent,
+            ExecutableElement element, VariableElement param,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        if ( !AnnotationUtil.hasAnnotation(parent, AnnotationUtil.DECORATOR, 
                 compInfo))
         {
-            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateHasNoInject"));                    // NOI18N
-                descriptions.add( description );
-            }
-            Element clazz = element.getEnclosingElement();
-            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
-                descriptions.add( description );
-            }
+            ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( param, compInfo, 
+                NbBundle.getMessage(DelegateFieldAnalizer.class, 
+                        "ERR_DelegateIsNotInDecorator")); // NOI18N
+            descriptions.add( description );
+        }        
+    }
+
+    private void checkMethodDefinition( ExecutableElement element, 
+            VariableElement param, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions )
+    {
+        if ( element.getKind() == ElementKind.CONSTRUCTOR ){
+            return;
+        }
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
+                compInfo))
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( param, compInfo, 
+                NbBundle.getMessage(DelegateMethodAnalyzer.class, 
+                        "ERR_WrongDelegateMethod"));                        // NOI18N
+            descriptions.add( description );
         }
     }
 

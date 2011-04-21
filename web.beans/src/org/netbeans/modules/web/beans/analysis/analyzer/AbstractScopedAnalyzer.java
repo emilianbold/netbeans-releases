@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer;
 
 import java.io.IOException;
 import java.util.List;
@@ -49,8 +49,6 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -61,31 +59,22 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
-import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
-import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
 
 
 /**
  * @author ads
  *
  */
-public class InjectionPointAnalyzer implements FieldAnalyzer {
+public abstract class AbstractScopedAnalyzer  {
     
     private static final Logger LOG = Logger.getLogger( 
-            InjectionPointAnalyzer.class.getName() );  
+            AbstractScopedAnalyzer.class.getName() );  
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
-    @Override
-    public void analyze( final VariableElement element, TypeMirror elementType,
-            TypeElement parent, final CompilationInfo compInfo,
-            final List<ErrorDescription> descriptions )
+    public void analyzeScope( Element element, 
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
@@ -93,65 +82,47 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
         }
         MetaModelSupport support = new MetaModelSupport(project);
         MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<VariableElement> handle = ElementHandle.create( element);
+        final ElementHandle<Element> handle = ElementHandle.create( element);
         try {
-            metaModel.runReadAction( 
-                    new MetadataModelAction<WebBeansModel, Void>() 
+            String scope = metaModel.runReadAction( 
+                    new MetadataModelAction<WebBeansModel, String>() 
             {
 
                 @Override
-                public Void run( WebBeansModel model ) throws Exception {
-                    VariableElement var = handle.resolve( 
-                            model.getCompilationController());
-                    if ( var == null ){
+                public String run( WebBeansModel model ) throws Exception {
+                    Element element = handle.resolve( model.getCompilationController());
+                    if ( element == null ){
                         return null;
                     }
-                    if ( model.isInjectionPoint( var ) ){
-                        DependencyInjectionResult result = model.lookupInjectables( var,  null);
-                        checkResult(result, element , compInfo , descriptions );
-                    }
-                    return null;
+                    return model.getScope( element );
                 }
             });
+            TypeElement scopeElement = compInfo.getElements().getTypeElement( scope );
+            if ( scopeElement == null ){
+                return;
+            }
+            checkScope( scopeElement , element , compInfo, descriptions );
         }
         catch (MetadataModelException e) {
-            if ( informInjectionPointDefError(e, element, compInfo, 
-                    descriptions))
-            {
+            if ( !informCdiException(e, element, compInfo, descriptions) ){
                 LOG.log( Level.INFO , null , e);
             }
         }
         catch (IOException e) {
-            if ( informInjectionPointDefError(e, element, compInfo, 
-                    descriptions))
-            {
+            if ( !informCdiException(e, element, compInfo, descriptions) ){
                 LOG.log( Level.INFO , null , e);
             }
         }
     }
+    
+    protected abstract void checkScope( TypeElement scopeElement, Element element, 
+            CompilationInfo compInfo, List<ErrorDescription> descriptions );
 
-    private void checkResult( DependencyInjectionResult result ,
-            VariableElement var, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
-    {
-        if ( result instanceof DependencyInjectionResult.Error ){
-            ResultKind kind = result.getKind();
-            Severity severity = Severity.WARNING;
-            if ( kind == DependencyInjectionResult.ResultKind.DEFINITION_ERROR){
-                severity = Severity.ERROR;
-            }
-            String message = ((DependencyInjectionResult.Error)result).getMessage();
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createNotification(severity, var , compInfo, message);
-            descriptions.add( description );
-        }
-    }
-
-    private boolean informInjectionPointDefError(Exception exception , Element element, 
+    private boolean informCdiException(Exception exception , Element element, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions)
     {
         Throwable cause = exception.getCause();
-        if ( cause instanceof InjectionPointDefinitionError ){
+        if ( cause instanceof CdiException ){
             ErrorDescription description = CdiEditorAnalysisFactory.
                 createError( element, compInfo, 
                     cause.getMessage());

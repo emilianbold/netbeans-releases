@@ -40,20 +40,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 
@@ -61,39 +65,63 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class DelegateFieldAnalizer implements FieldAnalyzer {
-
+public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer 
+    implements ClassAnalyzer 
+{
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
+    public void analyze( TypeElement element, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        analyzeScope(element, compInfo, descriptions);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void checkScope( TypeElement scopeElement, Element element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
+                AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
+        if ( isNormal ){
+            checkFinal( element , compInfo , descriptions );
+        }                
+    }
+
+    private void checkFinal( Element element, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
-                compInfo))
-        {
-            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
+        if ( !( element instanceof TypeElement )){
+            return;
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains( Modifier.FINAL) ){
+            ErrorDescription description = CdiEditorAnalysisFactory.
                 createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateHasNoInject"));                    // NOI18N
-                descriptions.add( description );
-            }
-            Element clazz = element.getEnclosingElement();
-            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
-                descriptions.add( description );
+                    NbBundle.getMessage(ScopedBeanAnalyzer.class, 
+                            "ERR_FinalScopedClass"));
+            descriptions.add( description );
+            return;
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                element.getEnclosedElements());
+        for (ExecutableElement method : methods) {
+            modifiers = method.getModifiers();
+            if (modifiers.contains(Modifier.FINAL)) {
+                ErrorDescription description = CdiEditorAnalysisFactory
+                        .createNotification( Severity.WARNING, method, compInfo, 
+                                NbBundle.getMessage(
+                                ScopedBeanAnalyzer.class,
+                                "WARN_FinalScopedClassMethod"));
+                descriptions.add(description);
             }
         }
     }
+
 
 }

@@ -40,60 +40,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class DelegateFieldAnalizer implements FieldAnalyzer {
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
-    @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+public abstract class AbstractTypedAnalyzer {
+    
+    private static final String TYPED = "javax.enterprise.inject.Typed";    // NOI18N
+    
+    public void analyze( Element element, TypeMirror elementType, 
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
-                compInfo))
+        AnnotationMirror typedMirror = AnnotationUtil.getAnnotationMirror(element, 
+                TYPED, compInfo);
+        if ( typedMirror == null ){
+            return;
+        }
+        Map<? extends ExecutableElement, ? extends AnnotationValue> values = 
+            typedMirror.getElementValues();
+        AnnotationValue restrictedTypes = null;
+        for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : 
+            values.entrySet() ) 
         {
-            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateHasNoInject"));                    // NOI18N
-                descriptions.add( description );
+            ExecutableElement key = entry.getKey();
+            AnnotationValue value = entry.getValue();
+            if ( AnnotationUtil.VALUE.contentEquals(key.getSimpleName())){ 
+                restrictedTypes = value;
+                break;
             }
-            Element clazz = element.getEnclosingElement();
-            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
-                descriptions.add( description );
+        }
+        if ( restrictedTypes == null ){
+            return;
+        }
+        Object value = restrictedTypes.getValue();
+        if ( value instanceof List<?> ){
+            for( Object type : (List<?>)value){
+                AnnotationValue annotationValue = (AnnotationValue)type;
+                type = annotationValue.getValue();
+                if (type instanceof TypeMirror){
+                    boolean isSubtype = hasBeanType(element, elementType, 
+                            (TypeMirror)type, compInfo);
+                    if ( !isSubtype){
+                        addError(element, compInfo, descriptions);
+                    }
+                }
             }
         }
     }
-
+    
+    protected boolean hasBeanType( Element subject, TypeMirror elementType, 
+            TypeMirror requiredBeanType,CompilationInfo compInfo )
+    {
+        return compInfo.getTypes().isSubtype(elementType, requiredBeanType);
+    }
+    
+    protected abstract void addError ( Element element , 
+            CompilationInfo compInfo , List<ErrorDescription> descriptions );
+    
 }

@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.QualifierVerifier;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.QualifierVerifier;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
 
 
 /**

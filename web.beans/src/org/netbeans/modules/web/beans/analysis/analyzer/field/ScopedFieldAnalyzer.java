@@ -50,9 +50,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 

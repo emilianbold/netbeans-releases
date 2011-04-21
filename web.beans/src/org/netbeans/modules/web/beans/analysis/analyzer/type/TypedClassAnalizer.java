@@ -40,68 +40,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
-import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeVerifier;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-class ScopeChecker extends RuntimeAnnotationChecker {
+public class TypedClassAnalizer extends AbstractTypedAnalyzer implements 
+    ClassAnalyzer
+{
     
-    static String SCOPE = "javax.inject.Scope";                         // NOI18N
-    
-    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
-    
-    static ScopeChecker get(){
-        return new ScopeChecker();
-    }
-
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
+     * @see org.netbeans.modules.web.beans.analysis.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(ScopeChecker.class.getName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return SCOPE;
+    public void analyze( TypeElement element, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        analyze(element, element.asType() , compInfo, descriptions);
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    protected TargetVerifier getTargetVerifier() {
-        return new ScopeVerifier( getHelper() );
+    protected void addError( Element element, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, compInfo, NbBundle.getMessage(
+                TypedClassAnalizer.class, "ERR_BadRestritedType"));
+        descriptions.add( description );        
     }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
-    @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Scope but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
-        }
-        return hasRequiredTarget;
-    }
-
+    
 }

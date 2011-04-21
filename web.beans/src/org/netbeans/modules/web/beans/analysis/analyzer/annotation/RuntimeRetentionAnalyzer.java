@@ -25,8 +25,9 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,68 +41,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeVerifier;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
 
 /**
  * @author ads
  *
  */
-class ScopeChecker extends RuntimeAnnotationChecker {
+public abstract class RuntimeRetentionAnalyzer {
     
-    static String SCOPE = "javax.inject.Scope";                         // NOI18N
-    
-    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
-    
-    static ScopeChecker get(){
-        return new ScopeChecker();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
-     */
-    @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(ScopeChecker.class.getName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return SCOPE;
+    public void init( Element element, AnnotationModelHelper helper ) {
+        myHelper = helper;
+        myElement = element;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
-     */
-    @Override
-    protected TargetVerifier getTargetVerifier() {
-        return new ScopeVerifier( getHelper() );
+    public void init( Element element, CompilationInfo info  ) {
+        init( element , AnnotationModelHelper.create( info.getClasspathInfo()));
     }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
-    @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Scope but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
+    
+    public boolean hasRuntimeRetention() {
+        Map<String, ? extends AnnotationMirror> types = getHelper()
+            .getAnnotationsByType(getElement().getAnnotationMirrors());
+        AnnotationMirror retention = types.get(Retention.class.getCanonicalName()); 
+        if ( retention == null ) {
+            handleNoRetention();
+            return false;
         }
-        return hasRequiredTarget;
-    }
 
+        AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectEnumConstant(AnnotationUtil.VALUE, getHelper().resolveType(
+                RetentionPolicy.class.getCanonicalName()), null);
+        
+        String retentionPolicy = parser.parse(retention).get(AnnotationUtil.VALUE,
+                String.class);
+        return RetentionPolicy.RUNTIME.toString().equals(retentionPolicy);
+    }
+    
+    protected abstract void handleNoRetention();
+
+    protected Element getElement(){
+        return myElement;
+    }
+    
+    protected AnnotationModelHelper getHelper(){
+        return myHelper;
+    }
+    
+    private AnnotationModelHelper myHelper;
+    private Element myElement;
 }

@@ -40,68 +40,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeVerifier;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.AnnotationsAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.CtorsAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.ManagedBeansAnalizer;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.ScopedBeanAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.SessionBeanAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.TypedClassAnalizer;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-class ScopeChecker extends RuntimeAnnotationChecker {
-    
-    static String SCOPE = "javax.inject.Scope";                         // NOI18N
-    
-    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
-    
-    static ScopeChecker get(){
-        return new ScopeChecker();
-    }
+public class ClassElementAnalyzer implements ElementAnalyzer {
+
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
+     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(ScopeChecker.class.getName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return SCOPE;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
-     */
-    @Override
-    protected TargetVerifier getTargetVerifier() {
-        return new ScopeVerifier( getHelper() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
-    @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Scope but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
+    public void analyze( Element element, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
+            AtomicBoolean cancel )
+    {
+        TypeElement subject = (TypeElement) element;
+        for( ClassAnalyzer analyzer : ANALIZERS ){
+            if ( cancel.get() ){
+                return;
+            }
+            analyzer.analyze( subject, parent, compInfo, descriptions);
         }
-        return hasRequiredTarget;
     }
 
+    public interface ClassAnalyzer {
+        void analyze( TypeElement element , TypeElement parent, CompilationInfo compInfo,
+                List<ErrorDescription> descriptions);
+    }
+
+    private static final List<ClassAnalyzer> ANALIZERS= new LinkedList<ClassAnalyzer>(); 
+    
+    static {
+        ANALIZERS.add( new TypedClassAnalizer() );
+        ANALIZERS.add( new ManagedBeansAnalizer());
+        ANALIZERS.add( new ScopedBeanAnalyzer());
+        ANALIZERS.add( new AnnotationsAnalyzer());
+        ANALIZERS.add( new CtorsAnalyzer() );
+        ANALIZERS.add( new SessionBeanAnalyzer());
+    }
 }

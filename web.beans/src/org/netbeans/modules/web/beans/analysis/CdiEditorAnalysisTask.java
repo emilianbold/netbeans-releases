@@ -57,12 +57,12 @@ import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.CtorAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;

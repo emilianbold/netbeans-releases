@@ -40,68 +40,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeVerifier;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
 
 
 /**
  * @author ads
  *
  */
-class ScopeChecker extends RuntimeAnnotationChecker {
+public interface TargetVerifier {
     
-    static String SCOPE = "javax.inject.Scope";                         // NOI18N
-    
-    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
-    
-    static ScopeChecker get(){
-        return new ScopeChecker();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
-     */
-    @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(ScopeChecker.class.getName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return SCOPE;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
-     */
-    @Override
-    protected TargetVerifier getTargetVerifier() {
-        return new ScopeVerifier( getHelper() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
-    @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Scope but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
-        }
-        return hasRequiredTarget;
-    }
+    boolean hasReqiredTarget(AnnotationMirror target);
 
 }

@@ -40,68 +40,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeVerifier;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.TypedFieldAnalyzer;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-class ScopeChecker extends RuntimeAnnotationChecker {
-    
-    static String SCOPE = "javax.inject.Scope";                         // NOI18N
-    
-    static String NORMAL_SCOPE = "javax.enterprise.context.NormalScope";// NOI18N
-    
-    static ScopeChecker get(){
-        return new ScopeChecker();
-    }
+public class FieldElementAnalyzer implements ElementAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
+     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
-    protected Logger getLogger() {
-        return Logger.getLogger(ScopeChecker.class.getName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
-     */
-    @Override
-    protected String getAnnotation() {
-        return SCOPE;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
-     */
-    @Override
-    protected TargetVerifier getTargetVerifier() {
-        return new ScopeVerifier( getHelper() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
-    @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING,
-                    "Annotation "+getElement().getQualifiedName()+
-                    "declared as Scope but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, TYPE}");// NOI18N
+    public void analyze( Element element, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
+            AtomicBoolean cancel )
+    {
+        VariableElement var = (VariableElement) element;
+        TypeMirror varType = compInfo.getTypes().asMemberOf( 
+                (DeclaredType)parent.asType(),  var );
+        for (FieldAnalyzer analyzer : ANALIZERS) {
+            analyzer.analyze(var, varType, parent, compInfo, descriptions);
         }
-        return hasRequiredTarget;
     }
-
+    
+    public interface FieldAnalyzer {
+        void analyze( VariableElement element , TypeMirror elementType,
+                TypeElement parent, CompilationInfo compInfo,
+                List<ErrorDescription> descriptions);
+    }
+    
+    private static final List<FieldAnalyzer> ANALIZERS= new LinkedList<FieldAnalyzer>(); 
+    
+    static {
+        ANALIZERS.add( new TypedFieldAnalyzer() );
+        ANALIZERS.add( new ScopedFieldAnalyzer() );
+        ANALIZERS.add( new InjectionPointAnalyzer());
+        ANALIZERS.add( new DelegateFieldAnalizer());
+    }
 }

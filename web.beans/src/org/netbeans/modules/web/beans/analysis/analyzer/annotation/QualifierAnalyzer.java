@@ -40,19 +40,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.util.List;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -61,39 +58,60 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class DelegateFieldAnalizer implements FieldAnalyzer {
+public class QualifierAnalyzer implements AnnotationAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
+    public void analyze( TypeElement element, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.QUALIFIER_FQN, 
                 compInfo))
         {
-            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                    compInfo))
-            {
+            QualifierTargetAnalyzer analyzer = new QualifierTargetAnalyzer(element, 
+                    compInfo, descriptions);
+            if ( !analyzer.hasRuntimeRetention() ){
                 ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateHasNoInject"));                    // NOI18N
+                    createError( element, compInfo, 
+                        NbBundle.getMessage(QualifierTargetAnalyzer.class, 
+                                INCORRECT_RUNTIME));
                 descriptions.add( description );
             }
-            Element clazz = element.getEnclosingElement();
-            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
-                    compInfo))
-            {
+            if ( !analyzer.hasTarget()){
                 ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
+                    createError( element, compInfo, 
+                            NbBundle.getMessage(QualifierTargetAnalyzer.class, 
+                                    "ERR_IncorrectQualifierTarget"));  // NOI18N
                 descriptions.add( description );
             }
         }
     }
+    
+    private static class QualifierTargetAnalyzer extends CdiAnnotationAnalyzer{
 
+        QualifierTargetAnalyzer( TypeElement element, CompilationInfo compInfo,
+                List<ErrorDescription> descriptions )
+        {
+            super(element, compInfo, descriptions);
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.CdiAnnotationAnalyzer#getCdiMetaAnnotation()
+         */
+        @Override
+        protected String getCdiMetaAnnotation() {
+            return AnnotationUtil.QUALIFIER;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+         */
+        @Override
+        protected TargetVerifier getTargetVerifier() {
+            return new QualifierVerifier( getHelper(), true );
+        }
+        
+    }
 }

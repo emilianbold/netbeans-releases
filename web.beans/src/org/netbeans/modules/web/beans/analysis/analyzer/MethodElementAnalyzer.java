@@ -40,60 +40,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.method.AnnotationsAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.method.DelegateMethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.method.ScopedMethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.method.TypedMethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class DelegateFieldAnalizer implements FieldAnalyzer {
+public class MethodElementAnalyzer implements ElementAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+    public void analyze( Element element, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
+            AtomicBoolean cancel )
     {
-        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
-                compInfo))
-        {
-            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateHasNoInject"));                    // NOI18N
-                descriptions.add( description );
-            }
-            Element clazz = element.getEnclosingElement();
-            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
-                descriptions.add( description );
+        ExecutableElement method = (ExecutableElement) element;
+        TypeMirror methodType = compInfo.getTypes().asMemberOf( 
+                (DeclaredType)parent.asType(),  method );
+        if ( methodType instanceof ExecutableType ){
+            TypeMirror returnType = ((ExecutableType) methodType).getReturnType();
+            for (MethodAnalyzer analyzer : ANALIZERS) {
+                if ( cancel.get() ){
+                    return;
+                }
+                analyzer.analyze(method, returnType, parent, compInfo, descriptions);
             }
         }
+    }
+    
+    public interface MethodAnalyzer {
+        void analyze( ExecutableElement element , TypeMirror returnType,
+                TypeElement parent, CompilationInfo compInfo,
+                List<ErrorDescription> descriptions);
+    }
+    
+    private static final List<MethodAnalyzer> ANALIZERS= new LinkedList<MethodAnalyzer>(); 
+    
+    static {
+        ANALIZERS.add( new TypedMethodAnalyzer() );
+        ANALIZERS.add( new ScopedMethodAnalyzer() );
+        ANALIZERS.add( new AnnotationsAnalyzer() );
+        ANALIZERS.add( new DelegateMethodAnalyzer() );
     }
 
 }

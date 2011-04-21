@@ -50,8 +50,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.StereotypeVerifier;
-import org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeVerifier;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
 
 
 /**
