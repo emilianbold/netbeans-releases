@@ -13,6 +13,10 @@
                     public void setJspDescriptor(org.netbeans.modules.j2ee.weblogic9.dd.model.JspDescriptorType[] descriptors) {
                         setJspDescriptor((JspDescriptorType[]) descriptors);
                     }
+
+                    public void addResourceDescription(org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType description) {
+                        addResourceDescription((ResourceDescriptionType) description);
+                    }
                 </user-code>
 		<meta-property>
 			<bean-name>Description</bean-name>
@@ -887,6 +891,7 @@
 		<dtd-name>resource-descriptionType</dtd-name>
 		<namespace>http://www.bea.com/ns/weblogic/weblogic-web-app</namespace>
 		<bean-name>ResourceDescriptionType</bean-name>
+                <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType</implements>
 		<meta-property>
 			<bean-name>ResRefName</bean-name>
 		</meta-property>
