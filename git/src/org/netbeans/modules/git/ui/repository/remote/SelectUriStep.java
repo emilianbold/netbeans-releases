@@ -221,7 +221,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             };
             supp.start(Git.getInstance().getRequestProcessor(repositoryFile), repositoryFile, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
             if (message[0] != null) {
-                setValid(true, message[0]);
+                setValid(false, message[0]);
             }
             //enable input
             EventQueue.invokeLater(new Runnable() {

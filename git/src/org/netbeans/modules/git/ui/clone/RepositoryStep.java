@@ -177,7 +177,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
-                setValid(true, new Message(ex.getMessage(), false));
+                setValid(false, new Message(ex.getMessage(), false));
                 return;
             } finally {
                 Utils.deleteRecursively(getRepositoryRoot());
