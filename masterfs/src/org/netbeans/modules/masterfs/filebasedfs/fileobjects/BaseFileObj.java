@@ -356,7 +356,14 @@ public abstract class BaseFileObj extends FileObject {
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
         if (Utils.equals(file2Rename, file)) {
-            if (!file.renameTo(file2Rename)) {
+            boolean success;
+            if (handler != null) {
+                handler.handle();
+                success = true;
+            } else {
+                success = file.renameTo(file2Rename);
+            }
+            if (!success) {
                 FileObject parentFo = getExistingParent();
                 String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
                 FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
