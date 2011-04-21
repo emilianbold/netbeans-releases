@@ -186,6 +186,11 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
     
     public abstract static class Item implements Comparable<Item> {
         boolean isSelected;
+
+        protected Item (boolean selected) {
+            this.isSelected = selected;
+        }
+        
         public abstract String getText();
         public abstract String getTooltipText();
     }

@@ -606,7 +606,7 @@ public class Generate {
                 w.write("            retValue = ex;\n");
             }
             if (com.sun.jdi.InternalException.class.equals(cex)) {
-                w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
+                w.write(reportOfJDIException(className, mName, "ex"));
             }
             if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
                 w.write("            return "+defaultReturn+";\n");
@@ -855,10 +855,11 @@ public class Generate {
         }
         w.write(" {\n");
         String higherVersionClass;
+        String higherVersionClassName;
         int higherVersionClassIndex = className.indexOf("/*");
         if (higherVersionClassIndex > 0) {
             higherVersionClassIndex += 2;
-            String higherVersionClassName = className.substring(higherVersionClassIndex, className.indexOf("*/"));
+            higherVersionClassName = className.substring(higherVersionClassIndex, className.indexOf("*/"));
             higherVersionClass = higherVersionClassName.substring(higherVersionClassName.lastIndexOf('.') + 1);
             higherVersionClass = Character.toLowerCase(higherVersionClass.charAt(0)) + higherVersionClass.substring(1) + "Class";
             w.write("        Class "+higherVersionClass+";\n"+
@@ -870,6 +871,7 @@ public class Generate {
 
         } else {
             higherVersionClass = null;
+            higherVersionClassName = null;
         }
         w.write("        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
         w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(\n"+
@@ -982,7 +984,9 @@ public class Generate {
             Class cex = it.next();
             w.write("            if (t instanceof "+cex.getName()+") {\n");
             if (com.sun.jdi.InternalException.class.equals(cex)) {
-                w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(("+com.sun.jdi.InternalException.class.getName()+") t);\n");
+                String c = higherVersionClassName;
+                if (c == null) c = className;
+                w.write("    "+reportOfJDIException(c, mName, "("+com.sun.jdi.InternalException.class.getName()+") t"));
             }
             if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
                 w.write("                return "+defaultReturn+";\n");
@@ -1204,6 +1208,21 @@ public class Generate {
             }
         }
         return exec;
+    }
+    
+    private static final String JDI_EXC_REPORT1 =
+            "            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(";
+    private static final String JDI_EXC_REPORT2 =
+            ");\n";
+    
+    private static String reportOfJDIException(String className, String methodName, String ex) {
+        if (com.sun.jdi.Method.class.getName().equals(className) && methodName.equals("bytecodes")) {
+            return "            if (ex.errorCode() != 101) { // Ignore ABSENT_INFORMATION\n"+
+                   "    "+JDI_EXC_REPORT1+ex+JDI_EXC_REPORT2+
+                   "            }\n";
+        } else {
+            return JDI_EXC_REPORT1+ex+JDI_EXC_REPORT2;
+        }
     }
 
     public static void main(String[] args) {
