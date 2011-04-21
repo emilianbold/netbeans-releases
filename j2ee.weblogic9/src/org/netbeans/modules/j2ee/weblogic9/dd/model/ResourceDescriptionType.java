@@ -39,31 +39,19 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.j2ee.weblogic9.dd.model;
-
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface WeblogicWebApp extends CommonDDBean {
-
-    String[] getContextRoot();
-
-    void setContextRoot(String[] roots);
-
-    LibraryRefType[] getLibraryRef();
-
-    void setLibraryRef(LibraryRefType[] libraries);
-
-    void setJspDescriptor(JspDescriptorType[] descriptor);
+public interface ResourceDescriptionType {
     
-    JspDescriptorType[] getJspDescriptor();
+    String getResRefName();
     
-    void addResourceDescription(ResourceDescriptionType type);
+    void setResRefName(String name);
     
-    ResourceDescriptionType[] getResourceDescription();
-
+    String getJndiName();
+    
+    void setJndiName(String name);
 }
