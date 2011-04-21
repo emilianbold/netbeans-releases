@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -125,7 +126,7 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
         catch (IOException e) {
             LOG.log( Level.INFO , null, e);
         }
-        return null;
+        return Collections.emptySet();
     }
     
     
@@ -134,6 +135,9 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
      */
     @Override
     protected void handleNoTarget() {
+        if ( getDescriptions()== null){
+            return;
+        }
         ErrorDescription description = CdiEditorAnalysisFactory.
             createError( getOriginalElement(), getCompilationInfo(), 
                     NbBundle.getMessage(ScopeAnalyzer.class, "ERR_NoTarget" ,   // NOI18N
@@ -146,6 +150,9 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
      */
     @Override
     protected void handleNoRetention() {
+        if ( getDescriptions()== null){
+            return;
+        }
         ErrorDescription description = CdiEditorAnalysisFactory.
             createError( getOriginalElement(), getCompilationInfo(), 
                     NbBundle.getMessage(ScopeAnalyzer.class, "ERR_NoRetention", // NOI18N
