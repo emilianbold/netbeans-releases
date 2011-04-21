@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.TestSkippingChecker;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 
@@ -168,7 +168,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                     buf.append('\n');
                 }
                 buf.append(entry.getKey()).append('=').append(entry.getValue());
-                if (entry.getKey().equals(TestSkippingChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
+                if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
                     cbSkipTests.setSelected(true);
                 }
             }
@@ -198,7 +198,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                     buf.append('\n');
                 }
                 buf.append(entry.getKey()).append('=').append(entry.getValue());
-                if (entry.getKey().equals(TestSkippingChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
+                if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
                     cbSkipTests.setSelected(true);
                 }
             }
@@ -237,7 +237,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(TestSkippingChecker.PROP_SKIP_TEST, "true"); //NOI18N
+            props.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         mapp.setProperties(props);
 
@@ -276,7 +276,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(TestSkippingChecker.PROP_SKIP_TEST, "true"); //NOI18N
+            props.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         rc.setProperties(props);
         rc.setRecursive(isRecursive());
@@ -444,10 +444,10 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void cbSkipTestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSkipTestsActionPerformed
         String current = taProperties.getText();
-        if (current.contains(TestSkippingChecker.PROP_SKIP_TEST)) {
-            taProperties.setText(current.replaceAll(".*\\Q" + TestSkippingChecker.PROP_SKIP_TEST + "\\E\\s*=\\s*[a-z]*\\s*.*", TestSkippingChecker.PROP_SKIP_TEST + "=" + (cbSkipTests.isSelected() ? "true" : "false"))); //NOI18N
+        if (current.contains(TestChecker.PROP_SKIP_TEST)) {
+            taProperties.setText(current.replaceAll(".*\\Q" + TestChecker.PROP_SKIP_TEST + "\\E\\s*=\\s*[a-z]*\\s*.*", TestChecker.PROP_SKIP_TEST + "=" + (cbSkipTests.isSelected() ? "true" : "false"))); //NOI18N
         } else if (cbSkipTests.isSelected()) {
-            taProperties.setText(taProperties.getText() + "\n" + TestSkippingChecker.PROP_SKIP_TEST + "=true"); //NOI18N
+            taProperties.setText(taProperties.getText() + "\n" + TestChecker.PROP_SKIP_TEST + "=true"); //NOI18N
         }
         
     }//GEN-LAST:event_cbSkipTestsActionPerformed
