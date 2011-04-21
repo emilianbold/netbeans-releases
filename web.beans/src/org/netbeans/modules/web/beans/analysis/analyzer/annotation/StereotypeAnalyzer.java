@@ -42,9 +42,14 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
+import java.io.IOException;
+import java.lang.annotation.ElementType;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -53,10 +58,15 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -66,6 +76,8 @@ import org.openide.util.NbBundle;
  *
  */
 public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements AnnotationAnalyzer {
+    
+    private static final Logger LOG = Logger.getLogger( StereotypeAnalyzer.class.getName() );
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
@@ -79,12 +91,56 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
         if ( !isStereotype ){
             return;
         }
-        analyzeScope((Element)element, compInfo, descriptions);
+        MetadataModel<WebBeansModel> metaModel = analyzeScope((Element)element, 
+                compInfo, descriptions);
         checkName( element, compInfo, descriptions);
-        checkDefinition( element , compInfo, descriptions );
+        Set<ElementType> targets = checkDefinition( element , compInfo, descriptions );
+        checkInterceptorBindings( element , targets, metaModel , 
+                compInfo , descriptions );
     }
 
-    private void checkDefinition( TypeElement element,
+    private void checkInterceptorBindings( TypeElement element,  Set<ElementType>
+        targets, MetadataModel<WebBeansModel> metaModel, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions )
+    {
+        if ( targets == null ){
+            return;
+        }
+        if ( targets.size() == 1 && targets.contains(ElementType.TYPE) ){
+            return;
+        }
+        final ElementHandle<TypeElement> handle = ElementHandle.create(element);
+        try {
+            Integer interceptorsCount = metaModel.runReadAction( 
+                    new MetadataModelAction<WebBeansModel, Integer>() 
+                    {
+                        @Override
+                        public Integer run( WebBeansModel model ) throws Exception {
+                            TypeElement element = handle.resolve( model.getCompilationController());
+                            if ( element == null ){
+                                return null;
+                            }
+                            return model.getInterceptorBindings(element).size();
+                        }
+                    });
+            if ( interceptorsCount != null && interceptorsCount !=0 ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                            NbBundle.getMessage(StereotypeAnalyzer.class, 
+                            "ERR_IncorrectTargetWithInterceptorBindings"));
+                descriptions.add( description );
+            }
+        }
+        catch (MetadataModelException e) {
+            LOG.log( Level.INFO , null, e );
+        }
+        catch (IOException e) {
+            LOG.log( Level.INFO , null, e );
+        }
+        
+    }
+
+    private Set<ElementType> checkDefinition( TypeElement element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         StereotypeTargetAnalyzer analyzer = new StereotypeTargetAnalyzer(element, 
@@ -102,6 +158,10 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
                         NbBundle.getMessage(StereotypeAnalyzer.class, 
                                 "ERR_IncorrectStereotypeTarget"));                // NOI18N
             descriptions.add( description );
+            return null;
+        }
+        else {
+            return analyzer.getDeclaredTargetTypes();
         }
     }
 
@@ -110,6 +170,9 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
     {
         AnnotationMirror named = AnnotationUtil.getAnnotationMirror(element, 
                 AnnotationUtil.NAMED , compInfo);
+        if ( named == null ){
+            return;
+        }
         Map<? extends ExecutableElement, ? extends AnnotationValue> members = 
             named.getElementValues();
         for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: 
@@ -156,7 +219,7 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
          */
         @Override
         protected TargetVerifier getTargetVerifier() {
-            return new StereotypeVerifier( getHelper() );
+            return StereotypeVerifier.getInstance();
         }
         
     }

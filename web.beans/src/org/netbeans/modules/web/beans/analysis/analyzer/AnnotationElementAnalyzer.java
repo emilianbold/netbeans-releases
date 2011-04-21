@@ -94,7 +94,6 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
         ANALIZERS.add( new ScopeAnalyzer() );
         ANALIZERS.add( new StereotypeAnalyzer());
         ANALIZERS.add( new InterceptorBindingAnalyzer() );
-        ANALIZERS.add( new StereotypeAnalyzer());
         ANALIZERS.add( new QualifierAnalyzer() );
     }
 

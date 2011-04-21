@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.lang.annotation.ElementType;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -113,11 +114,13 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror, java.util.Set)
      */
     @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
+    public boolean hasReqiredTarget( AnnotationMirror target,
+            Set<ElementType> set )
+    {
+        boolean hasRequiredTarget = super.hasReqiredTarget(target, set);
         if (!hasRequiredTarget) {
             if ( isEvent ) {
                 getLogger().log(Level.WARNING, "Annotation "
@@ -141,7 +144,7 @@ class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
      */
     @Override
     protected TargetVerifier getTargetVerifier() {
-        return new QualifierVerifier( getHelper(), isEvent );
+        return QualifierVerifier.getInstance( isEvent );
     }
     
     private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();

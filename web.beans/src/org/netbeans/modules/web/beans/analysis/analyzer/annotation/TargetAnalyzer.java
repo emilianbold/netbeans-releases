@@ -42,10 +42,20 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
 
 /**
@@ -63,19 +73,58 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
         if (target == null) {
             handleNoTarget();
         }
-        return hasReqiredTarget( target );
+        return hasReqiredTarget( target , getDeclaredTargetTypes());
+    }
+    
+    public Set<ElementType> getDeclaredTargetTypes() {
+        Map<String, ? extends AnnotationMirror> types = getHelper()
+                .getAnnotationsByType(getElement().getAnnotationMirrors());
+        AnnotationMirror target = types.get(Target.class.getCanonicalName());
+        if (target == null) {
+            return Collections.emptySet();
+        }
+        return getDeclaredTargetTypes( target );
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror, java.util.Set)
      */
     @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        return getTargetVerifier().hasReqiredTarget(target);
+    public boolean hasReqiredTarget( AnnotationMirror target, 
+            Set<ElementType> set ) 
+    {
+        return getTargetVerifier().hasReqiredTarget(target, set );
     }
     
     protected abstract TargetVerifier getTargetVerifier();
 
     protected abstract void handleNoTarget();
+    
+    private Set<ElementType> getDeclaredTargetTypes(AnnotationMirror target){
+        AnnotationParser parser = AnnotationParser.create(getHelper());
+        final Set<String> elementTypes = new HashSet<String>();
+        parser.expectEnumConstantArray( AnnotationUtil.VALUE, 
+                getHelper().resolveType(
+                ElementType.class.getCanonicalName()), 
+                new ArrayValueHandler() {
+                    
+                    @Override
+                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
+                        for (AnnotationValue arrayMember : arrayMembers) {
+                            String value = arrayMember.getValue().toString();
+                            elementTypes.add(value);
+                        }
+                        return null;
+                    }
+                } , null);
+        
+        parser.parse( target );
+        Set<ElementType> result = new HashSet<ElementType>();
+        for (String type : elementTypes) {
+            ElementType elementType = ElementType.valueOf(ElementType.class, type);
+            result.add( elementType );
+        }
+        return result;
+    }
 
 }

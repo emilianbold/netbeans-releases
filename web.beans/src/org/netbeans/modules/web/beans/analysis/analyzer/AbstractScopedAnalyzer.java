@@ -73,12 +73,12 @@ public abstract class AbstractScopedAnalyzer  {
     private static final Logger LOG = Logger.getLogger( 
             AbstractScopedAnalyzer.class.getName() );  
 
-    public void analyzeScope( Element element, 
+    public MetadataModel<WebBeansModel> analyzeScope( Element element, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
-            return ;
+            return null;
         }
         MetaModelSupport support = new MetaModelSupport(project);
         MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
@@ -99,7 +99,7 @@ public abstract class AbstractScopedAnalyzer  {
             });
             TypeElement scopeElement = compInfo.getElements().getTypeElement( scope );
             if ( scopeElement == null ){
-                return;
+                return metaModel;
             }
             checkScope( scopeElement , element , compInfo, descriptions );
         }
@@ -113,6 +113,7 @@ public abstract class AbstractScopedAnalyzer  {
                 LOG.log( Level.INFO , null , e);
             }
         }
+        return metaModel;
     }
     
     protected abstract void checkScope( TypeElement scopeElement, Element element, 

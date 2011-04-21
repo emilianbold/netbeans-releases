@@ -110,7 +110,7 @@ public class QualifierAnalyzer implements AnnotationAnalyzer {
          */
         @Override
         protected TargetVerifier getTargetVerifier() {
-            return new QualifierVerifier( getHelper(), true );
+            return QualifierVerifier.getInstance( true );
         }
         
     }

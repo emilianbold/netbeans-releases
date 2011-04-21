@@ -42,6 +42,8 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.lang.annotation.ElementType;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,13 +86,16 @@ class InterceptorBindingChecker extends RuntimeAnnotationChecker {
     protected String getAnnotation() {
         return INTERCEPTOR_BINDING;
     }
-
+    
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror, java.util.Set)
      */
     @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
-        boolean hasRequiredTarget = super.hasReqiredTarget(target);
+    public boolean hasReqiredTarget( AnnotationMirror target,
+            Set<ElementType> set )
+    {
+        boolean hasRequiredTarget = super.hasReqiredTarget(target, set);
         if (!hasRequiredTarget) {
             getLogger().log(Level.WARNING,
                     "Annotation "+getElement().getQualifiedName()+
@@ -106,7 +111,7 @@ class InterceptorBindingChecker extends RuntimeAnnotationChecker {
      */
     @Override
     protected TargetVerifier getTargetVerifier() {
-        return new InterceptorBindingVerifier( getHelper() );
+        return InterceptorBindingVerifier.getInstance();
     }
 
     void clean() {

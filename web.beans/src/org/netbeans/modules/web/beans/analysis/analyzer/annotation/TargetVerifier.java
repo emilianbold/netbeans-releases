@@ -42,6 +42,9 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
+import java.lang.annotation.ElementType;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 
 
@@ -51,6 +54,6 @@ import javax.lang.model.element.AnnotationMirror;
  */
 public interface TargetVerifier {
     
-    boolean hasReqiredTarget(AnnotationMirror target);
-
+    boolean hasReqiredTarget(AnnotationMirror target, Set<ElementType> targetTypes);
+    
 }

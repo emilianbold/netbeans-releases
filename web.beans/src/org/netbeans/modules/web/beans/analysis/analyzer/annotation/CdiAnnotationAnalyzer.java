@@ -43,7 +43,9 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,6 +109,23 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
             LOG.log( Level.INFO , null, e);
         }
         return true;
+    }
+    
+    @Override
+    public Set<ElementType> getDeclaredTargetTypes() {
+        try {
+            return getHelper().runJavaSourceTask( new Callable<Set<ElementType>>() {
+
+                @Override
+                public Set<ElementType> call() throws Exception {
+                    return CdiAnnotationAnalyzer.super.getDeclaredTargetTypes();
+                }
+            });
+        }
+        catch (IOException e) {
+            LOG.log( Level.INFO , null, e);
+        }
+        return null;
     }
     
     

@@ -43,17 +43,9 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.lang.annotation.ElementType;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
 
 /**
@@ -62,59 +54,39 @@ import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
  */
 public class StereotypeVerifier implements TargetVerifier {
     
-    public StereotypeVerifier(AnnotationModelHelper helper ){
-        myHelper = helper;
+    private static final StereotypeVerifier INSTANCE = new StereotypeVerifier();
+    
+    private StereotypeVerifier(){
     }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
-     */
+    
+    public static StereotypeVerifier getInstance(){
+        return INSTANCE;
+    }
+    
     @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
+    public boolean hasReqiredTarget( AnnotationMirror target,
+            Set<ElementType> targetTypes ) 
+    {
         boolean hasRequiredTarget = false;
-        AnnotationParser parser;
-        parser = AnnotationParser.create(getHelper());
-        final Set<String> elementTypes = new HashSet<String>();
-        parser.expectEnumConstantArray( AnnotationUtil.VALUE, 
-                getHelper().resolveType(
-                ElementType.class.getCanonicalName()), 
-                new ArrayValueHandler() {
-                    
-                    @Override
-                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
-                        for (AnnotationValue arrayMember : arrayMembers) {
-                            String value = arrayMember.getValue().toString();
-                            elementTypes.add(value);
-                        }
-                        return null;
-                    }
-                } , null);
-        
-        parser.parse( target );
-        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()) &&
-                        elementTypes.contains( ElementType.TYPE.toString())
-                        && elementTypes.size() == 3)
+        if ( targetTypes.contains( ElementType.METHOD) &&
+                targetTypes.contains(ElementType.FIELD) &&
+                targetTypes.contains( ElementType.TYPE)
+                        && targetTypes.size() == 3)
         {
             hasRequiredTarget = true;
         }
-        else if ( elementTypes.size() == 2 && 
-                elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()))
+        else if ( targetTypes.size() == 2 && 
+                targetTypes.contains( ElementType.METHOD) &&
+                targetTypes.contains(ElementType.FIELD))
         {
             hasRequiredTarget = true;
         }
-        else if ( elementTypes.size() == 1 ){
-            hasRequiredTarget = elementTypes.contains( ElementType.METHOD.toString()) ||
-                    elementTypes.contains( ElementType.FIELD.toString()) ||
-                            elementTypes.contains( ElementType.TYPE.toString());
+        else if ( targetTypes.size() == 1 ){
+            hasRequiredTarget = targetTypes.contains( ElementType.METHOD) ||
+            targetTypes.contains( ElementType.FIELD) ||
+            targetTypes.contains( ElementType.TYPE);
         }
         return hasRequiredTarget;
     }
     
-    private AnnotationModelHelper getHelper(){
-        return myHelper;
-    }
-
-    private AnnotationModelHelper myHelper;
 }

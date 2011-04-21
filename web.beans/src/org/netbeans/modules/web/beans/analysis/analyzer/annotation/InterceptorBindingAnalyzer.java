@@ -110,7 +110,7 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
          */
         @Override
         protected TargetVerifier getTargetVerifier() {
-            return new InterceptorBindingVerifier( getHelper() );
+            return InterceptorBindingVerifier.getInstance();
         }
         
     }

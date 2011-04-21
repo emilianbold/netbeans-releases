@@ -49,6 +49,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -86,11 +89,65 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
     protected void checkScope( TypeElement scopeElement, Element element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
+        checkProxiability(scopeElement, element, compInfo, descriptions); 
+        checkPublicField(scopeElement , element , compInfo , descriptions );
+        checkParameterizedBean(scopeElement , element , compInfo , descriptions);
+    }
+
+    private void checkParameterizedBean( TypeElement scopeElement,
+            Element element, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
+    {
+        if ( AnnotationUtil.DEPENDENT.contentEquals( 
+                scopeElement.getQualifiedName()))
+        {
+            return;
+        }  
+        TypeMirror type = element.asType();
+        if ( type instanceof DeclaredType ){
+            List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
+            if ( typeArguments.size() != 0 ){
+                ErrorDescription description = CdiEditorAnalysisFactory
+                .createError(element, compInfo, 
+                    NbBundle.getMessage(ScopedBeanAnalyzer.class,
+                        "ERR_IncorrectScopeForParameterizedBean" ));
+                descriptions.add(description);
+            }
+        }
+    }
+
+    private void checkPublicField( TypeElement scopeElement, Element element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        if ( AnnotationUtil.DEPENDENT.contentEquals( 
+                scopeElement.getQualifiedName()))
+        {
+            return;
+        }
+        List<VariableElement> fields = ElementFilter.fieldsIn( 
+                element.getEnclosedElements());
+        for (VariableElement field : fields) {
+            Set<Modifier> modifiers = field.getModifiers();
+            if ( modifiers.contains(Modifier.PUBLIC )){
+                ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, 
+                        NbBundle.getMessage(ScopedBeanAnalyzer.class,
+                            "ERR_IcorrectSscopeWithPublicField", 
+                            field.getSimpleName().toString()));
+                descriptions.add(description);
+                return;
+            }
+        }
+    }
+
+    private void checkProxiability( TypeElement scopeElement, Element element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
         boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
                 AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
         if ( isNormal ){
             checkFinal( element , compInfo , descriptions );
-        }                
+        }
     }
 
     private void checkFinal( Element element, CompilationInfo compInfo,

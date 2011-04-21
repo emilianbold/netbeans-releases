@@ -105,7 +105,7 @@ public class ScopeAnalyzer implements AnnotationAnalyzer {
          */
         @Override
         protected TargetVerifier getTargetVerifier() {
-            return new ScopeVerifier(getHelper());
+            return ScopeVerifier.getInstance();
         }
 
         /* (non-Javadoc)

@@ -43,17 +43,9 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.lang.annotation.ElementType;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
 
 /**
@@ -62,59 +54,57 @@ import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
  */
 public class QualifierVerifier implements TargetVerifier {
     
-    public QualifierVerifier(AnnotationModelHelper helper, boolean event){
-        myHelper = helper;
+    
+    private static final QualifierVerifier INSTANCE = new QualifierVerifier( false );
+    
+    private static final QualifierVerifier EVENT_INSTANCE = 
+            new QualifierVerifier( true );
+    
+    private QualifierVerifier(boolean event){
         isEvent = event;
     }
-
+    
+    public static QualifierVerifier getInstance( boolean event ){
+        if ( event ){
+            return EVENT_INSTANCE;
+        }
+        else {
+            return INSTANCE;
+        }
+    }
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier#hasReqiredTarget(javax.lang.model.element.AnnotationMirror, java.util.Set)
      */
     @Override
-    public boolean hasReqiredTarget( AnnotationMirror target ) {
+    public boolean hasReqiredTarget( AnnotationMirror target,
+            Set<ElementType> targetTypes )
+    {
         boolean hasRequiredTarget = false;
-        AnnotationParser parser;
-        parser = AnnotationParser.create(getHelper());
-        final Set<String> elementTypes = new HashSet<String>();
-        parser.expectEnumConstantArray( AnnotationUtil.VALUE, getHelper().resolveType(
-                ElementType.class.getCanonicalName()), 
-                new ArrayValueHandler() {
-                    
-                    @Override
-                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
-                        for (AnnotationValue arrayMember : arrayMembers) {
-                            String value = arrayMember.getValue().toString();
-                            elementTypes.add(value);
-                        }
-                        return null;
-                    }
-                } , null);
-        
-        parser.parse( target );
         if ( isEvent() ){
-            boolean hasFieldParameterTarget = elementTypes.contains(
-                    ElementType.FIELD.toString()) &&
-                        elementTypes.contains(ElementType.PARAMETER.toString());
+            boolean hasFieldParameterTarget = targetTypes.contains(
+                    ElementType.FIELD) &&
+                        targetTypes.contains(ElementType.PARAMETER);
             if ( !hasFieldParameterTarget){
                 hasRequiredTarget = false;
             }
             else {
-                if ( elementTypes.size() == 2 ){
+                if ( targetTypes.size() == 2 ){
                     hasRequiredTarget = true;
                 }
                 else {
-                    hasRequiredTarget = elementTypes.size() == 4 && 
-                        elementTypes.contains( ElementType.METHOD.toString()) &&
-                                elementTypes.contains( ElementType.TYPE.toString());
+                    hasRequiredTarget = targetTypes.size() == 4 && 
+                        targetTypes.contains( ElementType.METHOD) &&
+                                targetTypes.contains( ElementType.TYPE);
                 }
             }
         }
         else {
-            hasRequiredTarget = elementTypes.size() == 4 && 
-                elementTypes.contains( ElementType.METHOD.toString()) &&
-                        elementTypes.contains(ElementType.FIELD.toString()) &&
-                            elementTypes.contains(ElementType.PARAMETER.toString())&&
-                                elementTypes.contains( ElementType.TYPE.toString());
+            hasRequiredTarget = targetTypes.size() == 4 && 
+                targetTypes.contains( ElementType.METHOD) &&
+                        targetTypes.contains(ElementType.FIELD) &&
+                            targetTypes.contains(ElementType.PARAMETER)&&
+                                targetTypes.contains( ElementType.TYPE);
         }
         
         return hasRequiredTarget;
@@ -123,11 +113,6 @@ public class QualifierVerifier implements TargetVerifier {
     private boolean isEvent(){
         return isEvent;
     }
-
-    private AnnotationModelHelper getHelper(){
-        return myHelper;
-    }
     
     private boolean isEvent;
-    private AnnotationModelHelper myHelper;
 }
