@@ -281,6 +281,16 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         }
 
         @Override
+        public boolean pushPPDefined() {
+            return false;
+        }
+
+        @Override
+        public boolean popPPDefined() {
+            return false;
+        }
+        
+        @Override
         public boolean pushExpanding(APTToken token) {
             return false;
         }
