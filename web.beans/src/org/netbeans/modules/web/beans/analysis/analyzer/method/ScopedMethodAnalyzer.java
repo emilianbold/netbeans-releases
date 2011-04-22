@@ -47,13 +47,19 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -86,6 +92,40 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
     protected void checkScope( TypeElement scopeElement, Element element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
+        if ( scopeElement.getQualifiedName().contentEquals( AnnotationUtil.DEPENDENT)){
+            return;
+        }
+        TypeMirror methodType = element.asType();
+        if ( methodType instanceof ExecutableType ){
+            TypeMirror returnType = ((ExecutableType)methodType).getReturnType();
+            if ( hasTypeVarParameter( returnType )){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                            NbBundle.getMessage(ScopedMethodAnalyzer.class, 
+                                    "ERR_WrangScopeParameterizedProducerReturn",    // NOI18N
+                                    scopeElement.getQualifiedName().toString()));
+                descriptions.add( description );
+            }
+        }
+    }
+    
+    private boolean hasTypeVarParameter(TypeMirror type ){
+        if ( type.getKind() == TypeKind.TYPEVAR){
+            return true;
+        }
+        if ( type instanceof DeclaredType ){
+            List<? extends TypeMirror> typeArguments = 
+                ((DeclaredType)type).getTypeArguments();
+            for (TypeMirror typeArg : typeArguments) {
+                if ( hasTypeVarParameter(typeArg)){
+                    return true;
+                }
+            }
+        }
+        else if ( type instanceof ArrayType ){
+            return hasTypeVarParameter(((ArrayType)type).getComponentType());
+        }
+        return false;
     }
 
 }
