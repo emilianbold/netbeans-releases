@@ -385,7 +385,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public Object getAttribute(String attrName) {
-        if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) {
+        if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
             return new FileObjectBasedFile(getExecutionEnvironment(), this);
         }
         return getFileSystem().getAttribute(this, attrName);

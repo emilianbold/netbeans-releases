@@ -426,6 +426,7 @@ public class GsfFoldManager implements FoldManager {
 
         private boolean checkInitialFold(final GsfFoldManager manager, final TreeSet<FoldInfo> folds) {
             final boolean[] ret = new boolean[1];
+            ret[0] = true;
             final Document doc   = manager.operation.getHierarchy().getComponent().getDocument();
             final TokenHierarchy<?> th = TokenHierarchy.get(doc);
             if (th == null) {
@@ -467,23 +468,22 @@ public class GsfFoldManager implements FoldManager {
                                     // Start the fold at the END of the line
                                     startOffset = org.netbeans.editor.Utilities.getRowEnd((BaseDocument) doc, startOffset);
                                     if (startOffset >= endOffset) {
-                                        ret[0] = true;
+                                        return;
                                     }
                                 } catch (BadLocationException ex) {
                                     LOG.log(Level.WARNING, null, ex);
                                 }
 
                                 folds.add(new FoldInfo(doc, startOffset, endOffset, INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
-
-                                ret[0] = true;
+                                return;
                             }
-
                             if (!"whitespace".equals(category)) { // NOI18N
                                 break;
                             }
+                            
                         }
                     } catch (BadLocationException e) {
-                        // returns false
+                        ret[0] = false;
                     }
                 }
             });
