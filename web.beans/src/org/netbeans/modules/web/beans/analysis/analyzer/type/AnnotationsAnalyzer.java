@@ -106,7 +106,7 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
         for (Element child : enclosedElements) {
             if ( child.getKind() == ElementKind.CONSTRUCTOR )
             {
-                count +=delegateInjectionPointCount(element, compInfo);
+                count +=delegateInjectionPointCount(child, compInfo);
             }
             else if ( ! AnnotationUtil.hasAnnotation(child, AnnotationUtil.INJECT_FQN, 
                     compInfo ))
@@ -114,13 +114,13 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                 continue;
             }
             if ( child.getKind() == ElementKind.FIELD && AnnotationUtil.
-                    hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, compInfo ))
+                    hasAnnotation(child, AnnotationUtil.DELEGATE_FQN, compInfo ))
             {
                 count++;
             }
             else if (  child.getKind() ==ElementKind.METHOD )
             {
-                count+=delegateInjectionPointCount(element, compInfo);
+                count+=delegateInjectionPointCount(child, compInfo);
             }
         }
         if ( count != 1){
@@ -141,7 +141,7 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             if ( AnnotationUtil.hasAnnotation(par, AnnotationUtil.DELEGATE_FQN, 
                     compInfo))
             {
-                return result++;
+                result++;
             }
         }
         return result;

@@ -72,7 +72,7 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
             AtomicBoolean cancel )
     {
         TypeElement subject = (TypeElement) element;
-        for( AnnotationAnalyzer analyzer : ANALIZERS ){
+        for( AnnotationAnalyzer analyzer : ANALYZERS ){
             if ( cancel.get() ){
                 return;
             }
@@ -87,14 +87,14 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
                 List<ErrorDescription> descriptions);
     }
 
-    private static final List<AnnotationAnalyzer> ANALIZERS = 
+    private static final List<AnnotationAnalyzer> ANALYZERS = 
         new LinkedList<AnnotationAnalyzer>(); 
     
     static {
-        ANALIZERS.add( new ScopeAnalyzer() );
-        ANALIZERS.add( new StereotypeAnalyzer());
-        ANALIZERS.add( new InterceptorBindingAnalyzer() );
-        ANALIZERS.add( new QualifierAnalyzer() );
+        ANALYZERS.add( new ScopeAnalyzer() );
+        ANALYZERS.add( new StereotypeAnalyzer());
+        ANALYZERS.add( new InterceptorBindingAnalyzer() );
+        ANALYZERS.add( new QualifierAnalyzer() );
     }
 
 }

@@ -40,60 +40,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer;
+package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.TypedFieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class FieldElementAnalyzer implements ElementAnalyzer {
+public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyzer 
+    implements MethodAnalyzer
+{
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
      */
     @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+    public void analyze( ExecutableElement element, TypeMirror returnType,
+            TypeElement parent, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
     {
-        VariableElement var = (VariableElement) element;
-        TypeMirror varType = compInfo.getTypes().asMemberOf( 
-                (DeclaredType)parent.asType(),  var );
-        for (FieldAnalyzer analyzer : ANALYZERS) {
-            analyzer.analyze(var, varType, parent, compInfo, descriptions);
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains( Modifier.STATIC ) || 
+                modifiers.contains( Modifier.PRIVATE))
+        {
+            return;
+        }
+        boolean finalMethod = modifiers.contains( Modifier.FINAL );
+        boolean finalClass = parent.getModifiers().contains( Modifier.FINAL);
+        if ( !finalMethod && !finalClass ){
+            return;
+        }
+        if ( hasInterceptorBindings(element, compInfo, descriptions)){
+            if ( finalMethod ){
+                ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, NbBundle.getMessage(
+                            InterceptedMethodAnalyzer.class,
+                        "ERR_FinalInterceptedMethod")); // NOI18N
+                descriptions.add(description);
+            }
+            if ( finalClass && !AnnotationUtil.hasAnnotation(parent, 
+                    AnnotationUtil.INTERCEPTOR, compInfo))
+            {
+                ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, NbBundle.getMessage(
+                            InterceptedMethodAnalyzer.class,
+                        "ERR_FinalInterceptedClass")); // NOI18N
+                descriptions.add(description);
+            }
         }
     }
-    
-    public interface FieldAnalyzer {
-        void analyze( VariableElement element , TypeMirror elementType,
-                TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
-    }
-    
-    private static final List<FieldAnalyzer> ANALYZERS= new LinkedList<FieldAnalyzer>(); 
-    
-    static {
-        ANALYZERS.add( new TypedFieldAnalyzer() );
-        ANALYZERS.add( new ScopedFieldAnalyzer() );
-        ANALYZERS.add( new InjectionPointAnalyzer());
-        ANALYZERS.add( new DelegateFieldAnalizer());
-    }
+
 }

@@ -132,7 +132,7 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
                 ErrorDescription description = CdiEditorAnalysisFactory
                     .createError(element, compInfo, 
                         NbBundle.getMessage(ScopedBeanAnalyzer.class,
-                            "ERR_IcorrectSscopeWithPublicField", 
+                            "ERR_IcorrectScopeWithPublicField", 
                             field.getSimpleName().toString()));
                 descriptions.add(description);
                 return;

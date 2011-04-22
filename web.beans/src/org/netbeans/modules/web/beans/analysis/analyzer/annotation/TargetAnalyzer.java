@@ -73,7 +73,7 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
         if (target == null) {
             handleNoTarget();
         }
-        return hasReqiredTarget( target , getDeclaredTargetTypes());
+        return hasReqiredTarget( target , getDeclaredTargetTypes( target ));
     }
     
     public Set<ElementType> getDeclaredTargetTypes() {

@@ -52,6 +52,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.AnnotationsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.CtorsAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.InterceptedBeanAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.ManagedBeansAnalizer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.ScopedBeanAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.SessionBeanAnalyzer;
@@ -75,7 +76,7 @@ public class ClassElementAnalyzer implements ElementAnalyzer {
             AtomicBoolean cancel )
     {
         TypeElement subject = (TypeElement) element;
-        for( ClassAnalyzer analyzer : ANALIZERS ){
+        for( ClassAnalyzer analyzer : ANALYZERS ){
             if ( cancel.get() ){
                 return;
             }
@@ -88,14 +89,15 @@ public class ClassElementAnalyzer implements ElementAnalyzer {
                 List<ErrorDescription> descriptions);
     }
 
-    private static final List<ClassAnalyzer> ANALIZERS= new LinkedList<ClassAnalyzer>(); 
+    private static final List<ClassAnalyzer> ANALYZERS= new LinkedList<ClassAnalyzer>(); 
     
     static {
-        ANALIZERS.add( new TypedClassAnalizer() );
-        ANALIZERS.add( new ManagedBeansAnalizer());
-        ANALIZERS.add( new ScopedBeanAnalyzer());
-        ANALIZERS.add( new AnnotationsAnalyzer());
-        ANALIZERS.add( new CtorsAnalyzer() );
-        ANALIZERS.add( new SessionBeanAnalyzer());
+        ANALYZERS.add( new TypedClassAnalizer() );
+        ANALYZERS.add( new ManagedBeansAnalizer());
+        ANALYZERS.add( new ScopedBeanAnalyzer());
+        ANALYZERS.add( new AnnotationsAnalyzer());
+        ANALYZERS.add( new CtorsAnalyzer() );
+        ANALYZERS.add( new SessionBeanAnalyzer());
+        ANALYZERS.add( new InterceptedBeanAnalyzer() );
     }
 }
