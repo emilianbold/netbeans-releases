@@ -60,6 +60,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -267,8 +269,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         if (project != null) {
             MavenProject parent = project;
             while (parent != null) {
-                checkParent(parent);
-                parent = parent.getParent();
+                parent = checkParent(parent);
             }
 
             List<Artifact> compileArts = project.getTestArtifacts();
@@ -322,15 +323,20 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
     
-    private void checkParent(final MavenProject project) {
+    private @CheckForNull MavenProject checkParent(final @NonNull MavenProject project) {
+        MavenProject parentDecl;
+        try {
+            parentDecl = project.getParent();
+        } catch (IllegalStateException x) { // #197994
+            parentDecl = null;
+        }
         Artifact art = project.getParentArtifact();
         if (art != null ) {
             
-            MavenProject parentDecl = project.getParent();
             if (parentDecl != null) {
                 File parent = parentDecl.getFile();
                 if (parent != null && parent.exists()) {
-                    return;
+                    return parentDecl;
                 }
             }
            
@@ -342,7 +348,9 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                         new RevalidateAction(nbproject));
                 addReport(report);
             }
+
         }
+        return parentDecl;
     }
 
     
