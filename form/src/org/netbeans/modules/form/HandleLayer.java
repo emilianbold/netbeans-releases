@@ -2573,6 +2573,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private static void paintDraggedComponent(Component comp, Graphics g) {
+        Graphics2D g2 = (Graphics2D)g;
+        Composite originalComposite = g2.getComposite();
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
         try {
             if (comp instanceof JComponent)
                 comp.paint(g);
@@ -2582,6 +2585,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         catch (RuntimeException ex) { // inspired by bug #62041 (JProgressBar bug #5035852)
             org.openide.ErrorManager.getDefault().notify(
                 org.openide.ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            g2.setComposite(originalComposite);
         }
     }
 

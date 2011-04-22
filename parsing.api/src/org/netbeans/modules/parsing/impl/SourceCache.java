@@ -210,7 +210,7 @@ public final class SourceCache {
                     return null;
                 }
                 SourceModificationEvent event = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
-                _parser.parse (_snapshot, task, event);
+                TaskProcessor.callParse(_parser, snapshot, task, event);
                 SourceAccessor.getINSTANCE ().parsed (source);
                 parseSuccess = true;
             } finally {
@@ -221,7 +221,7 @@ public final class SourceCache {
                 }
             }
         }
-        return _parser.getResult (task);
+        return TaskProcessor.callGetResult(_parser, task);
     }
     
     public void invalidate () {
@@ -281,7 +281,7 @@ retry:  while (true) {
                     else if (currentUpToDateProviders.contains(embeddingProvider)) {
                         newEmbeddings.put(embeddingProvider,null);
                     } else {
-                        final List<Embedding> embForProv = embeddingProvider.getEmbeddings(snpsht);
+                        final List<Embedding> embForProv = TaskProcessor.callEmbeddingProvider(embeddingProvider,snpsht);
                         if (embForProv == null) {
                             throw new NullPointerException(String.format("The %s returned null embeddings!", embeddingProvider));
                         }
@@ -325,7 +325,7 @@ retry:  while (true) {
 
     
     void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
-        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+        List<Embedding> _embeddings = TaskProcessor.callEmbeddingProvider(embeddingProvider, getSnapshot ());
         List<Embedding> oldEmbeddings;
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
