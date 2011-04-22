@@ -93,9 +93,6 @@ public class CustomClassLoader extends URLClassLoader {
         if(name == null) {
             throw new IllegalArgumentException("class name cannot be null");
         }
-        if(name.toLowerCase().indexOf("mysql")>-1){
-            System.out.println("CLASS:" + name);
-        }
         Class clazz = findLoadedClass(name);
         if (clazz != null) {
             return clazz;
