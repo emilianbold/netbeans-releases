@@ -133,6 +133,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
      * @param path a path under which to register, or "" if inapplicable
      * @param position a position at which to register, or {@link Integer#MAX_VALUE} to skip
      * @param supersedes possibly empty list of implementation to supersede
+     * @since 8.8
      */
     protected final void register(Element el, Class<? extends Annotation> annotation,
             TypeMirror type, String path, int position, String[] supersedes) {
@@ -297,6 +298,12 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                 }
             }
         }
+    }
+
+    @Deprecated
+    protected final void register(TypeElement el, Class<? extends Annotation> annotation,
+            TypeMirror type, String path, int position, String[] supersedes) {
+        register((Element) el, annotation, type, path, position, supersedes);
     }
 
 }
