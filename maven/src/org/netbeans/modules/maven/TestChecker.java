@@ -45,6 +45,8 @@ package org.netbeans.modules.maven;
 import java.util.Properties;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ActionProvider;
 
@@ -52,7 +54,7 @@ import org.netbeans.spi.project.ActionProvider;
  *
  * @author mkleint
  */
-public class TestSkippingChecker implements PrerequisitesChecker {
+public class TestChecker implements PrerequisitesChecker {
 
     /**
      * Skip test execution.
@@ -61,7 +63,7 @@ public class TestSkippingChecker implements PrerequisitesChecker {
      */
     public static final String PROP_SKIP_TEST = "skipTests"; // NOI18N
 
-    public TestSkippingChecker() {
+    public TestChecker() {
     }
 
     public boolean checkRunConfig(RunConfig config) {
@@ -70,22 +72,26 @@ public class TestSkippingChecker implements PrerequisitesChecker {
             ActionProvider.COMMAND_TEST_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action) ||
             "profile-tests".equals(action)) { //NOI18N - profile-tests is not really nice but well.
-            return true;
+            if (!RunUtils.hasTestCompileOnSaveEnabled(config)) {
+                Properties props = config.getProperties();
+                String test = props.getProperty("test");
+                String method = props.getProperty(DefaultReplaceTokenProvider.METHOD_NAME);
+                if (test != null && method != null) {
+                    props.remove(DefaultReplaceTokenProvider.METHOD_NAME);
+                    props.setProperty("test", test + '#' + method);
+                    config.setProperties(props);
         }
-        if (MavenSettings.getDefault().isSkipTests()) {
+            }
+        } else if (MavenSettings.getDefault().isSkipTests()) {
             if (config.getPreExecution() != null) {
                 checkRunConfig(config.getPreExecution());
             }
             Properties props = config.getProperties();
-            if (props == null) {
-                props = new Properties();
-            }
             if (!props.containsKey(PROP_SKIP_TEST)) {
                 props.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
                 config.setProperties(props);
             }
         }
-
         return true;
     }
 
