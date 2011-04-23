@@ -856,11 +856,14 @@ public class JarClassLoader extends ProxyClassLoader {
             }
             String jar = url.substring(from, bang).replace('/', File.separatorChar);
             Source _src = Source.sources.get(jar);
+            LOGGER.log(Level.FINER, "openConnection for {0} jar: {1} src: {2}", new Object[]{u, jar, _src});
             if (_src == null) {
                 try {
                     Method m = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class);
                     m.setAccessible(true);
-                    return (JarURLConnection) m.invoke(originalJarHandler, u);
+                    JarURLConnection ret = (JarURLConnection) m.invoke(originalJarHandler, u);
+                    LOGGER.log(Level.FINER, "Calling original {0} yields {1}", new Object[]{originalJarHandler, ret});
+                    return ret;
                 } catch (Exception e) {
                     throw (IOException) new IOException(e.toString()).initCause(e);
                 }
@@ -871,6 +874,7 @@ public class JarClassLoader extends ProxyClassLoader {
             } catch (URISyntaxException x) {
                 throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
+            LOGGER.log(Level.FINER, "creating NbJarURLConnection({0},{1},{2})", new Object[]{u, _src, _name});
             return new NbJarURLConnection (u, _src, _name);
         }
 
