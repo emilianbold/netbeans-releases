@@ -510,6 +510,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                                 block);
 
                         newInnerClass = make.removeClassMember(newInnerClass, m);
+                        GeneratorUtilities.get(workingCopy).copyComments(m, newConstructor, true);
+                        GeneratorUtilities.get(workingCopy).copyComments(m, newConstructor, false);
                         newInnerClass = GeneratorUtilities.get(workingCopy).insertClassMember(newInnerClass, newConstructor);
                     }
                 }

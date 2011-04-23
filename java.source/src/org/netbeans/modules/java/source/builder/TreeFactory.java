@@ -90,6 +90,7 @@ public class TreeFactory {
     ASTService model;
     Elements elements;
     Types types;
+    private final CommentHandlerService chs;
     
     private static final Context.Key<TreeFactory> contextKey = new Context.Key<TreeFactory>();
 
@@ -109,6 +110,7 @@ public class TreeFactory {
         make = com.sun.tools.javac.tree.TreeMaker.instance(context);
         elements = JavacElements.instance(context);
         types = JavacTypes.instance(context);
+        chs = CommentHandlerService.instance(context);
         make.toplevel = null;
     }
     
@@ -1445,7 +1447,16 @@ public class TreeFactory {
         REMOVE
     }
     
-    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel) 
+    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel)
+            throws IllegalArgumentException {
+        N result = setLabelImpl(node, aLabel);
+
+        chs.copyComments(node, result);
+
+        return result;
+    }
+
+    private <N extends Tree> N setLabelImpl(final N node, final CharSequence aLabel)
             throws IllegalArgumentException
     {
         // todo (#pf): Shouldn't here be check that names are not the same?
