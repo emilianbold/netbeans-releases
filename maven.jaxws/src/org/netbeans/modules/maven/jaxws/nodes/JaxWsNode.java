@@ -464,11 +464,11 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     }
     
     void setServiceUrl() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        new RequestProcessor(JaxWsNode.class).post(new Runnable() {
 
             @Override
             public void run() {
-                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());
+                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());      // NOI18N
             }
         });        
     }
