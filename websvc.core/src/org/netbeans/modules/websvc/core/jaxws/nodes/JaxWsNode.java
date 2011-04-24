@@ -222,7 +222,7 @@ public class JaxWsNode extends AbstractNode implements
             }
         });
         try {
-            DataObject dataObject = DataObject.find(srcRoot);
+            DataObject dataObject = DataObject.find(implBeanClass);
             dataObject.addPropertyChangeListener( new PropertyChangeListener() {
 
                 @Override
