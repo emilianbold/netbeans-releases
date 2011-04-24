@@ -151,7 +151,7 @@ public final class ParserManager {
             SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
             final ResultIterator resultIterator = new ResultIterator (sourceCache, userTask);
             try {
-                userTask.run (resultIterator);
+                TaskProcessor.callUserTask(userTask, resultIterator);
             } finally {
                 ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
             }
@@ -186,7 +186,7 @@ public final class ParserManager {
                 final SourceCache uncachedSourceCache = new SourceCache(source, null);
                 final ResultIterator resultIterator = new ResultIterator (uncachedSourceCache, parser, userTask);
                 try {
-                    userTask.run (resultIterator);
+                    TaskProcessor.callUserTask(userTask, resultIterator);
                 } finally {
                     ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
                 }
@@ -372,10 +372,10 @@ public final class ParserManager {
         }
 
         public Void run () throws Exception {
-            parser.parse (null, userTask, null);
-            Parser.Result result = parser.getResult (userTask);
+            TaskProcessor.callParse(parser, null, userTask, null);
+            Parser.Result result = TaskProcessor.callGetResult(parser, userTask);
             try {
-                userTask.run (new ResultIterator (result));
+                TaskProcessor.callUserTask(userTask, new ResultIterator (result));
             } finally {
                 ParserAccessor.getINSTANCE ().invalidate (result);
             }

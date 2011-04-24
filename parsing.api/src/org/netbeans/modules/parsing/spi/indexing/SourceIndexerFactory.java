@@ -43,11 +43,15 @@
 package org.netbeans.modules.parsing.spi.indexing;
 
 import java.net.URL;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 
 /**
  * Abstract predecessor of the {@link CustomIndexerFactory} and {@link EmbeddingIndexerFactory}.
  * The indexer factory should never subclass this class. It should always subclass either the {@link CustomIndexerFactory}
  * or {@link EmbeddingIndexerFactory}
+ * <div class="nonnormative">
+ * <p>The {@link IndexingSupport} can be used to implement the {@link SourceIndexerFactory}</p>
+ * </div>
  * @since 1.20
  * @author Tomas Zezula
  */
@@ -60,6 +64,10 @@ public abstract class SourceIndexerFactory {
      *
      * @return <code>false</code> means that the whole root should be rescanned
      *   (eg. no up to date check is done, etc)
+     * <div class="nonnormative">
+     *  <p>If the {@link IndexingSupport} is used to implement the {@link SourceIndexerFactory}
+     * the implementation of this method should delegate to {@link IndexingSupport#isValid()}</p>
+     * </div>
      * @since 1.20
      */
     public boolean scanStarted (final Context context) {
@@ -81,6 +89,10 @@ public abstract class SourceIndexerFactory {
      * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
      * @param deleted the collection of deleted {@link Indexable}s
      * @param contents an indexing context
+     * <div class="nonnormative">
+     *  <p>If the {@link IndexingSupport} is used to implement the {@link SourceIndexerFactory}
+     * the implementation of this method should delegate to {@link IndexingSupport#isValid()}</p>
+     * </div>
      * @since 1.18
      */
     public abstract void filesDeleted (Iterable<? extends Indexable> deleted, Context context);
@@ -89,8 +101,11 @@ public abstract class SourceIndexerFactory {
      * Called by indexing infrastructure to notify indexer that roots were deregistered,
      * for example the project owning these roots was closed. The indexer may free memory caches
      * for given roots or do any other clean up.
-     *
      * @param removedRoots the iterable of removed roots
+     * <div class="nonnormative">
+     *  <p>If the {@link IndexingSupport} is used to implement the {@link SourceIndexerFactory}
+     *   the implementation of this method should delegate to {@link IndexingSupport#removeDocuments}</p>
+     * </div>
      * @since 1.19
      */
     public void rootsRemoved (Iterable<? extends URL> removedRoots) {
@@ -100,9 +115,12 @@ public abstract class SourceIndexerFactory {
     /**
      * Called by indexing infrastructure to notify indexer that a file was modified and so its
      * index may contain stale data.
-     *
      * @param dirty the collection of dirty {@link Indexable}s
      * @param context an indexing context
+     * <div class="nonnormative">
+     *  <p>If {@link IndexingSupport} is used to implement the {@link SourceIndexerFactory}
+     *   the implementation of this method should delegate to {@link IndexingSupport#markDirtyDocuments}</p>
+     * </div>
      * @since 1.18
      */
     public abstract void filesDirty (Iterable<? extends Indexable> dirty, Context context);

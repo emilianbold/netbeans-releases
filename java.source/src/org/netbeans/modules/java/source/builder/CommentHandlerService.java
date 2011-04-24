@@ -53,6 +53,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.Context;
 
 import java.util.*;
+import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 
 
 /**
@@ -115,12 +116,10 @@ public class CommentHandlerService implements CommentHandler {
             if (from != null) {
                 CommentSetImpl to = map.get(toTree);
                 if (to == null) {
-                    to = (CommentSetImpl)from.clone();
-                    map.put(toTree, to);
-                } 
-                else {
-                    to.addPrecedingComments(from.getPrecedingComments());
-                    to.addTrailingComments(from.getTrailingComments());
+                    map.put(toTree, to = new CommentSetImpl());
+                }
+                for (RelativePosition pos : RelativePosition.values()) {
+                    to.addComments(pos, from.getComments(pos));
                 }
             }
         }

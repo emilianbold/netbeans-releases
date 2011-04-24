@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.event;
 
-package org.netbeans.modules.parsing.spi.indexing;
-
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 
 /**
- * Factory class to create {@link CustomIndexer}s
- * The {@link CustomIndexerFactory} instances are registered in the {@link MimeLookup}
- * under the mime path corresponding to mime type of handled files.
- * <div class="nonnormative">
- * <p>The {@link IndexingSupport} can be used to implement the {@link CustomIndexerFactory}</p>
- * </div>.
+ *
  * @author Tomas Zezula
  */
-public abstract class CustomIndexerFactory extends SourceIndexerFactory {
-    
-    /**
-     * Creates  new {@link Indexer}.
-     * @return an indexer
-     */
-    public abstract CustomIndexer createIndexer ();
-   
-    public abstract boolean supportsEmbeddedIndexers ();
+public class EventSupportTest extends NbTestCase {
+
+    public EventSupportTest(final String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.clearWorkDir();
+    }
+
+
+    public void testReleaseCompletionCondition () throws IOException {
+        IndexingManagerAccessor.requiresReleaseOfCompletionLock = Boolean.TRUE;
+        try {
+            EventSupport.releaseCompletionCondition();
+            assertTrue("IllegalStateException expected when calling EventSupport.releaseCompletionCondition directly",false);  //NOI18N
+        } catch (IllegalStateException ae) {
+        }
+        final File wd = getWorkDir();
+        final File src = new File (wd,"src");
+        src.mkdirs();
+        try {
+            IndexingManager.getDefault().refreshIndexAndWait(src.toURI().toURL(), null);
+        } catch (IllegalStateException ae) {
+            assertTrue("IllegalStateException not expected when EventSupport.releaseCompletionCondition called by IndexingManager.refreshIndexAndWait", false);
+        }
+
+    }
 }
