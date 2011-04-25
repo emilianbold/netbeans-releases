@@ -518,7 +518,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             for(Map.Entry<String, String> entry: attrMap.entrySet()) {
                 String key = entry.getKey();
                 if(!filterKey(key)) {
-                    instanceFO.setAttribute(key, entry.getValue());
+                    Object currentValue = instanceFO.getAttribute(key);
+                    if (null != currentValue && currentValue.equals(entry.getValue())) {
+                        // do nothing
+                    } else {
+                        instanceFO.setAttribute(key, entry.getValue());
+                    }
                 }
             }
             
