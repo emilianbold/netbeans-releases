@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
 public class FileBufferFile extends AbstractFileBuffer {
     
     private volatile SoftReference<char[]> cachedArray;
+    private final Object lock = new Object();
     private volatile long lastModifiedWhenCachedString;
 
     public FileBufferFile(FileObject fileObject) {
@@ -85,63 +86,65 @@ public class FileBufferFile extends AbstractFileBuffer {
         }
     }
 
-    private synchronized char[] doGetChar() throws IOException {
-        SoftReference<char[]> aCachedArray = cachedArray;
-        if (aCachedArray != null) {
-            char[] res = aCachedArray.get();
-            if (res != null) {
-                if (lastModifiedWhenCachedString == lastModified()) {
-                    return res;
+    private char[] doGetChar() throws IOException {
+        synchronized (lock) {
+            SoftReference<char[]> aCachedArray = cachedArray;
+            if (aCachedArray != null) {
+                char[] res = aCachedArray.get();
+                if (res != null) {
+                        if (lastModifiedWhenCachedString == lastModified()) {
+                            return res;
+                        }
                 }
             }
-        }
-        FileObject fo = getFileObject();
-        long length = fo.getSize();
-        if (length > Integer.MAX_VALUE) {
-            new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
-        }
-        if (length == 0) {
-            return new char[0];
-        }
-        length++;
-        char[] readChars = new char[(int)length];
-        InputStream is = getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
-        try {
-            String line;
-            int position = 0;
-            while((line = reader.readLine())!= null) {
-                for(int i = 0; i < line.length(); i++) {
+            FileObject fo = getFileObject();
+            long length = fo.getSize();
+            if (length > Integer.MAX_VALUE) {
+                new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
+            }
+            if (length == 0) {
+                return new char[0];
+            }
+            length++;
+            char[] readChars = new char[(int)length];
+            InputStream is = getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
+            try {
+                String line;
+                int position = 0;
+                while((line = reader.readLine())!= null) {
+                    for(int i = 0; i < line.length(); i++) {
+                        if (length == position) {
+                            length = length*2;
+                            char[] copyChars = new char[(int)length];
+                            System.arraycopy(readChars, 0, copyChars, 0, position);
+                            readChars = copyChars;
+                        }
+                        readChars[position++] = line.charAt(i);
+                    }
                     if (length == position) {
                         length = length*2;
                         char[] copyChars = new char[(int)length];
                         System.arraycopy(readChars, 0, copyChars, 0, position);
                         readChars = copyChars;
                     }
-                    readChars[position++] = line.charAt(i);
+                    readChars[position++] = '\n'; // NOI18N
                 }
-                if (length == position) {
-                    length = length*2;
-                    char[] copyChars = new char[(int)length];
+                // no need to copy if the same size
+                // TODO: can we also skip case readChars.length = position + 1 due to last '\n'?
+                if (readChars.length > position) {
+                    char[] copyChars = new char[position];
                     System.arraycopy(readChars, 0, copyChars, 0, position);
                     readChars = copyChars;
                 }
-                readChars[position++] = '\n'; // NOI18N
+            } finally {
+                reader.close();
+                is.close();
             }
-            // no need to copy if the same size
-            // TODO: can we also skip case readChars.length = position + 1 due to last '\n'?
-            if (readChars.length > position) {
-                char[] copyChars = new char[position];
-                System.arraycopy(readChars, 0, copyChars, 0, position);
-                readChars = copyChars;
-            }
-        } finally {
-            reader.close();
-            is.close();
+            cachedArray = new SoftReference<char[]>(readChars);
+            lastModifiedWhenCachedString = lastModified();
+            return readChars;
         }
-        cachedArray = new SoftReference<char[]>(readChars);
-        lastModifiedWhenCachedString = lastModified();
-        return readChars;
     }
 
     private InputStream getInputStream() throws IOException {
