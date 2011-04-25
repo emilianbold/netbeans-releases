@@ -46,19 +46,16 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.IOException;
-import java.io.Reader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * implementation of APTDriver
@@ -134,53 +131,57 @@ public class APTDriverImpl {
         }
 
         /** synchronized on instance */
-        public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
-            CharSequence path = buffer.getAbsolutePath();
+        public APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
             // quick exit: check if already was added by another creator
             // during wait
-            if (withTokens && fullAPT != null) {
-                return fullAPT;
-            } else if (!withTokens && lightAPT != null) {
-                return lightAPT;
+            APTFile aFullAPT = fullAPT;
+            APTFile aLightAPT = lightAPT;
+            if (withTokens && aFullAPT != null) {
+                return aFullAPT;
+            } else if (!withTokens && aLightAPT != null) {
+                return aLightAPT;
             }
-            APTFile apt = _getAPTFile(path, withTokens);
-            if (apt == null) {
-                // ok, create new apt
-                TokenStream ts = getTokenStream(buffer, lang, !withTokens);
-                // build apt from light token stream
-                apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts);
-                if (!withTokens) {
-                    fullAPT = null;
-                    if (apt != null) {
-                        if (APTTraceFlags.TEST_APT_SERIALIZATION) {
-                            APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
-                            if (test != null) {
-                                apt = test;
-                            } else {
-                                System.err.println("error on serialization apt for file " + path); // NOI18N
+            CharSequence path = buffer.getAbsolutePath();
+            synchronized(this) {
+                APTFile apt = _getAPTFile(path, withTokens);
+                if (apt == null) {
+                    // ok, create new apt
+                    TokenStream ts = getTokenStream(buffer, lang, !withTokens);
+                    // build apt from light token stream
+                    apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts);
+                    if (!withTokens) {
+                        fullAPT = null;
+                        if (apt != null) {
+                            if (APTTraceFlags.TEST_APT_SERIALIZATION) {
+                                APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
+                                if (test != null) {
+                                    apt = test;
+                                } else {
+                                    System.err.println("error on serialization apt for file " + path); // NOI18N
+                                }
                             }
+                            lightAPT = apt;
+                            _putAPTFile(path, lightAPT, false);
                         }
-                        lightAPT = apt;
-                        _putAPTFile(path, lightAPT, false);
-                    }
-                } else {
-                    fullAPT = apt;
-                    if (apt != null) {
-                        if (APTTraceFlags.TEST_APT_SERIALIZATION) {
-                            APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
-                            if (test != null) {
-                                apt = test;
-                            } else {
-                                System.err.println("error on serialization apt for file " + path); // NOI18N
+                    } else {
+                        fullAPT = apt;
+                        if (apt != null) {
+                            if (APTTraceFlags.TEST_APT_SERIALIZATION) {
+                                APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
+                                if (test != null) {
+                                    apt = test;
+                                } else {
+                                    System.err.println("error on serialization apt for file " + path); // NOI18N
+                                }
                             }
+                            _putAPTFile(path, fullAPT, true);
+                            lightAPT = (APTFile) APTBuilder.buildAPTLight(apt);
+                            _putAPTFile(path, lightAPT, false);
                         }
-                        _putAPTFile(path, fullAPT, true);
-                        lightAPT = (APTFile) APTBuilder.buildAPTLight(apt);
-                        _putAPTFile(path, lightAPT, false);
                     }
                 }
+                return apt;
             }
-            return apt;
         }       
     } 
     
