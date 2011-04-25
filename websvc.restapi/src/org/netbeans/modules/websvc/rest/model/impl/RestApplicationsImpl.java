@@ -109,11 +109,8 @@ public class RestApplicationsImpl implements RestApplications {
 
         public boolean modifyObjects(TypeElement type, List<RestApplicationImpl> objects) {
             assert objects.size() == 1;
-            if (Utils.isRestApplication(type, helper)) {
-                return false;
-            }
-            String oldPath = objects.get(0).getApplicationPath();
-            if (oldPath != null && !oldPath.equals(Utils.getApplicationPath(type))) {
+            if ( !objects.get(0).refresh(type)){
+                objects.remove(0);
                 return true;
             }
             return false;

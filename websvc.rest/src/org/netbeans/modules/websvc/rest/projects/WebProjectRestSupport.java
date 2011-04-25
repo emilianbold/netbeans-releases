@@ -426,7 +426,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private String getApplicationPathFromDialog(List<RestApplication> restApplications) {
+    public static String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
         } else {
