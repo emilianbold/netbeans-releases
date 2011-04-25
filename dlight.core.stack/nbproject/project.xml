@@ -86,6 +86,7 @@
                 <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.analytics.ui.lib</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
