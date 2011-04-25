@@ -1150,7 +1150,7 @@ public class TraceXRef extends TraceModel {
             this.timeThreshold = timeThreshold;
         }
         
-        public void printFileStatistic(boolean print) {
+        public void printFileStatistic(boolean printFileStatistic) {
             this.printFileStatistic = printFileStatistic;
         }
     }

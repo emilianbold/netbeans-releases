@@ -249,7 +249,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public FileEntry getEntry(CharSequence absPath) {
-        CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: " + absPath); //NOI18N
+        CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: ", absPath); //NOI18N
         return getFileEntry(absPath, false, false);
     }
 

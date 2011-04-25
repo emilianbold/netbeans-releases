@@ -192,7 +192,7 @@ public class RemoteFileUtil {
             return getFileObject(absolutePath, execEnv);
         }
         FileObject projectDir = project.getProjectDirectory();
-        CndUtils.assertNotNull(projectDir, "Null project dir for " + project); //NOI18N
+        CndUtils.assertNotNull(projectDir, "Null project dir for ", project); //NOI18N
         final FileSystem fs;
         try {
             fs = projectDir.getFileSystem();            

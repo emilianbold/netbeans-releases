@@ -1915,7 +1915,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // it is expensive in Full Remote mode to create buffer, so do the work out of sync block
             assert preprocHandler != null : "null preprocHandler for " + absPath;
             FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
-            CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
+            CndUtils.assertTrueInConsole(fo != null, "file object not found ", absPath); // + " in fs=" + fileSystem); // NOI18N
             FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
             // and all other under lock again
             synchronized (fileContainerLock) {
