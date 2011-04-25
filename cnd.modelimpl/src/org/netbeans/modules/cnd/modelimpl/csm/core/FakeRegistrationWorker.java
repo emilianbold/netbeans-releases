@@ -118,7 +118,7 @@ public class FakeRegistrationWorker {
                         return;
                     }
                     FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
-                    CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file); // NOI18N
+                    CndUtils.assertTrueInConsole(impl != null, "no deref file for ", file); // NOI18N
                     // situation is possible for standalone files which were already replaced
                     // by real files
                     if (impl == null) {

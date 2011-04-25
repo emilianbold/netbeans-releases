@@ -349,22 +349,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         return null;
     }
 
-    public FileObject getApplicationContextXml() {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        FileObject[] fobjs = provider.getSourceRoots();
-
-        if (fobjs.length > 0) {
-            FileObject configRoot = fobjs[0];
-            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
-
-            if (webInf != null) {
-                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
-            }
-        }
-
-        return null;
-    }
-
     public Datasource getDatasource(String jndiName) {
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
 

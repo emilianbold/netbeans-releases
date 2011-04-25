@@ -112,7 +112,7 @@ public abstract class CndFileSystemProvider {
 
     public static FileObject toFileObject(CharSequence absPath) {
         FileObject result = getDefault().toFileObjectImpl(absPath);
-        CndUtils.assertNotNull(result, "Null file object for " + absPath); //NOI18N
+        CndUtils.assertNotNull(result, "Null file object for ", absPath); //NOI18N
         return result;
     }
 
@@ -130,7 +130,7 @@ public abstract class CndFileSystemProvider {
 
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
-        CndUtils.assertNotNull(result, "Null URL for file object " + fileObject); //NOI18N
+        CndUtils.assertNotNull(result, "Null URL for file object ", fileObject); //NOI18N
         return result;
     }
     
