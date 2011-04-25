@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.indexing;
 
-package org.netbeans.modules.parsing.spi.indexing;
-
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
- * Factory class to create {@link CustomIndexer}s
- * The {@link CustomIndexerFactory} instances are registered in the {@link MimeLookup}
- * under the mime path corresponding to mime type of handled files.
- * <div class="nonnormative">
- * <p>The {@link IndexingSupport} can be used to implement the {@link CustomIndexerFactory}</p>
- * </div>.
+ *
  * @author Tomas Zezula
  */
-public abstract class CustomIndexerFactory extends SourceIndexerFactory {
-    
-    /**
-     * Creates  new {@link Indexer}.
-     * @return an indexer
-     */
-    public abstract CustomIndexer createIndexer ();
-   
-    public abstract boolean supportsEmbeddedIndexers ();
+public abstract class IndexingManagerAccessor {
+
+    private static volatile IndexingManagerAccessor instance;
+
+    /*test*/ public static volatile Boolean requiresReleaseOfCompletionLock = null;
+
+    public static void setInstance(final @NonNull IndexingManagerAccessor _instance) {
+        Parameters.notNull("_instance", _instance);
+        instance = _instance;
+    }
+
+    public static synchronized IndexingManagerAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(IndexingManager.class.getName(),true,IndexingManagerAccessor.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return instance;
+    }
+
+
+    protected abstract boolean isCalledFromRefreshIndexAndWait(final @NonNull IndexingManager manager);
+
+    public final boolean isCalledFromRefreshIndexAndWait() {
+        return isCalledFromRefreshIndexAndWait(IndexingManager.getDefault());
+    }
+
+    public final boolean requiresReleaseOfCompletionLock() {
+        final Boolean result = requiresReleaseOfCompletionLock;
+        return result != null ? result : SwingUtilities.isEventDispatchThread();
+    }
 }
