@@ -854,7 +854,8 @@ public class JarClassLoader extends ProxyClassLoader {
             } else {
                 from = 0;
             }
-            String jar = url.substring(from, bang).replace('/', File.separatorChar);
+            String jar = url.substring(from, bang).replace('/', File.separatorChar)
+                    .replace("%20", " ");
             Source _src = Source.sources.get(jar);
             LOGGER.log(Level.FINER, "openConnection for {0} jar: {1} src: {2}", new Object[]{u, jar, _src});
             if (_src == null) {
