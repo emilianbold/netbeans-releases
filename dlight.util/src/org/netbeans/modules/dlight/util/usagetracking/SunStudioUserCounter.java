@@ -138,7 +138,11 @@ public final class SunStudioUserCounter {
      * @param execEnv execution environment
      */
     public static void countIDE(final String ssBaseDir, final ExecutionEnvironment execEnv) {
-        countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
+        if (execEnv.isRemote() && System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, "winide");
+        } else {
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
+        }
     }
 
     public static void countDLight(final ExecutionEnvironment execEnv) {
