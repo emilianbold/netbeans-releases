@@ -2993,7 +2993,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @SuppressWarnings("unchecked")
-        synchronized T getContainer() {
+        T getContainer() {
             T container = null;
             WeakReference<T> weak = null;
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && project.isValid()) {
@@ -3005,15 +3005,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
             }
-            container = (T) RepositoryUtils.get(sorageKey);
-            if (container == null && project.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
-                preventMultiplyDiagnosticExceptionsSorage++;
+            synchronized (this) {
+                container = (T) RepositoryUtils.get(sorageKey);
+                if (container == null && project.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
+                    DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
+                    preventMultiplyDiagnosticExceptionsSorage++;
+                }
+                if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
+                    weakContainer = new WeakReference<T>(container);
+                }
+                return container;
             }
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
-                weakContainer = new WeakReference<T>(container);
-            }
-            return container;
         }
     }
 }
