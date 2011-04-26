@@ -945,6 +945,10 @@ public class ClientJavaSourceHelper {
                     j++;
                 }
                 String arg = p.substring(i+1,j);
+                int index = arg.indexOf(':');
+                if ( index > -1){
+                    arg = arg.substring(0, index);
+                }
                 buf.append("{"+arguments.size()+"}"); //NOI18N
                 arguments.add(arg);
                 i = j;
@@ -953,7 +957,7 @@ public class ClientJavaSourceHelper {
             }
         }
 
-        pathFormat.setPattern(buf.toString());
+        pathFormat.setPattern(buf.toString().trim());
         pathFormat.setArguments(arguments.toArray(new String[arguments.size()]));
         return pathFormat;
     }
