@@ -5,6 +5,11 @@
 		<namespace>http://www.bea.com/ns/weblogic/90</namespace>
 		<bean-name>WeblogicEjbJar</bean-name>
                 <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEjbJar</implements>
+                <user-code>
+                    public void addWeblogicEnterpriseBean(org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEnterpriseBeanType enterpriseBean) {
+                        addWeblogicEnterpriseBean((WeblogicEnterpriseBeanType) enterpriseBean);
+                    }
+                </user-code>
 		<meta-property>
 			<bean-name>Description</bean-name>
 		</meta-property>
@@ -61,6 +66,12 @@
 		<dtd-name>weblogic-enterprise-beanType</dtd-name>
 		<namespace>http://www.bea.com/ns/weblogic/90</namespace>
 		<bean-name>WeblogicEnterpriseBeanType</bean-name>
+                <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEnterpriseBeanType</implements>
+                <user-code>
+                    public void addResourceDescription(org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType description) {
+                        addResourceDescription((ResourceDescriptionType) description);
+                    }
+                </user-code>
 		<meta-property>
 			<bean-name>EjbName</bean-name>
 		</meta-property>
@@ -566,6 +577,7 @@
 		<dtd-name>resource-descriptionType</dtd-name>
 		<namespace>http://www.bea.com/ns/weblogic/90</namespace>
 		<bean-name>ResourceDescriptionType</bean-name>
+                <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType</implements>
 		<meta-property>
 			<bean-name>ResRefName</bean-name>
 		</meta-property>
