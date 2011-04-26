@@ -84,9 +84,12 @@ public final class APTFileCacheManager {
         }        
         if (manager == null) {
             wLock.lock();
-            try {                
-                manager = new APTFileCacheManager();
-                managers.put(fs, manager);
+            try {        
+                manager = managers.get(fs);
+                if (manager == null) {
+                    manager = new APTFileCacheManager();
+                    managers.put(fs, manager);
+                }
             } finally {
                 wLock.unlock();
             }

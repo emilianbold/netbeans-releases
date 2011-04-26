@@ -2994,18 +2994,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @SuppressWarnings("unchecked")
         T getContainer() {
-            T container = null;
-            WeakReference<T> weak = null;
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE && project.isValid()) {
-                weak = weakContainer;
-                if (weak != null) {
-                    container = weak.get();
-                    if (container != null) {
-                        return container;
-                    }
-                }
+            T container  = getFromRef();
+            if (container != null) {
+                return container;
             }
             synchronized (this) {
+                container = getFromRef();
+                if (container != null) {
+                    return container;
+                }
                 container = (T) RepositoryUtils.get(sorageKey);
                 if (container == null && project.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
                     DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
@@ -3016,6 +3013,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 return container;
             }
+        }
+
+        private T getFromRef() {
+            WeakReference<T> weak = null;
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE && project.isValid()) {
+                weak = weakContainer;
+                if (weak != null) {
+                    return weak.get();
+                }
+            }
+            return null;
         }
     }
 }

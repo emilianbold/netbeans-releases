@@ -86,8 +86,11 @@ public final class APTDriver {
         if (impl == null) {
             wLock.lock();
             try {
-                impl = new APTDriverImpl();
-                drivers.put(fs, impl);
+                impl = drivers.get(fs);
+                if (impl == null) {
+                    impl = new APTDriverImpl();
+                    drivers.put(fs, impl);
+                }
             } finally {
                 wLock.unlock();
             }
