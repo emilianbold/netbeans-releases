@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.8.1
+#Version 1.22.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -15,12 +15,7 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
-CLSS public abstract interface org.netbeans.core.netigso.spi.BundleContent
-meth public abstract byte[] resource(java.lang.String) throws java.io.IOException
-
-CLSS public final org.netbeans.core.netigso.spi.NetigsoArchive
-meth public byte[] fromArchive(java.lang.String) throws java.io.IOException
-meth public org.netbeans.core.netigso.spi.NetigsoArchive forBundle(long,org.netbeans.core.netigso.spi.BundleContent)
+CLSS public final org.netbeans.modules.autoupdate.ui.api.PluginManager
+meth public static boolean openInstallWizard(org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport>)
 supr java.lang.Object
-hfds bundleId,content,netigso
 

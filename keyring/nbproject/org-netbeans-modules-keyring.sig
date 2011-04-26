@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.1
+#Version 1.5.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -30,4 +30,6 @@ meth public abstract boolean enabled()
 meth public abstract char[] read(java.lang.String)
 meth public abstract void delete(java.lang.String)
 meth public abstract void save(java.lang.String,char[],java.lang.String)
+
+CLSS abstract interface org.netbeans.spi.keyring.package-info
 
