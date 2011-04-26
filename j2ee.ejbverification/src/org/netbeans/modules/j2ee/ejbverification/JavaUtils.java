@@ -133,7 +133,11 @@ public class JavaUtils {
     }
 
     public static boolean isSameDeclaredType(TypeMirror param1, TypeMirror param2) {
-        return extractClassNameFromType(param1).equals(
-                extractClassNameFromType(param2));
+        String classNameParam1 = extractClassNameFromType(param1);
+        // classNameParam1 == null when param1 is not declared type
+        if (classNameParam1 != null && classNameParam1.equals(extractClassNameFromType(param2))) {
+            return true;
+        }
+        return false;
     }
 }
