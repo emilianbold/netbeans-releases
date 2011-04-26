@@ -78,11 +78,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
@@ -90,35 +88,27 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
 
     private final String path;
-    //private final String sortName;
     private Folder folder;
     private File file = null;
-    private FileObject fileObject;
+    private final FileSystem fileSystem;
+    private final String normalizedPath;
     private DataObject lastDataObject = null;
 
-    public Item(FileObject fileObject, FileObject baseDirFO, MakeProjectOptions.PathMode pathMode) {
-
-        this.fileObject = fileObject;
-
-        String p = ProjectSupport.toProperPath(baseDirFO, fileObject, pathMode);
+    public Item(FSPath fsPath, String baseDir, MakeProjectOptions.PathMode pathMode) {
+        this.fileSystem = fsPath.getFileSystem();
+        this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(fsPath.getPath(), fileSystem);
+        String p = ProjectSupport.toProperPath(baseDir, fsPath.getPath(), pathMode);
         p = CndPathUtilitities.normalizeSlashes(p);
-
         path = p;
     }
 
 
+    // XXX:fullRemote deprecate and remove!
     public Item(String path) {
         CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
         this.path = path;
-//        this.fileObject = FileUtil.toFileObject(new File(path));
-//        CndUtils.assertNotNull(fileObject, "Can't find file object for item " + path); //NOI18N
-        //this.sortName = CndPathUtilitities.getBaseName(path);
-//        int i = sortName.lastIndexOf("."); // NOI18N
-//        if (i > 0) {
-//            this.sortName = sortName.substring(0, i);
-//        } else {
-//            this.sortName = sortName;
-//        }
+        this.fileSystem = CndFileUtils.getLocalFileSystem();
+        this.normalizedPath = null;
         folder = null;
     }
 
@@ -168,15 +158,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private void renameTo(String newPath) {
         Folder f = getFolder();
         String oldPath;
-        if (fileObject != null) {
-            try {
-                oldPath = CndFileUtils.normalizeAbsolutePath(fileObject.getFileSystem(), getAbsPath());
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-                oldPath = CndFileUtils.normalizeAbsolutePath(getAbsPath());
-            }
+        if (normalizedPath != null) {
+            oldPath = normalizedPath;
         } else {
-            oldPath = CndFileUtils.normalizeAbsolutePath(getAbsPath());
+            oldPath = CndFileUtils.normalizeAbsolutePath(fileSystem, getAbsPath());
         }
         Item item = f.addItem(new Item(newPath));
         if (item != null && item.getFolder() != null) {
@@ -194,12 +179,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public String getAbsolutePath() {
-        synchronized (this) {
-            if (fileObject != null) {
-                return CndFileUtils.normalizePath(fileObject);
-            }
-        }
-        return getNormalizedFile().getAbsolutePath();
+        return getNormalizedPath();
     }
 
     public String getSortName() {
@@ -298,11 +278,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public String getNormalizedPath() {
-        if (fileObject == null) {
-            return getNormalizedFile().getPath();
-        } else {
-            return CndFileUtils.normalizePath(fileObject);
+        synchronized (this) {
+            if (normalizedPath != null) {
+                return normalizedPath;
+            }
         }
+        return getNormalizedFile().getAbsolutePath();
     }
     
     public File getNormalizedFile() {
@@ -402,53 +383,36 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public FileObject getFileObject() {
-        return getFileObjectImpl(false);
+        return getFileObjectImpl();
     }
 
-    private FileObject getFileObjectImpl(boolean retryInvalid) {
-        synchronized (this) {
-            if (fileObject == null || (retryInvalid && !fileObject.isValid())) {
-                Folder f = getFolder();
-                if (f == null) {
-                    // don't know file system, fall back to the default one
-                    // but do not cache file object
-                    String p = getPath();
-                    ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-                    if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
-                        p = FileSystemProvider.normalizeAbsolutePath(p, env);                        
-                        FileObject fo = FileSystemProvider.getFileObject(env, p);
-                        if (fo == null) {
-                            fo = InvalidFileObjectSupport.getInvalidFileObject(FileSystemProvider.getFileSystem(env), p);
-                        }
-                        return fo;
-                    } else {
-                        return null; // no folder and relative path
-                    }
-                } else {                    
-                    MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();                                        
-                    FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
-                    fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
-//                    // TODO: do we need this?
-//                    if (fileObject == null || !fileObject.isValid()) {
-//                        String absPath = getPath();
-//                        if (!CndPathUtilitities.isPathAbsolute(absPath)) {
-//                            absPath = cfgDescr.getBaseDir() + '/' + getPath();
-//                        }
-//                        String canonicalPath;
-//                        try {
-//                            FileSystem fs = baseDirFO.getFileSystem();
-//                            canonicalPath = FileSystemProvider.getCanonicalPath(fs, absPath);
-//                            fileObject = fs.findResource(canonicalPath);
-//                        } catch (FileStateInvalidException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        } catch (IOException ex) {
-//                            ex.printStackTrace(System.err);
-//                        }
-//                    }
+    /** 
+     * Returns file object for this item.
+     * If not found, returns a honest null, no dummies (InvalidFileObjectSupport.getInvalidFileObject)
+     */
+    private FileObject getFileObjectImpl() {
+        FileObject fileObject;
+        if (normalizedPath != null) {
+            return fileSystem.findResource(normalizedPath);
+        } else {
+            Folder f = getFolder();
+            if (f == null) {
+                // don't know file system, fall back to the default one
+                // but do not cache file object
+                String p = getPath();
+                if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
+                    p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
+                    return fileSystem.findResource(p);
+                } else {
+                    return null; // no folder and relative path
                 }
+            } else {                    
+                MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();
+                FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
+                fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
             }
+            return fileObject;
         }
-        return fileObject;
     }
     
 
@@ -459,7 +423,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
         DataObject dataObject = null;
-        FileObject fo = getFileObjectImpl(true);
+        FileObject fo = getFileObjectImpl();
         if (fo != null && fo.isValid()) {
             try {
                 dataObject = DataObject.find(fo);
@@ -499,12 +463,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public final String getMIMEType() {
         DataObject dataObject = getDataObject();
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
-        //XXX:fullRemote the entire "if" below should be removed
-        if (fo == null && fileObject != null && fileObject.isValid()) {
-            fo = fileObject;
+        if (fo == null) {
+            fo = getFileObjectImpl();
         }
         String mimeType = "";
-        if (fo == null) {
+        if (fo == null || ! fo.isValid()) {
             mimeType = MIMESupport.getFileMIMEType(getNormalizedFile());
         } else {
             mimeType = MIMESupport.getFileMIMEType(fo);
@@ -627,13 +590,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
             FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
-            FileSystem projectFS;
-            try {
-                projectFS = getFileObject().getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-                projectFS = CndFileUtils.getLocalFileSystem();
-            }
+            FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<FSPath>();            
             for (String p : vec2) {
                 String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), p);
