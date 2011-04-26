@@ -542,6 +542,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         ensureFilesCreated();
         ensureChangedFilesEnqueued();
+        model.waitModelTasks();
         waitParseImpl();
     }
 
