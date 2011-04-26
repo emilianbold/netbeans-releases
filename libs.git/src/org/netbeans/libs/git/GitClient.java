@@ -316,7 +316,7 @@ public interface GitClient {
      * @throws GitException 
      * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree

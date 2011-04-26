@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
@@ -95,15 +96,17 @@ public class PushAction extends SingleRepositoryAction {
                 LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, remote }); //NOI18N
                 try {
                     GitClient client = getClient();
-                    Map<String, GitTransportUpdate> result = client.push(remote, pushRefSpecs, fetchRefSpecs, this);
-                    log(result);
+                    GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, this);
+                    logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
+                    logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
             }
             
-            protected void log (Map<String, GitTransportUpdate> updates) {
+            protected void logUpdates (Map<String, GitTransportUpdate> updates, String titleBundleName) {
                 OutputLogger logger = getLogger();
+                logger.output(NbBundle.getMessage(PushAction.class, titleBundleName));
                 if (updates.isEmpty()) {
                     logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.noChange")); //NOI18N
                 } else {
