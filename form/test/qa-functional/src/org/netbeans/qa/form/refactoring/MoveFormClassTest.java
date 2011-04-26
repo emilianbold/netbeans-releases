@@ -43,6 +43,7 @@
  */
 package org.netbeans.qa.form.refactoring;
 
+import java.io.IOException;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -65,9 +66,6 @@ import org.netbeans.junit.NbModuleSuite;
  * Tests form refactoring, 3rd scenarion : Move form class into dif package
  *
  * @author Jiri Vagner
- * 
- * <b>Adam Senk</b>
- * 26 APRIL 2011 WORKS
  */
 public class MoveFormClassTest extends ExtJellyTestCase {
 

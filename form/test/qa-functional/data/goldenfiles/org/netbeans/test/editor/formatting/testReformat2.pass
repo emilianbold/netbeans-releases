@@ -125,7 +125,6 @@ public class testReformat2 extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>                        
-
     class myButton extends JButton {
 
         public myButton() {
@@ -157,8 +156,8 @@ public class testReformat2 extends javax.swing.JFrame {
          * A javadoc comment
          */
         public void myButtonActionPerformed(ActionEvent evt) {
-            System.out.println("-==-"
-                    + "These smiling eyes are just a mirror for the sun.");
+            System.out.println("-==-" +
+                    "These smiling eyes are just a mirror for the sun.");
         }
 
         @Override
@@ -175,8 +174,8 @@ public class testReformat2 extends javax.swing.JFrame {
     class Objects {
 
         @SuppressWarnings({
-            "unchecked", "unused"
-        })
+    "unchecked", "unused"
+})
         <T> T cast(final Object target) {
             return (T) target;
         }
