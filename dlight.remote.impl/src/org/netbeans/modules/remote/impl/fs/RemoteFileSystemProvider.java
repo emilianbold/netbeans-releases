@@ -43,10 +43,12 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
@@ -151,15 +153,22 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return RemoteFileSystemUtils.getCanonicalFileObject(fileObject).getPath();
     }
 
-    public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {
+    public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {        
         FileObject fo = fs.findResource(absPath);
-        return (fo == null) ? null : getCanonicalFileObject(fo).getPath();
+        if (fo != null) {
+            try {
+                return getCanonicalFileObject(fo).getPath();
+            } catch (FileNotFoundException e) {
+                RemoteLogger.finest(e);
+            }
+        }
+        return PathUtilities.normalizeUnixPath(absPath);
     }
     
     public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
         RemoteLogger.assertTrueInConsole(env.isRemote(), getClass().getSimpleName() + ".getCanonicalPath is called for LOCAL env: " + env); //NOI18N
-        FileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(absPath);        
-        return (fo == null) ? absPath : getCanonicalFileObject(fo).getPath();
+        FileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+        return getCanonicalPath(fs, absPath);
     }
     
     @Override
