@@ -324,6 +324,20 @@ public final class TreePathHandle {
         }
         throw new IllegalStateException("Cannot create PositionRef for file " + file.getPath() + ". CloneableEditorSupport not found");
     }
+
+    /**Constructs a <code>TreePathHandle</code> that corresponds to the given <code>ElementHandle</code>.
+     *
+     * @param handle an <code>ElementHandle</code> for which the <code>TreePathHandle</code> should be constructed
+     * @param cpInfo a classpath which is supposed to contain the element described by given the <code>ElementHandle</code>
+     * @return a newly constructed <code>TreePathHandle</code>
+     * @since 0.79
+     */
+    public static @NonNull TreePathHandle from(@NonNull ElementHandle<?> handle, @NonNull ClasspathInfo cpInfo) {
+        Parameters.notNull("handle", handle);
+        Parameters.notNull("cpInfo", cpInfo);
+
+        return new TreePathHandle(new ElementDelegate(handle, null, null, cpInfo));
+    }
     
     @Override
     public String toString() {
