@@ -279,7 +279,8 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
 
 
 public void method(boolean cond1){
-    if(cond1)System.out.println("Hello");
+    if(cond1)
+        System.out.println("Hello");
 }
     /**
      * @param args the command line arguments
