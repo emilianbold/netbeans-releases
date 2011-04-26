@@ -382,10 +382,10 @@ public class TaskProcessor {
      */
     public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);
-        Parameters.notNull("source", source);
-        synchronized (INTERNAL_LOCK) {
-            final Request request = currentRequest.getTaskToCancel (tasks);
-            try {
+        Parameters.notNull("source", source);        
+        final Request request = currentRequest.getTaskToCancel (tasks);
+        try {
+            synchronized (INTERNAL_LOCK) {
                 final Collection<Request> cr = finishedRequests.get(source);
                 if (cr != null) {
                     for (SchedulerTask task : tasks) {
@@ -408,10 +408,10 @@ public class TaskProcessor {
                         }
                     }
                 }
-            } finally {
-                if (request != null) {
-                    currentRequest.cancelCompleted(request);
-                }
+            }
+        } finally {
+            if (request != null) {
+                currentRequest.cancelCompleted(request);
             }
         }
     }
