@@ -241,10 +241,16 @@ public abstract class BaseActionProvider implements ActionProvider {
         return antProjectHelper;
     }
 
+    /**
+     * Callback for project private data.
+     *
+     * @return
+     * @see Callback
+     * @see Callback2
+     */
     protected Callback getCallback() {
         return callback;
     }
-
 
     private boolean allowsFileChangesTracking () {
         //allowsFileTracking is volatile primitive, fine to do double checking
@@ -519,17 +525,41 @@ public abstract class BaseActionProvider implements ActionProvider {
                         DialogDisplayer.getDefault().notify(nd);
                     }
                     else {
-                        ActionUtils.runTarget(buildFo, targetNames, p).addTaskListener(new TaskListener() {
-                            @Override
-                            public void taskFinished(Task task) {
-                                if (((ExecutorTask) task).result() != 0) {
-                                    synchronized (BaseActionProvider.this) {
-                                        // #120843: if a build fails, disable dirty-list optimization.
-                                        dirty = null;
+                        final Callback cb = getCallback();
+                        final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
+
+                        if (cb2 != null) {
+                            cb2.antTargetInvocationStarted(command, context);
+                        }
+                        try {
+                            ActionUtils.runTarget(buildFo, targetNames, p).addTaskListener(new TaskListener() {
+                                @Override
+                                public void taskFinished(Task task) {
+                                    try {
+                                        if (((ExecutorTask) task).result() != 0) {
+                                            synchronized (BaseActionProvider.this) {
+                                                // #120843: if a build fails, disable dirty-list optimization.
+                                                dirty = null;
+                                            }
+                                        }
+                                    } finally {
+                                        if (cb2 != null) {
+                                            cb2.antTargetInvocationFinished(command, context, ((ExecutorTask) task).result());
+                                        }
                                     }
                                 }
+                            });
+                        } catch (IOException ex) {
+                            if (cb2 != null) {
+                                cb2.antTargetInvocationFailed(command, context);
                             }
-                        });
+                            throw ex;
+                        } catch (RuntimeException ex) {
+                            if (cb2 != null) {
+                                cb2.antTargetInvocationFailed(command, context);
+                            }
+                            throw ex;
+                        }
                     }
                 }
                 catch (IOException e) {
@@ -1708,6 +1738,47 @@ public abstract class BaseActionProvider implements ActionProvider {
     public static interface Callback {
         ClassPath getProjectSourcesClassPath(String type);
         ClassPath findClassPath(FileObject file, String type);
+    }
+
+    /**
+     * Callback for accessing project private data and supporting
+     * ant invocation hooks.
+     * 
+     * @since 1.29
+     */
+    public static interface Callback2 extends Callback {
+
+        /**
+         * Called before an <i>ant</i> target is invoked. Note that call to
+         * {@link #invokeAction(java.lang.String, org.openide.util.Lookup)} does
+         * not necessarily means call to ant.
+         *
+         * @param command the command to be invoked
+         * @param context the invocation context
+         */
+        void antTargetInvocationStarted(final String command, final Lookup context);
+
+        /**
+         * Called after the <i>ant</i> target invocation. This does not reflect
+         * whether the ant target returned error or not, just successful invocation.
+         * Note that call to {@link #invokeAction(java.lang.String, org.openide.util.Lookup)}
+         * does not necessarily means call to ant.
+         *
+         * @param command executed command
+         * @param context the invocation context
+         */
+        void antTargetInvocationFinished(final String command, final Lookup context, int result);
+
+        /**
+         * Called when the <i>ant</i> target invocation failed. Note that call to
+         * {@link #invokeAction(java.lang.String, org.openide.util.Lookup)} does
+         * not necessarily means call to ant.
+         *
+         * @param command failed command
+         * @param context the invocation context
+         */
+        void antTargetInvocationFailed(final String command, final Lookup context);
+
     }
 
     public static final class CallbackImpl implements Callback {
