@@ -39,19 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.j2ee.weblogic9.dd.model;
-
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface WeblogicEjbJar extends CommonDDBean {
-
-    void addWeblogicEnterpriseBean(WeblogicEnterpriseBeanType enterpriseBean);
+public interface WeblogicEnterpriseBeanType {
     
-    WeblogicEnterpriseBeanType[] getWeblogicEnterpriseBean();
+    void setEjbName(String name);
+
+    String getEjbName();
+
+    void addResourceDescription(ResourceDescriptionType type);
+
+    ResourceDescriptionType[] getResourceDescription();
 
 }

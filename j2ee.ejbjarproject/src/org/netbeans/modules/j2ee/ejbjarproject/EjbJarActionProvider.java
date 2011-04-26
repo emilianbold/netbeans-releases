@@ -126,6 +126,8 @@ class EjbJarActionProvider extends BaseActionProvider {
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
     };
 
+    private final EjbJarProject project;
+
     /**Set of commands which are affected by background scanning*/
     private Set<String> bkgScanSensitiveActions;
 
@@ -142,7 +144,8 @@ class EjbJarActionProvider extends BaseActionProvider {
     
     public EjbJarActionProvider(EjbJarProject project, UpdateHelper updateHelper) {
         super(project, updateHelper, project.evaluator(), project.getSourceRoots(), project.getTestSourceRoots(), 
-                project.getAntProjectHelper(), new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
+                project.getAntProjectHelper(), new CallbackImpl(new BaseActionProvider.CallbackImpl(project.getClassPathProvider()), project.getEjbModule()));
+        this.project = project;
         commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
@@ -330,4 +333,41 @@ class EjbJarActionProvider extends BaseActionProvider {
         EjbJarProjectProperties.setServerInstance((EjbJarProject)getProject(), getAntProjectHelper(), serverInstanceId);
     }
     
+    private static class CallbackImpl implements Callback2 {
+
+        private final BaseActionProvider.CallbackImpl impl;
+
+        private final J2eeModuleProvider provider;
+
+        public CallbackImpl(BaseActionProvider.CallbackImpl impl, J2eeModuleProvider provider) {
+            this.impl = impl;
+            this.provider = provider;
+        }
+
+        @Override
+        public ClassPath getProjectSourcesClassPath(String type) {
+            return impl.getProjectSourcesClassPath(type);
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            return impl.findClassPath(file, type);
+        }
+
+        @Override
+        public void antTargetInvocationFailed(String command, Lookup context) {
+            Deployment.getDefault().resumeDeployOnSave(provider);
+        }
+
+        @Override
+        public void antTargetInvocationFinished(String command, Lookup context, int result) {
+            Deployment.getDefault().resumeDeployOnSave(provider);
+        }
+
+        @Override
+        public void antTargetInvocationStarted(String command, Lookup context) {
+            Deployment.getDefault().suspendDeployOnSave(provider);
+        }
+    }
+
 }
