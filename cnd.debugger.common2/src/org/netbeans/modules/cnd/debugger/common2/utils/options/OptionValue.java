@@ -159,6 +159,6 @@ public class OptionValue {
 
     @Override
     public String toString() {
-        return currValue + (dirty ? " (dirty)" : "");
+        return currValue + (dirty ? " (dirty)" : ""); //NOI18N
     }
 }
