@@ -121,8 +121,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public Name enclClassName; // the enclosing class name.
     private int indentSize;
     private int prec; // visitor argument: the current precedence level.
-    private LinkedList<Comment> pendingComments = null;
-    private int lastReadCommentIdx = -1;
+    private boolean printingMethodParams;
     private DiffContext diffContext;
     private CommentHandlerService comments;
 
@@ -760,8 +759,11 @@ public final class VeryPretty extends JCTree.Visitor {
             print(cs.spaceBeforeMethodDeclParen() ? " (" : "(");
             if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 print(' ');
+            boolean oldPrintingMethodParams = printingMethodParams;
+            printingMethodParams = true;
             wrapTrees(tree.params, cs.wrapMethodParams(), cs.alignMultilineMethodParams()
                     ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+            printingMethodParams = oldPrintingMethodParams;
             if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 needSpace();
             print(')');
@@ -1821,14 +1823,16 @@ public final class VeryPretty extends JCTree.Visitor {
         
         VeryPretty del = new VeryPretty(diffContext, cs, new HashMap<Tree, Object>(), new HashMap<Object, int[]>(), origText, 0);
         del.reallyPrintAnnotations = true;
+        del.printingMethodParams = printingMethodParams;
 
         del.printAnnotations(annotations);
 
         String str = del.out.toString();
+        int col = printingMethodParams ? out.leftMargin + cs.getContinuationIndentSize() : out.col;
+        
+        str = Reformatter.reformat(str + " class A{}", cs, cs.getRightMargin() - col);
 
-        str = Reformatter.reformat(str + " class A{}", cs, cs.getRightMargin() - out.col);
-
-        str = str.trim().replaceAll("\n", "\n" + whitespace(out.col));
+        str = str.trim().replaceAll("\n", "\n" + whitespace(col));
 
         adjustSpans(annotations, str);
 
@@ -1843,7 +1847,10 @@ public final class VeryPretty extends JCTree.Visitor {
         if (annotations.isEmpty()) return ;
 
         if (printAnnotationsFormatted(annotations)) {
-            toColExactly(out.leftMargin);
+            if (!printingMethodParams)
+                toColExactly(out.leftMargin);
+            else
+                out.needSpace();
             return ;
         }
         
@@ -1866,7 +1873,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             } else {
-                toColExactly(out.leftMargin);
+                if (!printingMethodParams)
+                    toColExactly(out.leftMargin);
             }
             annotations = annotations.tail;
         }
