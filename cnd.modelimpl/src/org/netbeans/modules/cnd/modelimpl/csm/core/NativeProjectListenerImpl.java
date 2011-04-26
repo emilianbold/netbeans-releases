@@ -45,20 +45,13 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Implementation of the NativeProjectItemsListener interface
@@ -68,15 +61,11 @@ import org.openide.filesystems.FileUtil;
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
     private static final boolean TRACE = false;
 
-    private final ModelImpl model;
     private final NativeProject nativeProject;
-    // TODO: we have so much conversion to ProjectBase, while each ProjectBase have own listener associated with
-    // own NativeProject, may be it's worth to reuse it and simplify all logic in this class?
     private final ProjectBase projectBase;
     private volatile boolean enabledEventsHandling = true;
 
     public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject, ProjectBase project) {
-	this.model = model;
         this.nativeProject = nativeProject;
         this.projectBase = project;
     }
@@ -88,7 +77,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("Native event fileAdded:"); // NOI18N
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
-	onProjectItemAdded(fileItem);
+	onProjectItemsAdded(Collections.singletonList(fileItem));
     }
 
     @Override
@@ -100,9 +89,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
-	for (List<NativeFileItem> list : divideByProjects(fileItems)){
-	    onProjectItemAdded(list);
-	}
+        onProjectItemsAdded(fileItems);
     }
 
     @Override
@@ -112,7 +99,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("Native event fileRemoved:"); // NOI18N
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
-	onProjectItemRemoved(fileItem);
+	onProjectItemRemoved(Collections.singletonList(fileItem));
     }
 
     @Override
@@ -124,9 +111,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
-	for (List<NativeFileItem> list : divideByProjects(fileItems)){
-	    onProjectItemRemoved(list);
-	}
+        onProjectItemRemoved(fileItems);
     }
 
     @Override
@@ -147,7 +132,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("Native event filePropertiesChanged:"); // NOI18N
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
-	onProjectItemChanged(fileItem);
+	filesPropertiesChanged(Collections.singletonList(fileItem));
     }
 
     @Override
@@ -182,12 +167,6 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
         enabledEventsHandling = enable;
     }
-
-    private void filesPropertiesChangedImpl(List<NativeFileItem> fileItems) {
-        for (List<NativeFileItem> list : divideByProjects(fileItems)){
-            onProjectItemChanged(list);
-        }
-   }
 
     @Override
     public void filesPropertiesChanged() {
@@ -232,70 +211,20 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	RepositoryUtils.onProjectDeleted(nativeProject);
     }
 
-    private Collection<List<NativeFileItem>> divideByProjects(List<NativeFileItem> fileItems){
-	Map<NativeProject,List<NativeFileItem>> res = new HashMap<NativeProject,List<NativeFileItem>>();
-	for(NativeFileItem item : fileItems){
-	    NativeProject aNativeProject = item.getNativeProject();
-	    if (aNativeProject != null){
-		List<NativeFileItem> list = res.get(aNativeProject);
-		if (list == null){
-		    list =new ArrayList<NativeFileItem>();
-		    res.put(aNativeProject,list);
-		}
-		list.add(item);
-	    }
-	}
-	return res.values();
-    }
-
-    private void onProjectItemAdded(final NativeFileItem item) {
-        try {
-            final ProjectBase project = getProject(item, true);
-            if( project != null ) {
-                project.onFileAdded(item);
-            }
-        } catch( Exception e ) {
-            e.printStackTrace(System.err);
-        }
-    }
-    
-    private void onProjectItemAdded(final List<NativeFileItem> items) {
+    private void onProjectItemsAdded(final List<NativeFileItem> items) {
         if (items.size()>0){
             try {
-                final ProjectBase project = getProject(items.get(0), true);
-                if( project != null ) {
-                    project.onFileAdded(items);
-                }
+                projectBase.onFileAdded(items);
             } catch( Exception e ) {
                 e.printStackTrace(System.err);
             }
         }
     }
     
-    private void onProjectItemRemoved(final NativeFileItem item) {
-        try {
-            final ProjectBase project = getProject(item, false);
-            if( project != null ) {
-                FileObject fo = item.getFileObject();
-                if (fo != null) {
-                    fo.addFileChangeListener(FileUtil.weakFileChangeListener(new FileDeleteListener(project), fo));
-                }
-                project.onFileRemoved(item.getAbsolutePath());
-            }
-        } catch( Exception e ) {
-            //TODO: FIX (most likely in Makeproject: path == null in this situation,
-            //this cause NPE
-            e.printStackTrace(System.err);
-        }
-    }
-    
     private void onProjectItemRemoved(final List<NativeFileItem> items) {
         if (!items.isEmpty()) {
             try {
-                final ProjectBase project = getProject(items.get(0), false);
-                if( project != null ) {
-                    project.onFileRemoved(items);
-                }
+                projectBase.onFileRemoved(items);
             } catch( Exception e ) {
                 e.printStackTrace(System.err);
             }
@@ -304,11 +233,8 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     private void onProjectItemRenamed(String oldPath, NativeFileItem newFileIetm) {
         try {
-            final ProjectBase project = getProject(newFileIetm, false);
-            if( project != null ) {
-                project.onFileRemoved(oldPath);
-                project.onFileAdded(newFileIetm);
-            }
+            projectBase.onFileRemoved(oldPath);
+            projectBase.onFileAdded(newFileIetm);
         } catch( Exception e ) {
             //TODO: FIX (most likely in Makeproject: path == null in this situation,
             //this cause NPE
@@ -316,68 +242,18 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
     
-    private void onProjectItemChanged(final NativeFileItem item) {
-        try {
-            final ProjectBase project = getProject(item, false);
-            if( project != null ) {
-                project.onFilePropertyChanged(item);
-            }
-        } catch( Exception e ) {
-            //TODO: FIX (most likely in Makeproject: path == null in this situation,
-            //this cause NPE
-            e.printStackTrace(System.err);
-        }
-    }
-    
-    private void onProjectItemChanged(final List<NativeFileItem> items) {
+    private void filesPropertiesChangedImpl(final List<NativeFileItem> items) {
         if (items.size()>0){
             try {
-                final ProjectBase project = getProject(items.get(0), true);
-                if( project != null && project.isValid()) {
-                    if (project instanceof ProjectImpl) {
-                        LibraryManager.getInstance().onProjectPropertyChanged(project.getUID());
+                if (projectBase.isValid()) {
+                    if (projectBase instanceof ProjectImpl) {
+                        LibraryManager.getInstance().onProjectPropertyChanged(projectBase.getUID());
                     }
-                    project.onFilePropertyChanged(items);
+                    projectBase.onFilePropertyChanged(items);
                 }
             } catch( Exception e ) {
                 e.printStackTrace(System.err);
             }
         }
     }
-    
-    private ProjectBase getProject(NativeFileItem nativeFile, boolean createIfNeeded) {
-        assert nativeFile != null : "must not be null";
-        ProjectBase csmProject = null;
-        try {
-            NativeProject aNnativeProject = nativeFile.getNativeProject();
-            assert (aNnativeProject == null) || this.nativeProject.equals(aNnativeProject) : "listener was attached to " + this.nativeProject + "\n was notified from " + aNnativeProject;
-            // removed file can have null project
-            if (aNnativeProject == null) {
-                aNnativeProject = this.nativeProject;
-            }
-            if (aNnativeProject != null) {
-                csmProject = createIfNeeded ? (ProjectBase) model._getProject(aNnativeProject) :
-                    (ProjectBase) model.findProject(aNnativeProject);
-            }
-        } catch(NullPointerException ex) {
-            ex.printStackTrace(System.err);
-        }
-        return csmProject;
-    }
-
-    private static class FileDeleteListener extends FileChangeAdapter {
-        private final ProjectBase project;
-
-        public FileDeleteListener(ProjectBase project) {
-            this.project = project;
-        }
-        
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            FileObject fo = fe.getFile();
-            project.onFileRemoved(CndFileUtils.normalizePath(fo));
-            fo.removeFileChangeListener(this);
-        }
-    };
-    
 }
