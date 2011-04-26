@@ -133,7 +133,7 @@ public class PushTest extends AbstractGitTestCase {
         remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
-        assertUpdate(updates.get("newbranch"), null, "newbranch", null, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
+        assertUpdate(updates.get("newbranch"), null, "newbranch", null, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
     }
     
     public void testPushChange () throws Exception {
@@ -158,7 +158,7 @@ public class PushTest extends AbstractGitTestCase {
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
-        assertUpdate(updates.get("master"), "master", "master", newid, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
+        assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
     }
     
     public void testPushUpdateInRemotes () throws Exception {
@@ -210,9 +210,13 @@ public class PushTest extends AbstractGitTestCase {
         cfg.save();
         
         // what about now???
+        write(f, "huhu3");
+        add(f);
+        id = newid;
+        newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
         updates = getClient(workDir).push("origin", Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR);
         remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertUpdate(updates.get("master"), "master", "master", newid, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.UP_TO_DATE);
+        assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
         branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(newid, branches.get("origin/master").getId());
@@ -248,7 +252,7 @@ public class PushTest extends AbstractGitTestCase {
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
-        assertUpdate(updates.get("master"), "master", "master", newid, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
+        assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
         
         getClient(workDir).createBranch("localbranch", id, ProgressMonitor.NULL_PROGRESS_MONITOR);
         getClient(workDir).checkoutRevision("localbranch", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -260,7 +264,7 @@ public class PushTest extends AbstractGitTestCase {
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
-        assertUpdate(updates.get("master"), "localbranch", "master", id, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
+        assertUpdate(updates.get("master"), "localbranch", "master", id, newid, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
     }
 
     private void assertUpdate(GitTransportUpdate update, String localName, String remoteName, String newObjectId, String oldObjectId, String remoteUri, Type type, GitRefUpdateResult result) {

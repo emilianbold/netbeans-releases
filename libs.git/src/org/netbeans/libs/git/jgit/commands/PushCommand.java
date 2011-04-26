@@ -54,13 +54,16 @@ import java.util.Map;
 import org.netbeans.libs.git.jgit.DelegatingProgressMonitor;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.Transport;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -106,6 +109,7 @@ public class PushCommand extends TransportCommand {
             transport.setRemoveDeletedRefs(true);
             transport.setTagOpt(TagOpt.AUTO_FOLLOW);
             result = transport.push(new DelegatingProgressMonitor(monitor), fetchSpecs.isEmpty() ? transport.findRemoteRefUpdatesFor(specs) : Transport.findRemoteRefUpdatesFor(getRepository(), specs, fetchSpecs));
+            Map<String, GitBranch> remoteBranches = Utils.refsToBranches(result.getAdvertisedRefs(), Constants.R_HEADS);
             for (String msg : result.getMessages().split("\n")) { //NOI18N
                 if (!msg.isEmpty()) {
                     // these are not warnings, i guess, just plain informational messages
@@ -114,7 +118,7 @@ public class PushCommand extends TransportCommand {
             }
             updates = new HashMap<String, GitTransportUpdate>(result.getRemoteUpdates().size());
             for (RemoteRefUpdate update : result.getRemoteUpdates()) {
-                GitTransportUpdate upd = new JGitTransportUpdate(transport.getURI(), update);
+                GitTransportUpdate upd = new JGitTransportUpdate(transport.getURI(), update, remoteBranches);
                 updates.put(upd.getRemoteName(), upd);
             }
         } catch (NotSupportedException e) {
