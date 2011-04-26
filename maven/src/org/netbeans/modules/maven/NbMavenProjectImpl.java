@@ -955,7 +955,7 @@ public final class NbMavenProjectImpl implements Project {
                     CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
-                    new TestSkippingChecker(),
+                    new TestChecker(),
                     new RecommendedTemplates() {
 
                         public String[] getRecommendedTypes() {
