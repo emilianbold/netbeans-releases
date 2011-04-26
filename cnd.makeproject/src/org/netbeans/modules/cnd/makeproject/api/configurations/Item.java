@@ -261,9 +261,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // File has been moved
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
-                // XXX:fullRemote looks like fo.getPath is enough for all cases
-                boolean local = CndFileUtils.isLocalFileSystem(getFolder().getConfigurationDescriptor().getBaseDirFileSystem());
-                String newPath = local ? CndFileUtils.toFile(fo).getPath() : fo.getPath();
+                String newPath = fo.getPath();
                 if (!CndPathUtilitities.isPathAbsolute(getPath())) {
                     newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }

@@ -251,13 +251,13 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         if (folder.isDiskFolder()) {
             String rootPath = folder.getRootPath();
             FileObject fo;
-            if (CndFileUtils.isLocalFileSystem(folder.getConfigurationDescriptor().getBaseDirFileSystem())) {
-                String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
-                fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
-            } else {
-                // XXX:fullRemote: looks like line below is OK for all cases
+//            if (CndFileUtils.isLocalFileSystem(folder.getConfigurationDescriptor().getBaseDirFileSystem())) {
+//                String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
+//                fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
+//            } else {
+                // looks like line below is OK for all cases
                 fo = RemoteFileUtil.getFileObject(folder.getConfigurationDescriptor().getBaseDirFileObject(), rootPath);
-            }
+//            }
             if (fo == null /*paranoia*/ || !fo.isValid() || !fo.isFolder()) {
                 return;
             }
