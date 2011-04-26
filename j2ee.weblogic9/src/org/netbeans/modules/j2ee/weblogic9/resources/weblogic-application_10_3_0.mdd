@@ -11,7 +11,7 @@
                     }
 
                     public void setId(String id) {
-                        // noop
+                       // noop
                     }
                 </user-code>
 		<meta-property>
@@ -529,12 +529,6 @@
 		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
-		<dtd-name>true-falseType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>TrueFalseType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
 		<dtd-name>xsdPositiveIntegerType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>XsdPositiveIntegerType</bean-name>
@@ -542,15 +536,20 @@
 	</meta-element>
 	<meta-element>
 		<dtd-name>dispatch-policyType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://www.bea.com/ns/weblogic/weblogic-application</namespace>
 		<bean-name>DispatchPolicyType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>work-manager-shutdown-triggerType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://www.bea.com/ns/weblogic/weblogic-application</namespace>
 		<bean-name>WorkManagerShutdownTriggerType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>MaxStuckThreadTime</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>StuckThreadCount</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>xsdBooleanType</dtd-name>
@@ -559,46 +558,24 @@
 		<wrapper-class>boolean</wrapper-class>
 	</meta-element>
 	<meta-element>
-		<dtd-name>capacityType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>CapacityType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>max-threads-constraintType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>MaxThreadsConstraintType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>min-threads-constraintType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>MinThreadsConstraintType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>response-time-request-classType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>ResponseTimeRequestClassType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>fair-share-request-classType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>FairShareRequestClassType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>context-request-classType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
-		<bean-name>ContextRequestClassType</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
 		<dtd-name>context-caseType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://www.bea.com/ns/weblogic/weblogic-application</namespace>
 		<bean-name>ContextCaseType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>UserName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>GroupName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>RequestClassName</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>group-nameType</dtd-name>
+		<namespace>http://www.bea.com/ns/weblogic/weblogic-application</namespace>
+		<bean-name>GroupNameType</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>boolean</dtd-name>
