@@ -572,7 +572,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         factory = new Dbx.DbxFactory(executor, additionalArgv,
                                      listener, exec32, isShortName(),
                                      dbxInitFile, host, connectExisting, dbxPath,
-                                     ddi.getInputOutput(), ddi);
+                                     ddi.getInputOutput(), ddi, optionLayers());
 
         factory.start();
     }
@@ -3006,9 +3006,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         OptionValue run_io = optionLayers().byType(DebuggerOption.RUN_IO);
         OptionValue run_pty = optionLayers().byType(DebuggerOption.RUN_PTY);
 
-        if (o.type() == DebuggerOption.RUN_PTY && new_value.equals(slave)) {
+        if (o.type() == DebuggerOption.RUN_PTY && new_value.equals(slave) && !"stdio".equals(run_io.get())) { //NOI18N
             run_io.set("window"); // NOI18N
-
         } else if (o.type() == DebuggerOption.RUN_IO &&
                 new_value.equals("pty") && // NOI18N
                 run_pty.get().equals(slave)) {

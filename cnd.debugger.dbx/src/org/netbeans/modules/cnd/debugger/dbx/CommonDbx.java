@@ -91,6 +91,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcProgressManager;
 import org.netbeans.modules.cnd.debugger.dbx.spi.DbxPathProvider;
@@ -222,8 +224,9 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	private Map<String, String> additionalEnv;
 	private IOPack ioPack;
 	private boolean remote;
-        private InputOutput io;
-        private NativeDebuggerInfo ndi;	// TMP
+        private final InputOutput io;
+        private final NativeDebuggerInfo ndi;	// TMP
+        private final OptionLayers optionLayers;
 
 	// Start out connecting to dbx in master mode. If we can't we turn
 	// 'beMaster' off and fall back on the old CONNECT_CHILD mode.
@@ -257,7 +260,8 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 			   boolean connectExisting,
                            String dbxName,
                            InputOutput io,
-                           NativeDebuggerInfo ndi) {
+                           NativeDebuggerInfo ndi,
+                           OptionLayers optionLayers) {
 	    this.executor = executor;
 	    this.additionalArgv = additionalArgv;
 	    this.listener = listener;
@@ -269,6 +273,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
             this.dbxname = dbxName;
             this.io = io;
             this.ndi = ndi;
+            this.optionLayers = optionLayers;
 	}
 
 	protected abstract CommonDbx getDbx(Factory fatory,
@@ -631,6 +636,9 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // setup the IOPack
 	    //
 
+            if (DebuggerOption.RUN_IO.getCurrValue(optionLayers).equals("stdio")) { //NOI18N
+                ndi.setInputOutput(null);
+            }
 	    ioPack = IOPack.create(remote, ndi, executor);
 	    tentativeDbx.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
@@ -943,9 +951,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	// prop_set("DBX_output_inherited_members", "off"); // NOI18N
 
 	// Arrange for dbx victims to run under the Pio
-	boolean ioInWindow =
-	    true;
-	    // LATER DebuggerOption.RUN_IO.getCurrValue().equals("window");
+	boolean ioInWindow = DebuggerOption.RUN_IO.getCurrValue(factory().optionLayers).equals("window");
 
 	String slaveName = null;
 	if (!factory.connectExisting())
