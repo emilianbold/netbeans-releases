@@ -1089,7 +1089,9 @@ public class ConfigurationMakefileWriter {
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
-                String name = items[i].getName().replaceAll("\\..*", ""); // NOI18N
+                String name = items[i].getName();
+                String extension = FileUtil.getExtension(name);
+                name = name.substring(0, name.length() - (extension.isEmpty() ? 0 : extension.length() + 1));
                 String nomainTarget;
                 if (itemConfiguration.isCompilerToolConfiguration()) {
                     AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
