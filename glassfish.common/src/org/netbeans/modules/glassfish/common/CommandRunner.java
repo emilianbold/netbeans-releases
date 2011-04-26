@@ -75,6 +75,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Map.Entry;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -94,21 +95,21 @@ import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.glassfish.spi.WSDesc;
 
 
-/** 
+/**
  * Implementation of management task that provides info about progress
  *
  * @author Peter Williams
  */
 public class CommandRunner extends BasicTask<OperationState> {
-    
+
     public final int HTTP_RETRY_DELAY = 3000;
-    
-    /** Executor that serializes management tasks. 
+
+    /** Executor that serializes management tasks.
      */
     private static ExecutorService executor;
 
     private static Authenticator AUTH = new AdminAuthenticator();
-    
+
     /** Returns shared executor.
      */
     private static synchronized ExecutorService executor() {
@@ -117,31 +118,31 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return executor;
     }
-    
+
     /** Command type used for events. */
     private ServerCommand serverCmd;
-    
+
     /** Has been the last access to  manager web app authorized? */
     private boolean authorized;
     private final CommandFactory cf;
     private final boolean isReallyRunning;
-    
-    
+
+
     public CommandRunner(boolean isReallyRunning, CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
         super(properties, stateListener);
         this.cf =cf;
         this.isReallyRunning = isReallyRunning;
     }
-    
+
     /**
      * Sends stop-domain command to server (asynchronous)
-     * 
+     *
      */
     public Future<OperationState> stopServer() {
         return execute(Commands.STOP, "MSG_STOP_SERVER_IN_PROGRESS"); // NOI18N
-        
+
     }
-    
+
     /**
      * Sends restart-domain command to server (asynchronous)
      *
@@ -217,7 +218,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
     /**
      * Sends list-applications command to server (synchronous)
-     * 
+     *
      * @return String array of names of deployed applications.
      */
     public Map<String, List<AppDesc>> getApplications(String container) {
@@ -303,7 +304,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return result;
     }
-    
+
     /**
      * Sends list-web-services command to server (synchronous)
      *
@@ -355,7 +356,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return result;
     }
-    
+
     public Map<String, String> getResourceData(String name) {
         try {
             GetPropertyCommand cmd;
@@ -384,7 +385,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return new HashMap<String,String>();
     }
-    
+
     public void putResourceData(Map<String, String> data) throws PartialCompletionException {
         Set<String> keys = data.keySet();
         String itemsNotUpdated = null;
@@ -429,11 +430,11 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Future<OperationState> deploy(File dir, String moduleName) {
         return deploy(dir, moduleName, null);
     }
-    
+
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
         return deploy(dir, moduleName, contextRoot, null, new File[0]);
     }
-    
+
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties, File[] libraries) {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.DeployCommand(dir, moduleName,
@@ -442,7 +443,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
     public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
         LogViewMgr.displayOutput(ip,null);
-        return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
+        return execute(new Commands.RedeployCommand(moduleName, contextRoot,
                 computePreserveSessions(ip), libraries, resourcesChanged));
     }
 
@@ -456,12 +457,12 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return Boolean.parseBoolean(sessionPreservationFlag);
     }
-    
+
     public Future<OperationState> undeploy(String moduleName) {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.UndeployCommand(moduleName));
     }
-    
+
     public Future<OperationState> enable(String moduleName) {
         return execute(new Commands.EnableCommand(moduleName));
     }
@@ -490,7 +491,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return retVal;
     }
-    
+
     private Future<OperationState> execute(ServerCommand command, String msgResId) {
         serverCmd = command;
         if(msgResId != null) {
@@ -498,8 +499,8 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         return executor().submit(this);
     }
-    
-    /** Executes one management task. 
+
+    /** Executes one management task.
      */
     @Override
     public OperationState call() {
@@ -510,14 +511,14 @@ public class CommandRunner extends BasicTask<OperationState> {
             return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailedIncorrectInstance", // NOI18N
                     serverCmd.toString(), instanceName);
         }
-        
+
         boolean httpSucceeded = false;
         boolean commandSucceeded = false;
         URL urlToConnectTo = null;
         URLConnection conn = null;
         HttpURLConnection hconn = null;
         String commandUrl;
-        
+
         try {
             commandUrl = constructCommandUrl(serverCmd.getSrc(), serverCmd.getCommand(), serverCmd.getQuery());
         } catch (URISyntaxException ex) {
@@ -594,6 +595,14 @@ public class CommandRunner extends BasicTask<OperationState> {
                         if(contentType != null && contentType.length() > 0) {
                             hconn.setRequestProperty("Content-Type", contentType); // NOI18N
                             hconn.setChunkedStreamingMode(0);
+                        } else {
+                            // work around that helps prevent tickling the
+                            // GF issue that is the root cause of 195384.
+                            //
+                            // GF doesn't expect to get image content, so it doesn't
+                            // try to handle the content... which prevents the
+                            // exception, according to Tim Quinn.
+                            hconn.setRequestProperty("Content-Type", "image/png");
                         }
                         hconn.setRequestProperty("User-Agent", "hk2-agent"); // NOI18N
                         if (serverCmd.acceptsGzip()) {
@@ -614,7 +623,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                         handleSend(hconn);
 
                         int respCode = hconn.getResponseCode();
-                        if(respCode == HttpURLConnection.HTTP_UNAUTHORIZED || 
+                        if(respCode == HttpURLConnection.HTTP_UNAUTHORIZED ||
                                 respCode == HttpURLConnection.HTTP_FORBIDDEN) {
                             // connection to manager has not been allowed
                             authorized = false;
@@ -622,7 +631,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                             if (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null) {
                                 messageId = "MSG_AuthorizationFailedRemote"; // NOI18N
                             }
-                            return fireOperationStateChanged(OperationState.FAILED, 
+                            return fireOperationStateChanged(OperationState.FAILED,
                                     messageId, serverCmd.toString(), instanceName);
                         }
 
@@ -634,8 +643,20 @@ public class CommandRunner extends BasicTask<OperationState> {
                         // Process the response message
                         if(handleReceive(hconn)) {
                             commandSucceeded = serverCmd.processResponse();
+                        } else {
+                            Logger.getLogger("glassfish").log(Level.WARNING, hconn.toString());
+                            Logger.getLogger("glassfish").log(Level.WARNING, hconn.getContentType());
+                            Logger.getLogger("glassfish").log(Level.WARNING, hconn.getContentEncoding());
+                            Map<String,List<String>> ms2ls = hconn.getHeaderFields();
+                            Logger.getLogger("glassfish").log(Level.WARNING, "Header Fields");
+                            for (Entry<String,List<String>> e : ms2ls.entrySet()) {
+                                Logger.getLogger("glassfish").log(Level.WARNING, e.getKey()+" = ");
+                                for (String v : e.getValue()) {
+                                    Logger.getLogger("glassfish").log(Level.WARNING, "     "+v);
+                                }
+                            }
                         }
-                        
+
                         httpSucceeded = true;
                     } else {
                         Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: {0}", urlToConnectTo); // NOI18N
@@ -652,7 +673,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                 } finally {
                     if (null != hconn) hconn.disconnect();
                 }
-                
+
                 if(!httpSucceeded && retries > 0) {
                     try {
                         Thread.sleep(HTTP_RETRY_DELAY);
@@ -662,7 +683,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         } catch(MalformedURLException ex) {
             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex); // NOI18N
         }
-        
+
         if(commandSucceeded) {
             return fireOperationStateChanged(OperationState.COMPLETED, "MSG_ServerCmdCompleted", // NOI18N
                     serverCmd.toString(), instanceName);
@@ -671,7 +692,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                     serverCmd.toString(), instanceName, serverCmd.getServerMessage());
         }
     }
-    
+
     private String constructCommandUrl(final String cmdSrc, final String cmd, final String query) throws URISyntaxException {
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
         boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
@@ -679,7 +700,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         URI uri = new URI(Utils.getHttpListenerProtocol(host,port), null, host, port, cmdSrc + cmd, query, null); // NOI18N
         return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
     }
-    
+
 
     /*
      * Note: this is based on reading the code of CLIRemoteCommand.java
@@ -713,8 +734,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
                 if(ostream != null) {
-                    try { 
-                        ostream.close(); 
+                    try {
+                        ostream.close();
                     } catch(IOException ex) {
                         Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);  // NOI18N
                     }
@@ -725,7 +746,7 @@ public class CommandRunner extends BasicTask<OperationState> {
             Logger.getLogger("glassfish").log(Level.INFO, "HTTP POST request but no data stream provided"); // NOI18N
         }
     }
-    
+
     private byte[] getExtraProperties() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Properties props = new Properties();

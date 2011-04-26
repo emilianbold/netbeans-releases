@@ -560,7 +560,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         }
         if(instanceFO != null && instanceFO.canWrite()) {
             try {
-                instanceFO.setAttribute(name, value);
+                Object currentValue = instanceFO.getAttribute(name);
+                if (null != currentValue && currentValue.equals(value)) {
+                    // do nothing
+                } else {
+                    instanceFO.setAttribute(name, value);
+                }
                 retVal = true;
             } catch(IOException ex) {
                 Logger.getLogger("glassfish").log(Level.WARNING, 
