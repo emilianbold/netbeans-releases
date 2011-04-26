@@ -77,7 +77,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("Native event fileAdded:"); // NOI18N
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
-	onProjectItemsAdded(Collections.singletonList(fileItem));
+	itemsAddedImpl(Collections.singletonList(fileItem));
     }
 
     @Override
@@ -89,7 +89,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
-        onProjectItemsAdded(fileItems);
+        itemsAddedImpl(fileItems);
     }
 
     @Override
@@ -99,7 +99,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("Native event fileRemoved:"); // NOI18N
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
-	onProjectItemRemoved(Collections.singletonList(fileItem));
+	itemsRemovedImpl(Collections.singletonList(fileItem));
     }
 
     @Override
@@ -111,7 +111,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
-        onProjectItemRemoved(fileItems);
+        itemsRemovedImpl(fileItems);
     }
 
     @Override
@@ -122,9 +122,18 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("\tOld Name:"+oldPath); // NOI18N
             System.err.println("\tNew Name:"+newFileIetm.getAbsolutePath()); // NOI18N
         }
-	onProjectItemRenamed(oldPath, newFileIetm);
+	itemRenamedImpl(oldPath, newFileIetm);
     }
 
+    /*package*/
+    final void enableListening(boolean enable) {
+        if (TraceFlags.TIMING) {
+            System.err.printf("\n%s ProjectListeners %s...\n", enable ? "enable" : "disable",
+                    nativeProject.getProjectDisplayName());
+        }
+        enabledEventsHandling = enable;
+    }
+    
     @Override
     public void filePropertiesChanged(NativeFileItem fileItem) {
         if (TRACE) {
@@ -132,7 +141,14 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("Native event filePropertiesChanged:"); // NOI18N
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
-	filesPropertiesChanged(Collections.singletonList(fileItem));
+        if (enabledEventsHandling) {
+            itemsPropertiesChangedImpl(Collections.singletonList(fileItem));
+        } else {
+            if (TraceFlags.TIMING) {
+                System.err.printf("\nskipped filePropertiesChanged(item) %s...\n",
+                        nativeProject.getProjectDisplayName());
+            }
+        }        
     }
 
     @Override
@@ -145,27 +161,13 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             }
         }
         if (enabledEventsHandling) {
-            // FIXUP for #109425
-            ModelImpl.instance().enqueueModelTask(new Runnable() {
-                @Override
-                public void run() {
-                    filesPropertiesChangedImpl(fileItems);
-                }
-            }, "Applying property changes"); // NOI18N
+            itemsPropertiesChangedImpl(fileItems);
         } else {
             if (TraceFlags.TIMING) {
                 System.err.printf("\nskipped filesPropertiesChanged(list) %s...\n",
                         nativeProject.getProjectDisplayName());
             }
         }
-    }
-
-    /*package*/final void enableListening(boolean enable) {
-        if (TraceFlags.TIMING) {
-            System.err.printf("\n%s ProjectListeners %s...\n", enable?"enable":"disable",
-                    nativeProject.getProjectDisplayName());
-        }
-        enabledEventsHandling = enable;
     }
 
     @Override
@@ -178,27 +180,21 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             }
         }
         if (enabledEventsHandling) {
-            // FIXUP for #109425
-            ModelImpl.instance().enqueueModelTask(new Runnable() {
-                @Override
-                public void run() {
-                    ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-                    for(NativeFileItem item : nativeProject.getAllFiles()){
-                        if (!item.isExcluded()) {
-                            switch(item.getLanguage()){
-                                case C:
-                                case CPP:
-                                case FORTRAN:
-                                    list.add(item);
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
+            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+            for(NativeFileItem item : nativeProject.getAllFiles()){
+                if (!item.isExcluded()) {
+                    switch(item.getLanguage()){
+                        case C:
+                        case CPP:
+                        case FORTRAN:
+                            list.add(item);
+                            break;
+                        default:
+                            break;
                     }
-                    filesPropertiesChangedImpl(list);
                 }
-            }, "Applying property changes"); // NOI18N
+            }
+            itemsPropertiesChangedImpl(list);
         } else {
             if (TraceFlags.TIMING) {
                 System.err.printf("\nskipped filesPropertiesChanged %s...\n", nativeProject.getProjectDisplayName());
@@ -211,49 +207,73 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	RepositoryUtils.onProjectDeleted(nativeProject);
     }
 
-    private void onProjectItemsAdded(final List<NativeFileItem> items) {
-        if (items.size()>0){
-            try {
-                projectBase.onFileAdded(items);
-            } catch( Exception e ) {
-                e.printStackTrace(System.err);
-            }
+    private void itemsAddedImpl(final List<NativeFileItem> items) {
+        if (!items.isEmpty()){
+            ModelImpl.instance().enqueueModelTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        projectBase.onFileAdded(items);
+                    } catch( Exception e ) {
+                        e.printStackTrace(System.err);
+                    }
+                }
+            }, "Applying add items"); // NOI18N         
         }
     }
     
-    private void onProjectItemRemoved(final List<NativeFileItem> items) {
+    private void itemsRemovedImpl(final List<NativeFileItem> items) {
         if (!items.isEmpty()) {
-            try {
-                projectBase.onFileRemoved(items);
-            } catch( Exception e ) {
-                e.printStackTrace(System.err);
-            }
+            ModelImpl.instance().enqueueModelTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        projectBase.onFileRemoved(items);
+                    } catch( Exception e ) {
+                        e.printStackTrace(System.err);
+                    }
+                }
+            }, "Applying remove items"); // NOI18N                
         }
     }
 
-    private void onProjectItemRenamed(String oldPath, NativeFileItem newFileIetm) {
-        try {
-            projectBase.onFileRemoved(oldPath);
-            projectBase.onFileAdded(newFileIetm);
-        } catch( Exception e ) {
-            //TODO: FIX (most likely in Makeproject: path == null in this situation,
-            //this cause NPE
-            e.printStackTrace(System.err);
-        }
+    private void itemRenamedImpl(final String oldPath, final NativeFileItem newFileIetm) {
+        ModelImpl.instance().enqueueModelTask(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    projectBase.onFileRemoved(oldPath);
+                    projectBase.onFileAdded(newFileIetm);
+                } catch( Exception e ) {
+                    //TODO: FIX (most likely in Makeproject: path == null in this situation,
+                    //this cause NPE
+                    e.printStackTrace(System.err);
+                }
+            }
+        }, "Applying rename item"); // NOI18N          
     }
     
-    private void filesPropertiesChangedImpl(final List<NativeFileItem> items) {
-        if (items.size()>0){
-            try {
-                if (projectBase.isValid()) {
-                    if (projectBase instanceof ProjectImpl) {
-                        LibraryManager.getInstance().onProjectPropertyChanged(projectBase.getUID());
+    private void itemsPropertiesChangedImpl(final List<NativeFileItem> items) {
+        if (!items.isEmpty()) {
+            ModelImpl.instance().enqueueModelTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        if (projectBase.isValid()) {
+                            if (projectBase instanceof ProjectImpl) {
+                                LibraryManager.getInstance().onProjectPropertyChanged(projectBase.getUID());
+                            }
+                            projectBase.onFilePropertyChanged(items);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace(System.err);
                     }
-                    projectBase.onFilePropertyChanged(items);
                 }
-            } catch( Exception e ) {
-                e.printStackTrace(System.err);
-            }
+            }, "Applying property changes"); // NOI18N            
         }
     }
 }
