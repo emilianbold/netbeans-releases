@@ -846,6 +846,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (typeAST == null) {
                 return false;
             }
+            typeAST = getFirstSiblingSkipQualifiers(typeAST);
+            if (typeAST == null) {
+                return false;
+            }
             if (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN) {
                 if (typeAST.getType() == CPPTokenTypes.LITERAL_enum) {
                     typeAST = typeAST.getNextSibling();
@@ -857,7 +861,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
             // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
-            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST.getNextSibling(), type, null);
+            typeAST = getFirstSiblingSkipQualifiers(typeAST.getNextSibling());
+            if (typeAST == null) {
+                return false;
+            }
+            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST, type, null);
             return bitFieldAdded;
         }
 
