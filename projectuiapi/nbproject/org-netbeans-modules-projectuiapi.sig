@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.47.0
+#Version 1.50.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -56,7 +56,7 @@ meth public void open(org.netbeans.api.project.Project[],boolean,boolean)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setMainProject(org.netbeans.api.project.Project)
 supr java.lang.Object
-hfds INSTANCE,trampoline
+hfds INSTANCE,LOG,trampoline
 
 CLSS public abstract interface org.netbeans.spi.project.ui.CustomizerProvider
 meth public abstract void showCustomizer()
@@ -135,7 +135,7 @@ meth public abstract !hasdefault int position()
 meth public abstract java.lang.String[] projectType()
 
 CLSS public org.netbeans.spi.project.ui.support.NodeFactorySupport
-meth public !varargs static org.netbeans.spi.project.ui.support.NodeList fixedNodeList(org.openide.nodes.Node[])
+meth public !varargs static org.netbeans.spi.project.ui.support.NodeList<?> fixedNodeList(org.openide.nodes.Node[])
 meth public static org.openide.nodes.Children createCompositeChildren(org.netbeans.api.project.Project,java.lang.String)
 supr java.lang.Object
 hfds LOADING_KEY,RP

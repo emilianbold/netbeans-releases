@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.17.0
+#Version 1.21.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -14,6 +14,32 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public final org.netbeans.lib.editor.codetemplates.api.CodeTemplate
 meth public java.lang.String getAbbreviation()
@@ -42,6 +68,7 @@ meth public abstract boolean accept(org.netbeans.lib.editor.codetemplates.api.Co
 
 CLSS public abstract interface static org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
  outer org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="CodeTemplateFilterFactories")
 meth public abstract org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter createFilter(javax.swing.text.JTextComponent,int)
 
 CLSS public final org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest
@@ -66,6 +93,8 @@ fld public final static java.lang.String CURSOR_PARAMETER_NAME = "cursor"
 fld public final static java.lang.String DEFAULT_VALUE_HINT_NAME = "default"
 fld public final static java.lang.String EDITABLE_HINT_NAME = "editable"
 fld public final static java.lang.String LINE_HINT_NAME = "line"
+fld public final static java.lang.String NO_FORMAT_PARAMETER_NAME = "no-format"
+fld public final static java.lang.String NO_INDENT_PARAMETER_NAME = "no-indent"
 fld public final static java.lang.String SELECTION_PARAMETER_NAME = "selection"
 meth public boolean isEditable()
 meth public boolean isSlave()
@@ -88,5 +117,14 @@ meth public abstract void release()
 meth public abstract void updateDefaultValues()
 
 CLSS public abstract interface org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="CodeTemplateProcessorFactories")
 meth public abstract org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor createProcessor(org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest)
+
+CLSS public abstract interface !annotation org.netbeans.spi.editor.mimelookup.MimeLocation
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass()
+meth public abstract java.lang.String subfolderName()
 

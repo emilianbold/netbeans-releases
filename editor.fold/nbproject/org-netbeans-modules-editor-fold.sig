@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.18.0
+#Version 1.23.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -16,6 +16,32 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract interface java.util.EventListener
 
@@ -143,6 +169,7 @@ meth public abstract void removeEmptyNotify(org.netbeans.api.editor.fold.Fold)
 meth public abstract void removeUpdate(javax.swing.event.DocumentEvent,org.netbeans.spi.editor.fold.FoldHierarchyTransaction)
 
 CLSS public abstract interface org.netbeans.spi.editor.fold.FoldManagerFactory
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="FoldManager")
 meth public abstract org.netbeans.spi.editor.fold.FoldManager createFoldManager()
 
 CLSS public final org.netbeans.spi.editor.fold.FoldOperation
@@ -161,4 +188,12 @@ meth public void removeFromHierarchy(org.netbeans.api.editor.fold.Fold,org.netbe
 supr java.lang.Object
 hfds impl,spiPackageAccessorRegistered
 hcls SpiPackageAccessorImpl
+
+CLSS public abstract interface !annotation org.netbeans.spi.editor.mimelookup.MimeLocation
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass()
+meth public abstract java.lang.String subfolderName()
 
