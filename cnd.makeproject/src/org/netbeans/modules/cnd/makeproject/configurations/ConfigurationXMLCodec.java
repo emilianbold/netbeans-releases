@@ -461,7 +461,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             CndUtils.assertNotNull(fixedSyncFactory, "Can not restore fixed sync factory " + currentText); //NOI18N
             ((MakeConfiguration) currentConf).setFixedRemoteSyncFactory(fixedSyncFactory);
         } else if (element.equals(REMOTE_MODE_ELEMENT)) {
-            // XXX:fullRemote: move to project-level
             RemoteProject.Mode mode = RemoteProject.Mode.valueOf(currentText);
             CndUtils.assertNotNull(mode, "Can not restore remote mode " + currentText); //NOI18N
             ((MakeConfiguration) currentConf).setRemoteMode(mode);
@@ -951,7 +950,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (fixedSyncFactory != null) {
             xes.element(FIXED_SYNC_FACTORY_ELEMENT, fixedSyncFactory.getID());
         }
-        // XXX:fullRemote: move to project-level
         xes.element(REMOTE_MODE_ELEMENT, makeConfiguration.getRemoteMode().name());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
