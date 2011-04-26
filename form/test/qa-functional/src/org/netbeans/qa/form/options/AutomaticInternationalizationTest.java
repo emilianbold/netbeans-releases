@@ -44,22 +44,24 @@
 
 package org.netbeans.qa.form.options;
 
-import java.io.IOException;
+import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.form.FormPropertyContext.Component;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import org.openide.util.Exceptions;
 
 /**
  * Automatic internationalization test
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 26 APRIL 2011 WORKS
  */
 public class AutomaticInternationalizationTest extends ExtJellyTestCase {
     
@@ -75,7 +77,10 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
     /** Creates suite from particular test cases. */
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AutomaticInternationalizationTest.class)
-                .addTest("testAutomaticInternationalizationEnabled").clusters(".*")
+                .addTest(
+                "testAutomaticInternationalizationEnabled",
+                "testAutomaticInternationalizationDisabled"
+                ).clusters(".*")
                 .enableModules(".*").gui(true));
     }
     
@@ -102,25 +107,45 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         
         OptionsOperator.invoke();
         //add timeout
-        waitNoEvent(2000);
+        waitNoEvent(1000);
         log("Option dialog was opened");
         
         OptionsOperator options = new OptionsOperator();
- //       options.switchToClassicView();
+        
+        
         //add timeout
-        waitNoEvent(2000);
+        waitNoEvent(1000);
         
         options.selectMiscellaneous(); // NOI18N
         //add timeout
         waitNoEvent(2000);
-        
-        java.awt.Component[] c=options.getComponents();
-        for(int i=0;i<c.length;i++){
-            java.awt.Component component = c[i];
+        options.pushKey(KeyEvent.VK_TAB);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_TAB);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_TAB);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_TAB);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_TAB);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_LEFT);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_LEFT);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_LEFT);
+        waitNoEvent(500);
+        options.pushKey(KeyEvent.VK_SPACE);
+        waitNoEvent(500);
+        JComboBoxOperator jcbo=new JComboBoxOperator(options,4);
+        if (enabled){
+            jcbo.selectItem("On"); 
+        } else {
+            jcbo.selectItem("Off");
         }
-        Property property = new Property(options.getPropertySheet(""), "Automatic Internationalization"); // NOI18N
-        property.setValue(String.valueOf( enabled ? "On" : "Off"));
-        options.close();
+        //Property property = new Property(options.getPropertySheet("Miscellaneous|GUI Builder"), "Automatic Internationalization"); // NOI18N
+        //property.setValue(String.valueOf( enabled ? "On" : "Off"));
+        options.ok();
         //add timeout
         waitNoEvent(2000);
         log("AutomaticResource Management was set");
