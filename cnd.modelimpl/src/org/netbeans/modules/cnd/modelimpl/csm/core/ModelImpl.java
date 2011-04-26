@@ -338,7 +338,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public Cancellable enqueue(Runnable task, CharSequence name) {
-        return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
+        return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name, userProcessorTasks); // NOI18N
     }
 
     public static ModelImpl instance() {
@@ -346,12 +346,26 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     public Cancellable enqueueModelTask(Runnable task, String name) {
-        return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+        return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name, modelProcessorTasks); // NOI18N
     }
 
-    private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
+    void waitModelTasks() {
+        synchronized (modelProcessorTasks) {
+            while (!modelProcessorTasks.isEmpty()) {
+                try {
+                    modelProcessorTasks.wait(10000);
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+    }
+    
+    private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName, final Set<Runnable> registry) {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception(taskName).printStackTrace(System.err);
+        }
+        synchronized (registry) {
+            registry.add(task);
         }
         return processor.post(new Runnable() {
 
@@ -365,6 +379,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     DiagnosticExceptoins.register(thr);
                 } finally {
                     Thread.currentThread().setName(oldName);
+                    synchronized (registry) {
+                        registry.remove(task);
+                        registry.notifyAll();
+                    }
                 }
             }
         });
@@ -749,7 +767,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     //private double fatalThreshold = 0.99;
     private final Set<Object> disabledProjects = new HashSet<Object>();
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
+    private final Set<Runnable> modelProcessorTasks = new HashSet<Runnable>();
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
+    private final Set<Runnable> userProcessorTasks = new HashSet<Runnable>();
     
     /////////// 
     // tracing
