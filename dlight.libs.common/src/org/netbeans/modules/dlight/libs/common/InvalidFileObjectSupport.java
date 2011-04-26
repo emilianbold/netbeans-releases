@@ -236,10 +236,10 @@ public class InvalidFileObjectSupport {
 
         @Override
         public String getName() {
-            String nameExt = getNameExt();
-            int pos = nameExt.indexOf('.', 1); // skip '.' as the leftmost char
-            if (pos <= 0) { 
-                return nameExt;
+            String nameExt = getNameExt();            
+            int pos = nameExt.lastIndexOf('.'); //NOI18N
+            if (pos == 0 || pos == -1) {
+                return nameExt; //NOI18N
             } else {
                 return nameExt.substring(0, pos);
             }

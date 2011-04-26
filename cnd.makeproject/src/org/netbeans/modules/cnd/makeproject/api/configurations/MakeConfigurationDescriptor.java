@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -1502,17 +1503,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
             } else {
-//  All the logic below moved to Item constructor
-//                String filePath;
-//                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-//                    filePath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, file.getPath());
-//                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-//                    filePath = CndPathUtilitities.toRelativePath(baseDirFO, file.getPath());
-//                } else {
-//                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
-//                }
-//                Item item = new Item(CndPathUtilitities.normalize(filePath));
-                Item item = new Item(file, baseDirFO, ProjectSupport.getPathMode(project));
+                Item item = new Item(new FSPath(baseDirFS, file.getPath()), baseDirFO.getPath(), ProjectSupport.getPathMode(project));
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.indexing;
 
-package org.netbeans.modules.cnd.apt.impl.support;
-
-import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author vv159170
+ * @author Tomas Zezula
  */
-public abstract class SupportAPIAccessor {
-    private static SupportAPIAccessor INSTANCE;
+public abstract class IndexingManagerAccessor {
 
-    public static SupportAPIAccessor get() {
-        SupportAPIAccessor out = INSTANCE;
-        if (out == null) {
-            synchronized (SupportAPIAccessor.class) {
-                if (INSTANCE == null) {
-                    Class<?> c = IncludeDirEntry.class;
-                    try {
-                        Class.forName(c.getName(), true, c.getClassLoader());
-                    } catch (ClassNotFoundException e) {
-                        // ignore
-                    }
-                }
-                out = INSTANCE;
+    private static volatile IndexingManagerAccessor instance;
+
+    /*test*/ public static volatile Boolean requiresReleaseOfCompletionLock = null;
+
+    public static void setInstance(final @NonNull IndexingManagerAccessor _instance) {
+        Parameters.notNull("_instance", _instance);
+        instance = _instance;
+    }
+
+    public static synchronized IndexingManagerAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(IndexingManager.class.getName(),true,IndexingManagerAccessor.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-
-        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
-        return out;
+        return instance;
     }
 
-    /**
-     * Register the accessor. The method can only be called once
-     * - otherwise it throws IllegalStateException.
-     *
-     * @param accessor instance.
-     */
-    public static void register(SupportAPIAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
+
+    protected abstract boolean isCalledFromRefreshIndexAndWait(final @NonNull IndexingManager manager);
+
+    public final boolean isCalledFromRefreshIndexAndWait() {
+        return isCalledFromRefreshIndexAndWait(IndexingManager.getDefault());
     }
 
-    public abstract void invalidateFileBasedCache(String file);
-    public abstract void invalidateCache();
-    public abstract boolean isExistingDirectory(IncludeDirEntry entry);
+    public final boolean requiresReleaseOfCompletionLock() {
+        final Boolean result = requiresReleaseOfCompletionLock;
+        return result != null ? result : SwingUtilities.isEventDispatchThread();
+    }
 }

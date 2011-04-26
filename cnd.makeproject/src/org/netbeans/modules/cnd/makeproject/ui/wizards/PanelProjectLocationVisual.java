@@ -655,7 +655,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
 
         d.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE);
-        d.putProperty( /*XXX Define somewhere */"mainClass", null); // NOI18N
+        d.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
 
         MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
         MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);

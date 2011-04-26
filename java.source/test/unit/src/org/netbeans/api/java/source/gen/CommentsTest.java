@@ -1485,7 +1485,6 @@ public class CommentsTest extends GeneratorTestBase {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
                 ClassTree newClazz = make.setLabel(clazz, clazz.getSimpleName());
-                GeneratorUtilities.get(workingCopy).copyComments(clazz, newClazz, true);
                 make.removeComment(newClazz, 0, true);
                 workingCopy.rewrite(clazz, newClazz);
             }

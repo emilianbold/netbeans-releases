@@ -235,7 +235,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return null;
         
         boolean inherited = isParentInherited || (null != parent && !parent.equals( e.getEnclosingElement() ));
-        Description d = new Description( ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), TreePathHandle.create(e, info), inherited );
+        Description d = new Description( ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), inherited );
         
         if( e instanceof TypeElement ) {
             d.subs = new HashSet<Description>();
@@ -250,10 +250,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         d.modifiers = e.getModifiers();
         d.pos = getPosition(e, info, pos);
-        
-        if( inherited ) {
-            d.cpInfo = info.getClasspathInfo();
-        }
+        d.cpInfo = info.getClasspathInfo();
         
         return d;
     }

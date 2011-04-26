@@ -231,7 +231,6 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             newInnerClass = make.setLabel(newInnerClass, refactoring.getClassName());
             
             newInnerClass = refactorInnerClass(newInnerClass);
-            RetoucheUtils.copyJavadoc(inner, newInnerClass, workingCopy);
             
             if (outerouter.getKind() == ElementKind.PACKAGE) {
                 FileObject sourceRoot=ClassPath.getClassPath(workingCopy.getFileObject(), ClassPath.SOURCE).findOwnerRoot(workingCopy.getFileObject());
@@ -510,6 +509,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                                 block);
 
                         newInnerClass = make.removeClassMember(newInnerClass, m);
+                        GeneratorUtilities.get(workingCopy).copyComments(m, newConstructor, true);
+                        GeneratorUtilities.get(workingCopy).copyComments(m, newConstructor, false);
                         newInnerClass = GeneratorUtilities.get(workingCopy).insertClassMember(newInnerClass, newConstructor);
                     }
                 }

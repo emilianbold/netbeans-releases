@@ -46,7 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Callable;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -58,7 +58,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.plain.PlainKit;
-import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -203,6 +204,211 @@ public class TaskProcessorTest extends NbTestCase {
         end.countDown();
     }
 
+    public void testCancelCall () {                
+        final FooTask task = new FooTask();
+        final FooParser parser = new FooParser();
+        boolean success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.cancelTask(task);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling cancelTask under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.cancelTask(task);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling cancelTask without INTERNAL_LOCK", success); //NOI18N
+        assertEquals(1, task.cancelCount);
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.cancelParser(parser, true, Parser.CancelReason.USER_TASK, null);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling cancelParser under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.cancelParser(parser, true, Parser.CancelReason.USER_TASK, null);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling cancelParser without INTERNAL_LOCK", success); //NOI18N
+        assertEquals(1, parser.cancelCount);
+    }
+
+    public void testTaskCall () throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final File workingDir = getWorkDir();
+        final FileObject file = FileUtil.createData(new File(workingDir,"test.foo"));
+        final Source src = Source.create(file);
+
+        final FooTask task = new FooTask();
+        final FooUserTask userTask = new FooUserTask();
+        final FooEmbeddingProvider embProv = new FooEmbeddingProvider();
+        final Parser.Result result = new FooParserResult(src.createSnapshot());
+        final ResultIterator[] it = new ResultIterator[1];
+        ParserManager.parse(Collections.singleton(src), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                it[0] = resultIterator;
+            }
+        });
+
+        boolean success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callParserResultTask(task, result, null);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParserResultTask under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callParserResultTask(task, result, null);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParserResultTask without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callParserResultTask(task, result, null);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callParserResultTask with parser lock", success); //NOI18N
+        assertEquals(1, task.runCount);
+
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callEmbeddingProvider(embProv, src.createSnapshot());
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callEmbeddingProvider under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callEmbeddingProvider(embProv, src.createSnapshot());
+            success = true;
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callEmbeddingProvider without INTERNAL_LOCK", success); //NOI18N
+        assertEquals(1, embProv.runCount);
+
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callUserTask(userTask, it[0]);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callUserTask under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callUserTask(userTask, it[0]);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callUserTask without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callUserTask(userTask, it[0]);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callUserTask with parser lock", success); //NOI18N
+        assertEquals(1, userTask.runCount);
+        
+    }
+
+    public void testParserCall () throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final File workingDir = getWorkDir();
+        final FileObject file = FileUtil.createData(new File(workingDir,"test.foo"));
+        final Source src = Source.create(file);
+        final FooParser parser = new FooParser();
+        final FooTask task = new FooTask();
+
+        boolean success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callParse(parser, src.createSnapshot(), task, null);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParse under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callParse(parser, src.createSnapshot(), task, null);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParse without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callParse(parser, src.createSnapshot(), task, null);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callParse with parser lock", success); //NOI18N
+        assertEquals(1, parser.parseCount);
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callGetResult(parser, task);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callGetResult under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callGetResult(parser, task);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callGetResult without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callGetResult(parser, task);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callGetResult with parser lock", success); //NOI18N
+        assertEquals(1, parser.resultCount);
+        
+    }
+
     private static final class FooParserFactory extends ParserFactory {
         @Override
         public Parser createParser(Collection<Snapshot> snapshots) {
@@ -212,16 +418,22 @@ public class TaskProcessorTest extends NbTestCase {
 
     private static final class FooParser extends Parser {
         private FooParserResult result;
+        private int cancelCount;
+        private int parseCount;
+        private int resultCount;
 
         public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+            parseCount++;
             result = new FooParserResult((snapshot));
         }
 
         public @Override Result getResult(Task task) throws ParseException {
+            resultCount++;
             return result;
         }
 
         public @Override void cancel() {
+            cancelCount++;
         }
 
         public @Override void addChangeListener(ChangeListener changeListener) {
@@ -258,6 +470,63 @@ public class TaskProcessorTest extends NbTestCase {
                 filteredStackTrace.add(e);
             }
             caller = Util.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
+        }
+    }
+
+    private static class FooTask extends  ParserResultTask  {
+        
+        private int cancelCount;
+        private int runCount;
+
+        @Override
+        public void run(Result result, SchedulerEvent event) {
+            runCount++;
+        }
+
+        @Override
+        public int getPriority() {
+            return 10;
+        }
+
+        @Override
+        public Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+        }
+
+        @Override
+        public void cancel() {
+            cancelCount++;
+        }
+    }
+
+    private static class FooEmbeddingProvider extends EmbeddingProvider {
+
+        private int runCount;
+
+        @Override
+        public List<Embedding> getEmbeddings(Snapshot snapshot) {
+            runCount++;
+            return Collections.<Embedding>emptyList();
+        }
+
+        @Override
+        public int getPriority() {
+            return 10;
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+    }
+
+    private static class FooUserTask extends UserTask {
+
+        int runCount;
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            runCount++;
         }
     }
 }

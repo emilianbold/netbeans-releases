@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.event;
 
-package org.netbeans.modules.cnd.apt.impl.support;
-
-import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 
 /**
  *
- * @author vv159170
+ * @author Tomas Zezula
  */
-public abstract class SupportAPIAccessor {
-    private static SupportAPIAccessor INSTANCE;
+public class EventSupportTest extends NbTestCase {
 
-    public static SupportAPIAccessor get() {
-        SupportAPIAccessor out = INSTANCE;
-        if (out == null) {
-            synchronized (SupportAPIAccessor.class) {
-                if (INSTANCE == null) {
-                    Class<?> c = IncludeDirEntry.class;
-                    try {
-                        Class.forName(c.getName(), true, c.getClassLoader());
-                    } catch (ClassNotFoundException e) {
-                        // ignore
-                    }
-                }
-                out = INSTANCE;
-            }
-        }
-
-        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
-        return out;
+    public EventSupportTest(final String name) {
+        super(name);
     }
 
-    /**
-     * Register the accessor. The method can only be called once
-     * - otherwise it throws IllegalStateException.
-     *
-     * @param accessor instance.
-     */
-    public static void register(SupportAPIAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.clearWorkDir();
     }
 
-    public abstract void invalidateFileBasedCache(String file);
-    public abstract void invalidateCache();
-    public abstract boolean isExistingDirectory(IncludeDirEntry entry);
+
+    public void testReleaseCompletionCondition () throws IOException {
+        IndexingManagerAccessor.requiresReleaseOfCompletionLock = Boolean.TRUE;
+        try {
+            EventSupport.releaseCompletionCondition();
+            assertTrue("IllegalStateException expected when calling EventSupport.releaseCompletionCondition directly",false);  //NOI18N
+        } catch (IllegalStateException ae) {
+        }
+        final File wd = getWorkDir();
+        final File src = new File (wd,"src");
+        src.mkdirs();
+        try {
+            IndexingManager.getDefault().refreshIndexAndWait(src.toURI().toURL(), null);
+        } catch (IllegalStateException ae) {
+            assertTrue("IllegalStateException not expected when EventSupport.releaseCompletionCondition called by IndexingManager.refreshIndexAndWait", false);
+        }
+
+    }
 }

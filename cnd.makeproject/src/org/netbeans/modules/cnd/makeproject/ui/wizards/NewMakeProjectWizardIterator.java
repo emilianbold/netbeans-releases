@@ -528,7 +528,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, null);
         this.wiz.putProperty(WizardConstants.PROPERTY_NAME, null);
-        this.wiz.putProperty("mainClass", null); // NOI18N
+        this.wiz.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) {
             this.wiz.putProperty("sourceRoot", null); // NOI18N
         }
