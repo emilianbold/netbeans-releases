@@ -5,6 +5,11 @@
 		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>WeblogicEjbJar</bean-name>
                 <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEjbJar</implements>
+                <user-code>
+                    public void addWeblogicEnterpriseBean(org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEnterpriseBeanType enterpriseBean) {
+                        addWeblogicEnterpriseBean((WeblogicEnterpriseBeanType) enterpriseBean);
+                    }
+                </user-code>
 		<meta-property>
 			<bean-name>Description</bean-name>
 		</meta-property>
@@ -70,6 +75,12 @@
 		<dtd-name>weblogic-enterprise-beanType</dtd-name>
 		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>WeblogicEnterpriseBeanType</bean-name>
+                <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEnterpriseBeanType</implements>
+                <user-code>
+                    public void addResourceDescription(org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType description) {
+                        addResourceDescription((ResourceDescriptionType) description);
+                    }
+                </user-code>
 		<meta-property>
 			<bean-name>EjbName</bean-name>
 		</meta-property>
@@ -315,15 +326,20 @@
 	</meta-element>
 	<meta-element>
 		<dtd-name>dispatch-policyType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>DispatchPolicyType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>work-manager-shutdown-triggerType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>WorkManagerShutdownTriggerType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>MaxStuckThreadTime</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>StuckThreadCount</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>xsdBooleanType</dtd-name>
@@ -332,40 +348,99 @@
 		<wrapper-class>boolean</wrapper-class>
 	</meta-element>
 	<meta-element>
+		<dtd-name>xsdIntegerType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>XsdIntegerType</bean-name>
+		<wrapper-class>java.math.BigInteger</wrapper-class>
+	</meta-element>
+	<meta-element>
 		<dtd-name>capacityType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>CapacityType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Count</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>max-threads-constraintType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>MaxThreadsConstraintType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Count</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>PoolName</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>min-threads-constraintType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>MinThreadsConstraintType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Count</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>response-time-request-classType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>ResponseTimeRequestClassType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>GoalMs</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>fair-share-request-classType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>FairShareRequestClassType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>FairShare</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>context-request-classType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>ContextRequestClassType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>ContextCase</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>context-caseType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>ContextCaseType</bean-name>
+		<meta-property>
+			<bean-name>UserName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>GroupName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>RequestClassName</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>group-nameType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>GroupNameType</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>xsdNonNegativeIntegerType</dtd-name>
@@ -427,9 +502,9 @@
 	</meta-element>
 	<meta-element>
 		<dtd-name>message-destination-nameType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>MessageDestinationNameType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>string</dtd-name>
@@ -439,21 +514,21 @@
 	</meta-element>
 	<meta-element>
 		<dtd-name>destination-jndi-nameType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>DestinationJndiNameType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>initial-context-factoryType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>InitialContextFactoryType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>provider-urlType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>ProviderUrlType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>isolation-levelType</dtd-name>
@@ -525,34 +600,161 @@
 		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
-		<dtd-name>dispatch-policyType</dtd-name>
-		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
-		<bean-name>DispatchPolicyType</bean-name>
-		<wrapper-class>java.lang.String</wrapper-class>
-	</meta-element>
-	<meta-element>
 		<dtd-name>resource-descriptionType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>ResourceDescriptionType</bean-name>
-		<wrapper-class>String</wrapper-class>
+                <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType</implements>
+		<meta-property>
+			<bean-name>ResRefName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>JndiName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>ResourceLink</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>resource-env-descriptionType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>ResourceEnvDescriptionType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>ResourceEnvRefName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>JndiName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>ResourceLink</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>ejb-reference-descriptionType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>EjbReferenceDescriptionType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>EjbRefName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>JndiName</bean-name>
+		</meta-property>
 	</meta-element>
 	<meta-element>
 		<dtd-name>service-reference-descriptionType</dtd-name>
-		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>ServiceReferenceDescriptionType</bean-name>
-		<wrapper-class>String</wrapper-class>
+		<meta-property>
+			<bean-name>ServiceRefName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>WsdlUrl</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>CallProperty</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>PortInfo</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>property-namevalueType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>PropertyNamevalueType</bean-name>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Value</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>port-infoType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>PortInfoType</bean-name>
+		<meta-property>
+			<bean-name>PortName</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>StubProperty</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>CallProperty</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>WsatConfig</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>OwsmPolicy</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Operation</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>wsat-configType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>WsatConfigType</bean-name>
+		<meta-property>
+			<bean-name>Enabled</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>FlowType</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Version</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>owsm-policyType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>OwsmPolicyType</bean-name>
+		<meta-property>
+			<bean-name>Uri</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Status</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>Category</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>SecurityConfigurationProperty</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>operation-infoType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>OperationInfoType</bean-name>
+		<meta-property>
+			<bean-name>Name</bean-name>
+		</meta-property>
+		<meta-property>
+			<bean-name>WsatConfig</bean-name>
+		</meta-property>
+	</meta-element>
+	<meta-element>
+		<dtd-name>boolean</dtd-name>
+		<namespace>http://www.w3.org/2001/XMLSchema</namespace>
+		<bean-name>Boolean</bean-name>
+		<wrapper-class>boolean</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>transactionFlowType</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>TransactionFlowType</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>transaction-version</dtd-name>
+		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
+		<bean-name>TransactionVersion</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>ejb-ref-nameType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>EjbRefNameType</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>transport-requirementsType</dtd-name>
@@ -772,24 +974,6 @@
 		<dtd-name>distributed-destination-connectionType</dtd-name>
 		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
 		<bean-name>DistributedDestinationConnectionType</bean-name>
-		<wrapper-class>java.lang.String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>destination-jndi-nameType</dtd-name>
-		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
-		<bean-name>DestinationJndiNameType</bean-name>
-		<wrapper-class>java.lang.String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>initial-context-factoryType</dtd-name>
-		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
-		<bean-name>InitialContextFactoryType</bean-name>
-		<wrapper-class>java.lang.String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>provider-urlType</dtd-name>
-		<namespace>http://xmlns.oracle.com/weblogic/weblogic-ejb-jar</namespace>
-		<bean-name>ProviderUrlType</bean-name>
 		<wrapper-class>java.lang.String</wrapper-class>
 	</meta-element>
 	<meta-element>
@@ -1078,11 +1262,5 @@
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>XsdPositiveIntegerType</bean-name>
 		<wrapper-class>long</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>xsdIntegerType</dtd-name>
-		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
-		<bean-name>XsdIntegerType</bean-name>
-		<wrapper-class>java.math.BigInteger</wrapper-class>
 	</meta-element>
 </metaDD>

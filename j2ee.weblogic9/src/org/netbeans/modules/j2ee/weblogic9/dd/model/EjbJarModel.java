@@ -138,4 +138,70 @@ public final class EjbJarModel extends BaseDescriptorModel {
         webLogicEjbJar.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd http://xmlns.oracle.com/weblogic/weblogic-ejb-jar http://xmlns.oracle.com/weblogic/weblogic-ejb-jar/1.0/weblogic-ejb-jar.xsd"); // NOI18N
         return new EjbJarModel(webLogicEjbJar);
     }
+    
+    public void setReference(String ejbName, String ejbType, String referenceName, String jndiName) {
+        WeblogicEnterpriseBeanType enterpriseBean = getWeblogicEnterpriseBean(ejbName);
+        for (ResourceDescriptionType type : enterpriseBean.getResourceDescription()) {
+            String refName = type.getResRefName();
+            if (referenceName.equals(refName)) {
+                type.setJndiName(jndiName);
+                return;
+            }
+        }
+        
+        ResourceDescriptionType type = null;
+        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEjbJar) {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.ResourceDescriptionType();
+        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEjbJar) {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.ResourceDescriptionType();
+        } else {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb90.ResourceDescriptionType();
+        }        
+        
+        type.setResRefName(referenceName);
+        type.setJndiName(jndiName);
+        enterpriseBean.addResourceDescription(type);        
+    }
+
+    public String getReferenceJndiName(String ejbName, String referenceName) {
+        WeblogicEnterpriseBeanType enterpriseBean = null;
+        for (WeblogicEnterpriseBeanType ejb : bean.getWeblogicEnterpriseBean()) {
+            if (ejbName.equals(ejb.getEjbName())) {
+                enterpriseBean = ejb;
+                break;
+            }
+        }
+        
+        if (enterpriseBean == null) {
+            return null;
+        }
+
+        for (ResourceDescriptionType type : enterpriseBean.getResourceDescription()) {
+            String refName = type.getResRefName();
+            if (referenceName.equals(refName)) {
+                return type.getJndiName();
+            }
+        }
+        return null;
+    }
+
+    private WeblogicEnterpriseBeanType getWeblogicEnterpriseBean(String name) {
+        for (WeblogicEnterpriseBeanType enterpriseBean : bean.getWeblogicEnterpriseBean()) {
+            if (name.equals(enterpriseBean.getEjbName())) {
+                return enterpriseBean;
+            }
+        }
+        
+        WeblogicEnterpriseBeanType type = null;
+        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEjbJar) {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEnterpriseBeanType();
+        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEjbJar) {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEnterpriseBeanType();
+        } else {
+            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb90.WeblogicEnterpriseBeanType();
+        }
+        type.setEjbName(name);
+        bean.addWeblogicEnterpriseBean(type);
+        return type;
+    }
 }

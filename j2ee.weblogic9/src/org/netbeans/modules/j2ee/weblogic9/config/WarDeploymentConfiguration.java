@@ -396,7 +396,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         WebApplicationModel webLogicWebApp = getWeblogicWebApp();
         if (webLogicWebApp == null) { // graph not parseable
-            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadContextRoot", file.getPath());
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadReferenceName", file.getPath());
             throw new ConfigurationException(msg);
         }
         return webLogicWebApp.getReferenceJndiName(referenceName);
