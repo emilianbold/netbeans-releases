@@ -951,7 +951,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	// prop_set("DBX_output_inherited_members", "off"); // NOI18N
 
 	// Arrange for dbx victims to run under the Pio
-	boolean ioInWindow = DebuggerOption.RUN_IO.getCurrValue(factory().optionLayers).equals("window");
+	boolean ioInWindow = DebuggerOption.RUN_IO.getCurrValue(factory().optionLayers).equals("window"); //NOI18N
 
 	String slaveName = null;
 	if (!factory.connectExisting())
