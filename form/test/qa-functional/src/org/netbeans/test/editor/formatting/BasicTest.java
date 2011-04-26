@@ -50,21 +50,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import junit.framework.Test;
+import junit.textui.TestRunner;
+import lib.EditorTestCase;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.modules.form.FormDesignerOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.qa.form.ExtJellyTestCase;
-
+import org.netbeans.junit.NbTestSuite;
+//import org.netbeans.test.editor.LineDiff;
 
 /**
  *
  * @author jp159440
- * 
- * <b>Adam Senk</b>
- * 26 April 2011 WORKS
  */
-public class BasicTest extends ExtJellyTestCase{
+public class BasicTest extends EditorTestCase{
     
     private boolean generateGoldenFiles = false;
     
@@ -91,10 +90,9 @@ public class BasicTest extends ExtJellyTestCase{
 
     }
     
-    
-    
-    public File getaGoldenFile() {
-        String fileName = ("goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass");
+    @Override
+    public File getGoldenFile() {
+        String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
         File f = new java.io.File(getDataDir(),fileName);
         if(!f.exists()) fail("Golden file "+f.getAbsolutePath()+ " does not exist");
         return f;
@@ -108,21 +106,19 @@ public class BasicTest extends ExtJellyTestCase{
     }
     
 
-    public void compareGoldenFile() throws IOException, InterruptedException {
+    public void compareGoldenFile() throws IOException {
         File fGolden = null;
         if(!generateGoldenFiles) {
-            fGolden = getGoldenFile(testClass+".pass");
+            fGolden = getGoldenFile();
         } else {
             fGolden = getNewGoldenFile();
         }
         String refFileName = getName()+".ref";
         String diffFileName = getName()+".diff";
         File fRef = new File(getWorkDir(),refFileName);
-        Thread.sleep(1000);
         FileWriter fw = new FileWriter(fRef);
         fw.write(oper.getText());
         fw.close();
-        Thread.sleep(1000);
        // LineDiff diff = new LineDiff(false);
         if(!generateGoldenFiles) {
             File fDiff = new File(getWorkDir(),diffFileName);
@@ -130,7 +126,6 @@ public class BasicTest extends ExtJellyTestCase{
             System.out.println("fGolden file is: "+fGolden);
             System.out.println("fDiff file is: "+fDiff);
             assertFile(fRef, fGolden, fDiff);
-            Thread.sleep(1000);
            // if(diff.diff(fGolden, fRef, fDiff)) fail("Golden files differ");
         } else {
             FileWriter fwgolden = new FileWriter(fGolden);
@@ -140,22 +135,18 @@ public class BasicTest extends ExtJellyTestCase{
         }
     }
     
-    @Override
-    public void setUp() throws IOException  {
+    protected void setUp() throws Exception {
         super.setUp();
+        openDefaultProject();
         testClass = getName();
         System.out.println(testClass );
         System.out.println(curPackage);
-        setTestPackageName(curPackage);
-        openFile(testClass);
-        FormDesignerOperator fdo= new FormDesignerOperator(testClass);
-        
-        oper =  fdo.editor();
+        openSourceFile(curPackage, testClass);
+        oper =  new EditorOperator(testClass);
         oper.txtEditorPane().setVerification(false);
     }
     
-    @Override
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         compareGoldenFile();
         super.tearDown();
     }
@@ -216,8 +207,9 @@ public class BasicTest extends ExtJellyTestCase{
     }
     
     public void testReformat() {
-        
-        new ActionNoBlock("Source|Format", null).perform();
+        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
+        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
+        new Action(sourceMenu+"|"+reformat, null).perform();
     }
     
     /**
@@ -225,7 +217,9 @@ public class BasicTest extends ExtJellyTestCase{
      * testReformat2.java, testReformat.pass
      */ 
     public void testReformat2() {
-        new ActionNoBlock("Source|Format", null).perform();
+        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
+        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
+        new Action(sourceMenu+"|"+reformat, null).perform();
     }
     
     

@@ -41,40 +41,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.qa.form.options;
 
-import java.awt.event.KeyEvent;
-import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jellytools.properties.Property;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
 /**
  * Componentes declaration test
  *
  * @author Jiri Vagner
- * 
- * <b>Adam Senk</b>
- * 26 APRIL 2011 WORKS
  */
 public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
-
+    
     /** Constructor required by JUnit */
     public GeneratedComponentsDestionationTest(String testName) {
         super(testName);
     }
-
-    /** Creates suite from particular test cases. */
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(GeneratedComponentsDestionationTest.class).addTest(
-                "testGeneratedComponentsDestionationLocal",
-                "testGeneratedComponentsDestionationClassField").clusters(".*").enableModules(".*").gui(true));
+    
+    /** Method allowing to execute test directly from IDE. */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
-
+    
+    /** Creates suite from particular test cases. */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        
+        suite.addTest(new GeneratedComponentsDestionationTest("testGeneratedComponentsDestionationLocal")); // NOI18N
+        suite.addTest(new GeneratedComponentsDestionationTest("testGeneratedComponentsDestionationClassField")); // NOI18N
+        
+        return suite;
+    }
+    
     /** Tests generation component declaration code with properties LocalVariables=true
      * Test for issue 95518
      */
@@ -96,67 +100,38 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
      */
     private void testGeneratedComponentsDestionation(Boolean local) {
         OptionsOperator.invoke();
-        //add timeout
-        waitNoEvent(1000);
-        log("Option dialog was opened");
-
         OptionsOperator options = new OptionsOperator();
-
-
-        //add timeout
-        waitNoEvent(1000);
-        if (local) {
-            options.selectMiscellaneous(); // NOI18N
-            //add timeout
-            waitNoEvent(2000);
-            options.pushKey(KeyEvent.VK_TAB);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_TAB);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_TAB);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_TAB);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_TAB);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_LEFT);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_LEFT);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_LEFT);
-            waitNoEvent(500);
-            options.pushKey(KeyEvent.VK_SPACE);
-        }
-        waitNoEvent(500);
-        int i = 0;
-        if (!local) {
-            i = 1;
-        }
-        JRadioButtonOperator jrbo = new JRadioButtonOperator(options, i);
-        jrbo.setSelected(true);
-
-        waitNoEvent(1000);
-        options.ok();
+//        options.switchToClassicView();
         waitAMoment();
+        
+        options.selectOption("Editing|GUI Builder"); // NOI18N
+        waitAMoment();        
 
+        Property property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Variables Modifier"); // NOI18N
+        property.setValue("private"); // NOI18N
+        
+        property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Local Variables"); // NOI18N
+        property.setValue(String.valueOf(local));
+        options.close();
+        waitAMoment();        
+        
         String name = createJFrameFile();
-        waitAMoment();
-
+        waitAMoment();        
+        
         FormDesignerOperator designer = new FormDesignerOperator(name);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
-
+        
         runPopupOverNode("Add From Palette|Swing Controls|Label", node); // NOI18N
-        waitAMoment();
-
+        waitAMoment();        
+        
         String code = "private javax.swing.JLabel jLabel1";  // NOI18N
-        if (local) {
+        if (local)
             missInCode(code, designer);
-        } else {
+        else
             findInCode(code, designer);
-        }
-
-        waitAMoment();
+        
+        waitAMoment();        
         removeFile(name);
     }
 }
