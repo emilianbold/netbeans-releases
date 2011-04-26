@@ -47,8 +47,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -56,6 +58,7 @@ import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -65,6 +68,7 @@ import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
 import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.openide.util.NbBundle;
@@ -224,5 +228,40 @@ public final class Utils {
             }
         }
         return name;
+    }
+
+    /**
+     * Transforms references into GitBranches
+     * @param allRefs all references found
+     * @param prefix prefix denoting heads amongst references
+     * @return 
+     */
+    public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix) {
+        Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+        
+        // try to find the head first - it usually is the active remote branch
+        Ref head = null;
+        for (final Ref ref : allRefs) {
+            if (ref.getLeaf().getName().equals(Constants.HEAD)) {
+                head = ref;
+                break;
+            }
+        }
+        
+        // get all refs/heads
+        for (final Ref ref : RefComparator.sort(allRefs)) {
+            String refName = ref.getLeaf().getName();
+            if (refName.startsWith(prefix)) {
+                String name = refName.substring(prefix.length());
+                branches.put(
+                    name, 
+                    new JGitBranch(
+                        name, 
+                        false, 
+                        head != null && ref.getObjectId().equals(head.getObjectId()), 
+                        ref.getLeaf().getObjectId()));
+            }
+        }
+        return branches;
     }
 }

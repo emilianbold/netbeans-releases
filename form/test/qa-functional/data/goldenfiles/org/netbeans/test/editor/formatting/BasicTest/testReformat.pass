@@ -108,28 +108,27 @@ public class testReformat extends javax.swing.JFrame {
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
     // TODO add your handling code here:
     System.out.println("Button Cancel was pressed");
-System.exit(1);    
+    System.exit(1);
 }                                        
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-System.out.println("Button OK was pressed");
+    System.out.println("Button OK was pressed");
     System.exit(0);
 }                                        
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new testReformat().setVisible(true);
             }
         });
     }
-    
     // Variables declaration - do not modify                     
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     // End of variables declaration                   
-    
 }
