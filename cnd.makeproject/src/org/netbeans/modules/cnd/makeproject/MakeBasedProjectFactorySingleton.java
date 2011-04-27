@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
@@ -102,34 +100,20 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     }
 
     @Override
-    public boolean isProject(FileObject dir) {
-        File dirF = FileUtil.toFile(dir);
-        if (dirF == null) {
-            return false;
-        }
-        // Just check whether project.xml exists. Do not attempt to parse it, etc.
-        // Do not use FileObject.getFileObject since that may load other sister files.
-        File projectXmlF = new File(new File(dirF, "nbproject"), "project.xml"); // NOI18N
-        return projectXmlF.isFile();
+  public boolean isProject(FileObject dir) {
+        FileObject projectFile = dir.getFileObject(PROJECT_XML_PATH);
+        return projectFile != null && projectFile.isValid() && projectFile.isData();
     }
 
     @Override
     public Result isProject2(FileObject projectDirectory) {
-        if (FileUtil.toFile(projectDirectory) == null) {
-            return null;
-        }
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
         //#54488: Added check for virtual
         if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
             return null;
         }
-        File projectDiskFile = FileUtil.toFile(projectFile);
-        //#63834: if projectFile exists and projectDiskFile does not, do nothing:
-        if (projectDiskFile == null) {
-            return null;
-        }
         try {
-            Document projectXml = loadProjectXml(projectDiskFile);
+            Document projectXml = loadProjectXml(projectDirectory);
             if (projectXml != null) {
                 Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
                 if (typeEl != null) {
@@ -152,35 +136,25 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
 
     @Override
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        if (FileUtil.toFile(projectDirectory) == null) {
-            LOG.log(Level.FINE, "no disk dir {0}", projectDirectory);
-            return null;
-        }
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
         //#54488: Added check for virtual
         if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
             LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
             return null;
         }
-        File projectDiskFile = FileUtil.toFile(projectFile);
-        //#63834: if projectFile exists and projectDiskFile does not, do nothing:
-        if (projectDiskFile == null) {
-            LOG.log(Level.FINE, "{0} not mappable to file", projectFile);
-            return null;
-        }
-        Document projectXml = loadProjectXml(projectDiskFile);
+        Document projectXml = loadProjectXml(projectFile);
         if (projectXml == null) {
-            LOG.log(Level.FINE, "could not load {0}", projectDiskFile);
+            LOG.log(Level.FINE, "could not load {0}", projectFile);
             return null;
         }
         Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
         if (typeEl == null) {
-            LOG.log(Level.FINE, "no <type> in {0}", projectDiskFile);
+            LOG.log(Level.FINE, "no <type> in {0}", projectFile);
             return null;
         }
         String type = XMLUtil.findText(typeEl);
         if (type == null) {
-            LOG.log(Level.FINE, "no <type> text in {0}", projectDiskFile);
+            LOG.log(Level.FINE, "no <type> text in {0}", projectFile);
             return null;
         }
         MakeProjectTypeImpl provider = findAntBasedProjectType(type);
@@ -198,9 +172,9 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
         return project;
     }
 
-    private Document loadProjectXml(File projectDiskFile) throws IOException {
+    private Document loadProjectXml(FileObject projectDiskFile) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        InputStream is = new FileInputStream(projectDiskFile);
+        InputStream is = projectDiskFile.getInputStream();
         try {
             FileUtil.copy(is, baos);
         } finally {
@@ -208,7 +182,6 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         byte[] data = baos.toByteArray();
         InputSource src = new InputSource(new ByteArrayInputStream(data));
-        src.setSystemId(projectDiskFile.toURI().toString());
         try {
 //            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

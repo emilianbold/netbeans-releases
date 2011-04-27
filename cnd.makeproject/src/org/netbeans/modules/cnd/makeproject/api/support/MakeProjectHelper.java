@@ -229,4 +229,6 @@ public interface MakeProjectHelper {
     SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories);
     
     File resolveFile(String filename);
+
+    FileObject resolveFileObject(String filename);
 }

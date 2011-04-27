@@ -158,7 +158,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = xml.getInputStream();
-        success = read(inputStream, FileUtil.toFile(xml).getPath());
+        success = read(inputStream, xml.getPath());
         deregisterXMLDecoder(decoder);
 
         if (!success) {

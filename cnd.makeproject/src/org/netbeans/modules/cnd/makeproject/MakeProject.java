@@ -305,7 +305,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
-                    new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
+                    new MakeSharabilityQuery(projectDescriptorProvider, getProjectDirectory()),
                     sources,
                     helper,
                     projectDescriptorProvider,

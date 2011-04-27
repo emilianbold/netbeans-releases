@@ -59,7 +59,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
@@ -75,8 +74,10 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.RequestProcessor;
@@ -147,18 +148,11 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     private final FileChangeListener fileListener;
     /** Atomic actions in use to save XML files. */
     private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
-    /**
-     * Number of metadata files remaining to be written before {@link #pendingHook} can be called.
-     * Javadoc for {@link ProjectXmlSavedHook} only guarantees that project.xml will be written,
-     * but best to be safe and make sure also private.xml and *.properties are too.
-     */
-    private int pendingHookCount;
 
     // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
     // and reload any modified files if the project is unmodified
     public MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
-        assert dir != null && FileUtil.toFile(dir) != null;
         this.state = state;
         assert state != null;
         this.type = type;
@@ -167,13 +161,41 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         projectXmlValid = true;
         assert projectXml != null;
         fileListener = new FileListener();
-        FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH));
-        FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+        FileObject resolveFileObject = resolveFileObject(PROJECT_XML_PATH);
+        if (resolveFileObject != null) {
+            resolveFileObject.addFileChangeListener(fileListener);
+        } else {
+            FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH));
+        }
+        resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
+        if (resolveFileObject != null) {
+            resolveFileObject.addFileChangeListener(fileListener);
+        } else {
+            FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+        }
+    }
+
+    @Override
+    public FileObject resolveFileObject(String filename) throws IllegalArgumentException {
+        if (filename == null) {
+            throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
+        }
+        FileObject f;
+        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
+            return dir.getFileObject(filename);
+        } else {
+            try {
+                return dir.getFileSystem().findResource(filename) ;
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
     }
 
     @Override
     public File resolveFile(String filename) throws IllegalArgumentException {
-        File basedir = FileUtil.toFile(dir);
+        File basedir = new File(dir.getPath());
         if (basedir == null) {
             throw new NullPointerException("null basedir passed to resolveFile"); // NOI18N
         }
@@ -259,10 +281,8 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         if (xml == null || !xml.isData()) {
             return NONEXISTENT;
         }
-        File f = FileUtil.toFile(xml);
-        assert f != null;
         try {
-            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            Document doc = XMLUtil.parse(new InputSource(xml.getInputStream()), false, true, XMLUtil.defaultErrorHandler(), null);
             return doc;
         } catch (IOException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
@@ -638,16 +658,16 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                 }
             }
             String path;
-            File f = FileUtil.toFile(fe.getFile());
+            FileObject f = fe.getFile();
             synchronized (modifiedMetadataPaths) {
-                if (f.equals(resolveFile(PROJECT_XML_PATH))) {
+                if (f.equals(resolveFileObject(PROJECT_XML_PATH))) {
                     if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
                         //#68872: don't do anything if the given file has non-saved changes:
                         return;
                     }
                     path = PROJECT_XML_PATH;
                     projectXmlValid = false;
-                } else if (f.equals(resolveFile(PRIVATE_XML_PATH))) {
+                } else if (f.equals(resolveFileObject(PRIVATE_XML_PATH))) {
                     if (modifiedMetadataPaths.contains(PRIVATE_XML_PATH)) {
                         //#68872: don't do anything if the given file has non-saved changes:
                         return;
