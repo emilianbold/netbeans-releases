@@ -43,22 +43,34 @@
 package org.netbeans.modules.git.ui.push;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
+import org.netbeans.libs.git.SearchCriteria;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.hooks.GitHook;
+import org.netbeans.modules.versioning.hooks.GitHookContext;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -85,20 +97,37 @@ public class PushAction extends SingleRepositoryAction {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         PushWizard wiz = new PushWizard(repository, remotes);
         if (wiz.show()) {
-            push(repository, wiz.getPushUri(), wiz.getPushRefSpecs(), wiz.getFetchRefSpecs());
+            push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
         }
     }
     
-    public void push (File repository, final String remote, final List<String> pushRefSpecs, final List<String> fetchRefSpecs) {
+    public void push (File repository, final String remote, final Collection<PushBranchMapping> pushMappins, final List<String> fetchRefSpecs) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
+                List<String> pushRefSpecs = new LinkedList<String>();
+                for (PushBranchMapping b : pushMappins) {
+                    pushRefSpecs.add(b.getRefSpec());
+                }
                 LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, remote }); //NOI18N
                 try {
                     GitClient client = getClient();
+                    // init push hooks
+                    Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
+                    beforePush(hooks, pushMappins);
+                    if (isCanceled()) {
+                        return;
+                    }
+                    // push
                     GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, this);
                     logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
                     logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N
+                    if (isCanceled()) {
+                        return;
+                    }
+                    // after-push hooks
+                    setProgress(NbBundle.getMessage(PushAction.class, "MSG_PushAction.finalizing")); //NOI18N
+                    afterPush(hooks, result.getRemoteRepositoryUpdates());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
@@ -127,6 +156,137 @@ public class PushAction extends SingleRepositoryAction {
                         }
                     }
                 }
+            }
+
+            private void beforePush (Collection<GitHook> hooks, Collection<PushBranchMapping> pushMapping) throws GitException {
+                if (hooks.size() > 0) {
+                    List<GitRevisionInfo> messages = getOutgoingRevisions(pushMapping);
+                    if(!isCanceled() && !messages.isEmpty()) {
+                        GitHookContext context = initializeHookContext(messages);
+                        for (GitHook gitHook : hooks) {
+                            try {
+                                // XXX handle returned context
+                                gitHook.beforePush(context);
+                            } catch (IOException ex) {
+                                // XXX handle veto
+                            }
+                        }
+                    }
+                }
+            }
+
+            private List<GitRevisionInfo> getOutgoingRevisions (Collection<PushBranchMapping> pushMappings) throws GitException {
+                List<GitRevisionInfo> revisionList = new LinkedList<GitRevisionInfo>();
+                Set<String> visitedRevisions = new HashSet<String>();
+                GitClient client = Git.getInstance().getClient(getRepositoryRoot()); // do not use progresssupport's client, that one logs into output
+                for (PushBranchMapping mapping : pushMappings) {
+                    String remoteRevisionId = mapping.getRemoteRepositoryBranchHeadId();
+                    String localRevisionId = mapping.getLocalRepositoryBranchHeadId();
+                    revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                    if (isCanceled()) {
+                        break;
+                    }
+                }
+                return revisionList;
+            }
+
+            private List<GitRevisionInfo> getPushedRevisions (Map<String, GitTransportUpdate> remoteRepositoryUpdates) throws GitException {
+                List<GitRevisionInfo> revisionList = new LinkedList<GitRevisionInfo>();
+                Set<String> visitedRevisions = new HashSet<String>();
+                GitClient client = Git.getInstance().getClient(getRepositoryRoot()); // do not use progresssupport's client, that one logs into output
+                for (Map.Entry<String, GitTransportUpdate> update : remoteRepositoryUpdates.entrySet()) {
+                    String remoteRevisionId = update.getValue().getOldObjectId();
+                    String localRevisionId = update.getValue().getNewObjectId();
+                    revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                    if (isCanceled()) {
+                        break;
+                    }
+                }
+                return revisionList;
+            }
+
+            private void afterPush (Collection<GitHook> hooks, Map<String, GitTransportUpdate> remoteRepositoryUpdates) throws GitException {
+                if (hooks.size() > 0) {
+                    List<GitRevisionInfo> messages = getPushedRevisions(remoteRepositoryUpdates);
+                    if(!isCanceled() && !messages.isEmpty()) {
+                        GitHookContext context = initializeHookContext(messages);
+                        for (GitHook gitHook : hooks) {
+                            gitHook.afterPush(context);
+                        }
+                    }
+                }
+            }
+
+            private GitHookContext initializeHookContext (List<GitRevisionInfo> messages) {
+                List<GitHookContext.LogEntry> entries = new LinkedList<GitHookContext.LogEntry>();
+                for (GitRevisionInfo message : messages) {
+                    entries.add(new GitHookContext.LogEntry(
+                            message.getFullMessage(),
+                            message.getAuthor().toString(),
+                            message.getRevision(),
+                            new Date(message.getCommitTime())));
+                }
+                GitHookContext context = new GitHookContext(new File[] { getRepositoryRoot() }, null, entries.toArray(new GitHookContext.LogEntry[entries.size()]));
+                return context;
+            }
+
+            private List<GitRevisionInfo> addRevisions (GitClient client, Set<String> visitedRevisions, String remoteRevisionId, String localRevisionId) throws GitException {
+                List<GitRevisionInfo> list = new LinkedList<GitRevisionInfo>();
+                SearchCriteria crit = null;
+                if (localRevisionId == null) {
+                    // delete branch, do nothing
+                } else if (remoteRevisionId == null) {
+                    // adding branch, add all revisions in the branch
+                    crit = new SearchCriteria();
+                    crit.setRevisionTo(localRevisionId);
+                } else {
+                    // updating branch, add all new revisions
+                    crit = new SearchCriteria();
+                    crit.setRevisionFrom(remoteRevisionId);
+                    crit.setRevisionTo(localRevisionId);
+                }
+                if (crit != null) {
+                    final GitProgressSupport supp = this;
+                    try {
+                        GitRevisionInfo[] revisions = client.log(crit, new ProgressMonitor() {
+                            @Override
+                            public boolean isCanceled () {
+                                return supp.isCanceled();
+                            }
+
+                            @Override
+                            public void started (String command) {}
+
+                            @Override
+                            public void finished () {}
+
+                            @Override
+                            public void preparationsFailed (String message) {}
+
+                            @Override
+                            public void notifyError (String message) {}
+
+                            @Override
+                            public void notifyWarning (String message) {}
+                        });
+                        for (GitRevisionInfo rev : revisions) {
+                            boolean firstTime = visitedRevisions.add(rev.getRevision());
+                            if (firstTime) {
+                                list.add(rev);
+                            }
+                        }
+                    } catch (GitException.MissingObjectException ex) {
+                        if (remoteRevisionId != null && remoteRevisionId.equals(ex.getObjectName())) {
+                            // probably not a fast-forward push, what should we do next?
+                            // list all revisions? that could take a loooot of time and memory
+                            // get a common parent? and how?
+                            // for now let's do... nothing
+                        } else {
+                            throw ex;
+                        }
+                    }
+                }
+                return list;
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PushAction.class, "LBL_PushAction.progressName")); //NOI18N
