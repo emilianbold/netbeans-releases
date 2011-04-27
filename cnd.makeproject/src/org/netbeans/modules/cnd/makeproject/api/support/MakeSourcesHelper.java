@@ -122,7 +122,7 @@ public final class MakeSourcesHelper {
         }
         @Override
         public String toString() {
-            return "Root[" + location + "]";
+            return "Root[" + location + "]"; //NOI18N
         }
     }
     
@@ -202,7 +202,7 @@ public final class MakeSourcesHelper {
                 }
                 String path = FileUtil.getRelativePath(loc, file);
                 if (path == null) {
-                    throw new IllegalArgumentException(file + " is not inside " + loc);
+                    throw new IllegalArgumentException(file + " is not inside " + loc); //NOI18N
                 }
                 if (file.isFolder()) {
                     path += "/"; // NOI18N

@@ -154,16 +154,16 @@ public final class MakePathMatcher  {
             Matcher m = Pattern.compile("/\\*\\*/|/\\*\\*|\\*\\*/|/\\*$|\\*|/|[^*/]+").matcher(pattern); // NOI18N
             while (m.find()) {
                 String t = m.group();
-                if (t.equals("/**")) {
+                if (t.equals("/**")) { // NOI18N
                     rx.append("/.*");
-                } else if (t.equals("**/")) {
-                    rx.append("(.*/|)");
-                } else if (t.equals("/**/")) {
-                    rx.append("(/.*/|/)");
+                } else if (t.equals("**/")) { // NOI18N
+                    rx.append("(.*/|)"); // NOI18N
+                } else if (t.equals("/**/")) { // NOI18N
+                    rx.append("(/.*/|/)"); // NOI18N
                 } else if (t.equals("/*")) { // #98235
-                    rx.append("/[^/]+");
-                } else if (t.equals("*")) {
-                    rx.append("[^/]*");
+                    rx.append("/[^/]+"); // NOI18N
+                } else if (t.equals("*")) { // NOI18N
+                    rx.append("[^/]*"); // NOI18N
                 } else {
                     rx.append(Pattern.quote(t));
                 }
@@ -190,7 +190,7 @@ public final class MakePathMatcher  {
             if (includePattern.matcher(path).matches()) {
                 return true;
             }
-            if (useKnownIncludes && (path.length() == 0 || path.endsWith("/"))) {
+            if (useKnownIncludes && (path.length() == 0 || path.endsWith("/"))) { // NOI18N
                 for (String incl : knownIncludes) {
                     if (incl.startsWith(path)) {
                         return true;
@@ -268,13 +268,13 @@ public final class MakePathMatcher  {
             // Find what dirs inside root actually match the path, so we known which parents to include later.
             // XXX note that this fails to listen to file creations & deletions inside the root so the result
             // can become inaccurate. Not clear how to efficiently solve that.
-            findMatches(base, "", roots);
+            findMatches(base, "", roots); // NOI18N
         }
         return roots;
     }
 
     private void findMatches(File dir, String prefix, Set<String> roots) {
-        assert prefix.length() == 0 || prefix.endsWith("/");
+        assert prefix.length() == 0 || prefix.endsWith("/"); // NOI18N
         assert includes != null;
         String[] childnames = dir.list();
         if (childnames == null) {
