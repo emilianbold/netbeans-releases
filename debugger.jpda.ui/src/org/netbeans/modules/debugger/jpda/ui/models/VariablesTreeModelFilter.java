@@ -142,7 +142,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         this.lookupProvider = lookupProvider;
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         evalListener = new EvaluatorListener();
-        CodeEvaluator.addResultListener(evalListener);
+        CodeEvaluator.addResultListener(WeakListeners.propertyChange(evalListener, new ResultListenerRemoval()));
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(
                 PreferenceChangeListener.class, prefListener, preferences));
@@ -793,6 +793,13 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             }
         }
 
+    }
+    
+    private static class ResultListenerRemoval {
+        
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            CodeEvaluator.removeResultListener(l);
+        }
     }
 
 }
