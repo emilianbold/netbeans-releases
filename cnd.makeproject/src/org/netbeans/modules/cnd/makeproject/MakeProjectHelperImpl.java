@@ -80,6 +80,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.WeakSet;
@@ -165,13 +166,13 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         if (resolveFileObject != null) {
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
-            FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH));
+            FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH)); //XXX:fullRemote: introduce a special listener
         }
         resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
         if (resolveFileObject != null) {
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
-            FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+            FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH)); //XXX:fullRemote: introduce a special listener
         }
     }
 
@@ -193,15 +194,11 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
     }
 
+    //XXX:fullRemote: deprecate and remove
     @Override
     public File resolveFile(String filename) throws IllegalArgumentException {
+        Parameters.notNull("filename", filename);
         File basedir = new File(dir.getPath());
-        if (basedir == null) {
-            throw new NullPointerException("null basedir passed to resolveFile"); // NOI18N
-        }
-        if (filename == null) {
-            throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
-        }
         if (!basedir.isAbsolute()) {
             throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
         }

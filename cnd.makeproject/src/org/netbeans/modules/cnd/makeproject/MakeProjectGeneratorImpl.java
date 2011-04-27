@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -126,13 +127,13 @@ public class MakeProjectGeneratorImpl {
 
     public static MakeProject createBlankProject(ProjectParameters prjParams) throws IOException {
         MakeConfiguration[] confs = prjParams.getConfigurations();
-        File projectFolder = prjParams.getProjectFolder();
+        String projectFolderPath = prjParams.getProjectFolderPath();
 
         // work in a copy of confs
         MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
             copyConfs[i] = confs[i].clone();
-            copyConfs[i].setBaseDir(projectFolder.getPath());
+            copyConfs[i].setFsPath(new FSPath(prjParams.getSourceFileSystem(), projectFolderPath));
             RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
         }

@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryN
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
@@ -151,16 +152,30 @@ public class MakeConfiguration extends Configuration {
     private volatile RemoteProject.Mode remoteMode;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
+    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, null);
     }
 
+    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
         this(baseDir, name, configurationTypeValue, hostUID, null, true);
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        super(baseDir, name);
+        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, hostUID, hostCS, defaultToolCollection);
+    }
+    
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
+        this(fsPath, name, configurationTypeValue, null);
+    }
+
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
+        this(fsPath, name, configurationTypeValue, hostUID, null, true);
+    }
+
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+        super(fsPath, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
@@ -188,10 +203,10 @@ public class MakeConfiguration extends Configuration {
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
-        cCompilerConfiguration = new CCompilerConfiguration(baseDir, null, this);
-        ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null, this);
-        fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
-        assemblerConfiguration = new AssemblerConfiguration(baseDir, null);
+        cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
+        ccCompilerConfiguration = new CCCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
+        fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
+        assemblerConfiguration = new AssemblerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
@@ -457,7 +472,7 @@ public class MakeConfiguration extends Configuration {
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
-        setBaseDir(makeConf.getBaseDir());
+        setFsPath(makeConf.getFsPath());
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
@@ -511,7 +526,7 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public Configuration copy() {
-        MakeConfiguration copy = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
+        MakeConfiguration copy = new MakeConfiguration(getFsPath(), getName(), getConfigurationType().getValue());
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
@@ -593,7 +608,7 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public MakeConfiguration clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(),
+        MakeConfiguration clone = new MakeConfiguration(getFsPath(), getName(),
                 getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);

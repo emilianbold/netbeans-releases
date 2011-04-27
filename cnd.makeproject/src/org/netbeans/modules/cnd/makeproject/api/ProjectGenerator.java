@@ -62,6 +62,8 @@ import org.netbeans.modules.cnd.makeproject.ui.wizards.NewProjectWizardUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 public class ProjectGenerator {
@@ -69,7 +71,7 @@ public class ProjectGenerator {
     public static final class ProjectParameters {
 
         private final String projectName;
-        private final File projectFolder;
+        private final String projectFolderPath;
         private String makefile;
         private MakeConfiguration[] configurations;
         private boolean openFlag;
@@ -105,9 +107,11 @@ public class ProjectGenerator {
          * @param projectName name of the project
          * @param projectFolder project folder (i.e. ~/NetbeansProjects/projectName)
          */
-        public ProjectParameters(String projectName, File projectFolder) {            
+        //XXX:fullRemote:fileSystem - change File to setFSPath
+        public ProjectParameters(String projectName, File projectFolder) {
             this.projectName = projectName;
-            this.projectFolder = FileUtil.normalizeFile(projectFolder);
+            this.sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
+            this.projectFolderPath = FileUtil.normalizeFile(projectFolder).getPath();
             this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             this.configurations = new MakeConfiguration[0];
             this.openFlag = false;
@@ -119,7 +123,6 @@ public class ProjectGenerator {
             this.postCreationClassName = null;
             this.mainProject = null;
             this.templateParams = Collections.<String, Object>emptyMap();
-            this.sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
         }
 
         public ProjectParameters setMakefileName(String makefile) {
@@ -207,10 +210,15 @@ public class ProjectGenerator {
             return this;
         }
 
+        //XXX:fullRemote:fileSystem - change with setFSPath
         public File getProjectFolder() {
-            return projectFolder;
+            return new File(projectFolderPath);
         }
 
+        public String getProjectFolderPath() {
+            return projectFolderPath;
+        }
+        
         public String getProjectName() {
             return projectName;
         }
@@ -257,6 +265,10 @@ public class ProjectGenerator {
 
         public ExecutionEnvironment getSourceExecutionEnvironment() {
             return sourceEnv;
+        }
+        
+        public FileSystem getSourceFileSystem() {
+            return FileSystemProvider.getFileSystem(sourceEnv);
         }
 
         public void setSourceExecutionEnvironment(ExecutionEnvironment env) {
