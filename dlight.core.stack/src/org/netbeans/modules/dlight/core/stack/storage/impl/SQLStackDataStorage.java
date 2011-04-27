@@ -1012,7 +1012,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
         public FunctionImpl(long id, long context_id, String name, String qualifiedName, String module_name, String module_offset, String source_file) {
             this.id = id;
-            this.name = name;
+            try{
+                this.name = FunctionNameUtils.getFunctionName(qualifiedName);
+            }catch(Throwable e){
+                System.err.println(e);
+                this.name = qualifiedName;
+            }
             this.quilifiedName = qualifiedName;
             this.module_name = module_name;
             this.module_offset = module_offset;

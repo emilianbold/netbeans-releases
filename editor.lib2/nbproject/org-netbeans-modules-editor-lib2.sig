@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.28.0
+#Version 1.39.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -119,9 +119,11 @@ meth public abstract void invoke()
 
 CLSS public abstract interface static org.netbeans.spi.editor.codegen.CodeGenerator$Factory
  outer org.netbeans.spi.editor.codegen.CodeGenerator
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="CodeGenerators")
 meth public abstract java.util.List<? extends org.netbeans.spi.editor.codegen.CodeGenerator> create(org.openide.util.Lookup)
 
 CLSS public abstract interface org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="CodeGeneratorContextProviders")
 innr public abstract interface static Task
 meth public abstract void runTaskWithinContext(org.openide.util.Lookup,org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider$Task)
 
@@ -144,13 +146,14 @@ intf java.util.EventListener
 meth public abstract void highlightChanged(org.netbeans.spi.editor.highlighting.HighlightsChangeEvent)
 
 CLSS public abstract interface org.netbeans.spi.editor.highlighting.HighlightsContainer
-fld public final static java.lang.String ATTR_EXTENDS_EMPTY_LINE
-fld public final static java.lang.String ATTR_EXTENDS_EOL
+fld public final static java.lang.String ATTR_EXTENDS_EMPTY_LINE = "org.netbeans.spi.editor.highlighting.HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE"
+fld public final static java.lang.String ATTR_EXTENDS_EOL = "org.netbeans.spi.editor.highlighting.HighlightsContainer.ATTR_EXTENDS_EOL"
 meth public abstract org.netbeans.spi.editor.highlighting.HighlightsSequence getHighlights(int,int)
 meth public abstract void addHighlightsChangeListener(org.netbeans.spi.editor.highlighting.HighlightsChangeListener)
 meth public abstract void removeHighlightsChangeListener(org.netbeans.spi.editor.highlighting.HighlightsChangeListener)
 
 CLSS public final org.netbeans.spi.editor.highlighting.HighlightsLayer
+meth public java.lang.String toString()
 meth public static org.netbeans.spi.editor.highlighting.HighlightsLayer create(java.lang.String,org.netbeans.spi.editor.highlighting.ZOrder,boolean,org.netbeans.spi.editor.highlighting.HighlightsContainer)
 supr java.lang.Object
 hfds accessor,container,fixedSize,layerTypeId,zOrder
@@ -208,7 +211,7 @@ meth public void removeHighlights(int,int,boolean)
 meth public void setHighlights(org.netbeans.spi.editor.highlighting.HighlightsSequence)
 meth public void setHighlights(org.netbeans.spi.editor.highlighting.support.OffsetsBag)
 supr org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer
-hfds LOG,docListener,document,lastAddIndex,lastMoveNextIndex,marks,mergeHighlights,version
+hfds LOG,discardCaller,discardThreadId,docListener,document,lastAddIndex,lastMoveNextIndex,marks,mergeHighlights,version
 hcls DocL,Mark,Seq
 
 CLSS public final org.netbeans.spi.editor.highlighting.support.PositionsBag
@@ -224,4 +227,92 @@ meth public void setHighlights(org.netbeans.spi.editor.highlighting.support.Posi
 supr org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer
 hfds LOG,attributes,document,marks,mergeHighlights,version
 hcls Seq
+
+CLSS public abstract interface !annotation org.netbeans.spi.editor.mimelookup.MimeLocation
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass()
+meth public abstract java.lang.String subfolderName()
+
+CLSS public abstract interface org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor
+innr public abstract interface static Factory
+innr public final static Context
+meth public abstract boolean beforeRemove(org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Context) throws javax.swing.text.BadLocationException
+meth public abstract void afterRemove(org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Context) throws javax.swing.text.BadLocationException
+meth public abstract void cancelled(org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Context)
+meth public abstract void remove(org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Context) throws javax.swing.text.BadLocationException
+
+CLSS public final static org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Context
+ outer org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor
+meth public boolean isBackwardDelete()
+meth public int getOffset()
+meth public java.lang.String getText()
+meth public javax.swing.text.Document getDocument()
+meth public javax.swing.text.JTextComponent getComponent()
+supr java.lang.Object
+hfds backwardDelete,component,document,offset,removedText
+
+CLSS public abstract interface static org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Factory
+ outer org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor
+meth public abstract org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor createDeletedTextInterceptor(org.netbeans.api.editor.mimelookup.MimePath)
+
+CLSS public abstract interface org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor
+innr public abstract interface static Factory
+innr public final static MutableContext
+innr public static Context
+meth public abstract boolean beforeInsert(org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Context) throws javax.swing.text.BadLocationException
+meth public abstract void afterInsert(org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Context) throws javax.swing.text.BadLocationException
+meth public abstract void cancelled(org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Context)
+meth public abstract void insert(org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$MutableContext) throws javax.swing.text.BadLocationException
+
+CLSS public static org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Context
+ outer org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor
+meth public int getBreakInsertOffset()
+meth public int getCaretOffset()
+meth public javax.swing.text.Document getDocument()
+meth public javax.swing.text.JTextComponent getComponent()
+supr java.lang.Object
+hfds breakInsertOffset,caretOffset,component,document
+
+CLSS public abstract interface static org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Factory
+ outer org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor
+meth public abstract org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor createTypedBreakInterceptor(org.netbeans.api.editor.mimelookup.MimePath)
+
+CLSS public final static org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$MutableContext
+ outer org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor
+meth public !varargs void setText(java.lang.String,int,int,int[])
+supr org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Context
+hfds breakInsertPosition,caretPosition,insertionText,reindentBlocks
+
+CLSS public abstract interface org.netbeans.spi.editor.typinghooks.TypedTextInterceptor
+innr public abstract interface static Factory
+innr public final static MutableContext
+innr public static Context
+meth public abstract boolean beforeInsert(org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Context) throws javax.swing.text.BadLocationException
+meth public abstract void afterInsert(org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Context) throws javax.swing.text.BadLocationException
+meth public abstract void cancelled(org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Context)
+meth public abstract void insert(org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$MutableContext) throws javax.swing.text.BadLocationException
+
+CLSS public static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Context
+ outer org.netbeans.spi.editor.typinghooks.TypedTextInterceptor
+meth public int getOffset()
+meth public java.lang.String getText()
+meth public javax.swing.text.Document getDocument()
+meth public javax.swing.text.JTextComponent getComponent()
+supr java.lang.Object
+hfds component,document,offset,originallyTypedText
+
+CLSS public abstract interface static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory
+ outer org.netbeans.spi.editor.typinghooks.TypedTextInterceptor
+meth public abstract org.netbeans.spi.editor.typinghooks.TypedTextInterceptor createTypedTextInterceptor(org.netbeans.api.editor.mimelookup.MimePath)
+
+CLSS public final static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$MutableContext
+ outer org.netbeans.spi.editor.typinghooks.TypedTextInterceptor
+meth public java.lang.String getText()
+meth public void setText(java.lang.String,int)
+supr org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Context
+hfds caretPosition,insertionText
+hcls Accessor
 

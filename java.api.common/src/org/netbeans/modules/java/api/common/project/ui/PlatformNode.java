@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.api.common.project.ui;
 
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -70,10 +71,12 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -84,6 +87,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -110,7 +114,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     private PlatformNode(PlatformProvider pp, ClassPathSupport cs) {
         super (new PlatformContentChildren (cs), new ProxyLookup(new Lookup[]{
-            Lookups.singleton (new JavadocProvider(pp)),
+            Lookups.fixed(pp, new JavadocProvider(pp)),
             new PlatformFolderLookup(new InstanceContent(), pp)
         }));
         this.pp = pp;
@@ -167,7 +171,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get (ShowJavadocAction.class)
+            SystemAction.get (ShowJavadocAction.class),
+            SystemAction.get (EditPlatformAction.class),
         };
     }
 
@@ -224,7 +229,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
         @Override
         protected Node[] createNodes(SourceGroup sg) {
-            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
+            return new Node[] {ActionFilterNode.forPackage(PackageView.createPackageView(sg))};
         }
 
         private List<SourceGroup> getKeys () {            
@@ -260,7 +265,41 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return result;
         }
     }
-    
+
+    private static class EditPlatformAction extends NodeAction {
+
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+            final JavaPlatform platform = activatedNodes[0].getLookup().lookup(PlatformProvider.class).getPlatform();
+            assert platform != null;
+            PlatformsCustomizer.showCustomizer(platform);
+        }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            if (activatedNodes.length != 1) {
+                return false;
+            }
+            final PlatformProvider platformProvider = activatedNodes[0].getLookup().lookup(PlatformProvider.class);
+            if (platformProvider == null) {
+                return false;
+            }
+            return platformProvider.getPlatform() != null;
+        }
+
+        @Override
+        @NbBundle.Messages({"TXT_EditPlatform=Edit..."})
+        public String getName() {
+            return Bundle.TXT_EditPlatform();
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(PlatformNode.class);
+        }
+
+    }
+
     private static class PlatformProvider implements PropertyChangeListener {
         
         private final PropertyEvaluator evaluator;

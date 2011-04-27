@@ -50,7 +50,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
@@ -77,6 +80,8 @@ import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -92,30 +97,59 @@ final class ActionFilterNode extends FilterNode {
     private static final int MODE_FILE = 3;
     private static final int MODE_FILE_CONTENT = 4;
 
+    private static final RequestProcessor RP = new RequestProcessor(ActionFilterNode.class);
+
     private final int mode;
     private Action[] actionCache;
 
     /**
      * Creates new ActionFilterNode for class path root
      * @param original the original node
-     * @param helper used for implementing {@link RemoveClassPathRootAction.Removable} or null if
-     * the node should not have the {@link RemoveClassPathRootAction}
-     * @param classPathId ant property name of classpath to which these classpath root belongs or null if
-     * the node should not have the {@link RemoveClassPathRootAction}
-     * @param entryId ant property name of this classpath root or null if
-     * the node should not have the {@link RemoveClassPathRootAction}
+     * @param helper used for implementing {@link RemoveClassPathRootAction.Removable}
+     * @param classPathId ant property name of classpath to which these classpath root belongs 
+     * @param entryId ant property name of this classpath root
      * @return ActionFilterNode
      */
-    static FilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, ReferenceHelper rh) {
-        DataObject dobj = original.getLookup().lookup(DataObject.class);
+    static FilterNode forRoot (
+            final @NonNull Node original,
+            final @NonNull UpdateHelper helper,
+            final @NonNull String classPathId,
+            final @NonNull String entryId,
+            final @NullAllowed String webModuleElementName,     //xxx: remove
+            final @NonNull ClassPathSupport cs,
+            final @NonNull ReferenceHelper rh) {
+        Parameters.notNull("original", original);   //NOI18N
+        Parameters.notNull("helper", helper);       //NOI18N
+        Parameters.notNull("classPathId", classPathId); //NOI18N
+        Parameters.notNull("entryId", entryId);     //NOI18N
+        Parameters.notNull("cs", cs);       //NOI18N
+        Parameters.notNull("rh", rh);       //NOI18N
+
+        final FileObject root =  getFolder(original);
+        return new ActionFilterNode (original, MODE_ROOT, root, createLookup(original, 
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new JavadocProvider(root,root)));
+    }
+
+    static FilterNode forPackage(final @NonNull Node original) {
+        Parameters.notNull("original", original);   //NOI18N
+
+        final FileObject root = getFolder(original);
+        return new ActionFilterNode (original, MODE_PACKAGE, root, createLookup(original,
+                new JavadocProvider(root,root)));
+    }
+
+    private static FileObject getFolder(final Node original) {
+        final DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
-        FileObject root =  dobj.getPrimaryFile();
-        Lookup lkp = new ProxyLookup(original.getLookup(), helper == null ?
-            Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
-            new JavadocProvider(root,root)}));
-        return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
+        return dobj.getPrimaryFile();
+    }
+
+    private static Lookup createLookup(final Node original, Object... toAdd) {
+        final Lookup lkp = new ProxyLookup(
+                original.getLookup(),
+                Lookups.fixed (toAdd));
+        return lkp;
     }
 
 
@@ -244,12 +278,26 @@ final class ActionFilterNode extends FilterNode {
 
     private static class JavadocProvider implements ShowJavadocAction.JavadocProvider {
 
+        private static final AtomicBoolean initialized = new AtomicBoolean();
+
         private final FileObject cpRoot;
         private final FileObject resource;
 
-        JavadocProvider (FileObject cpRoot, FileObject resource) {
+        JavadocProvider (final @NonNull FileObject cpRoot, final @NullAllowed FileObject resource) {
             this.cpRoot = cpRoot;
             this.resource = resource;
+            if (!initialized.getAndSet(true)) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JavadocForBinaryQuery.findJavadoc(cpRoot.getURL());
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
         }
 
         @Override
