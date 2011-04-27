@@ -155,7 +155,7 @@ public final class MavenEmbedder {
     public synchronized Settings getSettings() {
         long newSettingsTimestamp = DEFAULT_GLOBAL_SETTINGS_FILE.lastModified() ^ DEFAULT_USER_SETTINGS_FILE.lastModified();
         // could be included but currently constant: hashCode() of those files; getSystemProperties.hashCode()
-        if (settingsTimestamp == newSettingsTimestamp) {
+        if (settings != null && settingsTimestamp == newSettingsTimestamp) {
             LOG.log(Level.FINER, "settings.xml cache hit for {0}", this);
             return settings;
         }
