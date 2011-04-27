@@ -6,8 +6,10 @@
 		<bean-name>WeblogicEjbJar</bean-name>
                 <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEjbJar</implements>
                 <user-code>
-                    public void addWeblogicEnterpriseBean(org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEnterpriseBeanType enterpriseBean) {
-                        addWeblogicEnterpriseBean((WeblogicEnterpriseBeanType) enterpriseBean);
+                    public WeblogicEnterpriseBeanType addWeblogicEnterpriseBean() {
+                        WeblogicEnterpriseBeanType bean = new WeblogicEnterpriseBeanType();
+                        addWeblogicEnterpriseBean(bean);
+                        return bean;
                     }
                 </user-code>
 		<meta-property>
@@ -74,8 +76,10 @@
 		<bean-name>WeblogicEnterpriseBeanType</bean-name>
                 <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicEnterpriseBeanType</implements>
                 <user-code>
-                    public void addResourceDescription(org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType description) {
-                        addResourceDescription((ResourceDescriptionType) description);
+                    public ResourceDescriptionType addResourceDescription() {
+                        ResourceDescriptionType description = new ResourceDescriptionType();
+                        addResourceDescription(description);
+                        return description;
                     }
                 </user-code>
 		<meta-property>
