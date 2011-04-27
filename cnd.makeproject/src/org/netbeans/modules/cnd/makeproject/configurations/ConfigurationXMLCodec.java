@@ -93,8 +93,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 
 /**
@@ -930,7 +930,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else {
             host = CppUtils.getDefaultDevelopmentHost();
         }
-        MakeConfiguration makeConfiguration = new MakeConfiguration(projectDirectory.getPath(), getString(value), confType, host);
+        FSPath fsPath;
+        try {
+            fsPath = new FSPath(projectDirectory.getFileSystem(), projectDirectory.getPath());
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+        MakeConfiguration makeConfiguration = new MakeConfiguration(fsPath, getString(value), confType, host);
         return makeConfiguration;
     }
 

@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.utils;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem;  
 
 /**
  * A FileSystem / path pair

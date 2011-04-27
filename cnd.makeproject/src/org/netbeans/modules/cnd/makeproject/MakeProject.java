@@ -1291,7 +1291,11 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
                 return FileSystemProvider.getFileSystem(remoteFileSystemHost);
             } else {
-                return CndFileUtils.getLocalFileSystem();
+                try {
+                    return getProjectDirectory().getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    throw new IllegalStateException(ex);
+                }
             }
         }
 
