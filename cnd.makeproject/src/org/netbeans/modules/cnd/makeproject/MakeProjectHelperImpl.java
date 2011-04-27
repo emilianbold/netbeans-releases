@@ -171,7 +171,8 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
     }
 
-    private File resolveFile(String filename) throws IllegalArgumentException {
+    @Override
+    public File resolveFile(String filename) throws IllegalArgumentException {
         File basedir = FileUtil.toFile(dir);
         if (basedir == null) {
             throw new NullPointerException("null basedir passed to resolveFile"); // NOI18N

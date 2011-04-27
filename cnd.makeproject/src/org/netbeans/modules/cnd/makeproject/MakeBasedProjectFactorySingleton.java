@@ -60,6 +60,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManager.Result;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
@@ -274,5 +275,13 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     public static MakeProjectHelperImpl getHelperFor(Project p) {
         Reference<MakeProjectHelperImpl> helperRef = project2Helper.get(p);
         return helperRef != null ? helperRef.get() : null;
+    }
+    
+    public static Project getProjectFor(MakeProjectHelper helper) {
+        Reference<Project> ref = helper2Project.get(helper);
+        if (ref != null) {
+            return ref.get();
+        }
+        return null;
     }
 }

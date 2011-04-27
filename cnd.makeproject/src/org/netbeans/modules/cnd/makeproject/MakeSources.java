@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeSourcesHelper;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -231,8 +233,8 @@ public final class MakeSources implements Sources, MakeProjectListener {
                 completeSouces.set(false);
             }
         }
-        FileObjectBasedSources sources = new FileObjectBasedSources();
-        if (project.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+       if (project.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            FileObjectBasedSources sources = new FileObjectBasedSources();
             MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor(true);
             if (pd != null) {
                 String baseDir = pd.getBaseDir();
@@ -258,21 +260,19 @@ public final class MakeSources implements Sources, MakeProjectListener {
             }
             sources.addGroup(project, GENERIC, project.getProjectDirectory(), 
                         NbBundle.getMessage(MakeSources.class, "SHADOW_METADATA_DISPLAY_NAME"));
+            return sources;
         } else {
             String baseDir = helper.getProjectDirectory().getPath();
+            MakeSourcesHelper h = new MakeSourcesHelper(project, helper);
             for (String name : sourceRootList) {
                 String displayName = CndPathUtilitities.toRelativePath(baseDir, name);
                 displayName = CndPathUtilitities.naturalizeSlashes(displayName);
-                String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
-                FileObject fo = FileUtil.toFileObject(new File(path));
-                if (fo == null) {
-                    new NullPointerException().printStackTrace();
-                } else {
-                    sources.addGroup(project, GENERIC, fo, displayName);
-                }
+                h.sourceRoot(name).displayName(displayName).add();
+                h.sourceRoot(name).type(GENERIC).displayName(displayName).add(); // NOI18N
             }
+            h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            return h.createSources();
         }
-        return sources;
     }
 
     @Override

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.support;
 
+import java.io.File;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
@@ -226,5 +227,6 @@ public interface MakeProjectHelper {
      * @see Project#getLookup
      */
     SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories);
-
+    
+    File resolveFile(String filename);
 }
