@@ -50,7 +50,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
@@ -77,6 +80,7 @@ import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -91,6 +95,8 @@ final class ActionFilterNode extends FilterNode {
     private static final int MODE_PACKAGE = 2;
     private static final int MODE_FILE = 3;
     private static final int MODE_FILE_CONTENT = 4;
+
+    private static final RequestProcessor RP = new RequestProcessor(ActionFilterNode.class);
 
     private final int mode;
     private Action[] actionCache;
@@ -244,12 +250,26 @@ final class ActionFilterNode extends FilterNode {
 
     private static class JavadocProvider implements ShowJavadocAction.JavadocProvider {
 
+        private static final AtomicBoolean initialized = new AtomicBoolean();
+
         private final FileObject cpRoot;
         private final FileObject resource;
 
-        JavadocProvider (FileObject cpRoot, FileObject resource) {
+        JavadocProvider (final @NonNull FileObject cpRoot, final @NullAllowed FileObject resource) {
             this.cpRoot = cpRoot;
             this.resource = resource;
+            if (!initialized.getAndSet(true)) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JavadocForBinaryQuery.findJavadoc(cpRoot.getURL());
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
         }
 
         @Override
