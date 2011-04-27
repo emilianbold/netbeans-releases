@@ -76,7 +76,7 @@ import org.openide.windows.TopComponent;
  *
  * @author mt154047
  */
-@ServiceProvider(service = SourceSupportProvider.class)
+@ServiceProvider(service = SourceSupportProvider.class, position=200)
 public class SourceSupportProviderImpl implements SourceSupportProvider {
 
     private static String loc(String key, String... arg) {
