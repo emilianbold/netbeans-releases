@@ -82,7 +82,7 @@ public class ContextAwareServiceHandler implements InvocationHandler {
     //private ContextProvider context;
     private Object delegate;
 
-    private Map<ContextProvider, Object> contextInstances = new WeakHashMap<ContextProvider, Object>();
+    private Map<ContextProvider, WeakReference<Object>> contextInstances = new WeakHashMap<ContextProvider, WeakReference<Object>>();
     private WeakReference<Object> noContextInstance = new WeakReference<Object>(null);
 
     public ContextAwareServiceHandler(String serviceName, Class[] serviceClasses,
@@ -125,14 +125,15 @@ public class ContextAwareServiceHandler implements InvocationHandler {
                 if (context == null) {
                     instance = noContextInstance.get();
                 } else {
-                    instance = contextInstances.get(context);
+                    WeakReference<Object> ref = contextInstances.get(context);
+                    instance = (ref != null) ? ref.get() : null;
                 }
                 if (instance == null) {
                     instance = ContextAwareSupport.createInstance(serviceName, context);
                     if (context == null) {
                         noContextInstance = new WeakReference(instance);
                     } else {
-                        contextInstances.put(context, instance);
+                        contextInstances.put(context, new WeakReference(instance));
                     }
                 }
                 return instance;
