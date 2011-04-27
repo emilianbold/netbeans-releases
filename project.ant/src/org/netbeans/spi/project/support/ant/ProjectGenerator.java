@@ -48,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -209,7 +210,11 @@ public class ProjectGenerator {
                             throw new IllegalArgumentException("Factory type " + type + " is registered but does not appear in lookup");
                         }
                         FileObject services = FileUtil.getConfigFile("Services");
-                        throw new IllegalArgumentException("No Ant-based project factory for type " + type + "; Services folder contains: " + (services != null ? Collections.list(services.getChildren(true)) : null)); // NOI18N
+                        if (services == null) {
+                            FileObject r = FileUtil.getConfigRoot();
+                            throw new IllegalArgumentException("No Services folder; SFS " + r.getFileSystem() + " contains: " + Arrays.toString(r.getChildren()));
+                        }
+                        throw new IllegalArgumentException("No Ant-based project factory for type " + type + "; Services folder contains: " + Collections.list(services.getChildren(true))); // NOI18N
                     }
                     AntProjectHelper helper = AntBasedProjectFactorySingleton.getHelperFor(p);
                     if (helper == null) {
