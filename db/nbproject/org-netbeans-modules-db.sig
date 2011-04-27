@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.38.0
+#Version 1.43.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -83,6 +83,7 @@ meth public static org.netbeans.api.db.explorer.ConnectionManager getDefault()
 meth public void addConnection(org.netbeans.api.db.explorer.DatabaseConnection) throws org.netbeans.api.db.explorer.DatabaseException
 meth public void addConnectionListener(org.netbeans.api.db.explorer.ConnectionListener)
 meth public void disconnect(org.netbeans.api.db.explorer.DatabaseConnection)
+meth public void refreshConnectionInExplorer(org.netbeans.api.db.explorer.DatabaseConnection)
 meth public void removeConnection(org.netbeans.api.db.explorer.DatabaseConnection) throws org.netbeans.api.db.explorer.DatabaseException
 meth public void removeConnectionListener(org.netbeans.api.db.explorer.ConnectionListener)
 meth public void selectConnectionInExplorer(org.netbeans.api.db.explorer.DatabaseConnection)
@@ -106,6 +107,7 @@ meth public java.sql.Connection getJDBCConnection()
 meth public java.sql.Connection getJDBCConnection(boolean)
 meth public org.netbeans.api.db.explorer.JDBCDriver getJDBCDriver()
 meth public static org.netbeans.api.db.explorer.DatabaseConnection create(org.netbeans.api.db.explorer.JDBCDriver,java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)
+meth public static org.netbeans.api.db.explorer.DatabaseConnection create(org.netbeans.api.db.explorer.JDBCDriver,java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,java.lang.String)
 supr java.lang.Object
 hfds delegate
 

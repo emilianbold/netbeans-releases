@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.9
+#Version 2.12.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -54,8 +54,8 @@ supr java.lang.Exception
 hfds exitCode,locMsg
 
 CLSS public final org.netbeans.api.sendopts.CommandLine
+meth public !varargs void process(java.lang.String[]) throws org.netbeans.api.sendopts.CommandException
 meth public static org.netbeans.api.sendopts.CommandLine getDefault()
-meth public void process(java.lang.String[]) throws org.netbeans.api.sendopts.CommandException
 meth public void process(java.lang.String[],java.io.InputStream,java.io.OutputStream,java.io.OutputStream,java.io.File) throws org.netbeans.api.sendopts.CommandException
 meth public void usage(java.io.PrintWriter)
 supr java.lang.Object
