@@ -71,7 +71,8 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -81,7 +82,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileLock;
@@ -435,7 +435,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private static FileObject updateRemoteProjectXml(FileObject remoteProjectCopy) throws IOException, SAXException {
-        FileObject projectXmlFO = getFileObject(remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
+        FileObject projectXmlFO = getFileObject(remoteProjectCopy, MakeProjectHelper.PROJECT_XML_PATH);
         Document doc = XMLUtil.parse(new InputSource(projectXmlFO.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -452,7 +452,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        return saveXml(doc, remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);        
+        return saveXml(doc, remoteProjectCopy, MakeProjectHelper.PROJECT_XML_PATH);        
     }
 
     private static String getOrigCompilerSet(FileObject remoteProjectOrig) throws IOException, SAXException {
@@ -564,12 +564,12 @@ public class ShadowProjectSynchronizer {
     }
 
     private FileObject updateLocalProjectXml() throws IOException, SAXException {
-        FileObject fo = getFileObject(localProject, AntProjectHelper.PROJECT_XML_PATH);
+        FileObject fo = getFileObject(localProject, MakeProjectHelper.PROJECT_XML_PATH);
         File projXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
-            NodeList dataList = root.getElementsByTagName(MakeProjectType.PROJECT_CONFIGURATION_NAME);
+            NodeList dataList = root.getElementsByTagName(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAME);
             if (dataList.getLength() > 0) {
                 Node masterConfs = dataList.item(0);
                 Element remoteMode = doc.createElement(MakeProject.REMOTE_MODE);
@@ -583,7 +583,7 @@ public class ShadowProjectSynchronizer {
                 masterConfs.appendChild(remoteBaseDir);
             }
         }
-        return saveXml(doc, localProject, AntProjectHelper.PROJECT_XML_PATH);
+        return saveXml(doc, localProject, MakeProjectHelper.PROJECT_XML_PATH);
     }
 
     private FileObject updateLocalConfiguration() throws IOException, SAXException {

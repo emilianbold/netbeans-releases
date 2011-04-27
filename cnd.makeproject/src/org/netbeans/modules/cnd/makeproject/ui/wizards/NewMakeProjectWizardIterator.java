@@ -62,7 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.Projec
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -502,7 +501,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
-            MakeProjectGenerator.createProject(prjParams);
+            MakeProjectGeneratorImpl.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);
