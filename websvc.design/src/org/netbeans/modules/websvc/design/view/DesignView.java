@@ -46,14 +46,25 @@ package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseWheelListener;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingWorker;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -69,6 +80,7 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * WebService Designer
@@ -94,6 +106,8 @@ public class DesignView extends JPanel  {
     private Widget separatorWidget;
     private OperationsWidget operationsWidget;
     
+    private transient JToolBar toolbar;
+    
     /**
      * Creates a new instance of GraphView.
      * @param service
@@ -104,7 +118,6 @@ public class DesignView extends JPanel  {
         
         this.service = service;
         this.implementationClass = implementationClass;
-        this.serviceModel = ServiceModel.getServiceModel(implementationClass);
         
         scene = new ObjectScene() {
             @Override
@@ -115,7 +128,6 @@ public class DesignView extends JPanel  {
                 return new DesignerWidgetIdentityCode(scene,object);
             }
         };
-        final JComponent sceneView = scene.createView();
         zoomer = new ZoomManager(scene);
 
         scene.getActions().addAction(ActionFactory.createCycleObjectSceneFocusAction());
@@ -131,21 +143,7 @@ public class DesignView extends JPanel  {
         mainWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 12));
         
-        headerWidget = new LabelWidget(scene,getServiceName());
-        serviceModel.addServiceChangeListener(new ServiceChangeListener() {
-            public void propertyChanged(String propertyName, String oldValue, String newValue) {
-                if(propertyName.equals("serviceName") || propertyName.equals("portName") &&
-                        DesignView.this.service.getWsdlUrl()!=null) {
-                    headerWidget.setLabel(getServiceName());
-                }
-            }
-            public void operationAdded(MethodModel method) {
-            }
-            public void operationRemoved(MethodModel method) {
-            }
-            public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
-            }
-        });
+        headerWidget = new LabelWidget(scene);
         headerWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
         headerWidget.setForeground(Color.GRAY);
         headerWidget.setBorder(BorderFactory.createEmptyBorder(6,28,0,0));
@@ -156,26 +154,30 @@ public class DesignView extends JPanel  {
         separatorWidget.setForeground(Color.ORANGE);
         mainWidget.addChild(separatorWidget);
         
-        
         contentWidget = new Widget(scene);
         contentWidget.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mainWidget.addChild(contentWidget);
         
-        //add operations widget
-        operationsWidget = new OperationsWidget(scene,service, serviceModel);
-        contentWidget.addChild(operationsWidget);
-        //add wsit widget
-        WsitWidget wsitWidget = new WsitWidget(scene,service, implementationClass);
-        contentWidget.addChild(wsitWidget);
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER){
+            /* (non-Javadoc)
+             * @see java.awt.FlowLayout#layoutContainer(java.awt.Container)
+             */
+            @Override
+            public void layoutContainer( Container target ) {
+                super.layoutContainer(target);
+                Component[] components = target.getComponents();
+                double height = target.getSize().getHeight()/2;
+                for (Component component : components) {
+                    Point location = component.getLocation();
+                    component.setLocation( (int)location.getX(), (int)height );
+                }
+            }
+        });
+        panel.add(new JLabel(NbBundle.getMessage( DesignView.class, "LBL_Wait")));
+        add( panel,BorderLayout.CENTER);
         
-        sceneView.removeMouseWheelListener((MouseWheelListener)sceneView);
-        final JScrollPane panel = new JScrollPane(sceneView);
-        panel.getVerticalScrollBar().setUnitIncrement(16);
-        panel.getHorizontalScrollBar().setUnitIncrement(16);
-        panel.setBorder(null);
-        add(panel);
         mainLayer.addChild(mainWidget);
 
         messageWidget = new Widget(scene);
@@ -184,6 +186,117 @@ public class DesignView extends JPanel  {
         mainLayer.addChild(messageWidget);
         scene.addObject(messageLayerKey, messageWidget);
         
+        initServiceModel();
+    }
+    
+    public JComponent getToolbarRepresentation() {
+        if (toolbar == null) {
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+        }
+        return toolbar;
+    }
+    
+    /**
+     * Return the view content, suitable for printing (i.e. without a
+     * scroll pane, which would result in the scroll bars being printed).
+     *
+     * @return  the view content, sans scroll pane.
+     */
+    public JComponent getContent() {
+        JComponent view = scene.getView();
+        if ( view == null ){
+            return this;
+        }
+        return view;
+    }
+    
+    public void requestFocus() {
+        super.requestFocus();
+        // Ensure the graph widgets have the focus.
+        getContent().requestFocus();
+    }
+    
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        // Ensure the graph widgets have the focus.
+        return getContent().requestFocusInWindow();
+    }
+    
+    private void initServiceModel(){
+        SwingWorker<ServiceModel, Void> worker = new SwingWorker<ServiceModel, Void>(){
+
+            @Override
+            protected ServiceModel doInBackground() throws Exception {
+                return ServiceModel.getServiceModel(implementationClass);
+            }
+            
+            /* (non-Javadoc)
+             * @see javax.swing.SwingWorker#done()
+             */
+            @Override
+            protected void done() {
+                try {
+                    serviceModel = get();
+                    initUI();
+                }
+                catch(ExecutionException e ){
+                    Logger.getLogger( DesignView.class.getName()).log( 
+                            Level.WARNING, null, e );
+                }
+                catch(InterruptedException e ){
+                    Logger.getLogger( DesignView.class.getName()).log( 
+                            Level.WARNING, null, e );
+                            
+                }
+            }
+        };
+        worker.execute();
+    }
+    
+    private void initUI() {
+        serviceModel.addServiceChangeListener(new ServiceChangeListener() {
+            public void propertyChanged(String propertyName, 
+                    String oldValue, String newValue) 
+            {
+                if(propertyName.equals("serviceName") || 
+                        propertyName.equals("portName") &&
+                        DesignView.this.service.getWsdlUrl()!=null)         // NOI18N
+                {
+                    headerWidget.setLabel(getServiceName());
+                }
+            }
+            public void operationAdded(MethodModel method) {
+            }
+            public void operationRemoved(MethodModel method) {
+            }
+            public void operationChanged(MethodModel oldMethod, 
+                    MethodModel newMethod) 
+            {
+            }
+        });
+        //add operations widget
+        operationsWidget = new OperationsWidget(scene, service, serviceModel);
+        contentWidget.addChild(operationsWidget);
+        //add wsit widget
+        WsitWidget wsitWidget = new WsitWidget(scene, service, implementationClass);
+        contentWidget.addChild(wsitWidget);
+        
+        headerWidget.setLabel( getServiceName());
+        
+        JComponent sceneView = scene.createView();
+        final JScrollPane panel = new JScrollPane(sceneView);
+        panel.getVerticalScrollBar().setUnitIncrement(16);
+        panel.getHorizontalScrollBar().setUnitIncrement(16);
+        panel.setBorder(null);
+        
+        Component[] components = getComponents();
+        for (Component component : components) {
+            remove(component);
+        }
+        add(panel);
+        
+        sceneView.removeMouseWheelListener((MouseWheelListener)sceneView);
         scene.addSceneListener(new ObjectScene.SceneListener() {
             public void sceneRepaint() {
             }
@@ -197,43 +310,19 @@ public class DesignView extends JPanel  {
                 }
             }
         });
-        
+        addToolbarActions();
         // vlv: print
         getContent().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        invalidate();
+        repaint();
     }
     
-    /**
-     * Adds the graph actions to the given toolbar.
-     *
-     * @param  toolbar  to which the actions are added.
-     */
-    public void addToolbarActions(JToolBar toolbar) {
+    private void addToolbarActions() {
+        getToolbarRepresentation();
         toolbar.addSeparator();
         zoomer.addToolbarActions(toolbar);
         toolbar.addSeparator();
         operationsWidget.addToolbarActions(toolbar);
-    }
-    
-    /**
-     * Return the view content, suitable for printing (i.e. without a
-     * scroll pane, which would result in the scroll bars being printed).
-     *
-     * @return  the view content, sans scroll pane.
-     */
-    public JComponent getContent() {
-        return scene.getView();
-    }
-    
-    public void requestFocus() {
-        super.requestFocus();
-        // Ensure the graph widgets have the focus.
-        scene.getView().requestFocus();
-    }
-    
-    public boolean requestFocusInWindow() {
-        super.requestFocusInWindow();
-        // Ensure the graph widgets have the focus.
-        return scene.getView().requestFocusInWindow();
     }
     
     private String getServiceName() {

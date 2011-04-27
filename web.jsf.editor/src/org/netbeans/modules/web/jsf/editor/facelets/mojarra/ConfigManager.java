@@ -119,6 +119,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
+import java.net.URI;
 
 import org.w3c.dom.*;
 
@@ -327,14 +329,14 @@ public class ConfigManager {
                       isFaceletsDisabled(webConfig, webInfFacesConfigInfo);
                 if (!webInfFacesConfigInfo.isWebInfFacesConfig() || !webInfFacesConfigInfo.isMetadataComplete()) {
                     // execute the Task responsible for finding annotation classes
-                    Set<URL> scanUrls = getAnnotationScanURLs(facesDocuments);
+                    Set<URI> scanUris = getAnnotationScanURIs(facesDocuments);
                     Future<Map<Class<? extends Annotation>,Set<Class<?>>>> annotationScan;
                     if (executor != null) {
-                        annotationScan = executor.submit(new AnnotationScanTask(sc, scanUrls));
+                        annotationScan = executor.submit(new AnnotationScanTask(sc, scanUris));
                         pushTaskToContext(sc, annotationScan);
                     } else {
                         annotationScan =
-                              new FutureTask<Map<Class<? extends Annotation>,Set<Class<?>>>>(new AnnotationScanTask(sc, scanUrls));
+                              new FutureTask<Map<Class<? extends Annotation>,Set<Class<?>>>>(new AnnotationScanTask(sc, scanUris));
                         ((FutureTask) annotationScan).run();
                     }
                     pushTaskToContext(sc, annotationScan);
@@ -426,25 +428,25 @@ public class ConfigManager {
     // --------------------------------------------------------- Private Methods
 
 
-    private static Set<URL> getAnnotationScanURLs(DocumentInfo[] documentInfos) {
+    private static Set<URI> getAnnotationScanURIs(DocumentInfo[] documentInfos) {
 
-        Set<URL> urls = new HashSet<URL>(documentInfos.length);
+        Set<URI> uris = new HashSet<URI>(documentInfos.length);
         Set<String> jarNames = new HashSet<String>(documentInfos.length);
         for (DocumentInfo docInfo : documentInfos) {
-            Matcher m = JAR_PATTERN.matcher(docInfo.getSourceURL().toString());
+            Matcher m = JAR_PATTERN.matcher(docInfo.getSourceURI().toString());
             if (m.matches()) {
                 String jarName = m.group(2);
                 if (!jarNames.contains(jarName)) {
                     FacesConfigInfo configInfo = new FacesConfigInfo(docInfo);
                     if (!configInfo.isMetadataComplete()) {
-                        urls.add(docInfo.getSourceURL());
+                        uris.add(docInfo.getSourceURI());
                         jarNames.add(jarName);
                     }
                 }
             }
         }
 
-        return urls;
+        return uris;
 
     }
 
@@ -624,7 +626,7 @@ public class ConfigManager {
      * @param sc the <code>ServletContext</code> for the application to be
      *  processed
      * @param providers <code>List</code> of <code>ConfigurationResourceProvider</code>
-     *  instances that provide the URL of the documents to parse.
+     *  instances that provide the URI of the documents to parse.
      * @param executor the <code>ExecutorService</code> used to dispatch parse
      *  request to
      * @param validating flag indicating whether or not the documents
@@ -636,12 +638,12 @@ public class ConfigManager {
                                                  ExecutorService executor,
                                                  boolean validating) {
 
-        List<FutureTask<Collection<URL>>> urlTasks =
-             new ArrayList<FutureTask<Collection<URL>>>(providers.size());
+        List<FutureTask<Collection<URI>>> uriTasks =
+             new ArrayList<FutureTask<Collection<URI>>>(providers.size());
         for (ConfigurationResourceProvider p : providers) {
-            FutureTask<Collection<URL>> t =
-                 new FutureTask<Collection<URL>>(new URLTask(p, sc));
-            urlTasks.add(t);
+            FutureTask<Collection<URI>> t =
+                 new FutureTask<Collection<URI>>(new URITask(p, sc));
+            uriTasks.add(t);
             if (executor != null) {
                 executor.execute(t);
             } else {
@@ -652,12 +654,12 @@ public class ConfigManager {
         List<FutureTask<DocumentInfo>> docTasks =
              new ArrayList<FutureTask<DocumentInfo>>(providers.size() << 1);
 
-        for (FutureTask<Collection<URL>> t : urlTasks) {
+        for (FutureTask<Collection<URI>> t : uriTasks) {
             try {
-                Collection<URL> l = t.get();
-                for (URL u : l) {
+                Collection<URI> l = t.get();
+                for (URI u : l) {
                     FutureTask<DocumentInfo> d =
-                         new FutureTask<DocumentInfo>(new ParseTask(validating, u));
+                         new FutureTask<DocumentInfo>(new ParseTask(validating, u.toURL()));
                     docTasks.add(d);
                     if (executor != null) {
                         executor.execute(d);
@@ -748,16 +750,16 @@ public class ConfigManager {
     private static class AnnotationScanTask implements Callable<Map<Class<? extends Annotation>,Set<Class<?>>>> {
 
         private ServletContext sc;
-        private Set<URL> urls;
+        private Set<URI> uris;
 
 
         // -------------------------------------------------------- Constructors
 
 
-        public AnnotationScanTask(ServletContext sc, Set<URL> urls) {
+        public AnnotationScanTask(ServletContext sc, Set<URI> uris) {
 
             this.sc = sc;
-            this.urls = urls;
+            this.uris = uris;
 
         }
 
@@ -775,7 +777,7 @@ public class ConfigManager {
             //AnnotationScanner scanner = new AnnotationScanner(sc);
             AnnotationProvider provider = AnnotationProviderFactory.createAnnotationProvider(sc);
             Map<Class<? extends Annotation>,Set<Class<?>>> annotatedClasses =
-                  provider.getAnnotatedClasses(urls);
+                  provider.getAnnotatedClasses(uris);
 
             if (t != null) {
                 t.stopTiming();
@@ -847,7 +849,7 @@ public class ConfigManager {
                     timer.logResult("Parse " + documentURL.toExternalForm());
                 }
 
-                return new DocumentInfo(d, documentURL);
+                return new DocumentInfo(d, new URI(documentURL.toExternalForm()));
             } catch (Exception e) {
                 throw new ConfigurationException(MessageFormat.format(
                      "Unable to parse document ''{0}'': {1}",
@@ -1027,11 +1029,11 @@ public class ConfigManager {
     /**
      * <p>
      *  This <code>Callable</code> will be used by {@link ConfigManager#getConfigDocuments(javax.servlet.ServletContext, java.util.List, java.util.concurrent.ExecutorService, boolean)}.
-     *  It represents one or more URLs to configuration resources that require
+     *  It represents one or more URIs to configuration resources that require
      *  processing.
      * </p>
      */
-    private static class URLTask implements Callable<Collection<URL>> {
+    private static class URITask implements Callable<Collection<URI>> {
 
         private ConfigurationResourceProvider provider;
         private ServletContext sc;
@@ -1041,12 +1043,12 @@ public class ConfigManager {
 
 
         /**
-         * Constructs a new <code>URLTask</code> instance.
+         * Constructs a new <code>URITask</code> instance.
          * @param provider the <code>ConfigurationResourceProvider</code> from
-         *  which zero or more <code>URL</code>s will be returned
+         *  which zero or more <code>URI</code>s will be returned
          * @param sc the <code>ServletContext</code> of the current application
          */
-        public URLTask(ConfigurationResourceProvider provider,
+        public URITask(ConfigurationResourceProvider provider,
                        ServletContext sc) {
             this.provider = provider;
             this.sc = sc;
@@ -1057,11 +1059,11 @@ public class ConfigManager {
 
 
         /**
-         * @return zero or more <code>URL</code> instances
+         * @return zero or more <code>URI</code> instances
          * @throws Exception if an Exception is thrown by the underlying
          *  <code>ConfigurationResourceProvider</code> 
          */
-        public Collection<URL> call() throws Exception {
+        public Collection<URI> call() throws Exception {
             return provider.getResources(sc);
         }
 
