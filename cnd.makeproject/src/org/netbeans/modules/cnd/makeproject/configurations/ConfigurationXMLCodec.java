@@ -930,7 +930,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else {
             host = CppUtils.getDefaultDevelopmentHost();
         }
-        MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
+        MakeConfiguration makeConfiguration = new MakeConfiguration(projectDirectory.getPath(), getString(value), confType, host);
         return makeConfiguration;
     }
 
