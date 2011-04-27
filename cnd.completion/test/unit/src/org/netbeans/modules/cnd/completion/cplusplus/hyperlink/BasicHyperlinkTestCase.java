@@ -828,6 +828,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 195307 - Unresolved function parameters in function pointer with composed return type
         performTest("bug195307.cpp", 6, 47, "bug195307.cpp", 6, 43);
     }
+
+    public void testBug196966() throws Exception {
+        // Bug 196966 - volatile bitfield in structure incorrectly reported as an error
+        performTest("bug196966.cpp", 2, 21, "bug196966.cpp", 2, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
