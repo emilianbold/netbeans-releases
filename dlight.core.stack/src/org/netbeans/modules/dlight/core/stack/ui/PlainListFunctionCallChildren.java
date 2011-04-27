@@ -75,6 +75,9 @@ public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
         setKeys(functionCalls);
     }
 
+    List<FunctionCall> getFunctionCalls(){
+        return this.functionCalls;
+    }
 
 
     @Override

@@ -139,9 +139,9 @@ public final class SunStudioUserCounter {
      * @param execEnv execution environment
      */
     public static void countIDE(final String ssBaseDir, final ExecutionEnvironment execEnv) {
-        File winDistConfiguration = new File(System.getProperty("netbeans.home") + File.separator + "remotehosts.xml");
+        File winDistConfiguration = new File(System.getProperty("netbeans.home") + File.separator + "remotehosts.xml"); // NOI18N
         if (execEnv.isRemote() && winDistConfiguration.exists()) {
-            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, "winide");
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, "winide"); // NOI18N
         } else {
             countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
         }
