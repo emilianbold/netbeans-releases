@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test197997() throws Exception {
+        // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
+        performTest("iz197997.cc");
+    }
+    
     public void test191446() throws Exception {
         // #191446 - no code assistance for elementes #include'ed in namespace body
         performTest("iz191446.cc");

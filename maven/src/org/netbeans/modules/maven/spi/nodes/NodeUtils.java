@@ -43,8 +43,20 @@
 package org.netbeans.modules.maven.spi.nodes;
 
 import java.awt.Image;
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -79,5 +91,49 @@ public class NodeUtils {
     private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
     private static final String ICON_PATH = "org/netbeans/modules/maven/defaultFolder.gif"; // NOI18N
     private static final String OPENED_ICON_PATH = "org/netbeans/modules/maven/defaultFolderOpen.gif"; // NOI18N
+
+    // XXX could alternately register a URLMapper so that FileUtil.toFileObject works on repo files (which would be useful for making deserialization of r/o TCs work)
+    /**
+     * Produces a variant of a file in the local repository that the IDE will consider read-only.
+     * You can then use {@link OpenCookie} or {@link EditCookie} to open in a read-only text editor window.
+     * @param file a file possibly in the local repository
+     * @return the same file but from a transient r/o filesystem; or the original file, if a folder or not in the local repository
+     * @since 2.10
+     */
+    public static synchronized FileObject readOnlyLocalRepositoryFile(FileObject file) {
+        File f = FileUtil.toFile(file);
+        if (f == null || !file.isData()) {
+            return file;
+        }
+        LocalFileSystem fs = repoFS != null ? repoFS.get() : null;
+        if (fs == null) {
+            fs = new LocalFileSystem();
+            fs.setReadOnly(true);
+            try {
+                fs.setRootDirectory(new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()));
+            } catch (Exception x) {
+                throw new AssertionError(x);
+            }
+            repoFS = new WeakReference<LocalFileSystem>(fs);
+        }
+        File root = fs.getRootDirectory();
+        String path = FileUtilities.getRelativePath(root, f);
+        if (path == null) {
+            return file;
+        }
+        FileObject ro = fs.findResource(path);
+        if (ro == null) {
+            fs.refresh(false);
+            ro = fs.findResource(path);
+        }
+        if (ro == null) {
+            Logger.getLogger(NodeUtils.class.getName()).log(Level.WARNING, "Cannot find r/o equivalent of {0} as {1} in {2}", new Object[] {f, path, root});
+            return file;
+        }
+        return ro;
+    }
+    private static Reference<LocalFileSystem> repoFS;
+
+    private NodeUtils() {}
     
 }

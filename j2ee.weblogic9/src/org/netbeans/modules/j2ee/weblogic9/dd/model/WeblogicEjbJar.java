@@ -50,4 +50,8 @@ import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
  */
 public interface WeblogicEjbJar extends CommonDDBean {
 
+    void addWeblogicEnterpriseBean(WeblogicEnterpriseBeanType enterpriseBean);
+    
+    WeblogicEnterpriseBeanType[] getWeblogicEnterpriseBean();
+
 }

@@ -61,5 +61,9 @@ public interface WeblogicWebApp extends CommonDDBean {
     void setJspDescriptor(JspDescriptorType[] descriptor);
     
     JspDescriptorType[] getJspDescriptor();
+    
+    void addResourceDescription(ResourceDescriptionType type);
+    
+    ResourceDescriptionType[] getResourceDescription();
 
 }

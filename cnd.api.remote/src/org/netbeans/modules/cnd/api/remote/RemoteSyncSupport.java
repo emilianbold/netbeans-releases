@@ -106,6 +106,9 @@ public final class RemoteSyncSupport {
         } else {
             PathMap pathMap = null;
             ExecutionEnvironment execEnv = remoteProject.getDevelopmentHost();
+            if (execEnv == null) {
+                return null;
+            }
             RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
             if (syncFactory != null) {
                 pathMap = syncFactory.getPathMap(execEnv);

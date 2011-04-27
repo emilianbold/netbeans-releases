@@ -47,7 +47,10 @@ package org.netbeans.modules.websvc.design.multiview;
 import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.SwingWorker;
+
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -70,7 +73,6 @@ public class DesignMultiViewElement extends TopComponent
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
     private transient MultiViewElementCallback multiViewCallback;
-    private transient JToolBar toolbar;
     private transient DesignView designView;
     private transient DataObject dataObject;
     private transient Lookup myLookup;
@@ -155,13 +157,12 @@ public class DesignMultiViewElement extends TopComponent
     }
     
     public JComponent getToolbarRepresentation() {
-        // This is called every time user switches between elements.
-        if (toolbar == null) {
-            toolbar = new JToolBar();
-            toolbar.setFloatable(false);
-            if(designView!=null) designView.addToolbarActions(toolbar);
+        if(designView!=null) {
+            return designView.getToolbarRepresentation();
         }
-        return toolbar;
+        else {
+            return new JPanel();
+        }
     }
     
     @Override

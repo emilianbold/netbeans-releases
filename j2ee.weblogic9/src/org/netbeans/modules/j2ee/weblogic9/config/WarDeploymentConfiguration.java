@@ -379,6 +379,30 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     }
 
     @Override
+    public void bindDatasourceReference(final String referenceName, final String jndiName) throws ConfigurationException {
+        if (referenceName == null || referenceName.length() == 0
+                || jndiName == null || jndiName.length() == 0) {
+            return;
+        }
+
+        modifyWeblogicWebApp(new WeblogicWebAppModifier() {
+            public void modify(WebApplicationModel webLogicWebApp) {
+                webLogicWebApp.setReference(referenceName, jndiName);
+            }
+        });
+    }
+
+    @Override
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        WebApplicationModel webLogicWebApp = getWeblogicWebApp();
+        if (webLogicWebApp == null) { // graph not parseable
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadReferenceName", file.getPath());
+            throw new ConfigurationException(msg);
+        }
+        return webLogicWebApp.getReferenceJndiName(referenceName);
+    }
+
+    @Override
     public void configureLibrary(@NonNull final ServerLibraryDependency library) throws ConfigurationException {
         assert library != null;
 

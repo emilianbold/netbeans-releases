@@ -229,7 +229,7 @@ class RfsLocalController extends NamedRunnable {
                             RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                             logger.log(Level.FINEST, "uncontrolled %s", localFile);
                         } else {
-                            CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
+                            CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is ", kind);
                             if (localFile.exists() && !localFile.isDirectory()) {
                                 //FileState state = fileData.getState(localFile);
                                 logger.log(Level.FINEST, "uploading %s to %s started", localFile, remoteFile);
@@ -424,7 +424,7 @@ class RfsLocalController extends NamedRunnable {
         public FileGatheringInfo(File file, String remotePath) {
             this.file = file;
             this.remotePath = remotePath;
-            CndUtils.assertTrue(remotePath.startsWith("/"), "Non-absolute remote path: " + remotePath);
+            CndUtils.assertTrue(remotePath.startsWith("/"), "Non-absolute remote path: ", remotePath);
             this.linkTarget = null;
         }
 
@@ -813,7 +813,7 @@ class RfsLocalController extends NamedRunnable {
             CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED 
                     || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED
                     || newState == FileState.INEXISTENT,
-                    "State shouldn't be " + newState); //NOI18N
+                    "State shouldn't be ", newState); //NOI18N
             if (USE_TIMESTAMPS) {
                 long fileTime = file.lastModified();
                 long seconds = fileTime / 1000;

@@ -283,6 +283,25 @@ public class PHPDocCommentParserTest extends CslTestBase {
         perform(comment, "HTMLWrapper");
     }
     
+    public void testIssue197946() throws Exception {
+        String comment = 
+                "/**\n" +
+                " * This is the model class for table \"cliente\".\n" +
+                " *\n" +
+                " * The followings are the available columns in table 'cliente':\n" +
+                " * @property string $id_cliente\n" +
+                " * ....\n" +
+                " * ....\n" +
+                " * @property integer $id_profissao\n" +
+                " * @property string $renda_mensal\n" +
+                " *\n" +
+                " * The followings are the available model relations:\n" +
+                " * ....\n" +
+                " * ....\n" +
+                " */\n";
+        perform(comment, "Issue197946");
+    }
+    
     public void perform(String comment, String filename) throws Exception {
         PHPDocCommentParser parser = new PHPDocCommentParser();
         PHPDocBlock block = parser.parse(0, comment.length(), comment);

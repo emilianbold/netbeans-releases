@@ -615,6 +615,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         }
                     }
                 }
+                return cInfo.getTreeUtilities().parseType(typeName, enclClass);
             }
         } catch (Exception e) {            
         }

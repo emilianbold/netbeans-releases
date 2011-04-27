@@ -77,5 +77,13 @@ public class InvalidFileObjectSupportTest {
         assertEquals(origFo.getPath(), invalidFo1.getPath());
         assertEquals(origFo.getNameExt(), invalidFo1.getNameExt());
         assertEquals(origFo.getFileSystem(), invalidFo1.getFileSystem());
+        FileObject invalidFo4 = InvalidFileObjectSupport.getInvalidFileObject(fs, "/tmp/foo.bar.cpp");
+        assertNotNull(invalidFo4);
+        assertEquals("getName()", "foo.bar", invalidFo4.getName());
+        assertEquals("getExt()", "cpp", invalidFo4.getExt());
+        FileObject invalidFo5 = InvalidFileObjectSupport.getInvalidFileObject(fs, "/tmp/qwe.asd/foo1.bar1.cc");
+        assertNotNull(invalidFo5);
+        assertEquals("getName()", "foo1.bar1", invalidFo5.getName());
+        assertEquals("getExt()", "cc", invalidFo5.getExt());
     }
 }

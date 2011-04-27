@@ -251,6 +251,33 @@ public class ProvidedExtensionsTest extends NbTestCase {
             }
         }
     }
+    
+    public void testImplsCaseOnlyRename() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(fo);
+        assertNotNull(iListener);
+        FileObject toRename = fo.createData("aa");
+        assertNotNull(toRename);
+        
+        iListener.clear();
+        FileLock lock = toRename.lock();
+        iListener.setLock(lock);
+        try {
+            assertEquals(0,iListener.implsRenameCalls);
+            assertEquals(0,iListener.renameImplCalls);
+            iListener.setImplsRenameRetVal(true);
+            assertTrue(toRename.isValid());
+            assertNull(toRename.getParent().getFileObject(toRename.getExt(), toRename.getName()));
+            toRename.rename(lock,toRename.getName().toUpperCase(), toRename.getExt().toUpperCase());
+            assertEquals(1,iListener.implsRenameCalls);
+            assertEquals(1,iListener.renameImplCalls);
+        } finally {
+            if (lock != null) {
+                iListener.setLock(null);
+                lock.releaseLock();
+            }
+        }
+    }
 
     public void testDuringAtomicAction() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());

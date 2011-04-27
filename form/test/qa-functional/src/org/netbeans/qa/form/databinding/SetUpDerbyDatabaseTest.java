@@ -65,6 +65,9 @@ import org.netbeans.junit.NbModuleSuite;
  * Set up Derby DB for following tests
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class SetUpDerbyDatabaseTest  extends ExtJellyTestCase {
     public static String TMP_DB_DIR_NAME = "TempDerbyDatabaseDir" + String.valueOf(new Date().getTime());;

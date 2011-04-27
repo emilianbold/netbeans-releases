@@ -1,12 +1,38 @@
-Missing required attribute(s) type 
---
+Error: Quirky doctype. Expected "".
+From line 4, column 4; to line 5, column 63
+
+
+----
 (Alt-Enter shows hints)
-Missing required attribute(s) type 
---
+Error: Required attributes missing on element "style".
+From line 10, column 9; to line 10, column 15
+
+
+----
 (Alt-Enter shows hints)
-Missing required attribute(s) alt 
---
+Error: Required attributes missing on element "script".
+From line 12, column 9; to line 12, column 16
+
+
+----
 (Alt-Enter shows hints)
-Missing required attribute(s) src 
---
+Error: Bad value "http:///" for attribute "src" on element "img": REQUIRED_COMPONENT_MISSING in HOST.
+Syntax of IRI reference:
+Any URL. For example: '/hello', '#canvas', or 'http://example.org/'. Characters should be represented in NFC and spaces should be escaped as '%20'.
+
+From line 16, column 9; to line 16, column 28
+
+
+
+Error: Required attributes missing on element "img".
+From line 16, column 9; to line 16, column 28
+
+
+----
+(Alt-Enter shows hints)
+Error: Required attributes missing on element "img".
+From line 18, column 9; to line 18, column 31
+
+
+----
 (Alt-Enter shows hints)

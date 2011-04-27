@@ -195,6 +195,28 @@ public class ServiceProviderProcessorTest extends NbTestCase {
         baos = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C6", dest, null, baos));
         assertTrue(baos.toString(), baos.toString().contains("assignable"));
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C7",
+                "@org.openide.util.lookup.ServiceProvider(service=" + xfaceName + ".class)",
+                "public interface C7 extends " + xfaceName + " {}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C7", dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("not applicable"));
+    }
+
+    public void testInvalidInput() throws Exception { // #195983
+        clearWorkDir();
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+        String xfaceName = Interface.class.getCanonicalName();
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1",
+                "public class C1 {",
+                "@org.openide.util.lookup.ServiceProvider(service=" + xfaceName + ".class) public static " + xfaceName + " m() {return null;}",
+                "}");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C1", dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("not applicable"));
     }
 
 }

@@ -284,7 +284,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
 
     private void validateFields () {
-        boolean oldValid = valid;
         try {
             valid = true;
             msg = null;
@@ -297,9 +296,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 // XXX check suported protocols
             }
         } finally {
-            if(valid != oldValid) {
-                support.fireChange();
-            }
+            support.fireChange();
         }
     }    
     

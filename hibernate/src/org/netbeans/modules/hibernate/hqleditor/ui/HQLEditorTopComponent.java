@@ -312,8 +312,13 @@ public final class HQLEditorTopComponent extends TopComponent {
                     }
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     try {
+                        List<URL> localResourcesURLList = new ArrayList<URL>();
+                        localResourcesURLList.addAll(env.getProjectClassPath(selectedConfigObject));
+                        for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
+                            localResourcesURLList.add(mappingFO.getURL());
+                        }
                         ClassLoader ccl = env.getProjectClassLoader(
-                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}));
+                                localResourcesURLList.toArray(new URL[]{}));
 
                         Thread.currentThread().setContextClassLoader(ccl);
                         SessionFactory sessionFactory =

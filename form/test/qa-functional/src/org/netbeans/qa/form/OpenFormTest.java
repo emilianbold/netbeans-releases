@@ -28,12 +28,15 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.*;
-import org.netbeans.qa.form.actions.actionsTest;
 
 /**
  *
  * @author Marek G.
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT very usefull now
  */
+ 
 public class OpenFormTest extends JellyTestCase {
     
     public OpenFormTest(java.lang.String testName) {
@@ -189,9 +192,7 @@ public class OpenFormTest extends JellyTestCase {
             }
             
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
         } catch (IOException ex){
-            ex.printStackTrace();
         } finally {
             try {
                 if (bufferedReader!= null) {
@@ -201,7 +202,6 @@ public class OpenFormTest extends JellyTestCase {
                     bufferedWriter.close();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
             }
         }
         

@@ -226,7 +226,7 @@ public class PHPDocCommentParser {
     }
 
     private String getVaribleName(String description) {
-        String[] tokens = description.trim().split("[ ]+"); //NOI18N
+        String[] tokens = description.trim().split("[ \n\t]+"); //NOI18N
         String variable = null;
 
         if (tokens.length > 0 && tokens[0].length() > 0 && tokens[0].charAt(0) == '$'){

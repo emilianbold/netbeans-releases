@@ -42,12 +42,14 @@
 
 package org.netbeans.libs.git.jgit;
 
+import java.util.Map;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitTransportUpdate;
 
 /**
@@ -73,10 +75,10 @@ public class JGitTransportUpdate implements GitTransportUpdate {
         this.type = getType(update.getLocalName());
     }
 
-    public JGitTransportUpdate (URIish uri, RemoteRefUpdate update) {
+    public JGitTransportUpdate (URIish uri, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches) {
         this.localName = stripRefs(update.getSrcRef());
         this.remoteName = stripRefs(update.getRemoteName());
-        this.oldObjectId = update.getExpectedOldObjectId() == null || ObjectId.zeroId().equals(update.getExpectedOldObjectId()) ? null : update.getExpectedOldObjectId().getName();
+        this.oldObjectId = getOldRevisionId(remoteBranches.get(remoteName));
         this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
         this.result = GitRefUpdateResult.valueOf(update.getStatus().name());
         this.uri = uri.toString();
@@ -147,6 +149,10 @@ public class JGitTransportUpdate implements GitTransportUpdate {
             throw new IllegalArgumentException("Unknown type for: " + refName);
         }
         return retval;
+    }
+
+    private String getOldRevisionId (GitBranch branch) {
+        return branch == null ? null : branch.getId();
     }
 
 }

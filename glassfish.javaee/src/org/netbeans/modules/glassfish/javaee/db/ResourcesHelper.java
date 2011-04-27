@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -74,9 +74,11 @@ import org.openide.util.RequestProcessor;
  * @author Nitya Doraisamy
  */
 public class ResourcesHelper {
+
+    private static RequestProcessor RP = new RequestProcessor("Sample Datasource work");
     
     public static void addSampleDatasource(final J2eeModule module) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {

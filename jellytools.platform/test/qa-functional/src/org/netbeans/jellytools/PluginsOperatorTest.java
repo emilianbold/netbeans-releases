@@ -43,18 +43,31 @@
  */
 package org.netbeans.jellytools;
 
+import javax.swing.JTextField;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTest;
 
 /** Test PluginsOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class PluginsOperatorTest extends JellyTestCase {
+
+    private static PluginsOperator pluginsOper;
+    private static final String TEST_PLUGIN = "Archiver"; //NOI18N
+    public static final String[] tests = new String[]{
+        "testSetProxy",
+        "testInvoke",
+        "testInstall",
+        "testUninstall",
+        "testDeactivate",
+        "testSettings",
+        "testDowloaded",
+        "testClose"};
 
     /** Creates test case with given name.
      * @param testName name of test case
@@ -63,39 +76,11 @@ public class PluginsOperatorTest extends JellyTestCase {
         super(testName);
     }
 
-    /** Used for internal run in IDE.
-     * @param args not used here
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static final String[] tests = new String[] {
-        "testInvoke",
-        "testInstall",
-        "testUninstall",
-        "testDeactivate",
-        "testSettings",
-        "testDowloaded",
-        "testClose"};
     /** Define test suite.
      * @return suite.
      */
     public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // test cases have to be in particular order
-        suite.addTest(new PluginsOperatorTest("testInvoke"));
-        suite.addTest(new PluginsOperatorTest("testInstall"));
-        suite.addTest(new PluginsOperatorTest("testUninstall"));
-        suite.addTest(new PluginsOperatorTest("testDeactivate"));
-        suite.addTest(new PluginsOperatorTest("testSettings"));
-        suite.addTest(new PluginsOperatorTest("testDowloaded"));
-        suite.addTest(new PluginsOperatorTest("testClose"));
-        return suite;
-         */
-        return (NbTest) createModuleTest(PluginsOperatorTest.class, 
-        tests);
+        return (NbTest) createModuleTest(PluginsOperatorTest.class, tests);
     }
 
     /** Print out test name. */
@@ -103,19 +88,36 @@ public class PluginsOperatorTest extends JellyTestCase {
     public void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
     }
-    private static PluginsOperator pluginsOper;
-    
-    private static final String TEST_PLUGIN = "Archiver"; //NOI18N
+
+    /** Sets proxy for network connection. */
+    public void testSetProxy() {
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        // "Manual Proxy Setting"
+        String hTTPProxyLabel = Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.options.general.Bundle", "CTL_Use_HTTP_Proxy");
+        new JRadioButtonOperator(optionsOper, hTTPProxyLabel).push();
+        // "HTTP Proxy:"
+        String proxyHostLabel = Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Host");
+        JLabelOperator jloHost = new JLabelOperator(optionsOper, proxyHostLabel);
+        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("emea-proxy.uk.oracle.com"); // NOI18N
+        // "Port:"
+        String proxyPortLabel = Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Port");
+        JLabelOperator jloPort = new JLabelOperator(optionsOper, proxyPortLabel);
+        new JTextFieldOperator((JTextField) jloPort.getLabelFor()).setText("80"); // NOI18N
+        optionsOper.ok();
+    }
 
     /** Test of invoke method. */
     public void testInvoke() throws InterruptedException {
 
         //Make sure the menu has time to load
         new Action(Bundle.getStringTrimmed(
-            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+                "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
 
         Thread.sleep(1000);
-        
+
 
         new Action(Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
                 "Menu/BuildProject"), null).performMenu();
@@ -130,7 +132,7 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - type "netbeans.org Source Browser" into Search text field
      * - finish installation
      */
-    public void testInstall() {        
+    public void testInstall() {
         pluginsOper.selectAvailablePlugins();
         pluginsOper.reloadCatalog();
         pluginsOper.search(TEST_PLUGIN);
@@ -144,13 +146,13 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - wait for "NetBeans IDE Installer" dialog
      * - click Cancel
      */
-    public void testUninstall() throws Exception{
+    public void testUninstall() throws Exception {
         pluginsOper.cbShowDetails().setSelected(true);
 
         pluginsOper.selectPlugins(new String[]{
-            "Java",
-            TEST_PLUGIN
-        });
+                    "Java",
+                    TEST_PLUGIN
+                });
         pluginsOper.uninstall();
         pluginsOper.installer().cancel();
     }
@@ -185,7 +187,7 @@ public class PluginsOperatorTest extends JellyTestCase {
         pluginsOper.addPlugins();
         new JFileChooserOperator().cancel();
     }
-    
+
     /** Close Plugins dialog. */
     public void testClose() {
         pluginsOper.close();

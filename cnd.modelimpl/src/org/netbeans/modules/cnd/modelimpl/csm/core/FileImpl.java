@@ -522,7 +522,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         state = State.PARSED;
                                     }  // if not, someone marked it with new state
                                 }
-                                stateLock.notifyAll();
+                                postParseNotify();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
@@ -552,6 +552,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         state = State.PARSED;
                                     } // if not, someone marked it with new state
                                 }
+                                postParseNotify();
                                 stateLock.notifyAll();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
@@ -586,6 +587,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (isValid()) {	// FIXUP: use a special lock here
             getProjectImpl(true).getGraph().putFile(this);
         }
+    }
+
+    private void postParseNotify() {
         if (isValid()) {   // FIXUP: use a special lock here
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
@@ -594,7 +598,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             Notificator.instance().reset();
         }
     }
-
+    
     /*package*/ void onProjectParseFinished(boolean prjLibsAlreadyParsed) {
         if (fixFakeRegistrations(true)) {
             if (isValid()) {   // FIXUP: use a special lock here

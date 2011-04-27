@@ -66,6 +66,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.WeakSet;
 
 /**
  * Represents a handle for {@link Element} which can be kept and later resolved
@@ -369,7 +370,8 @@ public final class ElementHandle<T extends Element> {
         return this.kind;
     }
     
-    
+    private static final WeakSet<ElementHandle<?>> NORMALIZATION_CACHE = new WeakSet<ElementHandle<?>>();
+
     /**
      * Factory method for creating {@link ElementHandle}.
      * @param element for which the {@link ElementHandle} should be created. Permitted
@@ -382,6 +384,12 @@ public final class ElementHandle<T extends Element> {
      * @throws IllegalArgumentException if the element is of an unsupported {@link ElementKind}
      */
     public static @NonNull <T extends Element> ElementHandle<T> create (@NonNull final T element) throws IllegalArgumentException {
+        ElementHandle<T> eh = createImpl(element);
+
+        return (ElementHandle<T>) NORMALIZATION_CACHE.putIfAbsent(eh);
+    }
+
+    private static @NonNull <T extends Element> ElementHandle<T> createImpl (@NonNull final T element) throws IllegalArgumentException {
         Parameters.notNull("element", element);
         ElementKind kind = element.getKind();
         String[] signatures;

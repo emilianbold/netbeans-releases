@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.test.TestFileUtils;
 
@@ -56,9 +57,17 @@ public class URLsAreEqualTest extends NbTestCase {
     public URLsAreEqualTest(String n) {
         super(n);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
+    }
     
     public void testURLsAreEqual() throws Exception {
-        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        final File wd = new File(getWorkDir(), "work dir");
+        wd.mkdirs();
+        
+        File jar = new File(wd, "default-package-resource.jar");
         
         URL orig = new URL("jar:" + jar.toURI() + "!/package/resource.txt");
         URLConnection conn = orig.openConnection();

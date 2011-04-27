@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git;
 
-package org.netbeans.modules.maven;
-
-import java.util.Properties;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.spi.project.ActionProvider;
+import java.util.Map;
 
 /**
  *
- * @author mkleint
+ * @author ondra
  */
-public class TestSkippingChecker implements PrerequisitesChecker {
+public class GitPushResult {
 
-    /**
-     * Skip test execution.
-     * Do not use maven.test.skip as that skips also compilation; see #189466 for background.
-     * http://maven.apache.org/plugins/maven-surefire-plugin/examples/skipping-test.html
-     */
-    public static final String PROP_SKIP_TEST = "skipTests"; // NOI18N
+    private final Map<String, GitTransportUpdate> remoteRepositoryUpdates;
+    private final Map<String, GitTransportUpdate> localRepositoryUpdates;
 
-    public TestSkippingChecker() {
+    public GitPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
+        this.remoteRepositoryUpdates = remoteRepositoryUpdates;
+        this.localRepositoryUpdates = localRepositoryUpdates;
     }
 
-    public boolean checkRunConfig(RunConfig config) {
-        String action = config.getActionName();
-        if (ActionProvider.COMMAND_TEST.equals(action) ||
-            ActionProvider.COMMAND_TEST_SINGLE.equals(action) ||
-            ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action) ||
-            "profile-tests".equals(action)) { //NOI18N - profile-tests is not really nice but well.
-            return true;
-        }
-        if (MavenSettings.getDefault().isSkipTests()) {
-            if (config.getPreExecution() != null) {
-                checkRunConfig(config.getPreExecution());
-            }
-            Properties props = config.getProperties();
-            if (props == null) {
-                props = new Properties();
-            }
-            if (!props.containsKey(PROP_SKIP_TEST)) {
-                props.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
-                config.setProperties(props);
-            }
-        }
-
-        return true;
+    public Map<String, GitTransportUpdate> getLocalRepositoryUpdates () {
+        return localRepositoryUpdates;
     }
 
+    public Map<String, GitTransportUpdate> getRemoteRepositoryUpdates () {
+        return remoteRepositoryUpdates;
+    }
 }

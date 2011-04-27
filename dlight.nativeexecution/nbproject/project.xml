@@ -192,6 +192,7 @@
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.analytics.ui.lib</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
@@ -219,6 +220,7 @@
                 <friend>com.sun.tools.dlight.util</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.analytics.ui.lib</friend>
                 <friend>com.sun.tools.nativeexecution.accessor</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>

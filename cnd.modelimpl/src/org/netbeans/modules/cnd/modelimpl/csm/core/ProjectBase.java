@@ -542,6 +542,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         ensureFilesCreated();
         ensureChangedFilesEnqueued();
+        model.waitModelTasks();
         waitParseImpl();
     }
 
@@ -1915,7 +1916,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // it is expensive in Full Remote mode to create buffer, so do the work out of sync block
             assert preprocHandler != null : "null preprocHandler for " + absPath;
             FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
-            CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
+            CndUtils.assertTrueInConsole(fo != null, "file object not found ", absPath); // + " in fs=" + fileSystem); // NOI18N
             FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
             // and all other under lock again
             synchronized (fileContainerLock) {
@@ -2993,27 +2994,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @SuppressWarnings("unchecked")
-        synchronized T getContainer() {
-            T container = null;
+        T getContainer() {
+            T container  = getFromRef();
+            if (container != null) {
+                return container;
+            }
+            synchronized (this) {
+                container = getFromRef();
+                if (container != null) {
+                    return container;
+                }
+                container = (T) RepositoryUtils.get(sorageKey);
+                if (container == null && project.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
+                    DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
+                    preventMultiplyDiagnosticExceptionsSorage++;
+                }
+                if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
+                    weakContainer = new WeakReference<T>(container);
+                }
+                return container;
+            }
+        }
+
+        private T getFromRef() {
             WeakReference<T> weak = null;
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && project.isValid()) {
                 weak = weakContainer;
                 if (weak != null) {
-                    container = weak.get();
-                    if (container != null) {
-                        return container;
-                    }
+                    return weak.get();
                 }
             }
-            container = (T) RepositoryUtils.get(sorageKey);
-            if (container == null && project.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
-                preventMultiplyDiagnosticExceptionsSorage++;
-            }
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
-                weakContainer = new WeakReference<T>(container);
-            }
-            return container;
+            return null;
         }
     }
 }

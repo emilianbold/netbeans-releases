@@ -67,6 +67,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
+import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -373,11 +374,11 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public Map<String, GitTransportUpdate> push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
+    public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
         PushCommand cmd = new PushCommand(gitRepository.getRepository(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
         cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
-        return cmd.getUpdates();
+        return cmd.getResult();
     }
 
     /**

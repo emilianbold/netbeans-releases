@@ -1740,8 +1740,40 @@ public class TokenFormatter {
                                     if (!replaceOld.equals(replaceNew)
                                             && ((indexOldText + replaceOld.length()) <= oldText.length()
                                             || indexNewText == indexNewTextLine)) {
-                                        delta = replaceSimpleString(document, realOffset + indexOldText,
-                                                replaceOld, replaceNew, delta);
+                                        
+                                        if (newText.trim().length() == 0) {
+                                            delta = replaceSimpleString(document, realOffset + indexOldText,
+                                                    replaceOld, replaceNew, delta);
+                                        } else {
+                                            // in template we can move only with whitespaces
+                                            // if we will touch a parameter of the template
+                                            // then the processing of the template is stopped. 
+                                            // see issue #197906
+                                            int indexOldChar = 0;
+                                            int indexNewChar = 0;
+                                            while (indexNewChar < replaceNew.length() && indexOldChar < replaceOld.length()) {
+                                                char newChar = replaceNew.charAt(indexNewChar);
+                                                char oldChar = replaceOld.charAt(indexOldChar);
+                                                if (newChar != oldChar) {
+                                                    if (Character.isWhitespace(newChar)) {
+                                                        delta = replaceSimpleString(document, realOffset + indexOldText + indexNewChar,
+                                                            "", "" + newChar, delta);
+                                                        indexNewChar++;
+                                                    } else {
+                                                       if (Character.isWhitespace(oldChar)) {
+                                                           delta = replaceSimpleString(document, realOffset + indexOldText + indexNewChar,
+                                                            "" + oldChar, "", delta);
+                                                            indexOldChar++;
+                                                       }
+                                                    }
+                                                    
+                                                } else {
+                                                    indexNewChar++;
+                                                    indexOldChar++;
+                                                }
+                                            }
+
+                                        }
                                     }
                                     indexOldText = indexOldTextLine + 1;//(indexOldText == indexOldTextLine ? 2 : 1);
                                     indexNewText = indexNewTextLine + 1;//(indexNewText == indexNewTextLine ? 2 : 1);

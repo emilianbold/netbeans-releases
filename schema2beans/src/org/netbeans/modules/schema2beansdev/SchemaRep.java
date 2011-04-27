@@ -2268,7 +2268,7 @@ public class SchemaRep implements PrefixGuesser {
             //System.out.println("Attempting to include "+schemaLocation);
             ParserSchemaState oldState = new ParserSchemaState();
             try {
-                readSchemaFromLocation(schemaLocation);
+                readSchemaFromLocation(schemaLocation, true);
             } catch (org.xml.sax.SAXException e) {
                 throw new Schema2BeansRuntimeException(Common.getMessage("MSG_FailedToParse", schemaLocation), e);
             } catch (java.io.IOException e) {
@@ -2377,7 +2377,7 @@ public class SchemaRep implements PrefixGuesser {
             if (namespace != null && !namespace.equals(""))
                 targetNamespace = namespace;
             try {
-                readSchemaFromLocation(schemaLocation);
+                readSchemaFromLocation(schemaLocation, false);
             } catch (org.xml.sax.SAXException e) {
                 throw new Schema2BeansRuntimeException(Common.getMessage("MSG_FailedToParse", schemaLocation), e);
             } catch (java.io.IOException e) {
@@ -4740,7 +4740,7 @@ public class SchemaRep implements PrefixGuesser {
         rootElement.writeXMLSchema(out);
     }
 
-    public void readSchemaFromLocation(String schemaLocation) throws IOException, SAXException {
+    public void readSchemaFromLocation(String schemaLocation, boolean include) throws IOException, SAXException {
         if (debug)
             System.out.println("Reading schema from "+schemaLocation);
         if (schemaLocation == null || "".equals(schemaLocation))
@@ -4796,7 +4796,7 @@ public class SchemaRep implements PrefixGuesser {
                 if (!childNode.getLocalName().equals("schema"))	// NOI18N
                     throw new IllegalStateException(Common.getMessage("MSG_ExpectedNode", "schema", childNode.getNodeName()));
                 // Make sure to preserve the old stuff.
-                readSchemaElement(childNode);
+                readSchemaElement(childNode, include);
             }
         } catch (javax.xml.parsers.ParserConfigurationException e) {
             throw new Schema2BeansRuntimeException(Common.getMessage("MSG_FailedToParse", schemaLocation), e);
@@ -4813,12 +4813,12 @@ public class SchemaRep implements PrefixGuesser {
                 throw new IllegalStateException(Common.getMessage("MSG_ExpectedNode", "schema", childNode.getNodeName()));
             pushSchemaNode();
             peekCurrentNeedSub().readSchema(childNode);
-            readSchemaElement(childNode);
+            readSchemaElement(childNode, false);
             popCurrent();
         }
     }
 
-    public void readSchemaElement(org.w3c.dom.Element el) {
+    public void readSchemaElement(org.w3c.dom.Element el, boolean include) {
         NamedNodeMap attrs = el.getAttributes();
         String theTargetNamespace = null;
         String theDocumentNamespaceURI = null;
@@ -4841,6 +4841,14 @@ public class SchemaRep implements PrefixGuesser {
             // This needs to be done after all the namespaces have been read
             targetNamespace = theTargetNamespace;
             //System.out.println("readSchemaElement: just set targetNamespace to "+targetNamespace);
+        }
+        // included document as chameleon with no target and default NS
+        if (include && theDocumentNamespaceURI == null && theTargetNamespace == null
+                && targetNamespace != null) {
+            // spec is bit unclear on this chameleon inclusion without
+            // default and target namespace
+            // see http://lists.w3.org/Archives/Public/xmlschema-dev/2001Oct/0122.html
+            documentNamespace = targetNamespace;
         }
         ContainsSubElements re = getRootElement();
         if (re instanceof SchemaNode) {

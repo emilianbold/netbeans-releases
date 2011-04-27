@@ -64,6 +64,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
@@ -84,8 +85,18 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     private final File repositoryFile;
     private Map<String, GitBranch> remoteBranches;
     private final RemoteRepository repository;
+    private final Mode mode;
 
+    public static enum Mode {
+        PUSH,
+        FETCH
+    }
+    
     public SelectUriStep (File repositoryFile, Map<String, GitRemoteConfig> remotes) {
+        this(repositoryFile, remotes, Mode.FETCH);
+    }
+
+    public SelectUriStep (File repositoryFile, Map<String, GitRemoteConfig> remotes, Mode mode) {
         this.repositoryFile = repositoryFile;
         this.repository = new RemoteRepository(null);
         this.panel = new SelectUriPanel(repository.getPanel());
@@ -97,6 +108,11 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.lblRemoteNames,
             panel.cmbRemoteNames
         };
+        this.mode = mode;
+        if (mode == Mode.PUSH) {
+            panel.lblRemoteNames.setVisible(false);
+            panel.cmbRemoteNames.setVisible(false);
+        }
         fillPanel();
         attachListeners();
         Mutex.EVENT.readAccess(new Runnable() {
@@ -111,8 +127,17 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     private void fillPanel () {
         LinkedList<RemoteUri> list = new LinkedList<RemoteUri>();
         for (Map.Entry<String, GitRemoteConfig> e : remotes.entrySet()) {
-            for (String uri : e.getValue().getUris()) {
-                list.add(new RemoteUri(e.getKey(), uri));
+            boolean empty = true;
+            if (mode == Mode.PUSH) {
+                for (String uri : e.getValue().getPushUris()) {
+                    list.add(new RemoteUri(e.getKey(), uri));
+                    empty = false;
+                }
+            }
+            if (empty) {
+                for (String uri : e.getValue().getUris()) {
+                    list.add(new RemoteUri(e.getKey(), uri));
+                }
             }
         }
         RemoteUri[] uris = list.toArray(new RemoteUri[list.size()]);
@@ -168,7 +193,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         } else if (panel.rbCreateNew.isSelected()) {
             valid = repository.isValid();
             msg = repository.getMessage();
-            if (valid && (panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty())) {
+            if (valid && mode == Mode.FETCH && (panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty())) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteName"), false); //NOI18N
             }
@@ -190,14 +215,15 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         }
                         remoteBranches = client.listRemoteBranches(uri, this);
                     } catch (GitException ex) {
+                        GitModuleConfig.getDefault().removeRecentGitURI(repository.getURI());
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
                         message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
-                    }                
+                    }
                 }
             };
             supp.start(Git.getInstance().getRequestProcessor(repositoryFile), repositoryFile, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
             if (message[0] != null) {
-                setValid(true, message[0]);
+                setValid(false, message[0]);
             }
             //enable input
             EventQueue.invokeLater(new Runnable() {
@@ -239,6 +265,10 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             selectedRemote = RemoteConfig.createUpdatableRemote(repositoryFile, (String) panel.cmbRemoteNames.getSelectedItem());
         }
         return selectedRemote;
+    }
+
+    public boolean isConfiguredRemoteSelected () {
+        return panel.rbConfiguredUri.isSelected();
     }
 
     @Override

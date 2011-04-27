@@ -76,6 +76,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
             String lnkDir2 = "lnk-dir-2";
             String lnkDir3 = "lnk-dir-3";
             String lnkDirA = "lnk-dir-a";
+            String lnkDirInextistent = "lnk-dir-inexistent";
             
             String origFile = "orig-file";
             String lnkFile1 = "lnk-file-1";
@@ -90,6 +91,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
                     "ln -s " + lnkDir1 + ' ' + lnkDir2 + "; " +
                     "ln -s " + lnkDir2 + ' ' + lnkDir3 + "; " +
                     "ln -s " + baseDir + '/' + origDir + ' ' + lnkDirA + "; " +
+                    "ln -s " + baseDir + "/inexistent-dir" + ' ' + lnkDirInextistent + "; " +
                     "echo 123 > " + origFile + "; " +            
                     "ln -s " + origFile + ' ' + lnkFile1 + "; " +
                     "ln -s " + lnkFile1 + ' ' + lnkFile2 + "; " +
@@ -111,7 +113,17 @@ public class CanonicalTestCase extends RemoteFileTestBase {
             checkCanonical(getFileObject(baseDirFO, lnkFile2), origFileFO);
             checkCanonical(getFileObject(baseDirFO, lnkFile3), origFileFO);
             checkCanonical(getFileObject(baseDirFO, lnkFileA), origFileFO);
-            
+
+            String inexistent;
+            inexistent = baseDir + "/inexistent1";
+            checkCanonical(inexistent, inexistent);
+            checkCanonical(inexistent + "/aa/bb/../cc", inexistent + "/aa/cc");
+            inexistent = baseDir + '/' + lnkDir1 + "/inexistent2";
+            checkCanonical(inexistent, inexistent);
+            inexistent = baseDir + '/' + lnkDirInextistent;
+            checkCanonical(inexistent, inexistent);
+            inexistent = baseDir + '/' + lnkDirInextistent + "/inexistent3";
+            checkCanonical(inexistent, inexistent);
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
@@ -185,10 +197,14 @@ public class CanonicalTestCase extends RemoteFileTestBase {
         }
     }
 
+    private void checkCanonical(String orig, String canonicalShouldBe) throws Exception {
+        final String canonical = FileSystemProvider.getCanonicalPath(execEnv, orig);
+        assertEquals("Canonical path differs for " + orig, canonicalShouldBe, canonical);
+    }
     private void checkCanonical(FileObject orig, FileObject canonicalShouldBe) throws Exception {
         FileObject canonical = FileSystemProvider.getCanonicalFileObject(orig);
         assertNotNull("Null canonical file object for " + orig, canonical);
-        assertEquals("Canonical file object differ for " + orig, canonicalShouldBe, canonical);
+        assertEquals("Canonical file object differs for " + orig, canonicalShouldBe, canonical);
         String path = FileSystemProvider.getCanonicalPath(orig);
         assertEquals("Canonical path differ for " + orig, canonicalShouldBe.getPath(), path);
         path = FileSystemProvider.getCanonicalPath(fs, orig.getPath());

@@ -284,20 +284,44 @@ public final class GitModuleConfig {
     
     private final HashMap<String, GitURI> cachedUris = new HashMap<String, GitURI>(5);
     public void insertRecentGitURI(GitURI guri, boolean saveCredentials) {
-        if(guri == null) {
-            return;
-        }
         assert !EventQueue.isDispatchThread();
-                
-        Preferences prefs = getPreferences();
-        String guriString;
-        try {
-            // we need to compare all uris with the one without username or password
-            guriString = new GitURI(guri.toString()).setUser(null).setPass(null).toString();
-        } catch (URISyntaxException ex) {
-            Git.LOG.log(Level.WARNING, guri.toPrivateString(), ex);
+        String guriString = getUriStringWithoutCredentials(guri);
+        if(guriString == null) {
             return;
+        }        
+        Preferences prefs = getPreferences();
+        removeStaleEntries(prefs, guriString);
+        
+        if(saveCredentials && guri.getPass() != null) {
+            // keep permanently and remove from cache
+            storeCredentials(guri);
+            cachedUris.remove(guriString);
+        } else {
+            // remove from perm storage, we should not keep it forever
+            deleteCredentials(guri);
+            // but keep until end of session
+            cachedUris.put(guriString, guri);
         }
+        
+        if (!"".equals(guriString)) {                                           //NOI18N
+            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), saveCredentials).toString() , -1);
+        }
+    }
+
+    public void removeRecentGitURI (GitURI guri) {
+        assert !EventQueue.isDispatchThread();
+        String guriString = getUriStringWithoutCredentials(guri);
+        if(guriString == null) {
+            return;
+        }        
+        Preferences prefs = getPreferences();
+        removeStaleEntries(prefs, guriString);
+        
+        cachedUris.remove(guriString);
+        deleteCredentials(guri);
+    }
+
+    private void removeStaleEntries (Preferences prefs, String guriString) {
         List<String> urlValues = Utils.getStringList(prefs, RECENT_GURI);
         for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
             String rcOldString = it.next();
@@ -313,21 +337,6 @@ public final class GitModuleConfig {
             if(guriString.equals(guriOld.toString())) {
                 Utils.removeFromArray(prefs, RECENT_GURI, rcOldString);
             }
-        }
-        
-        if(saveCredentials && guri.getPass() != null) {
-            // keep permanently and remove from cache
-            storeCredentials(guri);
-            cachedUris.remove(guriString);
-        } else {
-            // remove from perm storage, we should not keep it forever
-            deleteCredentials(guri);
-            // but keep until end of session
-            cachedUris.put(guriString, guri);
-        }
-        
-        if (!"".equals(guriString)) {                                           //NOI18N
-            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), saveCredentials).toString() , -1);
         }
     }    
     
@@ -415,6 +424,19 @@ public final class GitModuleConfig {
     private void deleteCredentials (final GitURI guri) {
         assert !EventQueue.isDispatchThread();
         KeyringSupport.save(GURI_PASSWORD, guri.toString(), null, null);
+    }
+
+    private String getUriStringWithoutCredentials (GitURI guri) {
+        String guriString = null;
+        if(guri != null) {
+            try {
+                // we need to compare all uris with the one without username or password
+                guriString = new GitURI(guri.toString()).setUser(null).setPass(null).toString();
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.WARNING, guri.toPrivateString(), ex);
+            }
+        }
+        return guriString;
     }
     
     private static class GitURIEntry {
