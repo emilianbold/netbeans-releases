@@ -103,20 +103,21 @@ public final class EmbedderFactory {
         online = null;
     }
 
-    private static void setLocalRepoPreference(EmbedderConfiguration req) {
+    private static File localRepoPreference() {
         Preferences prefs = NbPreferences.root().node("org/netbeans/modules/maven"); //NOI18N
         String localRepo = prefs.get("localRepository", null); //NOI18N
         if (localRepo != null) {
             File file = new File(localRepo);
             if (file.exists() && file.isDirectory()) {
-                req.setLocalRepository(file);
+                return file;
             } else if (!file.exists()) {
                 if (!file.mkdirs()) {
                     LOG.log(Level.WARNING, "Could not create {0}", file);
                 }
-                req.setLocalRepository(file);
+                return file;
             }
         }
+        return null;
     }
 
    
@@ -221,13 +222,9 @@ public final class EmbedderFactory {
             assert false : x;
         }
 
-        EmbedderConfiguration configuration = new EmbedderConfiguration();
-        configuration.setContainer(pc);
-        configuration.setOffline(true);
-        setLocalRepoPreference(configuration);
         Properties props = new Properties();
         props.putAll(System.getProperties());
-        configuration.setSystemProperties(fillEnvVars(props));
+        EmbedderConfiguration configuration = new EmbedderConfiguration(pc, localRepoPreference(), fillEnvVars(props), true);
         
 //        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
 //        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
@@ -306,15 +303,12 @@ public final class EmbedderFactory {
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         pc.setLoggerManager(new NbLoggerManager());
 
-        EmbedderConfiguration req = new EmbedderConfiguration();
-        req.setContainer(pc);
-        setLocalRepoPreference(req);
+        Properties props = new Properties();
+        props.putAll(System.getProperties());
+        EmbedderConfiguration req = new EmbedderConfiguration(pc, localRepoPreference(), fillEnvVars(props), false);
 
 //        //TODO remove explicit activation
 //        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-        Properties props = new Properties();
-        props.putAll(System.getProperties());
-        req.setSystemProperties(fillEnvVars(props));
 
 
 //        req.setConfigurationCustomizer(new ContainerCustomizer() {
