@@ -91,8 +91,7 @@ public class PushCommand extends TransportCommand {
     protected void run () throws GitException.AuthorizationException, GitException {
         List<RefSpec> specs = new ArrayList<RefSpec>(pushRefSpecs.size());
         for (String refSpec : pushRefSpecs) {
-            RefSpec sp = new RefSpec(refSpec);
-            sp.setForceUpdate(false);
+            RefSpec sp = new RefSpec(refSpec).setForceUpdate(false);
             specs.add(sp);
         }
         // this will ensure that refs/remotes/abc/branch will be updated, too

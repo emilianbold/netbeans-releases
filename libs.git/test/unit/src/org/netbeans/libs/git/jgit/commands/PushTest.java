@@ -274,6 +274,13 @@ public class PushTest extends AbstractGitTestCase {
         write(f, "huhu2");
         add(f);
         id = getClient(workDir).commit(new File[] { f }, "some change before merge", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "+refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, remoteBranches.size());
+        assertEquals(newid, remoteBranches.get("master").getId());
+        assertEquals(1, updates.size());
+        assertUpdate(updates.get("master"), "localbranch", "master", id, newid, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
+        
         updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
         remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());

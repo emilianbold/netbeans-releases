@@ -56,7 +56,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.modules.git.ui.push.PushBranchesStep.BranchMapping;
 import org.netbeans.modules.git.ui.repository.remote.SelectUriStep;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
@@ -125,8 +124,8 @@ class PushWizard  implements ChangeListener {
         return wizardIterator.selectUriStep.getSelectedUri();
     }
     
-    List<String> getPushRefSpecs () {
-        return wizardIterator.pushBranchesStep.getSelectedRefSpecs();
+    Collection<PushBranchMapping> getPushMappings () {
+        return wizardIterator.pushBranchesStep.getSelectedMappings();
     }
     
     List<String> getFetchRefSpecs () {
@@ -182,9 +181,9 @@ class PushWizard  implements ChangeListener {
                 pushBranchesStep.setAsLastPanel(!selectUriStep.isConfiguredRemoteSelected());
                 selectUriStep.storeURI();
             } else if (current() == pushBranchesStep) {
-                Collection<BranchMapping> mappings = pushBranchesStep.getSelectedMappings();
+                Collection<PushBranchMapping> mappings = pushBranchesStep.getSelectedMappings();
                 Set<String> remoteBranches = new HashSet<String>(mappings.size());
-                for (BranchMapping mapping : mappings) {
+                for (PushBranchMapping mapping : mappings) {
                     remoteBranches.add(mapping.getRemoteRepositoryBranchName());
                 }
                 updateBranchReferencesStep.setRemote(selectUriStep.getSelectedRemote());
