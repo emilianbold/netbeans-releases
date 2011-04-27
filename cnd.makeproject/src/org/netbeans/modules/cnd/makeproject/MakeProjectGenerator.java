@@ -81,12 +81,14 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.CreateFromTemplateHandler;
 
 /**
@@ -388,9 +390,10 @@ public class MakeProjectGenerator {
         }
         String createdMainName = mainName;
         if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
-            File file = new File(srcFolder.getPath(), mainName).getCanonicalFile();
-            srcFolder = FileUtil.createFolder(file.getParentFile());
-            createdMainName = file.getName();
+            String absPath = CndPathUtilitities.toAbsolutePath(srcFolder, mainName);
+            absPath = FileSystemProvider.getCanonicalPath(srcFolder.getFileSystem(), absPath);
+            srcFolder = FileUtil.createFolder(srcFolder, CndPathUtilitities.getDirName(mainName));
+            createdMainName = CndPathUtilitities.getBaseName(absPath);
         }
 
         DataObject mt = DataObject.find(mainTemplate);

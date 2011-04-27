@@ -56,13 +56,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Misc utility functions used when creating new project
  * @author Vladimir Kvashin
  */
-/*package*/ class NewProjectWizardUtils {
+public class NewProjectWizardUtils {
 
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
         Boolean b = (Boolean) wizardDescriptor.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
@@ -85,6 +84,11 @@ import org.openide.filesystems.FileUtil;
         return (hostUID == null) ?
             ServerList.getDefaultRecord().getExecutionEnvironment() :
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+    }
+
+    public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {
+        ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV);
+        return (env == null) ?  getDefaultSourceEnvironment() : env;
     }
 
     public static boolean fileExists(String absolutePath, WizardDescriptor wizardDescriptor) {
@@ -116,6 +120,17 @@ import org.openide.filesystems.FileUtil;
             }
         }
         return RemoteFileUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+    
+    public static ExecutionEnvironment getDefaultSourceEnvironment() {
+        String externalForm = System.getProperty("cnd.default.project.source.env"); //NOI18N
+        if (externalForm != null) {
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(externalForm);
+            if (env != null) {
+                return env;
+            }
+        }
+        return ExecutionEnvironmentFactory.getLocal();
     }
 
     public static JFileChooser createFileChooser(WizardDescriptor wd, String titleText,

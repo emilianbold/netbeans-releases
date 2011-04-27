@@ -58,8 +58,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.NewProjectWizardUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileUtil;
 
 public class ProjectGenerator {
@@ -77,6 +79,7 @@ public class ProjectGenerator {
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
+        private ExecutionEnvironment sourceEnv;
         private boolean fullRemote;
         private String fullRemoteNativeProjectPath;
         private CompilerSet cs;
@@ -116,6 +119,7 @@ public class ProjectGenerator {
             this.postCreationClassName = null;
             this.mainProject = null;
             this.templateParams = Collections.<String, Object>emptyMap();
+            this.sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
         }
 
         public ProjectParameters setMakefileName(String makefile) {
@@ -251,6 +255,14 @@ public class ProjectGenerator {
             this.hostUID = hostUID;
         }
 
+        public ExecutionEnvironment getSourceExecutionEnvironment() {
+            return sourceEnv;
+        }
+
+        public void setSourceExecutionEnvironment(ExecutionEnvironment env) {
+            this.sourceEnv = env;
+        }
+        
         public CompilerSet getToolchain() {
             return cs;
         }
