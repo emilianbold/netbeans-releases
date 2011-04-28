@@ -45,11 +45,8 @@
 package org.netbeans.core.startup;
 
 import java.util.Collection;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.startup.StartLog;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -71,7 +68,6 @@ final class WarmUpSupport implements Runnable {
         RequestProcessor RP = new RequestProcessor("Warm Up");
         TASK = RP.create(new WarmUpSupport());
     } // NOI18N
-    static boolean finished = false;    // usefull for testability
 
     private static final Logger err = Logger.getLogger("org.netbeans.core.WarmUpSupport");
 
@@ -86,6 +82,7 @@ final class WarmUpSupport implements Runnable {
     public void run() {
         err.fine("Warmup starting..."); // NOI18N
         StartLog.logStart("Warmup"); // NOI18N
+        try {
 
         Collection<? extends Lookup.Item<Runnable>> warmObjects =
             Lookups.forPath("WarmUp").lookupResult(Runnable.class).allItems(); // NOI18N
@@ -101,8 +98,8 @@ final class WarmUpSupport implements Runnable {
             }
         }
         err.fine("Warmup done."); // NOI18N
+        } finally {
         StartLog.logEnd("Warmup"); // NOI18N
-        
-        finished = true;
+        }
     }
 }
