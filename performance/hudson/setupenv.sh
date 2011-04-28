@@ -17,12 +17,12 @@ cd "$performance"
 rm -rf build/test/unit/results
 rm -rf build/test/qa-functional/results
 
-ant clean -Dnetbeans.dest.dir="$netbeans_dest"
-ant -Dnetbeans.dest.dir="$netbeans_dest"
+ant clean -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
+ant -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir="$netbeans_dest"
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir="$netbeans_dest"
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir="$netbeans_dest"
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
 
 buildnum=`cat "$WORKSPACE"/../../../../build.number`
 str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
