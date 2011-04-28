@@ -77,6 +77,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
+import junit.framework.Protectable;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -576,12 +577,12 @@ public class NbModuleSuite {
         }
 
         @Override
-        public void run(TestResult result) {
-            try {
-                runInRuntimeContainer(result);
-            } catch (Exception ex) {
-                result.addError(this, ex);
-            }
+        public void run(final TestResult result) {
+            result.runProtected(this, new Protectable() {
+                public @Override void protect() throws Throwable {
+                    runInRuntimeContainer(result);
+                }
+            });
         }
         
         private static String[] tokenizePath(String path) {
