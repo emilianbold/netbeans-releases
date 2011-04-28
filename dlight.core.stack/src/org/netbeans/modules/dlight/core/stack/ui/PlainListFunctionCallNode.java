@@ -193,7 +193,7 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
 
                 infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
                 result.append("<font color='#808080'>").append(infoSuffix).append("</font>"); // NOI18N
-                plainNameResult.append(" ").append(infoPrefix).append(" ").append(fname).append(line > 0 ? ":" + line : "");
+                plainNameResult.append(" ").append(infoPrefix).append(" ").append(fname).append(line > 0 ? ":" + line : "");//NOI18N
             }
         } else {
             result.append("<font color='#808080'>").append(dispName).append("</font>"); // NOI18N
@@ -205,7 +205,7 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
                     final String moduleOffset = FunctionNameUtils.getFunctionModuleOffset(fSignature);
                     infoSuffix = infoPrefix + "&nbsp;" + moduleName + (moduleOffset != null ? "+" + moduleOffset : "");//NOI18N
                     result.append("<font color='#808080'>").append(infoSuffix).append("</font>"); // NOI18N
-                    plainNameResult.append(" ").append(infoPrefix).append(" ").append(moduleName).append(moduleOffset != null ? "+" + moduleOffset : "");
+                    plainNameResult.append(" ").append(infoPrefix).append(" ").append(moduleName).append(moduleOffset != null ? "+" + moduleOffset : "");//NOI18N
 
                 }
             }
