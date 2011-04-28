@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.junit.Test;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -352,6 +353,7 @@ public class KenaiTest extends AbstractKenaiTestCase {
      * Test of createProject method, of class Kenai.
      */
     @Test
+    @RandomlyFails
     public void testCreateProject() throws KenaiException {
         System.out.println("createProject");
         String name = UNITTESTUNIQUENAME;
@@ -410,6 +412,7 @@ public class KenaiTest extends AbstractKenaiTestCase {
     }
 
 
+    @RandomlyFails
     @Test
     /**
      * Test of createProjectFeature method of class Kenai
