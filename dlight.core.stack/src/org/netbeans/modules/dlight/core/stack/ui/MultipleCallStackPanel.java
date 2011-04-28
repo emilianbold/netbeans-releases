@@ -115,9 +115,9 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
                     if (n instanceof StackRootNode){
                         Children c = ((StackRootNode)n).getChildren();
                         Node[] fcNodes = c.getNodes();
-                        content.append(n.getDisplayName()).append("\n");
+                        content.append(n.getDisplayName()).append("\n");//NOI18N
                         for (Node fcNode : fcNodes){
-                           content.append("    ").append(fcNode.getName()).append("\n");
+                           content.append("    ").append(fcNode.getName()).append("\n");//NOI18N
                         }                        
                     }
                 }
