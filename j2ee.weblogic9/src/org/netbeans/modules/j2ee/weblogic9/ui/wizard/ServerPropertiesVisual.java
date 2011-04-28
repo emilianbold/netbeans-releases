@@ -211,7 +211,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             instantiatingIterator.setPassword(new String(passwordField.getPassword()));
             instantiatingIterator.setPort(instance.getPort());
             instantiatingIterator.setDomainName(instance.getDomainName());
-            instantiatingIterator.setHost(instance.getPort());
+            instantiatingIterator.setHost(instance.getHost());
         }
         return true;
     }
