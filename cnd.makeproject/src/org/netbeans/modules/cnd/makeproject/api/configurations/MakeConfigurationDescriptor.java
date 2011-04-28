@@ -95,7 +95,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
@@ -816,19 +815,19 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         // Check metadata files are writable
-        List<String> metadataFiles = new ArrayList<String>();
         List<String> notOkFiles = new ArrayList<String>();
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER); // NOI18N
+        FileObject[] metadataFileObjects = new FileObject[] {
+            getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_FOLDER),
+            getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER)
+        };
         boolean allOk = true;
-        for (int i = 0; i < metadataFiles.size(); i++) {
-            File file = CndFileUtils.createLocalFile(metadataFiles.get(i));
-            if (!file.exists()) {
+        for (FileObject file : metadataFileObjects) {
+            if (file == null || !file.isValid()) {
                 continue;
             }
             if (!file.canWrite()) {
                 allOk = false;
-                notOkFiles.add(metadataFiles.get(i));
+                notOkFiles.add(file.getPath());
             }
         }
         if (!allOk) {
