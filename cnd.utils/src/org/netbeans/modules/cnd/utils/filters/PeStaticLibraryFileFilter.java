@@ -44,13 +44,11 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
-import java.io.File;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class PeStaticLibraryFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class PeStaticLibraryFileFilter extends FileAndFileObjectFilter {
 
+    private static String suffixes[] = {"a", "lib"}; // NOI18N
     private static PeStaticLibraryFileFilter instance = null;
 
     public PeStaticLibraryFileFilter() {
@@ -70,24 +68,7 @@ public class PeStaticLibraryFileFilter extends FileFilterFactory.FileAndFileObje
     }
     
     @Override
-    public boolean accept(File f) {
-	if (f != null) {
-	    if (f.isDirectory()) {
-		return true;
-	    }
-	    return f.getName().endsWith(".a") || f.getName().endsWith(".lib"); // NOI18N
-	}
-	return false;
-    }
-
-    @Override
-    public boolean accept(FileObject f) {
-	if (f != null) {
-	    if (f.isFolder()) {
-		return true;
-	    }
-	    return f.getExt().equals("a") || f.getName().equals("lib"); // NOI18N
-	}
-	return false;
+    protected String[] getSuffixes() {
+        return suffixes;
     }
 }
