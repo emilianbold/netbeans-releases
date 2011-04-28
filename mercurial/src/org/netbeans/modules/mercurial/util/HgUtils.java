@@ -1313,6 +1313,23 @@ itor tabs #66700).
     }
 
     /**
+     * Returns an array with root as its only item or all seen roots under the root when it's a repository root
+     * @param root
+     * @return 
+     */
+    public static File[] splitIntoSeenRoots (File root) {
+        File[] roots;
+        File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(root);
+        if (root.equals(repositoryRoot)) {
+            Set<File> seenRoots = Mercurial.getInstance().getSeenRoots(repositoryRoot);
+            roots = seenRoots.toArray(new File[seenRoots.size()]);
+        } else {
+            roots = new File[] { root };
+        }
+        return roots;
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {

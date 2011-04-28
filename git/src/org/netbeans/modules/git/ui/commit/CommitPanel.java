@@ -50,11 +50,12 @@ package org.netbeans.modules.git.ui.commit;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.LinkedList;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.text.JTextComponent;
-import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.StringSelector;
@@ -92,20 +93,10 @@ public class CommitPanel extends javax.swing.JPanel {
         }
         
         
-        List<String> authors = GitModuleConfig.getDefault().getRecentCommitAuthors(); 
-        if(authors != null && !authors.isEmpty()) {
-            authorComboBox.setModel(new DefaultComboBoxModel(authors.toArray(new String[authors.size()])));
-        } else if(user != null) {
-            authorComboBox.setModel(new DefaultComboBoxModel(new String[] {user}));
-        }
+        authorComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommitAuthors(), user));
         setCaretPosition(authorComboBox);
         
-        List<String> commiters = GitModuleConfig.getDefault().getRecentCommiters();
-        if(commiters != null && !commiters.isEmpty()) {
-            commiterComboBox.setModel(new DefaultComboBoxModel(commiters.toArray(new String[commiters.size()])));
-        } else if(user != null) {
-            commiterComboBox.setModel(new DefaultComboBoxModel(new String[] {user}));            
-        }
+        commiterComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommiters(), user));
         setCaretPosition(commiterComboBox);
         
         Spellchecker.register (messageTextArea);  
@@ -244,6 +235,18 @@ public class CommitPanel extends javax.swing.JPanel {
 
     private String getMessage(String msgKey) {
         return NbBundle.getMessage(CommitPanel.class, msgKey);
-    }      
+    }
+
+    private ComboBoxModel prepareUserModel (List<String> authors, String user) {
+        DefaultComboBoxModel model;
+        if (authors == null) {
+            authors = new LinkedList<String>();
+        }
+        if (!authors.contains(user)) {
+            authors.add(user);
+        }
+        model = new DefaultComboBoxModel(authors.toArray(new String[authors.size()]));
+        return model;
+    }
     
 }

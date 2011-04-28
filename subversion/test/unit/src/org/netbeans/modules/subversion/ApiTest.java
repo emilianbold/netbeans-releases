@@ -238,9 +238,9 @@ public class ApiTest extends NbTestCase {
         
 //      requires authentification  assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository(http://subclipse.tigris.org/svn/subclipse/trunk/svnClientAdapter");
 
-        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn://peterp.czech.sun.com:9630"));
-        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://peterp.czech.sun.com/usr/svnrepo"));
-        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://peterp.czech.sun.com:440/svnsecure"));
+        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn://vcs-test.cz.oracle.com:9630"));
+        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://vcs-test.cz.oracle.com/usr/svnrepo"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://vcs-test.cz.oracle.com:440/svnsecure"));
     }
 
 //    public void testOpenCheckoutWizard () throws MalformedURLException, IOException {
