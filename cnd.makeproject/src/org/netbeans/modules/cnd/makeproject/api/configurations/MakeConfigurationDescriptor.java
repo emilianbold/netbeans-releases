@@ -851,7 +851,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         fo = getProjectDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
-            new ConfigurationXMLWriter(fo, this).write();
+            try {
+                new ConfigurationXMLWriter(fo, this).write();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Error writing configuration", ex);
+            }
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
             ConfigurationPrivateXMLWriter();
