@@ -394,18 +394,20 @@ public final class RepositoryUtils {
     private static class RepositoryListenerProxy implements RepositoryListener {
         private RepositoryListener parent = RepositoryListenerImpl.instance();
         private Map<CharSequence,Integer> wasErrors = new ConcurrentHashMap<CharSequence,Integer>();
+        private boolean fatalError = false;
         private RepositoryListenerProxy(){
         }
         public int getErrorCount(CharSequence unitName) {
             Integer i = wasErrors.get(unitName);
             if (i == null) {
-                return 0;
+                return fatalError ? 1 : 0;
             } else {
-                return i.intValue();
+                return fatalError ? i.intValue() + 1 : i.intValue();
             }
         }
         public void cleanErrorCount(CharSequence unitName) {
             wasErrors.remove(unitName);
+            fatalError = false;
         }
         @Override
         public boolean unitOpened(CharSequence unitName) {
@@ -428,13 +430,17 @@ public final class RepositoryUtils {
          * For example error in "file" segment can be fixed by file reparse.
          */
         private void primitiveErrorStrategy(CharSequence unitName, RepositoryException exc){
-            Integer i = wasErrors.get(unitName);
-            if (i == null) {
-                i = Integer.valueOf(1);
+            if (unitName != null) {
+                Integer i = wasErrors.get(unitName);
+                if (i == null) {
+                    i = Integer.valueOf(1);
+                } else {
+                    i = Integer.valueOf(i.intValue()+1);
+                }
+                wasErrors.put(unitName, i);
             } else {
-                i = Integer.valueOf(i.intValue()+1);
+                fatalError = true;
             }
-            wasErrors.put(unitName, i);
         }
     }
 }
