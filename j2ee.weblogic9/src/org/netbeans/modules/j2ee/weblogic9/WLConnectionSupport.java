@@ -87,8 +87,7 @@ public final class WLConnectionSupport {
         if ((host == null || host.trim().length() == 0
                 && (port == null || port.trim().length() == 0))) {
             
-            boolean remote = Boolean.parseBoolean(instanceProperties.getProperty(WLPluginProperties.REMOTE_ATTR));
-            if (!remote) {            
+            if (!deploymentManager.isRemote()) {            
                 // getDomainProperties instantiate DocumentBuilderFactory
                 // if we would od it inside call such factory could be loaded
                 // from weblogic classes causing troubles, see #189483
