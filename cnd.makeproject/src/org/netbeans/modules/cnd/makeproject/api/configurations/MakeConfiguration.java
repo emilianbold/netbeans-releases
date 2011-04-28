@@ -695,8 +695,17 @@ public class MakeConfiguration extends Configuration {
                 return result;
             }
         }
+        //if (CndFileUtils.isLocalFileSystem(getBaseFSPath().getFileSystem())) {
         ExecutionEnvironment execEnv = getDevelopmentHost().getExecutionEnvironment();
-        return (execEnv.isLocal()) ? null : ServerList.get(execEnv).getSyncFactory(); // FIXUP: temporary solution
+        if (execEnv.isLocal()) {            
+            return null;
+        } else {
+            ExecutionEnvironment fsEnv = FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
+            if (execEnv.equals(fsEnv)) {
+                return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+            }
+            return ServerList.get(execEnv).getSyncFactory();
+        }
     }
 
     public RemoteSyncFactory getFixedRemoteSyncFactory() {
