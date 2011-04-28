@@ -45,7 +45,6 @@
 package org.netbeans.modules.java.api.common.project.ui;
 
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -62,6 +61,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.openide.filesystems.FileObject;
@@ -71,7 +71,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -87,7 +86,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.Parameters;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -114,7 +113,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     private PlatformNode(PlatformProvider pp, ClassPathSupport cs) {
         super (new PlatformContentChildren (cs), new ProxyLookup(new Lookup[]{
-            Lookups.fixed(pp, new JavadocProvider(pp)),
+            Lookups.fixed(new PlatformEditable(pp), new JavadocProvider(pp)),
             new PlatformFolderLookup(new InstanceContent(), pp)
         }));
         this.pp = pp;
@@ -172,7 +171,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (ShowJavadocAction.class),
-            SystemAction.get (EditPlatformAction.class),
+            SystemAction.get (EditRootAction.class),
         };
     }
 
@@ -266,38 +265,26 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }
     }
 
-    private static class EditPlatformAction extends NodeAction {
+    private static class PlatformEditable implements EditRootAction.Editable {
+
+        private final PlatformProvider pp;
+
+        private PlatformEditable(final @NonNull PlatformProvider pp) {
+            Parameters.notNull("pp", pp);   //NOI18N
+            this.pp = pp;
+        }
 
         @Override
-        protected void performAction(Node[] activatedNodes) {
-            final JavaPlatform platform = activatedNodes[0].getLookup().lookup(PlatformProvider.class).getPlatform();
+        public boolean canEdit() {
+            return pp.getPlatform() != null;
+        }
+
+        @Override
+        public void edit() {
+            final JavaPlatform platform = pp.getPlatform();
             assert platform != null;
             PlatformsCustomizer.showCustomizer(platform);
         }
-
-        @Override
-        protected boolean enable(Node[] activatedNodes) {
-            if (activatedNodes.length != 1) {
-                return false;
-            }
-            final PlatformProvider platformProvider = activatedNodes[0].getLookup().lookup(PlatformProvider.class);
-            if (platformProvider == null) {
-                return false;
-            }
-            return platformProvider.getPlatform() != null;
-        }
-
-        @Override
-        @NbBundle.Messages({"TXT_EditPlatform=Edit..."})
-        public String getName() {
-            return Bundle.TXT_EditPlatform();
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(PlatformNode.class);
-        }
-
     }
 
     private static class PlatformProvider implements PropertyChangeListener {

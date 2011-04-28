@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.api.common.project.ui;
 
-package org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel;
-
-import java.net.URL;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author rico
+ * @author Tomas Zezula
  */
-public interface WsdlModelProvider {
+final class EditRootAction extends NodeAction {
 
-    WsdlModel getWsdlModel(URL wsdlurl, String packageName, URL catalog, 
-            boolean forceReload) ;
+    static interface Editable {
+        public boolean canEdit();
+        public void edit();
+    }
 
-    boolean canAccept(URL wsdlurl);
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        final Editable editable = activatedNodes[0].getLookup().lookup(Editable.class);
+        assert editable != null;
+        editable.edit();
+    }
 
-    Throwable getCreationException();
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        final Editable editable =  activatedNodes[0].getLookup().lookup(Editable.class);
+        if (editable == null) {
+            return false;
+        }
+        return editable.canEdit();
+    }
 
-    String getEffectivePackageName();
+    @Override
+    @NbBundle.Messages({"TXT_EditPlatform=Edit..."})
+    public String getName() {
+        return Bundle.TXT_EditPlatform();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PlatformNode.class);
+    }
+
 }
+
+
