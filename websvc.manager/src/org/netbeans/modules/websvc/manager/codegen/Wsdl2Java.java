@@ -185,6 +185,10 @@ public class Wsdl2Java {
                 webServiceData.setJaxRpcEnabled(true);
             }
             
+            int index = serviceName.lastIndexOf('/');
+            if ( index !=-1 ){
+                serviceName = serviceName.substring(index+1);
+            }
             if (webServiceData.isJaxRpcEnabled()) {
                 webServiceData.setJaxRpcDescriptorPath(serviceDirName + "/jaxrpc/" + serviceName + ".xml");
             }
