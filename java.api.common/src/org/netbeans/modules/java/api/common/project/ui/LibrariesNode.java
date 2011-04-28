@@ -598,6 +598,7 @@ public final class LibrariesNode extends AbstractNode {
             int hashCode = this.type<<16;
             switch (this.type) {
                 case TYPE_LIBRARY:
+                case TYPE_ARCHIVE:
                     hashCode ^= this.sg == null ? 0 : this.sg.hashCode();
                     break;
                 case TYPE_PROJECT:
@@ -620,6 +621,7 @@ public final class LibrariesNode extends AbstractNode {
             }
             switch (type) {
                 case TYPE_LIBRARY:
+                case TYPE_ARCHIVE:
                     return (this.sg == null ? other.sg == null : this.sg.equals(other.sg)) &&
                         (this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId)) &&
                         (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
