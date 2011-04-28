@@ -473,7 +473,7 @@ public class MakeConfiguration extends Configuration {
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
-        getBaseFSPath(makeConf.getBaseFSPath());
+        setBaseFSPath(makeConf.getBaseFSPath());
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;

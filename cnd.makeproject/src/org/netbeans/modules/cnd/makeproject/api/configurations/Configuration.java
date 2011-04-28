@@ -136,7 +136,7 @@ public abstract class Configuration implements ProjectConfiguration {
         return fsPath;
     }
 
-    public void getBaseFSPath(FSPath fsPath) {
+    public void setBaseFSPath(FSPath fsPath) {
         this.fsPath = fsPath;
     }
     

@@ -133,7 +133,7 @@ public class MakeProjectGeneratorImpl {
         MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
             copyConfs[i] = confs[i].clone();
-            copyConfs[i].getBaseFSPath(new FSPath(prjParams.getSourceFileSystem(), projectFolderPath));
+            copyConfs[i].setBaseFSPath(new FSPath(prjParams.getSourceFileSystem(), projectFolderPath));
             RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
         }
