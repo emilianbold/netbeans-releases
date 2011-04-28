@@ -132,11 +132,11 @@ public abstract class Configuration implements ProjectConfiguration {
         this.fsPath = new FSPath(fsPath.getFileSystem(), baseDir);
     }
 
-    public FSPath getFsPath() {
+    public FSPath getBaseFSPath() {
         return fsPath;
     }
 
-    public void setFsPath(FSPath fsPath) {
+    public void getBaseFSPath(FSPath fsPath) {
         this.fsPath = fsPath;
     }
     

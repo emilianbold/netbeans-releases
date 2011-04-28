@@ -473,7 +473,7 @@ public class MakeConfiguration extends Configuration {
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
-        setFsPath(makeConf.getFsPath());
+        getBaseFSPath(makeConf.getBaseFSPath());
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
@@ -527,7 +527,7 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public Configuration copy() {
-        MakeConfiguration copy = new MakeConfiguration(getFsPath(), getName(), getConfigurationType().getValue());
+        MakeConfiguration copy = new MakeConfiguration(getBaseFSPath(), getName(), getConfigurationType().getValue());
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
@@ -609,7 +609,7 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public MakeConfiguration clone() {
-        MakeConfiguration clone = new MakeConfiguration(getFsPath(), getName(),
+        MakeConfiguration clone = new MakeConfiguration(getBaseFSPath(), getName(),
                 getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);
