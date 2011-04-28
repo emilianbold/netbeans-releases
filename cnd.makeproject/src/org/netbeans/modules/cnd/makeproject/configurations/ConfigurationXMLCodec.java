@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -454,8 +455,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().restore(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
-                    ExecutionEnvironmentFactory.fromUniqueID(currentText));
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(currentText);
+            env = CppUtils.convertAfterReading(env, (MakeConfiguration) currentConf);
+            ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(env);
         } else if (element.equals(FIXED_SYNC_FACTORY_ELEMENT)) {
             RemoteSyncFactory fixedSyncFactory = RemoteSyncFactory.fromID(currentText);
             CndUtils.assertNotNull(fixedSyncFactory, "Can not restore fixed sync factory " + currentText); //NOI18N

@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
@@ -713,15 +712,14 @@ public class MakeConfiguration extends Configuration {
     }
 
     public FileSystem getSourceFileSystem() {
-        ExecutionEnvironment env = getFileSystemHost();
-        return FileSystemProvider.getFileSystem(env);
+        return getBaseFSPath().getFileSystem();
     }
     
     public ExecutionEnvironment getFileSystemHost() {
         if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
             return getDevelopmentHost().getExecutionEnvironment();
         } else {
-            return ExecutionEnvironmentFactory.getLocal();
+            return FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
         }
     }
     

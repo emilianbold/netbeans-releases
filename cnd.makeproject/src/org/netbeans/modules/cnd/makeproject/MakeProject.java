@@ -1314,7 +1314,11 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 {
                     MakeConfiguration activeConfiguration = getActiveConfiguration();
                     if (activeConfiguration != null) {
-                        return activeConfiguration.getRemoteSyncFactory();
+                        if (CndFileUtils.isLocalFileSystem(activeConfiguration.getBaseFSPath().getFileSystem())) {
+                            return activeConfiguration.getRemoteSyncFactory();                            
+                        } else {
+                            return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+                        }
                     } else {
                         return null;
                     }
