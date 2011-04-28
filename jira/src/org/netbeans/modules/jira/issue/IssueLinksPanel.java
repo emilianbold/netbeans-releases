@@ -101,7 +101,7 @@ public class IssueLinksPanel extends JPanel {
     void setIssue(NbJiraIssue issue) {
         this.issue = issue;
         recalculateMap();
-        RequestProcessor.getDefault().post(new Runnable() {
+        Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 reloadIssueDetails();
