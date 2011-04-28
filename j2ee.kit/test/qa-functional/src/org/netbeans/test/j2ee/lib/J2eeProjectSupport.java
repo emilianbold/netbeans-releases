@@ -54,7 +54,6 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -68,6 +67,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.test.ide.WatchProjects;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -263,7 +263,7 @@ public class J2eeProjectSupport {
 
     /** Waits until metadata scanning is finished. */
     public static void waitScanFinished() {
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
     }
 
     /**

@@ -766,7 +766,7 @@ public class LogReader {
             } else if (languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
-                String mime =MIMESupport.getKnownMIMETypeByExtension(sourcePath);
+                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
                 if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
                     if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
                         language = ItemProperties.LanguageKind.CPP;

@@ -535,6 +535,22 @@ public class DebuggerOption extends Option {
 			    "on",    // NOI18N //default value
 			    true, // is engine option
 			    CHECK_BOX, true);  //type
+    
+    public static final DebuggerOption MACRO_EXPAND  =
+	new DebuggerOption( // NOI18N
+			    "macro_expand",  // NOI18N //name
+			    new String[] {"on", "off"},  // NOI18N //values
+			    "on",    // NOI18N //default value
+			    true, // is engine option
+			    CHECK_BOX, true);  //type
+    
+    public static final DebuggerOption MACRO_SOURCE  =
+	new DebuggerOption( // NOI18N
+			    "macro_source",  // NOI18N //name
+			    new String[] {"none", "compiler", "skim", "skim_unless_compiler"},  // NOI18N //values
+			    "skim_unless_compiler",    // NOI18N //default value
+			    true, // is engine option
+			    COMBO_BOX, true);  //type
    
    public static final DebuggerOption FRONT_IDE =
 	new DebuggerOption( // NOI18N

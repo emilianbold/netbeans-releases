@@ -1,22 +1,18 @@
 
 package test;
 
-import java.rmi.RemoteException;
-import javax.ejb.CreateException;
-import javax.ejb.EJBHome;
-
 
 /**
  * This is the home interface for TestingSession enterprise bean.
  */
-public interface TestingSessionRemoteHome extends EJBHome {
+public interface TestingSessionRemoteHome extends javax.ejb.EJBHome {
     
     
     
     /**
      *
      */
-    TestingSessionRemote create()  throws CreateException, RemoteException;
+    test.TestingSessionRemote create()  throws javax.ejb.CreateException, java.rmi.RemoteException;
     
     
 }

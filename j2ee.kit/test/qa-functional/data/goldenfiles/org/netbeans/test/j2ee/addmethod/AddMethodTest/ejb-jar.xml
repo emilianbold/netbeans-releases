@@ -31,12 +31,12 @@
       <primkey-field>key</primkey-field>
     </entity>
     <message-driven>
-      <display-name>TestingMessageMDB</display-name>
+      <display-name>TestingMessageBeanMDB</display-name>
       <ejb-name>TestingMessageBean</ejb-name>
       <ejb-class>test.TestingMessageBean</ejb-class>
       <transaction-type>Container</transaction-type>
       <message-destination-type>javax.jms.Queue</message-destination-type>
-      <message-destination-link>TestingMessageDestination</message-destination-link>
+      <message-destination-link>jms/TestingMessageBean</message-destination-link>
       <activation-config>
         <activation-config-property>
           <activation-config-property-name>acknowledgeMode</activation-config-property-name>
@@ -72,8 +72,8 @@
       <trans-attribute>Required</trans-attribute>
     </container-transaction>
     <message-destination>
-      <display-name>Destination for TestingMessage</display-name>
-      <message-destination-name>TestingMessageDestination</message-destination-name>
+        <display-name>Destination for TestingMessageBeanMDB</display-name>
+        <message-destination-name>jms/TestingMessageBean</message-destination-name>
     </message-destination>
   </assembly-descriptor>
 </ejb-jar>
