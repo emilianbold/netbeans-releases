@@ -60,7 +60,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -118,7 +117,7 @@ public class FreeFormProjects extends J2eeTestCase {
         //wait project appear in projects view
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(name);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
         Node beansNode = new Node(rootNode, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node"));
         if (beans != null) {
             for (int i = 0; i < beans.length; i++) {
@@ -164,7 +163,7 @@ public class FreeFormProjects extends J2eeTestCase {
         n = new Node(rootNode, "Java EE Modules|Secure-ejb.jar");
         n.performPopupAction("Open Project");
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         // Build project

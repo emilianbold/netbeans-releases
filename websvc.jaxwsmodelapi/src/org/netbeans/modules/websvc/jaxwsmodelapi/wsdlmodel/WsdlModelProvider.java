@@ -50,7 +50,8 @@ import java.net.URL;
  */
 public interface WsdlModelProvider {
 
-    WsdlModel getWsdlModel(URL wsdlurl, String packageName, URL catalog) ;
+    WsdlModel getWsdlModel(URL wsdlurl, String packageName, URL catalog, 
+            boolean forceReload) ;
 
     boolean canAccept(URL wsdlurl);
 

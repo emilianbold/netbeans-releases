@@ -84,7 +84,6 @@ public class EntityRelations extends J2eeTestCase {
     private File secondFile = null;
     private static boolean projectsOpened = false;
     private static final Logger LOG = Logger.getLogger(EntityRelations.class.getName());
-    private boolean isEmty = false;
     private static final RequestProcessor RP = new RequestProcessor(EntityRelations.class.getName());
 
     /** Creates a new instance of EntityRelations */
@@ -114,22 +113,6 @@ public class EntityRelations extends J2eeTestCase {
 
     private boolean generateGoldenFiles() {
         return false;
-    }
-
-    @Override
-    protected void tearDown() throws IOException {
-        if (isEmty) {
-            return;
-        }
-        if (generateGoldenFiles()) {
-            if (goldenWriter != null) {
-                goldenWriter.close();
-            }
-            fail("GENERATING GOLDEN FILES: " + goldenFilePath);
-        } else {
-            compareReferenceFiles();
-        }
-        EditorOperator.closeDiscardAll();
     }
 
     private File[] getProjectsDirs() {
@@ -224,11 +207,6 @@ public class EntityRelations extends J2eeTestCase {
         hintTest(f, 0, null, 1);
     }
 
-    @Override
-    public void testEmpty() {
-        isEmty = true;
-    }
-
     ///@param size size is the expected size of fixes list length
     private void hintTest(File testedFile, int fixOrder, String captionDirToClose, int size) throws Exception {
         String result = null;
@@ -251,7 +229,7 @@ public class EntityRelations extends J2eeTestCase {
             for (Fix fix : fixes) {
                 write(fix.getText());
             }
-            assertTrue("All fixes should be initialized", fixes.size() >= size);
+            assertTrue("All fixes should be initialized (expected " + size + " but was " + fixes.size() + ").", fixes.size() >= size);
             final Fix fix = fixes.get(fixOrder);
             RequestProcessor.Task task = RP.post(new Runnable() {
 
@@ -280,8 +258,6 @@ public class EntityRelations extends J2eeTestCase {
             write("---------------------");
             result = operator.getText();
             assertFalse(text.equals(result));
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
         } finally {
             write(result);
             if (secondFile != null) {
@@ -290,6 +266,14 @@ public class EntityRelations extends J2eeTestCase {
             }
             EditorOperator.closeDiscardAll();
             Thread.sleep(1000);
+        }
+        if (generateGoldenFiles()) {
+            if (goldenWriter != null) {
+                goldenWriter.close();
+            }
+            fail("GENERATING GOLDEN FILES: " + goldenFilePath);
+        } else {
+            compareReferenceFiles();
         }
     }
 

@@ -112,16 +112,16 @@ public final class NativeProjectProvider {
         }
         String mimeType = "";
         if (fo != null) {
-            mimeType = MIMESupport.getFileMIMEType(fo);
+            mimeType = MIMESupport.getSourceFileMIMEType(fo);
         } else {
-            mimeType = MIMESupport.getFileMIMEType(file);
+            mimeType = MIMESupport.getSourceFileMIMEType(file);
         }
         return getLanguage(mimeType);
     }
 
     public static NativeFileItem.Language getLanguage(FileObject fo, DataObject dobj) {
         CndUtils.assertNotNull(fo, "null file object"); //NOI18N
-        String mimeType = MIMESupport.getFileMIMEType(fo);
+        String mimeType = MIMESupport.getSourceFileMIMEType(fo);
         return getLanguage(mimeType);
     }
 

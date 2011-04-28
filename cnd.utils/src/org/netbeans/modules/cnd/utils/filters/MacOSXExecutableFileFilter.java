@@ -48,13 +48,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class MacOSXExecutableFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class MacOSXExecutableFileFilter extends FileAndFileObjectFilter {
 
     private static MacOSXExecutableFileFilter instance = null;
 
@@ -71,29 +69,17 @@ public class MacOSXExecutableFileFilter extends FileFilterFactory.FileAndFileObj
     
     @Override
     public String getDescription() {
-	return(getString("FILECHOOSER_MACHOEXECUTABLE_FILEFILTER")); // NOI18N
+        return NbBundle.getMessage(MacOSXExecutableFileFilter.class, "FILECHOOSER_MACHOEXECUTABLE_FILEFILTER"); // NOI18N
     }
     
     @Override
-    public boolean accept(File f) {
-	if(f != null) {
-	    if(f.isDirectory()) {
-		return true;
-	    }
-	    return checkHeader(f);
-	}
-	return false;
+    protected boolean mimeAccept(File f) {
+        return checkHeader(f);
     }
 
     @Override
-    public boolean accept(FileObject f) {
-	if(f != null) {
-	    if(f.isFolder()) {
-		return true;
-	    }
-	    return checkHeader(f);
-	}
-	return false;
+    protected boolean mimeAccept(FileObject f) {
+        return checkHeader(f);
     }
 
     /** Check if this file's header represents an elf executable */
@@ -191,12 +177,8 @@ public class MacOSXExecutableFileFilter extends FileFilterFactory.FileAndFileObj
         return false;
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(MacOSXExecutableFileFilter.class);
-	}
-	return bundle.getString(s);
+    @Override
+    protected String[] getSuffixes() {
+        return new String[]{};
     }
 }
