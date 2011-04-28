@@ -627,7 +627,7 @@ public final class DtraceDataCollector
             localTmpFile.deleteOnExit();
         } else {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(trgEnv);
-            finalPath = hostInfo.getTempDir() + "/" + localTmpFile.getName(); // NOI18N            
+            finalPath = hostInfo.getTempDir() + "/r" + localTmpFile.getName(); // NOI18N            
         }
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(localTmpFile));

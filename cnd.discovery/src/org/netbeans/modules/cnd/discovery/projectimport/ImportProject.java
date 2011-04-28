@@ -735,7 +735,9 @@ public class ImportProject implements PropertyChangeListener {
                 dObj = DataObject.find(makeFileObject);
                 Node node = dObj.getNodeDelegate();
                 MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
-                mes.setBuildDirectory(makeFileObject.getParent().getPath());
+                if (mes != null) {
+                    mes.setBuildDirectory(makeFileObject.getParent().getPath());
+                }
                 if (doClean) {
                     postClean(node);
                 } else {

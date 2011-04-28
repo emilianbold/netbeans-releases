@@ -245,7 +245,7 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static String gatherCompilerLine(String line, boolean isScriptOutput,
+    public static List<String> gatherCompilerLine(String line, boolean isScriptOutput,
             List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
@@ -290,11 +290,11 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static String gatherCompilerLine( Iterator<String> st, boolean isScriptOutput,
+    public static List<String> gatherCompilerLine( Iterator<String> st, boolean isScriptOutput,
             List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
         boolean TRACE = false;
         String option = null; 
-        String what = null;
+        List<String> what = new ArrayList<String>(1);
         while(st.hasNext()){
             option = st.next();
             boolean isQuote = false;
@@ -496,21 +496,25 @@ public class DiscoveryUtils {
                 // Skip redurect
                 break;
             } else {
-                if (option.endsWith(".il") || option.endsWith(".o") || option.endsWith(".a") ||  //NOI18N
-                    option.endsWith(".so") || option.endsWith(".so.1")) {  //NOI18N
+                if (SourcesVisibilityQuery.getDefault().isIgnored(option)) {
                     continue;
                 }
-                if (what == null) {
-                    what = option;
+                if (what.isEmpty()) {
+                    what.add(option);
                 } else {
                     if (TRACE) {
-                        System.out.println("**** What is this ["+option + "] if previous was ["+ what + "]?"); //NOI18N
+                        System.out.println("**** What is this ["+option + "] if previous was ["+ what.get(0) + "]?"); //NOI18N
                     }
-                    if ((option.endsWith(".c") || option.endsWith(".cc") || option.endsWith(".cpp") || //NOI18N
-                        option.endsWith(".cxx") ||option.endsWith(".c++") || option.endsWith(".C")) && //NOI18N
-                        !(what.endsWith(".c") || what.endsWith(".cc") || what.endsWith(".cpp") || //NOI18N
-                        what.endsWith(".cxx") ||what.endsWith(".c++") || what.endsWith(".C"))) { //NOI18N
-                        what = option;
+                    if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
+                        if (what.size() == 1) {
+                            if (!SourcesVisibilityQuery.getDefault().isVisible(what.get(0))) {
+                                what.set(0, option);
+                            } else {
+                                what.add(option);
+                            }
+                        } else {
+                            what.add(option);
+                        }
                     }
                 }
             }
