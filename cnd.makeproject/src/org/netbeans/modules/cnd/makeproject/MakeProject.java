@@ -841,7 +841,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 subProjectLocations = ((MakeConfigurationDescriptor) projectDescriptor).getSubprojectLocations();
             }
 
-            String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
+            String baseDir = getProjectDirectory().getPath();
             for (String loc : subProjectLocations) {
                 String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
