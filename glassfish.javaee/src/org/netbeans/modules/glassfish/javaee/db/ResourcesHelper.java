@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -67,45 +67,54 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Nitya Doraisamy
  */
 public class ResourcesHelper {
+
+    private static RequestProcessor RP = new RequestProcessor("Sample Datasource work");
     
-    public static void addSampleDatasource(J2eeModule module) {
-        File f = module.getResourceDirectory();
-        if(null != f && f.exists()){
-            f = f.getParentFile();
-        }
-        if (null != f) {
-            Project p = FileOwnerQuery.getOwner(f.toURI());
-            if (null != p) {
-                J2eeModuleProvider jmp = getProvider(p);
-                if (null != jmp) {
-                    DeploymentManager dm = getDeploymentManager(jmp);
-                    if (dm instanceof Hk2DeploymentManager) {
-                        GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
-                        String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-                        if (null != gfdir) {
-                            String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-                            if (commonSupport.getServerState() != ServerState.RUNNING) {
-                                // TODO : need to account for remote domain here?
-                                DomainEditor de = new DomainEditor(gfdir, domain, false);
-                                de.createSampleDatasource();
-                            } else {
-                                registerSampleResource(commonSupport);
+    public static void addSampleDatasource(final J2eeModule module) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                File f = module.getResourceDirectory();
+                if(null != f && f.exists()){
+                    f = f.getParentFile();
+                }
+                if (null != f) {
+                    Project p = FileOwnerQuery.getOwner(f.toURI());
+                    if (null != p) {
+                        J2eeModuleProvider jmp = getProvider(p);
+                        if (null != jmp) {
+                            DeploymentManager dm = getDeploymentManager(jmp);
+                            if (dm instanceof Hk2DeploymentManager) {
+                                GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
+                                String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+                                if (null != gfdir) {
+                                    String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
+                                    if (commonSupport.getServerState() != ServerState.RUNNING) {
+                                        // TODO : need to account for remote domain here?
+                                        DomainEditor de = new DomainEditor(gfdir, domain, false);
+                                        de.createSampleDatasource();
+                                    } else {
+                                        registerSampleResource(commonSupport);
+                                    }
+                                }
                             }
                         }
+                    } else {
+                        Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
                     }
+                } else {
+                    Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
                 }
-            } else {
-                Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
             }
-        } else {
-            Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
-        }
+        });
     }
 
     static private J2eeModuleProvider getProvider(Project project) {

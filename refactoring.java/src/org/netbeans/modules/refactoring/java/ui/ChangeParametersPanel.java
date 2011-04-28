@@ -139,7 +139,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
                         Element enclosingElement = tph.resolveElement(info);
                         enclosingClassName = enclosingElement.getSimpleName().toString();
-                        if (inheritedFromInterface(e, info.getElementUtilities())) {
+                        if (enclosingElement.getKind().isInterface() || inheritedFromInterface(e, info.getElementUtilities())) {
                             modifiersCombo.setEnabled(false);
                         }
                         initTableData(info);

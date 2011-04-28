@@ -126,16 +126,26 @@ public final class SUNErrorParser extends ErrorParser {
 	int i = errorScuners.indexOf(m.pattern());
         if (i >= 0) {
             try {
-                String file = m.group(1);
-                Integer lineNumber = Integer.valueOf(m.group(2));
+                String file = null;
+                if(m.groupCount() == 5) {
+                    file = m.group(4);
+                }                
+                Integer lineNumber;
+                String description = null;
+                if(file == null || !file.matches(".*\\.pc")) { // NOI18N 
+                    file = m.group(1);
+                    lineNumber = Integer.valueOf(m.group(2));
+                    if (m.groupCount()<= 3) {
+                        description = m.group(3);
+                    }
+                } else {
+                    lineNumber = Integer.valueOf(m.group(2));
+                    description = m.group(1);
+                }
                 //FileObject fo = relativeTo.getFileObject(file);
                 FileObject fo = resolveRelativePath(relativeTo, file);
                 boolean important = severity.get(i).equals("error"); // NOI18N
                 if (fo != null && fo.isValid()) {
-                    String description = null;
-                    if (m.groupCount()<= 3) {
-                        description = m.group(3);
-                    }
                     return new Results(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
                 }
             } catch (NumberFormatException e) {

@@ -1,6 +1,0 @@
-Code completion result for source line:
-puts greeting.capitalize.swapc|ase
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     swapcase                                   String
-METHOD     swapcase!                                  String
-CALL       puts(obj)                                  Kernel

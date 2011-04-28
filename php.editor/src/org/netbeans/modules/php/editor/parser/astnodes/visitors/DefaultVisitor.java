@@ -366,6 +366,9 @@ public class DefaultVisitor implements Visitor {
 
     public void visit(PHPDocTag node) {
     }
+    
+    public void visit(PHPDocTypeNode node) {
+    }
 
     public void visit(PHPDocTypeTag node) {
         scan(node.getTypes());

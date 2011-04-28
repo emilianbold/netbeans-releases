@@ -41,13 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.addmethod;
 
 import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Class implementing all necessary methods for handling "Call Enterprise Bean" NbPresenter.
  *
@@ -60,9 +64,8 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * Creates new CallEnterpriseBeanDialog that can handle it.
      */
     public CallEnterpriseBeanDialog() {
-        super(Bundle.getString("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbActionTitle"));
+        super(Bundle.getString("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_CallEjbActionTitle"));
     }
-
     private JCheckBoxOperator _cbConvertCheckedExceptionsToRuntimeException;
     private JRadioButtonOperator _rbGenerateInlineLookupCode;
     private JRadioButtonOperator _rbExistingClass;
@@ -74,17 +77,15 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
     private JButtonOperator _btOK;
     private JButtonOperator _btCancel;
 
-
     //******************************
     // Subcomponents definition part
     //******************************
-
     /** Tries to find "Convert Checked Exceptions to RuntimeException" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbConvertCheckedExceptionsToRuntimeException() {
-        if (_cbConvertCheckedExceptionsToRuntimeException==null) {
-            _cbConvertCheckedExceptionsToRuntimeException = new JCheckBoxOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_ConvertToRuntime"));
+        if (_cbConvertCheckedExceptionsToRuntimeException == null) {
+            _cbConvertCheckedExceptionsToRuntimeException = new JCheckBoxOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_ConvertToRuntime"));
         }
         return _cbConvertCheckedExceptionsToRuntimeException;
     }
@@ -93,7 +94,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbGenerateInlineLookupCode() {
-        if (_rbGenerateInlineLookupCode==null) {
+        if (_rbGenerateInlineLookupCode == null) {
             _rbGenerateInlineLookupCode = new JRadioButtonOperator(this, "Generate Inline Lookup Code");
         }
         return _rbGenerateInlineLookupCode;
@@ -103,7 +104,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbExistingClass() {
-        if (_rbExistingClass==null) {
+        if (_rbExistingClass == null) {
             _rbExistingClass = new JRadioButtonOperator(this, "Existing Class");
         }
         return _rbExistingClass;
@@ -113,7 +114,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtExistingClass() {
-        if (_txtExistingClass==null) {
+        if (_txtExistingClass == null) {
             _txtExistingClass = new JTextFieldOperator(this);
         }
         return _txtExistingClass;
@@ -123,7 +124,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JTreeOperator
      */
     public JTreeOperator tree() {
-        if (_tree==null) {
+        if (_tree == null) {
             _tree = new JTreeOperator(this);
         }
         return _tree;
@@ -133,9 +134,9 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtReferenceName() {
-        if (_txtReferenceName==null) {
+        if (_txtReferenceName == null) {
             JLabelOperator lblOper = new JLabelOperator(this, "Reference Name:");
-            _txtReferenceName = new JTextFieldOperator((JTextField)lblOper.getLabelFor());
+            _txtReferenceName = new JTextFieldOperator((JTextField) lblOper.getLabelFor());
             //_txtReferenceName = new JTextFieldOperator(this, 2);
         }
         return _txtReferenceName;
@@ -145,7 +146,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbLocal() {
-        if (_rbLocal==null) {
+        if (_rbLocal == null) {
             _rbLocal = new JRadioButtonOperator(this, "Local");
         }
         return _rbLocal;
@@ -155,7 +156,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JRadioButtonOperator
      */
     public JRadioButtonOperator rbRemote() {
-        if (_rbRemote==null) {
+        if (_rbRemote == null) {
             _rbRemote = new JRadioButtonOperator(this, "Remote");
         }
         return _rbRemote;
@@ -165,7 +166,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btOK() {
-        if (_btOK==null) {
+        if (_btOK == null) {
             _btOK = new JButtonOperator(this, "OK");
         }
         return _btOK;
@@ -175,22 +176,20 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btCancel() {
-        if (_btCancel==null) {
+        if (_btCancel == null) {
             _btCancel = new JButtonOperator(this, "Cancel");
         }
         return _btCancel;
     }
 
-
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
     public void checkConvertCheckedExceptionsToRuntimeException(boolean state) {
-        if (cbConvertCheckedExceptionsToRuntimeException().isSelected()!=state) {
+        if (cbConvertCheckedExceptionsToRuntimeException().isSelected() != state) {
             cbConvertCheckedExceptionsToRuntimeException().push();
         }
     }
@@ -248,7 +247,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
     public void typeReferenceName(String text) {
         txtReferenceName().typeText(text);
     }
-    
+
     /** clears text for txtReferenceName
      */
     public void clearReferenceName() {
@@ -279,11 +278,9 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
         btCancel().push();
     }
 
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /**
      * Performs verification of CallEnterpriseBeanDialog by accessing all its components.
      */
@@ -309,4 +306,3 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
         System.out.println("CallEnterpriseBean verification finished.");
     }
 }
-

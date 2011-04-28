@@ -49,53 +49,68 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.j2ee.lib.Reporter;
 import org.netbeans.test.j2ee.lib.RequiredFiles;
 import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
-import org.netbeans.test.j2ee.lib.Utils;
 
 /**
- * Test New File wizards in J2EE area. These tests are
+ * Test New Project wizards in J2EE area. These tests are
  * part of J2EE Functional test suite. Each test checks
  * if all files were created (deployment descriptors,
  * directories for sources etc.) and if project node
  * is expanded after finishing New Project wizard.
  *
- * @author jungi
+ * @author jungi, Jiri Skrivanek
  * @see <a href="http://qa.netbeans.org/modules/j2ee/promo-f/testspec/j2ee-wizards-testspec.html">J2EE Wizards Test Specification</a>
  */
-public class NewProjectWizardsTest extends JellyTestCase {
+public class NewProjectWizardsTest extends J2eeTestCase {
+
     private static final String CATEGORY_WEB = "Java Web";
     private static final String CATERGORY_JAVA_EE = "Java EE";
-    
     private static final int EJB = 0;
     private static final int WEB = 1;
-    private static final int J2EE_DEFAULT = 3;
-    private static final int APP_CLIENT_DEFAULT = 4;
-    
+    private static final int EAR = 3;
+    private static final int APP_CLIENT = 4;
     private static String projectLocation = null;
     private String projectName;
     private String version;
     private Reporter reporter;
 
-    public NewProjectWizardsTest(String testName) {
-        this(testName, "5");
+    public static class NewProjectWizardsTest4 extends NewProjectWizardsTest {
+
+        public NewProjectWizardsTest4(String testName) {
+            super(testName, "1.4");
+        }
     }
-    
+
+    public static class NewProjectWizardsTest5 extends NewProjectWizardsTest {
+
+        public NewProjectWizardsTest5(String testName) {
+            super(testName, "5");
+        }
+    }
+
+    public static class NewProjectWizardsTest6 extends NewProjectWizardsTest {
+
+        public NewProjectWizardsTest6(String testName) {
+            super(testName, "6");
+        }
+    }
+
     public NewProjectWizardsTest(String testName, String version) {
         super(testName);
         this.version = version;
     }
-    
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -103,6 +118,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
             projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
         }
         reporter = Reporter.getReporter((NbTestCase) this);
+        System.out.println("########  " + getName() + " Java EE " + version + " #######");
     }
 
     @Override
@@ -110,99 +126,82 @@ public class NewProjectWizardsTest extends JellyTestCase {
         super.tearDown();
         reporter.close();
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(NewProjectWizardsTest.class);
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class);
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest5.class);
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest6.class);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
 
     /**
      * Create EJB Module which name contains spaces
      * and default project settings.
      */
-    public void testDefaultNewEJBModWizard() throws Exception {
-        Utils.openOutputTab();
+    public void testEJBModWizard() throws Exception {
+        OutputOperator.invoke();
         projectName = "def EJB Mod" + version;
-        NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"EJB Module");
-        NewJavaProjectNameLocationStepOperator op
-                = WizardUtils.setProjectNameLocation(projectName,
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
+        NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "EJB Module");
+        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
+        WizardUtils.setJ2eeSpecVersion(op, version);
         wiz.finish();
         checkProjectStructure(EJB);
         checkProjectNodes();
     }
-    
-    /**
-     * Create EJB Module with default project settings.
-     */
-    public void testNewEJBModWizard() throws Exception {
-        projectName = "BadModule" + version;
-        NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"EJB Module");
-        NewJavaProjectNameLocationStepOperator op
-                = WizardUtils.setProjectNameLocation(projectName,
-                projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
-        wiz.finish();
-        checkProjectStructure(EJB);
-        checkProjectNodes();
-    }
-    
-    
+
     /**
      * Create Enterprise Application Client project with default project
      * settings.
      */
-    public void testDefaultAppClientWizard() throws Exception {
+    public void testAppClientWizard() throws Exception {
         projectName = "App client" + version;
-        NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"Enterprise Application Client");
-        NewJavaProjectNameLocationStepOperator op
-                = WizardUtils.setProjectNameLocation(projectName,
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
+        NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "Enterprise Application Client");
+        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_CAR, version);
+        WizardUtils.setJ2eeSpecVersion(op, version);
         wiz.finish();
-        checkProjectStructure(APP_CLIENT_DEFAULT);
+        checkProjectStructure(APP_CLIENT);
         checkProjectNodes();
     }
-    
+
     /**
      * Create Web Application which name contains spaces
      * and default project settings.
      */
-    public void testDefaultNewWebModWizard() throws Exception {
+    public void testWebModWizard() throws Exception {
         projectName = "def Web app" + version;
-        NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject(CATEGORY_WEB,"Web Application");
-        NewJavaProjectNameLocationStepOperator op
-                = WizardUtils.setProjectNameLocation(projectName,
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
+        NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATEGORY_WEB, "Web Application");
+        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_WAR, version);
+        WizardUtils.setJ2eeSpecVersion(op, version);
         wiz.finish();
         checkProjectStructure(WEB);
         checkProjectNodes();
     }
-    
+
     /**
      * Create Enterprise Application project with default project
      * settings (ejb and web module are as well ).
      */
-    public void testDefaultNewJ2eeAppWizard() throws Exception {
+    public void testEnterpriseAppWizard() throws Exception {
         projectName = "def EAR app" + version;
-        NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"Enterprise Application");
-        NewJavaProjectNameLocationStepOperator op
-                = WizardUtils.setProjectNameLocation(projectName,
+        File targetDir = new File(projectLocation, projectName);
+        deleteAll(targetDir);
+        NewProjectWizardOperator wiz = WizardUtils.createNewProject(CATERGORY_JAVA_EE, "Enterprise Application");
+        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
-        WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EAR, version);
+        WizardUtils.setJ2eeSpecVersion(op, version);
         wiz.finish();
-        checkProjectStructure(J2EE_DEFAULT);
+        checkProjectStructure(EAR);
         Node root = checkProjectNodes();
         Node modules = new Node(root, "Java EE Modules");
         modules.expand();
@@ -217,21 +216,17 @@ public class NewProjectWizardsTest extends JellyTestCase {
         RequiredFiles r = null;
         switch (prjType) {
             case EJB:
-                r = readRF("structures/ejbProject.str");
+                r = readRF("structures/ejbProject" + version + ".str");
                 break;
             case WEB:
-                r = readRF("structures/webProject.str");
+                r = readRF("structures/webProject" + version + ".str");
                 break;
-            case J2EE_DEFAULT:
-                if(version.equals("5")) {
-                    r = readRF("structures/defEAR5.str");
-                } else {
-                    r = readRF("structures/defEAR.str");
-                }
+            case EAR:
+                r = readRF("structures/defEAR" + version + ".str");
                 break;
-            case APP_CLIENT_DEFAULT:
-               r = readRF("structures/carProject.str");
-               break;
+            case APP_CLIENT:
+                r = readRF("structures/carProject" + version + ".str");
+                break;
             default:
                 throw new IllegalArgumentException();
         }
@@ -259,22 +254,20 @@ public class NewProjectWizardsTest extends JellyTestCase {
         reporter.ref("Expected: " + rf);
         reporter.ref("Real: " + l);
         Set s = getDifference(rf, l);
-        assertTrue("Files: " + s + " are new in project: " + projectPath , s.isEmpty());
+        assertTrue("Files: " + s + " are new in project: " + projectPath, s.isEmpty());
     }
-    
+
     public void closeProjects() {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.getProjectRootNode("def EJB Mod").performPopupAction("Close");
         pto.getProjectRootNode("def EAR app").performPopupAction("Close");
         pto.getProjectRootNode("def Web app").performPopupAction("Close");
-        if(version.contains("5")) {
-            pto.getProjectRootNode("App client"+version).performPopupAction("Close");
-        } else {
-            pto.getProjectRootNode("BadModule").performPopupAction("Close");
+        if (version.contains("5")) {
+            pto.getProjectRootNode("App client" + version).performPopupAction("Close");
         }
         new EventTool().waitNoEvent(2500);
     }
-    
+
     private RequiredFiles readRF(String fileName) {
         RequiredFiles rf = null;
         try {
@@ -285,7 +278,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         assertNotNull(rf);
         return rf;
     }
-    
+
     private Set getDifference(Set<String> s1, Set<String> s2) {
         Set<String> result = new HashSet<String>();
         s2.removeAll(s1);
@@ -299,15 +292,24 @@ public class NewProjectWizardsTest extends JellyTestCase {
         }
         return result;
     }
-    
+
     private Node checkProjectNodes() {
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ie) {
-            //do nothing
-        }
-        assertTrue("Project " + projectName + " is not expanded", node.isExpanded());
+        node.waitExpanded();
         return node;
+    }
+    
+    /** Deletes specified file/directory and its sub directories.
+     * @param file file to be deleted
+     * @throws IOException if cannot delete file
+     */
+    private static void deleteAll(File file) {
+        File files[] = file.listFiles();
+        if (files != null && files.length != 0) {
+            for (File f : files) {
+                deleteAll(f);
+            }
+        }
+        file.delete();
     }
 }

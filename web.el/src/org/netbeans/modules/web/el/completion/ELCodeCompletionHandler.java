@@ -48,6 +48,7 @@ import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
+import com.sun.el.parser.Token;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +58,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -69,8 +72,6 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions;
-import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions.Function;
 import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
@@ -97,6 +98,11 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             return CodeCompletionResult.NONE;
         }
         Node target = getTargetNode(element, context.getCaretOffset());
+        if(target == null) {
+            //completion called outside of the EL content, resp. inside the
+            //delimiters #{ or } area
+            return CodeCompletionResult.NONE;
+        }
         AstPath path = new AstPath(element.getNode());
         List<Node> rootToNode = path.rootToNode(target);
         if (rootToNode.isEmpty()) {
@@ -123,7 +129,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         Element resolved =
                 typeUtilities.resolveElement(element, nodeToResolve);
 
-        if (ELTypeUtilities.isScopeObject(nodeToResolve)) {
+        if (typeUtilities.isRawObject(nodeToResolve)) {
+            proposeRawObjectProperties(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);            
+        } else if(typeUtilities.isScopeObject(nodeToResolve)) {
             // seems to be something like "sessionScope.^", so complete beans from the scope
             proposeBeansFromScope(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);
         } else if(resolved == null) {
@@ -166,15 +174,29 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return sanitizer.sanitized();
     }
 
+    /**
+     * @param offset swing <b>document</b> offset
+     */
     private Node getTargetNode(ELElement element, int offset) {
         Node result = element.findNodeAt(offset);
         // in EL AST for example #{foo.bar^} the caret is at a deferred expression node, whereas
         // for code completion we need the "bar" property node; the code below tries to accomplish
         // that
         if (result instanceof AstDeferredExpression || result instanceof AstDynamicExpression) {
-            Node realTarget = element.findNodeAt(offset - 1);
-            if (realTarget != null) {
-                result = realTarget;
+            //ensure we do not jump out from the expression && do not offer EL stuff in delimiters
+            int relativeOffset = offset - element.getOriginalOffset().getStart();
+            assert relativeOffset >= 0;
+            
+            //do the workaround only if the completion called at or after 
+            //the opening EL delimiter #{ or ${, not before or inside it
+            if(relativeOffset >= 2) { 
+                Node realTarget = element.findNodeAt(offset - 1);
+                if (realTarget != null) {
+                    result = realTarget;
+                }
+            } else {
+                //ensure no EL completion before or inside the delimiters
+                return null; 
             }
         }
         return result;
@@ -186,31 +208,36 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
     private void proposeMethods(CodeCompletionContext context, Element resolved,
             PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
-
-        resolved = typeUtilities.getTypeFor(resolved);
-        if (resolved == null || resolved.getKind() == ElementKind.TYPE_PARAMETER) {
-            return;
-        }
-        for (ExecutableElement enclosed : ElementFilter.methodsIn(resolved.getEnclosedElements())) {
-            if (!enclosed.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
+        
+        List<Element> allTypes = typeUtilities.getSuperTypesFor(resolved);
+        for(Element element : allTypes) {
+            for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
+                //do not propose Object's members
+                if(element.getSimpleName().contentEquals("Object")) { //NOI18N
+                    //XXX hmm, not an ideal non-fqn check
+                    continue;
+                }
+                
+                if (!enclosed.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                String methodName = enclosed.getSimpleName().toString();
+                String propertyName = RefactoringUtil.getPropertyName(methodName, true);
+                if (!prefix.matches(propertyName)) {
+                    continue;
+                }
+                ELJavaCompletionItem item = new ELJavaCompletionItem(enclosed, elElement, typeUtilities);
+                item.setSmart(true);
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                proposals.add(item);
             }
-            String methodName = enclosed.getSimpleName().toString();
-            String propertyName = RefactoringUtil.getPropertyName(methodName, true);
-            if (!prefix.matches(propertyName)) {
-                continue;
-            }
-            ELJavaCompletionItem item = new ELJavaCompletionItem(enclosed, elElement, typeUtilities);
-            item.setSmart(true);
-            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            proposals.add(item);
         }
     }
 
     private void proposeImpicitObjects(CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
-        for (org.netbeans.modules.web.core.syntax.spi.ELImplicitObject implicitObject : ELTypeUtilities.getImplicitObjects()) {
+        for (org.netbeans.modules.web.el.spi.ImplicitObject implicitObject : typeUtilities.getImplicitObjects()) {
             if (prefix.matches(implicitObject.getName())) {
                 ELImplictObjectCompletionItem item = new ELImplictObjectCompletionItem(implicitObject.getName(), implicitObject.getClazz());
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
@@ -269,12 +296,26 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             scope = scope.substring(0, scope.length() - scopeString.length());
         }
 
-        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(scope, getFileObject(context))) {
+        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(scope, context.getParserResult().getSnapshot())) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
             ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            item.setSmart(true);
+            proposals.add(item);
+        }
+    }
+
+    private void proposeRawObjectProperties(CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, Node scopeNode, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        for (VariableInfo property : ELVariableResolvers.getRawObjectProperties(scopeNode.getImage(), context.getParserResult().getSnapshot())) {
+            if (!prefix.matches(property.name)) {
+                continue;
+            }
+            ELRawObjectPropertyCompletionItem item = new ELRawObjectPropertyCompletionItem(property.name);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
             proposals.add(item);
@@ -288,14 +329,24 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
-            Element element = typeUtilities.getElementForType(bean.clazz);
-            if (element == null) {
-                continue;
+            if(bean.clazz == null) {
+                //probably a refered (w/o type) variable, just show it in the completion w/o type
+                ELVariableCompletionItem item = new ELVariableCompletionItem(bean.name, bean.expression);
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                item.setSmart(true);
+                proposals.add(item);
+
+            } else {
+                //resolved variable
+                Element element = typeUtilities.getElementForType(bean.clazz);
+                if (element == null) {
+                    continue;
+                }
+                ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                item.setSmart(true);
+                proposals.add(item);
             }
-            ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
-            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            item.setSmart(true);
-            proposals.add(item);
         }
     }
 
@@ -339,17 +390,17 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeFunctions(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
-
-        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix.prefix)) {
-            ELFunctionCompletionItem item =
-                    new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
-            item.setSmart(true);
-            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            proposals.add(item);
-        }
-    }
+//    private void proposeFunctions(CodeCompletionContext context,
+//            PrefixMatcher prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+//
+//        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix.prefix)) {
+//            ELFunctionCompletionItem item =
+//                    new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
+//            item.setSmart(true);
+//            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+//            proposals.add(item);
+//        }
+//    }
 
     @Override
     public String document(ParserResult info, final ElementHandle element) {

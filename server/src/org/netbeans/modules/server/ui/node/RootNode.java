@@ -233,7 +233,14 @@ public final class RootNode extends AbstractNode {
 
             ServerRegistry registry = ServerRegistry.getInstance();
             for (ServerInstanceProvider type : registry.getProviders()) {
-                fresh.addAll(type.getInstances());
+                List<ServerInstance> instances = type.getInstances();
+                // #194962
+                for (ServerInstance instance : instances) {
+                    assert instance != null : "ServerInstance returned by provider " + type + " is null";
+                    if (instance != null) {
+                        fresh.add(instance);
+                    }
+                }
             }
 
             Collections.sort(fresh, COMPARATOR);
@@ -250,7 +257,13 @@ public final class RootNode extends AbstractNode {
             assert EventQueue.isDispatchThread();
             actionsPropertiesDone = true;
             enableActionsOnExpand();
-            ServerRegistry.getInstance().getProviders();
+            REFRESH_PROCESSOR.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    ServerRegistry.getInstance().getProviders();
+                }
+            });
         }
     } // end of ChildFactory
 

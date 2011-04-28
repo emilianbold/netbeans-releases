@@ -45,8 +45,6 @@ package org.netbeans.modules.web.beans.api.model;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileObject;
 
 
@@ -62,9 +60,8 @@ public class ModelUnit {
         myBootPath= bootPath;
         myCompilePath = compilePath;
         mySourcePath = sourcePath;
-        ClasspathInfo classpathInfo = ClasspathInfo.create(bootPath, 
+        myClassPathInfo = ClasspathInfo.create(bootPath, 
                 compilePath, sourcePath);
-        myHelper = AnnotationModelHelper.create(classpathInfo);
     }
     
     /* (non-Javadoc)
@@ -109,6 +106,10 @@ public class ModelUnit {
         return new ModelUnit(bootPath, compilePath, sourcePath);
     }
     
+    public ClasspathInfo getClassPathInfo(){
+        return myClassPathInfo;
+    }
+    
     FileObject getSourceFileObject(){
         FileObject[] roots = mySourcePath.getRoots();
         if ( roots!= null && roots.length >0 ){
@@ -117,11 +118,7 @@ public class ModelUnit {
         return null;
     }
     
-    AnnotationModelHelper getHelper(){
-        return myHelper;
-    }
-    
-    private final AnnotationModelHelper myHelper;
+    private final ClasspathInfo myClassPathInfo;
     private final ClassPath myBootPath;
     private final ClassPath myCompilePath;
     private final ClassPath mySourcePath;

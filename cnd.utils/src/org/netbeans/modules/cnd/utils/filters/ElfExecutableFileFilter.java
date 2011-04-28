@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.filesystems.FileObject;
@@ -80,7 +81,8 @@ public class ElfExecutableFileFilter extends FileFilterFactory.FileAndFileObject
 	    if(f.isDirectory()) {
 		return true;
 	    }
-	    return checkElfHeader(f);
+            FileObject fo = CndFileSystemProvider.toFileObject(f);
+	    return (fo == null) ? checkElfHeader(f) : checkElfHeader(fo);
 	}
 	return false;
     }

@@ -65,6 +65,7 @@ import org.netbeans.modules.glassfish.common.CreateDomain;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.PortCollection;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
@@ -263,7 +264,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     }
 
     public String formatUri(String host, int port) {
-        return null != sd ? "[" + glassfishRoot + "]" + sd.uriFragment + ":" + host + ":" + port // NOI18N
+        return null != sd ? "[" + glassfishRoot + "]" + sd.getUriFragment() + ":" + host + ":" + port // NOI18N
                 : "[" + glassfishRoot + "]null:" + host + ":" + port; // NOI18N
     }
     
@@ -297,20 +298,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
             return null;
         }
         for (ServerDetails candidate : possibleValues) {
-            boolean badFile = false;
-            for (String s : candidate.requiredFiles) {
-                containerRef = new File(glassfishDir, s);
-                if (!containerRef.exists()) {
-                    badFile = true;
-                }
-            }
-            for (String s : candidate.excludedFiles) {
-                containerRef = new File(glassfishDir, s);
-                if (containerRef.exists()) {
-                    badFile = true;
-                }
-            }
-            if (!badFile) {
+            if (candidate.isInstalledInDirectory(glassfishDir)) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
                 this.sd = candidate;
                 return candidate;
@@ -436,7 +424,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
                     installRoot, glassfishRoot, domainsDir, domainName, 
                     newHttpPort, newAdminPort, 
                     formatUri("localhost", newAdminPort), 
-                    sd.uriFragment, 
+                    sd.getUriFragment(),
                     gip);
             result.add(instance.getCommonInstance());
         } else {
@@ -444,7 +432,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName, getHttpPort(),
                     getAdminPort(), formatUri("localhost", getAdminPort()),
-                    sd.uriFragment, 
+                    sd.getUriFragment(),
                     gip);
             result.add(instance.getCommonInstance());
         }
@@ -460,7 +448,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"),   // NOI18N
                 installRoot, glassfishRoot, null, null, getHttpPort(), getAdminPort(),
-                formatUri(hn, getAdminPort()), sd.uriFragment, gip);
+                formatUri(hn, getAdminPort()), sd.getUriFragment(), gip);
         result.add(instance.getCommonInstance());
     }
 

@@ -48,7 +48,6 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -109,7 +108,6 @@ import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -123,6 +121,7 @@ import org.openide.util.Utilities;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
+            static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
@@ -540,7 +539,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    static void addAptGenerated(final Context context, JavaParsingContext javaContext, final String sourceRelative, final Set<CompileTuple> aptGenerated) throws IOException {
+    static boolean addAptGenerated(final Context context, JavaParsingContext javaContext, final String sourceRelative, final Set<CompileTuple> aptGenerated) throws IOException {
+        boolean ret = false;
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
         if (aptFolder.exists()) {
             final FileObject root = FileUtil.toFileObject(aptFolder);
@@ -555,7 +555,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
                             InferableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
-                            aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
+                            ret |= aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
                         }
                     }
                 } catch (IOException ioe) {
@@ -564,6 +564,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
             }
         }
+        return ret;
     }
 
     static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
@@ -586,7 +587,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
-    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {                
+    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {
         //get dependencies
         Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
         Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();
@@ -911,23 +912,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                         final Set<URL> toRefresh = new HashSet<URL>();
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
-                            ffl.stopListeningOn(removedRoot);
+                            ffl.stopListeningOn(removedRoot);                            
                             final FileObject root = URLMapper.findFileObject(removedRoot);
                             if (root == null) {
                                 JavaIndex.setAttribute(removedRoot, DIRTY_ROOT, Boolean.TRUE.toString());
-                                final String srcPathStr = JavaIndex.getAttribute(removedRoot, SOURCE_PATH, "");
-                                for (String pathElement : srcPathStr.split(" ")) {
-                                    try {
-                                        toRefresh.add(new URL(pathElement));
-                                    } catch (MalformedURLException mue) {
-                                        JavaIndex.LOG.log(Level.INFO, "Malformed URL in sourcePath attribute", pathElement);
-                                    }
-                                }                                
-                            } else if (ensureSourcePath(root)){
-                                final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
-                                for (final FileObject srcRoot : srcPath.getRoots()) {
-                                    toRefresh.add(srcRoot.getURL());
-                                }
+                            } else {
+                                ensureSourcePath(root);
                             }
                         }
                         for (URL removedRoot : removedRoots) {

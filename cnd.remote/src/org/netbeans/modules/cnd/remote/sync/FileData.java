@@ -137,6 +137,10 @@ public final class FileData {
             }
         }
     }
+    
+    public File getDataFile() {
+        return dataFile;
+    }
 
 //    /**
 //     * Initial filling

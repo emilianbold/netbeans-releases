@@ -267,7 +267,10 @@ is divided into following sections:
                     -->
                     <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
                     <xsl:attribute name="else">false</xsl:attribute>
-                    <istrue value="${{j2ee.deploy.on.save}}"/>
+                    <or>
+                        <istrue value="${{j2ee.deploy.on.save}}"/>
+                        <istrue value="${{j2ee.compile.on.save}}"/>
+                    </or>
                 </condition>         
             </target>
             
@@ -650,6 +653,7 @@ exists or setup the property manually. For example like this:
                     </xsl:if>
                     <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg=@{{subprojectname}}"/>
+                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
                     <arg line="@{{args}}"/>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
@@ -968,6 +972,15 @@ to simulate
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
             <xsl:attribute name="unless">no.deps</xsl:attribute>
+            <!--
+            If build.deploy.on.save is not set init-cos hasn't
+            been called so we are running the old style build.
+            -->
+            <condition>
+                <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
+                <xsl:attribute name="value">false</xsl:attribute>
+                <not><isset property="build.deploy.on.save"/></not>
+            </condition>            
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -982,15 +995,6 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <!--
-                If build.deploy.on.save is not set init-cos hasn't
-                been called so we are running the old style build.
-                -->
-                <condition>
-                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
-                    <xsl:attribute name="value">false</xsl:attribute>
-                    <not><isset property="build.deploy.on.save"/></not>
-                </condition>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">                   
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
                     <xsl:choose>
@@ -1016,15 +1020,6 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps2:script"/>
-                <!--
-                If build.deploy.on.save is not set init-cos hasn't
-                been called so we are running the old style build.
-                -->
-                <condition>
-                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
-                    <xsl:attribute name="value">false</xsl:attribute>
-                    <not><isset property="build.deploy.on.save"/></not>
-                </condition>
                 <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
                     <xsl:for-each select="projdeps2:properties/projdeps2:property">

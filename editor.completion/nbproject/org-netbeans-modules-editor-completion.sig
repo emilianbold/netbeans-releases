@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20.0
+#Version 1.25.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -17,6 +17,32 @@ meth public java.lang.String toString()
 
 CLSS public abstract interface java.lang.Runnable
 meth public abstract void run()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public final org.netbeans.api.editor.completion.Completion
 meth public static org.netbeans.api.editor.completion.Completion get()
@@ -49,6 +75,7 @@ meth public abstract void processKeyEvent(java.awt.event.KeyEvent)
 meth public abstract void render(java.awt.Graphics,java.awt.Font,java.awt.Color,java.awt.Color,int,int,boolean)
 
 CLSS public abstract interface org.netbeans.spi.editor.completion.CompletionProvider
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="CompletionProviders")
 fld public final static int COMPLETION_ALL_QUERY_TYPE = 9
 fld public final static int COMPLETION_QUERY_TYPE = 1
 fld public final static int DOCUMENTATION_QUERY_TYPE = 2
@@ -115,4 +142,12 @@ meth public static int getPreferredWidth(java.lang.String,java.lang.String,java.
 meth public static void renderHtml(javax.swing.ImageIcon,java.lang.String,java.lang.String,java.awt.Graphics,java.awt.Font,java.awt.Color,int,int,boolean)
 supr java.lang.Object
 hfds AFTER_ICON_GAP,AFTER_RIGHT_TEXT_GAP,BEFORE_ICON_GAP,BEFORE_RIGHT_TEXT_GAP,ICON_HEIGHT,ICON_WIDTH
+
+CLSS public abstract interface !annotation org.netbeans.spi.editor.mimelookup.MimeLocation
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass()
+meth public abstract java.lang.String subfolderName()
 

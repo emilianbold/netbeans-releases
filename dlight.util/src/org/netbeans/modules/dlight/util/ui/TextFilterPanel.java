@@ -51,12 +51,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -68,6 +72,7 @@ import org.openide.util.WeakListeners;
 public final class TextFilterPanel extends javax.swing.JPanel {
 
     private static final int FIRING_DELAY = 500;
+    private final RequestProcessor rp = new RequestProcessor(TextFilterPanel.class.getName(), 1);
     private final Task filterTask;
     private final ChangeSupport cs;
     private final LinkedList<String> model;
@@ -80,7 +85,7 @@ public final class TextFilterPanel extends javax.swing.JPanel {
         model = new LinkedList<String>();
         updateModel();
 
-        filterTask = RequestProcessor.getDefault().create(new Runnable() {
+        filterTask = rp.create(new Runnable() {
 
             @Override
             public void run() {
@@ -135,20 +140,42 @@ public final class TextFilterPanel extends javax.swing.JPanel {
     private void updateModel() {
         String text = getText();
 
-        if (!text.isEmpty()) {
-            model.remove(text);
-            model.addFirst(text);
+        if (text.isEmpty()) {
+            return;
+        }
 
-            if (model.size() > 5) {
-                model.removeLast();
-            }
+        model.remove(text);
+        model.addFirst(text);
+
+        if (model.size() > 5) {
+            model.removeLast();
         }
 
         cmbFilter.setModel(new DefaultComboBoxModel(model.toArray(new String[model.size()])));
     }
 
     public String getText() {
-        return cmbFilter.getEditor().getItem().toString();
+        final AtomicReference<String> result = new AtomicReference<String>();
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            result.set(cmbFilter.getEditor().getItem().toString());
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        result.set(cmbFilter.getEditor().getItem().toString());
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return result.get();
     }
 
     public void addWeakChangeListener(ChangeListener l) {

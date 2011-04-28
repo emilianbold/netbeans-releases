@@ -65,6 +65,9 @@ made subject to such option by the copyright holder.
             <file name="org.netbeans.modules.remote.ui.AddToFavoritesAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.AddToFavoritesAction"/>
             </file>            
+            <file name="org.netbeans.modules.remote.ui.OpenTerminalAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.OpenTerminalAction"/>
+            </file>            
         </folder>
     </folder>
     <folder name="Remote">
@@ -93,6 +96,10 @@ made subject to such option by the copyright holder.
                 <file name="AddToFavoritesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.AddToFavoritesAction.instance"/>
                     <attr name="position" intvalue="600"/>
+                </file>
+                <file name="OpenTerminalAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.OpenTerminalAction.instance"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
             </folder>
         </folder>

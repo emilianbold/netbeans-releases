@@ -85,7 +85,7 @@ public class ElementNodeTest extends NbTestCase {
                 counter.incrementAndGet();
                 return info.getFileObject();
             }
-        }, "test", ElementHandle.create(el), el.getKind(), tph, false);
+        }, "test", ElementHandle.create(el), el.getKind(), false);
 
         d.cpInfo = info.getClasspathInfo();
         
@@ -96,7 +96,7 @@ public class ElementNodeTest extends NbTestCase {
         assertEquals(info.getFileObject(), n.getLookup().lookup(FileObject.class));
         assertEquals(1, counter.get());
 
-        assertEquals(tph, n.getLookup().lookup(TreePathHandle.class));
+        assertEquals(tph.resolve(info).getLeaf(), n.getLookup().lookup(TreePathHandle.class).resolve(info).getLeaf());
     }
     
     public void testNoFileObject() throws Exception {
@@ -114,7 +114,7 @@ public class ElementNodeTest extends NbTestCase {
                 counter.incrementAndGet();
                 return null;
             }
-        }, "test", ElementHandle.create(el), el.getKind(), TreePathHandle.create(tp, info), false);
+        }, "test", ElementHandle.create(el), el.getKind(), false);
 
         d.cpInfo = info.getClasspathInfo();
 
@@ -134,6 +134,8 @@ public class ElementNodeTest extends NbTestCase {
     private CompilationInfo info;
 
     private void prepareTest(String filename, String code) throws Exception {
+        clearWorkDir();
+        
         File work = getWorkDir();
         FileObject workFO = FileUtil.toFileObject(work);
 

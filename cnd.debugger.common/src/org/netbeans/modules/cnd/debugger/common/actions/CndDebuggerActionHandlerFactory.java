@@ -48,11 +48,12 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
 
 public abstract class CndDebuggerActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-    public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
+    public boolean canHandle(ProjectActionEvent.Type type, Lookup context, Configuration conf) {
         if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             return true;
         } else {

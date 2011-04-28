@@ -216,6 +216,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     
     private Lookup.Result<KeyBindingSettings> kbs;
     private RequestProcessor.Task asyncWarmUpTask = null;
+    private String asyncWarmUpMimeType = null;
     private static CompletionImplProfile profile;
     
     private final LookupListener shortcutsTracker = new LookupListener() {
@@ -580,12 +581,18 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             return providersCache.get(mimeType);
 
         if (asyncWarmUpTask != null) {
-            asyncWarmUpTask.cancel();
+            if (asyncWarmUp && mimeType != null && mimeType.equals(asyncWarmUpMimeType))
+                return null;
+            if (!asyncWarmUpTask.cancel()) {
+                asyncWarmUpTask.waitFinished();
+            }
             asyncWarmUpTask = null;
+            asyncWarmUpMimeType = null;
         }
         final Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
         if (asyncWarmUp) {
-             asyncWarmUpTask = RequestProcessor.getDefault().post(new Runnable() {
+            asyncWarmUpMimeType = mimeType;
+            asyncWarmUpTask = RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
                     lookup.lookupAll(CompletionProvider.class);

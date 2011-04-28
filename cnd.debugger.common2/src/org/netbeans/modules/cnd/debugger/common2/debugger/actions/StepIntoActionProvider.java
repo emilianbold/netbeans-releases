@@ -58,6 +58,7 @@ import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 
 // registered in META-INF/debugger/netbeans-DbxDebuggerEngine
 // registered in META-INF/debugger/netbeans-GdbDebuggerEngine
@@ -85,7 +86,7 @@ public class StepIntoActionProvider extends NativeActionsProvider {
     public void doAction(Object a) {
 	NativeDebugger debugger = getDebugger();
 	if (debugger != null) {
-            if (inDis()) {
+            if (Disassembly.isInDisasm()) {
                 debugger.stepInst();
             } else {
                 debugger.stepInto();

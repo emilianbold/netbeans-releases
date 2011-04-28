@@ -330,6 +330,11 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             public String getWorkingFolder() {
                 return null;
             }
+
+            @Override
+            public boolean mergeProjectProperties() {
+                return false;
+            }
         };
         List<ProviderItem> list = new ArrayList<ProviderItem>();
         for(DiscoveryProvider provider : providers.allInstances()){

@@ -243,7 +243,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return mutableState.getServerProcess();
     }
 
-    public synchronized void setServerProcess(Process serverProcess) {
+    public void setServerProcess(Process serverProcess) {
         mutableState.setServerProcess(serverProcess);
     }
 

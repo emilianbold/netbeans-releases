@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.HostMappingsAnalyzer;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
@@ -580,14 +581,11 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 if (local.length() > 0) {
                     if (!HostInfoProvider.fileExists(ExecutionEnvironmentFactory.getLocal(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
-                    }
-                    if (!pathsToValidateCopy.isEmpty()) {
-                        for (String pathToValidate : this.pathsToValidate) {
-                            if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
-                                pathsToValidateCopy.remove(pathToValidate);
-                                break;
-                                //TODO: real path mapping validation (create file, check from both sides, etc)
-                            }
+                    }                    
+                    for (String pathToValidate : new ArrayList<String>(pathsToValidateCopy)) {
+                        if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
+                            pathsToValidateCopy.remove(pathToValidate);
+                            //TODO: real path mapping validation (create file, check from both sides, etc)
                         }
                     }
                 }
@@ -743,7 +741,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 case 1:
                     return new PathCellEditor(currentHost.getExecutionEnvironment());
                 default:
-                    throw new IllegalArgumentException("Invalid column number" + column); //NOI18N
+                    CndUtils.assertTrueInConsole(false, "Invalid column number" + column); //NOI18N
+                    return super.getCellEditor(row, column);
             }
         }
     }

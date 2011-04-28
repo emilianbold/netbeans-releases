@@ -132,10 +132,7 @@ final class PhpDocPanel extends JPanel {
     }
 
     void storeData() {
-        String phpDocTarget = getPhpDocTarget();
-        if (StringUtils.hasText(phpDocTarget)) {
-            PhpDocPreferences.setPhpDocTarget(phpModule, phpDocTarget);
-        }
+        PhpDocPreferences.setPhpDocTarget(phpModule, getPhpDocTarget());
         PhpDocPreferences.setPhpDocTitle(phpModule, getPhpDocTitle());
     }
 

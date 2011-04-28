@@ -99,6 +99,7 @@ public class PersistentUtils {
     public static FileSystem readFileSystem(DataInput input) throws IOException {
         CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
         FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
+        assert (rootFileObject != null) : "Restored null file object for URL " + rootUrl;
         return rootFileObject.getFileSystem();
     }
     
@@ -253,9 +254,7 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            if(!CharSequences.isCompact(st)) {
-                assert CharSequences.isCompact(st);
-            }
+            assert CharSequences.isCompact(st);
             aStream.writeUTF(st.toString());
         }
     }

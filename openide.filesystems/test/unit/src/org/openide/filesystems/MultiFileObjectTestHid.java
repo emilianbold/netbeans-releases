@@ -44,6 +44,7 @@
 
 package org.openide.filesystems;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +62,7 @@ public class MultiFileObjectTestHid extends TestBaseHid {
     }
 
 
+    @Override
     protected String[] getResources (String testName) {
         return resources;
     }
@@ -219,4 +221,42 @@ public class MultiFileObjectTestHid extends TestBaseHid {
         assertEquals("1st test", "mal", t.getAttribute("x"));
         assertEquals("2nd test", "mal", t.getAttribute("x"));
     }
+    
+    public void testMultiFileSystemWithOverridenAttributes() throws Exception {
+        MultiFileSystem mfs = (MultiFileSystem)this.testedFS;
+        List<FileSystem> all = new ArrayList<FileSystem>(Arrays.asList(mfs.getDelegates()));
+        File f = writeFile("layer.xml",
+                "<filesystem>\n"
+                + "    <folder name =\"org-sepix\">\n"
+                + "       <folder name =\"Panes\">\n"
+                + "            <file name=\"Demo.txt\">\n"
+                + "                <attr name=\"position\" intvalue=\"100\"/>\n"
+                + "            </file>\n"
+                + "      </folder>\n"
+                + "    </folder>\n"
+                + "</filesystem>");
+        XMLFileSystem xml = new XMLFileSystem(f.toURI().toURL());
+        all.add(xml);
+        mfs.setDelegates(all.toArray(new FileSystem[0]));
+
+
+        FileObject folder = mfs.findResource("org-sepix/Panes/");
+
+        for (FileObject fileObject : folder.getChildren()) {
+            assertEquals("should be 100", 100, fileObject.getAttribute("position"));
+
+            fileObject.setAttribute("position", 200);
+            assertEquals("should be 200", 200, fileObject.getAttribute("position"));
+            assertEquals("should be 200 still", 200, fileObject.getAttribute("position"));
+        }
+    }
+
+    private File writeFile(String name, String content) throws IOException {
+        File f = new File(getWorkDir(), name);
+        java.io.FileWriter w = new java.io.FileWriter(f);
+        w.write(content);
+        w.close();
+        return f;
+    }
+    
 }

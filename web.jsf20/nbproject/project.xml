@@ -64,10 +64,10 @@ made subject to such option by the copyright holder.
                 <subpackages>com.sun.faces</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jsf-2_0/jsf-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jsf-2_1/jsf-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jsf-2_0/jsf-impl.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jsf-2_1/jsf-impl.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

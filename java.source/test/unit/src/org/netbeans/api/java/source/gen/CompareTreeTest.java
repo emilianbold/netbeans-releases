@@ -62,7 +62,7 @@ import org.netbeans.modules.java.source.transform.Transformer;
  * @author Pavel Flaska
  */
 
-public class CompareTreeTest extends GeneratorTest {
+public class CompareTreeTest extends GeneratorTestBase {
     
     /** Creates a new instance of CompareTreeTest */
     public CompareTreeTest(String name) {

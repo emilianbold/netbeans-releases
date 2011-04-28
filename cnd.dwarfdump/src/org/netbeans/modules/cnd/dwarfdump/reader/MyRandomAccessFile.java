@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.dwarfdump.reader;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -52,18 +53,33 @@ import java.nio.channels.FileChannel;
  */
 public final class MyRandomAccessFile extends RandomAccessFile {
 
-    private final MappedByteBuffer buffer;
+    private MappedByteBuffer buffer;
+    private long bufferShift;
+    private long bufferSize;
     private final FileChannel channel;
 
     public MyRandomAccessFile(String fileName) throws IOException {
         super(fileName, "r"); // NOI18N
         channel = getChannel();
-        buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        bufferSize = Math.min(channel.size(), Integer.MAX_VALUE - 1);
+        bufferShift = 0;
+        buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
     }
 
     @Override
     public int read() throws IOException {
         if (buffer.remaining() == 0) {
+            if(bufferShift + bufferSize < channel.size()) {
+                long position = bufferShift + bufferSize;
+                bufferShift = bufferShift + Integer.MAX_VALUE/2;
+                bufferSize = Math.min(channel.size() - bufferShift, Integer.MAX_VALUE - 1);
+                ByteOrder order = buffer.order();
+                buffer.clear();
+                buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+                buffer.order(order);
+                buffer.position((int)(position-bufferShift));
+                return read();
+            }
             return -1;
         } else {
             return 0xff & buffer.get();
@@ -82,12 +98,22 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     @Override
     public long getFilePointer() throws IOException {
-        return buffer.position();
+        return buffer.position() + bufferShift;
     }
 
     @Override
     public void seek(long pos) throws IOException {
-        buffer.position((int) pos);
+        if (pos >= bufferShift && pos < bufferShift + bufferSize) {
+            buffer.position((int) (pos-bufferShift));
+        } else {
+            bufferShift = Math.max(pos - Integer.MAX_VALUE/2, 0);
+            bufferSize = Math.min(channel.size() - bufferShift, Integer.MAX_VALUE - 1);
+            ByteOrder order = buffer.order();
+            buffer.clear();
+            buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+            buffer.order(order);
+            buffer.position((int)(pos - bufferShift));
+        }
     }
 
     public void dispose() {

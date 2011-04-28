@@ -1,6 +1,0 @@
-mylocal:VARIABLE:[]:ESCAPED{mylocal}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-Foobyy:CLASS:[]:ESCAPED{Foobyy}:
-  hello:METHOD:[PUBLIC]:ESCAPED{hello}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-$anotherglobal:GLOBAL:[]:ESCAPED{$anotherglobal}:
-$foo:GLOBAL:[]:ESCAPED{$foo}:
-$foobar:GLOBAL:[]:ESCAPED{$foobar}:

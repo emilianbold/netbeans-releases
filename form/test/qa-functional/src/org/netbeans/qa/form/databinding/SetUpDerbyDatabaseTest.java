@@ -53,16 +53,21 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import java.util.*;
+import junit.framework.Test;
 import org.netbeans.jellytools.modules.db.nodes.DatabasesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Set up Derby DB for following tests
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class SetUpDerbyDatabaseTest  extends ExtJellyTestCase {
     public static String TMP_DB_DIR_NAME = "TempDerbyDatabaseDir" + String.valueOf(new Date().getTime());;
@@ -92,26 +97,17 @@ public class SetUpDerbyDatabaseTest  extends ExtJellyTestCase {
         super(testName);
     }
     
-    /**
-     * Method allowing to execute test directly from IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    /**
-     * Creates suite from particular test cases.
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new SetUpDerbyDatabaseTest("testSetupDbPaths")); // NOI18N
-        suite.addTest(new SetUpDerbyDatabaseTest("testStartDbServer")); // NOI18N
-        suite.addTest(new SetUpDerbyDatabaseTest("testCreateDb")); // NOI18N        
-        suite.addTest(new SetUpDerbyDatabaseTest("testConnectDbAndCreateTables")); // NOI18N
-//        suite.addTest(new SetUpDerbyDatabaseTest("testStopDbServer")); // NOI18N        
-        
-        return suite;
+    public static Test suite() {
+       
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SetUpDerbyDatabaseTest.class).addTest(
+                "testSetupDbPaths",
+                "testStartDbServer",
+                 "testStopDbServer",
+                 "testCreateDb",
+                 "testConnectDbAndCreateTables"                 
+                ).gui(true).enableModules(".*").clusters(".*"));
+
     }
     
     /** Sets db server path and database folder path */

@@ -236,6 +236,7 @@ public class ApplePopupFactory extends PopupFactory {
             if (parent != null) {
                 contents.getParent().remove (contents);
                 parent.repaint(bounds.x, bounds.y, bounds.width, bounds.height);
+                parent.setVisible(false);
             }
             //If doShow() was never called, we've modified the visibility
             //of the contents component, which could cause problems elsewhere

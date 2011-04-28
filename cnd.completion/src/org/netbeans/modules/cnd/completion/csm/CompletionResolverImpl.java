@@ -1767,6 +1767,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_METHODS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
+            } else if (CsmContextUtilities.isInFunctionInstantiation(context, offset)) {
+                updateResolveTypesInFunction(offset, context, match);
             } else {
                 resolveGlobalContext = true;
             }

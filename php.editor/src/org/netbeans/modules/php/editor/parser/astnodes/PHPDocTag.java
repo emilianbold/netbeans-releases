@@ -79,7 +79,19 @@ public class PHPDocTag extends ASTNode {
         return this.type;
     }
 
+    /**
+     * 
+     * @return this is the whole text of the tag
+     */
     public String getValue() {
+        return value;
+    }
+    
+    /**
+     * 
+     * @return the documentation for a tag
+     */
+    public String getDocumentation() {
         return value;
     }
 

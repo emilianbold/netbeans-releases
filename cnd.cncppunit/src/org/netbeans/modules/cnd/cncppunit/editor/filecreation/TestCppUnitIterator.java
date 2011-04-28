@@ -155,19 +155,24 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
 
         setCUnitLinkerOptions(project, folder);
 
-        DataObject formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestclassfile.cpp"); // NOI18N
-        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassSourceFileName(), params);
-        addItemToLogicalFolder(project, folder, dataObject);
+        DataObject formDataObject;
+        DataObject dataObject;
 
         formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestclassfile.h"); // NOI18N
         dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassHeaderFileName(), params);
         addItemToLogicalFolder(project, folder, dataObject);
+        //dataObjects.add(dataObject);
+
+        formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestclassfile.cpp"); // NOI18N
+        dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassSourceFileName(), params);
+        addItemToLogicalFolder(project, folder, dataObject);
+        dataObjects.add(dataObject);
 
         formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestrunnerfile.cpp"); // NOI18N
         dataObject = formDataObject.createFromTemplate(targetFolder, getTestRunnerFileName(), params);
         addItemToLogicalFolder(project, folder, dataObject);
+        //dataObjects.add(dataObject);
 
-        dataObjects.add(dataObject);
         return dataObjects;
     }
 

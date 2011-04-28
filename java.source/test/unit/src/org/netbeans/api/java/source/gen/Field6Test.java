@@ -61,7 +61,7 @@ import org.netbeans.junit.NbTestSuite;
  * 
  * @author Pavel Flaska
  */
-public class Field6Test extends GeneratorTest {
+public class Field6Test extends GeneratorTestBase {
     
     /** Creates a new instance of MethodParametersTest */
     public Field6Test(String testName) {

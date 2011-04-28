@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.32
+#Version 1.37.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -154,12 +154,23 @@ supr java.lang.Object
 hcls JFBIMerged,JFBLookupMerger,SFBIMerged,SFBLookupMerger
 
 CLSS public org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
+innr public abstract interface static LibraryDefiner
 meth public static boolean isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
 meth public static void showAlert()
+meth public static void showAlert(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public static void showCustomizer(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
 supr java.lang.Object
-hfds BROKEN_ALERT_TIMEOUT,brokenAlertLastTime,brokenAlertShown
-hcls MainWindowListener
+hfds BROKEN_ALERT_TIMEOUT,RP,context,rpTask
+
+CLSS public abstract interface static org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$LibraryDefiner
+ outer org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
+meth public abstract java.util.concurrent.Callable<org.netbeans.api.project.libraries.Library> missingLibrary(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 
 CLSS public final org.netbeans.spi.java.project.support.ui.EditJarSupport
 cons public init()

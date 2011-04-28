@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.io.IOException;
 
 import java.awt.Component;
@@ -66,6 +65,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -93,12 +93,11 @@ public class IpeUtils {
 	         is some problem (IOException etc. in File's getCanonicalPath
 		 method)
     */
-    public static String normalizePath(String path) {
+    public static String normalizePath(String path, FileSystem fs) {
 	if (path == null)
 	    return null;
 	try {
-	    File file = new File(path);
-	    return file.getCanonicalPath();
+            return FileSystemProvider.getCanonicalPath(fs, path);
 	} catch (IOException e) {
 	    return null;
 	}
@@ -297,47 +296,6 @@ public class IpeUtils {
 	return dp.toString();
     }
      */
-
-
-    /**
-     * This method is currently not needed. However, there is a pending
-     * bug fix which makes it important. The code from Venus is commented out.
-     * Assuming we get the requested NetBeans RFE, it should be
-     * uncommented and the PathUtils class added to t-common. Then it
-     * makes sense to keep this as a method rather  than replacing it
-     * with a FileUtil.toFileObject() call.
-     */
-    public static FileObject findFileObject(String fileName) {
-	/*
-	String name;
-	int slash = fileName.lastIndexOf(File.separatorChar);
-
-	if (slash != -1) {
-	    name = fileName.substring(slash + 1);
-
-	    Iterator iter = TopComponent.getRegistry().getOpened().iterator();
-	    while (iter.hasNext()) {
-		Object o = iter.next();
-		if (o instanceof CppEditorComponent &&
-			    ((CloneableEditor) o).getName().equals(name)) {
-		    CppEditorSupport support = ((CppEditorComponent) o).getSupport();
-		    StyledDocument doc = support.getDocument();
-		    String docPath = (String) doc.getProperty(Document.TitleProperty);
-		    if (!(docPath.equals(fileName)) &&
-				PathUtils.equivalentPaths(fileName, docPath)) {
-			fileName = docPath;
-			break;
-		    }
-		}
-	    }
-	}
-	*/
-
-	File file = new File(fileName);
-	File normalizedFile = FileUtil.normalizeFile(file);
-	FileObject fo = FileUtil.toFileObject(normalizedFile);
-	return fo;
-    }
 
     /** Compare two boolean values and return 0 if they are equal,
 	-1 if the first is "less" than the second, and 1 if the first

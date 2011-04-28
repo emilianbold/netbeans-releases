@@ -41,80 +41,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.addmethod;
 
-import java.io.File;
 import java.io.IOException;
-import org.netbeans.jellytools.*;
+import javax.swing.JTextField;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.test.j2ee.*;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.test.j2ee.EJBValidation;
 
 /**
- *
- * @author lm97939
+ *  Called from EJBValidation test suite.
+ * 
+ * @author Libor Martinek
  */
 public class UseDatabaseTest extends AddMethodBase {
-    
+
     private String name;
-    
+
     /** Creates a new instance of AddMethodTest */
     public UseDatabaseTest(String name) {
         super(name);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        junit.textui.TestRunner.run(new SendMessageTest("testUseDatabase1InSB"));
-    }
 
-    public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
-    }
-    
-    public void testUseDatabase1InSB()  throws IOException{
+    public void testUseDatabase1InSB() throws IOException {
         beanName = "TestingSession";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_EnterpriseActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_UseDbAction");
+        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_UseDbAction");
+        // "Choose Database"
+        dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_ChooseDatabase");
         name = "myTestingDatabase";
         toSearchInEditor = "getMyTestingDatabase";
         isDDModified = true;
         saveFile = true;
         addMethod();
-        Node resources = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.EJB_PROJECT_NAME),
-                 Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_Node_ResourceNode"));
-        new Node(resources,"derby_netPool.sun-resource");
-        new Node(resources,"jdbc_"+name+".sun-resource");
     }
 
     protected void addMethod() throws IOException {
-        EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
-        editor.select(11);
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName + "Bean.java");
+        editor.select("private javax.ejb.SessionContext context;");
 
-        // invoke Add Business Method dialog
-        new ActionNoBlock(null,editorPopup).perform(editor);
-        NbDialogOperator dialog = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_ChooseDatabase"));
-        if (name != null) {
-            new JTextFieldOperator(dialog).setText(name);
-        }
-        new JComboBoxOperator(dialog).selectItem("/sample");
-        new JCheckBoxOperator(dialog).setSelected(true);
-        dialog.ok();
-        
-        if (saveFile) 
+        GenerateCodeOperator.openDialog(editorPopup, editor);
+        NbDialogOperator chooseDatabaseOper = new NbDialogOperator(dialogTitle);
+        new JButtonOperator(chooseDatabaseOper, "Add...").pushNoBlock();
+        NbDialogOperator addReferenceOper = new NbDialogOperator("Add Data Source Reference");
+        new JTextFieldOperator((JTextField) new JLabelOperator(addReferenceOper, "Reference Name:").getLabelFor()).typeText(name);
+        new JButtonOperator(addReferenceOper, "Add...").pushNoBlock();
+        NbDialogOperator createDataSourceOper = new NbDialogOperator("Create Data Source");
+        new JTextFieldOperator((JTextField) new JLabelOperator(createDataSourceOper, "JNDI Name:").getLabelFor()).typeText(name);
+        new JComboBoxOperator(createDataSourceOper).selectItem("/sample");
+        createDataSourceOper.ok();
+        addReferenceOper.ok();
+        chooseDatabaseOper.ok();
+        editor.txtEditorPane().waitText(toSearchInEditor);
+        if (saveFile) {
             editor.save();
-        
-        waitForEditorText(editor, toSearchInEditor);
-        
+        }
         compareFiles();
     }
-    
 }

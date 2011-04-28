@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,7 +68,7 @@ import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescriptor.ValidatingPanel<AddConnectionWizard>, WizardDescriptor.FinishablePanel<AddConnectionWizard> {
+public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescriptor.AsynchronousValidatingPanel<AddConnectionWizard>, WizardDescriptor.FinishablePanel<AddConnectionWizard> {
 
     private DatabaseConnection databaseConnection;
     private JDBCDriver drv;
@@ -76,7 +76,6 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     private static HelpCtx CONNECTION_PANEL_HELPCTX = new HelpCtx(ConnectionPanel.class);
 
     public ConnectionPanel() {}
-
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -90,7 +89,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     // create only those which really need to be visible.
     @Override
     public Component getComponent() {
-        if (component == null || (oldDriver != null && ! oldDriver.equals(drv))) {
+        if (component == null || (oldDriver != null && !oldDriver.equals(drv))) {
             component = null;
             if (pw == null) {
                 return null;
@@ -179,114 +178,126 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
         pw.setCurrentSchema(databaseConnection.getUser().toUpperCase());
         pw.setDatabaseConnection(databaseConnection);
     }
-
     private String state;
     private String errorMessage;
 
     @Override
-    @SuppressWarnings("SleepWhileHoldingLock")
+    public void prepareValidation() {
+        if (component != null) {
+            component.setWaitingState(true);
+        }
+    }
+
+    @Override
+    @SuppressWarnings({"SleepWhileInLoop"})
     public void validate() throws WizardValidationException {
-        state = null;
-        PropertyChangeListener connectionListener = new PropertyChangeListener() {
+        try {
+            state = null;
+            PropertyChangeListener connectionListener = new PropertyChangeListener() {
 
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getPropertyName().equals("connecting")) { // NOI18N
-                } else if (event.getPropertyName().equals("failed")) { // NOI18N
-                    state = event.getPropertyName();
-                } else if (event.getPropertyName().equals("connected")) { //NOI18N
-                    try {
-                        databaseConnection.getConnector().finishConnect(null, databaseConnection, databaseConnection.getConnection());
+                @Override
+                public void propertyChange(PropertyChangeEvent event) {
+                    if (event.getPropertyName().equals("connecting")) { // NOI18N
+                    } else if (event.getPropertyName().equals("failed")) { // NOI18N
                         state = event.getPropertyName();
-                    } catch (DatabaseException exc) {
-                        Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
-                        state = "failed";
-                    }
-                    //boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
-                }
-            }
-        };
-        ExceptionListener excListener = new ExceptionListener() {
-            @Override
-            public void exceptionOccurred(Exception exc) {
-                if (exc instanceof DDLException) {
-                    Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc.getCause());
-                } else {
-                    Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
-                }
-                String message = null;
-                if (exc instanceof ClassNotFoundException) {
-                    message = NbBundle.getMessage (ConnectUsingDriverAction.class, "EXC_ClassNotFound", exc.getMessage()); //NOI18N
-                } else {
-                    StringBuilder buffer = new StringBuilder();
-                    buffer.append(exc.getMessage());
-                    if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
-                        SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
-                        while (sqlEx != null) {
-                            buffer.append("\n\n").append(sqlEx.getMessage()); // NOI18N
-                            sqlEx = sqlEx.getNextException();
+                    } else if (event.getPropertyName().equals("connected")) { //NOI18N
+                        try {
+                            databaseConnection.getConnector().finishConnect(null, databaseConnection, databaseConnection.getConnection());
+                            state = event.getPropertyName();
+                        } catch (DatabaseException exc) {
+                            Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
+                            state = "failed";
                         }
+                        //boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
                     }
-                    message = buffer.toString();
                 }
-                errorMessage = message;
-            }
-        };
+            };
+            ExceptionListener excListener = new ExceptionListener() {
 
-
-        databaseConnection.addPropertyChangeListener(connectionListener);
-        databaseConnection.addExceptionListener(excListener);
-        databaseConnection.connectAsync();
-        int maxLoops = 60;
-        int loop = 0;
-        while ((! "connected".equals(state) || ! "failed".equals(state)) && loop < maxLoops) { // NOI18N
-            try {
-                Thread.sleep(1000);
-                loop++;
-            } catch (InterruptedException ex) {
-            }
-            if ("connected".equals(state)) { // NOI18N
-                // all ok
-                databaseConnection.removePropertyChangeListener(connectionListener);
-                databaseConnection.removeExceptionListener(excListener);
-                List<String> schemas = null;
-                try {
-                    DatabaseMetaData dbMetaData = databaseConnection.getConnection().getMetaData();
-                    if (dbMetaData.supportsSchemasInTableDefinitions()) {
-                        ResultSet rs = dbMetaData.getSchemas();
-                        if (rs != null) {
-                            while (rs.next()) {
-                                if (schemas == null) {
-                                    schemas = new ArrayList<String>();
-                                }
-                                schemas.add(rs.getString(1).trim());
+                @Override
+                public void exceptionOccurred(Exception exc) {
+                    if (exc instanceof DDLException) {
+                        Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc.getCause());
+                    } else {
+                        Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
+                    }
+                    String message = null;
+                    if (exc instanceof ClassNotFoundException) {
+                        message = NbBundle.getMessage(ConnectUsingDriverAction.class, "EXC_ClassNotFound", exc.getMessage()); //NOI18N
+                    } else {
+                        StringBuilder buffer = new StringBuilder();
+                        buffer.append(exc.getMessage());
+                        if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
+                            SQLException sqlEx = ((SQLException) exc.getCause()).getNextException();
+                            while (sqlEx != null) {
+                                buffer.append("\n\n").append(sqlEx.getMessage()); // NOI18N
+                                sqlEx = sqlEx.getNextException();
                             }
                         }
+                        message = buffer.toString();
                     }
-                } catch (SQLException exc) {
-                    Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
-                    //String message = NbBundle.getMessage(ConnectUsingDriverAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
-                    //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    errorMessage = message;
                 }
-                pw.setSchemas(schemas);
-                return ;
-            } else if ("failed".equals(state)) { // NOI18N
-                databaseConnection.removePropertyChangeListener(connectionListener);
-                databaseConnection.removeExceptionListener(excListener);
-                throw new WizardValidationException((JComponent) component, state, errorMessage);
-            } else if (loop >= maxLoops) {
-                databaseConnection.removePropertyChangeListener(connectionListener);
-                databaseConnection.removeExceptionListener(excListener);
-                throw new WizardValidationException((JComponent) component, "Too long", "Too long"); // NOI18N
+            };
+
+
+            databaseConnection.addPropertyChangeListener(connectionListener);
+            databaseConnection.addExceptionListener(excListener);
+            databaseConnection.connectAsync();
+            int maxLoops = 60;
+            int loop = 0;
+            while ((!"connected".equals(state) || !"failed".equals(state)) && loop < maxLoops) { // NOI18N
+                try {
+                    Thread.sleep(1000);
+                    loop++;
+                } catch (InterruptedException ex) {
+                }
+                if ("connected".equals(state)) { // NOI18N
+                    // all ok
+                    databaseConnection.removePropertyChangeListener(connectionListener);
+                    databaseConnection.removeExceptionListener(excListener);
+                    List<String> schemas = null;
+                    try {
+                        DatabaseMetaData dbMetaData = databaseConnection.getConnection().getMetaData();
+                        if (dbMetaData.supportsSchemasInTableDefinitions()) {
+                            ResultSet rs = dbMetaData.getSchemas();
+                            if (rs != null) {
+                                while (rs.next()) {
+                                    if (schemas == null) {
+                                        schemas = new ArrayList<String>();
+                                    }
+                                    schemas.add(rs.getString(1).trim());
+                                }
+                            }
+                        }
+                    } catch (SQLException exc) {
+                        Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
+                        //String message = NbBundle.getMessage(ConnectUsingDriverAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
+                        //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                    pw.setSchemas(schemas);
+                    return;
+                } else if ("failed".equals(state)) { // NOI18N
+                    databaseConnection.removePropertyChangeListener(connectionListener);
+                    databaseConnection.removeExceptionListener(excListener);
+                    throw new WizardValidationException((JComponent) component, state, errorMessage);
+                } else if (loop >= maxLoops) {
+                    databaseConnection.removePropertyChangeListener(connectionListener);
+                    databaseConnection.removeExceptionListener(excListener);
+                    throw new WizardValidationException((JComponent) component, "Too long", "Too long"); // NOI18N
+                }
+            }
+            databaseConnection.removePropertyChangeListener(connectionListener);
+            databaseConnection.removeExceptionListener(excListener);
+        } finally {
+            if (component != null) {
+                component.setWaitingState(false);
             }
         }
-        databaseConnection.removePropertyChangeListener(connectionListener);
-        databaseConnection.removeExceptionListener(excListener);
     }
 
     @Override
     public boolean isFinishPanel() {
         return true;
     }
-
 }

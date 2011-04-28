@@ -72,9 +72,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 
 /**
  * maven project related aggregator node..
@@ -84,10 +85,11 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
     
     private NbMavenProjectImpl project;
     /** Creates a new instance of ProjectFilesNode */
+    @Messages("LBL_Project_Files=Project Files")
     public ProjectFilesNode(NbMavenProjectImpl project) {
         super(new ProjectFilesChildren(project), Lookups.fixed(project.getProjectDirectory(), new OthersRootNode.ChildDelegateFind()));
         setName("projectfiles"); //NOI18N
-        setDisplayName(org.openide.util.NbBundle.getMessage(ProjectFilesNode.class, "LBL_Project_Files"));
+        setDisplayName(LBL_Project_Files());
         this.project = project;
         setMyFiles();
     }
@@ -147,7 +149,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             };
         }
         
-        protected Node[] createNodes(File fil) {
+        protected @Override Node[] createNodes(File fil) {
             FileObject fo = FileUtil.toFileObject(fil);
             if (fo != null) {
                 try {
@@ -162,7 +164,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             return new Node[0];
         }
         
-        public void propertyChange(PropertyChangeEvent evt) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 regenerateKeys(true);
             }
@@ -197,7 +199,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             //#149566 prevent setting keys under project mutex.
             if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
                 RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         regenerateKeys(refresh);
                     }
                 });
@@ -205,6 +207,8 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             }
             Collection<File> keys = new ArrayList<File>();
             keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "pom.xml")); //NOI18N
+            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "nbactions.xml")); //NOI18N
+            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "nb-configuration.xml")); //NOI18N
             keys.add(new File(MavenSettingsSingleton.getInstance().getM2UserDir(), "settings.xml")); //NOI18N
             setKeys(keys);
             ((ProjectFilesNode)getNode()).setMyFiles();
@@ -216,12 +220,13 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         }
     }
 
-    private class AddSettingsXmlAction extends AbstractAction {
+    private static class AddSettingsXmlAction extends AbstractAction {
+        @Messages("BTN_Create_settings_xml=Create settings.xml")
         AddSettingsXmlAction() {
-            putValue(Action.NAME, NbBundle.getMessage(ProjectFilesNode.class, "BTN_Create_settings_xml"));
+            super(BTN_Create_settings_xml());
         }
         
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             try {
                 File fil = MavenSettingsSingleton.getInstance().getM2UserDir();
                 

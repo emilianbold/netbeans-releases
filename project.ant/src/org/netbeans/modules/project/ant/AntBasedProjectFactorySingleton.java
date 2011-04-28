@@ -78,6 +78,7 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -134,17 +135,23 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     }
     
     private static void antBasedProjectTypesRemoved(Set<AntBasedProjectType> removed) {
-        for (AntBasedProjectType type : removed) {
-            List<Reference<AntProjectHelper>> projects = type2Projects.get(type);
-            if (projects != null) {
-                for (Reference<AntProjectHelper> r : projects) {
-                    AntProjectHelper helper = r.get();
-                    if (helper != null) {
-                        helper.notifyDeleted();
+        List<AntProjectHelper> helpers = new ArrayList<AntProjectHelper>();
+        synchronized (AntBasedProjectFactorySingleton.class) {
+            for (AntBasedProjectType type : removed) {
+                List<Reference<AntProjectHelper>> projects = type2Projects.get(type);
+                if (projects != null) {
+                    for (Reference<AntProjectHelper> r : projects) {
+                        AntProjectHelper helper = r.get();
+                        if (helper != null) {
+                            helpers.add(helper);
+                        }
                     }
                 }
+                type2Projects.remove(type);
             }
-            type2Projects.remove(type);
+        }
+        for (AntProjectHelper helper : helpers) {
+            helper.notifyDeleted();
         }
     }
     
@@ -217,12 +224,16 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     
     public @Override Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         if (FileUtil.toFile(projectDirectory) == null) {
-            LOG.log(Level.FINE, "no disk dir {0}", projectDirectory);
+            LOG.log(Level.FINER, "no disk dir {0}", projectDirectory);
             return null;
         }
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
+        if (projectFile == null) {
+            LOG.log(Level.FINER, "no {0}/nbproject/project.xml", projectDirectory);
+            return null;
+        }
         //#54488: Added check for virtual
-        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
+        if (!projectFile.isData() || projectFile.isVirtual()) {
             LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
             return null;
         }
@@ -258,10 +269,12 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         synchronized (helper2Project) {
             helper2Project.put(helper, new WeakReference<Project>(project));
         }
-        List<Reference<AntProjectHelper>> l = type2Projects.get(provider);
-        
-        if (l == null) {
-            type2Projects.put(provider, l = new ArrayList<Reference<AntProjectHelper>>());
+        List<Reference<AntProjectHelper>> l;
+        synchronized (AntBasedProjectFactorySingleton.class) {
+            l = type2Projects.get(provider);
+            if (l == null) {
+                type2Projects.put(provider, l = new ArrayList<Reference<AntProjectHelper>>());
+            }
         }
         
         l.add(new WeakReference<AntProjectHelper>(helper));
@@ -341,14 +354,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             }
             builder.setErrorHandler(XMLUtil.defaultErrorHandler());
             Document projectXml = builder.parse(src);
-            LOG.fine("parsed document");
+            LOG.finer("parsed document");
 //            dumpFields(projectXml);
             Element projectEl = projectXml.getDocumentElement();
-            LOG.fine("got document element");
+            LOG.finer("got document element");
 //            dumpFields(projectXml);
 //            dumpFields(projectEl);
             String namespace = projectEl.getNamespaceURI();
-            LOG.log(Level.FINE, "got namespace {0}", namespace);
+            LOG.log(Level.FINER, "got namespace {0}", namespace);
             if (!PROJECT_NS.equals(namespace)) {
                 LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
                         new Object[] {projectDiskFile, namespace, baos});

@@ -46,6 +46,8 @@ package org.netbeans.core.ui;
 
 import java.awt.Cursor;
 import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -74,9 +76,8 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
     Icon about;
     
     public ProductInformationPanel() {
-        about = new ImageIcon(org.netbeans.core.startup.Splash.loadContent(true));
         initComponents();
-        jLabel1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         description.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, 
                 "LBL_Description", new Object[] {getProductVersionValue(), getJavaValue(), getVMValue(), 
                 getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue()}));
@@ -84,28 +85,35 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
         copyright.setBackground(getBackground());
+
+        about = new ImageIcon(org.netbeans.core.startup.Splash.loadContent(true));
+        imageLabel.setIcon(about);
+
+        imageLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                try {
+                    url = new URL(NbBundle.getMessage(ProductInformationPanel.class, "URL_ON_IMG")); // NOI18N
+                    showUrl();
+                } catch (MalformedURLException ex) {
+                    //ignore
+                }
+            }
+        });
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         copyright = new javax.swing.JTextPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         description = new javax.swing.JTextPane();
-
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setIcon(about);
-        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel1MouseClicked(evt);
-            }
-        });
+        imagePanel = new javax.swing.JPanel();
+        imageLabel = new javax.swing.JLabel();
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -140,6 +148,11 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description.setText("<div style=\"font-size: 12pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">\n    <b>Product Version:</b> {0}<br> <b>Java:</b> {1}; {2}<br> <b>System:</b> {3}; {4}; {5}<br><b>Userdir:</b> {6}</div>");
         jScrollPane2.setViewportView(description);
 
+        imagePanel.setLayout(new java.awt.BorderLayout());
+
+        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        imagePanel.add(imageLabel, java.awt.BorderLayout.CENTER);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -147,21 +160,21 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(imagePanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(imagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
+                .addGap(14, 14, 14)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -176,21 +189,12 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     closeDialog();    
 }//GEN-LAST:event_jButton2ActionPerformed
 
-private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
-        try {
-            url = new URL(NbBundle.getMessage(ProductInformationPanel.class,"URL_ON_IMG")); // NOI18N
-            showUrl();
-        } catch (MalformedURLException ex) {
-            //ignore
-        }
-        url = null;    // TODO add your handling code here:
-}//GEN-LAST:event_jLabel1MouseClicked
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane copyright;
     private javax.swing.JTextPane description;
+    private javax.swing.JLabel imageLabel;
+    private javax.swing.JPanel imagePanel;
     private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

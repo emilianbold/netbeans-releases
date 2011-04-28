@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,6 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Mutex;
@@ -425,8 +426,8 @@ private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             if (null != selectedValue) {
             updateStatusText("");  // NOI18N
             retriever = new Retriever(new File(hk2HomeTextField.getText()), 
-                    selectedValue.indirectUrl, V3_DOWNLOAD_PREFIX,
-                    selectedValue.directUrl,
+                    selectedValue.getIndirectUrl(), V3_DOWNLOAD_PREFIX,
+                    selectedValue.getDirectUrl(),
                     this, "glassfish"); // NOI18N
             new Thread(retriever).start();
             setDownloadState(DownloadState.DOWNLOADING);

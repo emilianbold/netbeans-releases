@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.dlight.util.usagetracking;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -138,7 +139,12 @@ public final class SunStudioUserCounter {
      * @param execEnv execution environment
      */
     public static void countIDE(final String ssBaseDir, final ExecutionEnvironment execEnv) {
-        countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
+        File winDistConfiguration = new File(System.getProperty("netbeans.home") + File.separator + "remotehosts.xml"); // NOI18N
+        if (execEnv.isRemote() && winDistConfiguration.exists()) {
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, "winide"); // NOI18N
+        } else {
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
+        }
     }
 
     public static void countDLight(final ExecutionEnvironment execEnv) {

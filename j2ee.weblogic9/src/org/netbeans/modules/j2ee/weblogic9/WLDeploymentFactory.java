@@ -77,6 +77,8 @@ import org.openide.util.NbBundle;
  */
 public class WLDeploymentFactory implements DeploymentFactory {
 
+    public static final String SERVER_ID = "WebLogic9"; // NOI18N
+    
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
 
     public static final int DEFAULT_PORT = 7001;

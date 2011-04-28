@@ -47,9 +47,11 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -141,7 +143,9 @@ public class TarPackager implements PackagerDescriptor {
         private void writePackagingScriptBodyTarZip(BufferedWriter bw, MakeConfiguration conf) throws IOException {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
             List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             String output = packagingConfiguration.getOutputValue();
+            output = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, output));
             String outputRelToTmp = CndPathUtilitities.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N

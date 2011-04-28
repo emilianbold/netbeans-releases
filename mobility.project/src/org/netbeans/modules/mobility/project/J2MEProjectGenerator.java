@@ -98,7 +98,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mobility.project.ui.customizer.MIDletScanner;
-import org.netbeans.modules.mobility.project.ui.wizard.ClassPreloader;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.cookies.OpenCookie;
@@ -281,7 +280,6 @@ public class J2MEProjectGenerator {
     }
       
     public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates, final boolean library) throws IOException {
-        ClassPreloader.stop(); //#147403
         return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(createHelloMIDlet, cfgTemplates, library));
     }
     

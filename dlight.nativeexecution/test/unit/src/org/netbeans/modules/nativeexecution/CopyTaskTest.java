@@ -108,6 +108,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
     public void __testCopyToLocal() throws Exception {
         System.out.println("copyTo"); // NOI18N
         File srcFile = createTempFile("src", null, false); // NOI18N
+        srcFile.deleteOnExit();
         writeFile(srcFile, "123\n456\n789"); // NOI18N
         String dstFileName = "/tmp/trg_x"; // NOI18N
 
@@ -141,6 +142,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
         File src = createTempFile("test-upload-1", null, false); // NOI18N
+        src.deleteOnExit();
         writeFile(src, "qwe/nasd/nzxc"); // NOI18N
         String dst = "/tmp/" + /* execEnv.getUser() + "/" +  */ src.getName(); // NOI18N
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst); // NOI18N

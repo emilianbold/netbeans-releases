@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -95,22 +96,27 @@ public final class UIDProviderIml implements UIDProvider {
                 Object object = uid.getObject();
                 if (object == null) {
                     // this could happen in clients delayed threads
-                    if (checkNull && CsmKindUtilities.isCsmObject(obj) && CsmBaseUtilities.isValid((CsmObject)obj)) {
+                    if (checkNull && CsmKindUtilities.isCsmObject(obj) && CsmBaseUtilities.isValid((CsmObject)obj) && !(obj instanceof CsmInstantiation)) {
                         String prefix = "no deref object for uid["; // NOI18N
                         if (Thread.currentThread().getName().contains("FileTaskFactory")) { // NOI18N
                             prefix = "it's OK to have invalidated object with uid["; // NOI18N
                         }
                         String line = ""; // NOI18N
                         if (obj instanceof CsmOffsetable) {
-                            CsmOffsetable offsetable = (CsmOffsetable) obj;
-                            Position startPosition = offsetable.getStartPosition();
-                            Position endPosition = offsetable.getEndPosition();
-                            if (startPosition.getOffset() >= 0 && startPosition.getOffset() < offsetable.getText().length()
-                                    && endPosition.getOffset() >= 0 && endPosition.getOffset() < offsetable.getText().length()) {
-                                line = " [" + startPosition.getLine() + ":" + startPosition.getColumn() + "-" + // NOI18N
-                                        endPosition.getLine() + ":" + endPosition.getColumn() + "]"; // NOI18N
-                            } else {
-                                line = " bad position! [" + startPosition.getOffset() + "-" + endPosition.getOffset() + "]"; // NOI18N
+                            try {
+                                CsmOffsetable offsetable = (CsmOffsetable) obj;
+                                Position startPosition = offsetable.getStartPosition();
+                                Position endPosition = offsetable.getEndPosition();
+                                if (startPosition.getOffset() >= 0 && endPosition.getOffset() >= 0 && startPosition.getOffset() <= endPosition.getOffset() &&
+                                    offsetable.getContainingFile() != null && endPosition.getOffset() < offsetable.getContainingFile().getText().length()) {
+                                    line = " [" + startPosition.getLine() + ":" + startPosition.getColumn() + "-" + // NOI18N
+                                            endPosition.getLine() + ":" + endPosition.getColumn() + "]"; // NOI18N
+                                } else {
+                                    line = " bad position! [" + startPosition.getOffset() + "-" + endPosition.getOffset() + "]"; // NOI18N
+                                }
+                            } catch (Throwable e) {
+                                // ignore all ecxeption because diagnostic on broken object can throw any exception
+                                line = " bad position! [" + UIDUtilities.getStartOffset(uid) + "-" + UIDUtilities.getEndOffset(uid) + "]"; // NOI18N
                             }
                         }
                         new Exception(prefix + uid + "] of " + obj + line).printStackTrace(System.err); // NOI18N
