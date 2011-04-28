@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -151,6 +152,8 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
         private final String host;
 
         private int port;
+        
+        private final boolean remote;
 
         public WLServerInstanceDescriptor(WLDeploymentManager manager) {
             String uri = manager.getInstanceProperties().getProperty(InstanceProperties.URL_ATTR);
@@ -164,6 +167,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
                 // leave default
                 port = WLDeploymentFactory.DEFAULT_PORT;
             }
+            remote = Boolean.parseBoolean(manager.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
         }
 
         @Override
@@ -178,7 +182,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
 
         @Override
         public boolean isLocal() {
-            return true;
+            return !remote;
         }
     }
 }
