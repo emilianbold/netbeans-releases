@@ -273,11 +273,19 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 }
             }
 
+            URL sourceUrl;
+            try {
+                sourceUrl = info.getSourceURI().toURL();
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                return;
+            }
+
             if (compositeLibraryName != null) {
                 //nothing to process inside the library definition AFAIR...
-                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, info.getSourceURL()));
+                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, sourceUrl));
             } else {
-                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(info.getSourceURL(), support, taglibNamespace);
+                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(sourceUrl, support, taglibNamespace);
                 //process the library content
                 NodeList tags =
                         documentElement.getElementsByTagNameNS(namespace, TAG);

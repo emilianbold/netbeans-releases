@@ -46,6 +46,8 @@ import java.util.Enumeration;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.spi.ConfigurationResourceProvider;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -300,17 +302,21 @@ public class FaceletsLibrarySupport {
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
         faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
-        //2. second add a provider returning URLs of library descriptors found during indexing
-        //   the URLs points to both source roots and binary roots of dependent libraries.
-        final Collection<URL> urls = new ArrayList<URL>();
+        //2. second add a provider returning URIs of library descriptors found during indexing
+        //   the URIs points to both source roots and binary roots of dependent libraries.
+        final Collection<URI> uris = new ArrayList<URI>();
         for (IndexedFile file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
-            urls.add(URLMapper.findURL(file.getFile(), URLMapper.EXTERNAL));
+            try {
+                uris.add(URLMapper.findURL(file.getFile(), URLMapper.EXTERNAL).toURI());
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
 
             @Override
-            public Collection<URL> getResources(ServletContext sc) {
-                return urls;
+            public Collection<URI> getResources(ServletContext sc) {
+                return uris;
             }
         });
 
@@ -328,18 +334,20 @@ public class FaceletsLibrarySupport {
         //be overridden if the descriptors are found in any of the jars
         //on compile classpath.
         Collection<FileObject> libraryDescriptorFiles = DefaultFaceletLibraries.getInstance().getLibrariesDescriptorsFiles();
-        final Collection<URL> libraryURLs = new ArrayList<URL>();
+        final Collection<URI> libraryURIs = new ArrayList<URI>();
         for(FileObject fo : libraryDescriptorFiles) {
             try {
-                libraryURLs.add(fo.getURL());
+                libraryURIs.add(fo.getURL().toURI());
             } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (URISyntaxException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
             @Override
-            public Collection<URL> getResources(ServletContext sc) {
-                return libraryURLs;
+            public Collection<URI> getResources(ServletContext sc) {
+                return libraryURIs;
             }
         });
 
