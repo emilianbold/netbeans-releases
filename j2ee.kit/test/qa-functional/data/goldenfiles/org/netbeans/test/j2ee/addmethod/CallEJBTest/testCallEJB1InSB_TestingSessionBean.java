@@ -57,6 +57,11 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
         // spanning all methods can be performed here such as home interfaces
         // and data sources.
     }
+    
+    
+    
+    // Add business logic below. (Right-click in editor and choose
+    // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
 
     public String testBusinessMethod1() {
         return null;
@@ -66,7 +71,7 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
         return null;
     }
 
-    private TestingEntityLocalHome lookupTestingEntityBean() {
+    private TestingEntityLocalHome lookupTestingEntityBeanLocal() {
         try {
             Context c = new InitialContext();
             TestingEntityLocalHome rv = (TestingEntityLocalHome) c.lookup("java:comp/env/TestingEntityBean");
@@ -76,11 +81,6 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
             throw new RuntimeException(ne);
         }
     }
-    
-    
-    
-    // Add business logic below. (Right-click in editor and choose
-    // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
     
     
     
