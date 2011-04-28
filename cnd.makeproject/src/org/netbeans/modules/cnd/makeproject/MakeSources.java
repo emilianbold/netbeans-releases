@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -66,12 +65,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeSourcesHelper;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -151,15 +149,11 @@ public final class MakeSources implements Sources, MakeProjectListener {
             absSourceRoots = new ArrayList<String>();
             for (String sRoot : sourceRoots) {
                 String absSRoot;
-                if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                CndUtils.assertNotNullInConsole(remoteProject, "null RemoteProject"); //NOI18N
+                if (remoteProject != null) {
                     absSRoot = remoteProject.resolveRelativeRemotePath(sRoot);
-                } else {
-                    // TODO: Cleanup, leave the above branch since it should work in any remote mode;
-                    // this "if" is just to be sure we don't break local or ordinary remote
-                    String baseDir = FileUtil.toFile(helper.getProjectDirectory()).getPath();        
-                    absSRoot = CndPathUtilitities.toAbsolutePath(baseDir, sRoot);
+                    absSourceRoots.add(absSRoot);
                 }
-                absSourceRoots.add(absSRoot);
             }
         }
         return absSourceRoots;
