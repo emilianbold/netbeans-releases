@@ -51,7 +51,7 @@ public interface WeblogicEnterpriseBeanType {
 
     String getEjbName();
 
-    void addResourceDescription(ResourceDescriptionType type);
+    ResourceDescriptionType addResourceDescription();
 
     ResourceDescriptionType[] getResourceDescription();
 

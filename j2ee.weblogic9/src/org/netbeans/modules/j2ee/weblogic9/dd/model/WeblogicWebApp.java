@@ -54,15 +54,15 @@ public interface WeblogicWebApp extends CommonDDBean {
 
     void setContextRoot(String[] roots);
 
+    LibraryRefType addLibraryRef();
+
     LibraryRefType[] getLibraryRef();
 
-    void setLibraryRef(LibraryRefType[] libraries);
-
-    void setJspDescriptor(JspDescriptorType[] descriptor);
+    JspDescriptorType addJspDescriptor();
     
     JspDescriptorType[] getJspDescriptor();
     
-    void addResourceDescription(ResourceDescriptionType type);
+    ResourceDescriptionType addResourceDescription();
     
     ResourceDescriptionType[] getResourceDescription();
 

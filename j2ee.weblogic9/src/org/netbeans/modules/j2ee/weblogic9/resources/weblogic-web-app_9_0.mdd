@@ -6,16 +6,22 @@
 		<bean-name>WeblogicWebApp</bean-name>
                 <implements>org.netbeans.modules.j2ee.weblogic9.dd.model.WeblogicWebApp</implements>
                 <user-code>
-                    public void setLibraryRef(org.netbeans.modules.j2ee.weblogic9.dd.model.LibraryRefType[] libraries) {
-                        setLibraryRef((LibraryRefType[]) libraries);
+                    public LibraryRefType addLibraryRef() {
+                        LibraryRefType libRef = new LibraryRefType();
+                        addLibraryRef(libRef);
+                        return libRef;
                     }
 
-                    public void setJspDescriptor(org.netbeans.modules.j2ee.weblogic9.dd.model.JspDescriptorType[] descriptors) {
-                        setJspDescriptor((JspDescriptorType[]) descriptors);
+                    public JspDescriptorType addJspDescriptor() {
+                        JspDescriptorType descriptor = new JspDescriptorType();
+                        addJspDescriptor(descriptor);
+                        return descriptor;
                     }
 
-                    public void addResourceDescription(org.netbeans.modules.j2ee.weblogic9.dd.model.ResourceDescriptionType description) {
-                        addResourceDescription((ResourceDescriptionType) description);
+                    public ResourceDescriptionType addResourceDescription() {
+                        ResourceDescriptionType description = new ResourceDescriptionType();
+                        addResourceDescription(description);
+                        return description;
                     }
                 </user-code>
 		<meta-property>
