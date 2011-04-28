@@ -88,6 +88,8 @@ public class ProfileOptionSet extends OptionSetSupport {
 	DebuggerOption.OVERLOAD_FUNCTION,
 	DebuggerOption.OVERLOAD_OPERATOR,
 	DebuggerOption.SCOPE_LOOK_ASIDE,
+        DebuggerOption.MACRO_EXPAND,
+        DebuggerOption.MACRO_SOURCE,
 	DebuggerOption.OUTPUT_PRETTY_PRINT,
 
 	DebuggerOption.STEP_EVENTS,
