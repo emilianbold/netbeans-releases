@@ -57,7 +57,6 @@ import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
-import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -122,7 +121,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
 
     @Override
     public boolean supportsCreateMessageDestination() {
-        return ResourcesHelper.isEE6(module);
+        return true;
     }
 
     @Override
