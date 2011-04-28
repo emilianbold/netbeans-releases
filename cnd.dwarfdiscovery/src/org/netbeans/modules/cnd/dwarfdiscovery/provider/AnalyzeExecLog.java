@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -385,7 +386,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             if (line.length()==0) {
                                 // create new result entry
                                 try {
-                                    result.add(new ExecSource(tool, params, pathMapper));
+                                    addSources(tool, params);
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
                                     if (TRACE) {
@@ -419,22 +420,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             return result;
         }
-    }
-    
-    private static class ExecSource implements SourceFileProperties {
-
-        private String compilePath;
-        private String sourceName;
-        private String fullName;
-        private String compiler;
-        private ItemProperties.LanguageKind language;
-        private List<String> userIncludes;
-        private List<String> systemIncludes = Collections.<String>emptyList();
-        private Map<String, String> userMacros;
-        private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
-        private Set<String> includedFiles = Collections.<String>emptySet();
-
-        private ExecSource(String tool, List<String> args, PathMap pathMapper) {
+        
+        private void addSources(String tool, List<String> args) {
+            String compiler = null;
+            ItemProperties.LanguageKind language = null;
+            String compilePath = null;
             if (tool.lastIndexOf('/') > 0) { //NOI18N
                 compiler = tool.substring(tool.lastIndexOf('/')+1); //NOI18N
             } else {
@@ -442,7 +432,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             if (compiler.equals("cc") || compiler.equals("gcc")) { //NOI18N
                 language = LanguageKind.C;
-            } else if (compiler.equals("CC") || compiler.equals("g++")) { //NOI18N
+            } else if (compiler.equals("CC") || compiler.equals("g++") || compiler.equals("c++")) { //NOI18N
                 language = LanguageKind.CPP;
             } else if (compiler.equals("ffortran") || compiler.equals("f77") || compiler.equals("f90") || compiler.equals("f95") || //NOI18N
                        compiler.equals("gfortran") || compiler.equals("g77") || compiler.equals("g90") || compiler.equals("g95")) { //NOI18N
@@ -469,60 +459,90 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             List<String> aUserIncludes = new ArrayList<String>();
             Map<String,String> aUserMacros = new HashMap<String, String>();
             List<String> languageArtifacts = new ArrayList<String>();
-            String what = DiscoveryUtils.gatherCompilerLine(iterator, false, aUserIncludes, aUserMacros, null, languageArtifacts);
-            if (what == null) {
-                throw new IllegalArgumentException();
-            }
-            if (what.endsWith(".s") || what.endsWith(".S")) {  //NOI18N
-                // It seems assembler file was compiled by C compiler.
-                // Exclude assembler files from C/C++ code model.
-                throw new IllegalArgumentException();
-            }
-            userIncludes = new ArrayList<String>(aUserIncludes.size());
-            for(String s : aUserIncludes){
-                if (s.startsWith("/") && pathMapper != null) { // NOI18N
-                    s = pathMapper.getLocalPath(s);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, false, aUserIncludes, aUserMacros, null, languageArtifacts);
+            for (String what : sourcesList) {
+                if (what == null) {
+                    continue;
                 }
-                userIncludes.add(PathCache.getString(s));
-            }
-            userMacros = new HashMap<String, String>(aUserMacros.size());
-            for(Map.Entry<String,String> e : aUserMacros.entrySet()){
-                if (e.getValue() == null) {
-                    userMacros.put(PathCache.getString(e.getKey()), null);
-                } else {
-                    userMacros.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
+                if (what.endsWith(".s") || what.endsWith(".S")) {  //NOI18N
+                    // It seems assembler file was compiled by C compiler.
+                    // Exclude assembler files from C/C++ code model.
+                    continue;
                 }
-            }
-            if (what.startsWith("/")){  //NOI18N
-                if (pathMapper != null) {
-                    what = pathMapper.getLocalPath(what);
+                String fullName;
+                String sourceName;
+                List<String> userIncludes = new ArrayList<String>(aUserIncludes.size());
+                Map<String, String> userMacros = new HashMap<String, String>(aUserMacros.size());
+                for(String s : aUserIncludes){
+                    if (s.startsWith("/") && pathMapper != null) { // NOI18N
+                        s = pathMapper.getLocalPath(s);
+                    }
+                    userIncludes.add(PathCache.getString(s));
                 }
-                fullName = what;
-                sourceName = DiscoveryUtils.getRelativePath(compilePath, what);
-            } else {
-                fullName = compilePath+"/"+what; //NOI18N
-                sourceName = what;
-            }
-            File f = new File(fullName);
-            if (f.exists() && f.isFile()) {
-                File file = new File(fullName);
-                fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
-                fullName = PathCache.getString(fullName);
-                if (languageArtifacts.contains("c")) { // NOI18N
-                    language = ItemProperties.LanguageKind.C;
-                } else if (languageArtifacts.contains("c++")) { // NOI18N
-                    language = ItemProperties.LanguageKind.CPP;
-                } else {
-                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
-                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                        language = ItemProperties.LanguageKind.CPP;
-                    } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                        language = ItemProperties.LanguageKind.C;
+                userMacros = new HashMap<String, String>(aUserMacros.size());
+                for(Map.Entry<String,String> e : aUserMacros.entrySet()){
+                    if (e.getValue() == null) {
+                        userMacros.put(PathCache.getString(e.getKey()), null);
+                    } else {
+                        userMacros.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
                     }
                 }
-            } else {
-                throw new IllegalArgumentException();
+                if (what.startsWith("/")){  //NOI18N
+                    if (pathMapper != null) {
+                        what = pathMapper.getLocalPath(what);
+                    }
+                    fullName = what;
+                    sourceName = DiscoveryUtils.getRelativePath(compilePath, what);
+                } else {
+                    fullName = compilePath+"/"+what; //NOI18N
+                    sourceName = what;
+                }
+                File f = new File(fullName);
+                if (f.exists() && f.isFile()) {
+                    File file = new File(fullName);
+                    fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                    fullName = PathCache.getString(fullName);
+                    if (languageArtifacts.contains("c")) { // NOI18N
+                        language = ItemProperties.LanguageKind.C;
+                    } else if (languageArtifacts.contains("c++")) { // NOI18N
+                        language = ItemProperties.LanguageKind.CPP;
+                    } else {
+                        String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
+                        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                            language = ItemProperties.LanguageKind.CPP;
+                        } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                            language = ItemProperties.LanguageKind.C;
+                        }
+                    }
+                    ExecSource res = new ExecSource();
+                    res.compilePath = compilePath;
+                    res.sourceName = sourceName;
+                    res.fullName = fullName;
+                    res.language = language;
+                    res.userIncludes = userIncludes;
+                    res.userMacros = userMacros;
+                    result.add(res);
+                } else {
+                    continue;
+                }
             }
+        }
+    }
+    
+    private static class ExecSource implements SourceFileProperties {
+
+        private String compilePath;
+        private String sourceName;
+        private String fullName;
+        private String compiler;
+        private ItemProperties.LanguageKind language;
+        private List<String> userIncludes;
+        private List<String> systemIncludes = Collections.<String>emptyList();
+        private Map<String, String> userMacros;
+        private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
+        private Set<String> includedFiles = Collections.<String>emptySet();
+
+        private ExecSource() {
         }
         
         @Override
