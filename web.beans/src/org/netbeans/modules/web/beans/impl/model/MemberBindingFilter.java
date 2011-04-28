@@ -64,7 +64,7 @@ import javax.lang.model.type.DeclaredType;
 class MemberBindingFilter<T extends Element> extends Filter<T> {
     
     private static final String NON_BINDING_MEMBER_ANNOTATION =
-                "javax.enterprise.inject.Nonbinding";    // NOI18N
+                "javax.enterprise.util.Nonbinding";    // NOI18N
     
     private MemberBindingFilter( Class<T> clazz ){
         myClass = clazz;
