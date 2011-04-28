@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -158,7 +157,7 @@ public final class DiscoveryWizardAction extends NodeAction {
 	return base;
     }
     
-    /*package-local*/ static String findSourceRoot(Project project) {
+    public static String findSourceRoot(Project project) {
         String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null && pdp.gotDescriptor()){

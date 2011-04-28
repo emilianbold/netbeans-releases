@@ -48,6 +48,7 @@ import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -72,6 +73,15 @@ public final class MainLookup extends ProxyLookup {
      */
     public static void started() {
         started = true;
+    }
+    
+    /** Schedule all {@link Runnable} in WarmUp folder for invocation.
+     * @since 1.30
+     * @param delay time in ms to wait with warmup
+     * @return task one can wait for
+     */
+    public static Task warmUp(long delay) {
+        return WarmUpSupport.warmUp(delay);
     }
     
     /** Checks whether everything is started.

@@ -73,6 +73,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
@@ -748,7 +749,10 @@ public abstract class RestSupport {
     }
 
     public boolean isServerGFV3() {
-        return GFV3_SERVER_TYPE.equals(getServerType());
+        if ( getServerType() == null ){
+            return false;
+        }
+        return getServerType().startsWith(GFV3_SERVER_TYPE);
     }
 
     public boolean isServerGFV2() {
@@ -757,6 +761,23 @@ public abstract class RestSupport {
 
     public String getApplicationPath() throws IOException {
         return "resources"; // default application path
+    }
+    
+    public FileObject getApplicationContextXml() {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
+            lookup(J2eeModuleProvider.class);
+        FileObject[] fobjs = provider.getSourceRoots();
+
+        if (fobjs.length > 0) {
+            FileObject configRoot = fobjs[0];
+            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
+
+            if (webInf != null) {
+                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
+            }
+        }
+
+        return null;
     }
 
     protected static class JerseyFilter implements FileFilter {

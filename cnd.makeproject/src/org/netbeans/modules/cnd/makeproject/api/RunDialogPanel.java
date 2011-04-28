@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
@@ -619,22 +618,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         return true;
     }
     
-    private boolean validateRunDirectory() {
-        String runDirectory = runDirectoryTextField.getText();
-        
-        File runDirectoryFile = new File(runDirectoryTextField.getText());
-     
-        if (!runDirectoryFile.exists()) {
-            setError("ERROR_RUNDIR_DONTEXIST", false); // NOI18N
-            return false;
-        }
-        if (!runDirectoryFile.isDirectory()) {
-            setError("ERROR_RUNDIR_INVALID", false); // NOI18N
-            return false;
-        }
-        return true;
-    }
-
     private boolean validateProjectLocation() {
         if (!PanelProjectLocationVisual.isValidProjectName(projectNameField.getText())) {
             setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
@@ -802,7 +785,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
                     prjParams.setOpenFlag(false)
                              .setConfiguration(conf)
-                             .setImportantFiles(Collections.<String>singletonList(exe).iterator());
+                             .setImportantFiles(Collections.<String>singletonList(exe).iterator())
+                             .setMakefileName(""); //NOI18N
                     project = ProjectGenerator.createBlankProject(prjParams);
                     lastSelectedProject = project;
                     OpenProjects.getDefault().addPropertyChangeListener(this);

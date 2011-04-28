@@ -79,7 +79,7 @@ import org.openide.util.Exceptions;
  *
  * @author Pavel Flaska
  */
-public class AnnotationTest extends GeneratorTest {
+public class AnnotationTest extends GeneratorTestBase {
 
     /** Creates a new instance of ClassMemberTest */
     public AnnotationTest(String testName) {
@@ -902,6 +902,42 @@ public class AnnotationTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+
+    public void testParameterAnnotations() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        String code = "package hierbas.del.litoral;\n" +
+                      "\n" +
+                      "public class Test {\n\n" +
+                      "    public Test() {\n" +
+                      "    }\n\n" +
+                      "    public void test() {\n" +
+                      "    }\n" +
+                      "}\n";
+
+        code = Reformatter.reformat(code, CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
+        TestUtilities.copyStringToFile(testFile, code);
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                NewClassTree nct = (NewClassTree) workingCopy.getTreeUtilities().parseExpression("new Object() { public int a(@Test1(a=1) @Test2(b=2) int i, @Test1 @Test2 int j) { return 0; }", new SourcePositions[1]);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, workingCopy.getTreeMaker().addClassMember(clazz, nct.getClassBody().getMembers().get(0)));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        String formattedRes = Reformatter.reformat(res, CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
+        System.err.println(res);
+        res = res.replaceAll("\n[ ]*\n", "\n");
+        System.err.println(formattedRes);
+        formattedRes = formattedRes.replaceAll("\n[ ]*\n", "\n"); //XXX: workaround for a bug in reformatter
+        assertEquals(formattedRes, res);
     }
 
     private void setValues(Preferences p, Map<String, String> values) {

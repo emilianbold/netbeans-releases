@@ -47,9 +47,20 @@ import org.openide.filesystems.FileObject;
 
 public interface SourceSupportProvider {
 
-    void showSource(SourceFileInfo lineInfo, boolean isReadOnly);
+    /**
+     *
+     * @param lineInfo
+     * @param isReadOnly <code>true</code> if the file should be opened in read-only mode
+     * @return <code>true</code> if the file was successfully opened, <code>false</code> otherwise
+     */
+    boolean showSource(SourceFileInfo lineInfo, boolean isReadOnly);
 
-    void showSource(SourceFileInfo lineInfo);
+    /**
+     *
+     * @param lineInfo
+     * @return <code>true</code> if the file was successfully opened, <code>false</code> otherwise
+     */
+    boolean showSource(SourceFileInfo lineInfo);
 
     // TODO: FileObjectsToSourceMap is a hack for source annotations... 
     // See Bug 193172, org.netbeans.modules.cnd.gizmo.SourceSupportProviderImpl.showSource()

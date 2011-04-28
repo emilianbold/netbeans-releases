@@ -1,6 +1,0 @@
-##if there is no condition , then its cartesian join
-#set( $indent = "    " )
-#if($condition == "")${leftObj}, ${rightObj}
-#else${leftObj} 
-${indent}${joinType} ${rightObj} 
-${indent}${indent}ON ${condition}#end

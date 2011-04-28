@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -156,13 +157,15 @@ import org.openide.util.CharSequences;
         try {
             declarationsLock.readLock().lock();
             inh = inheritances.get(name);
+            if (inh != null) {
+                inh = new ArrayList<CsmUID<CsmInheritance>>(inh);
+            } else {
+                return Collections.<CsmInheritance>emptyList();
+            }
         } finally {
             declarationsLock.readLock().unlock();
         }
-        if (inh != null) {
-            return UIDCsmConverter.<CsmInheritance>UIDsToInheritances(inh);
-        }
-        return Collections.<CsmInheritance>emptyList();
+        return UIDCsmConverter.<CsmInheritance>UIDsToInheritances(inh);
     }
 
 

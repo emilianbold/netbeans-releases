@@ -434,7 +434,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             x.printStackTrace(); // do not mask real error
         }
     }
-    private static void copytree(File from, File to) throws IOException {
+    static void copytree(File from, File to) throws IOException {
         if (from.isDirectory()) {
             if (!to.mkdirs()) {
                 throw new IOException("mkdir: " + to);
@@ -447,6 +447,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             try {
                 OutputStream os = new FileOutputStream(to);
                 try {
+                    // XXX using FileChannel would be more efficient, but more complicated
                     BufferedInputStream bis = new BufferedInputStream(is);
                     BufferedOutputStream bos = new BufferedOutputStream(os);
                     int c;

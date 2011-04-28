@@ -169,6 +169,37 @@ public class StoreTest extends LHTestCase {
         assertFile(file, store, ts, -1, 3, 1, "data2", TOUCHED);
     }
 
+    public void testFileChangeSymlink() throws Exception {
+        LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+
+        long ts = System.currentTimeMillis();
+
+        // create file in store
+        File file = new File(dataDir, "file1");
+        createFile(store, file, ts, "data");
+        File fileSym = new File(file.getParentFile(), "file1sym");
+        createSymlink(store, file, ts, fileSym);
+        assertFalse(fileSym.getCanonicalPath().equals(fileSym.getAbsolutePath()));
+                
+        // check that nothing changed
+        File storefile = store.getStoreFile(file, ts, false);        
+        assertFile(file, store, ts, storefile.lastModified(), 2, 1, "data", TOUCHED);
+//        assertFile(fileSym, store, ts, storefile.lastModified(), 2, 1, "data", TOUCHED);
+
+        // change file with new ts
+        ts = System.currentTimeMillis();
+        lh.reset();
+        changeFile(store, file, ts, "data2");
+        changeFile(store, fileSym, ts, "data3");
+        lh.waitUntilDone();
+
+        // check the change
+        assertFalse(fileSym.getCanonicalPath().equals(fileSym.getAbsolutePath()));
+        assertFile(file, store, ts, -1, 3, 1, "data2", TOUCHED);
+        assertFile(fileSym, store, ts, -1, 3, 1, "data3", TOUCHED);
+    }
+    
     public void testFileDelete() throws Exception {
         cleanUpDataFolder();
         LocalHistoryTestStore store = createStore();
@@ -495,41 +526,41 @@ public class StoreTest extends LHTestCase {
         dos.close();
     }
 
-    public void testManyManyChangesSync() throws Exception {
-        LocalHistoryTestStore store = createStore();
-        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
-
-        long ts = System.currentTimeMillis();
-
-        // create file in store
-        File file = new File(dataDir, "file1");
-        createFile(store, file, ts, "data");
-
-        File storefile = store.getStoreFile(file, ts, false);
-
-        // check that nothing changed
-        assertFile(file, store, ts, storefile.lastModified(), 2, 1, "data", TOUCHED);
-
-        // change file with new ts
-        int many = 300;
-        long[] tss = new long[many + 1];
-        String[] datas = new String[many + 1];
-        tss[0] = ts;
-        datas[0] = "data";
-        for (int i = 1; i <= many; i++) {
-            tss[i] = System.currentTimeMillis();
-            datas[i] = "data" + i;
-            lh.reset();
-            changeFile(store, file, tss[i], datas[i]);
-            System.out.println("testManyManyChangesSync change " + i);
-            lh.waitUntilDone();
-            System.out.println("testManyManyChangesSync change wait done " + i);
-        }
-
-        // check the change
-        StoreEntry[] se = store.getStoreEntries(file);
-        assertEntries(se, file, tss, datas);
-    }    
+//    public void testManyManyChangesSync() throws Exception {
+//        LocalHistoryTestStore store = createStore();
+//        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+//
+//        long ts = System.currentTimeMillis();
+//
+//        // create file in store
+//        File file = new File(dataDir, "file1");
+//        createFile(store, file, ts, "data");
+//
+//        File storefile = store.getStoreFile(file, ts, false);
+//
+//        // check that nothing changed
+//        assertFile(file, store, ts, storefile.lastModified(), 2, 1, "data", TOUCHED);
+//
+//        // change file with new ts
+//        int many = 300;
+//        long[] tss = new long[many + 1];
+//        String[] datas = new String[many + 1];
+//        tss[0] = ts;
+//        datas[0] = "data";
+//        for (int i = 1; i <= many; i++) {
+//            tss[i] = System.currentTimeMillis();
+//            datas[i] = "data" + i;
+//            lh.reset();
+//            changeFile(store, file, tss[i], datas[i]);
+//            System.out.println("testManyManyChangesSync change " + i);
+//            lh.waitUntilDone();
+//            System.out.println("testManyManyChangesSync change wait done " + i);
+//        }
+//
+//        // check the change
+//        StoreEntry[] se = store.getStoreEntries(file);
+//        assertEntries(se, file, tss, datas);
+//    }    
 
     private long setupFirstFolderToRevert(LocalHistoryStore store, File folder) throws Exception {
         LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);

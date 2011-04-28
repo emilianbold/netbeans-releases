@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.DuplicateException;
 import org.netbeans.Events;
+import org.netbeans.JaveleonModule;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
@@ -329,6 +330,13 @@ public final class ModuleSystem {
      */
     final void deployTestModule(File jar) throws IOException {
         if (! jar.isAbsolute()) throw new IOException("Absolute paths only please"); // NOI18N
+
+        // Check to see if Javeleon is enabled. If so,
+        // let Javeleon handle the module reloading.
+        if (JaveleonModule.isJaveleonPresent && JaveleonModuleReloader.getDefault().reloadJaveleonModule(jar, mgr, installer, ev)) {
+            return;
+        }
+        
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_DEPLOY_TEST_MODULE, jar);
         // For now, just print to stderr directly; could also go thru Events.

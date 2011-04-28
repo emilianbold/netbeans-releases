@@ -1,2 +1,0 @@
-## Join conditions in Oracle 8i are specified by predicate(s) in the where clause
-${leftObj}, ${rightObj}

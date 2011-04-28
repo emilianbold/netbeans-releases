@@ -121,8 +121,8 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         Properties p = new Properties();
         p.load(new FileInputStream(checkSum));
 
-        assertEquals("60000", p.get(platform.getPath()));
-        assertEquals("50000", p.get(ide.getPath()));
+        assertEquals("Correct for platform: " + p, "60000", p.get(platform.getPath()));
+        assertEquals("Correct for ide: " + p, "50000", p.get(ide.getPath()));
     }        
     
 

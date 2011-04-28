@@ -50,6 +50,9 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,93 +90,36 @@ public final class TomcatFactory implements DeploymentFactory {
     public static final String TOMCAT_URI_HOME_PREFIX = "home=";    // NOI18N
     public static final String TOMCAT_URI_BASE_PREFIX = ":base=";   // NOI18N
 
-    private static final String DISCONNECTED_URI_50 = "tomcat:jakarta-tomcat-5.0.x";    // NOI18N
-    private static final String DISCONNECTED_URI_55 = "tomcat55:jakarta-tomcat-5.5.x";  // NOI18N
-    private static final String DISCONNECTED_URI_60 = "tomcat60:apache-tomcat-6.0.x";   // NOI18N
-    private static final String DISCONNECTED_URI_70 = "tomcat60:apache-tomcat-7.0.x";   // NOI18N
+    private static final String GENERIC_DISCONNECTED_URI_PREFIX = "tomcat-any:"; // NOI18N
+    private static final String GENERIC_DISCONNECTED_URI =
+            GENERIC_DISCONNECTED_URI_PREFIX + "jakarta-tomcat-generic"; // NOI18N
+    private static final String DISCONNECTED_URI_50 = TOMCAT_URI_PREFIX_50 + "jakarta-tomcat-5.0.x";    // NOI18N
+    private static final String DISCONNECTED_URI_55 = TOMCAT_URI_PREFIX_55 + "jakarta-tomcat-5.5.x";  // NOI18N
+    private static final String DISCONNECTED_URI_60 = TOMCAT_URI_PREFIX_60 + "apache-tomcat-6.0.x";   // NOI18N
+    private static final String DISCONNECTED_URI_70 = TOMCAT_URI_PREFIX_70 + "apache-tomcat-7.0.x";   // NOI18N
+    
+    private static final Set<String> DISCONNECTED_URIS = new HashSet<String>();
+    static {
+        Collections.addAll(DISCONNECTED_URIS, DISCONNECTED_URI_50,
+                DISCONNECTED_URI_55, DISCONNECTED_URI_60, DISCONNECTED_URI_70, GENERIC_DISCONNECTED_URI);
+    }
     
     private static TomcatFactory instance;
-    private static TomcatFactory instance55;
-    private static TomcatFactory instance60;
-    private static TomcatFactory instance70;
     
     private static final WeakHashMap managerCache = new WeakHashMap();
     
-    private static Logger err = Logger.getLogger("org.netbeans.modules.tomcat5");  // NOI18N
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.tomcat5");  // NOI18N
     
-    private final String tomcatUriPrefix;
-    private final String disconnectedUri;
-    private final TomcatVersion version;
-            
-    private TomcatFactory(TomcatVersion version) {
-        this.version = version;
-        switch (version) {
-            case TOMCAT_50 :
-                tomcatUriPrefix = TOMCAT_URI_PREFIX_50;
-                disconnectedUri = DISCONNECTED_URI_50;
-                break;
-            case TOMCAT_55 :
-                tomcatUriPrefix = TOMCAT_URI_PREFIX_55;
-                disconnectedUri = DISCONNECTED_URI_55;
-                break;
-            case TOMCAT_60 :
-                tomcatUriPrefix = TOMCAT_URI_PREFIX_60;
-                disconnectedUri = DISCONNECTED_URI_60;
-                break;
-            case TOMCAT_70 :
-            default:
-                tomcatUriPrefix = TOMCAT_URI_PREFIX_70;
-                disconnectedUri = DISCONNECTED_URI_70;
-                break;
-        }
+    private TomcatFactory() {
+        super();
     }
     
-    /** 
-     * Factory method to create DeploymentFactory for Tomcat 5.0.x
-     */
-    public static synchronized TomcatFactory create50() {
+    public static synchronized TomcatFactory getInstance() {
         if (instance == null) {
-            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
-            instance = new TomcatFactory(TomcatVersion.TOMCAT_50);
+            instance = new TomcatFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
         }
         return instance;
-    }
-    
-    /** 
-     * Factory method to create DeploymentFactory for Tomcat 5.5.x
-     */
-    public static synchronized TomcatFactory create55() {
-        if (instance55 == null) {
-            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
-            instance55 = new TomcatFactory(TomcatVersion.TOMCAT_55);
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance55);
-        }
-        return instance55;
-    }
-    
-    /** 
-     * Factory method to create DeploymentFactory for Tomcat 6.0.x
-     */
-    public static synchronized TomcatFactory create60() {
-        if (instance60 == null) {
-            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
-            instance60 = new TomcatFactory(TomcatVersion.TOMCAT_60);
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance60);
-        }
-        return instance60;
-    }
-
-    /**
-     * Factory method to create DeploymentFactory for Tomcat 6.0.x
-     */
-    public static synchronized TomcatFactory create70() {
-        if (instance70 == null) {
-            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
-            instance70 = new TomcatFactory(TomcatVersion.TOMCAT_70);
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance70);
-        }
-        return instance70;
     }
     
     /** Factory method to create DeploymentManager.
@@ -194,7 +140,7 @@ public final class TomcatFactory implements DeploymentFactory {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
         if (ip == null) {
             // null ip either means that the instance is not registered, or that this is the disconnected URL
-            if (!disconnectedUri.equals(uri)) {
+            if (!DISCONNECTED_URIS.contains(uri)) {
                 throw new DeploymentManagerCreationException("Tomcat instance: " + uri + " is not registered in the IDE."); // NOI18N
             }
         }
@@ -202,7 +148,8 @@ public final class TomcatFactory implements DeploymentFactory {
             TomcatManager tm = (TomcatManager)managerCache.get(ip);
             if (tm == null) {
                 try {
-                    tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), version);
+                    TomcatVersion version = getTomcatVersion(uri);
+                    tm = new TomcatManager(true, stripUriPrefix(uri, version), version);
                     managerCache.put(ip, tm);
                 } catch (IllegalArgumentException iae) {
                     Throwable t = new DeploymentManagerCreationException("Cannot create deployment manager for Tomcat instance: " + uri + "."); // NOI18N
@@ -220,17 +167,7 @@ public final class TomcatFactory implements DeploymentFactory {
     }
     
     public String getDisplayName() {
-        switch (version) {
-            case TOMCAT_50 :
-                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory");
-            case TOMCAT_55 :
-                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory55");
-            case TOMCAT_60 :
-                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory60");
-            case TOMCAT_70 :
-            default:
-                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory70");
-        }
+        return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory");
     }
     
     public String getProductVersion() {
@@ -242,7 +179,10 @@ public final class TomcatFactory implements DeploymentFactory {
      * @return <CODE>true</CODE> for URIs beggining with <CODE>tomcat[55|60]:</CODE> prefix
      */    
     public boolean handlesURI(String str) {
-        return str != null && str.startsWith (tomcatUriPrefix);
+        return str != null && (str.startsWith(TOMCAT_URI_PREFIX_50)
+                || str.startsWith(TOMCAT_URI_PREFIX_55)
+                || str.startsWith(TOMCAT_URI_PREFIX_60)
+                || str.startsWith(TOMCAT_URI_PREFIX_70));
     }
     
     /** 
@@ -250,7 +190,7 @@ public final class TomcatFactory implements DeploymentFactory {
      * 
      * @throws IllegalStateException if the version information cannot be retrieved 
      */
-    public static String getTomcatVersion(File catalinaHome) throws IllegalStateException {
+    public static String getTomcatVersionString(File catalinaHome) throws IllegalStateException {
         File catalinaJar = new File(catalinaHome, "lib/catalina.jar"); // NOI18N
         if (!catalinaJar.exists()) {
             catalinaJar = new File(catalinaHome, "server/lib/catalina.jar"); // NOI18N
@@ -276,5 +216,51 @@ public final class TomcatFactory implements DeploymentFactory {
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }
-    }   
+    }
+    
+    public static TomcatVersion getTomcatVersion(File catalinaHome) throws IllegalStateException {
+        String version = null;
+        try {
+            version = getTomcatVersionString(catalinaHome);
+        } catch (IllegalStateException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return TomcatVersion.TOMCAT_50;
+        }
+        if (version.startsWith("5.5.")) { // NOI18N
+            return TomcatVersion.TOMCAT_55;
+        } else if (version.startsWith("6.")) { // NOI18N
+            return TomcatVersion.TOMCAT_60;
+        } else if (version.startsWith("7.")) { // NOI18N
+            return TomcatVersion.TOMCAT_70;
+        }
+        return TomcatVersion.TOMCAT_50;
+    }    
+    
+    private static TomcatVersion getTomcatVersion(String uri) throws IllegalStateException {
+        if (uri.startsWith(TOMCAT_URI_PREFIX_70)) {
+            return TomcatVersion.TOMCAT_70;
+        } else if (uri.startsWith(TOMCAT_URI_PREFIX_60)) {
+            return TomcatVersion.TOMCAT_60;
+        } else if (uri.startsWith(TOMCAT_URI_PREFIX_55)) {
+            return TomcatVersion.TOMCAT_55;
+        }
+        return TomcatVersion.TOMCAT_50;
+    }
+    
+    private static String stripUriPrefix(String uri, TomcatVersion tomcatVersion) {
+        if (uri.startsWith(GENERIC_DISCONNECTED_URI_PREFIX)) {
+            return uri.substring(GENERIC_DISCONNECTED_URI_PREFIX.length());
+        }
+        switch (tomcatVersion) {
+            case TOMCAT_70:
+                return uri.substring(TomcatFactory.TOMCAT_URI_PREFIX_70.length());
+            case TOMCAT_60: 
+                return uri.substring(TomcatFactory.TOMCAT_URI_PREFIX_60.length());
+            case TOMCAT_55: 
+                return uri.substring(TomcatFactory.TOMCAT_URI_PREFIX_55.length());
+            case TOMCAT_50: 
+            default:
+                return uri.substring(TomcatFactory.TOMCAT_URI_PREFIX_50.length());
+        }        
+    }
 }

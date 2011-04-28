@@ -70,7 +70,7 @@ public class CompoundAction implements ShortcutAction {
                 return dn;
             }
         }
-        return "<error>"; // TODO:
+        return "";
     }
 
     public String getId () {

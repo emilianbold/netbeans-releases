@@ -50,9 +50,11 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.logging.Level;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.form.actions.DuplicateAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -2573,6 +2575,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private static void paintDraggedComponent(Component comp, Graphics g) {
+        issue71257Hack(comp);
+        Graphics2D g2 = (Graphics2D)g;
+        Composite originalComposite = g2.getComposite();
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
         try {
             if (comp instanceof JComponent)
                 comp.paint(g);
@@ -2582,6 +2588,42 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         catch (RuntimeException ex) { // inspired by bug #62041 (JProgressBar bug #5035852)
             org.openide.ErrorManager.getDefault().notify(
                 org.openide.ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            g2.setComposite(originalComposite);
+        }
+    }
+
+    private static Field componentValidField;
+    static {
+        try {
+            Field field = Component.class.getDeclaredField("valid"); // NOI18N
+            field.setAccessible(true);
+            componentValidField = field;
+        } catch (NoSuchFieldException ex) {
+            FormUtils.LOGGER.log(Level.INFO, null, ex);
+        } catch (SecurityException ex) {
+            FormUtils.LOGGER.log(Level.INFO, null, ex);
+        }
+    }
+    private static void issue71257Hack(Component comp) {
+        Container cont = comp.getParent();
+        if (cont != null) {
+            if (cont.getLayout() instanceof org.jdesktop.layout.GroupLayout) {
+                while (cont != null && !(cont instanceof ComponentLayer)) {
+                    if (cont instanceof JTabbedPane) {
+                        if (!cont.isValid() && (componentValidField != null)) {
+                            try {
+                                componentValidField.set(cont, true);
+                            } catch (IllegalArgumentException ex) {
+                                FormUtils.LOGGER.log(Level.INFO, null, ex);
+                            } catch (IllegalAccessException ex) {
+                                FormUtils.LOGGER.log(Level.INFO, null, ex);
+                            }
+                        }
+                    }
+                    cont = cont.getParent();
+                }
+            }
         }
     }
 

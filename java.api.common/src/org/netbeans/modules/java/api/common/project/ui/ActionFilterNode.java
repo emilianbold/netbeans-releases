@@ -50,7 +50,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.libraries.Library;
 
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
@@ -66,6 +70,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -77,6 +82,8 @@ import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -87,50 +94,153 @@ import org.openide.util.Exceptions;
  */
 final class ActionFilterNode extends FilterNode {
 
-    private static final int MODE_ROOT = 1;
-    private static final int MODE_PACKAGE = 2;
-    private static final int MODE_FILE = 3;
-    private static final int MODE_FILE_CONTENT = 4;
+    private static enum Mode {
+        ROOT {
+            @Override
+            public boolean isFolder() {
+                return true;
+            }
+            @Override
+            public boolean isRoot() {
+                return true;
+            }
+        },
+        EDITABLE_ROOT {
+            @Override
+            public boolean isFolder() {
+                return true;
+            }
+            @Override
+            public boolean isRoot() {
+                return true;
+            }
+        },
+        PACKAGE {
+            @Override
+            public boolean isFolder() {
+                return true;
+            }
+            @Override
+            public boolean isRoot() {
+                return false;
+            }
+        },
+        FILE {
+            @Override
+            public boolean isFolder() {
+                return false;
+            }
+            @Override
+            public boolean isRoot() {
+                return false;
+            }
+        },
+        FILE_CONTENT {
+            @Override
+            public boolean isFolder() {
+                return false;
+            }
+            @Override
+            public boolean isRoot() {
+                return false;
+            }
+        };
 
-    private final int mode;
+        public abstract boolean isFolder();
+
+        public abstract boolean isRoot();
+    }
+
+    private static final RequestProcessor RP = new RequestProcessor(ActionFilterNode.class);
+
+    private final Mode mode;
     private Action[] actionCache;
 
     /**
      * Creates new ActionFilterNode for class path root
      * @param original the original node
-     * @param helper used for implementing {@link RemoveClassPathRootAction.Removable} or null if
-     * the node should not have the {@link RemoveClassPathRootAction}
-     * @param classPathId ant property name of classpath to which these classpath root belongs or null if
-     * the node should not have the {@link RemoveClassPathRootAction}
-     * @param entryId ant property name of this classpath root or null if
-     * the node should not have the {@link RemoveClassPathRootAction}
+     * @param helper used for implementing {@link RemoveClassPathRootAction.Removable}
+     * @param classPathId ant property name of classpath to which these classpath root belongs 
+     * @param entryId ant property name of this classpath root
      * @return ActionFilterNode
      */
-    static FilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, ReferenceHelper rh) {
-        DataObject dobj = original.getLookup().lookup(DataObject.class);
+    static FilterNode forRoot (
+            final @NonNull Node original,
+            final @NonNull UpdateHelper helper,
+            final @NonNull String classPathId,
+            final @NonNull String entryId,
+            final @NullAllowed String webModuleElementName,     //xxx: remove
+            final @NonNull ClassPathSupport cs,
+            final @NonNull ReferenceHelper rh) {
+        Parameters.notNull("original", original);   //NOI18N
+        Parameters.notNull("helper", helper);       //NOI18N
+        Parameters.notNull("classPathId", classPathId); //NOI18N
+        Parameters.notNull("entryId", entryId);     //NOI18N
+        Parameters.notNull("cs", cs);       //NOI18N
+        Parameters.notNull("rh", rh);       //NOI18N
+
+        final FileObject root =  getFolder(original);
+        return new ActionFilterNode (original, Mode.ROOT, root, createLookup(original,
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new JavadocProvider(root,root)));
+    }
+
+    static FilterNode forLibrary(
+            final @NonNull Node original,
+            final @NonNull UpdateHelper helper,
+            final @NonNull String classPathId,
+            final @NonNull String entryId,
+            final @NullAllowed String webModuleElementName,     //xxx: remove
+            final @NonNull ClassPathSupport cs,
+            final @NonNull ReferenceHelper rh) {
+        Parameters.notNull("original", original);   //NOI18N
+        Parameters.notNull("helper", helper);       //NOI18N
+        Parameters.notNull("classPathId", classPathId); //NOI18N
+        Parameters.notNull("entryId", entryId);     //NOI18N
+        Parameters.notNull("cs", cs);       //NOI18N
+        Parameters.notNull("rh", rh);       //NOI18N
+
+        final FileObject root =  getFolder(original);
+        return new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new LibraryEditable(entryId, rh),
+                new JavadocProvider(root,root)));
+    }
+
+    static FilterNode forPackage(final @NonNull Node original) {
+        Parameters.notNull("original", original);   //NOI18N
+
+        final FileObject root = getFolder(original);
+        return new ActionFilterNode (original, Mode.PACKAGE, root, createLookup(original,
+                new JavadocProvider(root,root)));
+    }
+
+    private static FileObject getFolder(final Node original) {
+        final DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
-        FileObject root =  dobj.getPrimaryFile();
-        Lookup lkp = new ProxyLookup(original.getLookup(), helper == null ?
-            Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
-            new JavadocProvider(root,root)}));
-        return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
+        return dobj.getPrimaryFile();
+    }
+
+    private static Lookup createLookup(final Node original, Object... toAdd) {
+        final Lookup lkp = new ProxyLookup(
+                original.getLookup(),
+                Lookups.fixed (toAdd));
+        return lkp;
     }
 
 
 
-    private ActionFilterNode (Node original, int mode, FileObject cpRoot, FileObject resource) {
+    private ActionFilterNode (Node original, Mode mode, FileObject cpRoot, FileObject resource) {
         this (original, mode, cpRoot,
             new ProxyLookup(new Lookup[] {original.getLookup(),Lookups.singleton(new JavadocProvider(cpRoot,resource))}));
     }
 
-    private ActionFilterNode (Node original, int mode) {
+    private ActionFilterNode (Node original, Mode mode) {
         super (original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren (original, mode, null));
         this.mode = mode;
     }
 
-    private ActionFilterNode (Node original, int mode, FileObject root, Lookup lkp) {
+    private ActionFilterNode (Node original, Mode mode, FileObject root, Lookup lkp) {
         super (original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren (original, mode,root),lkp);
         this.mode = mode;
     }
@@ -155,7 +265,7 @@ final class ActionFilterNode extends FilterNode {
 
     @Override
     public Action getPreferredAction() {
-        if (mode == MODE_FILE) {
+        if (mode == Mode.FILE) {
             Action[] actions = initActions();
             if (actions.length > 0 && isOpenAction(actions[0])) {
                 return actions[0];
@@ -167,7 +277,7 @@ final class ActionFilterNode extends FilterNode {
     private Action[] initActions () {
         if (actionCache == null) {
             List<Action> result = new ArrayList<Action>(2);
-            if (mode == MODE_FILE) {
+            if (mode == Mode.FILE) {
                 for (Action superAction : super.getActions(false)) {
                     if (isOpenAction(superAction)) {
                         result.add(superAction);
@@ -175,7 +285,7 @@ final class ActionFilterNode extends FilterNode {
                 }
                 result.add (SystemAction.get(ShowJavadocAction.class));
             }
-            else if (mode == MODE_PACKAGE || mode == MODE_ROOT) {
+            else if (mode.isFolder()) {
                 result.add (SystemAction.get(ShowJavadocAction.class));
                 Action[] superActions = super.getActions(false);
                 for (int i=0; i<superActions.length; i++) {
@@ -183,8 +293,11 @@ final class ActionFilterNode extends FilterNode {
                         result.add (superActions[i]);
                     }
                 }                
-                if (mode == MODE_ROOT) {
+                if (mode.isRoot()) {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
+                }
+                if (mode == Mode.EDITABLE_ROOT) {
+                    result.add (SystemAction.get(EditRootAction.class));
                 }
             }            
             actionCache = result.toArray(new Action[result.size()]);
@@ -207,10 +320,10 @@ final class ActionFilterNode extends FilterNode {
 
     private static class ActionFilterChildren extends FilterNode.Children {
 
-        private final int mode;
+        private final Mode mode;
         private final FileObject cpRoot;
 
-        ActionFilterChildren (Node original, int mode, FileObject cpRooot) {
+        ActionFilterChildren (@NonNull Node original, @NonNull Mode mode, @NonNull FileObject cpRooot) {
             super (original);
             this.mode = mode;
             this.cpRoot = cpRooot;
@@ -218,38 +331,46 @@ final class ActionFilterNode extends FilterNode {
 
         @Override
         protected Node[] createNodes(Node n) {
-            switch (mode) {
-                case MODE_ROOT:
-                case MODE_PACKAGE:
-                    DataObject dobj = n.getCookie(DataObject.class);
-                    if (dobj == null) {
-                        assert false : "DataNode without DataObject in Lookup";  //NOI18N
-                        return new Node[0];
-                    }
-                    else if (dobj.getPrimaryFile().isFolder()) {
-                        return new Node[] {new ActionFilterNode (n, MODE_PACKAGE,cpRoot,dobj.getPrimaryFile())};
-                    }
-                    else {
-                        return new Node[] {new ActionFilterNode (n, MODE_FILE,cpRoot,dobj.getPrimaryFile())};
-                    }
-                case MODE_FILE:
-                case MODE_FILE_CONTENT:
-                    return new Node[] {new ActionFilterNode (n, MODE_FILE_CONTENT)};
-                default:
-                    assert false : "Unknown mode";  //NOI18N
+            if (mode.isFolder()) {
+                final DataObject dobj = n.getCookie(DataObject.class);
+                if (dobj == null) {
+                    assert false : "DataNode without DataObject in Lookup";  //NOI18N
                     return new Node[0];
+                }
+                else if (dobj.getPrimaryFile().isFolder()) {
+                    return new Node[] {new ActionFilterNode (n, Mode.PACKAGE,cpRoot,dobj.getPrimaryFile())};
+                }
+                else {
+                    return new Node[] {new ActionFilterNode (n, Mode.FILE,cpRoot,dobj.getPrimaryFile())};
+                }
+            } else {
+                return new Node[] {new ActionFilterNode (n, Mode.FILE_CONTENT)};
             }
         }
     }
 
     private static class JavadocProvider implements ShowJavadocAction.JavadocProvider {
 
+        private static final AtomicBoolean initialized = new AtomicBoolean();
+
         private final FileObject cpRoot;
         private final FileObject resource;
 
-        JavadocProvider (FileObject cpRoot, FileObject resource) {
+        JavadocProvider (final @NonNull FileObject cpRoot, final @NullAllowed FileObject resource) {
             this.cpRoot = cpRoot;
             this.resource = resource;
+            if (!initialized.getAndSet(true)) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JavadocForBinaryQuery.findJavadoc(cpRoot.getURL());
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
         }
 
         @Override
@@ -288,7 +409,7 @@ final class ActionFilterNode extends FilterNode {
         }
     }
 
-   static class Removable implements RemoveClassPathRootAction.Removable {
+    static class Removable implements RemoveClassPathRootAction.Removable {
 
        private final UpdateHelper helper;
        private final String classPathId;
@@ -297,7 +418,7 @@ final class ActionFilterNode extends FilterNode {
        private final ClassPathSupport cs;
        private ReferenceHelper rh;
 
-       Removable (UpdateHelper helper, String classPathId, String entryId, 
+       Removable (UpdateHelper helper, String classPathId, String entryId,
                String webModuleElementName, ClassPathSupport cs, ReferenceHelper rh) {
            this.helper = helper;
            this.classPathId = classPathId;
@@ -316,9 +437,9 @@ final class ActionFilterNode extends FilterNode {
         }
 
         @Override
-       public Project remove() {        
+       public Project remove() {
            // The caller has write access to ProjectManager
-           // and ensures the project will be saved.           
+           // and ensures the project will be saved.
             boolean removed = false;
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String raw = props.getProperty (classPathId);
@@ -346,7 +467,7 @@ final class ActionFilterNode extends FilterNode {
 
         /**
          * Check whether given property is referenced by other properties.
-         * 
+         *
          * @param property property which presence it going to be tested
          * @param props properties
          * @param ignoreProperty a property to ignore
@@ -362,7 +483,7 @@ final class ActionFilterNode extends FilterNode {
             }
             return true;
         }
-        
+
         private static void destroyReference(ReferenceHelper rh, UpdateHelper uh, ClassPathSupport.Item item) {
             if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
@@ -372,6 +493,42 @@ final class ActionFilterNode extends FilterNode {
                 }
             }
         }
-        
-   }
+
+    }
+
+    private static class LibraryEditable implements EditRootAction.Editable {
+
+        private final ReferenceHelper refHelper;
+        private final String entryId;
+
+        private LibraryEditable(
+               @NonNull final String entryId,
+               @NonNull final ReferenceHelper refHelper) {
+           Parameters.notNull("entryId", entryId);  //NOI18N
+           Parameters.notNull("refHelper", refHelper);  //NOI18N
+           if (!entryId.startsWith("libs.") || entryId.lastIndexOf('.')<=4) {   //NOI18N
+               throw new IllegalArgumentException(entryId);
+           }
+           this.entryId = entryId;
+           this.refHelper = refHelper;
+        }
+
+        @Override
+        public boolean canEdit() {
+            return getLibrary() != null;
+        }
+
+        @Override
+        public void edit() {
+            final Library lib = getLibrary();
+            assert lib != null;
+            LibrariesCustomizer.showSingleLibraryCustomizer(lib);
+        }
+
+        private Library getLibrary() {
+            //Todo: Caching if needed
+            final String libName = entryId.substring(5, entryId.lastIndexOf('.'));
+            return refHelper.findLibrary(libName);
+        }
+    }
 }

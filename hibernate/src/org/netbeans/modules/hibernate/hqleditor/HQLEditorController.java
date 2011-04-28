@@ -107,14 +107,15 @@ public class HQLEditorController {
             for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
                 localResourcesURLList.add(mappingFO.getURL());
             }
-            final ClassLoader customClassLoader = env.getProjectClassLoader(
+            ClassLoader customClassLoader = env.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
-
+            final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
             Thread t = new Thread() {
 
                 @Override
                 public void run() {
-                    Thread.currentThread().setContextClassLoader(customClassLoader);
+                    //Thread.currentThread().setContextClassLoader(customClassLoader);
+                    ClassLoader customClassLoader = Thread.currentThread().getContextClassLoader();
                     HQLExecutor queryExecutor = new HQLExecutor();
                     HQLResult hqlResult = new HQLResult();
                     try {
@@ -133,6 +134,7 @@ public class HQLEditorController {
                         hqlResult.getExceptions().add(e);
                     }
                     editorTopComponent.setResult(hqlResult, customClassLoader);
+                    Thread.currentThread().setContextClassLoader(defClassLoader);
                 }
             };
             t.setContextClassLoader(customClassLoader);

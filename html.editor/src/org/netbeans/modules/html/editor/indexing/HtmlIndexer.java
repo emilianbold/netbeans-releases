@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.indexing.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -77,7 +76,7 @@ public class HtmlIndexer extends EmbeddingIndexer {
         try {
             if(LOG) {
                 FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-                LOGGER.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
+                LOGGER.log(Level.FINE, "indexing {0}", fo.getPath()); //NOI18N
             }
 
             HtmlFileModel model = new HtmlFileModel((HtmlParserResult)parserResult);
@@ -97,7 +96,7 @@ public class HtmlIndexer extends EmbeddingIndexer {
  
     private void storeEntries(Collection<? extends Entry> entries, IndexDocument doc, String key) {
         if (!entries.isEmpty()) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             Iterator<? extends Entry> i = entries.iterator();
             while (i.hasNext()) {
                 sb.append(i.next().getName());
@@ -113,7 +112,7 @@ public class HtmlIndexer extends EmbeddingIndexer {
     public static class Factory extends EmbeddingIndexerFactory {
 
         static final String NAME = "html"; //NOI18N
-        static final int VERSION = 1;
+        static final int VERSION = 2;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {

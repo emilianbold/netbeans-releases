@@ -52,6 +52,7 @@ import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -59,7 +60,6 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -75,6 +75,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class RelocateAction extends ContextAction {
          
+    @Override
     protected boolean enable(Node[] nodes) {
         if(nodes.length != 1) {
             return false;
@@ -92,6 +93,7 @@ public class RelocateAction extends ContextAction {
         return false;
     }
     
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
@@ -107,10 +109,12 @@ public class RelocateAction extends ContextAction {
         }
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_Relocate_Title";
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         ResourceBundle loc = NbBundle.getBundle(RelocateAction.class);
         
@@ -131,7 +135,7 @@ public class RelocateAction extends ContextAction {
         // 1.) it can be only a folder - see isEnabled
         // 2.) even if its a dataobject with more files, we just don't care,
         // the action will affect the whole working copy
-        File root = roots[0];
+        final File root = roots[0];
 
         SVNUrl repositoryUrl = null;
         try {
@@ -153,14 +157,17 @@ public class RelocateAction extends ContextAction {
         btnRelocate.setToolTipText(loc.getString("TT_Relocate_Action"));
         
         panel.getNewURL().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 validate(panel, btnRelocate);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 validate(panel, btnRelocate);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 validate(panel, btnRelocate);
             }          
@@ -183,13 +190,28 @@ public class RelocateAction extends ContextAction {
         final SVNUrl url = repositoryUrl;
         SvnProgressSupport support = new SvnProgressSupport() {
             SvnClient client = null;
+            @Override
             protected void perform() {                    
                 try {
                     client = Subversion.getInstance().getClient(url);
                     client.relocate(url.toString(), newUrl, wc, true);
+                    patchCache();
                 } catch (SVNClientException ex) {
                     annotate(ex);
                 } 
+            }
+
+            private void patchCache () {
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                // refresh status only for status entries already cached
+                File[] files = cache.listFiles(new File[] { root }, FileInformation.STATUS_MANAGED);
+                for (File f : files) {
+                    FileInformation fi = cache.getCachedStatus(f);
+                    if (fi != null && fi.getEntry(null) != null) {
+                        // cache needs to be refreshed
+                        cache.refresh(f, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    }
+                }
             }
         };
         support.start(rp, repositoryUrl, loc.getString("LBL_Relocate_Progress"));

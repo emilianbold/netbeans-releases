@@ -139,8 +139,7 @@ public class PullAction extends ContextAction {
     public static boolean confirmWithLocalChanges(File rootFile, Class bundleLocation, String title, String query, 
         List<String> listIncoming, OutputLogger logger) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        File[] roots = new File[1];
-        roots[0] = rootFile;
+        File[] roots = HgUtils.splitIntoSeenRoots(rootFile);
         File[] localModNewFiles = cache.listFiles(roots, 
                 FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | 
                 FileInformation.STATUS_VERSIONED_CONFLICT | 

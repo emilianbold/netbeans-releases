@@ -98,6 +98,10 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 firePropertyChange("parameters", null, null); // NOI18N
             }
         });
+
+        if (parameters.isEmpty()) {
+            table.setFocusable(false);
+        }
         
         JComboBox typeCombo = new JComboBox();
         

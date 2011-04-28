@@ -115,7 +115,8 @@ public class CommitAction extends SingleRepositoryAction {
                     GitClient client = Git.getInstance().getClient(repository);
                     user = client.getUser();
                 } catch (GitException ex) {
-                    LOG.log(Level.WARNING, null, ex);
+                    GitClientExceptionHandler.notifyException(ex, true);
+                    return;
                 }
                 
                 GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
@@ -248,7 +249,7 @@ public class CommitAction extends SingleRepositoryAction {
 
         private String beforeCommitHook (List<File> commitCandidates, Collection<GitHook> hooks, String message) {
             if(hooks.isEmpty()) {
-                return null;
+                return message;
             }
             File[] hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
             for (GitHook hook : hooks) {

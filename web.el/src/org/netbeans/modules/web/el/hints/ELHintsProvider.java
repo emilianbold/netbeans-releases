@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.web.el.hints;
 
-import com.sun.el.parser.AstIdentifier;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.Error;
@@ -78,10 +76,9 @@ public final class ELHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        ELRuleContext elContext = (ELRuleContext) context;
         // parse errors are not handled here, so let the infrastructure just display
         // them as they are
-        unhandled.addAll(elContext.getELParserResult().getDiagnostics());
+        unhandled.addAll(context.parserResult.getDiagnostics());
         
         // computing the all hints - not just errors - due to #189590
         Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
@@ -91,7 +88,7 @@ public final class ELHintsProvider implements HintsProvider {
         }
         for (ELRule rule : ids) {
             if (manager.isEnabled(rule)) {
-                rule.run(elContext, hints);
+                rule.run(context, hints);
             }
         }
     }

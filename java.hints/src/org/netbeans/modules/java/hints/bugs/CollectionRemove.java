@@ -45,6 +45,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -231,6 +232,15 @@ public class CollectionRemove {
                     warningKey = "HINT_SuspiciousCallIncompatibleTypes"; //NOI18N
                 }
 
+                ExecutableElement checkMethodElement = resolveMethod(ctx.getInfo(), checkMethod);
+                ExecutableElement enclosingMethod = findEnclosingMethod(ctx.getInfo(), ctx.getPath());
+
+                if (   enclosingMethod != null
+                    && checkMethodElement != null
+                    && ctx.getInfo().getElements().overrides(enclosingMethod, checkMethodElement, (TypeElement) checkMethodElement.getEnclosingElement())) {
+                    continue;
+                }
+                
                 String semiFQN = checkMethod.substring(0, checkMethod.indexOf('('));
 
                 String warning = NbBundle.getMessage(CollectionRemove.class,
@@ -301,6 +311,22 @@ public class CollectionRemove {
             }
         }
         
+        return null;
+    }
+
+    private static ExecutableElement findEnclosingMethod(CompilationInfo info, TreePath path) {
+        while (path != null && path.getLeaf().getKind() != Kind.CLASS && path.getLeaf().getKind() != Kind.METHOD) {
+            path = path.getParentPath();
+        }
+
+        if (path != null && path.getLeaf().getKind() == Kind.METHOD) {
+            Element el = info.getTrees().getElement(path);
+
+            if (el != null && el.getKind() == ElementKind.METHOD) {
+                return (ExecutableElement) el;
+            }
+        }
+
         return null;
     }
 

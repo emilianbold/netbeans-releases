@@ -50,7 +50,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -72,9 +71,13 @@ public class UpdateItemTest extends NbTestCase {
         super (testName);
     }
     
+    @Override
     public void setUp () throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
     }
 
+    @Override
     public void tearDown () throws Exception {
     }
 

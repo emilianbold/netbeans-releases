@@ -875,7 +875,7 @@ FIRST_MOD options { constText=true; } :
             | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
             | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
             | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
-            | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); } DirectiveBody
+            | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); }
             | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
             | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
             | DirectiveBody)
@@ -1042,7 +1042,7 @@ PREPROC_DIRECTIVE :
                     | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
                     | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
                     | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
-                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); } DirectiveBody
+                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); }
                     | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
                     | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
                     | DirectiveBody)

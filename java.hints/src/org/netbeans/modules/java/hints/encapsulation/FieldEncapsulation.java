@@ -60,27 +60,22 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -113,7 +108,7 @@ public class FieldEncapsulation {
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription protectedField(final HintContext ctx) {
         return create(ctx,
-            Modifier.PROTECTED,
+            Visibility.PROTECTED,
             NbBundle.getMessage(FieldEncapsulation.class, "TXT_ProtectedField"),
             "ProtectedField");  //NOI18N
     }
@@ -122,7 +117,7 @@ public class FieldEncapsulation {
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription publicField(final HintContext ctx) {
         return create(ctx,
-            Modifier.PUBLIC,
+            Visibility.PUBLIC,
             NbBundle.getMessage(FieldEncapsulation.class, "TXT_PublicField"),
             "PublicField"); //NOI18N
     }
@@ -131,7 +126,7 @@ public class FieldEncapsulation {
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription packageField(final HintContext ctx) {
         return create(ctx,
-            null,
+            Visibility.PACKAGE_PRIVATE,
             NbBundle.getMessage(FieldEncapsulation.class, "TXT_PackageField"),
             "PackageVisibleField"); //NOI18N
     }
@@ -175,7 +170,7 @@ public class FieldEncapsulation {
     }
 
     private static ErrorDescription create (final HintContext ctx,
-                                            final Modifier visibility,
+                                            final Visibility visibility,
                                             final String message,
                                             final String suppressWarnings) {
         assert ctx != null;
@@ -189,7 +184,7 @@ public class FieldEncapsulation {
         }
         final VariableTree vt = (VariableTree) tp.getLeaf();
         final ModifiersTree mt = vt.getModifiers();
-        if (mt.getFlags().contains(Modifier.FINAL) || !hasRequiredVisibility(mt.getFlags(),visibility)) {
+        if (mt.getFlags().contains(Modifier.FINAL) || Utilities.effectiveVisibility(tp) != visibility) {
             return null;
         }
         if (ctx.getPreferences().getBoolean(ALLOW_ENUMS_KEY, ALLOW_ENUMS_DEFAULT)) {

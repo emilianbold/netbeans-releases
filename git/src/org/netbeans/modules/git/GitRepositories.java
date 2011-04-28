@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  *
@@ -67,6 +68,10 @@ public class GitRepositories {
 
     void add (File repository) {
         boolean added;
+        if (Utils.isAncestorOrEqual(new File(System.getProperty("java.io.tmpdir")), repository)) { //NOI18N
+            // skip repositories in temp folder
+            return;
+        }
         Set<File> oldValues = null;
         Set<File> newValues = null;
         synchronized (repositories) {

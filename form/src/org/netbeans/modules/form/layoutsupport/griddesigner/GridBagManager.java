@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -78,7 +79,7 @@ import org.openide.nodes.Node;
 /**
  * {@code GridManager} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GridBagManager implements GridManager {
     private Container container;
@@ -310,6 +311,20 @@ public class GridBagManager implements GridManager {
         return new GridBagCustomizer(this, performer);
     }
 
+    @SuppressWarnings("unchecked")
+    public int getAnchor(Component component) {
+        Node.Property<Integer> property = getProperty(component, "anchor"); // NOI18N
+        int anchor = GridBagConstraints.NONE;
+        try {
+            anchor = ((Integer)property.getValue()).intValue();
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }
+        return anchor;
+    }
+
     public void setAnchor(Component component, int anchor) {
         setProperty(component, "anchor", anchor); // NOI18N
     }
@@ -318,6 +333,106 @@ public class GridBagManager implements GridManager {
         setProperty(component, "fill", fill); // NOI18N
     }
     
+    @SuppressWarnings("unchecked")
+    public void setHorizontalFill(Component component, boolean fill) {
+        Node.Property<Integer> property = getProperty(component, "fill"); // NOI18N
+        int oldfill = GridBagConstraints.NONE;
+        try {
+            oldfill = ((Integer)property.getValue()).intValue();
+            if(fill) switch(oldfill) {
+                case GridBagConstraints.NONE: oldfill = GridBagConstraints.HORIZONTAL; break;
+                case GridBagConstraints.VERTICAL: oldfill = GridBagConstraints.BOTH; break;
+            } else switch(oldfill) {
+                case GridBagConstraints.HORIZONTAL: oldfill = GridBagConstraints.NONE; break;
+                case GridBagConstraints.BOTH: oldfill = GridBagConstraints.VERTICAL; break;
+            }
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }      
+        setProperty(component, "fill", oldfill); // NOI18N
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void setVerticalFill(Component component, boolean fill) {
+        Node.Property<Integer> property = getProperty(component, "fill"); // NOI18N
+        int oldfill = GridBagConstraints.NONE;
+        try {
+            oldfill = ((Integer)property.getValue()).intValue();
+            if(fill) switch(oldfill) {
+                case GridBagConstraints.NONE: oldfill = GridBagConstraints.VERTICAL; break;
+                case GridBagConstraints.HORIZONTAL: oldfill = GridBagConstraints.BOTH; break;
+            } else switch(oldfill) {
+                case GridBagConstraints.VERTICAL: oldfill = GridBagConstraints.NONE; break;
+                case GridBagConstraints.BOTH: oldfill = GridBagConstraints.HORIZONTAL; break;
+            }
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }      
+        setProperty(component, "fill", oldfill); // NOI18N
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void updateIPadX(Component component, int ipadxdiff) {
+        Node.Property<Integer> property = getProperty(component, "ipadx"); // NOI18N
+        int oldipadx = 0;
+        try {
+            oldipadx = ((Integer)property.getValue()).intValue();
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }      
+        if(oldipadx+ipadxdiff>=0) setProperty(component, "ipadx", oldipadx+ipadxdiff); // NOI18N
+        else
+            setProperty(component, "ipadx", 0); // NOI18N
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void updateIPadY(Component component, int ipadydiff) {
+        Node.Property<Integer> property = getProperty(component, "ipady"); // NOI18N
+        int oldipady = 0;
+        try {
+            oldipady = ((Integer)property.getValue()).intValue();
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }      
+        if(oldipady+ipadydiff>=0) setProperty(component, "ipady", oldipady+ipadydiff); // NOI18N
+        else
+            setProperty(component, "ipady", 0); // NOI18N
+    }
+
+    public void setIPadX(Component component, int ipadx) {
+        setProperty(component, "ipadx", ipadx); // NOI18N
+    }
+
+    public void setIPadY(Component component, int ipady) {
+        setProperty(component, "ipady", ipady); // NOI18N
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void updateInsets(Component component, Insets idiff) {
+        Node.Property<Insets> property = getProperty(component, "insets"); // NOI18N
+        Insets insets=null;
+        try {
+            insets = (Insets)property.getValue();
+            insets.top = insets.top+idiff.top>=0 ? insets.top+idiff.top : 0;
+            insets.left = insets.left+idiff.left>=0 ? insets.left+idiff.left : 0;
+            insets.bottom = insets.bottom+idiff.bottom>=0 ? insets.bottom+idiff.bottom : 0;
+            insets.right = insets.right+idiff.right>=0 ? insets.right+idiff.right : 0;
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }     
+        if(insets!=null) setProperty(component, "insets", insets); // NOI18N
+    }
+
     public void setWeightX(Component component, double weight) {
         setProperty(component, "weightx", weight); // NOI18N
     }

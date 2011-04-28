@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -77,7 +78,9 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -100,13 +103,17 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         
         FileObject paletteFolder = FileUtil.getConfigFile( "Actions" ); // NOI18N
         DataFolder df = DataFolder.findFolder( paletteFolder );
-        root = new FolderActionNode( new AbstractNode( df.createNodeChildren( new ActionIconDataFilter() ) ) );
+        root = createFolderActionNode(df);
 
         final JLabel lblWait = new JLabel( getBundleString("LBL_PleaseWait") );
         lblWait.setHorizontalAlignment( JLabel.CENTER );
         palettePanel.setPreferredSize( new Dimension( 440, 350 ) );
         palettePanel.add( lblWait );
         getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_ToolbarCustomizer") );
+    }
+
+    static FolderActionNode createFolderActionNode(DataFolder df) {
+        return new FolderActionNode(new AbstractNode(df.createNodeChildren(new ActionIconDataFilter())));
     }
     
     public void run() {
@@ -427,6 +434,23 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             }
         }
     }
+    
+    private static class BlankAction extends CallbackSystemAction {
+        static final Icon BLANK_ICON;
+        static {
+            BLANK_ICON = get(BlankAction.class).getIcon();
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+    }
 
     private static class ItemActionNode extends FilterNode {
         
@@ -465,13 +489,25 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                     if( null != instance ) {
                         if( instance instanceof Action ) {
                             Action action = (Action)instance;
+                            boolean noIconBase = false;
                             try {
-                                if( null == action.getValue( "iconBase" ) ) {
-                                    return false;
-                                }
+                                noIconBase = null == action.getValue( "iconBase" );
                             } catch( AssertionError aE ) {
                                 //hack: some action do not allow access outside
                                 //event queue - so let's ignore their assertions
+                            }
+                            boolean smallIcon = false;
+                            if (noIconBase) {
+                                try {
+                                    final Object icon = action.getValue(Action.SMALL_ICON);
+                                    smallIcon = icon != null && icon != BlankAction.BLANK_ICON;
+                                } catch (AssertionError aE) {
+                                    //hack: some action do not allow access outside
+                                    //event queue - so let's ignore their assertions
+                                }
+                            }
+                            if (noIconBase && !smallIcon) {
+                                return false;
                             }
                         } else if( instance instanceof JSeparator ) {
                             return false;

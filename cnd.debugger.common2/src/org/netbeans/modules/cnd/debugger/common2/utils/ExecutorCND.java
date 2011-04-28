@@ -167,7 +167,9 @@ import org.openide.util.Utilities;
     }
 
     public synchronized int startEngine(String enginePath,
-					String engine_argv[], Map<String, String> additionalEnv,
+					String engine_argv[], 
+                                        Map<String, String> additionalEnv,
+                                        String workDir, 
 			                TermComponent console,
                                         boolean usePty,
                                         boolean disableEcho) {
@@ -182,6 +184,8 @@ import org.openide.util.Utilities;
 
         npb.setExecutable(enginePath);
         npb.setArguments(argv);
+        npb.setWorkingDirectory(workDir);
+        npb.getEnvironment().putAll(additionalEnv);
         
         if (usePty) {
             npb.setUsePty(true);

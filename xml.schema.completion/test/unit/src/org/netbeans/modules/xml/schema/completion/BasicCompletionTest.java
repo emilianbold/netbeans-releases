@@ -71,8 +71,9 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testPurchaseOrder2"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter1"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter2"));
-        suite.addTest(new BasicCompletionTest("testEmptyTag1"));
-        suite.addTest(new BasicCompletionTest("testEmptyTag2"));
+        //issue #196598
+        //suite.addTest(new BasicCompletionTest("testEmptyTag1"));
+        //suite.addTest(new BasicCompletionTest("testEmptyTag2"));
         suite.addTest(new BasicCompletionTest("testEmptyTag3"));
         suite.addTest(new BasicCompletionTest("testEmptyTag4"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
@@ -154,7 +155,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     public void testPurchaseOrder1() throws Exception {
         setupCompletion("resources/PO1.xml", null);
         List<CompletionResultItem> items = query(237);
-        String[] expectedResult = null;
+        String[] expectedResult = {"po:name", "po:street", "po:city", "po:state", "po:zip"};
         assertResult(items, expectedResult);
     }
     
@@ -232,10 +233,11 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries an empty tag. If cursor is between < and A31 in <A31 />
+     * Queries an empty tag. If cursor is between < and A:A31 in <A:A31 />
      * we should show all qualifying elements that are children of the parent.
      */
     public void testEmptyTag1() throws Exception {
+        // see issue #196598
         setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(220);
         String[] expectedResult = {"A:A31", "A:A32"};
@@ -243,10 +245,11 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries an empty tag. If cursor is after 'A' in <A31 />
-     * we should show only A31 as the qualifying element.
+     * Queries an empty tag. If cursor is after second 'A' in <A:A31 />
+     * we should show all elements beginning with this prefix.
      */
     public void testEmptyTag2() throws Exception {
+        // see issue #196598
         setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(223);
         String[] expectedResult = {"A:A31", "A:A32"};
@@ -269,7 +272,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     public void testEmptyTag4() throws Exception {
         setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(229);
-        String[] expectedResult = null;
+        String[] expectedResult = {"A:A31", "A:A32"};
         assertResult(items, expectedResult);
     }
     
@@ -306,14 +309,14 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard1() throws Exception {
-        setupCompletion("resources/Wildcard1.xml", null);
+        setupCompletion("resources/WildCard1.xml", null);
         List<CompletionResultItem> items = query(221);
         String[] expectedResult = {"A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
         assertResult(items, expectedResult);
     }
     
     public void testWildcard2() throws Exception {
-        setupCompletion("resources/Wildcard2.xml", null);
+        setupCompletion("resources/WildCard2.xml", null);
         List<CompletionResultItem> items = query(265);
         String[] expectedResult = {"ns1:rootB1", "ns1:rootB2", "A:rootA1", "A:rootA2",
         "A:rootA3", "A:A11", "A:A12"};
@@ -321,7 +324,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard3() throws Exception {
-        setupCompletion("resources/Wildcard3.xml", null);
+        setupCompletion("resources/WildCard3.xml", null);
         //query at 405
         List<CompletionResultItem> items = query(405);
         String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2",
@@ -341,7 +344,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard4() throws Exception {
-        setupCompletion("resources/Wildcard4.xml", null);
+        setupCompletion("resources/WildCard4.xml", null);
         List<CompletionResultItem> items = query(405);
         String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
             "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};

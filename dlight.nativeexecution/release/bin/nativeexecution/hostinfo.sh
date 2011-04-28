@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PATH=/usr/bin:/bin:$PATH
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
@@ -109,6 +109,8 @@ fi
 
 ENVFILE="${TMPDIRBASE}/env"
 
+ID=`LC_MESSAGES=C /usr/bin/id`
+
 echo BITNESS=${BITNESS}
 echo CPUFAMILY=${CPUFAMILY}
 echo CPUNUM=${CPUNUM}
@@ -123,4 +125,5 @@ echo USERDIRBASE=${USERDIRBASE}
 echo TMPDIRBASE=${TMPDIRBASE}
 echo DATETIME=${DATETIME}
 echo ENVFILE=${ENVFILE}
+echo ID=${ID}
 exit 0

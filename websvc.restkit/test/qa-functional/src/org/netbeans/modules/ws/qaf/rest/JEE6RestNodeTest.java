@@ -70,7 +70,7 @@ public class JEE6RestNodeTest extends RestNodeTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(JEE6RestNodeTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6RestNodeTest.class),
                 "testNodesAfterOpen",
                 "testOpenOnResource",
                 "testOpenOnMethod",

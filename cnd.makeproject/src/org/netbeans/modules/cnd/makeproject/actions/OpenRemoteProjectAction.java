@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,342 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileView;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
 /**
- *
  * @author Alexander Simon
+ * @author Vladimir Kvashin
  */
-public class OpenRemoteProjectAction extends AbstractAction {
-    private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
-    private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
-
+@ActionID(id = "org.netbeans.modules.cnd.makeproject.actions.OpenRemoteProjectAction", category = "Project")
+@ActionRegistration(iconInMenu = false, displayName = "#CTL_ImportProjectMenuItem")
+@ActionReference(path = "Menu/File/Import", position = 3000)
+public class OpenRemoteProjectAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
-        Collection<? extends org.netbeans.modules.cnd.api.remote.ServerRecord> records = ServerList.getRecords();
-        ServerRecord rr = null;
-        for (ServerRecord r : records) {
-            if (r.isRemote()) {
-                rr = r;
-                break;
-            }
-        }
-        if (rr == null) {
-            return;
-        }
-        final ServerRecord record = rr;
-        if (record.isOffline()) {
-            final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
-                @Override
-                public void doWork() {
-                    record.validate(true);
-                }
-                @Override
-                public void doPostRunInEDT() {
-                    openProject(record);
-                }
-            };
-            Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            String title = NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.comment.title"); //NOI18N
-            String msg = NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.comment.message",record.getDisplayName()); //NOI18N
-            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
-        } else {
-            openProject(record);
-        }
-    }
-
-    private void openProject(ServerRecord record) {
-        Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(record.getExecutionEnvironment(),
-                record.getDisplayName(), NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
-                JFileChooser.DIRECTORIES_ONLY, null, null, true);
-        //fileChooser.setFileView(new MyFileView(fileChooser));
-        int ret = fileChooser.showOpenDialog(mainWindow);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
-        FileObject remoteProject = fileChooser.getSelectedFileObject();
-        try {
-            String path = ProjectChooser.getProjectsFolder().getAbsolutePath()+"/"+remoteProject.getNameExt(); //NOI18N
-            File destination = new File(path); //NOI18N
-            int loop = 0;
-            while(true) {
-                if (!destination.exists()) {
-                    break;
-                }
-                loop++;
-                destination = new File(path+loop);
-            }
-            FileObject localProject = FileUtil.createFolder(destination);
-            copy(remoteProject.getFileObject("nbproject"), localProject, "nbproject"); //NOI18N
-            updateProject(remoteProject, localProject, record);
-            updateConfiguration(localProject, record);
-            updatePrivateConfiguration(localProject, record);
-            Project findProject = ProjectManager.getDefault().findProject(localProject);
-            OpenProjects.getDefault().open(new Project[]{findProject}, false);
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private void updateProject(FileObject remoteProject, FileObject localProject, ServerRecord record) throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-        File projXml = FileUtil.toFile(fo);
-        Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-        Element root = doc.getDocumentElement();
-        if (root != null) {
-            NodeList dataList = root.getElementsByTagName(MakeProjectType.PROJECT_CONFIGURATION_NAME);
-            if (dataList.getLength() > 0) {
-                Node masterConfs = dataList.item(0);
-                Element remoteMode = doc.createElement(MakeProject.REMOTE_MODE);
-                remoteMode.setTextContent("REMOTE_SOURCES"); //NOI18N
-                masterConfs.appendChild(remoteMode);
-                Element remoteHost = doc.createElement(MakeProject.REMOTE_FILESYSTEM_HOST);
-                remoteHost.setTextContent(ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment()));
-                masterConfs.appendChild(remoteHost);
-                Element remoteBaseDir = doc.createElement(MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
-                remoteBaseDir.setTextContent(remoteProject.getPath());
-                masterConfs.appendChild(remoteBaseDir);
-            }
-        }
-        saveXml(doc, localProject, AntProjectHelper.PROJECT_XML_PATH);
-    }
-
-    private void updateConfiguration(FileObject localProject, ServerRecord record) throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(PROJECT_CONFIGURATION_FILE);
-        File confXml = FileUtil.toFile(fo);
-        Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
-        Element root = doc.getDocumentElement();
-        if (root != null) {
-            NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
-            if (toolSetList.getLength() > 0) {
-                for(int i = 0; i < toolSetList.getLength(); i++) {
-                    Node node = toolSetList.item(i);
-                    NodeList childNodes = node.getChildNodes();
-                    List<Node> list = new ArrayList<Node>();
-                    for(int j = 0; j < childNodes.getLength(); j++) {
-                        list.add(childNodes.item(j));
-                    }
-                    for(Node n : list) {
-                        node.removeChild(n);
-                    }
-                    Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.FIXED_SYNC_FACTORY_ELEMENT);
-                    remoteMode.setTextContent("full"); //NOI18N
-                    node.appendChild(remoteMode);
-                    remoteMode = doc.createElement(MakeProject.REMOTE_MODE);
-                    remoteMode.setTextContent("REMOTE_SOURCES"); //NOI18N
-                    node.appendChild(remoteMode);
-                    remoteMode = doc.createElement(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
-                    remoteMode.setTextContent("default"); //NOI18N
-                    node.appendChild(remoteMode);
-                }
-            }
-        }
-        saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
-    }
-
-    private void updatePrivateConfiguration(FileObject localProject, ServerRecord record) throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
-        File confXml = FileUtil.toFile(fo);
-        Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
-        Element root = doc.getDocumentElement();
-        if (root != null) {
-            NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
-            if (toolSetList.getLength() > 0) {
-                for(int i = 0; i < toolSetList.getLength(); i++) {
-                    Node node = toolSetList.item(i);
-                    NodeList childNodes = node.getChildNodes();
-                    List<Node> list = new ArrayList<Node>();
-                    for(int j = 0; j < childNodes.getLength(); j++) {
-                        list.add(childNodes.item(j));
-                    }
-                    for(Node n : list) {
-                        node.removeChild(n);
-                    }
-                    Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
-                    remoteMode.setTextContent(ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment()));
-                    node.appendChild(remoteMode);
-                }
-            }
-        }
-        saveXml(doc, localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        Collection<? extends org.netbeans.modules.cnd.api.remote.ServerRecord> records = ServerList.getRecords();
-        for(ServerRecord record : records) {
-            if (record.isRemote()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private FileObject copy(FileObject base, FileObject proxy, String name) throws IOException {
-        if (base.isFolder()) {
-            FileObject peer = proxy.createFolder(name);
-            FileUtil.copyAttributes(base, peer);
-            for (FileObject fo : base.getChildren()) {
-                copy(fo, peer, fo.getNameExt());
-            }
-            return peer;
-        } else {
-            FileObject dest = copyImpl(base, proxy, name);
-            return dest;
-        }
-    }
-
-    /** Copies file to the selected folder.
-     * This implementation simply copies the file by stream content.
-    * @param source source file object
-    * @param destFolder destination folder
-    * @param newName file name (without extension) of destination file
-    * @param newExt extension of destination file
-    * @return the created file object in the destination folder
-    * @exception IOException if <code>destFolder</code> is not a folder or does not exist; the destination file already exists; or
-    *      another critical error occurs during copying
-    */
-    private FileObject copyImpl(FileObject source, FileObject destFolder, String newName)  throws IOException {
-        FileObject dest = destFolder.createData(newName);
-
-        FileLock lock = null;
-        InputStream bufIn = null;
-        OutputStream bufOut = null;
-
-        try {
-            lock = dest.lock();
-            bufIn = source.getInputStream();
-            bufOut = dest.getOutputStream(lock);
-            FileUtil.copy(bufIn, bufOut);
-            FileUtil.copyAttributes(source, dest);
-        } finally {
-            if (bufIn != null) {
-                bufIn.close();
-            }
-            if (bufOut != null) {
-                bufOut.close();
-            }
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
-        return dest;
-    }
-
-    /**
-     * Save an XML config file to a named path.
-     * If the file does not yet exist, it is created.
-     */
-    private static void saveXml(Document doc, FileObject dir, String path) throws IOException {
-        FileObject xml = FileUtil.createData(dir, path);
-        FileLock lock = xml.lock();
-        try {
-            OutputStream os = xml.getOutputStream(lock);
-            try {
-                XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
-    }
-
-    private static final class MyFileView extends FileView {
-        private final JFileChooser chooser;
-        private final Map<File,Icon> knownProjectIcons = new HashMap<File,Icon>();
-
-        public MyFileView(JFileChooser chooser) {
-            this.chooser = chooser;
-        }
-
-        @Override
-        public Icon getIcon(File f) {
-            Icon res = knownProjectIcons.get(f);
-            if (res == null) {
-                res = _getIcon(f);
-                knownProjectIcons.put(f, res);
-            }
-            return res;
-        }
-
-        public Icon _getIcon(File f) {
-            try {
-                if (f != null &&
-                    f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
-                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. // NOI18N
-                    f.getParentFile() != null) { // do not consider drive roots
-                    String path = f.getAbsolutePath();
-                    String project = path+"/nbproject"; // NOI18N
-                    File projectDir = chooser.getFileSystemView().createFileObject(project);
-                    if (projectDir.exists() && projectDir.isDirectory() && projectDir.canRead()) {
-                        String projectXml = path+"/nbproject/project.xml"; // NOI18N
-                        File projectFile = chooser.getFileSystemView().createFileObject(projectXml);
-                        if (projectFile.exists()) {
-                            String conf = path+"/nbproject/configurations.xml"; // NOI18N
-                            File configuration = chooser.getFileSystemView().createFileObject(conf);
-                            if (configuration.exists()) {
-                                return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable t) {
-                //
-            }
-            return chooser.getFileSystemView().getSystemIcon(f);
-        }
+        RemoteProjectImportWizard.showImportWizard();
+        return;
     }
 }

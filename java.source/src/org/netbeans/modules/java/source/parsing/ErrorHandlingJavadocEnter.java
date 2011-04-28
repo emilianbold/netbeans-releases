@@ -63,8 +63,8 @@ class ErrorHandlingJavadocEnter extends JavadocEnter {
 
     public static void preRegister(final Context context) {
         context.put(enterKey, new Context.Factory<Enter>() {
-            public Enter make() {
-                return new ErrorHandlingJavadocEnter(context);
+            public Enter make(Context c) {
+                return new ErrorHandlingJavadocEnter(c);
             }
         });
     }

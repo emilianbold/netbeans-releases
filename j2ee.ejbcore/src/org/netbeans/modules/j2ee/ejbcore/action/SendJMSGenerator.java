@@ -244,7 +244,7 @@ public final class SendJMSGenerator {
                 "javax.annotation.Resource",
                 fieldName,
                 fieldType,
-                Collections.singletonMap("name", destinationName),
+                Collections.singletonMap("mappedName", destinationName),  //NOI18N
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
         return fieldName;

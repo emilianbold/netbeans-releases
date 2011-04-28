@@ -43,10 +43,14 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 
 import com.sun.faces.spi.ConfigurationResourceProvider;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -75,7 +79,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
         this.wm = wm;
     }
 
-    public Collection<URL> getResources(ServletContext ignored) {
+    public Collection<URI> getResources(ServletContext ignored) {
         try {
             MetadataModel<WebAppMetadata> model = wm.getMetadataModel();
             String faceletsLibrariesList = null;
@@ -100,7 +104,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
 
             FileObject webModuleRoot = wm.getDocumentBase();
             FileObject webInfBase = wm.getWebInf() == null ? null : wm.getWebInf().getParent();
-            Collection<URL> librariesURLs = new ArrayList<URL>();
+            Collection<URI> librariesURIs = new ArrayList<URI>();
             if(faceletsLibrariesList != null) {
                 StringTokenizer st = new StringTokenizer(faceletsLibrariesList, ";");
                 while(st.hasMoreTokens()) {
@@ -119,12 +123,16 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
                     if(libraryFO != null) {
                         URL url = URLMapper.findURL(libraryFO, URLMapper.INTERNAL);
                         if(url != null) {
-                            librariesURLs.add(url);
+                            try {
+                                librariesURIs.add(new URI(url.toExternalForm()));
+                            } catch (URISyntaxException ex) {
+                                Logger.getLogger(WebFaceletTaglibResourceProvider.class.getName()).log(Level.INFO, null, ex);
+                            }
                         }
                     }
                 }
             }
-            return librariesURLs;
+            return librariesURIs;
 
         } catch (MetadataModelException ex) {
             Exceptions.printStackTrace(ex);

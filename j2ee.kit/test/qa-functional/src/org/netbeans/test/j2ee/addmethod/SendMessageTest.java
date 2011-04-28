@@ -41,70 +41,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.addmethod;
 
-import java.io.File;
 import java.io.IOException;
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.test.j2ee.*;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
- *
- * @author lm97939
+ *  Called from EJBValidation test suite.
+ * 
+ * @author Libor Martinek
  */
 public class SendMessageTest extends AddMethodBase {
-    
+
     /** Creates a new instance of AddMethodTest */
     public SendMessageTest(String name) {
         super(name);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        junit.textui.TestRunner.run(new SendMessageTest("testSendMessage1InSB"));
-    }
 
-    public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
-    }
-    
-    public void testSendMessage1InSB()  throws IOException{
+    public void testSendMessage1InSB() throws IOException {
         beanName = "TestingSession";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_EnterpriseActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_SendJMSMessageAction");
-        toSearchInEditor = "sendJMSMessageToTestingMessageDestination";
+        // "Send JMS Message..."
+        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_SendJMSMessageAction");
+        // "Send JMS Message"
+        dialogTitle = Bundle.getString("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_SendJmsMessage");
+        toSearchInEditor = "sendJMSMessageToTestingMessageBean";
         isDDModified = true;
         saveFile = true;
         addMethod();
     }
 
     protected void addMethod() throws IOException {
-        EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
-        editor.select(11);
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName + "Bean.java");
+        editor.select("private javax.ejb.SessionContext context;");
 
-        // invoke Add Business Method dialog
-        new ActionNoBlock(null,editorPopup).perform(editor);
-        NbDialogOperator dialog = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_SelectMessageDestination"));
-        JComboBoxOperator combo=new JComboBoxOperator(dialog, 0);
-        combo.selectItem("TestingEntApp-EJBModule");
-        dialog.ok();
-        
-        if (saveFile) 
+        GenerateCodeOperator.openDialog(editorPopup, editor);
+        NbDialogOperator sendJMSOper = new NbDialogOperator(dialogTitle);
+        sendJMSOper.ok();
+        editor.txtEditorPane().waitText(toSearchInEditor);
+        if (saveFile) {
             editor.save();
-        
-        waitForEditorText(editor, toSearchInEditor);
-        
+        }
         compareFiles();
     }
-    
 }

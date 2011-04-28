@@ -103,7 +103,7 @@ public class JavaKit extends NbEditorKit {
 
     private static final Logger LOGGER = Logger.getLogger(JavaKit.class.getName());
 
-    private static final Object sourceLevelKey = new Object();
+//    private static final Object sourceLevelKey = new Object();
 
     public JavaKit(){
     }
@@ -112,20 +112,20 @@ public class JavaKit extends NbEditorKit {
         return JAVA_MIME_TYPE;
     }
 
-    /** Create new instance of syntax coloring scanner
-    * @param doc document to operate on. It can be null in the cases the syntax
-    *   creation is not related to the particular document
-    */
-    public Syntax createSyntax(Document doc) {
-        // XXX: sourcelevel can be subject of changes, ignored by this cache
-        // Should not be a problem here however. Covered by #171330.
-        String sourceLevel = (String) doc.getProperty(sourceLevelKey);
-        if (sourceLevel == null) {
-            sourceLevel = getSourceLevel((BaseDocument) doc);
-            doc.putProperty(sourceLevelKey, sourceLevel);
-        }
-        return new JavaSyntax(sourceLevel);
-    }
+//    /** Create new instance of syntax coloring scanner
+//    * @param doc document to operate on. It can be null in the cases the syntax
+//    *   creation is not related to the particular document
+//    */
+//    public Syntax createSyntax(Document doc) {
+//        // XXX: sourcelevel can be subject of changes, ignored by this cache
+//        // Should not be a problem here however. Covered by #171330.
+//        String sourceLevel = (String) doc.getProperty(sourceLevelKey);
+//        if (sourceLevel == null) {
+//            sourceLevel = getSourceLevel((BaseDocument) doc);
+//            doc.putProperty(sourceLevelKey, sourceLevel);
+//        }
+//        return new JavaSyntax(sourceLevel);
+//    }
 
     public String getSourceLevel(BaseDocument doc) {
         DataObject dob = NbEditorUtilities.getDataObject(doc);

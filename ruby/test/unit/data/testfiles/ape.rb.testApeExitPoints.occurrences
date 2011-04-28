@@ -1,5 +1,0 @@
-    |>MARK_OCCURRENCES:return<| unless service
-      |>MARK_OCCURRENCES:return<|
-      |>MARK_OCCURRENCES:return<|
-      |>MARK_OCCURRENCES:test_media_linkage media_coll<|
-      |>MARK_OCCURRENCES:warning "No collection for 'image/jpeg', won't test media posting."<|

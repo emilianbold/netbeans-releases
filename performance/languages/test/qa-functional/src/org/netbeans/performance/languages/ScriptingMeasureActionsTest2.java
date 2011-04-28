@@ -68,10 +68,8 @@ public class ScriptingMeasureActionsTest2 {
                 .addTest(TypingInScriptingEditorTest.class)
                 .addTest(ScriptingCodeCompletionInEditorTest.class)
                 .addTest(PageUpPageDownScriptingEditorTest.class)
-                .addTest(OpenRubyProjectTest.class)
                 .addTest(CreatePHPProjectTest.class)
                 .addTest(CreatePHPSampleProjectTest.class)
-                .addTest(CreateRubyProjectTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        

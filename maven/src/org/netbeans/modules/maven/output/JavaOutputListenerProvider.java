@@ -68,6 +68,9 @@ public class JavaOutputListenerProvider implements OutputProcessor {
         "mojo-execute#compiler:testCompile" //NOI18N
     };
     private Pattern failPattern;
+    private String windowsDrive; // #197381
+    /** @see org.codehaus.plexus.compiler.javac.JavacCompiler#compile */
+    private static final Pattern windowsDriveInfoPattern = Pattern.compile("Compiling \\d+ source files? to ([A-Za-z]:)\\\\.+");
     
     /** Creates a new instance of JavaOutputListenerProvider */
     public JavaOutputListenerProvider() {
@@ -82,7 +85,12 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                 String clazz = match.group(1);
                 String lineNum = match.group(2);
                 String text = match.group(4);
-                File clazzfile = FileUtil.normalizeFile(new File(clazz + ".java")); //NOI18N
+                File clazzfile;
+                if (clazz.startsWith("\\") && !clazz.startsWith("\\\\") && windowsDrive != null) {
+                    clazzfile = FileUtil.normalizeFile(new File(windowsDrive + clazz + ".java"));
+                } else {
+                    clazzfile = FileUtil.normalizeFile(new File(clazz + ".java"));
+                }
                 visitor.setOutputListener(new CompileAnnotation(clazzfile, lineNum,
                         text), text.indexOf("[deprecation]") < 0); //NOI18N
                 FileUtil.refreshFor(clazzfile);
@@ -107,6 +115,10 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                 line = line.replace(clazz, newclazz); //NOI18N
                 visitor.setLine(line);
             }
+        match = windowsDriveInfoPattern.matcher(line);
+        if (match.matches()) {
+            windowsDrive = match.group(1);
+        }
     }
 
     public String[] getRegisteredOutputSequences() {

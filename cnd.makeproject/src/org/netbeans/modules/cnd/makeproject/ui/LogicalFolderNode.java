@@ -104,11 +104,12 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         this.provider = provider;
         String postfix = "";
         if (folder != null && folder.getRoot() != null) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
-            AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, provider.getProject());
-            FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, provider.getProject());
-            if (folderFile != null) {
-                postfix = " - " + folderFile.getPath(); // NOI18N
+            String absPath = folder.getAbsolutePath();
+//            String AbsRootPath = CndPathUtilitities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
+//            AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, provider.getProject());
+//            FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, provider.getProject());
+            if (absPath != null) {
+                postfix = " - " + absPath; // NOI18N
             }
         }
         pathPostfix = postfix;
@@ -249,14 +250,21 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         String oldName = folder.getDisplayName();
         if (folder.isDiskFolder()) {
             String rootPath = folder.getRootPath();
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
-            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
+            FileObject fo;
+//            if (CndFileUtils.isLocalFileSystem(folder.getConfigurationDescriptor().getBaseDirFileSystem())) {
+//                String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
+//                fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
+//            } else {
+                // looks like line below is OK for all cases
+                fo = RemoteFileUtil.getFileObject(folder.getConfigurationDescriptor().getBaseDirFileObject(), rootPath);
+//            }
             if (fo == null /*paranoia*/ || !fo.isValid() || !fo.isFolder()) {
                 return;
             }
             try {
                 fo.rename(fo.lock(), newName, null);
             } catch (IOException ioe) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ioe.getMessage()));
             }
             return;
         }

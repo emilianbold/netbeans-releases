@@ -75,9 +75,14 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -88,6 +93,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -185,7 +191,7 @@ public class TaskProcessor {
         final Request request = currentRequest.getTaskToCancel();
         try {
             if (request != null) {
-                request.task.cancel();
+                cancelTask(request.task);
             }            
             parserLock.lock();
             try {
@@ -251,7 +257,7 @@ public class TaskProcessor {
                         return sync;
                     }
                     if (request[0] != null) {
-                        request[0].task.cancel();
+                        cancelTask(request[0].task);
                     }
                     if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
@@ -290,39 +296,12 @@ public class TaskProcessor {
      */ 
     public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
             boolean bridge, Class<? extends Scheduler> schedulerType) {
-        addPhaseCompletionTasks(tasks, cache, cache.getSnapshot().getSource(), bridge, schedulerType);
-    }
-
-    /**
-     * Adds the task, used by addPhaseCompletionTasks and updatePhaseCompletionTask, can be called under
-     * INTERNAL_LOCK. The original addPhaseCompletionTasks cannot be called under INTERNAL_LOCK as it
-     * calls {@link SourceCache#getSnapshot()} which takes private SourceCache lock.
-     * @param tasks
-     * @param cache
-     * @param source
-     * @param bridge
-     * @param schedulerType
-     */
-    private static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
-            final Source source, boolean bridge, Class<? extends Scheduler> schedulerType) {
-        Parameters.notNull("task", tasks);   //NOI18N
-        Parameters.notNull("source", source);   //NOI18N
-        Parameters.notNull("cache", cache);   //NOI18N
-        List<Request> _requests = new ArrayList<Request> ();
-        for (SchedulerTask task : tasks) {
-            final String taskClassName = task.getClass().getName();
-            if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
-                if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
-                    continue;
-            }
-            _requests.add (new Request (task, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, schedulerType));
-        }
-        if (!_requests.isEmpty ()) {
-            handleAddRequests (source, _requests);
+        final Collection<? extends Request> rqs = toRequests(tasks, cache, bridge, schedulerType);
+        if (handleAddRequests(cache.getSource(), rqs)) {
+            cancelLowPriorityTask(rqs);
         }
     }
-    
-    
+        
     /**
      * Removes a task from scheduled requests.
      * @param task The task to be removed.
@@ -403,10 +382,10 @@ public class TaskProcessor {
      */
     public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);
-        Parameters.notNull("source", source);
-        synchronized (INTERNAL_LOCK) {
-            final Request request = currentRequest.getTaskToCancel (tasks);
-            try {
+        Parameters.notNull("source", source);        
+        final Request request = currentRequest.getTaskToCancel (tasks);
+        try {
+            synchronized (INTERNAL_LOCK) {
                 final Collection<Request> cr = finishedRequests.get(source);
                 if (cr != null) {
                     for (SchedulerTask task : tasks) {
@@ -429,25 +408,33 @@ public class TaskProcessor {
                         }
                     }
                 }
-            } finally {
-                if (request != null) {
-                    currentRequest.cancelCompleted(request);
-                }
+            }
+        } finally {
+            if (request != null) {
+                currentRequest.cancelCompleted(request);
             }
         }
     }
 
-    public static void updatePhaseCompletionTask (final Collection<SchedulerTask>add, final Collection<SchedulerTask>remove,
-            final Source source, SourceCache cache, Class<? extends Scheduler> schedulerType) {
+    public static void updatePhaseCompletionTask (
+            final @NonNull Collection<SchedulerTask>add,
+            final @NonNull Collection<SchedulerTask>remove,
+            final @NonNull Source source,
+            final @NonNull SourceCache cache,
+            final @NullAllowed Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("add", add);
         Parameters.notNull("remove", remove);
         Parameters.notNull("source", source);
         Parameters.notNull("cache", cache);
-       // Parameters.notNull("schedulerType", schedulerType);
+        if (add.isEmpty() && remove.isEmpty()) {
+            return;
+        }
+        final Collection<? extends Request> rqs = toRequests(add, cache, false, schedulerType);
         synchronized (INTERNAL_LOCK) {
             removePhaseCompletionTasks(remove, source);
-            addPhaseCompletionTasks(add, cache, source, false, schedulerType);
+            handleAddRequests (source, rqs);
         }
+        cancelLowPriorityTask(rqs);
     }
     
     //Changes handling
@@ -462,7 +449,7 @@ public class TaskProcessor {
         TaskProcessor.Request r = currentRequest.getTaskToCancel (mayInterruptParser);
         if (r != null) {
             try {
-                r.task.cancel();
+                cancelTask(r.task);
             } finally {
                 if (sync) {
                     Request oldR = rst.getAndSet(r);
@@ -515,36 +502,137 @@ public class TaskProcessor {
     
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
-        final Request rq = new Request(task, null, ReschedulePolicy.NEVER, null);
-        handleAddRequests (null,Collections.<Request>singletonList (rq));
+        final Collection<? extends Request> rqs = Collections.<Request>singleton(new Request(task, null, ReschedulePolicy.NEVER, null));
+        if (handleAddRequests (null, rqs)) {
+            cancelLowPriorityTask(rqs);
+        }
     }
     
     
     //Private methods
-    private static void handleAddRequests (final Source source, final List<Request> requests) {
-        assert requests != null;
+    private static @NonNull Collection<? extends Request> toRequests (
+            final @NonNull Collection<? extends SchedulerTask> tasks,
+            final @NonNull SourceCache cache,
+            final boolean bridge,
+            final @NullAllowed Class<? extends Scheduler> schedulerType) {
+        Parameters.notNull("task", tasks);   //NOI18N
+        Parameters.notNull("cache", cache);   //NOI18N
+        List<Request> _requests = new ArrayList<Request> ();
+        for (SchedulerTask task : tasks) {
+            final String taskClassName = task.getClass().getName();
+            if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+                if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
+                    continue;
+            }
+            _requests.add (new Request (task, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, schedulerType));
+        }
+        return _requests;
+    }
+
+    private static boolean handleAddRequests (
+            final @NullAllowed Source source,
+            final @NonNull Collection<? extends Request> requests) {
+        Parameters.notNull("requests", requests);
         if (requests.isEmpty()) {
-            return;
+            return false;
         }
         if (source != null) {
             SourceAccessor.getINSTANCE().assignListeners(source);
         }
         //Issue #102073 - removed running task which is readded is not performed
-        int priority = Integer.MAX_VALUE;
         synchronized (INTERNAL_LOCK) {
-            for (Request request : requests) {
-                priority = Math.min(priority, request.task.getPriority());
-            }
             TaskProcessor.requests.addAll (requests);
-        }        
-        Request request = currentRequest.getTaskToCancel(priority);
+        }
+        return true;
+    }
+
+
+    private static void cancelLowPriorityTask(final @NonNull Iterable<? extends Request> requests) {
+        int priority = Integer.MAX_VALUE;
+        for (Request r : requests) {
+            priority = Math.min(priority, r.task.getPriority());
+        }
+        final Request request = currentRequest.getTaskToCancel(priority);
         try {
             if (request != null) {
-                request.task.cancel();
+                cancelTask(request.task);
             }
         } finally {
             currentRequest.cancelCompleted(request);
         }
+     }
+
+    /*test*/ static void cancelTask (final @NonNull SchedulerTask task) {
+        assert task != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        task.cancel();
+    }
+
+    /*test*/ static void cancelParser(
+            final @NonNull Parser parser,
+            final boolean callDeprecatedCancel,
+            final @NonNull Parser.CancelReason cancelReason,
+            final @NullAllowed SourceModificationEvent event) {
+        assert parser != null;
+        assert cancelReason != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        if (callDeprecatedCancel) {
+            parser.cancel();
+        }
+        parser.cancel(cancelReason,event);
+    }
+
+    /*test*/ static <T extends Parser.Result> void callParserResultTask (
+            final @NonNull ParserResultTask<T> task,
+            final @NullAllowed T result,
+            final @NullAllowed SchedulerEvent event) {
+            assert task != null;
+            assert !Thread.holdsLock(INTERNAL_LOCK);
+            assert parserLock.isHeldByCurrentThread();
+            task.run(result, event);
+    }
+
+    static List<Embedding> callEmbeddingProvider(
+            final @NonNull EmbeddingProvider embeddingProvider,
+            final @NonNull Snapshot snapshot) {
+        assert embeddingProvider != null;
+        assert snapshot != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        //EmbeddingProvider does not do parsing no need of parserLock
+        return embeddingProvider.getEmbeddings(snapshot);
+    }
+
+    public static void callUserTask(
+            final @NonNull UserTask task,
+            final @NonNull ResultIterator resultIterator) throws Exception {
+        assert task != null;
+        assert resultIterator != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        assert parserLock.isHeldByCurrentThread();
+        task.run(resultIterator);
+    }
+
+    public static void callParse(
+        final @NonNull Parser parser,
+        final @NullAllowed Snapshot snapshot,
+        final @NonNull Task task,
+        final @NullAllowed SourceModificationEvent event) throws ParseException {
+        assert parser != null;
+        assert task != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        assert parserLock.isHeldByCurrentThread();
+        parser.parse(snapshot, task, event);
+    }
+
+    public static Parser.Result callGetResult(
+            final @NonNull Parser parser,
+            final @NonNull Task task) throws ParseException {
+        assert parser !=  null;
+        assert task != null;
+        assert !Thread.holdsLock(INTERNAL_LOCK);
+        assert parserLock.isHeldByCurrentThread();
+        return parser.getResult(task);
+
     }
     
     /**
@@ -606,8 +694,7 @@ public class TaskProcessor {
                                             if (LOGGER.isLoggable(Level.FINE)) {
                                                 LOGGER.log(Level.FINE, "Running Special Task: {0}", r.toString());
                                             }
-                                            // needs some description!!!! (tzezula)
-                                            ((ParserResultTask) r.task).run (null, null);
+                                            callParserResultTask((ParserResultTask) r.task, null, null);
                                         } finally {
                                             currentRequest.clearCurrentTask();
                                             boolean cancelled = requests.contains(r);
@@ -673,7 +760,7 @@ public class TaskProcessor {
                                                                             LOGGER.log(Level.FINE, "Running Task: {0}", r);
                                                                             ParserResultTask parserResultTask = (ParserResultTask) r.task;
                                                                             SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
-                                                                            parserResultTask.run (currentResult, schedulerEvent);                                                                        
+                                                                            callParserResultTask(parserResultTask,currentResult, schedulerEvent);
                                                                         }
                                                                         else {
                                                                             assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
@@ -992,7 +1079,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.PARSER_RESULT_TASK, null);
+                    cancelParser (parser, false, Parser.CancelReason.PARSER_RESULT_TASK, null);
                 }
             }
             return request;
@@ -1015,7 +1102,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.PARSER_RESULT_TASK, null);
+                    cancelParser(parser, false, Parser.CancelReason.PARSER_RESULT_TASK, null);
                 }
             }
             return request;
@@ -1037,7 +1124,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.USER_TASK, null);
+                    cancelParser (parser, false, Parser.CancelReason.USER_TASK, null);
                 }
             }
             return request;
@@ -1071,11 +1158,10 @@ public class TaskProcessor {
                     if (request != null && (sc = request.cache)!= null) {
                         src = sc.getSnapshot().getSource();
                     }
-                    if (src != null) {
-                        if (mayCancelParser) {
-                            parser.cancel();
-                        }
-                        parser.cancel(
+                    if (src != null) {                        
+                        cancelParser(
+                            parser,
+                            mayCancelParser,
                             Parser.CancelReason.SOURCE_MODIFICATION_EVENT,
                             SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
                     }
@@ -1105,7 +1191,7 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    parser.cancel(Parser.CancelReason.USER_TASK, null);
+                    cancelParser(parser, false, Parser.CancelReason.USER_TASK, null);
                 }
             }
             return result;

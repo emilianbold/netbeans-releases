@@ -197,7 +197,12 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         }
         return Collections.<CsmInheritance>emptyList();
     }
-    
+
+    @Override
+    public boolean isExplicitSpecialization() {
+        return true;
+    }
+
     private static String getClassName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
         return getClassNameFromFunctionSpecialicationName(funName.toString());

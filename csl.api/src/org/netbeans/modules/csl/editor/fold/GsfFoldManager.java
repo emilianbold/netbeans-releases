@@ -424,71 +424,70 @@ public class GsfFoldManager implements FoldManager {
             return success[0];
         }
 
-        private boolean checkInitialFold(GsfFoldManager manager, TreeSet<FoldInfo> folds) {
-            try {
-                Document doc   = manager.operation.getHierarchy().getComponent().getDocument();
-                TokenHierarchy<?> th = TokenHierarchy.get(doc);
-                if (th == null) {
-                    return false;
-                }
-                TokenSequence<?> ts = th.tokenSequence();
-                if (ts == null) {
-                    return false;
-                }
-                
-                while (ts.moveNext()) {
-                    Token<?> token = ts.token();
-                    
-                    String category = token.id().primaryCategory();
-                    if ("comment".equals(category)) { // NOI18N
-                        int startOffset = ts.offset();
-                        int endOffset =  startOffset + token.length();
-                        boolean collapsed = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT); //foldInitialCommentsPreset;
-                        
-                        if (manager.initialCommentFold != null) {
-                            collapsed = manager.initialCommentFold.isCollapsed();
-                        }
-                        
-                        // Find end - could be a block of single-line statements
-                        
-                        while (ts.moveNext()) {
-                            token = ts.token();
-                            category = token.id().primaryCategory();
-                            if ("comment".equals(category)) { // NOI18N
-                                endOffset =  ts.offset() + token.length();
-                            } else if (!"whitespace".equals(category)) { // NOI18N
-                                break;
-                            }
-                        }
-
-                        try {
-                            // Start the fold at the END of the line
-                            startOffset = org.netbeans.editor.Utilities.getRowEnd((BaseDocument)doc, startOffset);
-                            if (startOffset >= endOffset) {
-                                return true;
-                            }
-                        } catch (BadLocationException ex) {
-                            LOG.log(Level.WARNING, null, ex);
-                        }
-                        
-                        folds.add(new FoldInfo(doc, startOffset, endOffset, INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
-                        
-                        return true;
-                    }
-                    
-                    if (!"whitespace".equals(category)) { // NOI18N
-                        break;
-                    }
-                }
-            } catch (BadLocationException e) {
-                //the document probably changed, stop
-                return false;
-            } catch (ConcurrentModificationException e) {
-                //from TokenSequence, document probably changed, stop
+        private boolean checkInitialFold(final GsfFoldManager manager, final TreeSet<FoldInfo> folds) {
+            final boolean[] ret = new boolean[1];
+            ret[0] = true;
+            final Document doc   = manager.operation.getHierarchy().getComponent().getDocument();
+            final TokenHierarchy<?> th = TokenHierarchy.get(doc);
+            if (th == null) {
                 return false;
             }
-            
-            return true;
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        TokenSequence<?> ts = th.tokenSequence();
+                        if (ts == null) {
+                            return;
+                        }
+                        while (ts.moveNext()) {
+                            Token<?> token = ts.token();
+                            String category = token.id().primaryCategory();
+                            if ("comment".equals(category)) { // NOI18N
+                                int startOffset = ts.offset();
+                                int endOffset = startOffset + token.length();
+                                boolean collapsed = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT); //foldInitialCommentsPreset;
+
+                                if (manager.initialCommentFold != null) {
+                                    collapsed = manager.initialCommentFold.isCollapsed();
+                                }
+
+                                // Find end - could be a block of single-line statements
+
+                                while (ts.moveNext()) {
+                                    token = ts.token();
+                                    category = token.id().primaryCategory();
+                                    if ("comment".equals(category)) { // NOI18N
+                                        endOffset = ts.offset() + token.length();
+                                    } else if (!"whitespace".equals(category)) { // NOI18N
+                                        break;
+                                    }
+                                }
+
+                                try {
+                                    // Start the fold at the END of the line
+                                    startOffset = org.netbeans.editor.Utilities.getRowEnd((BaseDocument) doc, startOffset);
+                                    if (startOffset >= endOffset) {
+                                        return;
+                                    }
+                                } catch (BadLocationException ex) {
+                                    LOG.log(Level.WARNING, null, ex);
+                                }
+
+                                folds.add(new FoldInfo(doc, startOffset, endOffset, INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
+                                return;
+                            }
+                            if (!"whitespace".equals(category)) { // NOI18N
+                                break;
+                            }
+                            
+                        }
+                    } catch (BadLocationException e) {
+                        ret[0] = false;
+                    }
+                }
+            });
+            return ret[0];
         }
         
         private void scan(final GsfFoldManager manager, final ParserResult info,

@@ -30,7 +30,10 @@
  */
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
+import java.io.Writer;
 import javax.swing.text.Document;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -287,4 +290,48 @@ public class JsUtils {
        
        return s;
     }
+    
+    static void dumpAST(Node root, Appendable out) {
+        DumpTreeVisitor visitor = new DumpTreeVisitor(out);
+        ParseTreeWalker walker = new ParseTreeWalker(visitor);
+        walker.walk(root);
+    }
+    
+    private static class DumpTreeVisitor implements ParseTreeVisitor {
+
+        private int indent = 0;
+
+        private Appendable output;
+        private static final String INDENT_STRING = "    ";
+
+        public DumpTreeVisitor(Appendable output) {
+            this.output = output;
+        }
+
+        @Override
+        public boolean visit(Node node) {
+            indent++;
+            dump(node);
+            return false;
+        }
+
+        @Override
+        public boolean unvisit(Node node) {
+            indent--;
+            return false;
+        }
+
+        private void dump(Node node) {
+            try {
+                for(int i = 0; i < indent; i++) {
+                    output.append(INDENT_STRING);
+                }
+                output.append(node.toString()).append('\n');
+            } catch (IOException e) {
+                //no-op
+            }
+        }
+
+    }
+    
 }

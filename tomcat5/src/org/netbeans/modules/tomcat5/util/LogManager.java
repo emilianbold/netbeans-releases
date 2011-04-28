@@ -129,7 +129,7 @@ public class LogManager {
     public void closeServerLog() {
         synchronized(serverLogLock) {
             if (serverLog != null) {
-                serverLog.interrupt();
+                serverLog.stop();
                 serverLog = null;
             }
         }

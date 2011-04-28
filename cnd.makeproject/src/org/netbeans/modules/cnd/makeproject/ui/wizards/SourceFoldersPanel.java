@@ -84,9 +84,6 @@ import org.openide.util.NbBundle;
             String workingdir = ((File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER)).getAbsolutePath();
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
-//            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
-//                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
-//            }
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
             firstTime = false;
         }

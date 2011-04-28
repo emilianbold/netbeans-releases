@@ -71,7 +71,7 @@ public final class GdbDebuggerSettings implements DebuggerSettings {
 
         final String dummyBaseDir = "<dummyBaseDir>";	// NOI18N
 
-        runProfile = new RunProfile(dummyBaseDir, PlatformTypes.PLATFORM_NONE);
+        runProfile = new RunProfile(dummyBaseDir, PlatformTypes.PLATFORM_NONE, null);
         dbgProfile = new GdbProfile();
     }
 

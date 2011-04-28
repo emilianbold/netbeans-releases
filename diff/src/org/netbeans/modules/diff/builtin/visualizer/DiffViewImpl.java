@@ -133,6 +133,8 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         
         saveSources(r1, r2);
         initComponents ();
+        aquaBackgroundWorkaround();
+        
         setName(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "DiffComponent.title"));
         initActions();
         jSplitPane1.setResizeWeight(0.5);
@@ -204,6 +206,15 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
 
     }
 
+    private void aquaBackgroundWorkaround() {
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color); 
+            filePanel1.setBackground(color); 
+            filePanel2.setBackground(color); 
+        }
+    }
+        
     private void saveSources(Reader r1, Reader r2) throws IOException {
         if (r1 != null) {
             StringWriter sw = new StringWriter();

@@ -59,6 +59,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.spi.targetinfo.JPATargetInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,7 +95,10 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
             modifiedClazz = getGenUtils().addAnnotation(modifiedClazz, getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN, attribs));
         }
 
-        modifiedClazz = getTreeMaker().insertClassMember(modifiedClazz, getIndexForField(modifiedClazz), createUserTransaction());
+        boolean simple = GenerationOptions.Operation.GET_EM.equals(getGenerationOptions().getOperation());//if simple (or with return etc) - no transactions
+        if(!(isEJB || simple)){
+            modifiedClazz = getTreeMaker().insertClassMember(modifiedClazz, getIndexForField(modifiedClazz), createUserTransaction());
+        }
         
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
                 Collections.<Modifier>singleton(Modifier.PROTECTED),
@@ -118,14 +122,15 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
     private String getMethodBody(FieldInfo em, boolean isEJB){
         String ctxInit = em.isExisting() ? "" : "    javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup(\"java:comp/env\");\n";
         String emInit = em.isExisting() ? "    {0}.joinTransaction();\n" :"    javax.persistence.EntityManager {0} =  (javax.persistence.EntityManager) ctx.lookup(\"persistence/LogicalName\");\n";
+        boolean simple = GenerationOptions.Operation.GET_EM.equals(getGenerationOptions().getOperation());//if simple (or with return etc) - no transactions
         
         String text =
                 "try '{'\n" +
                 ctxInit +
-                (isEJB ? "" : "    utx.begin();\n") +
+                (isEJB || simple ? "" : "    utx.begin();\n") +
                 emInit +
                 generateCallLines(em.getName()) +
-                (isEJB ? "" : "    utx.commit();\n") +
+                (isEJB || simple ? "" : "    utx.commit();\n") +
                 "} catch(Exception e) '{'\n" +
                 "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
                 "    throw new RuntimeException(e);\n" +

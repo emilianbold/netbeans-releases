@@ -242,6 +242,17 @@ public class MainTest extends NbTestCase {
         generalTest("TestApplication1_4", true, true, true);
     }
 
+    public void testInclude() throws IOException, Schema2BeansException, InterruptedException {
+        GenBeans.Config config = new GenBeans.Config();
+        config.setDocRoot("root");
+        generalTest("TestIncludeMain", true, config, false);
+    }
+
+    public void testChameleonInclude() throws IOException, Schema2BeansException, InterruptedException {
+        GenBeans.Config config = new GenBeans.Config();
+        generalTest("TestChameleonIncludeMain", true, config, false);
+    }    
+
     public void testMergeExtendBaseBean() throws IOException, Schema2BeansException, InterruptedException {
         GenBeans.Config config = new GenBeans.Config();
         config.setOutputType(GenBeans.Config.OUTPUT_JAVABEANS);
@@ -344,6 +355,11 @@ public class MainTest extends NbTestCase {
 
     public void generalTest(String testName, boolean xmlSchema,
                             GenBeans.Config config) throws IOException, Schema2BeansException, InterruptedException {
+        generalTest(testName, xmlSchema, config, true);
+    }
+
+    public void generalTest(String testName, boolean xmlSchema,
+                            GenBeans.Config config, boolean testCompile) throws IOException, Schema2BeansException, InterruptedException {
         String testOnly = System.getProperty("MainTest.testOnly");
         if (testOnly != null && !testOnly.equals(testName))
             return;
@@ -398,16 +414,17 @@ public class MainTest extends NbTestCase {
             ref(beanTreeFile);
             beanTreeFile.delete();
             
-            ref("Compiling");
-            String cmd = getJdkHome() + "javac -nowarn -classpath "+workDir.toString()+File.pathSeparator+getDataDir().toString()+File.pathSeparator+theClassPath+" "+getDataDir().toString()+"/"+testName+".java";
-            int result = runCommandToSystemOut(cmd);
-            ref("Finished compiling: "+result);
+            if (testCompile) {
+                ref("Compiling");
+                String cmd = getJdkHome() + "javac -nowarn -classpath "+workDir.toString()+File.pathSeparator+getDataDir().toString()+File.pathSeparator+theClassPath+" "+getDataDir().toString()+"/"+testName+".java";
+                int result = runCommandToSystemOut(cmd);
+                ref("Finished compiling: "+result);
 
-            //runCommand("ls -l "+getDataDir());
-            cmd = getJdkHome() + "java -classpath "+workDir.toString()+File.pathSeparator+getDataDir().toString()+File.pathSeparator+theClassPath+" "+testName+" "+getDataDir().toString()+"/";
-            result = runCommand(cmd);
-            ref("Finished running "+testName+": "+result);
-
+                //runCommand("ls -l "+getDataDir());
+                cmd = getJdkHome() + "java -classpath "+workDir.toString()+File.pathSeparator+getDataDir().toString()+File.pathSeparator+theClassPath+" "+testName+" "+getDataDir().toString()+"/";
+                result = runCommand(cmd);
+                ref("Finished running "+testName+": "+result);
+            }
             System.out.println("Finished.\n");
         } catch (Exception e) {
             ref(e.getMessage());

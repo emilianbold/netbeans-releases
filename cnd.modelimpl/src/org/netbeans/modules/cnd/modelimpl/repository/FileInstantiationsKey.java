@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  *
  * @author Nikolay Krasilnikov(nnnnnk@netbeans.org)
  */
-public class FileInstantiationsKey extends ProjectFileNameBasedKey {
+public final class FileInstantiationsKey extends ProjectFileNameBasedKey {
 
     public FileInstantiationsKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());

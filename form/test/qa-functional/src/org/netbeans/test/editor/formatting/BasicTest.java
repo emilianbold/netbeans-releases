@@ -49,19 +49,22 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import junit.textui.TestRunner;
-import lib.EditorTestCase;
-import org.netbeans.jellytools.Bundle;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.junit.NbTestSuite;
-//import org.netbeans.test.editor.LineDiff;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.form.FormDesignerOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.qa.form.ExtJellyTestCase;
+
 
 /**
  *
  * @author jp159440
+ * 
+ * <b>Adam Senk</b>
+ * 26 April 2011 WORKS
  */
-public class BasicTest extends EditorTestCase{
+public class BasicTest extends ExtJellyTestCase{
     
     private boolean generateGoldenFiles = false;
     
@@ -78,13 +81,20 @@ public class BasicTest extends EditorTestCase{
         
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(BasicTest.class);
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BasicTest.class).addTest(
+               "testBasicIndentation",
+               "testAdvancedIndentation",
+               "testReformat",
+               "testReformat2"
+               ).clusters(".*").enableModules(".*").gui(true));
+
     }
     
-    public File getGoldenFile() {
-        String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
+    
+    
+    public File getaGoldenFile() {
+        String fileName = ("goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass");
         File f = new java.io.File(getDataDir(),fileName);
         if(!f.exists()) fail("Golden file "+f.getAbsolutePath()+ " does not exist");
         return f;
@@ -98,19 +108,21 @@ public class BasicTest extends EditorTestCase{
     }
     
 
-    public void compareGoldenFile() throws IOException {
+    public void compareGoldenFile() throws IOException, InterruptedException {
         File fGolden = null;
         if(!generateGoldenFiles) {
-            fGolden = getGoldenFile();
+            fGolden = getGoldenFile(testClass+".pass");
         } else {
             fGolden = getNewGoldenFile();
         }
         String refFileName = getName()+".ref";
         String diffFileName = getName()+".diff";
         File fRef = new File(getWorkDir(),refFileName);
+        Thread.sleep(1000);
         FileWriter fw = new FileWriter(fRef);
         fw.write(oper.getText());
         fw.close();
+        Thread.sleep(1000);
        // LineDiff diff = new LineDiff(false);
         if(!generateGoldenFiles) {
             File fDiff = new File(getWorkDir(),diffFileName);
@@ -118,6 +130,7 @@ public class BasicTest extends EditorTestCase{
             System.out.println("fGolden file is: "+fGolden);
             System.out.println("fDiff file is: "+fDiff);
             assertFile(fRef, fGolden, fDiff);
+            Thread.sleep(1000);
            // if(diff.diff(fGolden, fRef, fDiff)) fail("Golden files differ");
         } else {
             FileWriter fwgolden = new FileWriter(fGolden);
@@ -127,18 +140,22 @@ public class BasicTest extends EditorTestCase{
         }
     }
     
-    protected void setUp() throws Exception {
+    @Override
+    public void setUp() throws IOException  {
         super.setUp();
-        openDefaultProject();
         testClass = getName();
         System.out.println(testClass );
         System.out.println(curPackage);
-        openSourceFile(curPackage, testClass);
-        oper =  new EditorOperator(testClass);
+        setTestPackageName(curPackage);
+        openFile(testClass);
+        FormDesignerOperator fdo= new FormDesignerOperator(testClass);
+        
+        oper =  fdo.editor();
         oper.txtEditorPane().setVerification(false);
     }
     
-    protected void tearDown() throws Exception {
+    @Override
+    public void tearDown() throws Exception {
         compareGoldenFile();
         super.tearDown();
     }
@@ -199,9 +216,8 @@ public class BasicTest extends EditorTestCase{
     }
     
     public void testReformat() {
-        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
-        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
-        new Action(sourceMenu+"|"+reformat, null).perform();
+        
+        new ActionNoBlock("Source|Format", null).perform();
     }
     
     /**
@@ -209,14 +225,10 @@ public class BasicTest extends EditorTestCase{
      * testReformat2.java, testReformat.pass
      */ 
     public void testReformat2() {
-        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
-        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
-        new Action(sourceMenu+"|"+reformat, null).perform();
+        new ActionNoBlock("Source|Format", null).perform();
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(BasicTest.class));
-    }
+    
     
     
 }

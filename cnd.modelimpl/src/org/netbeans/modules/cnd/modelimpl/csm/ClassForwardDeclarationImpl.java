@@ -172,6 +172,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     public boolean isSpecialization() {
         return false;
     }
+
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
     
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {

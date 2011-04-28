@@ -210,7 +210,7 @@ public class TraceXRef extends TraceModel {
     }
 
     private CsmFile getCsmFile(String path) {
-        return super.getProject().findFile(new java.io.File(path).getAbsolutePath(), false);
+        return super.getProject().findFile(new java.io.File(path).getAbsolutePath(), true, false);
     }
 
     @Override
@@ -389,7 +389,9 @@ public class TraceXRef extends TraceModel {
             }
         }
         bag.incrementLineCounter(lineCount);
-        out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time + "ms"); // NOI18N
+        if (params.printFileStatistic) {
+            out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time + "ms"); // NOI18N
+        }
         return time;
     }
 
@@ -1139,12 +1141,17 @@ public class TraceXRef extends TraceModel {
         public final boolean reportUnresolved;
         public final int numThreads;
         public final long timeThreshold;
+        public boolean printFileStatistic = true;
         public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads, long timeThreshold) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
             this.reportUnresolved = reportUnresolved;
             this.numThreads = numThreads;
             this.timeThreshold = timeThreshold;
+        }
+        
+        public void printFileStatistic(boolean printFileStatistic) {
+            this.printFileStatistic = printFileStatistic;
         }
     }
 

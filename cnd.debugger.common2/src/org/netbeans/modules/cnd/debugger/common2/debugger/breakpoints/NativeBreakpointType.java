@@ -71,8 +71,9 @@ abstract public class NativeBreakpointType extends BreakpointType {
 	customizerRef = new WeakReference<BreakpointPanel>(customizer);
 	return customizer;
     }
-
+    
     // interface BreakpointType
+    @Override
     public Controller getController() {
 	// OLD BreakpointPanel customizer = getCustomizer(null);
 	BreakpointPanel customizer = customizerRef.get();

@@ -50,15 +50,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.util.Factory;
 
 /** Class which takes a folder and behaves like an archive should behave.
  * It does not apply any optimalizations. However it is good for comparing
@@ -127,7 +124,7 @@ class GoldenArchive implements Archive {
         
         for( File f : files ) {
             if ( !f.isDirectory() ) {
-                entries.add( FileObjects.fileFileObject (f, rootFolder, null));
+                entries.add( FileObjects.fileFileObject (f, rootFolder, null, null));
             }
         }
         

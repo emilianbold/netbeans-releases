@@ -84,7 +84,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
@@ -367,12 +366,8 @@ public class ModulesNodeFactory implements NodeFactory {
                 Project project = activatedNodes[i].getLookup().lookup(Project.class);
                 projects[i] = project;
             }
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    StatusDisplayer.getDefault().setStatusText(getMessage("MSG_OpeningProjects"));
-                    OpenProjects.getDefault().open(projects, false);
-                }
-            });
+            StatusDisplayer.getDefault().setStatusText(getMessage("MSG_OpeningProjects"));
+            OpenProjects.getDefault().open(projects, false);
         }
 
         public String getName() {
@@ -384,7 +379,7 @@ public class ModulesNodeFactory implements NodeFactory {
         }
 
         protected @Override boolean asynchronous() {
-            return false;
+            return true;
         }
 
         protected int mode() {

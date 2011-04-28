@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -57,6 +58,7 @@ public class MakeArtifact {
     public static final int TYPE_QT_APPLICATION = 4;
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
+    public static final int TYPE_DB_APPLICATION = 7;
 
     // Project
     private String projectLocation;
@@ -107,9 +109,20 @@ public class MakeArtifact {
             buildCommand = makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue();
             cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
         } else {
-            workingDirectory = projectLocation;
-            buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-            cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+            if (makeConfiguration.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                // this method should be used for any remote mode.
+                // "if" is written just in case to lower risk in high resistance mode
+                workingDirectory = pd.getBaseDir();
+            } else {
+                workingDirectory = projectLocation;
+            }
+            if (!pd.getProjectMakefileName().isEmpty()) {
+                buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+            } else {
+                buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName + " clean"; // NOI18N
+            }
         }
 
         switch (makeConfiguration.getConfigurationType().getValue()) {
@@ -133,6 +146,9 @@ public class MakeArtifact {
                 break;
             case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 configurationType = MakeArtifact.TYPE_QT_STATIC_LIB;
+                break;
+            case MakeConfiguration.TYPE_DB_APPLICATION:
+                configurationType = MakeArtifact.TYPE_DB_APPLICATION;
                 break;
             default:
                 assert false; // FIXUP: error

@@ -348,12 +348,17 @@ public class ProfilesModelHelper {
     private static void updateServiceUrl(WSDLComponent c, boolean toHttps) {
         
         String from, to;
+        String portFrom, portTo;
         if (toHttps) {
             from = "http:";     //NOI18N
             to = "https:";      //NOI18N
+            portFrom	= "\\$\\{HttpDefaultPort}";
+            portTo		= "\\${HttpsDefaultPort}";
         } else {
             from = "https:";    //NOI18N
             to = "http:";       //NOI18N
+            portFrom	= "\\$\\{HttpsDefaultPort}";
+            portTo		= "\\${HttpDefaultPort}";
         }
         if (c instanceof Binding) {
             Collection<Service> services = c.getModel().getDefinitions().getServices();
@@ -366,6 +371,7 @@ public class ProfilesModelHelper {
                            for (Address a : addresses) {
                                String addr = a.getAddress();
                                if (addr != null) {
+                            	   addr = addr.replaceFirst(portFrom, portTo);
                                    a.setAddress(addr.replaceFirst(from, to));
                                }
                            }
@@ -375,6 +381,7 @@ public class ProfilesModelHelper {
                            for (Address10 a : addresses10) {
                                String addr = a.getAddress();
                                if (addr != null) {
+                            	   addr = addr.replaceFirst(portFrom, portTo); 
                                    a.setAddress(addr.replaceFirst(from, to));
                                }
                            }
@@ -384,6 +391,7 @@ public class ProfilesModelHelper {
                            for (SOAPAddress a : soapAddresses) {
                                String addr = a.getLocation();
                                if (addr != null) {
+                            	   addr = addr.replaceFirst(portFrom, portTo); 
                                    a.setLocation(addr.replaceFirst(from, to));
                                }
                            }

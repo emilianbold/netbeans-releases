@@ -874,7 +874,8 @@ public class EjbJarProject implements Project, FileChangeListener {
             artifactSupport.enableArtifactSynchronization(true);
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
@@ -1209,6 +1210,11 @@ public class EjbJarProject implements Project, FileChangeListener {
         }
 
         private boolean handleResource(FileEvent fe) {
+            // this may happen in broken project - see issue #191516
+            // in any case it can't be resource event when resources is null
+            if (resources != null) {
+                return false;
+            }
             FileObject resourceFo = FileUtil.toFileObject(resources);
             if (resourceFo != null
                     && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {

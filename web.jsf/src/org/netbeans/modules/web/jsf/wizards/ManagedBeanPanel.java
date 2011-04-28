@@ -53,10 +53,12 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
 
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Panel asking for web frameworks to use.
@@ -124,7 +126,15 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
     
     public boolean isValid() {
         getComponent();
-        return component.valid(wizard);
+        if (component.valid(wizard)) {
+            // check that this project has a valid target server
+            if (!Util.isValidServerInstance(project)) {
+                wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                        NbBundle.getMessage(ManagedBeanPanel.class, "WARN_MissingTargetServer"));
+            }
+            return true;
+        }
+        return false;
     }
 
     public boolean isAddBeanToConfig() {

@@ -112,7 +112,7 @@ abstract class AbstractJ2eeFile {
         }
         return retVal;
     }
-    
+
     /**
      * empty array iff there'are no errors, otherwise array of error messages
      *

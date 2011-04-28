@@ -363,13 +363,13 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return storage.cs;
             } else if (WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.equals(name)) { // NOI18N
                 return storage.defaultCompilerSet;
-            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_FULL_REMOTE.equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_FULL_REMOTE.equals(name)) { // NOI18N
                 return storage.fullRemote;
-            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N
                 return storage.getSourcesFileObject().getPath();
-            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) { // NOI18N
                 return storage.getSourcesFileObject();
-            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) { // NOI18N
                 //Object o = super.getProperty(name);
                 return new File(storage.getProjectPath());
             }

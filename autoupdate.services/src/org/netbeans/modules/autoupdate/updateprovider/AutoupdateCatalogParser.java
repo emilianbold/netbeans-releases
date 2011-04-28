@@ -169,7 +169,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
     
-    public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) {
+    public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) throws IOException {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
         URI base;
         try {
@@ -186,7 +186,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 is = getInputSource(url, provider, base);
                 saxParser.parse(is, new AutoupdateCatalogParser(items, provider, base));
             } catch (Exception ex) {
-                ERR.log(Level.INFO, "Failed to parse " + base, ex);
+                throw new IOException("Failed to parse " + base, ex);
             } finally {
                 if (is != null && is.getByteStream() != null) {
                     try {
@@ -363,7 +363,13 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
         lines.clear();
         bufferInitSize = 0;
-        switch (ELEMENTS.valueOf (qName)) {
+        final ELEMENTS elem;
+        try {
+            elem = ELEMENTS.valueOf (qName);
+        } catch (IllegalArgumentException ex) {
+            throw new SAXException("Wrong element " + qName); // NOI18N
+        }
+        switch (elem) {
             case module_updates :
                 try {
                     catalogDate = "";

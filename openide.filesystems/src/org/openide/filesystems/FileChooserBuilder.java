@@ -454,7 +454,12 @@ public class FileChooserBuilder {
         @Override
         public void approveSelection() {
             if (approver != null) {
-                boolean approved = approver.approve(getSelectedFiles());
+                File[] selected = getSelectedFiles();
+                final File sf = getSelectedFile();
+                if ((selected == null || selected.length == 0) && sf != null) {
+                    selected = new File[] { sf };
+                }
+                boolean approved = approver.approve(selected);
                 if (approved) {
                     super.approveSelection();
                 }

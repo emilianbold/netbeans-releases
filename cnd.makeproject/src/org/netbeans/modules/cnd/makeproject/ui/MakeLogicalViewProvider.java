@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.Image;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,19 +153,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         // FIXUP: this doesn't work with file groups (jl: is this still true?)
-        File file = FileUtil.toFile((FileObject) target);
-        if (!gotMakeConfigurationDescriptor() || file == null) {
+        FileObject fo = (FileObject) target;
+        if (!gotMakeConfigurationDescriptor() || !fo.isValid()) {
             // IZ 111884 NPE while creating a web project
             return null;
         }
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
-        Item item = makeConfigurationDescriptor.findProjectItemByPath(file.getAbsolutePath());
+        Item item = makeConfigurationDescriptor.findItemByFileObject(fo);
 
         if (item == null) {
-            item = makeConfigurationDescriptor.findExternalItemByPath(file.getAbsolutePath());
+            item = makeConfigurationDescriptor.findExternalItemByPath(fo.getPath());
             if (item == null) {
                 // try to find any item
-                item = makeConfigurationDescriptor.findItemByFile(file);
+                item = makeConfigurationDescriptor.findItemByPathSlowly(fo.getPath());
                 if (item == null) {
                     //not found:
                     return null;
