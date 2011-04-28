@@ -167,7 +167,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
                 // leave default
                 port = WLDeploymentFactory.DEFAULT_PORT;
             }
-            remote = Boolean.parseBoolean(manager.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+            remote = manager.isRemote();
         }
 
         @Override
