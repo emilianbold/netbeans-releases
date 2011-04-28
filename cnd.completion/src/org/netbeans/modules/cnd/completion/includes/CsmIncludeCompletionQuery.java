@@ -188,7 +188,7 @@ public class CsmIncludeCompletionQuery {
 
     private static boolean isHeaderFileWoExt(File pathname) {
         if (FileUtil.getExtension(pathname.getName()).length() == 0) {
-            return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(pathname));
+            return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getSourceFileMIMEType(pathname));
         }
         return false;
     }

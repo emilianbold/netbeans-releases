@@ -1339,7 +1339,7 @@ public class MakefileGenerator {
 
     /** Check to see if file is a fortran file (just looking at the extension) */
     private boolean isFortranFile(String file) {
-        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMESupport.getKnownMIMETypeByExtension(file));
+        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMESupport.getKnownSourceFileMIMETypeByExtension(file));
     }
 
     /** A class holding module definition and use information for a Fortran file */
