@@ -86,11 +86,6 @@ public class NewProjectWizardUtils {
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);
     }
 
-    public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {
-        ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV);
-        return (env == null) ?  getDefaultSourceEnvironment() : env;
-    }
-
     public static boolean fileExists(String absolutePath, WizardDescriptor wizardDescriptor) {
         if (isFullRemote(wizardDescriptor)) {
             return RemoteFileUtil.fileExists(absolutePath, getExecutionEnvironment(wizardDescriptor));

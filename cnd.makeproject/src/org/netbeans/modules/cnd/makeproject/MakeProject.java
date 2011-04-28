@@ -1121,7 +1121,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
     private synchronized void onProjectOpened() {
         if (!isOpenHookDone) {
-            helper.addMakeProjectListener(MakeProject.this);;
+            helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {
                 for (Runnable runnable : openedTasks) {

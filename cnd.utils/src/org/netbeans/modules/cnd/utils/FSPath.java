@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.utils;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;  
 
 /**
@@ -51,6 +52,21 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Kvashin
  */
 public final class FSPath {
+
+    /**
+     * Converts a FileObject to FSPath
+     * NB: throws IllegalStateException if FileObject.getFileSystem throws FileStateInvalidException!
+     * @param fo
+     * @throws IllegalStateException if FileObject.getFileSystem throws FileStateInvalidException
+     * @return 
+     */
+    public static FSPath toFSPath(FileObject fo) {
+        try {
+            return new FSPath(fo.getFileSystem(), fo.getPath());
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
     
     private final FileSystem fileSystem;
     private final String path;

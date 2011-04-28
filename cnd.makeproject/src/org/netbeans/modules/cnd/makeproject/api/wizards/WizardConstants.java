@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.cnd.makeproject.api.wizards;
 
+import org.netbeans.modules.cnd.makeproject.ui.wizards.NewProjectWizardUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.WizardDescriptor;
+
 /**
  * Constants that are used by wizards
  * @author Vladimir Kvashin
@@ -91,4 +95,9 @@ public class WizardConstants {
     public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
     public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N
     public static final String PROPERTY_SIMPLE_MODE_FOLDER = "simpleModeFolder"; // String // NOI18N
+    
+    public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {
+        ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV);
+        return (env == null) ? NewProjectWizardUtils.getDefaultSourceEnvironment() : env;
+    }    
 }

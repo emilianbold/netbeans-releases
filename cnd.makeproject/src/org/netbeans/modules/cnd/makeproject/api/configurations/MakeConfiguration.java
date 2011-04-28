@@ -83,7 +83,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -164,16 +163,6 @@ public class MakeConfiguration extends Configuration {
         this(baseDir, name, configurationTypeValue, hostUID, null, true);
     }
 
-    public static MakeConfiguration create(FileObject baseDirFileObject, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        FSPath fSPath;
-        try {
-            fSPath = new FSPath(baseDirFileObject.getFileSystem(), baseDirFileObject.getPath());
-        } catch (FileStateInvalidException ex) {
-            throw new IllegalStateException(ex);
-        }
-        return new MakeConfiguration(fSPath, name, configurationTypeValue, hostUID, hostCS, defaultToolCollection);
-    }
-    
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, hostUID, hostCS, defaultToolCollection);
     }
