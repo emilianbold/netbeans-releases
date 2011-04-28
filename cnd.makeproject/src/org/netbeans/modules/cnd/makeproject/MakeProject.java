@@ -1270,7 +1270,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private class RemoteProjectImpl implements RemoteProject {
-
+        
         @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
@@ -1282,7 +1282,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
                 return fileSystemHost;
             } else {
-                return ExecutionEnvironmentFactory.getLocal();
+                return FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory());
             }
         }
 
