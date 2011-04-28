@@ -203,6 +203,8 @@ public class DbxProfile extends DbgProfile {
 	set.put(DebuggerOption.OVERLOAD_FUNCTION.createNodeProp(this));
 	set.put(DebuggerOption.SCOPE_GLOBAL_ENUMS.createNodeProp(this));
 	set.put(DebuggerOption.SCOPE_LOOK_ASIDE.createNodeProp(this));
+        set.put(DebuggerOption.MACRO_EXPAND.createNodeProp(this));
+        set.put(DebuggerOption.MACRO_SOURCE.createNodeProp(this));
 	sheet.put(set);
 
 	set = new Sheet.Set();
