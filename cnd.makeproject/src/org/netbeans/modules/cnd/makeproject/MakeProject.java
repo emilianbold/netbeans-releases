@@ -174,7 +174,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
     private /*final*/ RemoteProject.Mode remoteMode;
     private final String remoteBaseDir;
-    private ExecutionEnvironment remoteFileSystemHost;
+    private ExecutionEnvironment fileSystemHost;
 
     public MakeProject(MakeProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
@@ -207,13 +207,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
 
-        remoteFileSystemHost = ExecutionEnvironmentFactory.getLocal();
+        fileSystemHost = FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory());        
         NodeList remoteFSHostNodeList = data.getElementsByTagName(REMOTE_FILESYSTEM_HOST);
         if (remoteFSHostNodeList.getLength() == 1) {
             remoteFSHostNodeList = remoteFSHostNodeList.item(0).getChildNodes();
             String hostID = remoteFSHostNodeList.item(0).getNodeValue();
             // XXX:fullRemote: separate user from host!
-            remoteFileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
+            fileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
         } else if (remoteFSHostNodeList.getLength() > 0) {
             CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
@@ -258,19 +258,19 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     public ExecutionEnvironment getRemoteFileSystemHost() {
-        return remoteFileSystemHost;
+        return fileSystemHost;
     }
 
     private FileSystem getSourceFileSystem() {
-        if (remoteFileSystemHost == null || remoteFileSystemHost.isLocal()) {
+        if (fileSystemHost == null || fileSystemHost.isLocal()) {
             return CndFileUtils.getLocalFileSystem();
         } else {
-            return FileSystemProvider.getFileSystem(remoteFileSystemHost);
+            return FileSystemProvider.getFileSystem(fileSystemHost);
         }
     }
 
     /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
-        this.remoteFileSystemHost = remoteFileSystemHost;
+        this.fileSystemHost = remoteFileSystemHost;
     }
 
     @Override
@@ -1280,7 +1280,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         @Override
         public ExecutionEnvironment getSourceFileSystemHost() {
             if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                return remoteFileSystemHost;
+                return fileSystemHost;
             } else {
                 return ExecutionEnvironmentFactory.getLocal();
             }
@@ -1289,7 +1289,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         @Override
         public FileSystem getSourceFileSystem() {
             if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                return FileSystemProvider.getFileSystem(remoteFileSystemHost);
+                return FileSystemProvider.getFileSystem(fileSystemHost);
             } else {
                 try {
                     return getProjectDirectory().getFileSystem();
@@ -1344,7 +1344,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
                 CndUtils.assertNotNull(remoteBaseDir, "Null remote base directory"); //NOI18N
                 if (remoteBaseDir != null) {
-                    return FileSystemProvider.getFileObject(remoteFileSystemHost, remoteBaseDir);
+                    return FileSystemProvider.getFileObject(fileSystemHost, remoteBaseDir);
                 }
             }
             return getProjectDirectory();
