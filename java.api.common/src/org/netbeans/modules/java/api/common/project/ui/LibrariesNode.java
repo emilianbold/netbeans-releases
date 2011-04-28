@@ -345,7 +345,7 @@ public final class LibrariesNode extends AbstractNode {
                         key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
                 case Key.TYPE_LIBRARY:
-                    result = new Node[] {ActionFilterNode.forRoot(PackageView.createPackageView(key.getSourceGroup()),
+                    result = new Node[] {ActionFilterNode.forLibrary(PackageView.createPackageView(key.getSourceGroup()),
                         helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
                 case Key.TYPE_ARCHIVE:
@@ -522,19 +522,19 @@ public final class LibrariesNode extends AbstractNode {
         private String anID;
                 
 
-        public static Key platform() {
+        private static Key platform() {
             return new Key();
         }
         
-        public static Key project(AntArtifact a, URI uri, String classPathId, String entryId) {
+        private static Key project(AntArtifact a, URI uri, String classPathId, String entryId) {
             return new Key(a, uri, classPathId, entryId);
         }
         
-        public static Key library(SourceGroup sg, String classPathId, String entryId) {
+        private static Key library(SourceGroup sg, String classPathId, String entryId) {
             return new Key(TYPE_LIBRARY, sg, classPathId, entryId);
         }
         
-        public static Key archive(SourceGroup sg, String classPathId, String entryId) {
+        private static Key archive(SourceGroup sg, String classPathId, String entryId) {
             return new Key(TYPE_ARCHIVE, sg, classPathId, entryId);
         }
 
