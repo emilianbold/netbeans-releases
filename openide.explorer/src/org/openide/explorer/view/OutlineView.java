@@ -103,6 +103,8 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -1238,7 +1240,7 @@ public class OutlineView extends JScrollPane {
 
         private boolean isHScrollingEnabled;
         private JScrollBar hScrollBar;
-        private TableModelListener tmScrollingListener;
+        private TMScrollingListener tmScrollingListener;
         private int treePositionX = 0;
         private int[] rowWidths;
         private RequestProcessor.Task changeTask;
@@ -1286,21 +1288,15 @@ public class OutlineView extends JScrollPane {
             this.hScrollBar = hScrollBar;
             if (isHScrollingEnabled) {
                 if (tmScrollingListener == null) {
-                    tmScrollingListener = new TableModelListener() {
-                        @Override
-                        public void tableChanged(TableModelEvent e) {
-                            int rowCount = getOutlineModel().getRowCount();
-                            if (rowCount != rowWidths.length) {
-                                rowWidths = Arrays.copyOf(rowWidths, rowCount);
-                            }
-                        }
-                    };
+                    tmScrollingListener = new TMScrollingListener();
                     rowWidths = new int[getOutlineModel().getRowCount()];
                     getOutlineModel().addTableModelListener(tmScrollingListener);
+                    getOutlineModel().addTreeModelListener(tmScrollingListener);
                 }
             } else {
                 if (tmScrollingListener != null) {
                     getOutlineModel().removeTableModelListener(tmScrollingListener);
+                    getOutlineModel().removeTreeModelListener(tmScrollingListener);
                     tmScrollingListener = null;
                     rowWidths = null;
                 }
@@ -1324,7 +1320,7 @@ public class OutlineView extends JScrollPane {
         }
 
         private void setPreferredTreeWidth(int row, int width) {
-            if (rowWidths[row] != width) {
+            if (isHScrollingEnabled && rowWidths[row] != width) {
                 rowWidths[row] = width;
                 changeTask.schedule(100);
             }
@@ -1654,6 +1650,43 @@ public class OutlineView extends JScrollPane {
             }
 
         }
+        
+        private class TMScrollingListener implements TableModelListener, TreeModelListener {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                updateRowWidths();
+            }
+
+            // TreeModelListener is usually notified sooner
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                updateRowWidths();
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                updateRowWidths();
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                updateRowWidths();
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                updateRowWidths();
+            }
+            
+            private void updateRowWidths() {
+                int rowCount = getOutlineModel().getRowCount();
+                if (rowCount != rowWidths.length) {
+                    rowWidths = Arrays.copyOf(rowWidths, rowCount);
+                }
+            }
+
+        }
+        
     }
     
     private static class OutlinePopupFactory extends NodePopupFactory {
