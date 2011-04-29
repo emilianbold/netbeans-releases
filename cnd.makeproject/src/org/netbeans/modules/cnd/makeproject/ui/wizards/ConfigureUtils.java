@@ -135,44 +135,7 @@ public final class ConfigureUtils {
 
     public static boolean isRunnable(FileObject fileObject) {
         if (fileObject != null && fileObject.isValid()) {
-            File file = FileUtil.toFile(fileObject);
-            if (file != null) {
-                return isRunnable(file); // XXX:fullRemote: a temporary fixup
-            }
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isRunnable(File file) {
-        if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
-            FileObject configureFileObject = CndFileUtils.toFileObject(file);
-            if (configureFileObject == null || !configureFileObject.isValid()) {
-                return false;
-            }
-            DataObject dObj;
-            try {
-                dObj = DataObject.find(configureFileObject);
-            } catch (DataObjectNotFoundException ex) {
-                return false;
-            }
-            if (dObj == null) {
-                return false;
-            }
-            Node node = dObj.getNodeDelegate();
-            if (node == null) {
-                return false;
-            }
-            ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-            if (ses != null) {
-                return true;
-            }
-            if (file.getAbsolutePath().endsWith("CMakeLists.txt")){ // NOI18N
-                return AbstractExecutorRunAction.findTools("cmake") != null; // NOI18N
-            }
-            if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
-                return AbstractExecutorRunAction.findTools("qmake") != null; // NOI18N
-            }
+            return isRunnable(fileObject);
         }
         return false;
     }

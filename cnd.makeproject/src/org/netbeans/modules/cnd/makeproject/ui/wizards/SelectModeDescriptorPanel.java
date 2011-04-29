@@ -195,20 +195,22 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     }
 
     public class WizardStorage {
-        private String path = ""; // NOI18N
-        private FileObject fileObject;
+        private String projectPath = ""; // NOI18N
+        private FileObject sourceFileObject;
         private String flags = ""; // NOI18N
         private boolean setMain = true;
         private boolean buildProject = true;
         private CompilerSet cs;
         private boolean defaultCompilerSet;
-        private ExecutionEnvironment env;
+        private ExecutionEnvironment buildEnv;
+        private ExecutionEnvironment sourceEnv;
         private final boolean fullRemote;
         private FileObject makefileFO;
 
         public WizardStorage(boolean fullRemote) {
             this.fullRemote = fullRemote;
-            env = ServerList.getDefaultRecord().getExecutionEnvironment();
+            buildEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
+            sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
         }
 
         /**
@@ -226,34 +228,34 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          * @return the path
          */
         public String getProjectPath() {
-            return path;
+            return projectPath;
         }
 
         public FileObject getSourcesFileObject() {
-            return fileObject;
+            return sourceFileObject;
         }
 
         /**
          * @param path the path to set
          */
         public void setProjectPath(String path) {
-            this.path = path.trim();
+            this.projectPath = path.trim();
             validate();
         }
 
         public void setSourcesFileObject(FileObject fileObject) {
-            this.fileObject = fileObject;
+            this.sourceFileObject = fileObject;
             validate();
         }
 
         public String getConfigure(){
-            if (path.length() == 0) {
+            if (projectPath.length() == 0) {
                 return null;
             }
-            if (fileObject != null) {
-                return ConfigureUtils.findConfigureScript(fileObject);
+            if (sourceFileObject != null) {
+                return ConfigureUtils.findConfigureScript(sourceFileObject);
             } else {
-                return ConfigureUtils.findConfigureScript(path);
+                return ConfigureUtils.findConfigureScript(projectPath);
             }
         }
 
@@ -276,7 +278,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
          * @return the flags
          */
         public String getRealFlags() {
-            return ConfigureUtils.getConfigureArguments(env, cs, getConfigure(), flags);
+            return ConfigureUtils.getConfigureArguments(buildEnv, cs, getConfigure(), flags);
         }
 
         /**
@@ -322,7 +324,15 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
 
         void setExecutionEnvironment(ExecutionEnvironment ee) {
-            this.env = ee;
+            this.buildEnv = ee;
+        }
+
+        public ExecutionEnvironment getSourceExecutionEnvironment() {
+            return sourceEnv;
+        }
+
+        public void setSourceExecutionEnvironment(ExecutionEnvironment sourceEnv) {
+            this.sourceEnv = sourceEnv;
         }
 
         void setDefaultCompilerSet(boolean defaultCompilerSet) {
@@ -358,7 +368,9 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) { // NOI18N
                 return storage.getConfigure();
             } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) { // NOI18N
-                return ExecutionEnvironmentFactory.toUniqueID(storage.env);
+                return ExecutionEnvironmentFactory.toUniqueID(storage.buildEnv);
+            } else if (WizardConstants.PROPERTY_SOURCE_HOST_ENV.equals(name)) {
+                return storage.getSourceExecutionEnvironment();
             } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) { // NOI18N
                 return storage.cs;
             } else if (WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.equals(name)) { // NOI18N

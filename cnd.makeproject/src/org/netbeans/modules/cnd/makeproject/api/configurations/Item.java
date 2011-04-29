@@ -381,7 +381,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public FileObject getFileObject() {
-        return getFileObjectImpl();
+        FileObject fo = getFileObjectImpl();
+        if (fo == null) {
+            String p = (normalizedPath != null) ? normalizedPath : getAbsPath();
+            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, normalizedPath);
+        }
+        return fo;
     }
 
     /** 
