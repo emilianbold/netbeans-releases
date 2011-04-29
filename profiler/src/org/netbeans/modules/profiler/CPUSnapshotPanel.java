@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.CCTNode;
 import org.netbeans.lib.profiler.results.ExportDataDumper;
@@ -101,8 +100,7 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public void addMethodToRoots(final String className, final String methodName, final String methodSig) {
-            Project project = loadedSnapshot.getProject();
-            ProfilingSettings[] projectSettings = ProfilingSettingsManager.getDefault().getProfilingSettings(project)
+            ProfilingSettings[] projectSettings = ProfilingSettingsManager.getDefault().getProfilingSettings()
                                                                           .getProfilingSettings();
             List<ProfilingSettings> cpuSettings = new ArrayList();
 
@@ -112,7 +110,7 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
                 }
             }
 
-            ProfilingSettings settings = IDEUtils.selectSettings(project, ProfilingSettings.PROFILE_CPU_PART,
+            ProfilingSettings settings = IDEUtils.selectSettings(ProfilingSettings.PROFILE_CPU_PART,
                                                                  cpuSettings.toArray(new ProfilingSettings[cpuSettings.size()]),
                                                                  null);
 
@@ -123,12 +121,12 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
             settings.addRootMethod(className, methodName, methodSig);
 
             if (cpuSettings.contains(settings)) {
-                ProfilingSettingsManager.getDefault().storeProfilingSettings(projectSettings, settings, project);
+                ProfilingSettingsManager.getDefault().storeProfilingSettings(projectSettings, settings);
             } else {
                 ProfilingSettings[] newProjectSettings = new ProfilingSettings[projectSettings.length + 1];
                 System.arraycopy(projectSettings, 0, newProjectSettings, 0, projectSettings.length);
                 newProjectSettings[projectSettings.length] = settings;
-                ProfilingSettingsManager.getDefault().storeProfilingSettings(newProjectSettings, settings, project);
+                ProfilingSettingsManager.getDefault().storeProfilingSettings(newProjectSettings, settings);
             }
         }
 
@@ -169,7 +167,7 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
         }
 
         public void showSourceForMethod(final String className, final String methodName, final String methodSig) {
-            NetBeansProfiler.getDefaultNB().openJavaSource(loadedSnapshot.getProject(), className, methodName, methodSig);
+            NetBeansProfiler.getDefaultNB().openJavaSource(className, methodName, methodSig);
         }
 
         public void showSubtreeCallGraph(CPUResultsSnapshot s, CCTNode node, int view, int sortingColumn, boolean sortingOrder) {
@@ -343,7 +341,6 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
     private JToggleButton slaveToggleButtonUp;
     private LoadedSnapshot loadedSnapshot;
     private ReverseCallGraphPanel backtraceView;
-    private SaveSnapshotAction saveAction;
     private SaveViewAction saveViewAction;
     private SnapshotFlatProfilePanel combinedFlat;
     private SnapshotFlatProfilePanel flatPanel;
@@ -470,7 +467,6 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
         toolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); //NOI18N
         toolBar.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
-        toolBar.add(saveAction = new SaveSnapshotAction(loadedSnapshot));
         toolBar.add(new ExportAction(this, loadedSnapshot));
         toolBar.add(saveViewAction = new SaveViewAction(this));
 
@@ -1041,7 +1037,6 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
 
     public void updateSavedState() {
         infoPanel.updateInfo();
-        saveAction.updateState();
     }
 
     private String getDefaultSnapshotFileName(ResultsSnapshot snapshot) {
