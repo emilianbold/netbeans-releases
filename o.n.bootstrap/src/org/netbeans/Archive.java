@@ -190,8 +190,10 @@ class Archive implements Stamps.Updater {
                 String key = sb.append(srcId).append(name).toString();
 
                 synchronized(gatheringLock) {
-                    if (!knownSources.containsKey(srcId)) knownSources.put(srcId, source);
-                    if (!requests.containsKey(key)) requests.put(key, Boolean.TRUE);
+                    if (gathering) {
+                        if (!knownSources.containsKey(srcId)) knownSources.put(srcId, source);
+                        if (!requests.containsKey(key)) requests.put(key, Boolean.TRUE);
+                    }
                 }
             }
         }
@@ -205,7 +207,9 @@ class Archive implements Stamps.Updater {
     }
     
     public void stopGathering() {
-        gathering = false;
+        synchronized (gatheringLock) {
+            gathering = false;
+        }
     }
     
     public void stopServing() {
