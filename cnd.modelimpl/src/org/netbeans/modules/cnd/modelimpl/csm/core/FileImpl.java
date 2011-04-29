@@ -930,7 +930,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 cache = tsRef.get();
                 if (cache == null) {
                     cache = new FileTokenStreamCache();
-                    tsRef = new SoftReference<FileTokenStreamCache>(cache);
+                    tsRef = new WeakReference<FileTokenStreamCache>(cache);
                 } else {
                     // could be already created by parallel thread
                     stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
