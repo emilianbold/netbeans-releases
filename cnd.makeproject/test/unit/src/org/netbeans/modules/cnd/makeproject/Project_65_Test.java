@@ -57,6 +57,7 @@ import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Teste for #198129 - Error opening a project created with NB 6.5
@@ -82,6 +83,9 @@ public class Project_65_Test extends CndBaseTestCase {
     }
     
     public void testMakeProj65() throws Exception {
+        if (Utilities.isWindows()) {
+            return;
+        }
         MakeProject makeProject = openProject("makeproj-with-link-PRJ-65");
         OpenProjectList.getDefault().open(makeProject);
         ConfigurationDescriptorProvider cdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
