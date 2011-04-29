@@ -119,7 +119,6 @@ public class Subversion {
     private List<ISVNNotifyListener> svnNotifyListeners;
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private SubversionVCS svcs;
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
@@ -144,12 +143,13 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
         prepareCache();
-        // this should be registered in SubversionVCS but we needed to reduce number of classes loaded
-        svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
-        fileStatusCache.addVersioningListener(svcs);
-        addPropertyChangeListener(svcs);
 
         asyncInit();
+    }
+
+    public void attachListeners(SubversionVCS svcs) {
+        fileStatusCache.addVersioningListener(svcs);
+        addPropertyChangeListener(svcs);
     }
 
     private void asyncInit() {
@@ -345,6 +345,7 @@ public class Subversion {
     }
 
     public void versionedFilesChanged() {
+        unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
@@ -489,13 +490,60 @@ public class Subversion {
         return rp;
     }
 
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
     /**
      * Delegates to SubversionVCS.getTopmostManagedAncestor
      * @param file a file for which the topmost managed ancestor shall be looked up.
      * @return topmost managed ancestor for the given file
      */
     public File getTopmostManagedAncestor (File file) {
-        return svcs == null ? null : svcs.getTopmostManagedAncestor(file);
+        Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            Subversion.LOG.fine(" cached as unversioned");
+            return null;
+    }
+        File metadataRoot = null;
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            Subversion.LOG.fine(" part of metaddata");
+            for (;file != null; file = file.getParentFile()) {
+                if (SvnUtils.isAdministrative(file)) {
+                    Subversion.LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
+                    metadataRoot = file;
+                    file = file.getParentFile();
+                    break;
+                }
+            }
+        }
+        File topmost = null;
+        Set<File> done = new HashSet<File>();
+        for (; file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) {
+                Subversion.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (SvnUtils.hasMetadata(file)) {
+                Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                topmost = file;
+                done.clear();
+            } else {
+                Subversion.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
+            }
+        }
+        if(done.size() > 0) {
+            Subversion.LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        if (topmost == null && metadataRoot != null) {
+            // .svn is considered managed, too, see #159453
+            Subversion.LOG.log(Level.FINE, "setting metadata root as managed parent {0}", new Object[] { metadataRoot });
+            topmost = metadataRoot;
+        }
+        Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
+        return topmost;
     }
 
     FileStatusProvider getVCSAnnotator() {

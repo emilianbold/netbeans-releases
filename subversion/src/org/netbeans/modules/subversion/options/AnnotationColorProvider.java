@@ -107,8 +107,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     @Override
     public String getName() {
         if (name == null) {
-            SubversionVCS vcs = Lookup.getDefault().lookup(SubversionVCS.class);
-            name = (String)vcs.getProperty(SubversionVCS.PROP_DISPLAY_NAME);
+            name = SubversionVCS.getDisplayName();
         }
         return name;
     }

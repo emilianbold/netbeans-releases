@@ -739,7 +739,7 @@ public class FileStatusCache {
         } finally {
             ready = true;
             propertySupport.firePropertyChange(PROP_CACHE_READY, false, true);
-    }
+        }
     }
 
     /**

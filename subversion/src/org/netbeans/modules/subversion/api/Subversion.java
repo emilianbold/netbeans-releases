@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.api;
 
-import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -72,10 +72,10 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -495,7 +495,7 @@ public class Subversion {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
-        SystemAction.get(CheckoutAction.class).performAction();
+        CheckoutAction.perform();
     }
 
     /**
