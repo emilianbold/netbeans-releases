@@ -325,7 +325,12 @@ public final class DDProvider {
     
     private DDParse parseDD (FileObject fo) 
     throws SAXException, IOException {
-        return parseDD(fo.getInputStream());
+        InputStream inputStream = fo.getInputStream();
+        try {
+            return parseDD(inputStream);
+        } finally {
+            inputStream.close();
+        }
     }
     
     private DDParse parseDD (InputStream is) 
