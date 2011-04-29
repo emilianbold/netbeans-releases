@@ -43,36 +43,51 @@
  */
 package org.netbeans.modules.versioning;
 
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.versioning.spi.VCSContext;
-
 import java.io.File;
-import java.util.*;
+import java.io.IOException;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
+import org.openide.util.test.MockLookup;
 
-/**
- * Make it possible to hide contructors and factory methods in VCSContext.
- * 
- * @author Maros Sandor
- */
-public abstract class Accessor {
+public class GetAnnotatedOwnerTest extends GetOwnerTest {
     
-    public static Accessor IMPL;
-    public static Accessor VersioningSystemAccessor;
-    
-    static {
-        // invokes static initializer of VCSContext.class
-        // that will assign value to the DEFAULT field above
-        Class c = VCSContext.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
-        }
+    public GetAnnotatedOwnerTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setLayersAndInstances();
     }
     
-    public abstract VCSContext createContextForFiles(Set<File> files, Set<? extends FileObject> originalFiles);
+    protected File getVersionedFolder() {
+        if (versionedFolder == null) {
+            versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
+            versionedFolder.mkdirs();
+            new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
+        }
+        return versionedFolder;
+    }
     
-    public abstract void moveChangeListeners(VersioningSystem from, VersioningSystem to);
+    @Override
+    protected Class getVCS() {
+        return TestAnnotatedVCS.class;
+    }
+
+    public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
+        
+        assertNull(TestAnnotatedVCS.INSTANCE);
+        
+        File f = new File(getUnversionedFolder(), "sleepingfile");
+        f.createNewFile();
+        
+        assertNull(TestAnnotatedVCS.INSTANCE);
+        
+        VersioningSystem owner = VersioningManager.getInstance().getOwner(f);
+        assertNull(owner);
+        
+        assertNull(TestAnnotatedVCS.INSTANCE);
+    }
+    
 }

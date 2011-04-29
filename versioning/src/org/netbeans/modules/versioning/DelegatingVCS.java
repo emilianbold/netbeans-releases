@@ -1,0 +1,282 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.versioning;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Action;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+
+/**
+ *
+ * @author Tomas Stupka
+ */
+public class DelegatingVCS extends VersioningSystem {
+
+    private final Map<?, ?> map;
+    private VersioningSystem delegate;
+    
+    public static DelegatingVCS create(Map<?, ?> map) {
+        return new DelegatingVCS(map);
+    }
+    
+    private DelegatingVCS(Map<?, ?> map) {
+        this.map = map;
+        
+        // populate properties
+        putProperty(VersioningSystem.PROP_DISPLAY_NAME, map.get("displayName"));// NOI18N
+        putProperty(VersioningSystem.PROP_MENU_LABEL, map.get("menuLabel"));    // NOI18N
+    }
+
+    VersioningSystem getDelegate() {
+        if(delegate == null) {
+            delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
+            Accessor.IMPL.moveChangeListeners(this, delegate);
+        }
+        return delegate;
+    }
+    
+    @Override
+    public VCSVisibilityQuery getVisibilityQuery() {
+        return getDelegate().getVisibilityQuery();
+    }
+
+    @Override
+    public VCSInterceptor getVCSInterceptor() {
+        return getDelegate().getVCSInterceptor();
+    }
+
+    @Override
+    public VCSAnnotator getVCSAnnotator() {
+        return getDelegate().getVCSAnnotator();
+    }
+
+    @Override
+    public void getOriginalFile(File workingCopy, File originalFile) {
+        getDelegate().getOriginalFile(workingCopy, originalFile);
+    }
+
+    @Override
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return getDelegate().getCollocationQueryImplementation();
+    }
+
+    @Override
+    public File getTopmostManagedAncestor(File file) {
+        if(!isAlive()) {
+            int i = 0;
+            while(true) {
+                String p = (String) map.get("metadataFolderName" + i++);        // NOI18N
+                if(p == null) {
+                    break;
+                }
+                if(p.equals(file.getName()) && file.isDirectory()) {
+                    
+                    VersioningManager.LOG.log(
+                            Level.FINE, 
+                            "will awake VCS {0} because of metadata folder {1}",// NOI18N 
+                            new Object[]{getProperty(PROP_DISPLAY_NAME), file}); 
+                    
+                    awake(); 
+                    return getDelegate().getTopmostManagedAncestor(file);
+                } 
+            }
+            if(hasMetadata(file)) {
+                VersioningManager.LOG.log(
+                        Level.FINE, 
+                        "will awake VCS {0} because {1} contains matadata",     // NOI18N
+                        new Object[]{getProperty(PROP_DISPLAY_NAME), file});
+                
+                
+                awake();
+                return getDelegate().getTopmostManagedAncestor(file);
+            }
+        } else {
+            return getDelegate().getTopmostManagedAncestor(file);
+        }
+        return null;
+    }
+    
+    boolean isMetadataFile(File file) {
+        int i = 0;
+        while(true) {
+            String folderName = (String) map.get("metadataFolderName" + i++);   // NOI18N
+            if(folderName == null) {
+                return false;
+            }
+            if(file.getName().equals(folderName)) {
+                return true;
+            }
+        }
+    }
+    
+    void awake() {
+        getDelegate(); // awake delegate
+        VersioningManager.getInstance().flushNullOwners();      
+    }
+    
+    Action[] getActions(VCSContext ctx, ActionDestination actionDestination) {
+        if(isAlive()) {
+            VCSAnnotator annotator = getDelegate().getVCSAnnotator();
+            return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
+        } else {
+            Action[] ia = getInitActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+            Action[] ga = getGlobalActions(VCSAnnotator.ActionDestination.MainMenu);
+            
+            List<Action> l = new ArrayList<Action>(ia.length + ga.length + 1); // +1 if separator needed
+            
+            // init actions
+            l.addAll(Arrays.asList(ia));
+            // add separator if necessary 
+            if(ga.length > 0 && ia.length > 0 && l.get(l.size() - 1) != null) {
+                l.add(null); 
+            }
+            // global actions
+            l.addAll(Arrays.asList(ga));
+            
+            return  l.toArray(new Action[l.size()]);
+        }        
+    }
+    
+    Action[] getGlobalActions(ActionDestination actionDestination) {
+        assert !isAlive();
+        String category = (String) map.get("actionsCategory");              // NOI18N
+        List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Global"); // NOI18N
+        return l != null ? l.toArray(new Action[l.size()]) : new Action[0];
+    }
+    
+    Action[] getInitActions(VCSContext ctx, ActionDestination actionDestination) {
+        String category = (String) map.get("actionsCategory");              // NOI18N
+        List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Unversioned"); // NOI18N
+        List<Action> ret = new ArrayList<Action>(l.size());
+        for (Action action : l) {
+            if(action instanceof ContextAwareAction) {
+                ret.add(((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(ctx)));
+            }
+        }
+        return ret.toArray(new Action[ret.size()]);
+    }
+
+    private boolean isAlive() {
+        return delegate != null;
+    }
+    
+    private boolean hasMetadata(File file) {
+        if(file == null) {
+            return false;
+        }
+        int i = 0;
+        while(true) {
+            String folderName = (String) map.get("metadataFolderName" + i++);            // NOI18N
+            if(folderName == null) {
+                return false;
+            }
+            File parent;
+            if(file.isDirectory()) {
+                parent = file;
+            } else {
+                parent = file.getParentFile();
+            }
+            while(parent != null) {
+                final boolean metadataFolder = new File(parent, folderName).exists();
+                if(metadataFolder) {
+                    
+                    VersioningManager.LOG.log(
+                            Level.FINER, 
+                            "found metadata folder {0} for file {1}",           // NOI18N
+                            new Object[]{metadataFolder, file});
+                    
+                    return true;
+                }
+                parent = parent.getParentFile();
+            }
+        }
+    }
+    
+    /**
+     * Testing purposes only!
+     */
+    void reset() {
+        delegate = null;
+    }
+    
+    /**
+     * Parses system property value and returns a priority for the given versioning system.
+     * The property should be defined as {@code versioning.versioningSystem.priority}.
+     * @param versioningSystem name of the vcs
+     * @return priority or {@link Integer#MAX_VALUE} as default
+     */
+    private static Integer getPriority (String versioningSystem) {
+        Integer value = null;
+        String propName = "versioning." + versioningSystem + ".priority"; //NOI18N
+        String sValue = System.getProperty(propName, null);
+        if (sValue != null && !sValue.isEmpty()) {
+            try {
+                value = Integer.parseInt(sValue);
+                if (value <= 0) {
+                    value = null;
+                }
+            } catch (NumberFormatException ex) {
+                VersioningManager.LOG.log(Level.INFO, "Wrong priority ({0}) value {1}, using default value", new Object[] {propName, sValue}); //NOI18N
+            }
+        }
+        if (value == null) {
+            value = Integer.MAX_VALUE;
+        }
+        return value;
+    }
+    
+}
