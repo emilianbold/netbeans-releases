@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.openide.ErrorManager;
 
 /**
@@ -55,15 +56,18 @@ import org.openide.ErrorManager;
  * @author vbk
  */
 public class ModConFactory implements ModuleConfigurationFactory {
+    private final SunDeploymentManagerInterface sdmi;
     
     /** Creates a new instance of ModConFactory */
-    public ModConFactory() {
+    public ModConFactory(SunDeploymentManagerInterface sdmi) {
+        this.sdmi = sdmi;
     }
     
+    @Override
     public ModuleConfiguration create(J2eeModule module) {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module);
+            retVal = new ModuleConfigurationImpl(module, sdmi);
         } catch (ConfigurationException ce) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
         }
