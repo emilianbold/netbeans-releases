@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.makeproject.api.support.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -69,19 +70,18 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -92,11 +92,11 @@ import org.openide.loaders.CreateFromTemplateHandler;
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
  */
-public class MakeProjectGenerator {
+public class MakeProjectGeneratorImpl {
 
     private static final String PROP_DBCONN = "dbconn"; // NOI18N
 
-    private MakeProjectGenerator() {
+    private MakeProjectGeneratorImpl() {
     }
 
     public static String getDefaultProjectFolder() {
@@ -127,13 +127,13 @@ public class MakeProjectGenerator {
 
     public static MakeProject createBlankProject(ProjectParameters prjParams) throws IOException {
         MakeConfiguration[] confs = prjParams.getConfigurations();
-        File projectFolder = prjParams.getProjectFolder();
+        String projectFolderPath = prjParams.getProjectFolderPath();
 
         // work in a copy of confs
         MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
             copyConfs[i] = confs[i].clone();
-            copyConfs[i].setBaseDir(projectFolder.getPath());
+            copyConfs[i].setBaseFSPath(new FSPath(prjParams.getSourceFileSystem(), projectFolderPath));
             RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
         }
@@ -161,7 +161,7 @@ public class MakeProjectGenerator {
      */
     public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
         FileObject dirFO = createProjectDir(prjParams);
-        AntProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
+        MakeProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         p.setRemoteMode(prjParams.getRemoteMode());
@@ -176,49 +176,7 @@ public class MakeProjectGenerator {
         return p;
     }
 
-    /*
-    public static AntProjectHelper createProject(final File dir, final String name, final File sourceFolder, final File testFolder) throws IOException {
-    System.out.println("createProject2 ");
-    assert sourceFolder != null : "Source folder must be given";   //NOI18N
-    final FileObject dirFO = createProjectDir (dir);
-    // this constructor creates only java application type
-    final AntProjectHelper h = createProject(dirFO, name, null, null, null, null, false, 0, null, null);
-    final MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
-    final ReferenceHelper refHelper = p.getReferenceHelper();
-    try {
-    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
-    public Object run() throws Exception {
-    String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    props.put("src.dir",srcReference);          //NOI18N
-    String testLoc;
-    if (testFolder == null) {
-    testLoc = NbBundle.getMessage (MakeProjectGenerator.class,"TXT_DefaultTestFolderName");
-    File f = new File (dir,testLoc);    //NOI18N
-    f.mkdirs();
-    }
-    else {
-    if (!testFolder.exists()) {
-    testFolder.mkdirs();
-    }
-    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-    testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-    }
-    props.put("test.src.dir",testLoc);    //NOI18N
-    h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-    ProjectManager.getDefault().saveProject (p);
-    return null;
-    }
-    });
-    } catch (MutexException me ) {
-    ErrorManager.getDefault().notify (me);
-    }
-    return h;
-    return null;
-    }
-     */
-    private static AntProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
+    private static MakeProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
@@ -236,26 +194,26 @@ public class MakeProjectGenerator {
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
         final Iterator<String> importantItems = prjParams.getImportantFiles();
         String mainFile = prjParams.getMainFile();
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
+        MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.PROJECT_CONFIGURATION__NAME_NAME);
+        Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
 
         FileObject sourceBaseFO;
         if (prjParams.getFullRemote()) {
             // mode
-            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE);
+            Element fullRemoteNode = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE);
             fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name()));
             data.appendChild(fullRemoteNode);
             // host
-            Element rfsHostNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST);
+            Element rfsHostNode = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST);
             rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID()));
             data.appendChild(rfsHostNode);
             // mount point
             String remoteProjectPath = prjParams.getFullRemoteNativeProjectPath();
-            Element rfsBaseDir = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
+            Element rfsBaseDir = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
             rfsBaseDir.appendChild(doc.createTextNode(remoteProjectPath));
             data.appendChild(rfsBaseDir);
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID());
@@ -269,12 +227,10 @@ public class MakeProjectGenerator {
 
         h.putPrimaryConfigurationData(data, true);
 
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        //ep.setProperty("make.configurations", "");
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        //ep.setProperty("application.args", ""); // NOI18N
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        //EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        //h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        //ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        //h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk.
         final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO, sourceBaseFO);
@@ -387,11 +343,12 @@ public class MakeProjectGenerator {
             return null; // Don't know the template
         }
         String createdMainName = mainName;
-        if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
-            File file = new File(srcFolder.getPath(), mainName).getCanonicalFile();
-            srcFolder = FileUtil.createFolder(file.getParentFile());
-            createdMainName = file.getName();
-        }
+         if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
+            String absPath = CndPathUtilitities.toAbsolutePath(srcFolder, mainName);
+            absPath = FileSystemProvider.getCanonicalPath(srcFolder.getFileSystem(), absPath);
+            srcFolder = FileUtil.createFolder(srcFolder, CndPathUtilitities.getDirName(mainName));
+            createdMainName = CndPathUtilitities.getBaseName(absPath);
+         }
 
         DataObject mt = DataObject.find(mainTemplate);
         DataFolder pDf = DataFolder.findFolder(srcFolder);
@@ -404,11 +361,7 @@ public class MakeProjectGenerator {
 
         return mainName;
     }
-//    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-//        File rootF = dir;
-//        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
-//            rootF = rootF.getParentFile();
-//    }
+
 }
 
 

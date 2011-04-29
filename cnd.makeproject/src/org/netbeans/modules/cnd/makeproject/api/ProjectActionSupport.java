@@ -627,11 +627,14 @@ public class ProjectActionSupport {
                     FileObject projectDirectory = project.getProjectDirectory();
                     if (projectDirectory != null) {
                         FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
-                        if (nbproject != null) {
-                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
-                            File file = FileUtil.toFile(nbproject);
-                            return file != null && file.exists();
-                        }
+                        return nbproject != null && nbproject.isValid();
+//                        Should use the check below when working with local projects?
+//                        if (nbproject != null) {
+//                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
+//                            File file = FileUtil.toFile(nbproject);
+//                            return file != null && file.exists();
+//                        }
+                        
                     }
                 }
             }

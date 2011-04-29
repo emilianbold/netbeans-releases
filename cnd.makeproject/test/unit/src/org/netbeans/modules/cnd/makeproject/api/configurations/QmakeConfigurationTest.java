@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import java.io.File;

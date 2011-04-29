@@ -44,14 +44,19 @@
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.IOException;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.modules.cnd.api.project.NativeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.openide.util.ImageUtilities;
 
 /**
  * Factory for simple Make projects.
+ * 
+ * @author Alexander Simon
  */
-public final class MakeProjectType implements AntBasedProjectType {
+public final class MakeProjectTypeImpl implements NativeProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
@@ -75,7 +80,7 @@ public final class MakeProjectType implements AntBasedProjectType {
      * Do nothing, just a service.
      * public for testing
      */
-    public MakeProjectType() {
+    public MakeProjectTypeImpl() {
     }
 
     @Override
@@ -83,8 +88,11 @@ public final class MakeProjectType implements AntBasedProjectType {
         return TYPE;
     }
 
-    @Override
-    public Project createProject(AntProjectHelper helper) throws IOException {
+    public Icon getIcon() {
+        return ImageUtilities.loadImageIcon(MakeConfigurationDescriptor.ICON, true);
+    }
+
+    public Project createProject(MakeProjectHelper helper) throws IOException {
         return new MakeProject(helper);
     }
 
