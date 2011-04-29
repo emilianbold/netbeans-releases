@@ -210,7 +210,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
             throw new IOException(ex);
         } catch (SAXException ex) {
             if (!STOP_PARSING_MGS.equals(ex.getMessage())) {
-                Exceptions.printStackTrace(ex);
+                throw new IOException(ex);
             }
         }
 
