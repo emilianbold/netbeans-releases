@@ -58,11 +58,13 @@ import java.net.URLClassLoader;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JButton;
 import javax.swing.JSeparator;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -594,6 +596,39 @@ public class ActionProcessorTest extends NbTestCase {
             return null;
         }
     }
+    
+    @ActionID(category="menutext", id="namedaction")
+    @ActionRegistration(displayName="This is an Action", menuText="This is a Menu Action", popupText="This is a Popup Action")
+    public static class NamedAction extends AbstractAction {
+        public NamedAction() { }
+        @Override
+        public void actionPerformed(ActionEvent e) { }
+    }
+
+    public void testPopupText() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        
+        JMenuItem item = new JMenuItem();
+        Actions.connect(item, (Action) obj, true );
+        assertEquals("This is an Action", ((Action) obj).getValue(Action.NAME));
+        assertEquals("This is a Popup Action", item.getText());
+    }
+    
+    public void testMenuText() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        
+        JMenuItem item = new JMenuItem();
+        Actions.connect(item, (Action) obj, false );
+        assertEquals("This is an Action", ((Action) obj).getValue(Action.NAME));
+        assertEquals("This is a Menu Action", item.getText());
+    }
+    
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
         assertNotNull("Instance found", fo);

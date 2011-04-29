@@ -65,6 +65,30 @@ public @interface ActionRegistration {
      * @return display name for the action
      */
     String displayName();
+    
+    /** 
+     * Provides the text if one wants to use other text in a JMenuItem than 
+     * the name of the action taken from Action.NAME. Takes precedence 
+     * over standard Action.NAME.
+     * 
+     * @return display name for the action
+     * 
+     * @see Actions#connect(javax.swing.JMenuItem, javax.swing.Action, boolean) 
+     * @since 7.29
+     */    
+    String menuText() default "";
+    
+    /** 
+     * Provides the text if one wants to use other text in a JMenuItem popup 
+     * than the name of the action taken from Action.NAME. 
+     * 
+     * @return display name for the action in a popup menu
+     * 
+     * @see Actions#connect(javax.swing.JMenuItem, javax.swing.Action, boolean) 
+     * @since 7.29
+     */
+    String popupText() default "";
+    
     /** Path to image representing the action's icon.
      * @return "org/myproject/mypkg/Icon.png"
      */
