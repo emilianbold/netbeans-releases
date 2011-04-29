@@ -79,10 +79,8 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     protected CPUResUserActionsHandler actionsHandler;
-    protected JMenuItem popupAddToRoots;
     protected JMenuItem popupFind;
     protected JMenuItem popupShowReverse;
-    protected JMenuItem popupShowSource;
     protected JMenuItem popupShowSubtree;
     protected JPopupMenu callGraphPopupMenu;
     protected JPopupMenu cornerPopup;
@@ -140,8 +138,6 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
 
         currentView = view;
 
-        popupShowSource.setEnabled(isShowSourceAvailable());
-        popupAddToRoots.setEnabled(isAddToRootsAvailable());
 
         actionsHandler.viewChanged(view); // notify the actions handler about this
     }
@@ -162,18 +158,14 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
     protected abstract String getSelectedMethodName();
 
     protected boolean isShowSourceAvailable() {
-        return (currentView != CPUResultsSnapshot.PACKAGE_LEVEL_VIEW);
+        return false;
     }
 
     // ------------------------------------------------------------------
     // Popup menu behavior
     protected JPopupMenu createPopupMenu() {
         JPopupMenu popup = new JPopupMenu();
-        popupShowSource = new JMenuItem();
-        popupAddToRoots = new JMenuItem();
         popupFind = new JMenuItem();
-
-        Font boldfont = popup.getFont().deriveFont(Font.BOLD);
 
         ActionListener menuListener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -181,11 +173,7 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
             }
         };
 
-        popupShowSource.setFont(boldfont);
-        popupShowSource.setText(GO_TO_SOURCE_ITEM_NAME);
-        popup.add(popupShowSource);
-
-        boolean separator = false;
+        boolean separator = true;
 
         if (supportsSubtreeCallGraph()) {
             if (!separator) {
@@ -213,13 +201,6 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
 
         popup.add(popupFind);
 
-        popup.addSeparator();
-
-        popupAddToRoots.setText(ROOT_METHODS_ITEM_NAME);
-        popup.add(popupAddToRoots);
-
-        popupShowSource.addActionListener(menuListener);
-        popupAddToRoots.addActionListener(menuListener);
         popupFind.addActionListener(menuListener);
 
         return popup;
@@ -269,9 +250,7 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
     void menuActionPerformed(ActionEvent evt) {
         Object src = evt.getSource();
 
-        if (src == popupShowSource) {
-            performDefaultAction();
-        } else if (src == popupShowReverse) {
+        if (src == popupShowReverse) {
             int threadId = 0;
 
             if (popupPath != null) {
@@ -322,21 +301,6 @@ public abstract class CPUResultsPanel extends ResultsPanel implements CommonCons
 
                 showSubtreeCallGraph(selectedNode, currentView, getSortingColumn(), getSortingOrder());
             }
-        } else if (src == popupAddToRoots) {
-            if (popupPath != null) {
-                PrestimeCPUCCTNode selectedNode = (PrestimeCPUCCTNode) popupPath.getLastPathComponent();
-
-                if (selectedNode.getMethodId() == 0) {
-                    if (selectedNode.getParent() instanceof PrestimeCPUCCTNode) {
-                        methodId = ((PrestimeCPUCCTNode) selectedNode.getParent()).getMethodId();
-                    }
-                } else {
-                    methodId = selectedNode.getMethodId();
-                }
-            } // else methodId is already set
-
-            String[] methodClassNameAndSig = getMethodClassNameAndSig(methodId, currentView);
-            actionsHandler.addMethodToRoots(methodClassNameAndSig[0], methodClassNameAndSig[1], methodClassNameAndSig[2]);
         } else if (src == popupFind) {
             actionsHandler.find(this, getSelectedMethodName());
         }

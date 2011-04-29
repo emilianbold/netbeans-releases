@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ui.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.netbeans.modules.profiler.ui.HyperlinkLabel;
@@ -116,7 +115,6 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     private JRadioButton allocationsRadio;
     private JRadioButton livenessRadio;
     private JSpinner trackEverySpinner;
-    private Project project; // TODO: implement reset or remove!!!
     private Runnable profilingPointsDisplayer;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -129,10 +127,9 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public void setContext(Project project, Runnable profilingPointsDisplayer) {
-        this.project = project;
+    public void setContext(Runnable profilingPointsDisplayer) {
         this.profilingPointsDisplayer = profilingPointsDisplayer;
-        updateProject(project);
+        updateProject();
     }
 
     public HelpCtx getHelpCtx() {
@@ -410,7 +407,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
     }
 
     // --- Private implementation ------------------------------------------------
-    private void updateProject(final Project project) {
-        profilingPointsCheckbox.setEnabled(project != null);
+    private void updateProject() {
+        profilingPointsCheckbox.setEnabled(false);
     }
 }
