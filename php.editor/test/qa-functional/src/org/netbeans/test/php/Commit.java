@@ -75,7 +75,7 @@ public class Commit extends GeneralPHP {
     static final String PROJECT_NAME = "LoginSample";
     static private final String TEST_PHP_NAME_1 = "PhpProject_commit_0001";
     static private final String INDEX_PHP_INITIAL_CONTENT =
-            "<!DOCTYPEHTMLPUBLIC\"-//W3C//DTDHTML4.01Transitional//EN\"><html><head><metahttp-equiv=\"Content-Type\"content=\"text/html;charset=UTF-8\"><title></title></head><body><?php//putyourcodehere?></body></html>";
+            "<!DOCTYPEhtml><html><head><metahttp-equiv=\"Content-Type\"content=\"text/html;charset=UTF-8\"><title></title></head><body><?php//putyourcodehere?></body></html>";
     static private final String EMPTY_PHP_INITIAL_CONTENT =
             "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
     static private final String CLASS_PHP_INITIAL_CONTENT =
