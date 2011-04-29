@@ -51,6 +51,7 @@ import java.util.Stack;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
@@ -911,15 +912,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        Project project = projectDescriptor.getProject();
-        FileSystem fs = remoteProject.getSourceFileSystem();
-        String absPath;
-        if (FileSystemProvider.isAbsolute(path)) {
-            absPath = path;                
-        } else {                
-            absPath = CndPathUtilitities.toAbsolutePath(remoteProject.getSourceBaseDir(), path);
-        }
-        return new Item(new FSPath(fs, absPath), remoteProject.getSourceBaseDir(), ProjectSupport.getPathMode(project));
+        return new Item(remoteProject.getSourceBaseDirFileObject(), path);
     }
 
     private String adjustOffset(String path) {

@@ -1506,7 +1506,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
             } else {
-                Item item = new Item(new FSPath(baseDirFS, file.getPath()), baseDirFO.getPath(), ProjectSupport.getPathMode(project));
+                String path = CndPathUtilitities.normalizeSlashes(ProjectSupport.toProperPath(baseDirFO, file, project));
+                Item item = new Item(baseDirFO, path);
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
