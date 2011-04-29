@@ -348,7 +348,11 @@ public final class LibrariesNode extends AbstractNode {
                     result = new Node[] {ActionFilterNode.forLibrary(PackageView.createPackageView(key.getSourceGroup()),
                         helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
-                case Key.TYPE_ARCHIVE:
+                case Key.TYPE_FILE_REFERENCE:
+                    result = new Node[] {ActionFilterNode.forArchive(PackageView.createPackageView(key.getSourceGroup()),
+                        helper, eval, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                    break;
+                case Key.TYPE_FILE:
                     result = new Node[] {ActionFilterNode.forRoot(PackageView.createPackageView(key.getSourceGroup()),
                         helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
@@ -458,7 +462,7 @@ public final class LibrariesNode extends AbstractNode {
                         File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
                         SourceGroup sg = createFileSourceGroup(file,rootsList);
                         if (sg !=null) {
-                            result.add (Key.archive(sg,currentClassPath, propName));
+                            result.add (Key.fileReference(sg,currentClassPath, propName));
                         }
                     }
                 }
@@ -471,7 +475,7 @@ public final class LibrariesNode extends AbstractNode {
                     File file = helper.getAntProjectHelper().resolveFile(prop);
                     SourceGroup sg = createFileSourceGroup(file,rootsList);
                     if (sg !=null) {
-                        result.add (Key.archive(sg,currentClassPath, propName));
+                        result.add (Key.file(sg,currentClassPath, propName));
                     }
                 }
             }
@@ -507,11 +511,12 @@ public final class LibrariesNode extends AbstractNode {
     //XXX: Leaking of implementation, should be pkg private
     //the reason why it's public is wrongly designed Callback interface
     public static final class Key {
-        static final int TYPE_PLATFORM = 0;
-        static final int TYPE_LIBRARY = 1;
-        static final int TYPE_ARCHIVE = 2;
-        static final int TYPE_PROJECT = 3;
-        static final int TYPE_OTHER = 4;
+        static final int TYPE_PLATFORM = 0;         //platform
+        static final int TYPE_LIBRARY = 1;          //library
+        static final int TYPE_FILE_REFERENCE = 2;   //file added by ReferenceHelper ${reference.
+        static final int TYPE_PROJECT = 3;          //project
+        static final int TYPE_OTHER = 4;            //extension provided by Callback
+        static final int TYPE_FILE = 5;             //direct file not added by ReferenceHelper
 
         private int type;
         private String classPathId;
@@ -534,8 +539,12 @@ public final class LibrariesNode extends AbstractNode {
             return new Key(TYPE_LIBRARY, sg, classPathId, entryId);
         }
         
-        private static Key archive(SourceGroup sg, String classPathId, String entryId) {
-            return new Key(TYPE_ARCHIVE, sg, classPathId, entryId);
+        private static Key fileReference(SourceGroup sg, String classPathId, String entryId) {
+            return new Key(TYPE_FILE_REFERENCE, sg, classPathId, entryId);
+        }
+
+        private static Key file(SourceGroup sg, String classPathId, String entryId) {
+            return new Key(TYPE_FILE, sg, classPathId, entryId);
         }
 
         public Key (String anID) {
@@ -549,7 +558,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private Key (int type, SourceGroup sg, String classPathId, String entryId) {
-            assert type == TYPE_LIBRARY || type == TYPE_ARCHIVE;
+            assert type == TYPE_LIBRARY || type == TYPE_FILE_REFERENCE || type == TYPE_FILE;
             this.type = type;
             this.sg = sg;
             this.classPathId = classPathId;
@@ -598,7 +607,8 @@ public final class LibrariesNode extends AbstractNode {
             int hashCode = this.type<<16;
             switch (this.type) {
                 case TYPE_LIBRARY:
-                case TYPE_ARCHIVE:
+                case TYPE_FILE_REFERENCE:
+                case TYPE_FILE:
                     hashCode ^= this.sg == null ? 0 : this.sg.hashCode();
                     break;
                 case TYPE_PROJECT:
@@ -621,7 +631,8 @@ public final class LibrariesNode extends AbstractNode {
             }
             switch (type) {
                 case TYPE_LIBRARY:
-                case TYPE_ARCHIVE:
+                case TYPE_FILE_REFERENCE:
+                case TYPE_FILE:
                     return (this.sg == null ? other.sg == null : this.sg.equals(other.sg)) &&
                         (this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId)) &&
                         (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
