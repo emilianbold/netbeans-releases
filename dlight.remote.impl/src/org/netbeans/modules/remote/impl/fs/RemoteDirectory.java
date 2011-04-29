@@ -88,7 +88,7 @@ import org.openide.util.Exceptions;
  */
 public class RemoteDirectory extends RemoteFileObjectBase {
 
-    private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
+    private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 
     private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);
     private static final class RefLock {}

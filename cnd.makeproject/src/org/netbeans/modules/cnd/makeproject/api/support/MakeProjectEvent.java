@@ -37,41 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.makeproject.api.support;
 
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import java.util.EventObject;
+
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
+public class MakeProjectEvent extends EventObject {
 
-    public RemoteBuildSamplesTestCase(String testName) {
-        super(testName);
+    private final String path;
+    private final boolean expected;
+
+    public MakeProjectEvent(MakeProjectHelper helper, String path, boolean expected) {
+        super(helper);
+        this.path = path;
+        this.expected = expected;
     }
 
-    public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    /**
+     * Get the associated Ant project helper object.
+     * @return the project helper which fired the event
+     */
+    public MakeProjectHelper getHelper() {
+        return (MakeProjectHelper)getSource();
     }
 
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
+    /**
+     * Get the path to the modified (or created or deleted) file.
+     * Paths typically used are:
+     * <ol>
+     * <li>{@link AntProjectHelper#PROJECT_PROPERTIES_PATH}
+     * <li>{@link AntProjectHelper#PRIVATE_PROPERTIES_PATH}
+     * <li>{@link AntProjectHelper#PROJECT_XML_PATH}
+     * <li>{@link AntProjectHelper#PRIVATE_XML_PATH}
+     * </ol>
+     * However for properties files, other paths may exist if the project
+     * uses them for some purpose.
+     * @return a project-relative path
+     */
+    public String getPath() {
+        return path;
     }
 
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
+    /**
+     * Check whether the change was produced by calling methods on
+     * {@link AntProjectHelper} or whether it represents a change
+     * detected on disk.
+     * @return true if the change was triggered by in-memory modification methods,
+     *         false if occurred on disk in the metadata files and is being loaded
+     */
+    public boolean isExpected() {
+        return expected;
     }
 
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
-    }
 }

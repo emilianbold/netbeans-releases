@@ -52,8 +52,10 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
@@ -70,10 +72,12 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
     private Reference<Line2Offset> lines = new WeakReference<Line2Offset>(null);
+    private final BufferType bufType;
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.normalizePath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
+        this.bufType = MIMENames.isCppOrCOrFortran(fileObject.getMIMEType()) ? APTFileBuffer.BufferType.START_FILE : APTFileBuffer.BufferType.INCLUDED;
 // remote link file objects are just lightweight delegating wrappers, so they have multiple instances
 //        if (CndUtils.isDebugMode()) {
 //            FileObject fo2 = fileSystem.findResource(absPath.toString());
@@ -100,6 +104,11 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             Exceptions.printStackTrace(ex);
             return InvalidFileObjectSupport.getDummyFileSystem();
         }       
+    }
+
+    @Override
+    public BufferType getType() {
+        return bufType;
     }
 
     @Override
@@ -141,13 +150,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
-        PersistentUtils.writeFileSystem(fileSystem, output);
+        PersistentUtils.writeFileSystem(fileSystem, output);        
+        output.writeByte((byte) bufType.ordinal());
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
+        bufType = BufferType.values()[input.readByte()];
     }
 
     @Override

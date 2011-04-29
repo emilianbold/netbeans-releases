@@ -335,17 +335,18 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     public void updateJpa2Button() {
         File root = new File(instantiatingIterator.getServerRoot());
         support = new WLJpa2SwitchSupport(root);
-        boolean visible = support.isSwitchSupported()
+        boolean statusVisible = support.isSwitchSupported();
+        boolean buttonVisible = statusVisible
                 && !support.isEnabledViaSmartUpdate();
 
-        jpa2SwitchLabel.setVisible(visible);
-        jpa2Status.setVisible(visible);
-        jpa2SwitchButton.setVisible(visible);
+        jpa2SwitchLabel.setVisible(statusVisible);
+        jpa2Status.setVisible(statusVisible);
+        jpa2SwitchButton.setVisible(buttonVisible);
         updateJpa2Status();
     }
     
     private void updateJpa2Status() {
-        if (support.isEnabled()) {
+        if (support.isEnabled() || support.isEnabledViaSmartUpdate()) {
             jpa2Status.setText(NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
             Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
         } else {

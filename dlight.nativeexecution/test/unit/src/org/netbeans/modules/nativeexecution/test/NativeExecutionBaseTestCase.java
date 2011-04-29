@@ -121,9 +121,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     static {
-        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
-        log.setLevel(Level.ALL);
-        log.addHandler(new TestLogHandler(log));
+        Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
+        org.netbeans.modules.nativeexecution.support.Logger.getInstance().addHandler(new TestLogHandler(log));
 
         // the 3 lines below contain a workaround for some WinXP tests failure
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -136,7 +135,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     private final ExecutionEnvironment testExecutionEnvironment;
     private String remoteTmpDir;
-
+    private Level oldLevel = null;
+    
     public NativeExecutionBaseTestCase(String name) {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
@@ -155,11 +155,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         System.setProperty("nativeexecution.mode.unittest", "true");
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
-        setupUserDir();
+        setupUserDir();        
     }
 
     @Override
     protected void setUp() throws Exception {
+        setLoggers(true);
         setupProperties();
         super.setUp();
     }
@@ -167,6 +168,21 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        setLoggers(false);
+    }
+    
+    private void setLoggers(boolean setup) {
+        if (setup) {
+            if (NativeExecutionTestSupport.getBoolean("execution", "logging.finest")
+                 || NativeExecutionTestSupport.getBoolean("execution", getClass().getName() + ".logging.finest")) {        
+                oldLevel = org.netbeans.modules.nativeexecution.support.Logger.getInstance().getLevel();
+                org.netbeans.modules.nativeexecution.support.Logger.getInstance().setLevel(Level.ALL);
+            }
+        } else {
+            if (oldLevel != null) {
+                org.netbeans.modules.nativeexecution.support.Logger.getInstance().setLevel(oldLevel);
+            }
+        }
     }
 
     private void setupUserDir() {

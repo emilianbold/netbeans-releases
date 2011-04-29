@@ -158,7 +158,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = xml.getInputStream();
-        success = read(inputStream, FileUtil.toFile(xml).getPath());
+        success = read(inputStream, xml.getPath());
         deregisterXMLDecoder(decoder);
 
         if (!success) {
@@ -223,8 +223,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
-            File projectFile = FileUtil.toFile(projectDirectory);
-            final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectFile.getName()); // NOI18N
+            final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectDirectory.getPath()); // NOI18N
             Runnable warning = new Runnable() {
 
                 @Override

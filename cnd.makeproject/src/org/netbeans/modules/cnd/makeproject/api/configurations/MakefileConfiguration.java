@@ -306,10 +306,14 @@ public class MakefileConfiguration {
     private ExecutionEnvironment getSourceExecutionEnvironment() {
         ExecutionEnvironment env = null;
         MakeConfiguration mc = this.getMakeConfiguration();
-        if (mc != null && mc.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            DevelopmentHostConfiguration dhc = mc.getDevelopmentHost();
-            if (dhc != null) {
-                env = dhc.getExecutionEnvironment();
+        if (mc != null) {
+            if (mc.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                DevelopmentHostConfiguration dhc = mc.getDevelopmentHost();
+                if (dhc != null) {
+                    env = dhc.getExecutionEnvironment();
+                }
+            } else {
+                return FileSystemProvider.getExecutionEnvironment(mc.getBaseFSPath().getFileSystem());
             }
         }
         if (env == null) {

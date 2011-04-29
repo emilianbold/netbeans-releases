@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,24 +42,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.support;
-
-import java.io.IOException;
-import org.openide.filesystems.FileSystem;
+package org.netbeans.modules.cnd.api.project;
 
 /**
- * Represents the input stream provider for APTDriver
- * @author Vladimir Voskresensky
+ * Native project type.
+ * Register one instance to default lookup in order to define an Native project type.
+ * @author Jesse Glick
+ * @author Alexander Simon
+ *
  */
-public interface APTFileBuffer {
-    /** Gets normalized absolute path */
-    public CharSequence getAbsolutePath();
-    public FileSystem getFileSystem();
-    public char[] getCharBuffer() throws IOException;
-    public BufferType getType();
+public interface NativeProjectType {
+
+    /**
+     * Get a unique type identifier for this kind of project.
+     * No two registered {@link NativeProjectType} instances may share the same type.
+     * The type is stored in <code>nbproject/project.xml</code> in the <code>type</code> element.
+     * It is forbidden for the result of this method to change from call to call.
+     * @return the project type
+     */
+    String getType();
     
-    enum BufferType {
-        INCLUDED,
-        START_FILE,
-    }
+    /**
+     * Get the simple name of the XML element that should be used to store
+     * the project's specific configuration data in <code>nbproject/project.xml</code>
+     * (inside <code>&lt;configuration&gt;</code>) or <code>nbproject/private/private.xml</code>
+     * (inside <code>&lt;project-private&gt;</code>).
+     * It is forbidden for the result of this method to change from call to call.
+     * @param shared if true, refers to <code>project.xml</code>, else refers to
+     *               <code>private.xml</code>
+     * @return a simple name; <samp>data</samp> is recommended but not required
+     */
+    String getPrimaryConfigurationDataElementName(boolean shared);
+    
+    /**
+     * Get the namespace of the XML element that should be used to store
+     * the project's specific configuration data in <code>nbproject/project.xml</code>
+     * (inside <code>&lt;configuration&gt;</code>) or <code>nbproject/private/private.xml</code>
+     * (inside <code>&lt;project-private&gt;</code>).
+     * It is forbidden for the result of this method to change from call to call.
+     * @param shared if true, refers to <code>project.xml</code>, else refers to
+     *               <code>private.xml</code>
+     * @return an XML namespace, e.g. <samp>http://www.netbeans.org/ns/j2se-project</samp>
+     *         or <samp>http://www.netbeans.org/ns/j2se-project-private</samp>
+     */
+    String getPrimaryConfigurationDataElementNamespace(boolean shared);
+
 }

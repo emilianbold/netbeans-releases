@@ -123,17 +123,19 @@ class CustomizerGeneral extends javax.swing.JPanel {
             serverPort.setText( port );
         }
         
-        boolean visible = support.isSwitchSupported()
+        boolean statusVisible = support.isSwitchSupported();
+        boolean buttonVisible = statusVisible
                 && !support.isEnabledViaSmartUpdate();
 
-        jpa2SwitchLabel.setVisible(visible);
-        jpa2Status.setVisible(visible);
-        jpa2SwitchButton.setVisible(visible);
+        
+        jpa2SwitchLabel.setVisible(statusVisible);
+        jpa2Status.setVisible(statusVisible);
+        jpa2SwitchButton.setVisible(buttonVisible);
         updateJpa2Status();
     }
 
     private void updateJpa2Status() {
-        if (support.isEnabled()) {
+        if (support.isEnabled() || support.isEnabledViaSmartUpdate()) {
             jpa2Status.setText(NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2Status.enabledText"));
             Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchButton.disableText"));
         } else {

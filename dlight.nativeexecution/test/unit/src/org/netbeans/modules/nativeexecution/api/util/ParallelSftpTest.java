@@ -53,11 +53,9 @@ import java.util.TreeSet;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -69,25 +67,11 @@ import org.openide.util.Exceptions;
  */
 public class ParallelSftpTest extends NativeExecutionBaseTestCase {
     
-    private Level oldLevel;
     private final Writer errorWriter = new PrintWriter(System.err);
     
     public ParallelSftpTest(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        oldLevel = Logger.getInstance().getLevel();
-        Logger.getInstance().setLevel(Level.ALL);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        Logger.getInstance().setLevel(oldLevel);
-    }    
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testMultipleDownload() throws Exception {

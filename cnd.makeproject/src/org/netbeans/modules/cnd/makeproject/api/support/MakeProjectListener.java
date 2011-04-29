@@ -37,41 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.makeproject.api.support;
 
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import java.util.EventListener;
+
 /**
- *
- * @author Vladimir Kvashin
+ * Listener for changes in Ant project metadata.
+ * Most changes are in-memory while the project is still modified, but changes
+ * may also be on disk.
+ * <p>Event methods are fired with read access to
+ * {@link org.netbeans.api.project.ProjectManager#mutex}.
+ * @author Jesse Glick
+ * @author Alexander Simon
  */
-public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
+public interface MakeProjectListener extends EventListener {
 
-    public RemoteBuildSamplesTestCase(String testName) {
-        super(testName);
-    }
+    /**
+     * Called when a change was made to an XML project configuration file.
+     * @param ev an event with details of the change
+     */
+    void configurationXmlChanged(MakeProjectEvent ev);
 
-    public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
+    /**
+     * Called when a change was made to a properties file that might be shared with Ant.
+     * <p class="nonnormative">
+     * Note: normally you would not use this event to detect property changes.
+     * Use the property change listener from {@link PropertyEvaluator} instead to find
+     * changes in the interpreted values of Ant properties, possibly coming from multiple
+     * properties files.
+     * </p>
+     * @param ev an event with details of the change
+     */
+    void propertiesChanged(MakeProjectEvent ev);
 
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
-    }
-
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
-    }
 }
