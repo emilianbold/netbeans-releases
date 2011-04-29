@@ -565,12 +565,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             currentFolder.addItem(createItem(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
-            CndUtils.assertNotNullInConsole(currentItemConfiguration, "mull currentItemConfiguration"); //NOI18N
+            CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {
                 currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
             }
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
-            CndUtils.assertNotNullInConsole(currentItemConfiguration, "mull currentItemConfiguration"); //NOI18N
+            CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {
                 int tool = new Integer(currentText).intValue();
                 currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));

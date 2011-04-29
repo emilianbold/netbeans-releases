@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.dd.api.client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -60,6 +61,7 @@ import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -100,7 +102,11 @@ public final class DDProvider {
      * @return appClient object - root of the deployment descriptor bean graph
      */
     public AppClient getDDRoot(File f) throws IOException, SAXException {
-        return DDUtils.createAppClient(new FileInputStream(f), ClientParseUtils.getVersion(new FileInputStream(f)));
+        FileObject fo = FileUtil.toFileObject(f);
+        if (fo == null) {
+            throw new IOException(String.format("File: %s does not exist.", f.getAbsolutePath())); //NOI18N
+        }
+        return DDUtils.createAppClient(fo, ClientParseUtils.getVersion(fo));
     }
     
     /**
@@ -132,10 +138,10 @@ public final class DDProvider {
             synchronized (baseBeanMap) {
                 original = getOriginalFromCache(fo);
                 if (original == null) {
-                    version = ClientParseUtils.getVersion(fo.getInputStream());
+                    version = ClientParseUtils.getVersion(fo);
                     // preparsing
                     error = ClientParseUtils.parse(fo);
-                    original = DDUtils.createAppClient(fo.getInputStream(), version);
+                    original = DDUtils.createAppClient(fo, version);
                     baseBeanMap.put(fo.getURL(), new WeakReference<AppClient>(original));
                     errorMap.put(fo.getURL(), error);
                 } else {
@@ -241,7 +247,7 @@ public final class DDProvider {
                         if (appClient!=null) {
                             String version = null;
                             try {
-                                version = ClientParseUtils.getVersion(fo.getInputStream());
+                                version = ClientParseUtils.getVersion(fo);
                                 // preparsing
                                 SAXParseException error = ClientParseUtils.parse(fo);
                                 if (error!=null) {
@@ -251,7 +257,7 @@ public final class DDProvider {
                                     appClient.setError(null);
                                     appClient.setStatus(AppClient.STATE_VALID);
                                 }
-                                AppClient original = DDUtils.createAppClient(fo.getInputStream(), version);
+                                AppClient original = DDUtils.createAppClient(fo, version);
                                 baseBeanMap.put(fo.getURL(), new WeakReference<AppClient>(original));
                                 errorMap.put(fo.getURL(), appClient.getError());
                                 appClient.merge(original, AppClient.MERGE_UPDATE);
@@ -268,8 +274,8 @@ public final class DDProvider {
                         } else if (orig != null) {
                             String version = null;
                             try {
-                                version = ClientParseUtils.getVersion(fo.getInputStream());
-                                AppClient original = DDUtils.createAppClient(fo.getInputStream(), version);
+                                version = ClientParseUtils.getVersion(fo);
+                                AppClient original = DDUtils.createAppClient(fo, version);
                                 if (original.getClass().equals(orig.getClass())) {
                                     orig.merge(original,AppClient.MERGE_UPDATE);
                                 } else {
