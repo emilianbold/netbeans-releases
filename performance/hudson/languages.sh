@@ -1,4 +1,5 @@
-if test ! -e /space/hudsonserver/master 
+#!/bin/bash -x
+if test ! -e /space/hudsonserver/master
 then
 
 if [ -n "$languages_enabled" ]
