@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 if test ! -e /space/hudsonserver/master 
 then
 if [ -n "$web_enabled" ]
