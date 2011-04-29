@@ -155,7 +155,7 @@ public class QmakeProjectWriter {
             if (confBaseFO == null) {
                 throw new FileNotFoundException("FileObject not found: " + baseFSPath); //NOI18N
             }
-            FileObject qmakeProjectFO = FileUtil.createData(confBaseFO, PROJECT_PREFIX);
+            FileObject qmakeProjectFO = FileUtil.createData(confBaseFO, PROJECT_PREFIX + configuration.getName() + PROJECT_SUFFIX);
             BufferedWriter bw = null;
             try {
                 bw = new BufferedWriter(new OutputStreamWriter(qmakeProjectFO.getOutputStream()));

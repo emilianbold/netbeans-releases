@@ -51,6 +51,7 @@ import java.util.Stack;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
@@ -564,10 +565,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             currentFolder.addItem(createItem(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
-            currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
+            CndUtils.assertNotNullInConsole(currentItemConfiguration, "mull currentItemConfiguration"); //NOI18N
+            if (currentItemConfiguration != null) {
+                currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
+            }
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
-            int tool = new Integer(currentText).intValue();
-            currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
+            CndUtils.assertNotNullInConsole(currentItemConfiguration, "mull currentItemConfiguration"); //NOI18N
+            if (currentItemConfiguration != null) {
+                int tool = new Integer(currentText).intValue();
+                currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
+            }
         } else if (element.equals(CONFORMANCE_LEVEL_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(COMPATIBILITY_MODE_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(LIBRARY_LEVEL_ELEMENT)) {
@@ -905,15 +912,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        Project project = projectDescriptor.getProject();
-        FileSystem fs = remoteProject.getSourceFileSystem();
-        String absPath;
-        if (FileSystemProvider.isAbsolute(path)) {
-            absPath = path;                
-        } else {                
-            absPath = CndPathUtilitities.toAbsolutePath(remoteProject.getSourceBaseDir(), path);
-        }
-        return new Item(new FSPath(fs, absPath), remoteProject.getSourceBaseDir(), ProjectSupport.getPathMode(project));
+        return new Item(remoteProject.getSourceBaseDirFileObject(), path);
     }
 
     private String adjustOffset(String path) {
