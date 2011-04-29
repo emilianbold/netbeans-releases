@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.api.common.project.ui;
 
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -77,6 +79,8 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.project.support.ui.EditJarSupport;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
@@ -204,6 +208,30 @@ final class ActionFilterNode extends FilterNode {
         return new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
                 new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
                 new LibraryEditable(entryId, rh),
+                new JavadocProvider(root,root)));
+    }
+
+    static FilterNode forArchive(
+            final @NonNull Node original,
+            final @NonNull UpdateHelper helper,
+            final @NonNull PropertyEvaluator eval,
+            final @NonNull String classPathId,
+            final @NonNull String entryId,
+            final @NullAllowed String webModuleElementName,     //xxx: remove
+            final @NonNull ClassPathSupport cs,
+            final @NonNull ReferenceHelper rh) {
+        Parameters.notNull("original", original);   //NOI18N
+        Parameters.notNull("helper", helper);       //NOI18N
+        Parameters.notNull("eval", eval);           //NOI18N
+        Parameters.notNull("classPathId", classPathId); //NOI18N
+        Parameters.notNull("entryId", entryId);     //NOI18N
+        Parameters.notNull("cs", cs);       //NOI18N
+        Parameters.notNull("rh", rh);       //NOI18N
+
+        final FileObject root =  getFolder(original);
+        return new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
+                new ArchiveEditable(entryId, helper, eval, rh),
                 new JavadocProvider(root,root)));
     }
 
@@ -529,6 +557,115 @@ final class ActionFilterNode extends FilterNode {
             //Todo: Caching if needed
             final String libName = entryId.substring(5, entryId.lastIndexOf('.'));
             return refHelper.findLibrary(libName);
+        }
+    }
+
+    private static class ArchiveEditable implements EditRootAction.Editable {
+
+        private static final String FILE_REF = "file.reference.";   //NOI18N
+        private static final String SRC_REF = "source.reference.";   //NOI18N
+        private static final String JDOC_REF = "javadoc.reference.";  //NOI18N
+
+        private final UpdateHelper updateHelper;
+        private final PropertyEvaluator eval;
+        private final ReferenceHelper refHelper;
+        private final String entryId;
+
+        private ArchiveEditable(
+                final @NonNull String entryId,
+                final @NonNull UpdateHelper updateHelper,
+                final @NonNull PropertyEvaluator eval,
+                final @NonNull ReferenceHelper refHelper) {
+            Parameters.notNull("entryId", entryId); //NOI18N
+            Parameters.notNull("updateHelper", updateHelper);   //NOI18N
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("refHelper", refHelper);   //NOI18N
+            if (!entryId.startsWith(FILE_REF)) {
+                throw new IllegalArgumentException(entryId);
+            }
+            this.entryId = entryId;
+            this.updateHelper = updateHelper;
+            this.eval = eval;
+            this.refHelper = refHelper;
+        }
+
+        @Override
+        public boolean canEdit() {
+            final String propValue = eval.getProperty(entryId);
+            return propValue != null;
+        }
+
+        @Override
+        public void edit() {
+            final String[] propValue = new String[1];
+            final String[] oldSource = new String[1];
+            final String[] oldJavadoc = new String[1];
+            ProjectManager.mutex().readAccess(new Runnable(){
+                @Override
+                public void run () {
+                    propValue[0] = eval.getProperty(entryId);
+                    assert propValue[0] != null;
+                    oldSource[0] = getSource();
+                    oldJavadoc[0] = getJavadoc();
+                }
+            });
+            final EditJarSupport.Item oldItem = new EditJarSupport.Item();
+            oldItem.setJarFile(propValue[0]);
+            oldItem.setSourceFile(oldSource[0]);
+            oldItem.setJavadocFile(oldJavadoc[0]);
+            final EditJarSupport.Item newItem = EditJarSupport.showEditDialog(updateHelper.getAntProjectHelper(), oldItem);
+            if (newItem != null) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProjectManager.mutex().writeAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                store(getSourceProperty(), oldSource[0], newItem.getSourceFile());
+                                store(getJavadocProperty(), oldJavadoc[0], newItem.getJavadocFile());
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        private String getSource() {
+            return eval.getProperty(getSourceProperty());
+        }
+
+        private String getJavadoc() {
+            return eval.getProperty(getJavadocProperty());
+        }
+
+        private String getSourceProperty() {
+            return SRC_REF + entryId.substring(FILE_REF.length());
+        }
+
+        private String getJavadocProperty() {
+            return JDOC_REF + entryId.substring(FILE_REF.length());
+        }
+
+        private void store (
+                final @NonNull String property,
+                final @NullAllowed String oldValue,
+                final @NullAllowed String newValue) {
+            Parameters.notNull("property", property);       //NOI18N
+            if (oldValue == null ? newValue != null : !oldValue.equals(newValue)) {                
+                if (newValue != null) {
+                    refHelper.createExtraForeignFileReferenceAsIs(newValue, property);
+                } else {
+                    final EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep.remove(property);
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                }
+                try {
+                    final Project prj = FileOwnerQuery.getOwner(updateHelper.getAntProjectHelper().getProjectDirectory());
+                    ProjectManager.getDefault().saveProject(prj);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 }
