@@ -46,9 +46,12 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,7 +60,7 @@ import org.openide.filesystems.FileObject;
  */
 public class FileBufferFile extends AbstractFileBuffer {
     
-    private volatile SoftReference<char[]> cachedArray;
+    private volatile Reference<char[]> cachedArray;
     private final Object lock = new Object();
     private volatile long lastModifiedWhenCachedString;
 
@@ -88,7 +91,7 @@ public class FileBufferFile extends AbstractFileBuffer {
 
     private char[] doGetChar() throws IOException {
         synchronized (lock) {
-            SoftReference<char[]> aCachedArray = cachedArray;
+            Reference<char[]> aCachedArray = cachedArray;
             if (aCachedArray != null) {
                 char[] res = aCachedArray.get();
                 if (res != null) {
@@ -141,7 +144,11 @@ public class FileBufferFile extends AbstractFileBuffer {
                 reader.close();
                 is.close();
             }
-            cachedArray = new SoftReference<char[]>(readChars);
+            if (MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
+                cachedArray = new WeakReference<char[]>(readChars);
+            } else {
+                cachedArray = new SoftReference<char[]>(readChars);
+            }
             lastModifiedWhenCachedString = lastModified();
             return readChars;
         }

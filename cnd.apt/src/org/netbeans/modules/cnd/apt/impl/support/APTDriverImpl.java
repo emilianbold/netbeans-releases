@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * implementation of APTDriver
@@ -205,7 +207,15 @@ public class APTDriverImpl {
             return;
         }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
-            file2ref2apt.put(path, new SoftReference<APTFile>(apt));
+            if (CharSequenceUtils.endsWith(path, ".cpp") || // NOI18N
+                CharSequenceUtils.endsWith(path, ".cc") || // NOI18N  
+                CharSequenceUtils.endsWith(path, ".c++") || // NOI18N  
+                CharSequenceUtils.endsWith(path, ".cxx") || // NOI18N  
+                CharSequenceUtils.endsWith(path, ".c")) { // NOI18N
+                file2ref2apt.put(path, new WeakReference<APTFile>(apt));
+            } else {
+                file2ref2apt.put(path, new SoftReference<APTFile>(apt));
+            }
         } else {
             file2apt.put(path, apt);
         }        
