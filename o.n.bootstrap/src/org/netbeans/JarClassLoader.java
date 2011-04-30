@@ -842,20 +842,19 @@ public class JarClassLoader extends ProxyClassLoader {
          * @return URLConnection
          * @throws IOException
          */
+        @Override
         protected JarURLConnection openConnection(URL u) throws IOException {
             String url = u.getFile();//toExternalForm();
             int bang = url.indexOf("!/");
             if (bang == -1) {
                 throw new IOException("Malformed JAR-protocol URL: " + u);
             }
-            int from;
-            if (url.startsWith("file:")) {
-                from = Utilities.isWindows() ? 6 : 5;
-            } else {
-                from = 0;
+            String jar;
+            try {
+                jar = new File(new URI(url.substring(0, bang))).getPath();
+            } catch (URISyntaxException x) {
+                throw new IOException(x);
             }
-            String jar = url.substring(from, bang).replace('/', File.separatorChar)
-                    .replace("%20", " ");
             Source _src = Source.sources.get(jar);
             LOGGER.log(Level.FINER, "openConnection for {0} jar: {1} src: {2}", new Object[]{u, jar, _src});
             if (_src == null) {
