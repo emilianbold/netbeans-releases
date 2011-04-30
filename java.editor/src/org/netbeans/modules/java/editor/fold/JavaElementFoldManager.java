@@ -127,9 +127,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
         Object od = doc.getProperty(Document.StreamDescriptionProperty);
         
         if (od instanceof DataObject) {
+            FileObject file = ((DataObject)od).getPrimaryFile();
+
             currentFolds = new ArrayList<FoldInfo>();
-            task = JavaElementFoldTask.getTask(((DataObject)od).getPrimaryFile());
-            task.setJavaElementFoldManager(JavaElementFoldManager.this);
+            task = JavaElementFoldTask.getTask(file);
+            task.setJavaElementFoldManager(JavaElementFoldManager.this, file);
         }
     }
     
@@ -161,7 +163,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
     public synchronized void release() {
         if (task != null)
-            task.setJavaElementFoldManager(null);
+            task.setJavaElementFoldManager(null, null);
         
         task         = null;
         file         = null;
@@ -194,8 +196,12 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         private Reference<JavaElementFoldManager> manager;
 
-        synchronized void setJavaElementFoldManager(JavaElementFoldManager manager) {
+        synchronized void setJavaElementFoldManager(JavaElementFoldManager manager, FileObject file) {
             this.manager = new WeakReference<JavaElementFoldManager>(manager);
+
+            if (file != null) {
+                JavaElementFoldManagerTaskFactory.doRefresh(file);
+            }
         }
         
         public void run(final CompilationInfo info) {
