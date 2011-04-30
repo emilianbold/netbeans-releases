@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
@@ -127,18 +128,29 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
         return HighlightsSequence.EMPTY;
     }
     
-    private synchronized void checkFileStatus(FileObject fo) {
-        if (lastFile == null || lastFile.get() != fo) {
-            lastFile = new WeakReference<FileObject>(fo);
+    private void checkFileStatus(FileObject fo) {
+        boolean update = false;
+        synchronized (this) {
+            if (lastFile == null || lastFile.get() != fo) {
+                lastFile = new WeakReference<FileObject>(fo);
+                update = true;
+            }
+        }
+        if (update) {
             fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
-            updateFileReadOnly(fo);
+            boolean readOnly = !fo.canWrite(); // Access without monitor on this class and document's lock
+            updateFileReadOnly(readOnly);
         }
     }
     
-    private void updateFileReadOnly(FileObject fo) {
-        boolean origReadOnly = fileReadOnly;
-        fileReadOnly = !fo.canWrite();
-        if (fileReadOnly != origReadOnly) {
+    void updateFileReadOnly(boolean readOnly) {
+        boolean fire = false;
+        synchronized (this) {
+            boolean origReadOnly = fileReadOnly;
+            fileReadOnly = readOnly;
+            fire = (fileReadOnly != origReadOnly);
+        }
+        if (fire) {
             fireHighlightsChange(0, document.getLength() + 1); // +1 to include extra '\n'
         }
     }
@@ -170,7 +182,16 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
                 FileObject fo = fe.getFile();
                 assert lastFile != null;
                 if (lastFile.get() == fo) {
-                    updateFileReadOnly(fo);
+                    final boolean readOnly = !fo.canWrite();
+                    // Update asynchronously to prevent deadlock of filesystem <-> document
+                    // since this fileAttributeChanged() gets invoked under FS lock.
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateFileReadOnly(readOnly);
+                        }
+                    });
+                            
                 }
             }
         }
