@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -459,8 +459,11 @@ public class Hk2PluginProperties {
         }
         InetSocketAddress isa = new InetSocketAddress(host, port);
         Socket socket = new Socket();
-        socket.connect(isa, 1);
-        socket.close();
+        socket.connect(isa, 2000);
+        socket.setSoTimeout(2000);
+        try { socket.close(); } catch (IOException ioe) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, "stranded open socket to "+host+":"+port, ioe);  //NOI18N
+        }
         return true;
     }
 
@@ -475,6 +478,8 @@ public class Hk2PluginProperties {
             return isRunning(host, Integer.parseInt(port));
         } catch (NumberFormatException e) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, e); // NOI18N
+            return false;
+        } catch (java.net.ConnectException ce) {
             return false;
         } catch (IOException ioe) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, ioe); // NOI18N
