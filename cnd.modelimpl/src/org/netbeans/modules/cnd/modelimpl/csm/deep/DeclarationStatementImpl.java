@@ -69,15 +69,9 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
     }
 
     public static DeclarationStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        DeclarationStatementImpl stmt = new DeclarationStatementImpl(ast, file, scope);
-        stmt.init(ast);
-        return stmt;
+        return new DeclarationStatementImpl(ast, file, scope);
     }
 
-    private void init(AST ast) {
-        render(ast);
-    }
-    
     @Override
     public final CsmStatement.Kind getKind() {
         return CsmStatement.Kind.DECLARATION;
@@ -85,6 +79,10 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
 
     @Override
     public final List<CsmDeclaration> getDeclarators() {
+        if (declarators == null) {
+            render();
+            //RepositoryUtils.setSelfUIDs(declarators);
+        }
         return Collections.unmodifiableList(declarators);
     }
 
@@ -101,12 +99,12 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }
 
-    private synchronized void render(AST ast) {
+    private synchronized void render() {
         if (this.declarators == null) {
             // assign constant to prevent infinite recusion by calling this method in the same thread
             this.declarators = EMPTY;
             DSRenderer renderer = new DSRenderer();
-            renderer.render(ast, null, null);
+            renderer.render(getAst(), null, null);
             // assign should be the latest operation
             // prevent publishing list before it is completely constructed
             this.declarators = renderer.declarators;

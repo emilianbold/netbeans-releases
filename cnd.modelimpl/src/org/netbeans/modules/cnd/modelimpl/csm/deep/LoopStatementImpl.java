@@ -70,22 +70,18 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
     }
 
     public static LoopStatementImpl create(AST ast, CsmFile file, boolean postCheck, CsmScope scope) {
-        LoopStatementImpl stmt = new LoopStatementImpl(ast, file, postCheck, scope);
-        stmt.init(ast);
-        return stmt;
+        return new LoopStatementImpl(ast, file, postCheck, scope);
     }
    
-    private void init(AST ast) {
-        render(ast);
-    }
-    
     @Override
     public CsmCondition getCondition() {
+        renderIfNeed();
         return condition;
     }
     
     @Override
     public CsmStatement getBody() {
+        renderIfNeed();
         return body;
     }
 
@@ -110,9 +106,15 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
         }
     }
 
-    private void render(AST ast) {
+    private void renderIfNeed() {
+        if( condition == null ) {
+            render();
+        }
+    }
+        
+    private void render() {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile());
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+        for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
             int type = token.getType();
             if( type == CPPTokenTypes.CSM_CONDITION ) {
                 condition = renderer.renderCondition(token, this);
