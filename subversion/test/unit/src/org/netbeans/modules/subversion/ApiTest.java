@@ -89,6 +89,23 @@ public class ApiTest extends NbTestCase {
 
         System.setProperty("svnClientAdapterFactory", "commandline");
         System.setProperty("netbeans.user", dataRootDir.getAbsolutePath());
+        
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+            br.readLine(); // kenai username, just skip it
+            br.readLine(); // kenai password, just skip it
+
+            String proxy = br.readLine();
+            String port = br.readLine();
+
+            if(proxy != null) {
+                System.setProperty("https.proxyHost", proxy);
+                System.setProperty("https.proxyPort", port);
+            }
+        } finally {
+            if(br != null) br.close();        
+        }
     }
     
     @Override
