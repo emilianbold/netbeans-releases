@@ -39,6 +39,7 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
@@ -322,7 +323,10 @@ public class Reindenter implements IndentTask {
                             || token.token().id() != JavaTokenId.EQ
                             || (token = findFirstNonWhitespaceToken(startOffset, endOffset)) == null
                             || token.token().id() != JavaTokenId.LBRACE) {
-                        currentIndent += cs.getContinuationIndentSize();
+                        if (cs.alignMultilineAssignment()) 
+                            currentIndent = getColumn(last);
+                        else
+                            currentIndent += cs.getContinuationIndentSize();
                     } else {
                         switch (cs.getOtherBracePlacement()) {
                             case NEW_LINE_INDENTED:
@@ -751,6 +755,12 @@ public class Reindenter implements IndentTask {
         return false;
     }
 
+    private int getColumn(Tree tree) throws BadLocationException {
+        int startOffset = (int)(sp.getStartPosition(cut, tree));
+        int lineStartOffset = context.lineStartOffset(startOffset);
+        return getCol(context.document().getText(lineStartOffset, startOffset - lineStartOffset));
+    }
+
     private int getCurrentIndent(Tree tree) throws BadLocationException {
         int lineStartOffset = context.lineStartOffset((int)sp.getStartPosition(cut, tree));
         Integer newIndent = newIndents.get(lineStartOffset);
@@ -758,10 +768,76 @@ public class Reindenter implements IndentTask {
     }
 
     private int getContinuationIndent(LinkedList<? extends Tree> path, int currentIndent) throws BadLocationException {
-        Tree tree = null;
-        Iterator<? extends Tree> it = path.iterator();
-        while (it.hasNext() && !((tree = it.next()) instanceof StatementTree || tree.getKind() == Kind.CLASS || tree.getKind() == Kind.METHOD));
-        return (tree != null ? getCurrentIndent(tree) : currentIndent) + cs.getContinuationIndentSize();
+        for (Tree tree : path) {
+            switch (tree.getKind()) {
+                case CLASS:
+                case INTERFACE:
+                case ENUM:
+                case ANNOTATION_TYPE:
+                case VARIABLE:
+                case METHOD:
+                case TRY:
+                case RETURN:
+                case BLOCK:
+                case FOR_LOOP:
+                case SWITCH:
+                case THROW:
+                case WHILE_LOOP:
+                case IF:
+                case EXPRESSION_STATEMENT:
+                case SYNCHRONIZED:
+                case ASSERT:
+                case CONTINUE:
+                case LABELED_STATEMENT:
+                case ENHANCED_FOR_LOOP:
+                case BREAK:
+                case EMPTY_STATEMENT:
+                case DO_WHILE_LOOP:
+                    return getCurrentIndent(tree) + cs.getContinuationIndentSize();
+                case ASSIGNMENT:
+                case MULTIPLY_ASSIGNMENT:
+                case DIVIDE_ASSIGNMENT:
+                case REMAINDER_ASSIGNMENT:
+                case PLUS_ASSIGNMENT:
+                case MINUS_ASSIGNMENT:
+                case LEFT_SHIFT_ASSIGNMENT:
+                case RIGHT_SHIFT_ASSIGNMENT:
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                case AND_ASSIGNMENT:
+                case XOR_ASSIGNMENT:
+                case OR_ASSIGNMENT:
+                    if (cs.alignMultilineAssignment())
+                        return getColumn(tree);
+                    break;
+                case AND:
+                case CONDITIONAL_AND:
+                case CONDITIONAL_OR:
+                case DIVIDE:
+                case EQUAL_TO:
+                case GREATER_THAN:
+                case GREATER_THAN_EQUAL:
+                case LEFT_SHIFT:
+                case LESS_THAN:
+                case LESS_THAN_EQUAL:
+                case MINUS:
+                case MULTIPLY:
+                case NOT_EQUAL_TO:
+                case OR:
+                case PLUS:
+                case REMAINDER:
+                case RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT:
+                case XOR:
+                    if (cs.alignMultilineBinaryOp())
+                        return getColumn(tree);
+                    break;
+                case CONDITIONAL_EXPRESSION:
+                    if (cs.alignMultilineTernaryOp())
+                        return getColumn(tree);
+                    break;
+            }
+        }
+        return currentIndent + cs.getContinuationIndentSize();
     }
 
     private int getStmtIndent(int startOffset, int endOffset, Set<JavaTokenId> expectedTokenIds, int expectedTokenOffset, int currentIndent) {
