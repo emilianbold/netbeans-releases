@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public abstract class StatementBase extends OffsetableBase implements CsmStatement {
     
+    private final AST ast;
+    
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
 
@@ -76,6 +78,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     
     private StatementBase(AST ast, CsmFile file, int start, int end, CsmScope scope) {
         super(file, start, end);
+        this.ast = ast;
         if (scope != null) {
             setScope(scope);
         }
@@ -102,6 +105,10 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         }
     }
     
+    protected AST getAst() {
+        return ast;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
@@ -116,6 +123,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     
     protected StatementBase(DataInput input) throws IOException {
         super(input);
+        this.ast = null;
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }   
 

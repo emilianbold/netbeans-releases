@@ -67,15 +67,9 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     }
 
     public static CompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        CompoundStatementImpl stmt = new CompoundStatementImpl(ast, file, scope);
-        stmt.init(ast);
-        return stmt;
+        return new CompoundStatementImpl(ast, file, scope);
     }
 
-    private void init(AST ast) {
-        renderStatements(ast);
-    }
-    
     @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.COMPOUND;
@@ -83,6 +77,9 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 
     @Override
     public final List<CsmStatement> getStatements() {
+        if (statements == null) {
+            renderStatements(getStartRenderingAst());
+        }
         return statements;
     }
 
@@ -94,7 +91,11 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         }
     }
 
-    protected void renderStatements(AST ast) {
+    protected AST getStartRenderingAst() {
+        return getAst();
+    }
+
+    private void renderStatements(AST ast) {
         // to prevent re-rendering recursions initialize with empty list
         // and replace with real content at the end
         // we do not use extra sync here, because it's ok in case of real 
