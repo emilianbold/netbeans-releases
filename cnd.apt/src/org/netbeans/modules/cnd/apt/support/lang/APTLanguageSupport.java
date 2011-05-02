@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  *  - filters collection
  * @author Vladimir Voskresensky
  */
-public class APTLanguageSupport {
+public final class APTLanguageSupport {
     private static APTLanguageSupport singleton = new APTLanguageSupport();
 
     public static final String STD_C    = "Std C Language"; // NOI18N

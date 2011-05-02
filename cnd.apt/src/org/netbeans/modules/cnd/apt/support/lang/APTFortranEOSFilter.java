@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
  *
  * @author nk220367
  */
-public class APTFortranEOSFilter implements APTLanguageFilter {
+final class APTFortranEOSFilter implements APTLanguageFilter {
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */

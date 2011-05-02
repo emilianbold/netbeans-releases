@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  * filter for GNU C language
  * @author Vladimir Voskresensky
  */
-public class APTGnuCFilter extends APTStdCFilter {
+final class APTGnuCFilter extends APTStdCFilter {
     
     /** Creates a new instance of APTGnuCFilter */
     public APTGnuCFilter() {

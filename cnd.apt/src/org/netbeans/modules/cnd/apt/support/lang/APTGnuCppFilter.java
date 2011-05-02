@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  * filter for GNU C++ language
  * @author Vladimir Voskresensky
  */
-public class APTGnuCppFilter extends APTBaseLanguageFilter {
+class APTGnuCppFilter extends APTBaseLanguageFilter {
     
     public APTGnuCppFilter() {
         super(false);

@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  * filter for Std C++ language
  * @author Vladimir Voskresensky
  */
-public class APTStdCppFilter extends APTBaseLanguageFilter {
+final class APTStdCppFilter extends APTBaseLanguageFilter {
     
     public APTStdCppFilter() {
         super(false);

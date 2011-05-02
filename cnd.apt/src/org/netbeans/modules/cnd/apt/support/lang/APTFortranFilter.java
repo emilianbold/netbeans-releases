@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class APTFortranFilter extends APTBaseLanguageFilter {
+final class APTFortranFilter extends APTBaseLanguageFilter {
 
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 
