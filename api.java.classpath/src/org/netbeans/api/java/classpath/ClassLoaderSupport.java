@@ -46,6 +46,8 @@ package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.*;
@@ -80,10 +82,12 @@ class ClassLoaderSupport extends NbClassLoader
     /** PropertyChangeListener */
     private java.beans.PropertyChangeListener propListener;
 
+    private final Object lock = new Object();
+    private final Map<FileObject,Boolean> emittedFileObjects = new HashMap<FileObject,Boolean>();
+    private boolean detachedFromCp;
+
     /** contains AllPermission */
     private static java.security.PermissionCollection allPermission;
-
-    private static boolean firstTime = true;
 
     /**
      * The ClassPath to load classes from.
@@ -92,6 +96,7 @@ class ClassLoaderSupport extends NbClassLoader
 
     /** Constructor that attaches itself to the filesystem pool.
     */
+    @SuppressWarnings("LeakingThisInConstructor")
     private ClassLoaderSupport (final ClassPath cp, final ClassLoader parentClassLoader) throws FileStateInvalidException {
         super(cp.getRoots(), parentClassLoader, null);
         this.classPath = cp;
@@ -108,6 +113,7 @@ class ClassLoaderSupport extends NbClassLoader
      * @return
      * @throws ClassNotFoundException
      */
+    @Override
     protected Class findClass (String name) throws ClassNotFoundException {
         Class c = super.findClass (name);
         if (c != null) {
@@ -117,7 +123,7 @@ class ClassLoaderSupport extends NbClassLoader
             if (fo != null) {
                 // if the file is from the file system pool,
                 // register to catch its changes
-                fo.addFileChangeListener (listener);
+                addFileChangeListener(fo);
             }
         }
         return c;
@@ -128,6 +134,7 @@ class ClassLoaderSupport extends NbClassLoader
      * @param name
      * @return URL of the resource
      */
+    @Override
     public URL findResource (String name) {
         URL url = super.findResource (name);
         if (url != null) {
@@ -135,7 +142,7 @@ class ClassLoaderSupport extends NbClassLoader
             if (fo != null) {
                 // if the file is from the file system pool,
                 // register to catch its changes
-                fo.addFileChangeListener (listener);
+                addFileChangeListener(fo);
             }
         }
         return url;
@@ -147,20 +154,21 @@ class ClassLoaderSupport extends NbClassLoader
     */
     private void test (org.openide.filesystems.FileObject fo) {
         classPath.resetClassLoader(this);
-        fo.removeFileChangeListener (listener);
+        removeAllListeners();   //Detached from CP no need to listen
     }
 
     /** Resets the loader, removes it from listneing on all known objects.
     */
     private void reset () {
         classPath.resetClassLoader(this);
+        removeAllListeners();   ////Detached from CP no need to listen
     }
 
     /** If this object is not current classloader, removes it from
     * listening on given file object.
     */
     private void testRemove (org.openide.filesystems.FileObject fo) {
-        fo.removeFileChangeListener (listener);
+        removeFileChangeListener(fo);
     }
 
     /** Fired when a new folder has been created. This action can only be
@@ -169,6 +177,7 @@ class ClassLoaderSupport extends NbClassLoader
     *
     * @param fe the event describing context where action has taken place
     */
+    @Override
     public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
         testRemove (fe.getFile ());
     }
@@ -179,6 +188,7 @@ class ClassLoaderSupport extends NbClassLoader
     *
     * @param fe the event describing context where action has taken place
     */
+    @Override
     public void fileDataCreated (org.openide.filesystems.FileEvent fe) {
         testRemove (fe.getFile ());
     }
@@ -186,6 +196,7 @@ class ClassLoaderSupport extends NbClassLoader
     /** Fired when a file has been changed.
     * @param fe the event describing context where action has taken place
     */
+    @Override
     public void fileChanged (org.openide.filesystems.FileEvent fe) {
         test (fe.getFile ());
     }
@@ -193,6 +204,7 @@ class ClassLoaderSupport extends NbClassLoader
     /** Fired when a file has been deleted.
     * @param fe the event describing context where action has taken place
     */
+    @Override
     public void fileDeleted (org.openide.filesystems.FileEvent fe) {
         test (fe.getFile ());
     }
@@ -201,6 +213,7 @@ class ClassLoaderSupport extends NbClassLoader
     * @param fe the event describing context where action has taken place
     *           and the original name and extension.
     */
+    @Override
     public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
         test (fe.getFile ());
     }
@@ -209,6 +222,7 @@ class ClassLoaderSupport extends NbClassLoader
     * @param fe the event describing context where action has taken place,
     *           the name of attribute and old and new value.
     */
+    @Override
     public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
         testRemove (fe.getFile ());
     }
@@ -227,8 +241,61 @@ class ClassLoaderSupport extends NbClassLoader
      * @param evt A PropertyChangeEvent object describing the event source 
      *  	and the property that has changed.
      */
+    @Override
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName()))
             reset();
+    }
+
+    private void addFileChangeListener(final FileObject fo) {
+        boolean add;
+        synchronized(lock) {
+            if (detachedFromCp) {
+                return;
+            }
+            add = emittedFileObjects.put(fo,Boolean.FALSE) == null;
+        }
+        if (add) {
+            fo.addFileChangeListener (listener);
+            synchronized(lock) {
+                if (!detachedFromCp) {
+                    assert emittedFileObjects.get(fo) == Boolean.FALSE;
+                    emittedFileObjects.put(fo,Boolean.TRUE);
+                } else {
+                    emittedFileObjects.remove(fo);
+                    add = false;
+                }
+            }
+            if (!add) {
+                fo.removeFileChangeListener(listener);
+            }
+        }
+    }
+
+    private void removeFileChangeListener(final FileObject fo) {
+        boolean remove;
+        synchronized(lock) {
+            remove = emittedFileObjects.remove(fo) == Boolean.TRUE;
+        }
+        if (remove) {
+            fo.removeFileChangeListener(listener);
+        }
+    }
+
+    private void removeAllListeners() {
+        Map.Entry[] removeListenerFrom;
+        synchronized(lock){
+            detachedFromCp = true;  //No need to add more listeners
+            if (emittedFileObjects.isEmpty()) {
+                return;
+            }
+            removeListenerFrom = emittedFileObjects.entrySet().toArray(new Map.Entry[emittedFileObjects.size()]);
+            emittedFileObjects.clear();
+        }
+        for (Map.Entry e : removeListenerFrom) {
+            if (e.getValue() == Boolean.TRUE) {
+                ((FileObject)e.getKey()).removeFileChangeListener(listener);
+            }
+        }
     }
 }

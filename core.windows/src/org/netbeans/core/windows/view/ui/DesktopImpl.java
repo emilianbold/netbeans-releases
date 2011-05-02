@@ -101,7 +101,14 @@ public final class DesktopImpl {
         layeredPane = new JLayeredPane();
         layeredPane.setLayout(new LayeredLayout());
         // desktop represents regular layer of layeredPane
-        desktop = new JPanel();
+        desktop = new JPanel() {
+            @Override
+            public boolean isOpaque() {
+                if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+                    return false;
+                return super.isOpaque();
+            }
+        };
         desktop.setLayout(new GridBagLayout());
         Color bkColor = UIManager.getColor("NbSplitPane.background"); //NOI18N
         if( null != bkColor ) {

@@ -426,9 +426,16 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
         // find insert position
         Position[] bounds = null;
         if (where != null) {
-            bounds = JavadocUtilities.findTagBounds(wc, doc, where, isLastTag);
-            if (insertBefore) {
-                isLastTag[0] = false;
+            try {
+                bounds = JavadocUtilities.findTagBounds(wc, doc, where, isLastTag);
+                if (insertBefore) {
+                    isLastTag[0] = false;
+                }
+            } catch (IllegalStateException ise) {
+                // insert at the last token; resolve \n and /***/ cases
+                bounds = JavadocUtilities.findLastTokenBounds(wc, doc, jdoc);
+                insertBefore = false;
+                isLastTag[0] = true;
             }
         } else {
             // 3. if not, insert at the last token; resolve \n and /***/ cases

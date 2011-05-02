@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -50,6 +50,7 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.OutputStream;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,6 +65,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.netbeans.modules.j2ee.sun.api.InstrumentAVK; 
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory;
 
 /**
  *
@@ -88,7 +90,9 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
         //System.out.println("In Verifier...."+target);
         final String jname = FileUtil.toFile(target).getAbsolutePath();
-        DeploymentManager dm = getAssociatedSunDM(target);
+        DeploymentManager dm;
+        try {
+            dm = getAssociatedSunDM(target);
         SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
         InstrumentAVK avkSupport = getAVKImpl();
         if((avkSupport != null) && (dm != null) && sdm.isLocal()){
@@ -100,14 +104,19 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
         }else{
             VerifierSupport.launchVerifier(jname,logger,sdm.getPlatformRoot());
         }   
+        } catch (DeploymentManagerCreationException ex) {
+            ValidationException ve =  new ValidationException("Bad DM");
+            ve.initCause(ex);
+            throw ve;
+        }
     }
     
-    private DeploymentManager getAssociatedSunDM(FileObject target){
+    private DeploymentManager getAssociatedSunDM(FileObject target) throws DeploymentManagerCreationException{
         DeploymentManager dm = null;
         J2eeModuleProvider modProvider = getModuleProvider(target);
         if (modProvider != null){
             InstanceProperties serverName = modProvider.getInstanceProperties();
-            dm = serverName.getDeploymentManager();
+            dm = (new SunDeploymentFactory()).getDisconnectedDeploymentManager(serverName.getProperty(InstanceProperties.URL_ATTR)); // serverName.getDeploymentManager();
         }
         return dm;
     }

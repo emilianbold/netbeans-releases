@@ -44,6 +44,7 @@
 
 package org.apache.tools.ant.module.run;
 
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.URL;
@@ -63,6 +64,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputEvent;
@@ -77,6 +79,7 @@ import org.openide.windows.OutputListener;
 public final class Hyperlink implements OutputListener {
 
     static final Set<Hyperlink> hyperlinks = new WeakSet<Hyperlink>();
+    private static final RequestProcessor RP = new RequestProcessor(Hyperlink.class);
 
     private final URL url;
     private final String message;
@@ -113,6 +116,8 @@ public final class Hyperlink implements OutputListener {
     }
     
     public void outputLineAction(OutputEvent ev) {
+        RP.post(new Runnable() {
+            public @Override void run() {
         FileObject file = URLMapper.findFileObject(url);
         if (file == null) { // #13115
             Toolkit.getDefaultToolkit().beep();
@@ -137,9 +142,13 @@ public final class Hyperlink implements OutputListener {
                     }
                     AntModule.err.log("opened document for " + file);
                     try {
-                        Line line = updateLines(ed);
+                        final Line line = updateLines(ed);
                         if (!line.isDeleted()) {
-                            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS, col1 == -1 ? -1 : col1 - 1);
+                            EventQueue.invokeLater(new Runnable() {
+                                public @Override void run() {
+                                    line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS, col1 == -1 ? -1 : col1 - 1);
+                                }
+                            });
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // Probably harmless. Bogus line number.
@@ -161,6 +170,8 @@ public final class Hyperlink implements OutputListener {
             // clears the current status message.
             StatusDisplayer.getDefault().setStatusText(message);
         }
+            }
+        });
     }
     
     // Fix for IZ#97727 - warning dialogue for opening large files is meaningless if opened via a hyperlink
@@ -243,6 +254,8 @@ public final class Hyperlink implements OutputListener {
     }
     
     public void outputLineSelected(OutputEvent ev) {
+        RP.post(new Runnable() {
+            public @Override void run() {
         FileObject file = URLMapper.findFileObject(url);
         if (file == null) {
             return;
@@ -259,9 +272,13 @@ public final class Hyperlink implements OutputListener {
                 }
                 AntModule.err.log("got document for " + file);
                 if (line1 != -1) {
-                    Line line = updateLines(ed);
+                    final Line line = updateLines(ed);
                     if (!line.isDeleted()) {
-                        line.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE, col1 == -1 ? -1 : col1 - 1);
+                        EventQueue.invokeLater(new Runnable() {
+                            public @Override void run() {
+                                line.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE, col1 == -1 ? -1 : col1 - 1);
+                            }
+                        });
                     }
                 }
             }
@@ -270,6 +287,8 @@ public final class Hyperlink implements OutputListener {
         } catch (IndexOutOfBoundsException iobe) {
             // Probably harmless. Bogus line number.
         }
+            }
+        });
     }
     
     public void outputLineCleared(OutputEvent ev) {

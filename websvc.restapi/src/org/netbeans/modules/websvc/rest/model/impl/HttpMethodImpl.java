@@ -149,6 +149,13 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
             isModified = true;
         }
         
+        String newPath = Utils.hasUriTemplate(element) ? 
+                Utils.getUriTemplate(element) : ""; //NOI18N
+        if ( !path.equals(newPath) ){
+            path = newPath;
+            isModified = true;
+        }
+        
         if (isModified) {
             return Status.MODIFIED;
         }

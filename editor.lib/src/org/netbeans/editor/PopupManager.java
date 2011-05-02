@@ -390,7 +390,8 @@ public class PopupManager {
         for(;;) { // do one or two passes
             popup.putClientProperty(Placement.class, placement);
 
-            int height = (placement == Above || placement == AbovePreferred) ? aboveCursorHeight : belowCursorHeight;
+            int maxHeight = (placement == Above || placement == AbovePreferred) ? aboveCursorHeight : belowCursorHeight;
+            int height = Math.min(prefSize.height, maxHeight);
             popup.setSize(width, height);
             popupBounds = popup.getBounds();
             

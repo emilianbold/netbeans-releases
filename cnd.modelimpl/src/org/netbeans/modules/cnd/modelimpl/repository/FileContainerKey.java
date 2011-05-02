@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * Key for FileContainer data
  * @author Vladimir Kvashin
  */
-final public class FileContainerKey extends ProjectNameBasedKey {
+public final class FileContainerKey extends ProjectNameBasedKey {
 
     public FileContainerKey(CharSequence project) {
         super(project);

@@ -215,9 +215,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         }
                         @SuppressWarnings("unchecked")
                         List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
-                        updateArtifacts(root, map, searchingTable(dlls));
-                        Map<String, String> checkDll = checkDll(dlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
-                        updateDllArtifacts(root, checkDll);
+                        final Map<String, String> resolvedDlls = searchingTable(dlls);
+                        updateArtifacts(root, map, resolvedDlls);
+                        checkDll(resolvedDlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
                     }
                 });
             }
@@ -284,7 +284,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         });
     }
 
-    private void updateDllArtifacts(final String root, final Map<String, String> checkDll){
+    private void updateDllArtifacts(final String root, final Map<String, String> checkDll, final boolean searching){
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -300,9 +300,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                                 binaryRoot = null;
                             }
                         }
-                        updateTableModel(checkDll, root, binaryRoot, false);
+                        updateTableModel(checkDll, root, binaryRoot, searching);
                     } else {
-                        updateTableModel(Collections.<String, String>emptyMap(), root, null, false);
+                        updateTableModel(Collections.<String, String>emptyMap(), root, null, searching);
                     }
                 }
                 validateController();
@@ -343,16 +343,15 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         return dllPaths; 
     }
 
-    private Map<String,String> checkDll(List<String> dlls, String root, List<String> searchPaths, String binary) {
+    private void checkDll(Map<String, String> dllPaths, String root, List<String> searchPaths, String binary) {
         cancelSearch();
         AtomicBoolean cancel = new AtomicBoolean(false);
         cancelable.add(cancel);
-        Map<String,String> dllPaths = new TreeMap<String, String>();
-        if (validBinary() && dlls != null) {
+        if (validBinary()) {
             String ldLibPath = CommonUtilities.getLdLibraryPath();
             ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
             boolean search = false;
-            for(String dll : dlls) {
+            for(String dll : dllPaths.keySet()) {
                 if (cancel.get()) {
                     break;
                 }
@@ -364,6 +363,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     dllPaths.put(dll, null);
                 }
             }
+            updateDllArtifacts(root, dllPaths, search);
             if (!cancel.get() && search && root.length() > 1) {
                 ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
                 progress.start();
@@ -372,9 +372,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 } finally {
                     progress.finish();
                 }
+                updateDllArtifacts(root, dllPaths, false);
             }
         }
-        return dllPaths;
     }
 
     private void gatherSubFolders(File d, HashSet<String> set, Map<String,String> result, AtomicBoolean cancel){

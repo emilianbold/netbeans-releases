@@ -47,10 +47,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.beans.PropertyChangeSupport;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.openide.nodes.Sheet;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -173,8 +169,8 @@ public final class EngineProfile extends ProfileSupport {
 
         set = new Sheet.Set();
         set.setName("General"); // NOI18N
-        set.setDisplayName("General"); // FIXUP I18N // NOI18N
-        set.setShortDescription("General"); // FIXUP I18N // NOI18N
+        set.setDisplayName(Catalog.get("GeneralTxt")); // NOI18N
+        set.setShortDescription(Catalog.get("GeneralHint")); // NOI18N
 	set.put(new EngineNodeProp(this));
 	sheet.put(set);
 	return sheet;

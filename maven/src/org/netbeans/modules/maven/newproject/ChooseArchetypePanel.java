@@ -82,7 +82,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.newproject.Bundle.*;
 
 /**
  *
@@ -213,7 +215,9 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         taDescription.setBackground(new java.awt.Color(238, 238, 238));
         taDescription.setColumns(20);
         taDescription.setEditable(false);
+        taDescription.setLineWrap(true);
         taDescription.setRows(5);
+        taDescription.setWrapStyleWord(true);
         jScrollPane1.setViewportView(taDescription);
         taDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.taDescription.accessibledesc")); // NOI18N
 
@@ -237,7 +241,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnCustom, btnRemove});
@@ -390,31 +394,23 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         return isSelected;
     }
+
+    @Messages({
+        "MSG_Description_with_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}\nRepository: {4}",
+        "MSG_Description_no_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}"
+    })
     private void updateDescription() {
         Node[] nds = manager.getSelectedNodes();
         if (nds.length > 0) {
             Archetype arch = (Archetype)((AbstractNode)nds[0]).getValue(PROP_ARCHETYPE);
             if (arch != null && !prohibited.contains(arch)) {
+                String desc = arch.getDescription() == null ? "" : arch.getDescription().replaceAll("\\s+", " ").replaceAll("^ | $", "");
                 if (arch.getRepository() != null) {
-                    taDescription.setText(NbBundle.getMessage(ChooseArchetypePanel.class, "MSG_Description2", 
-                        new Object[] {
-                                (arch.getName() != null ? arch.getName() : arch.getArtifactId()),
-                                 arch.getDescription() == null ? "" : arch.getDescription(), //NOI18N
-                                 arch.getGroupId(),
-                                 arch.getArtifactId(),
-                                 arch.getVersion(),
-                                 arch.getRepository()
-                        }));
+                    taDescription.setText(MSG_Description_with_repo(desc, arch.getGroupId(), arch.getArtifactId(), arch.getVersion(), arch.getRepository()));
                 } else {
-                    taDescription.setText(NbBundle.getMessage(ChooseArchetypePanel.class, "MSG_Description", 
-                        new Object[] {
-                                (arch.getName() != null ? arch.getName() : arch.getArtifactId()),
-                                 arch.getDescription() == null ? "" : arch.getDescription(), //NOI18N
-                                 arch.getGroupId(),
-                                 arch.getArtifactId(),
-                                 arch.getVersion()
-                        }));
+                    taDescription.setText(MSG_Description_no_repo(desc, arch.getGroupId(), arch.getArtifactId(), arch.getVersion()));
                 }
+                taDescription.setCaretPosition(0);
                 btnRemove.setEnabled(arch.deletable);
                 return;
             }
@@ -493,22 +489,25 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
     }
 
+    @Messages("LBL_Remote=Archetypes from Remote Repositories")
     private static Node createRemoteRepoNode() {
         AbstractNode nd = new AbstractNode(new RepoProviderChildren(new RemoteRepoProvider()));
         nd.setName("remote-repo-content"); //NOI18N
-        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Remote"));
+        nd.setDisplayName(LBL_Remote());
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
         return nd;
     }
     
+    @Messages("LBL_Local=Archetypes from Local Repository")
     private static Node createLocalRepoNode() {
         AbstractNode nd = new AbstractNode(new RepoProviderChildren(new LocalRepoProvider()));
         nd.setName("local-repo-content"); //NOI18N
-        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Local"));
+        nd.setDisplayName(LBL_Local());
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
         return nd;
     }
     
+    @Messages("LBL_LocalCatalog=Local Archetype Catalog")
     private static Node createLocalCatalogNode() {
         AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider() {
             protected @Override URL file() throws IOException {
@@ -520,11 +519,12 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             }
         }));
         nd.setName("local-catalog-content"); //NOI18N
-        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_LocalCatalog"));
+        nd.setDisplayName(LBL_LocalCatalog());
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
         return nd;
     }
 
+    @Messages("LBL_DefaultCatalog=Default Archetype Catalog")
     private static Node createDefaultCatalogNode() {
         AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider() {
             protected @Override URL file() throws IOException {
@@ -532,7 +532,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             }
         }));
         nd.setName("default-catalog-content"); //NOI18N
-        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_DefaultCatalog"));
+        nd.setDisplayName(LBL_DefaultCatalog());
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
         return nd;
     }

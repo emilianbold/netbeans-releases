@@ -44,14 +44,15 @@
 
 package org.netbeans.qa.form.visualDevelopment;
 
+import java.io.IOException;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
 import java.util.*;
+import junit.framework.Test;
 import org.netbeans.jellytools.actions.*;
-import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
 /**
@@ -60,6 +61,9 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * @see <a href="http://qa.netbeans.org/modules/form/promo-f/testspecs/visualDevelopment.html">Test specification</a>
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class MenuAndPopupMenuTest extends ExtJellyTestCase {
     
@@ -68,22 +72,21 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    @Override
+    public void setUp() throws IOException {
+        openDataProjects(_testProjectName);
     }
     
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(MenuAndPopupMenuTest.class).addTest(
+               "testMenuCreation",
+               "testPopupMenuCreation"
+               ).clusters(".*").enableModules(".*").gui(true));
 
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MenuAndPopupMenuTest("testMenuCreation"));
-        suite.addTest(new MenuAndPopupMenuTest("testPopupMenuCreation"));
-        
-        return suite;
     }
     
     public void testMenuCreation() {
+        p("testMenuCreation");
 	String menuPalettePath = "Add From Palette|";
         String frameName = createJFrameFile();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
@@ -120,37 +123,41 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
     }
 
     public void testPopupMenuCreation() {
+        p("testPopupMenuCreation");
 	String menuPalettePath = "Add From Palette|Swing Menus|";
+        String popupMenuPalettePath = "Add From Palette|";
         String frameName = createJFrameFile();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         
-        Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
+        Node node = new Node(inspector.treeComponents(), "Other Components"); // NOI18N
         
         new Action(null, menuPalettePath + "Popup Menu").perform(node); // NOI18N
         findInCode("jPopupMenu1 = new javax.swing.JPopupMenu();", designer); // NOI18N
         
+        
+                
         ArrayList<String> items = new ArrayList<String>();
-        items.add(menuPalettePath + "Menu Item"); // NOI18N
-        items.add(menuPalettePath + "CheckBox Menu Item"); // NOI18N
-        items.add(menuPalettePath + "RadioButton Menu Item"); // NOI18N
-        items.add(menuPalettePath + "Separator"); // NOI18N
-        items.add(menuPalettePath + "Menu"); // NOI18N
+        items.add(popupMenuPalettePath + "Menu Item"); // NOI18N
+        items.add(popupMenuPalettePath + "Menu Item / CheckBox"); // NOI18N
+        items.add(popupMenuPalettePath + "Menu Item / RadioButton"); // NOI18N
+        items.add(popupMenuPalettePath + "Separator"); // NOI18N
+        items.add(popupMenuPalettePath + "Menu"); // NOI18N
         
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, false);
         node = new Node(inspector.treeComponents(), "Other Components|jPopupMenu1 [JPopupMenu]"); // NOI18N
 
-        // fails [Issue 116496] Unable to modify inserted PopupMenu        
-//        runPopupOverNode(items, node, comparator);
+        runPopupOverNode(items, node, comparator);
         
-        // TODO: tady to zkontrolovat, az ten test pojede
-//        ArrayList<String> lines = new ArrayList<String>();
-//        lines.add("jMenu3.add(jMenu4);"); // NOI18N
-//        lines.add("jMenu1.add(jMenu3);"); // NOI18N
-//        lines.add("jMenuBar1.add(jMenu1);"); // NOI18N
-//        lines.add("setJMenuBar(jMenuBar1);"); // NOI18N
-//        findInCode(lines, designer);
+        ArrayList<String> lines = new ArrayList<String>();
+        lines.add("jPopupMenu1.add(jMenuItem1);"); // NOI18N
+        lines.add("jPopupMenu1.add(jCheckBoxMenuItem1)"); // NOI18N
+        lines.add("jPopupMenu1.add(jRadioButtonMenuItem1);");
+        lines.add("jPopupMenu1.add(jSeparator1);"); // NOI18N
+        lines.add("jPopupMenu1.add(jMenu1);"); // NOI18N
+        findInCode(lines, designer);
         
         removeFile(frameName);
+        
     }
   }

@@ -136,6 +136,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static int getParseCount() {
         return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
+
+    public static long getLongParseCount() {
+        return parseCount.get();
+    }
+
     private FileBuffer fileBuffer;
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be parsed.
@@ -517,7 +522,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         state = State.PARSED;
                                     }  // if not, someone marked it with new state
                                 }
-                                stateLock.notifyAll();
+                                postParseNotify();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
@@ -541,12 +546,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                     }
                                 }
                             } finally {
+                                postParse();
                                 synchronized (changeStateLock) {
                                     if (parsingState == ParsingState.BEING_PARSED) {
                                         state = State.PARSED;
                                     } // if not, someone marked it with new state
                                 }
-                                postParse();
+                                postParseNotify();
                                 stateLock.notifyAll();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
@@ -581,6 +587,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (isValid()) {	// FIXUP: use a special lock here
             getProjectImpl(true).getGraph().putFile(this);
         }
+    }
+
+    private void postParseNotify() {
         if (isValid()) {   // FIXUP: use a special lock here
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
@@ -589,7 +598,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             Notificator.instance().reset();
         }
     }
-
+    
     /*package*/ void onProjectParseFinished(boolean prjLibsAlreadyParsed) {
         if (fixFakeRegistrations(true)) {
             if (isValid()) {   // FIXUP: use a special lock here
@@ -921,7 +930,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 cache = tsRef.get();
                 if (cache == null) {
                     cache = new FileTokenStreamCache();
-                    tsRef = new SoftReference<FileTokenStreamCache>(cache);
+                    tsRef = new WeakReference<FileTokenStreamCache>(cache);
                 } else {
                     // could be already created by parallel thread
                     stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
@@ -1251,7 +1260,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     @Override
-    public String getText() {
+    public CharSequence getText() {
         try {
             return fileBuffer.getText();
         } catch (IOException e) {
@@ -1835,7 +1844,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public int[] getLineColumn(int offset) {
         if (offset == Integer.MAX_VALUE) {
-            offset = getText().length();
+            try {
+                offset = fileBuffer.getCharBuffer().length;
+            } catch (IOException e) {
+                DiagnosticExceptoins.register(e);
+                offset = 0;
+            }
         }
         try {
             return fileBuffer.getLineColumnByOffset(offset);

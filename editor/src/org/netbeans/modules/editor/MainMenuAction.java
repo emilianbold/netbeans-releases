@@ -411,7 +411,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     
     public static class GoToSourceAction extends MainMenuAction{
         public GoToSourceAction(){
-            super();
+            super(true, BLANK_ICON);
             setMenu();
         }
         
@@ -428,7 +428,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     
     public static class GoToSuperAction extends MainMenuAction{
         public GoToSuperAction(){
-            super();
+            super(true, BLANK_ICON);
             setMenu();
         }
         
@@ -462,7 +462,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class JumpBackAction extends MainMenuAction {
         public JumpBackAction () {
-            super();
+            super(true, BLANK_ICON);
             setMenu();
         }
         
@@ -480,7 +480,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class JumpForwardAction extends MainMenuAction {
         public JumpForwardAction () {
-            super();
+            super(true, BLANK_ICON);
             setMenu();
         }
         

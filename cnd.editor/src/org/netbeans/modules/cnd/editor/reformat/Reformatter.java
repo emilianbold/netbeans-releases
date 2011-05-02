@@ -42,11 +42,12 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -66,6 +67,8 @@ public class Reformatter implements ReformatTask {
     private Context context;
     private Document doc;
     private CodeStyle codeStyle;
+    private int carret = -1;
+    private JTextComponent currentComponent;
     private static boolean expandTabToSpaces = true;
     private static int tabSize = 8;
 
@@ -84,6 +87,13 @@ public class Reformatter implements ReformatTask {
     public void reformat() throws BadLocationException {
         if (codeStyle == null){
             codeStyle = CodeStyle.getDefault(doc);
+        }
+        for(JTextComponent component : EditorRegistry.componentList()) {
+            if (doc.equals(component.getDocument())) {
+                carret = component.getCaretPosition();
+                currentComponent = component;
+                break;
+            }
         }
 	expandTabToSpaces = codeStyle.expandTabToSpaces();
         tabSize = codeStyle.getTabSize();
@@ -165,6 +175,11 @@ public class Reformatter implements ReformatTask {
                     continue;
                 }
                 String curText = diff.getText();
+                if (carret != -1) {
+                    if (carret >= curStart) {
+                        carret += curText.length() - (curEnd - curStart);
+                    }
+                }
                 if (endOffset < curEnd) {
                     if (curText != null && curText.length() > 0) {
                         curText = curEnd - endOffset >= curText.length() ? null :
@@ -203,6 +218,11 @@ public class Reformatter implements ReformatTask {
                     System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
                     continue;
                 }
+                if (carret != -1) {
+                    if (carret >= start) {
+                        carret += text.length() - (end - start);
+                    }
+                }
                 if (endOffset < end) {
                     if (text != null && text.length() > 0) {
                         text = end - endOffset >= text.length() ? null : text.substring(0, text.length() - end + endOffset);
@@ -236,6 +256,9 @@ public class Reformatter implements ReformatTask {
             }
             doc.remove(0, doc.getLength());
             doc.insertString(0, prod.toString(), null);
+        }
+        if (carret != -1) {
+            currentComponent.getCaret().setDot(carret);
         }
     }
 

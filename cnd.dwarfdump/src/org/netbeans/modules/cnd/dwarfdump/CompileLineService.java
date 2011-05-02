@@ -124,7 +124,7 @@ public class CompileLineService {
                     break;
                 case 2:
                     compileLine = line;
-                    list.add(new SourceFile(compileDir, sourceFile, compileLine));
+                    list.add(createSourceFile(compileDir, sourceFile, compileLine));
                     break;
             }
             i++;
@@ -167,7 +167,7 @@ public class CompileLineService {
                             || LANG.DW_LANG_C89.toString().equals(lang)
                             || LANG.DW_LANG_C99.toString().equals(lang)
                             || LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        list.add(new SourceFile(cu));
+                        list.add(createSourceFile(cu));
                     } else {
                         if (TRACE_READ_EXCEPTIONS) {
                             System.out.println("Unknown language: " + lang);  // NOI18N
@@ -200,6 +200,14 @@ public class CompileLineService {
             }
         }
         return list;
+    }
+
+    public static SourceFile createSourceFile(String compileDir, String sourceFile, String compileLine) {
+        return new SourceFile(compileDir, sourceFile, compileLine);
+    }
+
+    public static SourceFile createSourceFile(CompilationUnit cu) throws IOException, Exception {
+        return new SourceFile(cu);
     }
 
     public static final class SourceFile {
@@ -258,6 +266,42 @@ public class CompileLineService {
             return userPaths;
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SourceFile other = (SourceFile) obj;
+            if ((this.compileLine == null) ? (other.compileLine != null) : !this.compileLine.equals(other.compileLine)) {
+                return false;
+            }
+            if ((this.compileDir == null) ? (other.compileDir != null) : !this.compileDir.equals(other.compileDir)) {
+                return false;
+            }
+            if ((this.sourceFile == null) ? (other.sourceFile != null) : !this.sourceFile.equals(other.sourceFile)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (this.compileLine != null ? this.compileLine.hashCode() : 0);
+            hash = 97 * hash + (this.compileDir != null ? this.compileDir.hashCode() : 0);
+            hash = 97 * hash + (this.sourceFile != null ? this.sourceFile.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "SourceFile{" + "compileLine=" + compileLine + ", compileDir=" + compileDir + ", sourceFile=" + sourceFile + '}'; // NOI18N
+        }
+        
+        
         private void initMacrosAndPaths(){
             userPaths = new ArrayList<String>();
             userMacros = new LinkedHashMap<String, String>();

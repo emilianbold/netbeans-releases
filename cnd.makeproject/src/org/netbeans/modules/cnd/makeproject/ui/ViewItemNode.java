@@ -156,9 +156,6 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-//            File file = new File(item.getAbsPath());
-//            if (file.exists())
-//                file.delete();
         super.destroy();
         folder.removeItemAction(item);
     }

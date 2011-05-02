@@ -47,6 +47,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -208,7 +210,7 @@ public final class SourceCache {
                     return null;
                 }
                 SourceModificationEvent event = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
-                _parser.parse (_snapshot, task, event);
+                TaskProcessor.callParse(_parser, snapshot, task, event);
                 SourceAccessor.getINSTANCE ().parsed (source);
                 parseSuccess = true;
             } finally {
@@ -219,7 +221,7 @@ public final class SourceCache {
                 }
             }
         }
-        return _parser.getResult (task);
+        return TaskProcessor.callGetResult(_parser, task);
     }
     
     public void invalidate () {
@@ -227,6 +229,7 @@ public final class SourceCache {
             snapshot = null;
             parsed = false;
             embeddings = null;
+            providerOrder = null;
             upToDateEmbeddingProviders.clear();
             for (SourceCache sourceCache : embeddingToCache.values ())
                 sourceCache.invalidate ();
@@ -241,14 +244,19 @@ public final class SourceCache {
     }
                 
     //@GuardedBy(this)
-    private volatile Collection<Embedding>
+    private volatile List<Embedding>
                             embeddings;
+
+    //@GuardedBy(this)
+    private List<EmbeddingProvider>
+                            providerOrder;
+
     //@GuardedBy(this)
     private final Map<EmbeddingProvider,List<Embedding>>
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
     public Iterable<Embedding> getAllEmbeddings () {
-        Collection<Embedding> result = this.embeddings;
+        List<Embedding> result = this.embeddings;
         if (result != null) {
             return result;
         }
@@ -263,7 +271,7 @@ retry:  while (true) {
                 currentUpToDateProviders = new HashSet<EmbeddingProvider>(upToDateEmbeddingProviders);
             }
 
-            final Map<EmbeddingProvider,List<Embedding>> newEmbeddings = new HashMap<EmbeddingProvider, List<Embedding>> ();
+            final Map<EmbeddingProvider,List<Embedding>> newEmbeddings = new LinkedHashMap<EmbeddingProvider, List<Embedding>> ();
             for (SchedulerTask schedulerTask : tsks) {
                 if (schedulerTask instanceof EmbeddingProvider) {
                     final EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
@@ -273,7 +281,7 @@ retry:  while (true) {
                     else if (currentUpToDateProviders.contains(embeddingProvider)) {
                         newEmbeddings.put(embeddingProvider,null);
                     } else {
-                        final List<Embedding> embForProv = embeddingProvider.getEmbeddings(snpsht);
+                        final List<Embedding> embForProv = TaskProcessor.callEmbeddingProvider(embeddingProvider,snpsht);
                         if (embForProv == null) {
                             throw new NullPointerException(String.format("The %s returned null embeddings!", embeddingProvider));
                         }
@@ -288,7 +296,7 @@ retry:  while (true) {
                         //ROLLBACK and RETRY
                         continue retry;
                     }
-                    result = new ArrayList<Embedding> ();
+                    result = new LinkedList<Embedding> ();
                     for (Map.Entry<EmbeddingProvider,List<Embedding>> entry : newEmbeddings.entrySet()) {
                         final EmbeddingProvider embeddingProvider = entry.getKey();
                         final List<Embedding> embeddingsForProvider = entry.getValue();
@@ -305,7 +313,8 @@ retry:  while (true) {
                     }
                     //COMMIT
                     this.embeddings = result;
-                }
+                    this.providerOrder = new ArrayList<EmbeddingProvider>(newEmbeddings.keySet());
+                }                
                 return this.embeddings;
             }
         }
@@ -316,18 +325,40 @@ retry:  while (true) {
 
     
     void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
-        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+        List<Embedding> _embeddings = TaskProcessor.callEmbeddingProvider(embeddingProvider, getSnapshot ());
         List<Embedding> oldEmbeddings;
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
             updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
-            embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
+            embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);            
             upToDateEmbeddingProviders.add (embeddingProvider);
             if (this.embeddings != null) {
+                final Embedding insertBefore = findNextEmbedding(providerOrder, embeddingProviderToEmbedings, embeddingProvider);
                 this.embeddings.removeAll(oldEmbeddings);
-                this.embeddings.addAll(_embeddings);
+                int index = insertBefore == null ? -1 : this.embeddings.indexOf(insertBefore);
+                this.embeddings.addAll(index == -1 ? this.embeddings.size() : index, _embeddings);
             }
         }
+    }
+
+    private Embedding findNextEmbedding (
+            final List<EmbeddingProvider> order,
+            final Map<EmbeddingProvider,List<Embedding>> providers2embs,
+            final EmbeddingProvider provider) {
+        if (order != null) {
+            boolean accept = false;
+            for (EmbeddingProvider p : order) {
+                if (accept) {
+                    final Collection<Embedding> c = providers2embs.get(p);
+                    if (c != null && !c.isEmpty()) {
+                        return c.iterator().next();
+                    }
+                } else if (p.equals(provider)) {
+                    accept = true;
+                }
+            }
+        }
+        return null;
     }
     
     private void updateEmbeddings (

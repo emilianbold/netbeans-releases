@@ -1185,7 +1185,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 Collection attrs = cssClassTagAttrMap.get(tag);
                 if (attrs != null && attrs.contains(attribute)) {
                     //yup the attribute's value should have css "class" selector embedding
-                    return token(HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS);
+                    return token(HTMLTokenId.VALUE_CSS, CLASS_TOKEN_PP);
                 }
             }
         } finally {
@@ -1195,31 +1195,31 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
     private Token<HTMLTokenId> createCssValueToken() {
-        String cssTokenType;
+        TokenPropertyProvider provider;
         if(equals(CLASS_ATTR_NAME, attribute, true, true)) {
-            cssTokenType = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS;
+            provider = CLASS_TOKEN_PP;
         } else if(equals(ID_ATTR_NAME, attribute, true, true)) {
-            cssTokenType = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID;
+            provider = ID_TOKEN_PP;
         } else {
-            cssTokenType = null;
+            provider = null;
         }
 
-        return token(HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, cssTokenType);
+        return token(HTMLTokenId.VALUE_CSS, provider);
     }
 
     private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
-        return token(tokenId, null, null);
+        return token(tokenId, null);
     }
 
-    private Token<HTMLTokenId> token(HTMLTokenId tokenId, String propertyKey, String propertyValue) {
+    private Token<HTMLTokenId> token(HTMLTokenId tokenId, TokenPropertyProvider tokenPropertyProvider) {
         if(LOG) {
             if(input.readLength() == 0) {
                 LOGGER.log(Level.INFO, "Found zero length token: "); //NOI18N
             }
             LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n"); //NOI18N
         }
-         if(propertyKey != null && propertyValue != null) {
-            return tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
+         if(tokenPropertyProvider != null) {
+            return tokenFactory.createPropertyToken(tokenId, input.readLength(), tokenPropertyProvider);
         } else {
             CharSequence image = input.readText();
             switch(tokenId) {
@@ -1316,4 +1316,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
 
     }
+    
+    private static final TokenPropertyProvider CLASS_TOKEN_PP = new HtmlTokenPropertyProvider(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS);
+    private static final TokenPropertyProvider ID_TOKEN_PP = new HtmlTokenPropertyProvider(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID);
+    
+    
 }

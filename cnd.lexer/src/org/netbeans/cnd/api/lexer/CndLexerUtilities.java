@@ -143,6 +143,24 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    public static TokenSequence<TokenId> getCppTokenSequenceWithoutEmbeddings(final Document doc, final int offset) {
+        if (doc == null) {
+            return null;
+        }
+        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, true);
+        if(!tsList.isEmpty()) {
+            TokenSequence<?> ts = tsList.get(0);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (isCppLanguage(lang, false)) {
+                @SuppressWarnings("unchecked")
+                TokenSequence<TokenId> cppTS = (TokenSequence<TokenId>) ts;
+                return cppTS;
+            }
+        }
+        return null;
+    }
+    
     private static final Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
 
     public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {
@@ -608,6 +626,9 @@ public final class CndLexerUtilities {
             CppTokenId.FINALLY, //C++
             CppTokenId.FRIEND, // C++
             CppTokenId.INLINE, // gcc, C++, now in C also
+            CppTokenId._INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE__,// gcc, C++, now in C also            
             CppTokenId.MUTABLE, // C++
             CppTokenId.NAMESPACE, //C++
             CppTokenId.NEW, //C++
@@ -649,6 +670,9 @@ public final class CndLexerUtilities {
     private static void addCOnlyKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.INLINE, // gcc, C++, now in C also
+            CppTokenId._INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE__,// gcc, C++, now in C also
             CppTokenId.RESTRICT, // C
             CppTokenId._BOOL, // C
             CppTokenId._COMPLEX, // C
@@ -659,8 +683,9 @@ public final class CndLexerUtilities {
 
     private static void addGccOnlyCommonCCKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
-            CppTokenId.ASM,
             CppTokenId.__ALIGNOF__,
+            CppTokenId.ASM,
+            CppTokenId._ASM,
             CppTokenId.__ASM,
             CppTokenId.__ASM__,
             CppTokenId.__ATTRIBUTE__,
@@ -670,7 +695,9 @@ public final class CndLexerUtilities {
             CppTokenId.__CONST__,
             CppTokenId.__IMAG__,
             CppTokenId.INLINE,
+            CppTokenId._INLINE,
             CppTokenId.__INLINE,
+            CppTokenId.__INLINE__,
             CppTokenId.__REAL__,
             CppTokenId.__RESTRICT,
             CppTokenId.__SIGNED,

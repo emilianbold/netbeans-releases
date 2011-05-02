@@ -43,7 +43,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Loaders">
@@ -773,12 +772,45 @@ made subject to such option by the copyright holder.
 		</folder>
 	    </folder>
             <folder name="x-asm">
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-cnd-debugger-common2-debugger-assembly-DisInfoPanel$Factory.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                </folder>
                 <folder name="GlyphGutterActions">
 		    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="500"/>
                     </file>
 		</folder>
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="300"/>
+		    </file>
+                    <file name="org-netbeans-modules-cnd-debugger-common2-debugger-actions-MemoryWindowAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-common2-MemoryWindowAction.instance"/>
+                        <attr name="position" intvalue="400"/>
+		    </file>
+                    <file name="org-netbeans-modules-cnd-debugger-common2-debugger-actions-RegistersWindowAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-common2-RegistersWindowAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+		    </file>
+                    <file name="org-netbeans-modules-cnd-debugger-common2-debugger-actions-GoToSourceAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-common2-GoToSourceAction.instance"/>
+                        <attr name="position" intvalue="600"/>
+		    </file>
+                    <file name="org-netbeans-modules-cnd-debugger-common2-debugger-actions-ShowCurrentDisStatementAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-common2-ShowCurrentDisStatementAction.instance"/>
+                        <attr name="position" intvalue="700"/>
+		    </file>
+                    <file name="Separator800.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                </folder>
             </folder>
 	</folder>
     </folder>
@@ -974,6 +1006,14 @@ made subject to such option by the copyright holder.
 	    <file name="org-netbeans-modules-cnd-debugger-common2-CaptureListenAction.instance">
 		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.capture.CaptureListenAction"/>
 	    </file>
+            
+            <file name="org-netbeans-modules-cnd-debugger-common2-GoToSourceAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.GoToSourceAction"/>
+            </file>
+            
+            <file name="org-netbeans-modules-cnd-debugger-common2-ShowCurrentDisStatementAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.ShowCurrentDisStatementAction"/>
+            </file>
 
 	</folder>
         <folder name="Window">

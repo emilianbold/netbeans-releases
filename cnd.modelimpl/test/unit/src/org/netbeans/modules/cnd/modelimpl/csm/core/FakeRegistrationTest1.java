@@ -94,10 +94,10 @@ public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
 	ModelImpl model = traceModel.getModel();
 	final CsmProject project = traceModel.getProject();
         
-        FileImpl csmSource = (FileImpl) project.findFile(sourceFile.getAbsolutePath(), false);
+        FileImpl csmSource = (FileImpl) project.findFile(sourceFile.getAbsolutePath(), true, false);
         assert csmSource != null;
 
-        FileImpl csmHeader = (FileImpl) project.findFile(headerFile.getAbsolutePath(), false);
+        FileImpl csmHeader = (FileImpl) project.findFile(headerFile.getAbsolutePath(), true, false);
         assert csmHeader != null;
 
         csmSource.scheduleParsing(true);

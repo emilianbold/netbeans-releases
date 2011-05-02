@@ -559,6 +559,15 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("right indentation cleanup for deletion of last child",
                 "    <file name=\"b\"/>\n",
                 l.write());
+        l = new Layer("    <file name=\"f\">\n        <attr name=\"a\" intvalue=\"0\"/>\n        <attr name=\"b\" intvalue=\"0\"/>\n    </file>\n");
+        fs = l.read();
+        f = fs.findResource("f");
+        f.setAttribute("b", null);
+        assertEquals("cleanup of last attribute",
+                "    <file name=\"f\">\n" +
+                "        <attr name=\"a\" intvalue=\"0\"/>\n" +
+                "    </file>\n",
+                l.write());
     }
     
     public void testRename() throws Exception {

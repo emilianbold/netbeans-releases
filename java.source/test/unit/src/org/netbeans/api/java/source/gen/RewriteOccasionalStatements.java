@@ -53,7 +53,7 @@ import javax.lang.model.element.Modifier;
  *
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.org">RKo</a>)
  */
-public class RewriteOccasionalStatements extends GeneratorTest {
+public class RewriteOccasionalStatements extends GeneratorTestBase {
     private static final String TEST_CONTENT = "\n" +
             "public class NewArrayTest {\n" +
             "\n" +

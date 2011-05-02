@@ -236,6 +236,9 @@ public class Utilities {
             return slave.toString();
         //count number of ../'es
         int dirCount = masterTok.countTokens();
+        if ( masterStr.endsWith("/") && dirCount != 0 ){
+            dirCount++;
+        }
         //generate prefix
         String pathPrefix = "";
         StringBuffer pathPrefixBuff = new StringBuffer("");

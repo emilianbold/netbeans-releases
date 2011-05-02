@@ -55,6 +55,7 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -462,6 +463,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
      * lines or lines with comment which are not associated with any property.
      */
     private static class Item implements Cloneable {
+        private static List<String> EMPTY_LIST = Collections.emptyList();
 
         /** Lines of comment as read from properties file and as they will be
          * written back to properties file. */
@@ -490,7 +492,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
          * some empty or comment lines. This item is READ-ONLY.
          */
         public Item(List<String> commentLines) {
-            this.commentLines = new ArrayList<String>(commentLines);
+            this.commentLines = commentLines.isEmpty() ? EMPTY_LIST : new ArrayList<String>(commentLines);
         }
 
         /**
@@ -498,8 +500,8 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
          * Property name and value will be split.
          */
         public Item(List<String> commentLines, List<String> keyValueLines) {
-            this.commentLines = new ArrayList<String>(commentLines);
-            this.keyValueLines = new ArrayList<String>(keyValueLines);
+            this.commentLines = commentLines.isEmpty() ? EMPTY_LIST : new ArrayList<String>(commentLines);
+            this.keyValueLines = keyValueLines.isEmpty() ? EMPTY_LIST : new ArrayList<String>(keyValueLines);
             parse(keyValueLines);
         }
 
@@ -522,7 +524,13 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         // backdoor for merging non-key items
         void addCommentLines(List<String> lines) {
             assert key == null;
-            commentLines.addAll(lines);
+            if (commentLines == EMPTY_LIST) {
+                if (!lines.isEmpty()) {
+                    commentLines = new ArrayList<String>(lines);
+                }
+            } else {
+                commentLines.addAll(lines);
+            }
         }
         
         public String[] getComment() {
@@ -536,10 +544,14 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         
         public void setComment(String[] commentLines, boolean separate) {
             this.separate = separate;
-            this.commentLines = new ArrayList<String>(commentLines.length);
-            for (int i = 0; i < commentLines.length; i++) {
-                // #60249 again - write only ISO-8859-1.
-                this.commentLines.add(encodeUnicode(commentLines[i]));
+            if (commentLines.length > 0) {
+                this.commentLines = new ArrayList<String>(commentLines.length);
+                for (int i = 0; i < commentLines.length; i++) {
+                    // #60249 again - write only ISO-8859-1.
+                    this.commentLines.add(encodeUnicode(commentLines[i]));
+                }
+            } else {
+                this.commentLines = EMPTY_LIST;
             }
         }
         
@@ -573,7 +585,7 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
                 l.add(encode(key, true) + '='); // NOI18N
             }
             this.value = val.toString();
-            keyValueLines = l;
+            keyValueLines = l.isEmpty() ? EMPTY_LIST : l;
         }
 
         public boolean isSeparate() {
@@ -822,10 +834,10 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         public Object clone() {
             Item item = new Item();
             if (keyValueLines != null) {
-                item.keyValueLines = new ArrayList<String>(keyValueLines);
+                item.keyValueLines = this.keyValueLines.isEmpty() ? EMPTY_LIST : new ArrayList<String>(keyValueLines);
             }
             if (commentLines != null) {
-                item.commentLines = new ArrayList<String>(commentLines);
+                item.commentLines = this.commentLines.isEmpty() ? EMPTY_LIST : new ArrayList<String>(commentLines);
             }
             item.key = key;
             item.value = value;

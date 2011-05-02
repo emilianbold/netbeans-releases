@@ -54,7 +54,7 @@ import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 
-public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, ChangeListener {
+public final class CndFileVisibilityQuery implements VisibilityQueryImplementation2, ChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
     private static CndFileVisibilityQuery INSTANCE = new CndFileVisibilityQuery();
@@ -64,11 +64,11 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
 
     /** Default instance for lookup. */
     private CndFileVisibilityQuery() {
-        MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(this);
-        MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).addChangeListener(this);
-        MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).addChangeListener(this);
-        MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).addChangeListener(this);
-        MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(CndFileVisibilityQuery.this);
+        MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).addChangeListener(CndFileVisibilityQuery.this);
+        MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).addChangeListener(CndFileVisibilityQuery.this);
+        MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).addChangeListener(CndFileVisibilityQuery.this);
+        MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).addChangeListener(CndFileVisibilityQuery.this);
     }
 
     public static CndFileVisibilityQuery getDefault() {

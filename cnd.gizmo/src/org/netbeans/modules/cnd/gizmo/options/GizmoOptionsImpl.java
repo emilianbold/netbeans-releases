@@ -75,15 +75,13 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private static final String GIZMO_SIMPLE_CONFIGURATION = "GizmoSimple"; // NOI18N
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
-    private String baseDir;
     private BooleanConfiguration profileOnRun;
     private GizmoStringConfiguration dlightConfigurationName;
     private String preferredConfigurationName = null;
     private boolean initialized = false;
     private MakeConfiguration makeConfiguration = null;
 
-    public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
-        this.baseDir = baseDir;
+    public GizmoOptionsImpl(PropertyChangeSupport pcs) {
         this.pcs = pcs;
         profileOnRun = new BooleanConfiguration(MakeProjectOptions.getShowIndicatorsOnRun());
         dlightConfigurationName = new GizmoStringConfiguration(this);
@@ -357,7 +355,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     @Override
     public GizmoOptionsImpl clone(Configuration c) {
         init(c);
-        GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
+        GizmoOptionsImpl clone = new GizmoOptionsImpl(null);
         clone.setProfileOnRun(getProfileOnRun().clone());
         clone.setDlightConfigurationName(getDlightConfigurationName());
         clone.setMakeConfiguration((MakeConfiguration) c);
@@ -365,9 +363,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return clone;
     }
 
-    public String getBaseDir() {
-        return baseDir;
-    }
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
 

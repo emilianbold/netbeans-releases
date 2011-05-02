@@ -76,6 +76,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </locjar>
 
     <locjar warnMissingDir="true"
+      basedir="core.ui/src"
+      jarfile="${cluster}/modules/org-netbeans-core-ui.jar">
+      <branding name="nb"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
       basedir="autoupdate.services/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar">
       <branding name="nb"/>

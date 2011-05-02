@@ -2181,15 +2181,10 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public boolean isValid(boolean tryOpen) throws IOException {
-            return true;
+        public Status getStatus(boolean tryOpen) throws IOException {
+            return Status.VALID;
         }
-
-        @Override
-        public boolean exists() {
-            return true;
-        }
-
+        
         @Override
         public <T> void query(
                 Collection<? super T> result,

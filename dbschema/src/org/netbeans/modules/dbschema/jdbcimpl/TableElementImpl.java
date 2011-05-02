@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -338,6 +338,14 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                     String uniqueStr;
                     while (rs.next()) {
                         if (bridge != null) {
+                            // Ignore Indices marked statistic
+                            // explizit: TYPE == DatabaseMetaData or
+                            // implizit: ORDINAL_POSITION == 0
+                            // @see java.sql.DatabaseMetaData#getIndexInfo
+                            if (rs.getShort("TYPE") == DatabaseMetaData.tableIndexStatistic // NOI18N
+                                    || rs.getInt("ORDINAL_POSITION") == 0) { // NOI18N
+                                continue;
+                            }
                             rset = bridge.getDriverSpecification().getRow();
                             name = (String) rset.get(new Integer(6));
                             columnName = (String) rset.get(new Integer(9));

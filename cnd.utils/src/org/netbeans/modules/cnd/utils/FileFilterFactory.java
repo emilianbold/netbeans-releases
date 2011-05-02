@@ -73,11 +73,10 @@ import org.openide.util.Utilities;
  */
 public final class FileFilterFactory {
 
-    /* A combination of FileFilter and FileObjectFilter */
-    public static abstract class FileAndFileObjectFilter
+    public static abstract class AbstractFileAndFileObjectFilter
             extends FileFilter implements FileObjectFilter {
+        public abstract String getSuffixesAsString();
     }
-
     private FileFilterFactory() {
     }
 
@@ -132,70 +131,70 @@ public final class FileFilterFactory {
         return filters;
     }
     
-    public static FileAndFileObjectFilter getAllFileFilter(){
+    public static AbstractFileAndFileObjectFilter getAllFileFilter(){
         return AllFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getAllSourceFileFilter(){
+    public static AbstractFileAndFileObjectFilter getAllSourceFileFilter(){
         return AllSourceFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getAllBinaryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getAllBinaryFileFilter(){
         return AllBinaryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getAllLibraryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getAllLibraryFileFilter(){
         return AllLibraryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getCCSourceFileFilter(){
+    public static AbstractFileAndFileObjectFilter getCCSourceFileFilter(){
         return CCSourceFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getCSourceFileFilter(){
+    public static AbstractFileAndFileObjectFilter getCSourceFileFilter(){
         return CSourceFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getConfigureFileFilter(){
+    public static AbstractFileAndFileObjectFilter getConfigureFileFilter(){
         return ConfigureFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getElfDynamicLibraryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getElfDynamicLibraryFileFilter(){
         return ElfDynamicLibraryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getElfExecutableFileFilter(){
+    public static AbstractFileAndFileObjectFilter getElfExecutableFileFilter(){
         return ElfExecutableFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getElfStaticLibraryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getElfStaticLibraryFileFilter(){
         return ElfStaticLibraryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getFortranSourceFileFilter(){
+    public static AbstractFileAndFileObjectFilter getFortranSourceFileFilter(){
         return FortranSourceFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getHeaderSourceFileFilter(){
+    public static AbstractFileAndFileObjectFilter getHeaderSourceFileFilter(){
         return HeaderSourceFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getMacOSXDynamicLibraryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getMacOSXDynamicLibraryFileFilter(){
         return MacOSXDynamicLibraryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getMacOSXExecutableFileFilter(){
+    public static AbstractFileAndFileObjectFilter getMacOSXExecutableFileFilter(){
         return MacOSXExecutableFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getMakefileFileFilter(){
+    public static AbstractFileAndFileObjectFilter getMakefileFileFilter(){
         return MakefileFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getPeDynamicLibraryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getPeDynamicLibraryFileFilter(){
         return PeDynamicLibraryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getPeExecutableFileFilter(){
+    public static AbstractFileAndFileObjectFilter getPeExecutableFileFilter(){
         return PeExecutableFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getPeStaticLibraryFileFilter(){
+    public static AbstractFileAndFileObjectFilter getPeStaticLibraryFileFilter(){
         return PeStaticLibraryFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getQtFileFilter(){
+    public static AbstractFileAndFileObjectFilter getQtFileFilter(){
         return QtFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getResourceFileFilter(){
+    public static AbstractFileAndFileObjectFilter getResourceFileFilter(){
         return ResourceFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getShellFileFilter(){
+    public static AbstractFileAndFileObjectFilter getShellFileFilter(){
         return ShellFileFilter.getInstance();
     }
-    public static FileAndFileObjectFilter getWorkshopProjectFilter(){
+    public static AbstractFileAndFileObjectFilter getWorkshopProjectFilter(){
         return WorkshopProjectFilter.getInstance();
     }
 }

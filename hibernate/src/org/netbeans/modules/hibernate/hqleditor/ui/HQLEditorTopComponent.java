@@ -312,8 +312,13 @@ public final class HQLEditorTopComponent extends TopComponent {
                     }
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     try {
+                        List<URL> localResourcesURLList = new ArrayList<URL>();
+                        localResourcesURLList.addAll(env.getProjectClassPath(selectedConfigObject));
+                        for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
+                            localResourcesURLList.add(mappingFO.getURL());
+                        }
                         ClassLoader ccl = env.getProjectClassLoader(
-                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}));
+                                localResourcesURLList.toArray(new URL[]{}));
 
                         Thread.currentThread().setContextClassLoader(ccl);
                         SessionFactory sessionFactory =
@@ -450,8 +455,9 @@ public final class HQLEditorTopComponent extends TopComponent {
     }
 
     public void setResult(HQLResult result, ClassLoader ccl) {
+        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ccl);
-        if (result.getExceptions().size() == 0) {
+        if (result.getExceptions().isEmpty()) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
             StringBuilder strBuffer = new StringBuilder();
@@ -485,7 +491,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                     }
 
                 } else {
-                    // Construct the table headers
+                        // Construct the table headers
                     createTableHeaders(tableHeaders, firstObject);
                     for (Object oneObject : result.getQueryResults()) {
                         createTableData(tableData, oneObject);
@@ -517,15 +523,20 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         runHQLButton.setEnabled(true);
         ph.finish();
-
+        Thread.currentThread().setContextClassLoader(oldClassLoader);
     }
 
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
-        for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
-            String methodName = m.getName();
-            if (methodName.startsWith("get")) { //NOI18N
-                if (!tableHeaders.contains(methodName)) {
-                    tableHeaders.add(m.getName().substring(3));
+        if(oneObject==null || oneObject.getClass().getName().startsWith("java.lang")){//NOI18N
+            //case for Long, String etc
+            tableHeaders.add(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " +(tableHeaders.size()+1));//NOI18N
+        } else {
+            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+                String methodName = m.getName();
+                if (methodName.startsWith("get")) { //NOI18N
+                    if (!tableHeaders.contains(methodName)) {
+                        tableHeaders.add(m.getName().substring(3));
+                    }
                 }
             }
         }
@@ -534,26 +545,31 @@ public final class HQLEditorTopComponent extends TopComponent {
     private void createTableData(Vector<Vector> tableData, Object... rowObject) {
         Vector<Object> oneRow = new Vector<Object>();
         for (Object oneObject : rowObject) {
-            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
-                String methodName = m.getName();
-                if (methodName.startsWith("get")) { //NOI18N
-                    try {
-                        Object methodReturnValue = m.invoke(oneObject, new Object[]{});
-                        if (methodReturnValue == null) {
-                            oneRow.add("NULL"); //NOI18N
-                            continue;
-                        }
-                        if (methodReturnValue instanceof java.util.Collection) {
+            if(oneObject==null || oneObject.getClass().getName().startsWith("java.lang")){
+                //case for Long, String etc
+                oneRow.add(oneObject.toString());
+            } else {
+                for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+                    String methodName = m.getName();
+                    if (methodName.startsWith("get")) { //NOI18N
+                        try {
+                            Object methodReturnValue = m.invoke(oneObject, new Object[]{});
+                            if (methodReturnValue == null) {
+                                oneRow.add("NULL"); //NOI18N
+                                continue;
+                            }
+                            if (methodReturnValue instanceof java.util.Collection) {
+                                oneRow.add(methodReturnValue.toString());
+                                continue;
+                            }
                             oneRow.add(methodReturnValue.toString());
-                            continue;
+                        } catch (IllegalAccessException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        } catch (InvocationTargetException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                        oneRow.add(methodReturnValue.toString());
-                    } catch (IllegalAccessException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalArgumentException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InvocationTargetException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
                 }
             }

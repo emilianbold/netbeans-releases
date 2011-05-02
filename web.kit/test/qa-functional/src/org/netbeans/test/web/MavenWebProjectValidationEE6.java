@@ -67,7 +67,7 @@ public class MavenWebProjectValidationEE6 extends MavenWebProjectValidation {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MavenWebProjectValidationEE6.class);
-        conf = addServerTests(J2eeTestCase.Server.GLASSFISH_V3, conf,
+        conf = addServerTests(J2eeTestCase.Server.GLASSFISH, conf,
               "testPreconditions", "testNewMavenWebProject", "testRegisterTomcat",
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", //"testViewServlet",

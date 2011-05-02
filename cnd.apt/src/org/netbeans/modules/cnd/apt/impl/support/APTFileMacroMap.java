@@ -258,7 +258,27 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     private final LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
     private final HashSet<CharSequence> expandingMacroIDs = new HashSet<CharSequence>();
+    private boolean afterPPDefinedKeyword = false;
 
+    @Override
+    public boolean pushPPDefined() {
+        if (afterPPDefinedKeyword) {
+            return false;
+        } else {
+            afterPPDefinedKeyword = true;
+            return true;
+        }
+    }
+
+    @Override
+    public boolean popPPDefined() {
+        if (afterPPDefinedKeyword) {
+            afterPPDefinedKeyword = false;
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     public boolean pushExpanding(APTToken token) {
         assert (token != null);

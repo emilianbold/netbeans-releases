@@ -1162,13 +1162,16 @@ public final class HtmlRenderer {
         }
     }
 
-    /** Parse a font color tag and return an appopriate java.awt.Color instance */
+    /** Parse a font color tag and return an appropriate java.awt.Color instance */
     private static Color findColor(final char[] ch, final int pos, final int tagEnd) {
         int colorPos = pos;
         boolean useUIManager = false;
 
         for (int i = pos; i < tagEnd; i++) {
             if (ch[i] == 'c') {
+                //#195703 - check for broken HTML
+                if( i + 6 >= ch.length )
+                    break;
                 colorPos = i + 6;
 
                 if ((ch[colorPos] == '\'') || (ch[colorPos] == '"')) {

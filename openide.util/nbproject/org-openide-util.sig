@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.6
+#Version 8.14.1
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)
@@ -143,7 +143,7 @@ meth public void readFully(byte[],int,int) throws java.io.IOException
 meth public void registerValidation(java.io.ObjectInputValidation,int) throws java.io.InvalidObjectException,java.io.NotActiveException
 supr java.io.InputStream
 hfds NULL_HANDLE,bin,closed,curContext,defaultDataEnd,depth,enableOverride,enableResolve,handles,passHandle,primClasses,primVals,unsharedMarker,vlist
-hcls BlockDataInputStream,Caches,CallbackContext,GetFieldImpl,HandleTable,PeekInputStream,ValidationList
+hcls BlockDataInputStream,Caches,GetFieldImpl,HandleTable,PeekInputStream,ValidationList
 
 CLSS public abstract interface java.io.ObjectOutput
 intf java.io.DataOutput
@@ -192,7 +192,7 @@ meth public void writeShort(int) throws java.io.IOException
 meth public void writeUTF(java.lang.String) throws java.io.IOException
 meth public void writeUnshared(java.lang.Object) throws java.io.IOException
 supr java.io.OutputStream
-hfds bout,curDesc,curObj,curPut,debugInfoStack,depth,enableOverride,enableReplace,extendedDebugInfo,handles,primVals,protocol,subs
+hfds bout,curContext,curPut,debugInfoStack,depth,enableOverride,enableReplace,extendedDebugInfo,handles,primVals,protocol,subs
 hcls BlockDataOutputStream,Caches,DebugTraceInfoStack,HandleTable,PutFieldImpl,ReplaceTable
 
 CLSS public abstract interface java.io.ObjectStreamConstants
@@ -672,6 +672,7 @@ meth public abstract {org.openide.util.Enumerations$Processor%1} process({org.op
 CLSS public final org.openide.util.Exceptions
 meth public static <%0 extends java.lang.Throwable> {%%0} attachLocalizedMessage({%%0},java.lang.String)
 meth public static <%0 extends java.lang.Throwable> {%%0} attachMessage({%%0},java.lang.String)
+meth public static <%0 extends java.lang.Throwable> {%%0} attachSeverity({%%0},java.util.logging.Level)
 meth public static java.lang.String findLocalizedMessage(java.lang.Throwable)
 meth public static void printStackTrace(java.lang.Throwable)
 supr java.lang.Object
@@ -854,21 +855,19 @@ hfds ex,serialVersionUID
 CLSS public org.openide.util.NbBundle
 cons public init()
  anno 0 java.lang.Deprecated()
+innr public abstract interface static !annotation Messages
 innr public abstract interface static ClassLoaderFinder
-meth public !varargs static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object[])
-meth public final static java.util.ResourceBundle getBundle(java.lang.String)
-meth public final static java.util.ResourceBundle getBundle(java.lang.String,java.util.Locale)
-meth public final static java.util.ResourceBundle getBundle(java.lang.String,java.util.Locale,java.lang.ClassLoader)
+meth public !varargs static java.lang.String getMessage(java.lang.Class<?>,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object[])
 meth public static <%0 extends java.lang.Object> {%%0} getLocalizedValue(java.util.Map<java.lang.String,{%%0}>,java.lang.String)
 meth public static <%0 extends java.lang.Object> {%%0} getLocalizedValue(java.util.Map<java.lang.String,{%%0}>,java.lang.String,java.util.Locale)
 meth public static java.lang.String getBranding()
 meth public static java.lang.String getLocalizedValue(java.util.jar.Attributes,java.util.jar.Attributes$Name)
 meth public static java.lang.String getLocalizedValue(java.util.jar.Attributes,java.util.jar.Attributes$Name,java.util.Locale)
-meth public static java.lang.String getMessage(java.lang.Class,java.lang.String)
-meth public static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object)
-meth public static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object)
-meth public static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object)
-meth public static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object[])
+meth public static java.lang.String getMessage(java.lang.Class<?>,java.lang.String)
+meth public static java.lang.String getMessage(java.lang.Class<?>,java.lang.String,java.lang.Object)
+meth public static java.lang.String getMessage(java.lang.Class<?>,java.lang.String,java.lang.Object,java.lang.Object)
+meth public static java.lang.String getMessage(java.lang.Class<?>,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object)
+meth public static java.lang.String getMessage(java.lang.Class<?>,java.lang.String,java.lang.Object[])
 meth public static java.net.URL getLocalizedFile(java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public static java.net.URL getLocalizedFile(java.lang.String,java.lang.String,java.util.Locale)
@@ -876,7 +875,10 @@ meth public static java.net.URL getLocalizedFile(java.lang.String,java.lang.Stri
 meth public static java.net.URL getLocalizedFile(java.lang.String,java.lang.String,java.util.Locale,java.lang.ClassLoader)
  anno 0 java.lang.Deprecated()
 meth public static java.util.Iterator<java.lang.String> getLocalizingSuffixes()
-meth public static java.util.ResourceBundle getBundle(java.lang.Class)
+meth public static java.util.ResourceBundle getBundle(java.lang.Class<?>)
+meth public static java.util.ResourceBundle getBundle(java.lang.String)
+meth public static java.util.ResourceBundle getBundle(java.lang.String,java.util.Locale)
+meth public static java.util.ResourceBundle getBundle(java.lang.String,java.util.Locale,java.lang.ClassLoader)
 meth public static void setBranding(java.lang.String)
 meth public static void setClassLoaderFinder(org.openide.util.NbBundle$ClassLoaderFinder)
  anno 0 java.lang.Deprecated()
@@ -889,6 +891,13 @@ CLSS public abstract interface static org.openide.util.NbBundle$ClassLoaderFinde
  anno 0 java.lang.Deprecated()
 meth public abstract java.lang.ClassLoader find()
  anno 0 java.lang.Deprecated()
+
+CLSS public abstract interface static !annotation org.openide.util.NbBundle$Messages
+ outer org.openide.util.NbBundle
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE, TYPE, METHOD, CONSTRUCTOR])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String[] value()
 
 CLSS public org.openide.util.NbCollections
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> java.util.Map<{%%0},{%%1}> checkedMapByCopy(java.util.Map,java.lang.Class<{%%0}>,java.lang.Class<{%%1}>,boolean)
@@ -915,6 +924,15 @@ CLSS public abstract interface static org.openide.util.NbPreferences$Provider
  outer org.openide.util.NbPreferences
 meth public abstract java.util.prefs.Preferences preferencesForModule(java.lang.Class)
 meth public abstract java.util.prefs.Preferences preferencesRoot()
+
+CLSS public final org.openide.util.NetworkSettings
+cons public init()
+meth public static java.lang.String getAuthenticationUsername(java.net.URI)
+meth public static java.lang.String getKeyForAuthenticationPassword(java.net.URI)
+meth public static java.lang.String getProxyHost(java.net.URI)
+meth public static java.lang.String getProxyPort(java.net.URI)
+supr java.lang.Object
+hfds LOGGER,PROXY_AUTHENTICATION_PASSWORD,PROXY_AUTHENTICATION_USERNAME,USE_PROXY_AUTHENTICATION
 
 CLSS public org.openide.util.NotImplementedException
 cons public init()
@@ -981,7 +999,7 @@ meth public void execute(java.lang.Runnable)
 meth public void shutdown()
 meth public void stop()
 supr java.lang.Object
-hfds DEFAULT,SLOW,UNLIMITED,counter,enableStackTraces,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput,warnParallel
+hfds DEFAULT,SLOW,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput,warnParallel
 hcls EnqueueTask,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,WaitableCallable
 
 CLSS public final org.openide.util.RequestProcessor$Task
@@ -1220,17 +1238,24 @@ intf java.lang.Cloneable
 meth public <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
 meth public boolean add({org.openide.util.WeakSet%0})
 meth public boolean contains(java.lang.Object)
+meth public boolean containsAll(java.util.Collection<?>)
+meth public boolean equals(java.lang.Object)
 meth public boolean isEmpty()
 meth public boolean remove(java.lang.Object)
+meth public boolean removeAll(java.util.Collection<?>)
+meth public boolean retainAll(java.util.Collection<?>)
+meth public int hashCode()
 meth public int size()
 meth public java.lang.Object clone()
 meth public java.lang.Object[] toArray()
 meth public java.lang.String toString()
 meth public java.util.Iterator<{org.openide.util.WeakSet%0}> iterator()
 meth public void clear()
+meth public void resize(int)
+meth public {org.openide.util.WeakSet%0} putIfAbsent({org.openide.util.WeakSet%0})
 supr java.util.AbstractSet<{org.openide.util.WeakSet%0}>
-hfds entries,iterChain,loadFactor,modcount,nullCount,refq,serialVersionUID,size
-hcls Entry,WeakSetIterator
+hfds PRESENT,loadFactor,m,s,serialVersionUID
+hcls SharedKeyWeakHashMap
 
 CLSS public abstract org.openide.util.actions.ActionInvoker
 cons protected init()
@@ -1526,8 +1551,9 @@ supr org.openide.util.io.FoldingIOException
 hfds ex,serialVersionUID
 
 CLSS public abstract org.openide.xml.EntityCatalog
-cons public init()
+cons protected init()
 fld public final static java.lang.String PUBLIC_ID = "-//NetBeans//Entity Mapping Registration 1.0//EN"
+ anno 0 java.lang.Deprecated()
 intf org.xml.sax.EntityResolver
 meth public static org.openide.xml.EntityCatalog getDefault()
 supr java.lang.Object

@@ -145,19 +145,24 @@ public class PhpStructureScanner implements StructureScanner {
                 }
                 Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
                 for (MethodScope method : declaredMethods) {
-                    List<StructureItem> variables = new ArrayList<StructureItem>();
-                    if (method.isConstructor()) {
-                        children.add(new PHPConstructorStructureItem(method, variables));
-                    } else {
-                        children.add(new PHPMethodStructureItem(method, variables));
-                    }
-                    //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
-                    /*Collection<? extends VariableName> declaredVariables = method.getDeclaredVariables();
-                    for (VariableName variableName : declaredVariables) {
-                        if (!variableName.representsThis()) {
-                            variables.add(new PHPSimpleStructureItem(variableName, "var"));
+                    // The method name doesn't have to be always defined during parsing. 
+                    // For example when user writes in  a php doc @method and parsing is 
+                    // started when there is no name yet.
+                    if (method.getName() != null && !method.getName().isEmpty()) {
+                        List<StructureItem> variables = new ArrayList<StructureItem>();
+                        if (method.isConstructor()) {
+                            children.add(new PHPConstructorStructureItem(method, variables));
+                        } else {
+                            children.add(new PHPMethodStructureItem(method, variables));
                         }
-                    }*/
+                        //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default
+                        /*Collection<? extends VariableName> declaredVariables = method.getDeclaredVariables();
+                        for (VariableName variableName : declaredVariables) {
+                            if (!variableName.representsThis()) {
+                                variables.add(new PHPSimpleStructureItem(variableName, "var"));
+                            }
+                        }*/
+                    }
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
                 for (ClassConstantElement classConstant : declaredClsConstants) {

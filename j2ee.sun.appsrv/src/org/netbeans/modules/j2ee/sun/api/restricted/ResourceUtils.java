@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -76,7 +76,6 @@ import javax.management.AttributeList;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -527,25 +526,6 @@ public class ResourceUtils implements WizardConstants{
         return propList;
     }
 
-    //FIXME: this method should be probably static
-    public List getTargetServers(){
-        String instances [] = InstanceProperties.getInstanceList();
-        List targets = new ArrayList();
-        for (int i=0; i < instances.length; i++) {
-            if (instances[i].startsWith(SunURIManager.SUNSERVERSURI)) {
-                targets.add(InstanceProperties.getInstanceProperties(instances[i]).getDeploymentManager());
-            }
-            else  if (instances[i].startsWith("[")) {
-                targets.add(InstanceProperties.getInstanceProperties(instances[i]).getDeploymentManager());
-            }
-        }
-        //This returns the deploymanager uri. Can we go from this to getting deployment manager??
-        //deployer:Sun:AppServer::localhost:4848
-        //    String[] targetArray = instanceProperties.getInstanceList();
-        //}
-        return targets;
-    }
-
     public static void saveConnPoolDatatoXml(ResourceConfigData data,String baseName) {
         Resources res = getServerResourcesGraph(data.getTargetFileObject(),
                             baseName.contains("glassfish-resources") ? Resources.VERSION_1_5 : Resources.VERSION_1_3);
@@ -868,7 +848,8 @@ public class ResourceUtils implements WizardConstants{
 
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
         List retVal = new ArrayList();
-        DeploymentManager dm = instProps.getDeploymentManager();
+        DeploymentManager dm = null;
+        LOG.log(Level.INFO, "investigate", new Exception());
         if (dm instanceof SunDeploymentManagerInterface) {
             SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface) dm;
             if (eightDM.isRunning()) {
@@ -1145,7 +1126,7 @@ public class ResourceUtils implements WizardConstants{
         DeploymentManager dm = null;
         InstanceProperties ip = provider.getInstanceProperties();
         if (ip != null) {
-            dm = ip.getDeploymentManager();
+            LOG.log(Level.INFO, "investigate", new Exception());
         }
         return dm;
     }
@@ -1454,18 +1435,9 @@ public class ResourceUtils implements WizardConstants{
             ObjectName configObjName = new ObjectName(MAP_RESOURCES);
             InstanceProperties instanceProperties = getTargetServer(FileUtil.toFileObject(resourceDir));
             if(instanceProperties != null){
-                SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instanceProperties.getDeploymentManager();
-                if(eightDM.isRunning()){
-                    poolValues = fillInPoolValues(eightDM, configObjName, poolName);
-                }else{
-                    if(eightDM.isLocal()){
-                        HashMap poolMap = eightDM.getConnPoolsFromXml();
-                        HashMap reqdPool = (HashMap)poolMap.get(poolName);
-                        if (reqdPool != null && (! reqdPool.isEmpty())) {
-                            poolValues = formatPoolMap((HashMap)poolMap.get(poolName));
-                        }
-                    }
-                }
+                SunDeploymentManagerInterface eightDM = null; // (SunDeploymentManagerInterface)instanceProperties.getDeploymentManager();
+                LOG.log(Level.INFO, "investigate", new Exception());
+                return poolValues;
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "getConnPoolValues failed", ex);

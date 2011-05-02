@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.modules.j2ee.nodes;
 
 import java.lang.reflect.Method;
@@ -59,7 +58,8 @@ import org.netbeans.jellytools.modules.j2ee.actions.StopAction;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 
 /** Node representing a J2EE Server node under Servers node. Default timeout
  * for all actions is 120 seconds.
@@ -72,10 +72,10 @@ import org.openide.util.Exceptions;
  *      server.stop();
  * </pre>
  *
- * @author Martin.Schovanek@sun.com
+ * @author Martin Schovanek, Jiri Skrivanek
  */
 public class J2eeServerNode extends Node {
-    
+
     static final CustomizerAction customizerAction = new CustomizerAction();
     static final StartDebugAction startDebugAction = new StartDebugAction();
     static final RefreshAction refreshAction = new RefreshAction();
@@ -87,14 +87,14 @@ public class J2eeServerNode extends Node {
     private static final String SERVERS = Bundle.getString(
             "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
             "SERVER_REGISTRY_NODE");
-    
+
     /** Creates new instance of J2eeServerNode with given name
      * @param serverName display name of project
      */
     public J2eeServerNode(String serverName) {
-        super(new RuntimeTabOperator().getRootNode(), SERVERS+"|"+serverName);
+        super(new RuntimeTabOperator().getRootNode(), SERVERS + "|" + serverName);
     }
-    
+
     /** Finds J2EE Server node with given name
      * @param serverName display name of project
      */
@@ -102,82 +102,70 @@ public class J2eeServerNode extends Node {
         RuntimeTabOperator.invoke();
         return new J2eeServerNode(serverName);
     }
-    
+
     /** tests popup menu items for presence */
     public void verifyPopup() {
         verifyPopup(new Action[]{
-            customizerAction,
-            startDebugAction,
-            refreshAction,
-            removeInstanceAction,
-            restartAction,
-            startAction,
-            stopAction
-        });
+                    customizerAction,
+                    startDebugAction,
+                    refreshAction,
+                    removeInstanceAction,
+                    restartAction,
+                    startAction,
+                    stopAction
+                });
     }
-    
+
     /** performs 'Properties' with this node */
     public void properties() {
         waitNotWaiting();
         customizerAction.perform(this);
     }
-    
+
     /** performs 'Start in Debug Mode' with this node */
     public void debug() {
         waitNotWaiting();
         startDebugAction.perform(this);
         waitDebugging();
     }
-    
+
     /** performs 'Refresh' with this node */
     public void refresh() {
         waitNotWaiting();
         refreshAction.perform(this);
         waitNotWaiting();
     }
-    
+
     /** performs 'Remove' with this node */
     public void remove() {
         waitNotWaiting();
         removeInstanceAction.perform(this);
     }
-    
+
     /** performs 'Restart' with this node */
     public void restart() {
         waitNotWaiting();
         restartAction.perform(this);
     }
-    
+
     /** performs 'Start' with this node */
     public void start() {
         waitNotWaiting();
         startAction.perform(this);
         waitRunning();
     }
-    
+
     /** performs 'Stop' with this node */
     public void stop() {
         waitNotWaiting();
         stopAction.perform(this);
         waitStopped();
     }
-    
+
     /** waits till server finishes current action */
     public void waitFinished() {
         waitNotWaiting();
     }
-    
-    static Class<? extends org.openide.nodes.Node.Cookie> classServerInstance() {
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class<?> general = Class.forName("org.netbeans.modules.j2ee.deployment.impl.ServerInstance", false, loader);
-            return general.asSubclass(org.openide.nodes.Node.Cookie.class);
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-            return org.openide.nodes.Node.Cookie.class;
-        }
-    }
-    
     //
     // copied from ServerInstance
     //
@@ -189,53 +177,80 @@ public class J2eeServerNode extends Node {
     public static final int STATE_PROFILING = 6;
     public static final int STATE_PROFILER_BLOCKING = 7;
     public static final int STATE_PROFILER_STARTING = 8;
-    
+
     /** Waits till server is running in debug mode. */
     private void waitDebugging() {
         waitServerState(STATE_DEBUGGING);
     }
-    
+
     /** Waits till server is running. */
     private void waitRunning() {
         waitServerState(STATE_RUNNING);
     }
-    
+
     /** Waits till server is stopped. */
     private void waitStopped() {
         waitServerState(STATE_STOPPED);
     }
-    
-    public int getServerState(){
+
+    public int getServerState() {
         final org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
         return getServerState(ideNode);
     }
 
     //// PRIVATE METHODS ////
-
-    private static int getServerState(org.openide.nodes.Node n) {
+    private static int getServerState(org.openide.nodes.Node node) {
+        String displayName = node.getDisplayName();
         try {
-            Object server = n.getCookie(classServerInstance());
-            Method m = classServerInstance().getMethod("getServerState");
-            return (Integer) m.invoke(server);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return STATE_STOPPED;
+            Deployment deployment = Deployment.getDefault();
+            for (String serverInstanceId : deployment.getServerInstanceIDs()) {
+                ServerInstance serverInstance = deployment.getServerInstance(serverInstanceId);
+                if (serverInstance.getDisplayName().equals(displayName)) {
+                    return getServerState(serverInstanceId);
+                }
+            }
+            throw new JemmyException("Server instance not found for node " + node);  //NOI18N
+        } catch (Exception e) {
+            throw new JemmyException("Server state cannot be determined for node " + node, e);  //NOI18N
         }
+    }
+
+    /** Use reflection to call non-API classes:
+     * ServerRegistry.getInstance().getServerInstance(serverInstanceId).getServerState();
+     */
+    private static int getServerState(String serverInstanceId) throws Exception {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Class<?> serverRegistryClass = Class.forName("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry", false, loader);
+        Method getInstanceMethod = serverRegistryClass.getDeclaredMethod("getInstance");
+        Object serverRegistryObject = getInstanceMethod.invoke(null);
+        Method getServerInstanceMethod = serverRegistryClass.getDeclaredMethod("getServerInstance", String.class);
+        Object serverInstanceObject = getServerInstanceMethod.invoke(serverRegistryObject, serverInstanceId);
+        Class<?> serverInstanceClass = Class.forName("org.netbeans.modules.j2ee.deployment.impl.ServerInstance", false, loader);
+        // need to call refresh because state is not updated automatically
+        Method refreshMethod = serverInstanceClass.getMethod("refresh");
+        refreshMethod.invoke(serverInstanceObject);
+        Method getServerStateMethod = serverInstanceClass.getMethod("getServerState");
+        return (Integer) getServerStateMethod.invoke(serverInstanceObject);
     }
 
     private void waitServerState(int state) {
         final org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
         final int targetState = state;
         waitFor(new Waitable() {
+
+            @Override
             public Object actionProduced(Object obj) {
                 if (getServerState(ideNode) == targetState) {
-                    return "Server state: "+getStateName()+" reached.";
+                    return "Server state: " + getStateName() + " reached.";
                 }
                 return null;
             }
+
+            @Override
             public String getDescription() {
-                return "Wait for server state: "+getStateName();
+                return "Wait for server state: " + getStateName();
             }
+
             private String getStateName() {
                 switch (targetState) {
                     case STATE_DEBUGGING:
@@ -254,30 +269,33 @@ public class J2eeServerNode extends Node {
             }
         });
     }
-    
+
     private void waitNotWaiting() {
         final org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
         waitFor(new Waitable() {
+
+            @Override
             public Object actionProduced(Object obj) {
                 if (getServerState(ideNode) != STATE_WAITING) {
                     return "Server leaves WAITING state.";
                 }
                 return null;
             }
+
+            @Override
             public String getDescription() {
                 return "Wait till server leaves state WAITING.";
             }
         });
     }
-    
+
     private static Object waitFor(Waitable action) {
         Waiter waiter = new Waiter(action);
         waiter.getTimeouts().setTimeout("Waiter.WaitingTime", 120000);
         try {
             return waiter.waitAction(null);
         } catch (InterruptedException ex) {
-            throw new JemmyException(action.getDescription()+" has been " +
-                    "interrupted.", ex);
+            throw new JemmyException(action.getDescription() + " has been " + "interrupted.", ex);
         }
     }
 }

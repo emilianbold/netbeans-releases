@@ -59,6 +59,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -153,8 +154,17 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
             if (e.getKind() != ElementKind.CONSTRUCTOR) {
                 return null;
             }
+            TypeElement jlThrowable = compilationInfo.getElements().getTypeElement("java.lang.Throwable");
+            if (jlThrowable == null) {//no bootclasspath? - better do nothing:
+                return null;
+            }
             ExecutableElement x = (ExecutableElement)e;
-            List<? extends Element> allElements = x.getEnclosingElement().getEnclosedElements();
+            Element enclosingType = x.getEnclosingElement();
+            Types t = compilationInfo.getTypes();
+            if (t.isSubtype(t.erasure(enclosingType.asType()), t.erasure(jlThrowable.asType()))) {
+                return null;//#197721
+            }
+            List<? extends Element> allElements = enclosingType.getEnclosedElements();
             List<Element> enclosedElements = new ArrayList<Element>(allElements.size());
             
             for (Element el : allElements) {

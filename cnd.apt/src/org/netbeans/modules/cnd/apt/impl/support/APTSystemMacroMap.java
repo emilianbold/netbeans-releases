@@ -72,19 +72,35 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         fill(sysMacros, true);
     }
     
+    @Override
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
         return new APTMacroImpl(file, define, macroType);
     }
     
+    @Override
+    public boolean pushPPDefined() {
+        APTUtils.LOG.log(Level.SEVERE, "pushPPDefined is not supported", new IllegalAccessException()); // NOI18N
+        return false;
+    }
+
+    @Override
+    public boolean popPPDefined() {
+        APTUtils.LOG.log(Level.SEVERE, "popPPDefined is not supported", new IllegalAccessException()); // NOI18N
+        return false;
+    }
+    
+    @Override
     public boolean pushExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException());// NOI18N
         return false;
     }
 
+    @Override
     public void popExpanding() {
         APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException());// NOI18N
     }
 
+    @Override
     public boolean isExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException());// NOI18N
         return false;
@@ -101,6 +117,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
     
+    @Override
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
         assert parent == null : "parent must be null";
         return new APTMacroMapSnapshot((APTMacroMapSnapshot)null);

@@ -7,16 +7,11 @@ package ${PACKAGE_NAME};
 
 import org.openide.modules.ModuleInstall;
 
-/**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
- */
 public class ${CLASS_NAME} extends ModuleInstall {
 
     @Override
     public void restored() {
-        // By default, do nothing.
-        // Put your startup code here.
+        // TODO
     }
 
 }

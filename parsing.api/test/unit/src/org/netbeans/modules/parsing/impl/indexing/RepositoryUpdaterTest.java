@@ -123,12 +123,16 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * TODO:
@@ -138,7 +142,8 @@ import org.openide.util.Exceptions;
  */
 public class RepositoryUpdaterTest extends NbTestCase {
 
-    private static final int TIME = 5000000;
+
+    private static final int TIME = 5000;
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
@@ -197,7 +202,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class, ClassPathProviderImpl.class);
+        MockServices.setServices(
+                FooPathRecognizer.class,
+                EmbPathRecognizer.class,
+                SFBQImpl.class,
+                OpenProject.class,
+                ClassPathProviderImpl.class,
+                Visibility.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -1071,7 +1082,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 Collections.singleton(root2),
                 new RepositoryUpdater.FSRefreshInterceptor());
-        assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2));
+        assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2, new ArrayList<RepositoryUpdater.Work>()));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
         }
     }
@@ -1342,11 +1353,315 @@ public class RepositoryUpdaterTest extends NbTestCase {
                
     }
     
+    public void testCheckAllFiles() throws Exception {
+        RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        //1st) Source root seen for first time (allFiles should be true)
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        final MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        Map<URL,Pair<Boolean,Boolean>> contextState = indexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        Pair<Boolean,Boolean> state = contextState.get(this.srcRootWithFiles1.getURL());
+        assertNotNull(state);
+        assertTrue(state.first);
+        assertFalse(state.second);
+        contextState = eindexerFactory.indexer.getContextState();
+        assertEquals(embeddedFiles.length, contextState.size());
+        for (URL url : embeddedFiles) {
+            state = contextState.get(url);
+            assertNotNull(state);
+            assertTrue(state.first);
+            assertFalse(state.second);
+        }
+
+        //2nd) Clean up - unregister
+        handler.reset();
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+
+        //3rd) Source root seen for second time (allFiles should be false)
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        handler.reset();
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        contextState = indexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(this.srcRootWithFiles1.getURL());
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertFalse(state.second);
+        contextState = eindexerFactory.indexer.getContextState();
+        assertEquals(0, contextState.size());
+
+        //4th) Clean up - unregister
+        handler.reset();
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+
+        //5th Do some modification and reopen the project (allFiles should be false)
+        fsWait();
+        touch(customFiles[0]);
+        touch(embeddedFiles[0]);
+        indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
+        handler.reset();
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        contextState = indexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(this.srcRootWithFiles1.getURL());
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertFalse(state.second);
+        contextState = eindexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(embeddedFiles[0]);
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertFalse(state.second);
+
+        //6th Do some modification when source are registered (allFiles should be false)
+        indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
+        fsWait();
+        touch(customFiles[0]);
+        touch(embeddedFiles[0]);
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        contextState = indexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(this.srcRootWithFiles1.getURL());
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertFalse(state.second);
+        contextState = eindexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(embeddedFiles[0]);
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertFalse(state.second);
+        
+        //7th IndexingManager.refreshIndex(root, all_files, fullRescan==true) (allFiles should be true)
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        IndexingManager.getDefault().refreshIndex(srcRootWithFiles1.getURL(), Collections.<URL>emptySet(), true);
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        contextState = indexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(this.srcRootWithFiles1.getURL());
+        assertNotNull(state);
+        assertTrue(state.first);
+        assertFalse(state.second);
+        contextState = eindexerFactory.indexer.getContextState();
+        assertEquals(embeddedFiles.length, contextState.size());
+        for (URL url : embeddedFiles) {
+            state = contextState.get(url);
+            assertNotNull(state);
+            assertTrue(state.first);
+            assertFalse(state.second);
+        }
+
+        //8th IndexingManager.refreshIndex(root, specifoc_file, fullRescan==true, checkEditor==true) (allFiles should be false, checkForEditorModifications should be true)
+        indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
+        IndexingManager.getDefault().refreshIndex(srcRootWithFiles1.getURL(), Arrays.asList(new URL[] {customFiles[0], embeddedFiles[0]}), true, true);
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        contextState = indexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(this.srcRootWithFiles1.getURL());
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertTrue(state.second);
+        contextState = eindexerFactory.indexer.getContextState();
+        assertEquals(1, contextState.size());
+        state = contextState.get(embeddedFiles[0]);
+        assertNotNull(state);
+        assertFalse(state.first);
+        assertTrue(state.second);        
+    }
+
+    public void testVisibilityQueryAmongIDERestarts() throws Exception {
+        //1st) Default visibility everything should be scanned
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        //2nd) Source root seen for first time (allFiles should be true)
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        final MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+
+        //3rd) Unregister - IDE closed
+        handler.reset();
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+        Crawler.setListenOnVisibility(false);
+
+        //4th) Making customFiles[1] invisible & touching the files to be indexed
+        fsWait();
+        touch (customFiles);
+        touch (embeddedFiles);
+        final Visibility visibility = Lookup.getDefault().lookup(Visibility.class);
+        assertNotNull(visibility);
+        visibility.registerInvisibles(Collections.singleton(URLMapper.findFileObject(customFiles[1])));
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[] {customFiles[1]}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+
+        //5th) Unregister - IDE closed
+        handler.reset();
+        globalPathRegistry_unregister(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+        Crawler.setListenOnVisibility(false);
+        
+        //6th) Making customFiles[1] visible again & touching the files to be indexed
+        fsWait();
+        touch (customFiles);
+        touch (embeddedFiles);
+        visibility.registerInvisibles(Collections.<FileObject>emptySet());
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+    }
+
+    public void testVisibilityQueryInIDERun() throws Exception {        
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        ////1st) Default visibility everything should be scanned
+        indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
+        final MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());        
+
+        //2nd) Change of VisibilityQuery should trigger rescan, customFiles[1] should be invisible
+        final Visibility visibility = Lookup.getDefault().lookup(Visibility.class);
+        assertNotNull(visibility);
+        visibility.registerInvisibles(Collections.singleton(URLMapper.findFileObject(customFiles[1])));
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[] {customFiles[1]}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+
+        //3rd) Change of VisibilityQuery should trigger rescan, customFiles[1] should be visible again
+        visibility.registerInvisibles(Collections.<FileObject>emptySet());
+        handler.reset();
+        indexerFactory.indexer.setExpectedFile(new URL[]{customFiles[1]}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());        
+    }
+
     /**
-     * Does not unregister refreshedRoot -> may affect other test
-     * @throws Exception 
+     * Test that unknown source roots are registered in the scannedRoots2Dependencies with EMPTY_DEPS
+     * and when the unknown root registers it's changed to regular dependencies.
+     * When the root is unregistered it's removed from scannedRoots2Dependencies
+     *
+     * The test was also extended to test Issue 196985. Unknown root which becomes known was lost
+     * @throws Exception
      */
-    public void testIndexManagerRefreshIndexListensOnChanges() throws Exception {
+    public void testIndexManagerRefreshIndexListensOnChanges_And_Issue196985() throws Exception {
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
         final FileObject refreshedRoot = wd.createFolder("refreshedRoot");
@@ -1361,13 +1676,18 @@ public class RepositoryUpdaterTest extends NbTestCase {
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
         final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
-        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[]{cp});
+        handler.reset(RepositoryUpdaterTest.TestHandler.Type.ROOTS_WORK_FINISHED);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
         handler.await();
+        assertNotNull(ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
         assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        GlobalPathRegistry.getDefault().unregister(SOURCES, new ClassPath[]{cp});
+        handler.reset(RepositoryUpdaterTest.TestHandler.Type.ROOTS_WORK_FINISHED);
+        globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp});
+        handler.await();
         assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
 
+    // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
 
         public static enum Type {BATCH, DELETE, FILELIST, ROOTS_WORK_FINISHED};
@@ -2035,8 +2355,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private volatile int indexCounter;
         private volatile int deletedCounter;
         private volatile int dirtyCounter;
-        private Set<URL> expectedDeleted = new HashSet<URL>();
-        private Set<URL> expectedDirty = new HashSet<URL>();
+        private final Set<URL> expectedDeleted = new HashSet<URL>();
+        private final Set<URL> expectedDirty = new HashSet<URL>();
+        private final Map<URL,Pair<Boolean,Boolean>> contextState = new HashMap<URL, Pair<Boolean, Boolean>>();
         private Runnable callBack;
 
         public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
@@ -2046,6 +2367,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             expectedDeleted.addAll(Arrays.asList(deleted));
             expectedDirty.clear();
             expectedDirty.addAll(Arrays.asList(dirty));
+            contextState.clear();
             indexCounter = 0;
             deletedCounter = 0;
             dirtyCounter = 0;
@@ -2082,15 +2404,19 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return this.dirtyCounter;
         }
 
+        public Map<URL,Pair<Boolean,Boolean>> getContextState() {
+            return this.contextState;
+        }
+
         @Override
-        protected void index(Iterable<? extends Indexable> files, Context context) {            
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            contextState.put(context.getRootURI(),Pair.<Boolean,Boolean>of(context.isAllFilesIndexing(),context.checkForEditorModifications()));
             for (Indexable i : files) {
                 indexCounter++;
                 if (expectedIndex.remove(i.getURL())) {
-                    //System.out.println("FooIndexer.index: " + i.getURL());
                     indexFilesLatch.countDown();
                 }
-            }
+            }            
             if (callBack != null) {
                 callBack.run();
                 callBack = null;
@@ -2174,6 +2500,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private volatile int dirtyCounter;
         private Set<URL> expectedDeleted = new HashSet<URL>();
         private Set<URL> expectedDirty = new HashSet<URL>();
+        private Map<URL,Pair<Boolean,Boolean>> contextState = new HashMap<URL, Pair<Boolean, Boolean>>();
         private boolean broken;
 
         public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
@@ -2184,6 +2511,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             expectedDeleted.addAll(Arrays.asList(deleted));
             expectedDirty.clear();
             expectedDirty.addAll(Arrays.asList(dirty));
+            contextState.clear();
             indexCounter = 0;
             deletedCounter = 0;
             dirtyCounter = 0;
@@ -2216,6 +2544,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return this.dirtyCounter;
         }
 
+        public Map<URL,Pair<Boolean,Boolean>> getContextState() {
+            return contextState;
+        }
+
         @Override
         protected void index(Indexable indexable, Result parserResult, Context context) {
             try {
@@ -2223,6 +2555,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 //System.out.println("EmbIndexer.index: " + url);
                 indexCounter++;
                 if (expectedIndex.remove(url)) {
+                    contextState.put(url, Pair.<Boolean,Boolean>of(context.isAllFilesIndexing(),context.checkForEditorModifications()));
                     indexFilesLatch.countDown();
                 }
             } catch (FileStateInvalidException ex) {
@@ -2325,4 +2658,65 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
         
     }
+
+    public static class Visibility implements VisibilityQueryImplementation2 {
+
+        private final Collection<FileObject> invisible =
+                Collections.synchronizedList( new ArrayList<FileObject>());
+
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+        public Visibility() {            
+        }
+
+        public void registerInvisibles (final Collection<? extends FileObject> invisibles) {
+            synchronized (invisible) {
+                invisible.clear();
+                invisible.addAll(invisibles);
+            }
+            changeSupport.fireChange();
+        }
+
+        @Override
+        public boolean isVisible(File file) {
+            return isVisible(FileUtil.toFileObject(file));
+        }
+
+        @Override
+        public boolean isVisible(FileObject file) {
+            return ! invisible.contains(file);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
+        }
+    }
+
+    private static void touch (final URL... urls) throws IOException {
+        for(URL url : urls) {
+            final FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                final OutputStream out = fo.getOutputStream();
+                try {
+                } finally {
+                    out.close();
+                }
+            }
+        }
+    }
+
+    /**
+     * Waits for file system mtime changes
+     */
+    private static void fsWait() throws InterruptedException {
+        Thread.sleep(3000);
+    }
+
+    //</editor-fold>
 }

@@ -58,12 +58,13 @@ import org.openide.filesystems.FileObject;
  * @author Nick Ktasilnikov
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position = 11)
-public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactory {
+public final class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactory {
 
     @Override
     protected PhaseRunner createTask(final FileObject fo) {
         return new PhaseRunner() {
 
+            @Override
             public void run(Phase phase) {
                 boolean changed = false;
                 Document doc = CsmUtilities.getDocument(fo);
@@ -87,15 +88,23 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
                 }
             }
 
+            @Override
             public boolean isValid() {
                 return true;
             }
 
+            @Override
             public void cancel() {
             }
 
+            @Override
             public boolean isHighPriority() {
                 return false;
+            }
+
+            @Override
+            public String toString() {
+                return "MacroExpansionCaretAwareFactory runner"; //NOI18N
             }
         };
     }
@@ -171,6 +180,7 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
 
     private static void setCaretPosition(final JEditorPane pane, final int position) {
         Runnable setCaret = new Runnable() {
+            @Override
             public void run() {
                 if (pane.getDocument() != null && position <= pane.getDocument().getLength()) {
                     pane.setCaretPosition(position);

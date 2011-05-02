@@ -201,8 +201,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         }
         //this.jmiObject = jmiObject;
         oldName = newName;
-        //[FIXME] this should be oldName of refactored object
-        this.dispOldName = newName;
+        this.dispOldName = jmiObject.getName();
         ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
         refactoring.getContext().add(cpInfo);
         fromListener = true;
@@ -258,7 +257,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
                     suffix = getString("LBL_Parameter");
                 }
             }
-            suffix = suffix + " " + name; // NOI18N
+            suffix = suffix + " " + this.dispOldName; // NOI18N
             panel = new RenamePanel(name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
         }
         return panel;

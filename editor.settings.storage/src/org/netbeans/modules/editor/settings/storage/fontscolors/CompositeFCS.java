@@ -385,6 +385,15 @@ public final class CompositeFCS extends FontColorSettings {
                 hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
             }
         }
+        
+        if (Boolean.getBoolean("org.netbeans.editor.aa.extra.hints")) {
+            // Get "bolder" Liberation Mono
+            hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            hints.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            // Extra hints
+            hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        }
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Editor Rendering hints:"); //NOI18N

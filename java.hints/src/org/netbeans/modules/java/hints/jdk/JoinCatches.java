@@ -164,7 +164,7 @@ public class JoinCatches {
 
             for (CatchTree ct : tt.getCatches()) {
                 if (c == first) {
-                    wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().DisjunctiveType(disjointTypes));
+                    wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().UnionType(disjointTypes));
                 }
                 
                 if (duplicates.contains(c++)) continue;

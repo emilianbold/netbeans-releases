@@ -63,6 +63,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Index;
 
 /**
  *
@@ -87,7 +88,7 @@ public class LuceneIndexTest extends NbTestCase {
         cache.mkdirs();
         final LuceneIndex index = LuceneIndex.create(cache, new KeywordAnalyzer());
         //Empty index => invalid
-        assertFalse(index.isValid(true));
+        assertEquals(Index.Status.EMPTY, index.getStatus(true));
 
         clearValidityCache(index);
         List<String> refs = new ArrayList<String>();
@@ -100,13 +101,13 @@ public class LuceneIndexTest extends NbTestCase {
                 new StrToQueryCovertor("resource"),
                 true);
         //Existing index => valid
-        assertTrue(index.isValid(true));
+        assertEquals(Index.Status.VALID, index.getStatus(true));
         assertTrue(cache.listFiles().length>0);
 
         clearValidityCache(index);
         createLock(index);
         //Index with orphan lock => invalid
-        assertFalse(index.isValid(true));
+        assertEquals(Index.Status.INVALID, index.getStatus(true));
         assertTrue(cache.listFiles().length==0);
 
         refs.add("B");
@@ -117,7 +118,7 @@ public class LuceneIndexTest extends NbTestCase {
                 new StrToDocConvertor("resources"),
                 new StrToQueryCovertor("resource"),
                 true);
-        assertTrue(index.isValid(true));
+        assertEquals(Index.Status.VALID, index.getStatus(true));
         assertTrue(cache.listFiles().length>0);
 
         //Broken index => invalid
@@ -136,7 +137,7 @@ public class LuceneIndexTest extends NbTestCase {
         } finally {
             out.close();
         }
-        assertFalse(index.isValid(true));
+        assertEquals(Index.Status.INVALID, index.getStatus(true));
         assertTrue(cache.listFiles().length==0);
 
     }

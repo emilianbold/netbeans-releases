@@ -563,7 +563,10 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 FileObject wmBase = getWebModule().getDocumentBase();
                 File[] files = null;
                 if (wmBase != null) {
-                    files = provider.getConfigurationFiles(WebModule.getWebModule(wmBase));
+                    WebModule wm = WebModule.getWebModule(wmBase);
+                    if (wm != null) {
+                        files = provider.getConfigurationFiles(wm);
+                    }
                 }
                 if (files != null) {
                     for (int j = 0; j < files.length; j++) {

@@ -83,10 +83,10 @@ import org.openide.util.NbBundle;
                 return "IS_SPECIALIZED"; // NOI18N
             case OVERRIDEN_COMBINED:
                 return "INHERITS_AND_INHERITED"; // NOI18N
-            case TEMPLATE_COMBINED:
-                return "SPECIALIZES_AND_SPECIALIZED_CLASS"; // NOI18N
-            case COMBINED:
-                return "INHERIT_TEMPLATE_COMBINED_CLASS"; // NOI18N
+            case EXTENDED_SPECIALIZES:
+                return "EXTENDED_SPECIALIZES"; // NOI18N
+            case EXTENDED_IS_SPECIALIZED:
+                return "EXTENDED_IS_SPECIALIZED"; // NOI18N
             default:
                 return "???"; // NOI18N
         }
