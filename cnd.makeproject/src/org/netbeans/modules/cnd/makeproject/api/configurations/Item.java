@@ -99,7 +99,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         String absPath = CndPathUtilitities.toAbsolutePath(baseDirFileObject, path);
         this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
-        this.path = path;
+        this.path = CndPathUtilitities.normalizeSlashes(path);
     }
 
     // XXX:fullRemote deprecate and remove!
