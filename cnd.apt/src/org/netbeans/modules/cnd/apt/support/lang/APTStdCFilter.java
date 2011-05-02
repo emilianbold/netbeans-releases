@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.impl.support.lang;
+package org.netbeans.modules.cnd.apt.support.lang;
 
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 

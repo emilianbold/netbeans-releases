@@ -384,6 +384,7 @@ tokens {
 	protected static final TypeQualifier tqCONST = new TypeQualifier("tqCONST");
 	protected static final TypeQualifier tqVOLATILE = new TypeQualifier("tqVOLATILE");
 	protected static final TypeQualifier tqCDECL = new TypeQualifier("tqCDECL");
+	protected static final TypeQualifier tqOTHER = new TypeQualifier("tqOTHER");
 
 	public static class StorageClass extends Enum { public StorageClass(String id) { super(id); } }
 
@@ -394,6 +395,7 @@ tokens {
 	protected static final StorageClass scEXTERN = new StorageClass("scEXTERN");
 	protected static final StorageClass scMUTABLE = new StorageClass("scMUTABLE");
 	protected static final StorageClass scTHREAD = new StorageClass("scTHREAD");
+	protected static final StorageClass scOTHER = new StorageClass("scOTHER");
 
 	public static class DeclSpecifier extends Enum { public DeclSpecifier(String id) { super(id); } }
 
@@ -1702,11 +1704,13 @@ storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     |   LITERAL_extern      {sc = scEXTERN;}
     |   LITERAL_mutable     {sc = scMUTABLE;}
     |   LITERAL___thread    {sc = scTHREAD;}
+    |   LITERAL__STORAGE_CLASS_SPECIFIER__ {sc = scOTHER;}
 	;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
 	:  (literal_const|LITERAL_const_cast)	{tq = tqCONST;} 
 	|  literal_volatile			{tq = tqVOLATILE;}
+	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
 	;
 
 type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
@@ -1759,6 +1763,8 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_void          {ts |= tsVOID;}
         | literal_complex       {ts |= tsCOMPLEX;}
         | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
+        | LITERAL_bit           {ts |= tsBOOL;}
+        | LITERAL__BUILT_IN_TYPE__ {ts |= tsOTHER;}
     ;
 
 qualified_type
@@ -3395,6 +3401,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_this
             |   literal_volatile
             |   literal_const
+            |   LITERAL__TYPE_QUALIFIER__
             |   literal_cdecl 
             |   literal_near
             |   literal_far 
@@ -3419,7 +3426,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
                     |   
-                        (literal_volatile|literal_const)*
+                        (literal_volatile|literal_const|LITERAL__TYPE_QUALIFIER__)*
                         (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum)
                         (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
@@ -3560,6 +3567,7 @@ lazy_expression_predicate
     |   LITERAL_this
     |   literal_volatile
     |   literal_const
+    |   LITERAL__TYPE_QUALIFIER__
     |   literal_cdecl 
     |   literal_near
     |   literal_far 
@@ -3595,7 +3603,7 @@ lazy_base_close
 protected
 postfix_cv_qualifier
         :
-            ((literal_volatile|literal_const) 
+            ((literal_volatile|literal_const|LITERAL__TYPE_QUALIFIER__) 
                 (options {greedy=true;}:unnamed_ptr_operator
                  { #postfix_cv_qualifier=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #postfix_cv_qualifier);}
                 )*

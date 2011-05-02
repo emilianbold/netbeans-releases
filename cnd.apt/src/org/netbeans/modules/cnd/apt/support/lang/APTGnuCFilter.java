@@ -42,56 +42,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.impl.support.lang;
+package org.netbeans.modules.cnd.apt.support.lang;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
- * implementation of language filters collection
+ * filter for GNU C language
  * @author Vladimir Voskresensky
  */
-public class APTLanguageSupportImpl {
-    private static Map<String, APTLanguageFilter> langFilters = new HashMap<String, APTLanguageFilter>();
+public class APTGnuCFilter extends APTStdCFilter {
     
-    private APTLanguageSupportImpl() {
+    /** Creates a new instance of APTGnuCFilter */
+    public APTGnuCFilter() {
+        initialize();
     }
     
-    public static APTLanguageFilter getFilter(String lang) {
-        // no sync is needed here
-        APTLanguageFilter filter = langFilters.get(lang);
-        if (filter == null) {
-            filter = createFilter(lang);
-            if (filter != null) {
-                addFilter(lang, filter);
-            }
-        }
-        return filter;
-    }
-    
-    public static void addFilter(String lang, final APTLanguageFilter filter) {
-        langFilters.put(lang, filter);
-    }
-
-    private static APTLanguageFilter createFilter(String lang) {
-        APTLanguageFilter filter = null;
-        // Now support only few filters
-        if (lang.equalsIgnoreCase(APTLanguageSupport.STD_C)) {
-            filter = new APTStdCFilter();
-        } else if (lang.equalsIgnoreCase(APTLanguageSupport.STD_CPP)) {
-            filter = new APTStdCppFilter();
-        } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_C)) {
-            filter = new APTGnuCFilter();
-        } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
-            filter = new APTGnuCppFilter();
-        } else if (lang.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
-            filter = new APTFortranFilter();
-        } else {
-            APTUtils.LOG.warning("unsupported language " + lang); // NOI18N
-        }
-        return filter;
+    private void initialize() {
+        // GNU C extensions 
+        filter("__alignof__", APTTokenTypes.LITERAL___alignof__); // NOI18N
+        filter("__asm", APTTokenTypes.LITERAL___asm); // NOI18N
+        filter("__asm__", APTTokenTypes.LITERAL___asm__); // NOI18N
+        filter("__attribute__", APTTokenTypes.LITERAL___attribute__); // NOI18N
+        filter("__attribute", APTTokenTypes.LITERAL___attribute); // NOI18N
+        filter("__complex__", APTTokenTypes.LITERAL___complex__); // NOI18N
+        filter("__const", APTTokenTypes.LITERAL___const); // NOI18N
+        filter("__const__", APTTokenTypes.LITERAL___const__); // NOI18N
+        filter("__imag__", APTTokenTypes.LITERAL___imag); // NOI18N
+        filter("__inline", APTTokenTypes.LITERAL___inline); // NOI18N
+        filter("__inline__", APTTokenTypes.LITERAL___inline__); // NOI18N
+        filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N
+        filter("restrict", APTTokenTypes.LITERAL_restrict); // NOI18N
+        filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N
+        filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
+        filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
+        filter("__thread", APTTokenTypes.LITERAL___thread); // NOI18N
+        filter("__typeof", APTTokenTypes.LITERAL___typeof); // NOI18N
+        filter("__typeof__", APTTokenTypes.LITERAL___typeof__); // NOI18N
+        filter("__volatile", APTTokenTypes.LITERAL___volatile); // NOI18N
+        filter("__volatile__", APTTokenTypes.LITERAL___volatile__); // NOI18N        
     }
 }

@@ -42,37 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.cnd.apt.support.lang;
 
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTLanguageSupportImpl;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
- * support for languages:
- *  - filters collection
+ * interface for language filters
+ * responsibility of filter to build filtering token stream
+ * which can be used for changing ID tokens on fly,
+ * by making keywords from identifiers
  * @author Vladimir Voskresensky
  */
-public class APTLanguageSupport {
-    private static APTLanguageSupport singleton = new APTLanguageSupport();
-
-    public static final String STD_C    = "Std C Language"; // NOI18N
-    public static final String GNU_C    = "Gnu C Language"; // NOI18N
-    public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
-    public static final String STD_CPP  = "Std C++ Language"; // NOI18N
-    public static final String FORTRAN  = "Fortran Language"; // NOI18N
-    public static final String UNKNOWN  = "Unknown Language"; // NOI18N
-    
-    private APTLanguageSupport() {
-    }
-    
-    public static APTLanguageSupport getInstance() {
-        return singleton;
-    }
-    
-    public APTLanguageFilter getFilter(String lang) {
-        return APTLanguageSupportImpl.getFilter(lang);
-    }
-    
-    public void addFilter(String lang, final APTLanguageFilter filter) {
-        APTLanguageSupportImpl.addFilter(lang, filter);
-    }
+public interface APTLanguageFilter {    
+    /**
+     * returns filtering token stream
+     */ 
+    public TokenStream getFilteredStream(TokenStream origStream);
 }

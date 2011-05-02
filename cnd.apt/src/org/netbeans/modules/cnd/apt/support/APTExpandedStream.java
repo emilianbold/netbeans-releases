@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
@@ -58,7 +59,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
