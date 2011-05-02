@@ -42,163 +42,122 @@
  * made subject to such option by the copyright holder.
  */
 
-
-package org.netbeans.modules.cnd.apt.impl.support.lang;
+package org.netbeans.modules.cnd.apt.support.lang;
 
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
-import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  *
- * @author nk220367
+ * @author Vladimir Voskresensky
  */
-public class APTFortranEOSFilter implements APTLanguageFilter {
+public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
+    private final Map<CharSequence,Integer/*ttype*/> filter;
+    private final Set<Integer/*ttype*/> keywords = new HashSet<Integer>();
+
+    // uncomment to use reduced memory
+//    private static final int BUFFERED_COUNT = 256;
+//    private static final Integer[] int2Int;
+//    static {
+//        int2Int = new Integer[BUFFERED_COUNT];
+//        for (int i = 0; i < BUFFERED_COUNT; i++) {
+//            int2Int[i] = null;
+//        }
+//    }
+
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
-    public APTFortranEOSFilter() {
+    protected APTBaseLanguageFilter(boolean caseInsensitive) {
+        if (caseInsensitive) {
+            filter = new TreeMap<CharSequence,Integer>(CharSequenceUtils.ComparatorIgnoreCase);
+        } else {
+            filter = new HashMap<CharSequence,Integer>();
+        }
     }
 
+    @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
         return new FilterStream(origStream);
     }
 
+//    // do necessary initializations in derived classes by calling
+//    // filter() method to fill up the filter
+//    protected abstract void initialize();
+
+    /**
+     * add token's key to be filtered
+     * the token stream returned from getFilteredStream
+     * will change the type of original token to new token type
+     * if original token has the filtered textKey value
+     */
+    protected void filter(String text, int ttype) {
+        // uncomment to use reduced memory
+//        if (ttype < BUFFERED_COUNT) {
+//            if (int2Int[ttype] == null) {
+//                int2Int[ttype] = new Integer(ttype);
+//            }
+//        }
+//        Integer val = (ttype < BUFFERED_COUNT) ? int2Int[ttype] : new Integer(ttype);
+//        assert(val != null);
+//        filter.put(textKey, val);
+        filter.put(CharSequences.create(text), Integer.valueOf(ttype));
+        keywords.add(Integer.valueOf(ttype));
+    }
+
+    protected Token onID(Token token) {
+        Integer newType = filter.get(((APTToken)token).getTextID());
+        if (newType != null) {
+            int ttype = newType.intValue();
+            token = new FilterToken((APTToken)token, ttype);
+        }
+        return token;
+    }
+
+    protected Token onToken(Token token) {
+        if (token.getType() == APTTokenTypes.ID) {
+            token = onID(token);
+        }
+        return token;
+    }
+
     private final class FilterStream implements TokenStream {
         private TokenStream orig;
-        private Token currentToken;
-        boolean newLine = false;
-
         public FilterStream(TokenStream orig) {
             this.orig = orig;
         }
 
+        @Override
         public Token nextToken() throws TokenStreamException {
-            if(newLine) {
-                newLine = false;
-                return currentToken;
-            }
-            Token newToken = orig.nextToken();
-            if (currentToken != null && newToken.getType() != APTTokenTypes.EOF && newToken.getLine() != currentToken.getLine()) {
-                Token eos = new EOSToken((APTToken) currentToken);
-                currentToken = newToken;
-                newLine = true;
-                return eos;
-            }
-            if (newToken.getType() == APTTokenTypes.SEMICOLON) {
-                currentToken = newToken;
-                return new FilterToken((APTToken)currentToken, APTTokenTypes.T_EOS);
-            }
-            currentToken = newToken;
-            return currentToken;
+            Token token = orig.nextToken();
+            token = onToken(token);
+            return token;
         }
     }
 
-    public static final class EOSToken implements APTToken {
-
-        int offset;
-        int endOffset;
-        int column;
-        int endColumn;
-        int line;
-        int endLine;
-        String fileName;
-
-        EOSToken(APTToken token) {
-            offset = token.getOffset();
-            endOffset = token.getEndOffset();
-            column = token.getColumn();
-            endColumn = token.getEndColumn();
-            line = token.getLine();
-            endLine = token.getEndLine();
-            fileName = token.getFilename();
+    public boolean isKeyword(Token token) {
+        if (token.getType() == APTTokenTypes.ID) {
+            Integer newType = filter.get(((APTToken)token).getTextID());
+            if (newType != null) {
+                return true;
+            }
         }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public void setOffset(int o) {
-            offset = o;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }
-
-        public void setEndOffset(int o) {
-            endOffset = o;
-        }
-
-        public int getEndColumn() {
-            return endColumn;
-        }
-
-        public void setEndColumn(int c) {
-            endColumn = c;
-        }
-
-        public int getEndLine() {
-            return endLine;
-        }
-
-        public void setEndLine(int l) {
-            endLine = l;
-        }
-
-        public String getText() {
-            return "<EOS>"; // NOI18N
-        }
-
-        public CharSequence getTextID() {
-            return "<EOS>"; // NOI18N
-        }
-
-        public void setTextID(CharSequence id) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public int getColumn() {
-            return column;
-        }
-
-        public void setColumn(int c) {
-            column = c;
-        }
-
-        public int getLine() {
-            return line;
-        }
-
-        public void setLine(int l) {
-            line = l;
-        }
-
-        public String getFilename() {
-            return fileName;
-        }
-
-        public void setFilename(String name) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public void setText(String t) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public int getType() {
-            return APTTokenTypes.T_EOS;
-        }
-
-        public void setType(int t) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
+        return false;
     }
 
+    public boolean isKeyword(int ttype) {
+        return keywords.contains(Integer.valueOf(ttype));
+    }
     /**
      * A wrapper token that changes original token type
      * and delegates the rest of the methods to original token.
@@ -217,82 +176,102 @@ public class APTFortranEOSFilter implements APTLanguageFilter {
             return origToken;
         }
 
+        @Override
         public int getOffset() {
             return origToken.getOffset();
         }
 
+        @Override
         public void setOffset(int o) {
             origToken.setOffset(o);
         }
 
+        @Override
         public int getEndColumn() {
             return origToken.getEndColumn();
         }
 
+        @Override
         public void setEndColumn(int c) {
             origToken.setEndColumn(c);
         }
 
+        @Override
         public int getEndLine() {
             return origToken.getEndLine();
         }
 
+        @Override
         public void setEndLine(int l) {
             origToken.setEndLine(l);
         }
 
+        @Override
         public int getEndOffset() {
             return origToken.getEndOffset();
         }
 
+        @Override
         public void setEndOffset(int o) {
             origToken.setEndOffset(o);
         }
 
+        @Override
         public CharSequence getTextID() {
             return origToken.getTextID();
         }
 
+        @Override
         public void setTextID(CharSequence id) {
             origToken.setTextID(id);
         }
 
+        @Override
         public int getColumn() {
             return origToken.getColumn();
         }
 
+        @Override
         public void setColumn(int c) {
             origToken.setColumn(c);
         }
 
+        @Override
         public int getLine() {
             return origToken.getLine();
         }
 
+        @Override
         public void setLine(int l) {
             origToken.setLine(l);
         }
 
+        @Override
         public String getFilename() {
             return origToken.getFilename();
         }
 
+        @Override
         public void setFilename(String name) {
             origToken.setFilename(name);
         }
 
+        @Override
         public String getText() {
             return origToken.getText();
         }
 
+        @Override
         public void setText(String t) {
             origToken.setText(t);
         }
 
+        @Override
         public int getType() {
             return type;
         }
 
+        @Override
         public void setType(int t) {
             this.type = t;
         }

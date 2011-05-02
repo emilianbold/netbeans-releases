@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,39 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.cnd.spi.lexer;
 
-package org.netbeans.modules.cnd.apt.support;
-
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTLanguageSupportImpl;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
 
 /**
- * support for languages:
- *  - filters collection
+ *
  * @author Vladimir Voskresensky
  */
-public class APTLanguageSupport {
-    private static APTLanguageSupport singleton = new APTLanguageSupport();
-
-    public static final String STD_C    = "Std C Language"; // NOI18N
-    public static final String GNU_C    = "Gnu C Language"; // NOI18N
-    public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
-    public static final String STD_CPP  = "Std C++ Language"; // NOI18N
-    public static final String FORTRAN  = "Fortran Language"; // NOI18N
-    public static final String UNKNOWN  = "Unknown Language"; // NOI18N
+public interface CndLexerLanguageFilterProvider {
+    // constant to be used for registration of provider
+    // i.e. @ServiceProvider(path=CndLexerLanguageFilterProvider.REGISTRATION_PATH, service=CndLexerLanguageFilterProvider.class, position=100)
+    public static final String REGISTRATION_PATH = "CND/CndLexerLanguageFilterProvider"; // NOI18N
     
-    private APTLanguageSupport() {
-    }
-    
-    public static APTLanguageSupport getInstance() {
-        return singleton;
-    }
-    
-    public APTLanguageFilter getFilter(String lang) {
-        return APTLanguageSupportImpl.getFilter(lang);
-    }
-    
-    public void addFilter(String lang, final APTLanguageFilter filter) {
-        APTLanguageSupportImpl.addFilter(lang, filter);
-    }
+    /**
+     * returns filter for document
+     * @param language
+     * @param doc
+     * @return 
+     */
+    Filter<CppTokenId> getFilter(Language<?> language, Document doc);
 }

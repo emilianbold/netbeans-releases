@@ -42,25 +42,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.impl.support.lang;
+package org.netbeans.modules.cnd.apt.support.lang;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
- * implementation of language filters collection
+ * support for languages:
+ *  - filters collection
  * @author Vladimir Voskresensky
  */
-public class APTLanguageSupportImpl {
-    private static Map<String, APTLanguageFilter> langFilters = new HashMap<String, APTLanguageFilter>();
+public final class APTLanguageSupport {
+    private static APTLanguageSupport singleton = new APTLanguageSupport();
+
+    public static final String STD_C    = "Std C Language"; // NOI18N
+    public static final String GNU_C    = "Gnu C Language"; // NOI18N
+    public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
+    public static final String STD_CPP  = "Std C++ Language"; // NOI18N
+    public static final String FORTRAN  = "Fortran Language"; // NOI18N
+    public static final String UNKNOWN  = "Unknown Language"; // NOI18N
     
-    private APTLanguageSupportImpl() {
+    private APTLanguageSupport() {
     }
     
-    public static APTLanguageFilter getFilter(String lang) {
+    public static APTLanguageSupport getInstance() {
+        return singleton;
+    }
+    
+    public APTLanguageFilter getFilter(String lang) {
         // no sync is needed here
         APTLanguageFilter filter = langFilters.get(lang);
         if (filter == null) {
@@ -72,9 +83,11 @@ public class APTLanguageSupportImpl {
         return filter;
     }
     
-    public static void addFilter(String lang, final APTLanguageFilter filter) {
+    public void addFilter(String lang, final APTLanguageFilter filter) {
         langFilters.put(lang, filter);
     }
+    
+    private Map<String, APTLanguageFilter> langFilters = new HashMap<String, APTLanguageFilter>();
 
     private static APTLanguageFilter createFilter(String lang) {
         APTLanguageFilter filter = null;
@@ -90,8 +103,8 @@ public class APTLanguageSupportImpl {
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
             filter = new APTFortranFilter();
         } else {
-            APTUtils.LOG.warning("unsupported language " + lang); // NOI18N
+            APTUtils.LOG.log(Level.WARNING, "unsupported language {0}", lang); // NOI18N
         }
         return filter;
-    }
+    }    
 }

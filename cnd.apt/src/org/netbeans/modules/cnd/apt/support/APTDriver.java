@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;

@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -69,6 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
 
 
@@ -100,6 +104,35 @@ public class Utils {
     private Utils() {
     }
 
+    private final static class LangProviders {
+        private final static Collection<? extends CsmFileLanguageProvider> langProviders = Lookups.forPath(CsmFileLanguageProvider.REGISTRATION_PATH).lookupAll(CsmFileLanguageProvider.class);
+    }
+    
+    public static String getLanguage(CsmFile.FileType fileType, String path) {
+        String lang = null;
+        if (!LangProviders.langProviders.isEmpty()) {
+            for (org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider provider : LangProviders.langProviders) {
+                lang = provider.getLanguage(fileType, path);
+                if (lang != null) {
+                    return lang;
+                }
+            }
+        }
+        if (fileType == FileType.SOURCE_CPP_FILE) {
+            lang = APTLanguageSupport.GNU_CPP;
+        } else if (fileType == FileType.SOURCE_C_FILE) {
+            lang = APTLanguageSupport.GNU_C;
+        } else if (fileType == FileType.SOURCE_FORTRAN_FILE) {
+            lang = APTLanguageSupport.FORTRAN;
+        } else {
+            lang = APTLanguageSupport.GNU_CPP;
+            if (path.length() > 2 && path.endsWith(".c")) { // NOI18N
+                lang = APTLanguageSupport.GNU_C;
+            }
+        }
+        return lang;
+    }
+    
     public static CsmOffsetable createOffsetable(CsmFile file, int startOffset, int endOffset) {
         return OffsetableBase.create(file, startOffset, endOffset);
     }
