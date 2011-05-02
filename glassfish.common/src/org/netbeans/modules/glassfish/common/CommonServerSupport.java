@@ -597,9 +597,10 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             Socket socket = new Socket();
             int timeout = 2000;
             if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
-                timeout = 100;
+                timeout = 2000;
             }
             socket.connect(isa, timeout);
+            socket.setSoTimeout(timeout);
             try { socket.close(); } catch (IOException ioe) {
                 Logger.getLogger("glassfish").log(Level.INFO, "closing after test", ioe);
             }
