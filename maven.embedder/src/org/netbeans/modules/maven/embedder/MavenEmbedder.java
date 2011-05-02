@@ -101,6 +101,8 @@ public final class MavenEmbedder {
     public static final File DEFAULT_USER_SETTINGS_FILE = new File(userMavenConfigurationHome, "settings.xml");
     public static final File DEFAULT_GLOBAL_SETTINGS_FILE =
             new File(System.getProperty("maven.home", System.getProperty("user.dir", "")), "conf/settings.xml");
+
+    private static final Logger LOG = Logger.getLogger(MavenEmbedder.class.getName());
     private final PlexusContainer plexus;
     private final DefaultMaven maven;
     private final ProjectBuilder projectBuilder;
@@ -108,6 +110,8 @@ public final class MavenEmbedder {
     private final MavenExecutionRequestPopulator populator;
     private final SettingsBuilder settingsBuilder;
     private final EmbedderConfiguration embedderConfiguration;
+    private long settingsTimestamp;
+    private Settings settings;
 
     MavenEmbedder(EmbedderConfiguration configuration) throws ComponentLookupException {
         embedderConfiguration = configuration;
@@ -148,15 +152,24 @@ public final class MavenEmbedder {
         }
     }
 
-    public Settings getSettings() {
+    public synchronized Settings getSettings() {
+        long newSettingsTimestamp = DEFAULT_GLOBAL_SETTINGS_FILE.lastModified() ^ DEFAULT_USER_SETTINGS_FILE.lastModified();
+        // could be included but currently constant: hashCode() of those files; getSystemProperties.hashCode()
+        if (settings != null && settingsTimestamp == newSettingsTimestamp) {
+            LOG.log(Level.FINER, "settings.xml cache hit for {0}", this);
+            return settings;
+        }
+        LOG.log(Level.FINE, "settings.xml cache miss for {0}", this);
         SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
         req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
         req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
         req.setSystemProperties(getSystemProperties());
         try {
-            return settingsBuilder.build(req).getEffectiveSettings();
+            settings = settingsBuilder.build(req).getEffectiveSettings();
+            settingsTimestamp = newSettingsTimestamp;
+            return settings;
         } catch (SettingsBuildingException x) {
-            Logger.getLogger(MavenEmbedder.class.getName()).log(Level.FINE, null, x); // #192768: do not even bother logging to console by default, too noisy
+            LOG.log(Level.FINE, null, x); // #192768: do not even bother logging to console by default, too noisy
             return new Settings();
         }
     }
@@ -256,7 +269,7 @@ public final class MavenEmbedder {
         try {
             return plexus.lookup(clazz);
         } catch (ComponentLookupException ex) {
-            Logger.getLogger(MavenEmbedder.class.getName()).warning(ex.getMessage());
+            LOG.warning(ex.getMessage());
         }
         return null;
     }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.11
+#Version 1.15.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -158,8 +158,10 @@ fld public final static int GUARDED = 2
 fld public final static int NORMAL = 0
 fld public final static int READ_ONLY = 3
 fld public final static int WARNING = 1
+meth public boolean equals(java.lang.Object)
 meth public boolean isEnabled()
 meth public int getStatus()
+meth public int hashCode()
 meth public java.lang.String getDisplayText()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String getText()
@@ -321,6 +323,7 @@ meth public abstract int getStatus()
 meth public abstract java.lang.String getDisplayText()
 meth public abstract java.lang.String getText()
 meth public abstract org.openide.filesystems.FileObject getParentFile()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public abstract org.openide.text.PositionBounds getPosition()
 meth public abstract org.openide.util.Lookup getLookup()
 meth public abstract void openInEditor()
@@ -337,7 +340,7 @@ meth public org.netbeans.modules.refactoring.api.Problem addFileChange(org.netbe
 meth public org.netbeans.modules.refactoring.api.RefactoringSession getSession()
 meth public void registerTransaction(org.netbeans.modules.refactoring.spi.Transaction)
 supr java.lang.Object
-hfds commits,delegate,fileChanges,readOnlyFiles,session
+hfds commits,delegate,fileChanges,hasGuarded,hasReadOnly,readOnlyFiles,session
 
 CLSS public abstract interface org.netbeans.modules.refactoring.spi.RefactoringPlugin
 meth public abstract org.netbeans.modules.refactoring.api.Problem checkParameters()

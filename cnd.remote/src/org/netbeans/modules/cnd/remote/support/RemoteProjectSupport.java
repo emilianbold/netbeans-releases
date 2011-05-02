@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -78,13 +79,22 @@ public class RemoteProjectSupport {
     }
 
     public static boolean projectExists(Project project) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
-        File nbproject = CndFileUtils.createLocalFile(baseDir, "nbproject"); //NOI18N
-        return nbproject.exists();
+        final FileObject projDirFO = project.getProjectDirectory();
+        if(projDirFO != null && projDirFO.isValid()) {
+            FileObject nbprojectFO = projDirFO.getFileObject("nbproject"); //NOI18N
+            if (nbprojectFO != null && nbprojectFO.isValid()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static File getPrivateStorage(Project project) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
+        if (baseDir == null) {
+            return null;
+        }
+        baseDir = baseDir.getAbsoluteFile();
         final File privProjectStorage = CndFileUtils.createLocalFile(new File(baseDir, "nbproject"), "private"); //NOI18N
         return privProjectStorage;
     }
@@ -100,7 +110,11 @@ public class RemoteProjectSupport {
     }
 
     public static File[] getProjectSourceDirs(Project project, MakeConfiguration conf) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
+        if (baseDir == null) {
+            return new File[0];
+        }
+        baseDir = baseDir.getAbsoluteFile();
         if (conf == null) {
             return new File[] { baseDir };
         }

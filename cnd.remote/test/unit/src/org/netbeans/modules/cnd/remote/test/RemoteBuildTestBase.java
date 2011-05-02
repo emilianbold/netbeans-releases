@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -156,7 +156,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     @Override
     protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(MakeProjectType.class);
+        list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;
     }

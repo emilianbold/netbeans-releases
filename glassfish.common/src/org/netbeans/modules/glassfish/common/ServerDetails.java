@@ -65,7 +65,7 @@ public enum ServerDetails {
         new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
         300,
         "http://download.java.net/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
-        "http://serverplugins.netbeans.org/glassfishv3/post69v3.txt" // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post70v3.txt" // NOI18N
     ),
     /**
      * details for an instance of GlassFish Server 3.1
@@ -75,8 +75,8 @@ public enum ServerDetails {
         new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
         new String[0],
         310,
-        "http://download.java.net/glassfish/3.1/release/glassfish-3.1.zip?nbretriever=fallback", // NOI18N
-        "http://serverplugins.netbeans.org/glassfishv3/post69v3-1.txt" // NOI18N
+        "http://download.java.net/glassfish/3.1.1/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post70v3-1.txt" // NOI18N
     );
 
     /**

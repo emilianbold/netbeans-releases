@@ -244,7 +244,7 @@ public class GsfFoldManager implements FoldManager {
         if (file != null) {
             currentFolds = new HashMap<FoldInfo, Fold>();
             task = JavaElementFoldTask.getTask(file);
-            task.setGsfFoldManager(GsfFoldManager.this);
+            task.setGsfFoldManager(GsfFoldManager.this, file);
         }
     }
     
@@ -276,7 +276,7 @@ public class GsfFoldManager implements FoldManager {
 
     public synchronized void release() {
         if (task != null) {
-            task.setGsfFoldManager(null);
+            task.setGsfFoldManager(null, null);
         }
         
         task         = null;
@@ -322,8 +322,12 @@ public class GsfFoldManager implements FoldManager {
         
         private Reference<GsfFoldManager> manager;
         
-        synchronized void setGsfFoldManager(GsfFoldManager manager) {
+        synchronized void setGsfFoldManager(GsfFoldManager manager, FileObject file) {
             this.manager = new WeakReference<GsfFoldManager>(manager);
+
+            if (file != null) {
+                GsfFoldScheduler.reschedule();
+            }
         }
         
         public void run(final ParserResult info, SchedulerEvent event) {
@@ -581,7 +585,7 @@ public class GsfFoldManager implements FoldManager {
 
         @Override
         public Class<? extends Scheduler> getSchedulerClass() {
-            return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+            return GsfFoldScheduler.class;
         }
 
         @Override

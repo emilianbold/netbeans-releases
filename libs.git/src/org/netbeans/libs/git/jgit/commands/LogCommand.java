@@ -134,7 +134,7 @@ public class LogCommand extends GitCommand {
                 throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
             } catch (NoHeadException ex) {
                 throw new GitException.MissingObjectException(GitObjectType.HEAD.name(), GitObjectType.HEAD);
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 throw new GitException(ex);
             }
         } 

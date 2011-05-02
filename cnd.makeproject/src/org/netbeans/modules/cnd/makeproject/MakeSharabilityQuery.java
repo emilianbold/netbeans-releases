@@ -54,18 +54,18 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources
  */
 public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 
-    private final File baseDirFile;
+    private final FileObject baseDirFile;
     private final String baseDir;
     private final int baseDirLength;
     private boolean privateShared;
@@ -74,7 +74,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
     private boolean inited = false;
     private Set<String> skippedFiles = new HashSet<String>();
 
-    MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, File baseDirFile) {
+    MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, FileObject baseDirFile) {
         this.projectDescriptorProvider = projectDescriptorProvider;
         this.baseDirFile = baseDirFile;
         this.baseDir = baseDirFile.getPath();

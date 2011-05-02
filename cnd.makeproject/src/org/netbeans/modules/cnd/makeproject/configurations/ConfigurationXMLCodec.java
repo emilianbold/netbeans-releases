@@ -51,6 +51,7 @@ import java.util.Stack;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
@@ -89,12 +90,13 @@ import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 
 /**
@@ -454,8 +456,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().restore(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
-                    ExecutionEnvironmentFactory.fromUniqueID(currentText));
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(currentText);
+            env = CppUtils.convertAfterReading(env, (MakeConfiguration) currentConf);
+            ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(env);
         } else if (element.equals(FIXED_SYNC_FACTORY_ELEMENT)) {
             RemoteSyncFactory fixedSyncFactory = RemoteSyncFactory.fromID(currentText);
             CndUtils.assertNotNull(fixedSyncFactory, "Can not restore fixed sync factory " + currentText); //NOI18N
@@ -562,10 +565,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             currentFolder.addItem(createItem(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
-            currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
+            CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
+            if (currentItemConfiguration != null) {
+                currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
+            }
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
-            int tool = new Integer(currentText).intValue();
-            currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
+            CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
+            if (currentItemConfiguration != null) {
+                int tool = new Integer(currentText).intValue();
+                currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
+            }
         } else if (element.equals(CONFORMANCE_LEVEL_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(COMPATIBILITY_MODE_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(LIBRARY_LEVEL_ELEMENT)) {
@@ -903,15 +912,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        Project project = projectDescriptor.getProject();
-        FileSystem fs = remoteProject.getSourceFileSystem();
-        String absPath;
-        if (FileSystemProvider.isAbsolute(path)) {
-            absPath = path;                
-        } else {                
-            absPath = CndPathUtilitities.toAbsolutePath(remoteProject.getSourceBaseDir(), path);
-        }
-        return new Item(new FSPath(fs, absPath), remoteProject.getSourceBaseDir(), ProjectSupport.getPathMode(project));
+        return new Item(remoteProject.getSourceBaseDirFileObject(), path);
     }
 
     private String adjustOffset(String path) {
@@ -930,7 +931,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else {
             host = CppUtils.getDefaultDevelopmentHost();
         }
-        MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
+        FSPath fsPath;
+        try {
+            fsPath = new FSPath(projectDirectory.getFileSystem(), projectDirectory.getPath());
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+        MakeConfiguration makeConfiguration = new MakeConfiguration(fsPath, getString(value), confType, host);
         return makeConfiguration;
     }
 

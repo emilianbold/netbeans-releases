@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="dll"/>
-        <resolver mime="application/x-exe+dll"/>
+        <resolver mime="application/x-shobj+elf"/>
     </file>
     <file>
         <ext name="o"/>

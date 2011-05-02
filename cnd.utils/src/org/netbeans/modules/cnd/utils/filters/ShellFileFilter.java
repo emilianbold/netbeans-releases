@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class ShellFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class ShellFileFilter extends FileAndFileObjectFilter {
 
     private static ShellFileFilter instance = null;
 
@@ -73,23 +73,13 @@ public class ShellFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
     }
 
     @Override
-    public boolean accept(File f) {
-        if (f != null) {
-            if (f.isDirectory()) {
-                return true;
-            }
-            FileObject fo = CndFileUtils.toFileObject(f);
-            return accept(fo);
-        }
-        return false;
+    protected boolean mimeAccept(File f) {
+        return mimeAccept(CndFileUtils.toFileObject(f));
     }
 
     @Override
-    public boolean accept(FileObject fo) {
+    protected boolean mimeAccept(FileObject fo) {
         if (fo != null) {
-            if (fo.isFolder()) {
-                return true;
-            }
             if (fo.isValid()) {
                 return MIMENames.SHELL_MIME_TYPE.equals(FileUtil.getMIMEType(fo, MIMENames.SHELL_MIME_TYPE));
             } else {
@@ -97,5 +87,10 @@ public class ShellFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
             }
         }
         return false;
+    }
+
+    @Override
+    protected String[] getSuffixes() {
+        return new String[]{};
     }
 }

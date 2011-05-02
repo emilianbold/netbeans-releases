@@ -44,11 +44,9 @@ package org.netbeans.modules.git.ui.push;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
@@ -59,7 +57,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
-import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.Mutex;
@@ -71,12 +68,12 @@ import org.openide.util.NbBundle;
  */
 public class PushBranchesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private final File repository;
-    private final ItemSelector<BranchMapping> branches;
+    private final ItemSelector<PushBranchMapping> branches;
     private boolean lastPanel;
 
     public PushBranchesStep (File repository) {
         this.repository = repository;
-        this.branches = new ItemSelector<BranchMapping>(NbBundle.getMessage(PushBranchesStep.class, "PushBranchesPanel.jLabel1.text")); //NOI18N
+        this.branches = new ItemSelector<PushBranchMapping>(NbBundle.getMessage(PushBranchesStep.class, "PushBranchesPanel.jLabel1.text")); //NOI18N
         this.branches.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -119,10 +116,10 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
-        List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
+        List<PushBranchMapping> l = new ArrayList<PushBranchMapping>(branches.size());
         for (GitBranch branch : localBranches.values()) {
             if (!branch.isRemote()) {
-                l.add(new BranchMapping(branches.get(branch.getName()), branch));
+                l.add(new PushBranchMapping(branches.get(branch.getName()), branch));
             }
         }
         this.branches.setBranches(l);
@@ -134,14 +131,6 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
         validateBeforeNext();
     }
 
-    public List<String> getSelectedRefSpecs () {
-        List<String> specs = new LinkedList<String>();
-        for (BranchMapping b : branches.getSelectedBranches()) {
-            specs.add(b.getRefSpec());
-        }
-        return specs;
-    }
-
     @Override
     public boolean isFinishPanel () {
         return lastPanel;
@@ -151,71 +140,7 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
         this.lastPanel = isLastPanel;
     }
 
-    Collection<BranchMapping> getSelectedMappings () {
+    Collection<PushBranchMapping> getSelectedMappings () {
         return branches.getSelectedBranches();
-    }
-    
-    class BranchMapping extends ItemSelector.Item {
-        private final String label;
-        private final String tooltip;
-        private final GitBranch localBranch;
-        private final GitBranch remoteBranch;
-        private static final String BRANCH_MAPPING_LABEL = "{0} -> {1} [{2}]"; //NOI18N
-
-        public BranchMapping (GitBranch remoteBranch, GitBranch localBranch) {
-            super(false);
-            this.localBranch = localBranch;
-            this.remoteBranch = remoteBranch;
-            if(remoteBranch == null) {
-                // added
-                label = MessageFormat.format(BRANCH_MAPPING_LABEL, localBranch.getName(), localBranch.getName(), "<font color=\"#00b400\">A</font>");
-                tooltip = NbBundle.getMessage(
-                    PushBranchesStep.class, 
-                    "LBL_PushBranchesPanel.BranchMapping.description", //NOI18N
-                    new Object[] { 
-                        localBranch.getName(),
-                        NbBundle.getMessage(PushBranchesStep.class, "LBL_PushBranchesPanel.BranchMapping.Mode.added.description") //NOI18N
-                    }); //NOI18N
-            } else {
-                // modified
-                label = MessageFormat.format(BRANCH_MAPPING_LABEL, localBranch.getName(), remoteBranch.getName(), "<font color=\"#0000FF\">U</font>"); //NOI18N                 
-                tooltip = NbBundle.getMessage(
-                    PushBranchesStep.class, 
-                    "LBL_PushBranchesPanel.BranchMapping.description", //NOI18N
-                    new Object[] { 
-                        remoteBranch.getName(), 
-                        NbBundle.getMessage(PushBranchesStep.class, "LBL_PushBranchesPanel.BranchMapping.Mode.updated.description") //NOI18N
-                    }); 
-            }
-        }
-        
-        public String getRemoteRepositoryBranchName () {
-            return remoteBranch == null ? localBranch.getName() : remoteBranch.getName();
-        }
-
-        public String getRefSpec () {
-            return org.netbeans.libs.git.utils.Utils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
-        }
-
-        @Override
-        public String getText () {
-            return label;
-        }
-
-        @Override
-        public String getTooltipText() {
-            return tooltip;
-        }
-
-        @Override
-        public int compareTo(Item t) {
-            if(t == null) {
-                return 1;
-            }
-            if(t instanceof BranchMapping) {
-                return localBranch.getName().compareTo(((BranchMapping)t).localBranch.getName());
-            }
-            return 0;            
-        }
     }
 }

@@ -59,8 +59,9 @@ public final class FileBufferSnapshot implements APTFileBuffer {
     private final char[] buffer;
     private final long timeStamp;
     private Reference<Line2Offset> lines;
+    private final APTFileBuffer.BufferType bufType;
     
-    public FileBufferSnapshot(FileSystem fileSystem, CharSequence absPath, char[] buffer, int[] linesCache, long timeStamp) {
+    public FileBufferSnapshot(FileSystem fileSystem, CharSequence absPath, APTFileBuffer.BufferType bufType, char[] buffer, int[] linesCache, long timeStamp) {
         this.absPath = absPath;
         this.fileSystem = fileSystem;
         this.buffer = buffer;
@@ -70,10 +71,16 @@ public final class FileBufferSnapshot implements APTFileBuffer {
         } else {
              lines = new WeakReference<Line2Offset>(null);
         }
+        this.bufType = bufType;
     }
 
     public long getTimeStamp() {
         return timeStamp;
+    }
+
+    @Override
+    public APTFileBuffer.BufferType getType() {
+        return bufType;
     }
     
     @Override

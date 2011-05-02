@@ -251,7 +251,15 @@ public class Operator {
                                 if (!ThreadReferenceWrapper.isSuspended(thref)) {
                                     // Can not do anything, someone already resumed the thread in the mean time.
                                     // The event is missed. We will therefore ignore it.
-                                    logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
+                                    try {
+                                        logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
+                                    } catch (ObjectCollectedException ocex) {
+                                        try {
+                                            logger.warning("!!\nMissed event "+eventSet+" due to collected thread");
+                                        } catch (ObjectCollectedException ocex2) {
+                                            logger.warning("!!\nMissed some event due to collected thread!");
+                                        }
+                                    }
                                     continue;
                                 }
                             } catch (ObjectCollectedExceptionWrapper e) {

@@ -65,8 +65,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -74,10 +72,9 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -94,14 +91,16 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private final String normalizedPath;
     private DataObject lastDataObject = null;
 
-    public Item(FSPath fsPath, String baseDir, MakeProjectOptions.PathMode pathMode) {
-        this.fileSystem = fsPath.getFileSystem();
-        this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(fsPath.getPath(), fileSystem);
-        String p = ProjectSupport.toProperPath(baseDir, fsPath.getPath(), pathMode);
-        p = CndPathUtilitities.normalizeSlashes(p);
-        path = p;
+    public Item(FileObject baseDirFileObject, String path) {
+        try {
+            this.fileSystem = baseDirFileObject.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+        String absPath = CndPathUtilitities.toAbsolutePath(baseDirFileObject, path);
+        this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
+        this.path = path;
     }
-
 
     // XXX:fullRemote deprecate and remove!
     public Item(String path) {
@@ -381,7 +380,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public FileObject getFileObject() {
-        return getFileObjectImpl();
+        FileObject fo = getFileObjectImpl();
+        if (fo == null) {
+            String p = (normalizedPath != null) ? normalizedPath : getAbsPath();
+            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, normalizedPath);
+        }
+        return fo;
     }
 
     /** 
@@ -466,9 +470,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         String mimeType = "";
         if (fo == null || ! fo.isValid()) {
-            mimeType = MIMESupport.getFileMIMEType(getNormalizedFile());
+            mimeType = MIMESupport.getSourceFileMIMEType(getNormalizedFile());
         } else {
-            mimeType = MIMESupport.getFileMIMEType(fo);
+            mimeType = MIMESupport.getSourceFileMIMEType(fo);
         }
         return mimeType;
     }

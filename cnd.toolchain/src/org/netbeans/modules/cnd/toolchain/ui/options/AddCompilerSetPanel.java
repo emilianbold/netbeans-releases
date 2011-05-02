@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -69,7 +68,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -80,6 +78,7 @@ import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -191,6 +190,11 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         }        
         if (!FileSystemProvider.isAbsolute(csm.getExecutionEnvironment(), path)) {
             showError(NbBundle.getMessage(getClass(), "BASE_RELATIVE"));
+            return;
+        }
+        FileObject fileObject = FileSystemProvider.getFileObject(csm.getExecutionEnvironment(), path);
+        if (fileObject == null || !fileObject.isValid() || !fileObject.isFolder()) {
+            showError(NbBundle.getMessage(getClass(), "REMOTEBASE_INVALID_FOLDER", path));
             return;
         }
         if (local) {

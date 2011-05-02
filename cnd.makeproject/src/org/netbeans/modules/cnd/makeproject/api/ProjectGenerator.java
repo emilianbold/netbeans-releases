@@ -53,13 +53,17 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.NewProjectWizardUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 public class ProjectGenerator {
@@ -67,7 +71,7 @@ public class ProjectGenerator {
     public static final class ProjectParameters {
 
         private final String projectName;
-        private final File projectFolder;
+        private final String projectFolderPath;
         private String makefile;
         private MakeConfiguration[] configurations;
         private boolean openFlag;
@@ -77,6 +81,7 @@ public class ProjectGenerator {
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
+        private ExecutionEnvironment sourceEnv;
         private boolean fullRemote;
         private String fullRemoteNativeProjectPath;
         private CompilerSet cs;
@@ -102,9 +107,11 @@ public class ProjectGenerator {
          * @param projectName name of the project
          * @param projectFolder project folder (i.e. ~/NetbeansProjects/projectName)
          */
-        public ProjectParameters(String projectName, File projectFolder) {            
+        //XXX:fullRemote:fileSystem - change File to setFSPath
+        public ProjectParameters(String projectName, File projectFolder) {
             this.projectName = projectName;
-            this.projectFolder = FileUtil.normalizeFile(projectFolder);
+            this.sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
+            this.projectFolderPath = FileUtil.normalizeFile(projectFolder).getPath();
             this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             this.configurations = new MakeConfiguration[0];
             this.openFlag = false;
@@ -203,10 +210,15 @@ public class ProjectGenerator {
             return this;
         }
 
+        //XXX:fullRemote:fileSystem - change with setFSPath
         public File getProjectFolder() {
-            return projectFolder;
+            return new File(projectFolderPath);
         }
 
+        public String getProjectFolderPath() {
+            return projectFolderPath;
+        }
+        
         public String getProjectName() {
             return projectName;
         }
@@ -251,6 +263,18 @@ public class ProjectGenerator {
             this.hostUID = hostUID;
         }
 
+        public ExecutionEnvironment getSourceExecutionEnvironment() {
+            return sourceEnv;
+        }
+        
+        public FileSystem getSourceFileSystem() {
+            return FileSystemProvider.getFileSystem(sourceEnv);
+        }
+
+        public void setSourceExecutionEnvironment(ExecutionEnvironment env) {
+            this.sourceEnv = env;
+        }
+        
         public CompilerSet getToolchain() {
             return cs;
         }
@@ -316,23 +340,23 @@ public class ProjectGenerator {
     }
     
     public static String getDefaultProjectFolder() {
-        return MakeProjectGenerator.getDefaultProjectFolder();
+        return MakeProjectGeneratorImpl.getDefaultProjectFolder();
     }
 
     public static String getValidProjectName(String projectFolder) {
-        return MakeProjectGenerator.getValidProjectName(projectFolder);
+        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder);
     }
 
     public static String getValidProjectName(String projectFolder, String suggestedProjectName) {
-        return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
+        return MakeProjectGeneratorImpl.getValidProjectName(projectFolder, suggestedProjectName);
     }
 
     public static Project createBlankProject(ProjectParameters prjParams) throws IOException {
-        return MakeProjectGenerator.createBlankProject(prjParams);
+        return MakeProjectGeneratorImpl.createBlankProject(prjParams);
     }
 
     public static Project createProject(ProjectParameters prjParams) throws IOException {
-        MakeProject createdProject = MakeProjectGenerator.createProject(prjParams);
+        MakeProject createdProject = MakeProjectGeneratorImpl.createProject(prjParams);
         ConfigurationDescriptorProvider.recordCreatedProjectMetrics(prjParams.getConfigurations());
         return createdProject;
     }

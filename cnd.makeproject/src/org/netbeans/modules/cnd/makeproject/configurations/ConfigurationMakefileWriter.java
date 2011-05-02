@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -93,7 +92,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -143,30 +141,36 @@ public class ConfigurationMakefileWriter {
     }
 
     public void writeMissingMakefiles() {
+        FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
+        CndUtils.assertNotNullInConsole(nbProjFO, "null nbproject file object"); //NOI18N
+        if (nbProjFO == null) {
+            return;
+        }
+        FileObject configuraionFO = nbProjFO.getFileObject(MakeConfiguration.CONFIGURATIONS_XML);
+        long xmlFileTimeStamp = (configuraionFO == null) ? -1 : configuraionFO.lastModified().getTime();
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-        long xmlFileTimeStamp = CndFileUtils.createLocalFile(
-                CndFileUtils.createLocalFile(projectDescriptor.getProjectDir(), MakeConfiguration.NBPROJECT_FOLDER),
-                MakeConfiguration.CONFIGURATIONS_XML).lastModified();
-        for (MakeConfiguration conf : okConfs) {
-            File file = CndFileUtils.createLocalFile(getMakefilePath(conf));
+        for (MakeConfiguration conf : okConfs) {            
             if (!conf.isMakefileConfiguration()) {
-                if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
+                String relPath = getMakefileName(conf); // NOI18N
+                FileObject fo = nbProjFO.getFileObject(relPath);
+                if (fo == null || ! fo.isValid() || fo.lastModified().getTime() < xmlFileTimeStamp) {
                     writeMakefileConf(conf);
                 }
             }
-            file = CndFileUtils.createLocalFile(getPackageScriptPath(conf));
-            if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
+            String relPath = getPackageScriptName(conf); // NOI18N
+            FileObject fo = nbProjFO.getFileObject(relPath);
+            if (fo == null || ! fo.isValid() || fo.lastModified().getTime() < xmlFileTimeStamp) {
                 writePackagingScript(conf);
             }
         }
     }
 
-    private String getMakefilePath(MakeConfiguration conf) {
-        return projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
+    private String getMakefileName(Configuration conf) {
+        return "Makefile-" + conf.getName() + ".mk"; // NOI18N
     }
 
-    private String getPackageScriptPath(MakeConfiguration conf) {
-        return projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
+    private String getPackageScriptName(Configuration conf) {
+        return "Package-" + conf.getName() + ".bash"; // NOI18N
     }
 
     /**
@@ -239,8 +243,8 @@ public class ConfigurationMakefileWriter {
                     if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
                         boolean known = false;
                         for (Configuration conf : projectDescriptor.getConfs().toArray()) {
-                            if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
-                                    || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
+                            if (filename.equals(getMakefileName(conf)) // NOI18N
+                                    || filename.equals(getPackageScriptName(conf))) { // NOI18N
                                 known = true;
                                 break;
                             }
@@ -361,7 +365,7 @@ public class ConfigurationMakefileWriter {
                 LOGGER.info("Error writing makefiles: can not find nbproject");
                 return;
             }
-            FileObject makefileFO = FileUtil.createData(nbProjFO, "Makefile-" + conf.getName() + ".mk"); // NOI18N;
+            FileObject makefileFO = FileUtil.createData(nbProjFO, getMakefileName(conf)); // NOI18N;
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(makefileFO.getOutputStream()));
             try {
                 makefileWriter.writePrelude(projectDescriptor, conf, bw);
@@ -1560,7 +1564,7 @@ public class ConfigurationMakefileWriter {
         }
 
         OutputStream os = null;
-        final String scriptName = "Package-" + conf.getName() + ".bash"; // NOI18N
+        final String scriptName = getPackageScriptName(conf); // NOI18N
         FileObject projectBaseFO = projectDescriptor.getProject().getProjectDirectory();
         if (projectBaseFO == null) {
             return;

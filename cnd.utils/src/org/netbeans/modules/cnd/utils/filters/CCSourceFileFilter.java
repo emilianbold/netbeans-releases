@@ -48,13 +48,13 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
-public class CCSourceFileFilter extends SourceFileFilter{
+public class CCSourceFileFilter extends FileAndFileObjectFilter {
     
     private static CCSourceFileFilter instance = null;
     
     private String[] suffixList = null;
     
-    public static SourceFileFilter getInstance() {
+    public static CCSourceFileFilter getInstance() {
         if (instance == null) {
             instance = new CCSourceFileFilter();
         }
@@ -63,7 +63,7 @@ public class CCSourceFileFilter extends SourceFileFilter{
     
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_CC_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(CCSourceFileFilter.class, "FILECHOOSER_CC_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
     
     @Override

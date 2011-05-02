@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
-public class FortranSourceFileFilter extends SourceFileFilter{
+public class FortranSourceFileFilter extends FileAndFileObjectFilter {
     
     private static FortranSourceFileFilter instance = null;
     
@@ -63,7 +63,7 @@ public class FortranSourceFileFilter extends SourceFileFilter{
     
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_FORTRAN_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(FortranSourceFileFilter.class, "FILECHOOSER_FORTRAN_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
     
     @Override
