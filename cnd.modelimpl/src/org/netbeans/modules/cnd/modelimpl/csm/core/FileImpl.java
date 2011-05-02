@@ -380,8 +380,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             lang = APTLanguageSupport.FORTRAN;
         } else {
             lang = APTLanguageSupport.GNU_CPP;
-            String name = getName().toString();
-            if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
+            String path = getAbsolutePath().toString();
+            if (path.length() > 2 && path.endsWith(".c")) { // NOI18N
                 lang = APTLanguageSupport.GNU_C;
             }
         }
