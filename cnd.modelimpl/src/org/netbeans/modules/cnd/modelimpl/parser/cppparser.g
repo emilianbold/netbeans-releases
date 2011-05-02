@@ -376,6 +376,7 @@ tokens {
 	protected static final int tsBOOL      = 0x8000;
 	protected static final int tsCOMPLEX   = 0x10000;
 	protected static final int tsIMAGINARY = 0x20000;
+        protected static final int tsOTHER     = 0x80000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -3348,6 +3349,7 @@ cast_expression
 // and have no need to recognize some constructions.
 // (IZ 142022 : IDE hangs while parsing Boost)
 lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
+{/*TypeSpecifier*/int ts=0;}
     :
         (options {warnWhenFollowAmbig = false;}:
             (   OR 
@@ -3399,21 +3401,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   literal_pascal 
             |   literal_stdcall
 
-            |   LITERAL_char
-            |   LITERAL_wchar_t
-            |   LITERAL_bool
-            |   LITERAL_short
-            |   LITERAL_int
-            |   literal_int64
-            |   LITERAL___w64
-            |   LITERAL_long
-            |   literal_signed
-            |   literal_unsigned
-            |   LITERAL_float
-            |   LITERAL_double
-            |   LITERAL_void
-            |   literal_complex
-            |   LITERAL__Imaginary
+            |   ts=builtin_type[0]
 
             |   LITERAL_struct
             |   LITERAL_union
@@ -3527,6 +3515,7 @@ simpleBalanceLessthanGreaterthanInExpression
     ;
 
 lazy_expression_predicate
+{int ts = 0;}
     :
         OR 
     |   AND 
@@ -3577,21 +3566,7 @@ lazy_expression_predicate
     |   literal_pascal 
     |   literal_stdcall
 
-    |   LITERAL_char
-    |   LITERAL_wchar_t
-    |   LITERAL_bool
-    |   LITERAL_short
-    |   LITERAL_int
-    |   literal_int64
-    |   LITERAL___w64
-    |   LITERAL_long
-    |   literal_signed
-    |   literal_unsigned
-    |   LITERAL_float
-    |   LITERAL_double
-    |   LITERAL_void
-    |   literal_complex
-    |   LITERAL__Imaginary
+    |   ts = builtin_type[0]
 
     |   LITERAL_OPERATOR 
     |   LITERAL_dynamic_cast 
