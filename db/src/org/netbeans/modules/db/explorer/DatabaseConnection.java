@@ -65,6 +65,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.openide.util.Lookup;
@@ -95,7 +96,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
@@ -106,6 +106,7 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 
@@ -639,10 +640,15 @@ public final class DatabaseConnection implements DBConnection {
         });
     }
     
-    private static void waitForReading(final Runnable toRun) {
+    private void waitForReading(final Runnable toRun) {
         if (SwingUtilities.isEventDispatchThread()) {
             showWaitingDialog(toRun);
         } else {
+            if (keyringTask != null && ! keyringTask.isFinished()) {
+                keyringTask.waitFinished();
+                toRun.run();
+                return ;
+            }            
             final Object lock = new Object();
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -664,38 +670,38 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
     
-    private static volatile Dialog d = null;
+    private RequestProcessor.Task keyringTask = null;
     
-    private static void showWaitingDialog(final Runnable toRun) {
+    private void showWaitingDialog(final Runnable toRun) {
         assert SwingUtilities.isEventDispatchThread();
-        if (d != null && d.isVisible()) {
-            // don't show again
-            return ;
-        }
+
         ProgressHandle progress = ProgressHandleFactory.createHandle("keyring");
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
         progressComponent.setPreferredSize(new Dimension(350, 20));
         ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent,
                 NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitMessage")); // NOI18N);
         panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectAction.class, "ACS_ConnectingDialogTextA11yDesc")); // NOI18N
-        DialogDescriptor dd = new DialogDescriptor(panel,
-                NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitTitle"), // NOI18N
-                true,
-                new Object[] { DialogDescriptor.CANCEL_OPTION },
-                DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        d = DialogDisplayer.getDefault().createDialog(dd);
-        RP.post(new Runnable() {
+        final Dialog d = new JDialog(WindowManager.getDefault().getMainWindow(),
+                                NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitTitle"), // NOI18N
+                                true);
+        d.add(panel);
+        keyringTask = RP.post(new Runnable() {
 
             @Override
             public void run() {
                 try {
                     toRun.run();
                 } finally {
-                    if (d != null) {
-                        d.setVisible(false);
-                        d.dispose();
-                        d = null;
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (d != null) {
+                                d.setVisible(false);
+                                d.dispose();
+                            }
+                        }
+                    });
                 }
             }
         });
