@@ -64,7 +64,7 @@ public class URLsAreEqualTest extends NbTestCase {
     }
     
     public void testURLsAreEqual() throws Exception {
-        final File wd = new File(getWorkDir(), "work dir");
+        final File wd = new File(getWorkDir(), "work#dir");
         wd.mkdirs();
         
         File jar = new File(wd, "default-package-resource.jar");
