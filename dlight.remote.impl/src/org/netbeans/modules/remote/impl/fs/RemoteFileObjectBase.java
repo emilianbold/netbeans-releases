@@ -85,8 +85,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private static final byte MASK_VALID = 1;
     private static final byte CHECK_CAN_WRITE = 2;
     
-    private static final boolean RETURN_JAVA_IO_FILE = 
-            Boolean.getBoolean("remote.java.io.file") || Boolean.getBoolean("full.remote.direct.open");
+    private static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
