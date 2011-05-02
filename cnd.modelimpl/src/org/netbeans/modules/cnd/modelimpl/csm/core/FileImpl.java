@@ -71,8 +71,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -371,21 +371,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public String getFileLanguage() {
-        String lang;
-        if (fileType == FileType.SOURCE_CPP_FILE) {
-            lang = APTLanguageSupport.GNU_CPP;
-        } else if (fileType == FileType.SOURCE_C_FILE) {
-            lang = APTLanguageSupport.GNU_C;
-        } else if (fileType == FileType.SOURCE_FORTRAN_FILE) {
-            lang = APTLanguageSupport.FORTRAN;
-        } else {
-            lang = APTLanguageSupport.GNU_CPP;
-            String name = getName().toString();
-            if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
-                lang = APTLanguageSupport.GNU_C;
-            }
-        }
-        return lang;
+        return Utils.getLanguage(fileType, getAbsolutePath().toString());
     }
 
     public APTPreprocHandler getPreprocHandler(int offset) {

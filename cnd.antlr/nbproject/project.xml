@@ -15,6 +15,7 @@
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>com.microchip.mplab.nbide.csmbridge</friend>
                 <package>org.netbeans.modules.cnd.antlr</package>
                 <package>org.netbeans.modules.cnd.antlr.ASdebug</package>
                 <package>org.netbeans.modules.cnd.antlr.collections</package>
