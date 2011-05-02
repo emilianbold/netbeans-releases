@@ -64,22 +64,19 @@ public final class CaseStatementImpl extends StatementBase implements CsmCaseSta
     }
 
     public static CaseStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        CaseStatementImpl stmt = new CaseStatementImpl(ast, file, scope);
-        stmt.init(ast);
-        return stmt;
+        return new CaseStatementImpl(ast, file, scope);
     }
 
-    protected void init(AST ast) {
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            if( AstRenderer.isExpression(token) ) {
-                expression = new AstRenderer((FileImpl) getContainingFile()).renderExpression(token, getScope());
-                break;
-            }
-        }
-    }
-    
     @Override
     public CsmExpression getExpression() {
+        if( expression == null ) {
+            for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
+                if( AstRenderer.isExpression(token) ) {
+                    expression = new AstRenderer((FileImpl) getContainingFile()).renderExpression(token, getScope());
+                    break;
+                }
+            }
+        }
         return expression;
     }
 
