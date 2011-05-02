@@ -10,6 +10,7 @@ then
 # ergonomics root
 cd "$project_root"
 rm -rf nbbuild/nbproject/private
+ant bootstrap
 
 # performance project
 cd "$performance"
