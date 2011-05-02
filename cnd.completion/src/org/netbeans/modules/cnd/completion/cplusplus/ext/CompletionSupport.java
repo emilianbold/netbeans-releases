@@ -510,7 +510,7 @@ public final class CompletionSupport implements DocumentListener {
         }
         int pos = doc2context(docPos);
         CsmContext context = CsmOffsetResolver.findContext(file, pos, refContext);
-        if (var.length() == 0 && CsmKindUtilities.isVariable(context.getLastObject())) {
+        if (var.length() == 0 && CsmKindUtilities.isVariable(context.getLastObject()) && ((CsmVariable)context.getLastObject()).getInitialValue() != null) {
             // probably in initializer of variable, like
             // struct AAA a[] = { { .field = 1}, { .field = 2}};
             CsmVariable varObj = (CsmVariable) context.getLastObject();

@@ -1036,11 +1036,14 @@ public class NbModuleSuite {
                     sep = File.pathSeparator;
                 }
             }
+            Set<URL> uniqueURLs = new HashSet<URL>();
             for (Class<?> c : classes) {
                 URL test = c.getProtectionDomain().getCodeSource().getLocation();
                 Assert.assertNotNull("URL found for " + c, test);
-                sb.append(sep).append(new File(test.toURI()).getPath());
-                sep = File.pathSeparator;
+                if (uniqueURLs.add(test)) {
+                    sb.append(sep).append(new File(test.toURI()).getPath());
+                    sep = File.pathSeparator;
+                }
             }
             prop.setProperty("netbeans.systemclassloader.patches", sb.toString());
         }

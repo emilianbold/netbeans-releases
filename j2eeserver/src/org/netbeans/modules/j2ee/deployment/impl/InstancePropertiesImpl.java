@@ -156,7 +156,7 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
 
     public javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager() {
         boolean assertsEnabled = false;
-        //assert assertsEnabled = true;
+        assert assertsEnabled = true;
         if (assertsEnabled) {
             return new DeploymentManager();
         }
