@@ -62,7 +62,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Token ids of C/C++ languages defined as enum.
@@ -392,6 +392,7 @@ public enum CppTokenId implements TokenId {
         return fixedText;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -508,15 +509,20 @@ public enum CppTokenId implements TokenId {
                     return LanguageEmbedding.create(languagePreproc, 0, 0);
             }
 
-            Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
-            for (CndLexerLanguageEmbeddingProvider provider : providers) {
-                Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
-                if(embeddings.containsKey(token.id())) {
-                    return embeddings.get(token.id());
+            if (!CndLexerEmbeddingProviders.providers.isEmpty()) {
+                for (org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider provider : CndLexerEmbeddingProviders.providers) {
+                    LanguageEmbedding<?> embedding = provider.createEmbedding(token, languagePath, inputAttributes);
+                    if (embedding != null) {
+                        return embedding;
+                    }
                 }
             }
-
             return null; // No embedding
         }
+        
+        private final static class CndLexerEmbeddingProviders {
+            private final static Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookups.forPath(CndLexerLanguageEmbeddingProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageEmbeddingProvider.class);
+        }
+
     }
 }

@@ -45,7 +45,6 @@ package org.netbeans.cnd.api.lexer;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -55,8 +54,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -161,13 +159,14 @@ public final class CndLexerUtilities {
         return null;
     }
     
-    private static final Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
+    private final static class CndLexerEmbeddingProviders {
+        private final static Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookups.forPath(CndLexerLanguageEmbeddingProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageEmbeddingProvider.class);
+    }
 
     public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {
-        for (CndLexerLanguageEmbeddingProvider provider : providers) {
-            Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
-            for (CppTokenId cppTokenId : embeddings.keySet()) {
-                if(embeddings.get(cppTokenId).language() == lang) {
+        if (!CndLexerEmbeddingProviders.providers.isEmpty()) {
+            for (org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider provider : CndLexerEmbeddingProviders.providers) {
+                if (provider.isKnownLanguage(lang)) {
                     return true;
                 }
             }
