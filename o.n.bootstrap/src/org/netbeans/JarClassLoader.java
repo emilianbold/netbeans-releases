@@ -851,7 +851,12 @@ public class JarClassLoader extends ProxyClassLoader {
             }
             String jar;
             try {
-                jar = new File(new URI(url.substring(0, bang))).getPath();
+                final URI uri = new URI(url.substring(0, bang));
+                if (uri.getScheme().equals("file")) {
+                    jar = new File(uri).getPath();
+                } else {
+                    jar = null;
+                }
             } catch (URISyntaxException x) {
                 throw new IOException(x);
             }
