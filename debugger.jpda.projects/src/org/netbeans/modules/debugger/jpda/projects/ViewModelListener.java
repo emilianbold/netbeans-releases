@@ -60,6 +60,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
@@ -132,6 +133,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private ObjectVariable variable;
     private SessionProvider providerToDisplay;
     private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
+    private ToolTipSupport toolTipSupport;
 
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -162,6 +164,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             this
         );
         updateModel ();
+    }
+    
+    void setToolTipSupport(ToolTipSupport toolTipSupport) {
+        this.toolTipSupport = toolTipSupport;
     }
 
     synchronized void destroy () {
@@ -485,6 +491,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         view.removeAll();
                         view.revalidate();
                         view.repaint();
+                        if (toolTipSupport != null) {
+                            toolTipSupport.setToolTipVisible(false);
+                        }
                     } else {
                         JComponent tree = (JComponent) view.getComponent(0);
                         Models.setModelsToView (

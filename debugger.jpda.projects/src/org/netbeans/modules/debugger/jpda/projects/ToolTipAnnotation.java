@@ -270,13 +270,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
                             et.removeAll();
                             et.setWidthCheck(false);
-                            et.add(ToolTipView.getToolTipView(expression, var));
+                            final ToolTipView ttView = ToolTipView.getToolTipView(expression, var);
+                            et.add(ttView);
                             et.revalidate();
                             et.repaint();
                             SwingUtilities.invokeLater(new Runnable() {
                                 public @Override void run() {
                                     EditorUI eui = Utilities.getEditorUI(ep);
                                     if (eui != null) {
+                                        ttView.setToolTipSupport(eui.getToolTipSupport());
                                         eui.getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
                                     } else {
                                         firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);

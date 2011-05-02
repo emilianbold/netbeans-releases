@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.editor.ext.ToolTipSupport;
 
 import org.openide.util.ImageUtilities;
 
@@ -92,6 +93,12 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
 
     static ObjectVariable getVariable() {
         return variable;
+    }
+
+    void setToolTipSupport(ToolTipSupport toolTipSupport) {
+        if (viewModelListener != null) {
+            viewModelListener.setToolTipSupport(toolTipSupport);
+        }
     }
 
     private void componentShowing (String icon) {
@@ -189,7 +196,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     
     
     /** Creates the view. */
-    public static synchronized JComponent getToolTipView(String expression, ObjectVariable v) {
+    public static synchronized ToolTipView getToolTipView(String expression, ObjectVariable v) {
         return new ToolTipView(
                 expression,
                 v,
