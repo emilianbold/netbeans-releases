@@ -184,7 +184,21 @@ public class FlowTest extends NbTestCase {
                     "1");
     }
 
-    private void prepareTest(String code) throws Exception {
+    public void test198233() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii = 1;\n" +
+                    "        boolean b = i == 1 && true;\n" +
+                    "        System.err.println(i`i);\n" +
+                    "        ===\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "1");
+    }
+
+    private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
@@ -220,18 +234,25 @@ public class FlowTest extends NbTestCase {
         info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
 
         assertNotNull(info);
-        assertTrue(info.getDiagnostics().toString(), info.getDiagnostics().isEmpty());
+
+        if (!allowErrors) {
+            assertTrue(info.getDiagnostics().toString(), info.getDiagnostics().isEmpty());
+        }
     }
 
     private CompilationInfo info;
     private Document doc;
 
     private void performTest(String code, String... assignments) throws Exception {
+        performTest(code, false, assignments);
+    }
+
+    private void performTest(String code, boolean allowErrors, String... assignments) throws Exception {
         int[] span = new int[1];
 
         code = TestUtilities.detectOffsets(code, span, "`");
 
-        prepareTest(code);
+        prepareTest(code, allowErrors);
 
         FlowResult flow = Flow.assignmentsForUse(info, new AtomicBoolean());
         TreePath sel = info.getTreeUtilities().pathFor(span[0]);

@@ -139,6 +139,15 @@ public class UtilityClassWithConstructorTest extends TreeRuleTestBase {
                             "}");
     }
 
+    public void testException197721() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test extends Exception {\n" +
+                            "    private static final long serialVersionUID = 1L;\n" +
+                            "    public Te|st() { }\n" +
+                            "    public Test(int i) { }\n" +
+                            "}");
+    }
+
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return UtilityClass.withConstructor().run(info, path);
