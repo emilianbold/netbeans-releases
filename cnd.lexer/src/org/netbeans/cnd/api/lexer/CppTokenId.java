@@ -84,8 +84,9 @@ public enum CppTokenId implements TokenId {
     ASM("asm", "keyword-directive"), // gcc and C++ // NOI18N
     _ASM("_asm", "keyword"), // g++ // NOI18N
     __ASM("__asm", "keyword"), // gcc // NOI18N
-    __ASM__("__asm__", "keyword"), // gcc // NOI18N
+    __ASM__("__asm__", "keyword"), // gcc // NOI18N    
     AUTO("auto", "keyword"), // NOI18N
+    BIT("bit", "keyword"), // NOI18N
     BOOL("bool", "keyword"), // C++ // NOI18N
     BREAK("break", "keyword-directive"), // NOI18N
     CASE("case", "keyword-directive"), // NOI18N
@@ -103,6 +104,7 @@ public enum CppTokenId implements TokenId {
     DOUBLE("double", "keyword"), // NOI18N
     DYNAMIC_CAST("dynamic_cast", "keyword"), // C++ // NOI18N
     ELSE("else", "keyword-directive"), // NOI18N
+    _ENDASM("_endasm", "keyword"), // NOI18N
     ENUM("enum", "keyword"), // NOI18N
     EXPLICIT("explicit", "keyword"), // C++ // NOI18N
     EXPORT("export", "keyword"), // C++ // NOI18N
@@ -191,6 +193,12 @@ public enum CppTokenId implements TokenId {
     __UNUSED__("__unused__", "keyword"), // gcc // NOI18N
     __W64("__w64", "keyword"), // g++ // NOI18N
 
+    // extension points
+    BUILT_IN_TYPE(null, "keyword"), // NOI18N
+    TYPE_QUALIFIER(null, "keyword"), // NOI18N
+    STORAGE_CLASS_SPECIFIER(null, "keyword"), // NOI18N
+    
+    // 
     INT_LITERAL(null, "number"), // NOI18N
     LONG_LITERAL(null, "number"), // NOI18N
     LONG_LONG_LITERAL(null, "number"), // NOI18N

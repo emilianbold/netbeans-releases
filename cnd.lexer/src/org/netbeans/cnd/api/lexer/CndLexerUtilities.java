@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
+import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.lookup.Lookups;
 
@@ -109,6 +110,31 @@ public final class CndLexerUtilities {
         return out;
     }
 
+    private final static class CndLexerLanguageFilterProviders {
+
+        private final static Collection<? extends CndLexerLanguageFilterProvider> providers = Lookups.forPath(CndLexerLanguageFilterProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageFilterProvider.class);
+    }
+    
+    public static Filter<CppTokenId> getFilter(Language<?> language, Document doc) {
+        if (!CndLexerLanguageFilterProviders.providers.isEmpty()) {
+            for (org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider provider : CndLexerLanguageFilterProviders.providers) {
+                Filter<CppTokenId> filter = provider.getFilter(language, doc);
+                if (filter != null) {
+                    return filter;
+                }
+            }
+        }        
+        if (language == CppTokenId.languageHeader()) {
+            return CndLexerUtilities.getHeaderFilter();
+        } else if (language == CppTokenId.languageC()) {
+            return CndLexerUtilities.getGccCFilter();
+        } else if (language == CppTokenId.languagePreproc()) {
+            return CndLexerUtilities.getPreprocFilter();
+        } else {
+            return CndLexerUtilities.getGccCppFilter();
+        }
+    }
+    
     /**
      * returns C/C++/Preprocessor tokens sequence for document
      * @param doc document

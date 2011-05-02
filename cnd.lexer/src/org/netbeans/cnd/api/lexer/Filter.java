@@ -88,4 +88,11 @@ public final class Filter<T extends TokenId> {
         filter.put(text, id);
     }    
     
+    public static <T extends TokenId> Filter<T> create(Map<CharSequence, T> matchTable) {
+        Filter<T> out = new Filter<T>();
+        for (Map.Entry<CharSequence, T> entry : matchTable.entrySet()) {
+            out.addMatch(entry.getKey(), entry.getValue());
+        }
+        return out;
+    }
 }

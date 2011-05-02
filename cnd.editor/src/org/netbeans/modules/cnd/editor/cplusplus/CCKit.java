@@ -90,26 +90,27 @@ public class CCKit extends NbEditorKit {
     @Override
     protected void initDocument(BaseDocument doc) {
         super.initDocument(doc);
-        doc.putProperty(InputAttributes.class, getLexerAttributes());
-        doc.putProperty(Language.class, getLanguage());
+        Language<CppTokenId> language = getLanguage();
+        doc.putProperty(Language.class, language);
+        doc.putProperty(InputAttributes.class, getLexerAttributes(language, doc));
     }
 
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageCpp();
     }
 
-    protected final synchronized InputAttributes getLexerAttributes() {
+    protected final synchronized InputAttributes getLexerAttributes(Language<?> language, BaseDocument doc) {
         // for now use shared attributes for all documents to save memory
         // in future we can make attributes per document based on used compiler info
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);  // NOI18N
+            lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, getFilter(language, doc), true);  // NOI18N
         }
         return lexerAttrs;
     }
 
-    protected Filter<CppTokenId> getFilter() {
-        return CndLexerUtilities.getGccCppFilter();
+    protected final Filter<CppTokenId> getFilter(Language<?> language, BaseDocument doc) {
+        return CndLexerUtilities.getFilter(language, doc);
     }
 
     protected Action getCommentAction() {
