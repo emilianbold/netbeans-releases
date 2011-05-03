@@ -91,4 +91,17 @@ public class PHPBracesMatcherTest extends PHPTestBase {
     public void testIssue164495_03() throws Exception {
         match2("foreach ($q['answers'] as $a)\n^{\n $tag=\"{value_$a[id]}\";\n^}");
     }
+    
+    
+    public void testIssue197709_01() throws Exception {
+        match2("if (true) ^{\n"
+                + "    echo \"Some string with braced ${variables[ $index ]} in it.\";\n"
+                + "^}");
+    }
+    
+    public void testIssue197709_02() throws Exception {
+        match2("if (true) {\n"
+                + "    echo \"Some string with braced ^${variables[ $index ]^} in it.\";\n"
+                + "}");
+    }
 }

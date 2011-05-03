@@ -104,6 +104,8 @@ public final class PHPBracesMatcher implements BracesMatcher {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (LexUtilities.textEquals(token.text(), ']')) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
+                } else if (LexUtilities.textEquals(token.text(), '$', '{')) {
+                    return new int [] { ts.offset(), ts.offset() + token.length() };
                 }
             }
             return null;
@@ -154,6 +156,9 @@ public final class PHPBracesMatcher implements BracesMatcher {
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), ']')) {
                     r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_TOKEN, '[', PHPTokenId.PHP_TOKEN, ']');
+                    return new int [] {r.getStart(), r.getEnd() };
+                } else if (LexUtilities.textEquals(token.text(), '$', '{')) {
+                    r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                     return new int [] {r.getStart(), r.getEnd() };
                 }
             }
