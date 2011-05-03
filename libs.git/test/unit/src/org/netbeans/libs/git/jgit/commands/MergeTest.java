@@ -44,10 +44,8 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
-import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -229,14 +227,23 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals("<<<<<<< HEAD\nmaster\n=======\nnew_branch\n>>>>>>> " + BRANCH_NAME, read(f));
         assertNull(result.getNewHead());
         assertEquals(Arrays.asList(f), result.getConflicts());
-        // with new jgit this will change and contain also information about conflicts
-        assertEquals("Merge new_branch", repo.readMergeCommitMsg());
+        assertEquals("Merge new_branch\n\nConflicts:\n\tfile\n", repo.readMergeCommitMsg());
         
         crit = new SearchCriteria();
         crit.setRevisionTo(Constants.MASTER);
         logs = client.log(crit, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, logs.length);
         assertEquals(logs[0].getRevision(), masterInfo.getRevision());
+        
+        // test obstructing paths
+        client.reset(Constants.MASTER, GitClient.ResetType.HARD, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(f, "local change");
+        result = client.merge(BRANCH_NAME, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(MergeStatus.FAILED, result.getMergeStatus());
+        assertEquals("local change", read(f));
+        assertNull(result.getNewHead());
+        assertEquals(Arrays.asList(f), result.getFailures());
+        assertNull(repo.readMergeCommitMsg());
     }
     
     public void testResolveConflicts () throws Exception {
@@ -273,7 +280,7 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         String logFileContent[] = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("commit : Merge new_branch", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
+        assertEquals("commit: Merge new_branch", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit: ")));
         
         client.reset("master~1", GitClient.ResetType.HARD, ProgressMonitor.NULL_PROGRESS_MONITOR);
         result = client.merge(branchInfo.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -289,7 +296,7 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         logFileContent = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("commit : Merge commit '" + branchInfo.getRevision() + "'", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
+        assertEquals("commit: Merge commit '" + branchInfo.getRevision() + "'", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit: ")));
     }
     
     public void testMergeFailOnLocalChanges () throws Exception {
@@ -342,13 +349,5 @@ public class MergeTest extends AbstractGitTestCase {
         GitMergeResult result = client.merge("origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(MergeStatus.FAST_FORWARD, result.getMergeStatus());
         assertEquals(Arrays.asList(new String[] { ObjectId.zeroId().getName(), updates.get("origin/master").getNewObjectId() }), Arrays.asList(result.getMergedCommits()));
-    }
-    
-    // when starts to fail, update GitMergeResult with failingPaths
-    public void testMergeResultFailingPaths () throws Exception {
-        try {
-            Field f = MergeResult.class.getDeclaredField("failingPaths");
-            fail("Update GitMergeResult");
-        } catch (NoSuchFieldException ex) {}
     }
 }

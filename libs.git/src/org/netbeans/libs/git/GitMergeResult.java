@@ -103,4 +103,6 @@ public interface GitMergeResult {
     public String getNewHead ();
     
     public Collection<File> getConflicts();
+    
+    public Collection<File> getFailures ();
 }
