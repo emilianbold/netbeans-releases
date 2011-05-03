@@ -255,7 +255,6 @@ public class TomcatProperties {
         antProps.setProperty("tomcat.home", homeDir.getAbsolutePath()); // NOI18N
         antProps.setProperty("tomcat.url", getWebUrl());                // NOI18N
         antProps.setProperty("tomcat.username", getUsername());         // NOI18N
-        antProps.setProperty("tomcat.password", getPassword());         // NOI18N
         file.createNewFile();
         FileObject fo = FileUtil.toFileObject(file);
         FileLock lock = fo.lock();
