@@ -56,6 +56,7 @@ import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import org.netbeans.modules.profiler.attach.AttachWizard;
 
 
 /**
@@ -172,7 +173,7 @@ public class Utils {
             attachSettings = new AttachSettings();
         }
 
-        return null;
+        return AttachWizard.getDefault().configure(attachSettings);
 //        AttachWizard attachWizard = new AttachWizard();
 //        attachWizard.init(attachSettings);
 //
