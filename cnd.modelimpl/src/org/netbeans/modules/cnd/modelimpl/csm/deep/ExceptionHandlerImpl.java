@@ -70,7 +70,22 @@ public final class ExceptionHandlerImpl extends CompoundStatementImpl implements
     }
 
     public static ExceptionHandlerImpl create(AST ast,  CsmFile file, CsmScope scope, boolean global) {
-        return new ExceptionHandlerImpl(ast, file, scope, global);
+        ExceptionHandlerImpl stmt = new ExceptionHandlerImpl(ast, file, scope, global);
+        stmt.init(ast);        
+        return stmt;
+    }
+    
+    private void init(AST ast) {
+        AST ast2 = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARAMETER_DECLARATION);
+        if( ast2 != null ) {
+            List<ParameterImpl> params = AstRenderer.renderParameter(ast2, getContainingFile(), this, !globalHandler);
+            if( params != null && ! params.isEmpty() ) {
+                        parameter = params.get(0);
+            }
+        }
+        
+        AST ast3 = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_COMPOUND_STATEMENT);
+        renderStatements(ast3);                
     }
     
     @Override
@@ -86,15 +101,6 @@ public final class ExceptionHandlerImpl extends CompoundStatementImpl implements
     
     @Override
     public CsmParameter getParameter() {
-        if( parameter == null ) {
-            AST ast = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_PARAMETER_DECLARATION);
-            if( ast != null ) {
-                List<ParameterImpl> params = AstRenderer.renderParameter(ast, getContainingFile(), this, !globalHandler);
-                if( params != null && ! params.isEmpty() ) {
-                            parameter = params.get(0);
-                }
-            }
-        }
         return parameter;
     }
 
@@ -104,12 +110,6 @@ public final class ExceptionHandlerImpl extends CompoundStatementImpl implements
         if (parameter instanceof Disposable) {
             ((Disposable) parameter).dispose();
         }
-    }
-
-    /** overrides parent method */
-    @Override
-    protected AST getStartRenderingAst() {
-        return AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_COMPOUND_STATEMENT);
     }
 
     @Override
