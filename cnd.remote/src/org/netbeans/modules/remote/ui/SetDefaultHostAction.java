@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.SetDefaultHostAction", category = "NativeRemote")
 @ActionRegistration(displayName = "SetDefaultMenuItem")
-@ActionReference(path = "Remote/Host/Actions", name = "SetDefaultHostAction", position = 200)
+@ActionReference(path = "Remote/Host/Actions", name = "SetDefaultHostAction", position = 300)
 public class SetDefaultHostAction extends SingleHostAction {
 
     @Override
