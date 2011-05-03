@@ -69,7 +69,7 @@ public class AnnotationsTest extends J2eeTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (firstTest) {// && isRegistered(Server.ANY) // need to verify!
+        if (firstTest) {// && isRegistered(Server.ANY) 
             JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
             openDataProjects(projectName);
             resolveServer(projectName);
@@ -166,7 +166,7 @@ public class AnnotationsTest extends J2eeTestCase {
     }
 
     public void testUnknownCSSProperty() throws Exception {
-        runTest("unknownCSSProperty.html", 2);
+        runTest("unknownCSSProperty.html", 3);
     }
 
     public void testMissingTableContent() throws Exception {

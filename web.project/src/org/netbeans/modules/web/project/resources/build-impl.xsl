@@ -1485,8 +1485,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
-                <nbjpdaappreloaded />
+                <xsl:attribute name="depends">init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy,-do-update-breakpoints</xsl:attribute>   
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
@@ -1591,6 +1590,12 @@ exists or setup the property manually. For example like this:
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <webproject1:java classname="${{run.class}}" classpath="${{run.test.classpath}}"/>
             </target>
+            
+            <target name="-do-update-breakpoints">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <webproject1:nbjpdaappreloaded/>
+            </target>            
             <xsl:comment>
                 DEBUGGING SECTION
             </xsl:comment>

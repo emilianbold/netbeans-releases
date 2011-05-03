@@ -1273,8 +1273,11 @@ public class TaskProcessor {
         @Override
         public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             checkCaller();
-            this.sync.await(timeout, unit);
-            return null;
+            if (!this.sync.await(timeout, unit)) {
+                throw new TimeoutException();
+            } else {
+                return null;
+            }
         }
 
         private void taskFinished () {
