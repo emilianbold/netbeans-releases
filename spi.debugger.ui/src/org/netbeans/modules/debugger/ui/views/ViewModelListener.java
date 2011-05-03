@@ -260,9 +260,19 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 sessionProviders = null;
                 currentSession = null;
                 providerToDisplay = null;
-                buttonsPane.removeAll();
                 buttons = null;
-                view.removeAll();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Have to access UI in AWT
+                        synchronized (destroyLock) {
+                            if (buttons == null) { // Still destroyed. Might be re-created in between.
+                                buttonsPane.removeAll();
+                                view.removeAll();
+                            }
+                        }
+                    }
+                });
                 for (ViewModelListener l : subListeners) {
                     l.destroy();
                 }

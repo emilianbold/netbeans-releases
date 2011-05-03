@@ -49,6 +49,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
@@ -185,18 +186,19 @@ public class EJBValidation extends J2eeTestCase {
         new OpenAction().performAPI(openFile);
         EditorOperator editorOper = new EditorOperator("TestingSessionBean.java");
         editorOper.replace("return null;", "return \"" + CONTROL_TEXT + "\";");
-
+        
         openFile = new Node(new SourcePackagesNode(EJBValidation.WEB_PROJECT_NAME), "test|TestingServlet");
         new OpenAction().performAPI(openFile);
         editorOper = new EditorOperator("TestingServlet.java");
         editorOper.replace("out.println(\"</body>\");", "out.println(lookupTestingSessionBeanLocal().testBusinessMethod1());");
         
-        openFile = new Node(new SourcePackagesNode(EJBValidation.EJB_PROJECT_NAME), "test|TestingEntityRemote.java");
+        // select in Files view to prevent unstable scrolling in low display resolution
+        openFile = new Node(FilesTabOperator.invoke().getProjectNode(EJBValidation.EJB_PROJECT_NAME), "src|java|test|TestingEntityRemote.java");
         new OpenAction().performAPI(openFile);
         editorOper = new EditorOperator("TestingEntityRemote.java");
         editorOper.replace("int getCmpTestField2x();", "int getCmpTestField2x() throws Exception;");
         editorOper.replace("void setCmpTestField2x(int cmpTestField2x);", "void setCmpTestField2x(int cmpTestField2x) throws Exception;");
-
+        
         String page = Utils.deploy(EAR_PROJECT_NAME, "http://localhost:8080/TestingEntApp-WebModule/TestingServlet", true);
         log(page);
         assertTrue("TestingServlet doesn't contain expected text '" + CONTROL_TEXT + "'. See log for page content.", page.contains(CONTROL_TEXT));

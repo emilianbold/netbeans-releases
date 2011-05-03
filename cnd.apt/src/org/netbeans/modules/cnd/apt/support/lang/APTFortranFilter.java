@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.impl.support.lang;
+package org.netbeans.modules.cnd.apt.support.lang;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class APTFortranFilter extends APTBaseLanguageFilter {
+final class APTFortranFilter extends APTBaseLanguageFilter {
 
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 

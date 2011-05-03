@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -241,7 +241,7 @@ public class Utils {
         return retVal;
     }
 
-    private static final int PORT_CHECK_TIMEOUT = 4000; // Port check timeout in ms
+    private static final int PORT_CHECK_TIMEOUT = 2000; // Port check timeout in ms
 
     /**
      * Determine whether an http listener is secure or not..

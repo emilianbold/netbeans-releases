@@ -44,10 +44,7 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Frame;
-import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
@@ -56,7 +53,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.Collator;
 import java.text.MessageFormat;
@@ -65,6 +61,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1041,8 +1038,12 @@ public final class OpenProjectList {
     // Used from ProjectUiModule
     static void shutdown() {
         if (INSTANCE != null) {
-            for (Project p : INSTANCE.openProjects) {
-                notifyClosed(p);
+            try {
+                for (Project p : INSTANCE.openProjects) {
+                    notifyClosed(p);
+                }
+            } catch (ConcurrentModificationException x) {
+                LOGGER.log(Level.INFO, "#198097: could not get list of projects to close", x);
             }
         }
     }
@@ -1443,13 +1444,7 @@ public final class OpenProjectList {
                             ProjectReference prjRef = recentProjectsIter.next();
                             recentProjectsInfosIter.next();
                             URL url = prjRef.getURL();
-                            FileObject prjDir = null;
-                            try {
-                                File file = FileUtil.normalizeFile(new File(url.toURI()));
-                                prjDir = FileUtil.toFileObject(file);
-                            } catch (URISyntaxException use) {
-                                // invalid projectdir URL saved?
-                            }
+                            FileObject prjDir = URLMapper.findFileObject(url);
                             Project prj = null;
                             if (prjDir != null && prjDir.isFolder()) {
                                 try {

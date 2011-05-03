@@ -47,6 +47,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
+import java.awt.Insets;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.netbeans.modules.form.FormUtils;
@@ -54,7 +55,7 @@ import org.netbeans.modules.form.FormUtils;
 /**
  * {@code GridInfoProvider} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GridBagInfoProvider implements GridInfoProvider {
     private Container container;
@@ -220,6 +221,21 @@ public class GridBagInfoProvider implements GridInfoProvider {
     public double getWeightY(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return constraints.weighty;
+    }
+
+    public int getIPadX(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.ipadx;
+    }
+
+    public int getIPadY(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.ipady;
+    }
+
+    public Insets getInsets(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.insets;
     }
 
 }

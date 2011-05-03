@@ -73,6 +73,7 @@ import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.diff.ExportUncommittedChangesAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
@@ -149,6 +150,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
+                actions.add(SystemAction.get(ExportUncommittedChangesAction.class));
                 IgnoreAction ia = SystemAction.get(IgnoreAction.class);
                 UnignoreAction uia = SystemAction.get(UnignoreAction.class);
                 if (ia.isEnabled() || uia.isEnabled()) {
@@ -199,6 +201,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ExportUncommittedChangesAction.class), NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
                 SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
