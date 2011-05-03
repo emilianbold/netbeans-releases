@@ -67,8 +67,10 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
 
+    private static final List<CsmStatement> EMPTY = Collections.<CsmStatement>emptyList();
+        
     private volatile SoftReference<List<CsmStatement>> statements = null;
-
+    
     protected LazyStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
         super(file, start, end, scope);
     }
@@ -96,7 +98,6 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     private List<CsmStatement> createStatements() {
         List<CsmStatement> list = statements == null ? null : statements.get();
         if (list == null) {
-            list = new ArrayList<CsmStatement>();
             // code completion tests do work in EDT because otherwise EDT thread is not started by test harness
             CndUtils.assertTrueInConsole(!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode(), "Calling Parser in UI Thread");
             synchronized (this) {
@@ -106,8 +107,11 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                         return refList;
                     }
                 }
-                statements = new SoftReference<List<CsmStatement>>(list);
+                // assign constant to prevent infinite recusion by calling this method in the same thread
+                statements = new SoftReference<List<CsmStatement>>(EMPTY);
+                list = new ArrayList<CsmStatement>();
                 if (renderStatements(list)) {
+                    statements = new SoftReference<List<CsmStatement>>(list);
                     return list;
                 } else {
                     return Collections.emptyList();
