@@ -1482,15 +1482,26 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.reindentLineAction)
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.reindentLineAction),
+        @EditorActionRegistration(name = BaseKit.reformatLineAction)
+    })        
     public static class ReindentLineAction extends LocalBaseAction {
 
+        private boolean reindent;
+        
         static final long serialVersionUID =1L;
 
         public ReindentLineAction() {
             // TODO: figure out what these flags are all about
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
             //putValue ("helpID", ReindentLineAction.class.getName ());
+        }
+
+        @Override
+        protected void actionNameUpdate(String actionName) {
+            super.actionNameUpdate(actionName);
+            this.reindent = BaseKit.reindentLineAction.equals(actionName);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -1505,8 +1516,13 @@ public class ActionFactory {
                 final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                        ? (GuardedDocument)doc : null;
 
-                final Indent indenter = Indent.get(doc);
-                indenter.lock();
+                final Indent indenter = reindent ? Indent.get(doc) : null;
+                final Reformat reformat = reindent ? null : Reformat.get(doc);
+                if (reindent) {
+                    indenter.lock();
+                } else {
+                    reformat.lock();
+                }
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
@@ -1537,7 +1553,11 @@ public class ActionFactory {
                                     }
 
                                     Position stopPosition = doc.createPosition(stopPos);
-                                    indenter.reindent(pos, stopPos);
+                                    if (reindent) {
+                                        indenter.reindent(pos, stopPos);
+                                    } else {
+                                        reformat.reformat(pos, stopPos);
+                                    }
                                     pos = pos + Math.max(stopPosition.getOffset() - pos, 1);
 
                                     if (gdoc != null) { // adjust to end of current block
@@ -1552,7 +1572,11 @@ public class ActionFactory {
                         }
                     });
                 } finally {
-                    indenter.unlock();
+                    if (reindent) {
+                        indenter.unlock();
+                    } else {
+                        reformat.unlock();
+                    }
                 }
             }
         }
