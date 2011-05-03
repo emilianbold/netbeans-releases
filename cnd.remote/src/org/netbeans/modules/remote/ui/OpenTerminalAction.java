@@ -55,6 +55,9 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -66,6 +69,9 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Vladimir Voskresensky
  */
+@ActionID(id = "org.netbeans.modules.remote.ui.OpenTerminalAction", category = "NativeRemote")
+@ActionRegistration(displayName = "OpenTerminalMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "OpenTerminalAction", position = 700)
 public class OpenTerminalAction extends SingleHostAction {
     private JMenu remotePopupMenu;
     private JMenu localPopupMenu;

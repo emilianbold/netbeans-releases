@@ -45,6 +45,9 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -52,6 +55,9 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
+@ActionID(id = "org.netbeans.modules.remote.ui.HostPropertiesAction", category = "NativeRemote")
+@ActionRegistration(displayName = "PropertiesMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "HostPropertiesAction", position = 500)
 public class HostPropertiesAction extends SingleHostAction {
 
     @Override
