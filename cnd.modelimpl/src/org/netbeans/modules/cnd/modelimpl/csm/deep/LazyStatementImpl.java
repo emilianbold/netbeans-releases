@@ -106,8 +106,8 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                         return refList;
                     }
                 }
+                statements = new SoftReference<List<CsmStatement>>(list);
                 if (renderStatements(list)) {
-                    statements = new SoftReference<List<CsmStatement>>(list);
                     return list;
                 } else {
                     return Collections.emptyList();
