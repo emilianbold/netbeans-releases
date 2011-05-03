@@ -50,7 +50,7 @@
 
     <folder name="InstalledServers">
         <file name="Tomcat60">
-            <attr name="url" stringvalue="tomcat60:home=/opt/apache-tomcat-6.0.30"/>
+            <attr name="url" stringvalue="tomcat60:home=catalina_home:base=apache-tomcat-6.0.20_base"/>
             <attr name="username" stringvalue="Adminuser"/>
             <attr name="password" stringvalue="Adminpasswd"/>
             <attr name="displayName" stringvalue="Tomcat60"/>
