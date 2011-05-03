@@ -46,9 +46,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.AntTargetExecutor;
-import org.apache.tools.ant.module.spi.AntEvent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
@@ -88,19 +85,12 @@ public class RemotePackExporter {
             put(TargetPlatformEnum.JDK_CVM.toString(), "cvm"); //NOI18N
         }
     };
-    private AntProjectCookie cookie;
 
     public static final RemotePackExporter getInstance() {
         return Singleton.INSTANCE;
     }
 
     private RemotePackExporter() throws ExceptionInInitializerError {
-        try {
-            File antFile = InstalledFileLocator.getDefault().locate("remote-pack-defs/build.xml", "org-netbeans-lib-profiler", false); //NOI18N
-            cookie = DataObject.find(FileUtil.toFileObject(antFile)).getCookie(AntProjectCookie.class);
-        } catch (DataObjectNotFoundException ex) {
-            throw new ExceptionInInitializerError(ex);
-        }
     }
 
     public String export(final String exportPath, final String hostOS, final String jvm) throws IOException {
@@ -109,15 +99,6 @@ public class RemotePackExporter {
         ph.setInitialDelay(500);
         ph.start();
         try {
-            AntTargetExecutor.Env env = new AntTargetExecutor.Env();
-            env.setVerbosity(AntEvent.LOG_VERBOSE);
-            Properties antProperties = new Properties();
-            antProperties.setProperty("lib.dir", "../lib");
-
-            antProperties.setProperty("dest.dir", exportPath != null ? exportPath : System.getProperty("java.io.tmpdir")); //NOI18N
-            env.setProperties(antProperties);
-            AntTargetExecutor ate = AntTargetExecutor.createTargetExecutor(env);
-            ate.execute(cookie, new String[]{"profiler-server-" + scriptMapper.get(hostOS) + "-" + jdkMapper.get(jvm)}).result();            
         } finally {
             ph.finish();
         }

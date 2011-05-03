@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-import org.netbeans.modules.profiler.utilities.queries.SettingsFolderQuery;
 
 
 /**
@@ -85,7 +84,7 @@ public abstract class IDESettingsPersistor implements SettingsPersistor {
         FileObject settingsFO = null;
 
         try {
-            settingsFO = SettingsFolderQuery.getDefault().getSettingsFolder(true);
+            settingsFO = getSettingsFolder(true);
         } catch (IOException e) {
             // IGNORE
         }
@@ -93,6 +92,21 @@ public abstract class IDESettingsPersistor implements SettingsPersistor {
         File settingsDir = (settingsFO == null) ? null : FileUtil.toFile(settingsFO);
 
         return new File(settingsDir, getSettingsFileName());
+    }
+
+    private static final String PROFILER_FOLDER = "NBProfiler/Config";  // NOI18N
+    private static final String SETTINGS_FOLDER = "Settings";   // NOI18N
+
+    private static FileObject getSettingsFolder(final boolean create)
+                                        throws IOException {
+        final FileObject folder = FileUtil.getConfigFile(PROFILER_FOLDER);
+        FileObject settingsFolder = folder.getFileObject(SETTINGS_FOLDER, null);
+
+        if ((settingsFolder == null) && create) {
+            settingsFolder = folder.createFolder(SETTINGS_FOLDER);
+        }
+
+        return settingsFolder;
     }
 
     private Properties loadProperties() {

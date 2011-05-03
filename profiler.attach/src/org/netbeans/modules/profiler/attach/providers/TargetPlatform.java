@@ -43,9 +43,6 @@
 
 package org.netbeans.modules.profiler.attach.providers;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.modules.SpecificationVersion;
@@ -84,38 +81,6 @@ public class TargetPlatform {
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    public TargetPlatform(final JavaPlatform platform) {
-        this(platform, false);
-    }
-
-    public TargetPlatform(final JavaPlatform platform, final boolean setDefault) {
-        this.defaultFlag = setDefault;
-
-        try {
-            this.displayName = platform.getDisplayName();
-            this.version = platform.getSpecification().getVersion();
-
-            FileObject folder = platform.getInstallFolders().iterator().next();
-            final String hostOS = System.getProperty("os.name"); // NOI18N
-            this.javaHome = URLDecoder.decode(folder.getURL().getPath(), "utf8"); // NOI18N
-
-            if (this.javaHome.endsWith("/")) { // NOI18N
-                this.javaHome = this.javaHome.substring(0, this.javaHome.length() - 1);
-            }
-
-            if (hostOS.contains("Windows") && this.javaHome.startsWith("/")) { // NOI18N
-                this.javaHome = this.javaHome.substring(1).replace('/', '\\'); // NOI18N
-            }
-
-            validFlag = true;
-        } catch (FileStateInvalidException ex) {
-            validFlag = false;
-        } catch (UnsupportedEncodingException e) {
-            validFlag = false;
-        } catch (Exception e) {
-            validFlag = false;
-        }
-    }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -206,31 +171,7 @@ public class TargetPlatform {
     private static List getSupportedPlatforms(final boolean cached) {
         if ((supportedPlatforms == null) || !cached) {
             supportedPlatforms = new LinkedList();
-
-            try {
-                JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-
-                if (defaultPlatform != null) {
-                    supportedPlatforms.add(new TargetPlatform(defaultPlatform, true));
-                }
-            } catch (Exception e) {
-                // IGNORE
-                e.printStackTrace();
-            }
-
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", null)); // NOI18N
-
-            for (int i = 0; i < platforms.length; i++) {
-                TargetPlatform platform = new TargetPlatform(platforms[i]);
-
-                if (!platform.isValid() || supportedPlatforms.contains(platform)) {
-                    continue;
-                }
-
-                supportedPlatforms.add(platform);
-            }
         }
-
         return supportedPlatforms;
     }
 }

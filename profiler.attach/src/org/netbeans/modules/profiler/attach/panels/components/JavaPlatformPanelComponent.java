@@ -55,7 +55,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListDataListener;
-import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
 import org.openide.util.NbBundle;
 
@@ -308,7 +307,6 @@ public class JavaPlatformPanelComponent extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
   
     private void buttonManageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonManageActionPerformed
-      PlatformsCustomizer.showCustomizer(null);
       TargetPlatform newPlatform = findNewItem(lastPlatformList, TargetPlatform.getPlatformList(getPlatformFilter(), false));
       refresh(newPlatform);
 //      List platformList = TargetPlatform.getPlatformList(getPlatformFilter(), false);
