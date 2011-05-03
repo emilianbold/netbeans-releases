@@ -359,6 +359,11 @@ public class ElfReader extends ByteStreamReader {
         return linkedObjectFiles;
     }
     
+    public void setdSYM(String path) {
+        linkedObjectFiles.clear();
+        linkedObjectFiles.add(path); 
+    }
+    
     private SectionHeader readMachoSection(boolean is64) throws IOException {
         byte[] sectName = new byte[16];
         read(sectName);
