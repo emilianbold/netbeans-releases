@@ -104,8 +104,11 @@ public final class Favorites {
         DataShadow obj = findShadow(fo);
         boolean result = false;
         if (obj == null) {
-            obj = (addInternal(fo))[0];
-            result = true;
+            DataShadow[] shadows = addInternal(fo);
+            if (shadows.length > 0) {
+                obj = shadows[0];
+            }
+            result = obj != null;
         }
         Actions.Add.selectAfterAddition(obj);
         return result;
