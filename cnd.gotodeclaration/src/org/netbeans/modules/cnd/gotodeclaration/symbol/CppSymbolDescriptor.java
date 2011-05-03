@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -79,10 +80,11 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
         fileObject = csmFile.getFileObject();
         offset = csmObj.getStartOffset();
         project = csmFile.getProject();
-        if (CsmKindUtilities.isFunction(csmObj)) {
+        if (CsmKindUtilities.isClass(csmObj) && CsmKindUtilities.isTemplate(csmObj)) {
+            name = ((CsmTemplate)csmObj).getDisplayName();
+        } else if (CsmKindUtilities.isFunction(csmObj)) {
             name = ((CsmFunction) csmObj).getSignature();
-        }
-        else if (CsmKindUtilities.isNamedElement(csmObj)) {
+        } else if (CsmKindUtilities.isNamedElement(csmObj)) {
             name = ((CsmNamedElement) csmObj).getName();
         } else {
             throw new IllegalArgumentException("should be CsmNamedElement, in fact " + csmObj.getClass().getName()); //NOI18N
@@ -114,16 +116,6 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
         icon = CsmImageLoader.getIcon(csmObj);
     }
     
-    private CharSequence getBriefFileName(CharSequence fileName) {
-        for (int i = fileName.length() - 1; i >= 0; i-- ) {
-            char c = fileName.charAt(i);
-            if (c == '/' || c == '\\') {
-                return fileName.subSequence(i + 1, fileName.length());
-            }
-        }
-        return fileName;
-    }
-
     @Override
     public FileObject getFileObject() {
         return fileObject;
