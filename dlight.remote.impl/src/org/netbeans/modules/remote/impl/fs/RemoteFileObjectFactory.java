@@ -47,7 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.util.RequestProcessor;
 
 /**
