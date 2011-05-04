@@ -220,8 +220,8 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({METHOD, FIELD }) "+          
                 "public @interface Produces  {}");
         
-        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Nonbinding.java",
-                "package javax.enterprise.inject; " +
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/util/Nonbinding.java",
+                "package javax.enterprise.util; " +
                 "import static java.lang.annotation.ElementType.METHOD; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import java.lang.annotation.*; "+
