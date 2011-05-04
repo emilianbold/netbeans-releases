@@ -88,7 +88,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
             case ALT_HYPERLINK:
                 JTextComponent focused = EditorRegistry.focusedComponent();
                 
-                if (focused.getDocument() == doc) {
+                if (focused != null && focused.getDocument() == doc) {
                     focused.setCaretPosition(offset);
                     GoToImplementation.goToImplementation(focused);
                 }
