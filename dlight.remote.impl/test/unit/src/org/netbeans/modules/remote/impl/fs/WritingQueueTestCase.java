@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -65,9 +66,41 @@ public class WritingQueueTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
-    // see #198200 - Deadlock after closing full remote project 
     @ForAllEnvironments
     public void testMultipleWrite() throws Exception {
+        String tempFile = null;
+        try {
+            tempFile = mkTempAndRefreshParent();
+            FileObject fo = getFileObject(tempFile);
+            
+            StringBuilder ref = new StringBuilder();
+            for (int i = 0; i < 200000; i++) {
+                ref.append(' ');                
+            }            
+
+            final int triesCount = 8;
+            
+            for (int i = 0; i < triesCount; i++) {
+                ref.replace(0, ref.length()-1, "" + i);
+                writeFile(fo, ref);
+            }
+            WritingQueue.getInstance(execEnv).waitFinished(null);
+            String readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
+            if (!readContent.contentEquals(ref)) {
+                assertTrue("File content differ: expected " + ref.substring(0, 32) + 
+                        "... but was " + readContent.substring(0, 32) + "...", false);
+            }
+            
+        } finally {
+            if (tempFile != null) {
+                removeRemoteDirIfNotNull(tempFile);
+            }
+        }
+    }
+    
+    // see #198200 - Deadlock after closing full remote project 
+    @ForAllEnvironments
+    public void testNonBlockingWrite() throws Exception {
         String tempFile = null;
         try {
             tempFile = mkTempAndRefreshParent();
