@@ -78,6 +78,9 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
         if (projectDirName.equals("nbproject")) {
             return false; // XXX why?
         }
+        if (projectDirName.equals("target") && new File(projectDir.getParentFile(), "pom.xml").isFile()) {
+            return false;
+        }
         return true;
     }
 

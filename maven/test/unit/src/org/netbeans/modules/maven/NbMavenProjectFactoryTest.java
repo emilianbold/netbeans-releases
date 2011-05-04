@@ -83,4 +83,13 @@ public class NbMavenProjectFactoryTest extends NbTestCase {
         assertFalse(ProjectManager.getDefault().isProject(FileUtil.toFileObject(d3)));
     }
 
+    public void testIsProjectTargetDir() throws Exception { // #198162
+        File d1 = getWorkDir();
+        TestFileUtils.writeFile(new File(d1, "pom.xml"), "...");
+        assertTrue(ProjectManager.getDefault().isProject(FileUtil.toFileObject(d1)));
+        File d2 = new File(d1, "target");
+        TestFileUtils.writeFile(new File(d2, "pom.xml"), "...");
+        assertFalse(ProjectManager.getDefault().isProject(FileUtil.toFileObject(d2)));
+    }
+
 }
