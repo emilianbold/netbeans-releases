@@ -92,11 +92,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public String PROJECT_NAME = "Java";
     public String workdirpath;
     public String jdkVersion = ExtJellyTestCase.getJDKVersionCode();
-        
     MainWindowOperator mainWindow;
     ProjectsTabOperator pto;
     ComponentInspectorOperator cio;
-    
 
     /** Constructor required by JUnit */
     public OpenTempl_defaultPackTest(String name) {
@@ -108,15 +106,20 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
-                "testApplet",
+                /*"testApplet",
                 "testDialog",
                 "testFrame", 
                 "testInter", 
                 "testMidi", 
                 "testPanel",
-                "testBean", 
-                "testAppl")
-                .gui(true).enableModules(".*").clusters(".*"));
+                "testBean", */
+                "testAppl",
+                "testOkCancel",
+                //AWT
+                "testAWTApplet",
+                "testAWTDialog",
+                "testAWTFrame",
+                "testAWTPanel").gui(true).enableModules(".*").clusters(".*"));
 
     }
 
@@ -187,26 +190,26 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      * Close document given in parametr.
      *Is HIGHLY RECOMMENDED close document, after test is finished.
      */
-     public void closeDocument(String documentName) throws InterruptedException {
-        FormDesignerOperator fdo= new FormDesignerOperator(documentName);
+
+    public void closeDocument(String documentName) throws InterruptedException {
+        FormDesignerOperator fdo = new FormDesignerOperator(documentName);
         fdo.editor();
         Thread.sleep(500);
-        DocumentsDialogOperator ddo= DocumentsDialogOperator.invoke();
+        DocumentsDialogOperator ddo = DocumentsDialogOperator.invoke();
         Thread.sleep(500);
         ddo.selectDocument(documentName);
         Thread.sleep(500);
         ddo.btCloseDocuments().doClick();
-        
-       
-    }
-    
 
-    public void openTemplate(String templateName) throws InterruptedException {
-               
+
+    }
+
+    public void openTemplate(String templateName, String category) throws InterruptedException {
+
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DATA_PROJECT_NAME);
         Thread.sleep(10000);
-        nfwo.selectCategory("Swing GUI Forms");
+        nfwo.selectCategory(category);
         nfwo.selectFileType(templateName);
         nfwo.next();
         JComboBoxOperator jcb_package = new JComboBoxOperator(nfwo, 1);
@@ -226,23 +229,27 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         }
     }
 
+    public void testTemplateMethod(String templateName, String category, String name) throws InterruptedException, IOException {
+
+        openTemplate(templateName, category);
+
+        System.out.println(getWorkDir());
+        testFormFile(name);
+        Thread.sleep(1000);
+        testJavaFile(name);
+        Thread.sleep(1000);
+        closeDocument(name + ".java");
+
+    }
+
     /** Test case 1.
      *Create new JApplet template in default package
      */
     public void testApplet() throws InterruptedException, IOException, Exception {
 
-       
-//        begin();
 
-        openTemplate("JApplet Form");
-        
-        System.out.println(getWorkDir());
-        testFormFile("NewJApplet");
-        Thread.sleep(1000);
-        testJavaFile("NewJApplet");
-        Thread.sleep(1000);
-        closeDocument("NewJApplet.java");
-        
+//        begin();
+        testTemplateMethod("JApplet Form", "Swing GUI Forms", "NewJApplet");
 
     }
 
@@ -251,15 +258,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      */
     public void testDialog() throws InterruptedException, IOException {
 
-        openTemplate("JDialog Form");
+        testTemplateMethod("JDialog Form", "Swing GUI Forms", "NewJDialog");
 
-        //check if template is generated correctly
-        testFormFile("NewJDialog");
-        Thread.sleep(1000);
-        testJavaFile("NewJDialog");
-        Thread.sleep(1000);
-        closeDocument("NewJDialog.java");
-        
 
     }
 
@@ -268,15 +268,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      */
     public void testFrame() throws InterruptedException, IOException {
 
-        openTemplate("JFrame Form");
-        //check if template is generated correctly
-        
-        
-        testJavaFile("NewJFrame");
-        Thread.sleep(1000);
-        testFormFile("NewJFrame");
-        Thread.sleep(1000);
-        closeDocument("NewJFrame.java");
+        testTemplateMethod("JFrame Form", "Swing GUI Forms", "NewJFrame");
+
     }
 
     /** Test case 4.
@@ -284,43 +277,18 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      */
     public void testInter() throws InterruptedException, IOException {
 
-        openTemplate("JInternalFrame Form");
+        testTemplateMethod("JInternalFrame Form", "Swing GUI Forms", "NewJInternalFrame");
 
-        //check if template is generated correctly
-        testFormFile("NewJInternalFrame");
-        Thread.sleep(1000);
-        testJavaFile("NewJInternalFrame");
-        Thread.sleep(1000);
-        closeDocument("NewJInternalFrame.java");
-       
     }
 
     public void testAppl() throws InterruptedException, IOException, Exception {
 
-        openTemplate("Application Sample Form");
-
-        //check if template is generated correctly
-        testFormFile("NewApplication");
-        Thread.sleep(1000);
-        testJavaFile("NewApplication");
-        Thread.sleep(1000);
-        closeDocument("NewApplication.java");
-       
+        testTemplateMethod("Application Sample Form", "Swing GUI Forms", "NewApplication");
     }
 
     public void testMidi() throws InterruptedException, IOException, Exception {
 
-        openTemplate("MDI Application Sample Form");
-
-        //check if template is generated correctly
-        testFormFile("NewMDIApplication");
-        Thread.sleep(1000);
-        testJavaFile("NewMDIApplication");
-        Thread.sleep(1000);
-        closeDocument("NewMDIApplication.java");
-        
-         
-
+        testTemplateMethod("MDI Application Sample Form", "Swing GUI Forms", "NewMDIApplication");
     }
 
     /** Test case 5.
@@ -328,14 +296,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      */
     public void testPanel() throws InterruptedException, IOException {
 
-        openTemplate("JPanel Form");
-
-        //check if template is generated correctly
-        testFormFile("NewJPanel");
-        Thread.sleep(1000);
-        testJavaFile("NewJPanel");
-        Thread.sleep(1000);
-        closeDocument("NewJPanel.java");
+        testTemplateMethod("JPanel Form", "Swing GUI Forms", "NewJPanel");
 
     }
 
@@ -343,52 +304,90 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      * Create new Bean template in default package
      */
     public void testBean() throws InterruptedException, IOException {
-                
-        openTemplate("Bean Form");
+
+        testTemplateMethod("Bean Form", "Swing GUI Forms", "NewBeanForm");
+
+    }
+
+    public void testOkCancel() throws InterruptedException, IOException {
+
+        testTemplateMethod("OK / Cancel Dialog Sample Form", "Swing GUI Forms", "NewOkCancelDialog");
+
+    }
+    
+    /**AWT Test case 1.
+     * Create new Panel template in default package
+     */
+    public void testAWTPanel() throws InterruptedException, IOException {
+
+        testTemplateMethod("Panel Form", "AWT GUI Forms", "NewPanel");
+
+    }
+    
+    /**AWT Test case 2.
+     * Create new Dialog template in default package
+     */
+    
+    public void testAWTApplet() throws InterruptedException, IOException, Exception {
+
+        testTemplateMethod("Applet Form", "AWT GUI Forms", "NewApplet");
+
+    }
+
+    /**AWT Test case 3.
+     * Create new Dialog template in default package
+     */
+    public void testAWTDialog() throws InterruptedException, IOException {
+
+        testTemplateMethod("Dialog Form", "AWT GUI Forms", "NewDialog");
 
 
-        testFormFile("NewBeanForm");
-        Thread.sleep(1000);
-        testJavaFile("NewBeanForm");
-        Thread.sleep(1000);
-        closeDocument("NewBeanForm.java");
+    }
+
+    /**AWT Test case 4.
+     * Create new Frame template in default package
+     */
+    public void testAWTFrame() throws InterruptedException, IOException {
+
+        testTemplateMethod("Frame Form", "AWT GUI Forms", "NewFrame");
+
     }
 
     public void testFormFile(String formfile) throws IOException {
         try {
-            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath() +
-                    File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form");
-                        
-            getLog(formfile+"Form.ref").print(refFile);
-            
-            
+            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
+                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form");
+
+            getLog(formfile + "Form.ref").print(refFile);
+
+
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
 
         assertFile(new File(getWorkDir() + File.separator + formfile + "Form.ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
-        
+
     }
 
     public void testJavaFile(String javafile) throws IOException {
 
         try {
-            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath() +
-                    File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
-            
+            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
+                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
+
             getRef().print(createRefFile(refFile));
-            
+
             // golden files are in ${xtest.data}/goldenfiles/${classname}/...
-           
+
             log("Java reference file was created");
 
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-        
-       
-        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile"+jdkVersion.replaceAll("jdk","") +".pass"), new File(getWorkDir(), javafile + "java.diff"));
-       
+
+
+        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile" + jdkVersion.replaceAll("jdk", "") + ".pass"), new File(getWorkDir(), javafile + "java.diff"));
+
 
     }
 
@@ -396,7 +395,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         int start = test.indexOf("/*");
         int end = test.indexOf("*/");
         test = test.substring(0, start) + test.substring(end + 2);
-        
+
         start = test.indexOf("/*");
         end = test.indexOf("*/");
         test = test.substring(0, start) + test.substring(end + 2);
