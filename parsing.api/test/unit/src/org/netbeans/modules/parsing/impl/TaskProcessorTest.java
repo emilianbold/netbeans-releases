@@ -46,12 +46,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -429,10 +431,10 @@ public class TaskProcessorTest extends NbTestCase {
         final Source src = Source.create(doc);
         final CountDownLatch ruRunning = new CountDownLatch(1);
         final CountDownLatch rwsfCalled = new CountDownLatch(1);
-        final AtomicBoolean indexing = new AtomicBoolean();
+        final AtomicReference<Set<RepositoryUpdater.IndexingState>> indexing = new AtomicReference<Set<RepositoryUpdater.IndexingState>>();
         final Utilities.IndexingStatus is = new Utilities.IndexingStatus() {
             @Override
-            public boolean isScanInProgress() {
+            public Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
                 return indexing.get();
             }
         };
@@ -454,13 +456,13 @@ public class TaskProcessorTest extends NbTestCase {
 
             @Override
             public void run(Result result, SchedulerEvent event) {
-                indexing.set(true);
+                indexing.set(EnumSet.of(RepositoryUpdater.IndexingState.WORKING));
                 try {
                     ruRunning.countDown();
                     rwsfCalled.await();
                 } catch (InterruptedException ie) {
                 } finally {
-                    indexing.set(false);
+                    indexing.set(EnumSet.noneOf(RepositoryUpdater.IndexingState.class));
                 }
             }
         });
