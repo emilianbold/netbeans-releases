@@ -131,9 +131,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private Project project = null;
     
     /*
-     * For full remote, configuration base and project base are different -
-     * project base is local (shadow project), configuration base is remote.
-     * For any other project they are the same
+     * For full remote, configuration base and project base might be different -
+     * in 7.0 project base is local (shadow project), configuration base is remote.
+     * For any other project, or full remote 7.0.1+ they are the same
      */
     private final FileObject baseDirFO;
     private final FileSystem baseDirFS;
