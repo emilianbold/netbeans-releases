@@ -555,6 +555,34 @@ public abstract class RestSupport {
         }
     }
     
+    protected void addSwdpLibrary(String[] classPathTypes, URL[] urls) throws IOException {
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs == null || sgs.length < 1) {
+            throw new IOException("Project has no Java sources"); //NOI18N
+        }
+        ClassPath classPath = getCompileClassPath(sgs);
+        URL[] roots = urls;
+        if ( classPath != null ){
+            List<URL> toAdd = new ArrayList<URL>(urls.length);
+            for (URL url : urls) {
+                if ( !contains(classPath, url)){
+                    toAdd.add( url );
+                }
+            }
+            roots = toAdd.toArray( new URL[toAdd.size()] );
+        }
+        
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        for (String type : classPathTypes) {
+            try {
+                ProjectClassPathModifier.addRoots(roots, sourceRoot, type);
+            } catch(UnsupportedOperationException ex) {
+                Logger.getLogger(getClass().getName()).info(type+" not supported.");
+            }
+        }
+    }
+    
     public void removeSwdpLibrary(String[] classPathTypes) throws IOException {
         Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
         if (swdpLibrary == null) {
@@ -793,6 +821,32 @@ public abstract class RestSupport {
     }
 
     public abstract int getProjectType();
+    
+    private ClassPath getCompileClassPath(SourceGroup[] groups ){
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        ClassPath[] paths = new ClassPath[ groups.length];
+        int i=0;
+        for (SourceGroup sourceGroup : groups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, ClassPath.COMPILE);
+            i++;
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
+    }
+    
+    private boolean contains( ClassPath classPath , URL url ){
+        List<ClassPath.Entry> entries = classPath.entries();
+        for (ClassPath.Entry entry : entries) {
+            if ( entry.getURL().equals(url)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
 

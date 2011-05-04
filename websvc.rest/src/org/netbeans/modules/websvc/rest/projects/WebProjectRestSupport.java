@@ -44,7 +44,11 @@
 package org.netbeans.modules.websvc.rest.projects;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,6 +83,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -262,20 +267,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         if (platform != null && platformHasRestLib(platform)){
             return true;
         }
-//        boolean hasRestBeansApi = false;
-//        boolean hasRestBeansImpl = false;
-//        for (File file : platform.getClasspathEntries()) {
-//            String jarName = file.getName();
-//            if (jarName.equals(REST_API_JAR)) {
-//                hasRestBeansApi = true;
-//            }
-//            if (jarName.startsWith(REST_RI_JAR) && jarName.endsWith(".jar")) { //NOI18N
-//                hasRestBeansImpl = true;
-//            }
-//            if (hasRestBeansApi && hasRestBeansImpl) {
-//                return true;
-//            }
-//        }
         return false;
     }
 
@@ -297,14 +288,33 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     private void addServerJerseyLibrary() throws IOException {
-        // get or create REST library, from selected J2EE server, and add it to project's classpath
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider != null) {
-            String libName = getServerRestLibraryName(j2eeModuleProvider);
-            Library swdpLibrary = LibraryManager.getDefault().getLibrary(libName);
-            if (swdpLibrary != null) {
-                addSwdpLibrary(classPathTypes, swdpLibrary);
+        J2eePlatform platform = getPlatform();
+        if (platform != null) {
+            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(platform);
+            if (wsStack  == null) {
+                return;
             }
+            URL[] libraryUrls = wsStack.getWSTool(JaxRs.Tool.JAXRS).getLibraries();
+            if ( libraryUrls == null ){
+                return;
+            }
+            for( int i = 0; i< libraryUrls.length ; i++ ){
+                if ( FileUtil.isArchiveFile( libraryUrls[i])){
+                    libraryUrls[i] = FileUtil.getArchiveRoot(libraryUrls[i]);
+                }
+            }
+            Library[] libraries = LibraryManager.getDefault().getLibraries();
+            for (Library library : libraries) {
+                List<URL> urls = library.getContent("classpath");       // NOI18N
+                if ( urls.size() >= libraryUrls.length ){
+                    Set<URL> set = new HashSet<URL>( urls );
+                    if ( set.containsAll( Arrays.asList( libraryUrls ) ) ){
+                        addSwdpLibrary(classPathTypes, library);
+                        return;
+                    }
+                }
+            }
+            addSwdpLibrary(classPathTypes, libraryUrls );
         }
     }
 
@@ -314,17 +324,6 @@ public class WebProjectRestSupport extends WebRestSupport {
             addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/ApplicationPath.class"); //NOI18N
         } else {
             addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/Path.class"); //NOI18N
-        }
-    }
-
-    private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
-        String libName = "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
-        if (libName.equals(GFV3_RESTLIB)) {
-            return GFV3_RESTLIB;
-        } else if (libName.startsWith(GFV3_RESTLIB)) {
-            return GFV31_RESTLIB;
-        } else {
-            return libName;
         }
     }
 
