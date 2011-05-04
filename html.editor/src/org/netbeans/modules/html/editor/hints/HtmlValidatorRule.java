@@ -39,37 +39,76 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.csl.core;
-
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ErrorFilter;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.util.Lookup;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Clients can use this class to filter out some of the parser errors returned by
- * {@link ParserResult.getDiagnostics()}. See the {@link ErrorFilter}
- * documentation. 
  *
  * @author marekfukala
  */
-public class ErrorFilterQuery {
-    
-    public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
-        Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<Error> filtered = new LinkedList<Error>();
-        for(ErrorFilter.Factory factory : factories) {
-            ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> result = filter.filter(parserResult);
-            if(result != null) {
-                filtered.addAll(result); 
-            }
-        }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+public abstract class HtmlValidatorRule extends HtmlRule {
+
+    @Override
+    public boolean isSpecialHtmlValidatorRule() {
+        return true;
     }
+
+    @Override
+    protected void run(HtmlRuleContext context, List<Hint> result) {
+        Snapshot snapshot = context.getSnapshot();
+
+        List<? extends Error> diagnostics = context.getLeftDiagnostics();
+        ListIterator<? extends Error> itr = diagnostics.listIterator();
+
+        while (itr.hasNext()) {
+            Error e = itr.next();
+            if (!appliesTo(context, e)) {
+                continue;
+            }
+
+            itr.remove(); //remove the processed element so the other rules won't see it
+
+            //tweak the error position if close to embedding boundary
+            int astFrom = e.getStartPosition();
+            int astTo = e.getEndPosition();
+
+            int from = snapshot.getOriginalOffset(astFrom);
+            int to = snapshot.getOriginalOffset(astTo);
+
+            if (from == -1 && to == -1) {
+                //completely unknown position, give up
+                continue;
+            } else if (from == -1 && to != -1) {
+                from = to;
+            } else if (from != -1 && to == -1) {
+                to = from;
+            }
+
+            Hint h = new Hint(this,
+                    e.getDescription(),
+                    e.getFile(),
+                    new OffsetRange(from, to),
+                    context.getDefaultFixes(),
+                    20);
+
+            if (isEnabled) {
+                //if the rule is disabled it will just remove the processed error from the 
+                //list but won't create a hint
+                result.add(h);
+            }
+
+
+        }
+    }
+
+    protected abstract boolean appliesTo(HtmlRuleContext content, Error e);
+
     
 }

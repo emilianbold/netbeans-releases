@@ -396,8 +396,37 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
             </folder>
+            <folder name="Hints">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="html">
+                        <file name="ELHints.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.hints.HintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
+
+    <folder name="csl-hints">
+        <folder name="text">
+            <folder name="html">
+                <folder name="hints">
+                    <folder name="general">
+                       <attr name="position" intvalue="200"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.hints.Bundle"/>
+                        <file name="org-netbeans-modules-html-editor-hints-Encoding.instance"/>
+                        <file name="org-netbeans-modules-html-editor-hints-TagsMatching.instance"/>
+                        <!-- the following hint 'Other' must be last in the hints list!!! -->
+                        <file name="org-netbeans-modules-html-editor-hints-Other.instance"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 
     <folder name="Loaders">
         <folder name="image">

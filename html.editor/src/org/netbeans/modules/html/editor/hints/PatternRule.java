@@ -39,37 +39,51 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.csl.core;
-
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ErrorFilter;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.util.Lookup;
 
 /**
- * Clients can use this class to filter out some of the parser errors returned by
- * {@link ParserResult.getDiagnostics()}. See the {@link ErrorFilter}
- * documentation. 
+ * TODO: the patterns for html validator issues should rather reside in the html.validator module itself
  *
  * @author marekfukala
  */
-public class ErrorFilterQuery {
-    
-    public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
-        Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<Error> filtered = new LinkedList<Error>();
-        for(ErrorFilter.Factory factory : factories) {
-            ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> result = filter.filter(parserResult);
-            if(result != null) {
-                filtered.addAll(result); 
+public abstract class PatternRule extends HtmlValidatorRule {
+
+    public abstract Pattern[] getPatterns();
+
+    @Override
+    protected final boolean appliesTo(HtmlRuleContext content, Error e) {
+        String msg = e.getDescription();
+        for(Pattern p : getPatterns()) {
+            if(p.matcher(msg).matches()) {
+                return true;
             }
         }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+        
+        return false;
     }
+    
+    protected static Pattern[] buildPatterns(String[] sources) {
+        Pattern[] patterns = new Pattern[sources.length];
+        for (int i = 0; i < patterns.length; i++) {
+            String src = new StringBuilder()
+                    .append(ERROR_MGS_PATTERN_PREFIX)
+                    .append(sources[i])
+                    .append(ERROR_MGS_PATTERN_POSTFIX).toString();
+            
+            patterns[i] = Pattern.compile(src, Pattern.DOTALL); // (. matches newline)
+        }
+        return patterns;
+        
+    }
+    
+    //represents the Error: or Warning: error messages prefix
+    private static final String ERROR_MGS_PATTERN_PREFIX = "[^:]*:\\s"; //NOI18N
+    
+    //represents the additional text above the core text of the message like
+    //description of the error and its position in the source
+    private static final String ERROR_MGS_PATTERN_POSTFIX = ".*"; //NOI18N
     
 }

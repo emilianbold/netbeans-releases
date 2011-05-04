@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.modules.html.editor.hints.HtmlHintsProvider;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
