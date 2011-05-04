@@ -43,6 +43,7 @@
 package org.netbeans.libs.git;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -71,6 +72,12 @@ public interface GitClient {
                 return "--hard"; //NOI18N
             }
         }
+    }
+
+    public enum DiffMode {
+        HEAD_VS_INDEX,
+        HEAD_VS_WORKINGTREE,
+        INDEX_VS_WORKINGTREE
     }
 
     /**
@@ -158,6 +165,16 @@ public interface GitClient {
      * @throws GitException  an error occurs
      */
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Exports changes in files under given roots to the given output stream
+     * @param roots
+     * @param mode
+     * @param out
+     * @param monitor
+     * @throws GitException 
+     */
+    public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException;
     
     /**
      * Fetches remote changes for references specified in the config file under a given remote.

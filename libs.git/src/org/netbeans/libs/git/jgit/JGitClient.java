@@ -80,6 +80,7 @@ import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
 import org.netbeans.libs.git.jgit.commands.FetchCommand;
 import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
@@ -214,6 +215,12 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         CreateBranchCommand cmd = new CreateBranchCommand(gitRepository.getRepository(), branchName, revision, monitor);
         cmd.execute();
         return cmd.getBranch();
+    }
+
+    @Override
+    public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException {
+        ExportDiffCommand cmd = new ExportDiffCommand(gitRepository.getRepository(), roots, mode, out, monitor);
+        cmd.execute();
     }
 
     @Override

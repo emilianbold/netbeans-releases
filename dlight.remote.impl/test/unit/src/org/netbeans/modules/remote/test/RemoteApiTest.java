@@ -63,6 +63,7 @@ import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
 import org.netbeans.modules.remote.impl.fs.RenameTestCase;
 import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
+import org.netbeans.modules.remote.impl.fs.WritingQueueTestCase;
 
 /**
  *
@@ -94,7 +95,8 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            ListenersParityTestCase.class,
            ReadOnlyDirTestCase.class,
            ScheduleRefreshParityTestCase.class,
-           RemoteFileSystemOffilneTestCase.class
+           RemoteFileSystemOffilneTestCase.class,
+           WritingQueueTestCase.class
         };
     }
     
