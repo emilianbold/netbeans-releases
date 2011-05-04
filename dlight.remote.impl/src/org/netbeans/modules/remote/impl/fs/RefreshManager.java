@@ -56,7 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 

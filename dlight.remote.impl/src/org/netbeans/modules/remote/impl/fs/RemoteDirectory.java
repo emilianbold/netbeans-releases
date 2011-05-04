@@ -75,7 +75,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -114,46 +114,40 @@ public class RemoteDirectory extends RemoteFileObjectBase {
          return getFileObject(composeName(name, ext));
     }
 
-    /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
+    private DirEntry getEntry(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(childNameExt);
             DirEntry entry = storage.getValidEntry(childNameExt);
-            return entry != null && entry.canWrite(getExecutionEnvironment()); //TODO:rfs - check groups
+            return entry;
         } catch (ConnectException ex) {
-            throw ex; // don't report
+            throw ex;
         } catch (InterruptedIOException ex) {
             RemoteLogger.finest(ex);
-            return false; // don't report
+            return null; // don't report
         } catch (ExecutionException ex) {
             RemoteLogger.finest(ex);
-            return false; // don't report
+            return null; // don't report
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
-            return false; // don't report
+            return null; // don't report
         } catch (CancellationException ex) {
-            return false; // don't report
+            return null; // don't report
         }
+    }
+    
+    /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
+            DirEntry entry = getEntry(childNameExt);
+            return entry != null && entry.canWrite(getExecutionEnvironment()); //TODO:rfs - check groups
     }
 
     /*package*/ boolean canRead(String childNameExt) throws IOException {
-        try {
-            DirectoryStorage storage = getDirectoryStorage(childNameExt);
-            DirEntry entry = storage.getValidEntry(childNameExt);
-            return entry != null && entry.canRead(getExecutionEnvironment());
-        } catch (ConnectException ex) {
-            return false; // don't report
-        } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex);
-            return false; // don't report
-        } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex);
-            return false; // don't report
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex);
-            return false; // don't report
-        } catch (CancellationException ex) {
-            return false; // don't report
-        }
+        DirEntry entry = getEntry(childNameExt);
+        return entry != null && entry.canRead(getExecutionEnvironment());
+    }
+
+    /*package*/ boolean canExecute(String childNameExt) throws IOException {
+        DirEntry entry = getEntry(childNameExt);
+        return entry != null && entry.canExecute(getExecutionEnvironment());
     }
 
     @Override

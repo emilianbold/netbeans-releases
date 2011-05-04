@@ -92,7 +92,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     private static final Map<Project,Reference<MakeProjectHelperImpl>> project2Helper = new WeakHashMap<Project,Reference<MakeProjectHelperImpl>>();
     private static final Map<MakeProjectHelperImpl,Reference<Project>> helper2Project = new WeakHashMap<MakeProjectHelperImpl,Reference<Project>>();
 
-    private static MakeProjectTypeImpl findAntBasedProjectType(String type) {
+    private static MakeProjectTypeImpl findMakeProjectType(String type) {
         if (MakeProjectTypeImpl.TYPE.equals(type)) {
             return TYPE_INSTANCE;
         }
@@ -119,7 +119,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
                 if (typeEl != null) {
                     String type = XMLUtil.findText(typeEl);
                     if (type != null) {
-                        MakeProjectTypeImpl provider = findAntBasedProjectType(type);
+                        MakeProjectTypeImpl provider = findMakeProjectType(type);
                         if (provider != null) {
                             return new ProjectManager.Result(provider.getIcon());
                         }
@@ -157,12 +157,12 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             LOG.log(Level.FINE, "no <type> text in {0}", projectFile);
             return null;
         }
-        MakeProjectTypeImpl provider = findAntBasedProjectType(type);
+        MakeProjectTypeImpl provider = findMakeProjectType(type);
         if (provider == null) {
             LOG.log(Level.FINE, "no provider for {0}", type);
             return null;
         }
-        MakeProjectHelperImpl helper = new MakeProjectHelperImpl(projectDirectory, projectXml, state, provider);
+        MakeProjectHelperImpl helper = MakeProjectHelperImpl.create(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
         project2Helper.put(project, new WeakReference<MakeProjectHelperImpl>(helper));
         synchronized (helper2Project) {
@@ -235,15 +235,15 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return;
         }
         MakeProjectHelperImpl helper = helperRef.get();
-        assert helper != null : "AntProjectHelper collected for " + project;
+        assert helper != null : "MakeProjectHelper collected for " + project;
         helper.save();
     }
 
     /**
      * Get the helper corresponding to a project.
      * For use from {@link ProjectGenerator}.
-     * @param project an Ant-based project
-     * @return the corresponding Ant project helper object, or null if it is unknown
+     * @param project an make-based project
+     * @return the corresponding Make project helper object, or null if it is unknown
      */
     public static MakeProjectHelperImpl getHelperFor(Project p) {
         Reference<MakeProjectHelperImpl> helperRef = project2Helper.get(p);

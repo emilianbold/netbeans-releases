@@ -89,6 +89,7 @@ public class ModelTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+		"import javax.enterprise.util.*; "+
                 "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
                 "@Qualifier " +
@@ -358,6 +359,7 @@ public class ModelTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+		"import javax.enterprise.util.*; "+
                 "import java.lang.annotation.*; "+
                 "import javax.inject.*; "+
                 "@Qualifier " +

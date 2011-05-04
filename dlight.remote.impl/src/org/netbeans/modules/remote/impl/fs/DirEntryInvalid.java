@@ -44,7 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.util.Date;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  *
