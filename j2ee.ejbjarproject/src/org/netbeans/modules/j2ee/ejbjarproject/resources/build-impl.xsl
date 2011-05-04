@@ -739,7 +739,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
                 <macrodef>
                     <xsl:attribute name="name">nbjpdaappreloaded</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/1</xsl:attribute>
                     <sequential>
                         <nbjpdaappreloaded />
                     </sequential>
@@ -1352,7 +1352,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-update-breakpoints">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <webproject1:nbjpdaappreloaded/>
+                <ejbjarproject1:nbjpdaappreloaded/>
             </target> 
 
             <xsl:comment>
