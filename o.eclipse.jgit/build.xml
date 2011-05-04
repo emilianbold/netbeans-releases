@@ -2,5 +2,4 @@
 <project name="o.eclipse.jgit" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="jar"/>
-    <target name="-validate-layers"/>
 </project>

@@ -43,27 +43,17 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.libs.jsch</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.jzlib</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0.7</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <public-packages>
-                <package>com.jcraft.jsch</package>
-            </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsch-0.1.43.jar</runtime-relative-path>
-                <binary-origin>external/jsch-0.1.43.jar</binary-origin>
-            </class-path-extension>
-        </data>
-    </configuration>
+<project name="c.jcraft.jsch" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/jsch-0.1.43.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="com.jcraft.jsch"/>
+                <attribute name="Bundle-Version" value="0.1.43"/>
+                <attribute name="Export-Package" value="com.jcraft.jsch"/>
+                <attribute name="Require-Bundle" value="com.jcraft.jzlib;resolution:=optional"/>
+            </manifest>
+        </jar>
+    </target>
 </project>
