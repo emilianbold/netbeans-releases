@@ -228,7 +228,7 @@ public class TaskProcessor {
         //0) Add speculatively task to be performed at the end of background scan
         todo.add (r);
         final Set<? extends RepositoryUpdater.IndexingState> state = Utilities.getIndexingState();
-        if (state.contains(RepositoryUpdater.IndexingState.STARTING)) {
+        if (!state.isEmpty()) {
             return sync;
         }
         //1) Try to aquire javac lock, if successfull no task is running
