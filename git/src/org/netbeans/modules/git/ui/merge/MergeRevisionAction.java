@@ -193,7 +193,7 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                         }
                     }
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failedFiles", revision)); //NOI18N
-                    printConflicts(sb, result.getConflicts());
+                    printConflicts(sb, result.getFailures());
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                             NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;

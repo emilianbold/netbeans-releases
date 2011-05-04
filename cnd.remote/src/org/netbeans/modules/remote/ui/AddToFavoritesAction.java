@@ -56,6 +56,9 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -70,6 +73,9 @@ import org.openide.windows.WindowManager;
  *
  * @author Vladimir Voskresensky
  */
+@ActionID(id = "org.netbeans.modules.remote.ui.AddToFavoritesAction", category = "NativeRemote")
+@ActionRegistration(displayName = "AddToFavoritesMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "AddToFavoritesAction", position = 600)
 public class AddToFavoritesAction extends SingleHostAction {
     private JMenu popupMenu;
     

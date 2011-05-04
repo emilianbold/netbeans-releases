@@ -216,6 +216,7 @@ public class EventTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+		"import javax.enterprise.util.*; "+
                 "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
                 "@Qualifier " +

@@ -176,17 +176,6 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
-    // implement callback when jgit fully supports https and certs
-    public void testHttpsConnection () throws Exception {
-        GitClient client = getClient(workDir);
-        try {
-            client.listRemoteBranches("https://vcs-test.cz.oracle.com:440/svnsecure/", ProgressMonitor.NULL_PROGRESS_MONITOR);
-            fail();
-        } catch (GitException ex) {
-            assertTrue(ex.getCause().getCause().getMessage().contains("unable to find valid certification path to requested target"));
-        }
-    }
-
     public void testSshConnectionCredentialsInUri () throws Exception {
         GitClient client = getClient(workDir);
         client.setCallback(new DefaultCallback());

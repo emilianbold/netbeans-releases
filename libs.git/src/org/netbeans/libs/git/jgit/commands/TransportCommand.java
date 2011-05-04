@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import org.eclipse.jgit.errors.NotSupportedException;
+import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -118,7 +119,7 @@ abstract class TransportCommand extends GitCommand {
         }
     }
     
-    protected Transport openTransport (boolean openPush) throws URISyntaxException, NotSupportedException {
+    protected Transport openTransport (boolean openPush) throws URISyntaxException, NotSupportedException, TransportException {
         URIish uri = getUriWithUsername(openPush);
         Transport transport = Transport.open(getRepository(), uri);
         RemoteConfig config = getRemoteConfig();

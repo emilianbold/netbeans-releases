@@ -48,6 +48,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -65,6 +69,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -407,6 +412,77 @@ public class TaskProcessorTest extends NbTestCase {
         assertTrue("AssertionError not expected when calling callGetResult with parser lock", success); //NOI18N
         assertEquals(1, parser.resultCount);
         
+    }
+
+    public void testRunWhenScanFinishGetCalledUnderCCLock() throws Exception {
+        final File wd = getWorkDir();
+        final File srcDir = new File (wd,"src");
+        srcDir.mkdirs();
+        final File file = new File (srcDir,"test.foo");
+        file.createNewFile();
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final FileObject fo = FileUtil.toFileObject(file);
+        final DataObject dobj = DataObject.find(fo);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        final Source src = Source.create(doc);
+        final CountDownLatch ruRunning = new CountDownLatch(1);
+        final CountDownLatch rwsfCalled = new CountDownLatch(1);
+        final AtomicBoolean indexing = new AtomicBoolean();
+        final Utilities.IndexingStatus is = new Utilities.IndexingStatus() {
+            @Override
+            public boolean isScanInProgress() {
+                return indexing.get();
+            }
+        };
+        Utilities.setIndexingStatus(is);
+        Utilities.scheduleSpecialTask(new ParserResultTask() {
+            @Override
+            public int getPriority() {
+                return 0;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return null;
+            }
+
+            @Override
+            public void cancel() {
+            }
+
+            @Override
+            public void run(Result result, SchedulerEvent event) {
+                indexing.set(true);
+                try {
+                    ruRunning.countDown();
+                    rwsfCalled.await();
+                } catch (InterruptedException ie) {
+                } finally {
+                    indexing.set(false);
+                }
+            }
+        });
+        ruRunning.await();
+        doc.putProperty("completion-active", Boolean.TRUE);
+        try {
+            final Future<Void> done = ParserManager.parseWhenScanFinished(Collections.<Source>singleton(src),new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {                    
+                }
+        });
+        assertFalse(done.isDone());
+        assertFalse(done.isCancelled());
+        rwsfCalled.countDown();
+        try {
+            done.get(5, TimeUnit.SECONDS);
+        } catch (TimeoutException te) {
+            assertTrue("Deadlock",false);
+        }
+        } finally {
+            doc.putProperty("completion-active", null);
+        }
     }
 
     private static final class FooParserFactory extends ParserFactory {
