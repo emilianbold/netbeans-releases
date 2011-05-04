@@ -224,7 +224,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     @Deprecated
     public boolean isReadOnly() {
-        return true;
+        return !canRead();
     }
 
     @Override
