@@ -165,7 +165,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
     
     private static FileObject substituteIfNeed(FileObject dir, Document projectXml) {
-        if (!dir.getNameExt().endsWith("shadow")) {
+        if (!dir.getNameExt().endsWith("shadow")) { // NOI18N
             return null;
         }
         Element root = projectXml.getDocumentElement();
