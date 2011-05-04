@@ -39,37 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.csl.core;
-
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ErrorFilter;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.util.Lookup;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
 
 /**
- * Clients can use this class to filter out some of the parser errors returned by
- * {@link ParserResult.getDiagnostics()}. See the {@link ErrorFilter}
- * documentation. 
  *
  * @author marekfukala
  */
-public class ErrorFilterQuery {
+public class EncodingTest extends NbTestCase {
     
-    public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
-        Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<Error> filtered = new LinkedList<Error>();
-        for(ErrorFilter.Factory factory : factories) {
-            ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> result = filter.filter(parserResult);
-            if(result != null) {
-                filtered.addAll(result); 
-            }
-        }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+    public EncodingTest(String name) {
+        super(name);
     }
     
+    public void testPatterns() {
+        String str = "Warning: Using \"windows-1252\" instead of the declared encoding \"iso-8859-1\".\n\n";
+//        for(int i = 0; i < str.length(); i++) {
+//            System.out.println(str.charAt(i) + " -> " + Integer.toHexString(str.charAt(i)));
+//        }
+        Error e = new DefaultError(null, null, str, null, -1, -1, Severity.WARNING);
+        Encoding rule = new Encoding();
+        
+        assertTrue(rule.appliesTo(null, e));
+    }
 }

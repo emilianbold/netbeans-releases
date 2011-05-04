@@ -39,37 +39,56 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.csl.core;
-
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ErrorFilter;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.util.Lookup;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
- * Clients can use this class to filter out some of the parser errors returned by
- * {@link ParserResult.getDiagnostics()}. See the {@link ErrorFilter}
- * documentation. 
  *
  * @author marekfukala
  */
-public class ErrorFilterQuery {
+public class HtmlRuleContext {
     
-    public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
-        Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<Error> filtered = new LinkedList<Error>();
-        for(ErrorFilter.Factory factory : factories) {
-            ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> result = filter.filter(parserResult);
-            if(result != null) {
-                filtered.addAll(result); 
-            }
-        }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+    private SyntaxAnalyzerResult syntaxAnalyzerResult;
+    private HtmlParserResult parserResult;
+    private List<HintFix> defaultFixes;
+    private List<? extends Error> leftDiagnostics;
+
+    public HtmlRuleContext(HtmlParserResult parserResult, SyntaxAnalyzerResult syntaxAnalyzerResult, List<HintFix> defaultFixes) {
+        this.parserResult = parserResult;
+        this.syntaxAnalyzerResult = syntaxAnalyzerResult;
+        this.defaultFixes = defaultFixes;
+        this.leftDiagnostics = new ArrayList<Error>(parserResult.getDiagnostics());
     }
     
+    public HtmlParserResult getHtmlParserResult() {
+        return parserResult;
+    }
+    
+    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
+        return syntaxAnalyzerResult;
+    }
+
+    public FileObject getFile() {
+        return getSnapshot().getSource().getFileObject();
+    }
+    
+    public Snapshot getSnapshot() {
+        return getHtmlParserResult().getSnapshot();
+    }
+
+    public List<HintFix> getDefaultFixes() {
+        return defaultFixes;
+    }
+ 
+    public List<? extends Error> getLeftDiagnostics() {
+        return leftDiagnostics;
+    }
 }

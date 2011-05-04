@@ -39,37 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.csl.core;
-
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ErrorFilter;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.util.Lookup;
+import java.util.regex.Pattern;
 
 /**
- * Clients can use this class to filter out some of the parser errors returned by
- * {@link ParserResult.getDiagnostics()}. See the {@link ErrorFilter}
- * documentation. 
  *
  * @author marekfukala
  */
-public class ErrorFilterQuery {
+public class Encoding extends PatternRule {
+
+    private static final String[] PATTERNS_SOURCES = new String[]{
+        "The internal character encoding declaration specified .*? which is not a rough superset of ASCII",
+        "The encoding .*? is not",
+        "Authors should not use the character encoding",
+        "The character encoding .*? is not widely supported",
+        "Using .*? instead of the declared encoding",
+        "Unsupported character encoding name: .*?. Will continue sniffing",
+        "Overriding document character encoding from "
+    }; //NOI18N
     
-    public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
-        Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<Error> filtered = new LinkedList<Error>();
-        for(ErrorFilter.Factory factory : factories) {
-            ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> result = filter.filter(parserResult);
-            if(result != null) {
-                filtered.addAll(result); 
-            }
-        }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
+
+    @Override
+    public Pattern[] getPatterns() {
+        return PATTERNS;
     }
     
 }
