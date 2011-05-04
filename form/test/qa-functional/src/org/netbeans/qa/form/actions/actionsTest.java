@@ -43,7 +43,6 @@
  */
 package org.netbeans.qa.form.actions;
 
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;

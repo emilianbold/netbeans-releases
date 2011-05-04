@@ -106,13 +106,14 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
-                /*"testApplet",
+                //SWING
+                "testApplet",
                 "testDialog",
                 "testFrame", 
                 "testInter", 
                 "testMidi", 
                 "testPanel",
-                "testBean", */
+                "testBean", 
                 "testAppl",
                 "testOkCancel",
                 //AWT
