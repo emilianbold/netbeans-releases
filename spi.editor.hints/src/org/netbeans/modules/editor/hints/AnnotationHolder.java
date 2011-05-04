@@ -318,24 +318,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
             if (endOffset < line.getOffset())
                 return;
 
-            List<ErrorDescription> eds = getErrorsForLine(line, false);
-
-            if (eds == null)
-                return ;
-
-            eds = new LinkedList<ErrorDescription>(eds);
-
-            for (ErrorDescription ed : eds) {
-                for (Position i : errors2Lines.remove(ed)) {
-                    line2Errors.get(i).remove(ed);
-                    modifiedLines.add(i);
-                }
-                for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
-                    edsForLayer.remove(ed);
-                }
-            }
-
-            line2Errors.remove(line);
+            clearLineErrors(line, modifiedLines);
 
             //make sure the highlights are removed even for multi-line inserts:
             try {
@@ -423,24 +406,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
             }
 
             for (Position line : new LinkedList<Position>(modifiedLinesTokens)) {
-                List<ErrorDescription> eds = line2Errors.get(line);
-
-                if (eds == null || eds.isEmpty()) {
-                    continue;
-                }
-                eds = new LinkedList<ErrorDescription>(eds);
-
-                for (ErrorDescription ed : eds) {
-                    for (Position i : errors2Lines.remove(ed)) {
-                        line2Errors.get(i).remove(ed);
-                        modifiedLinesTokens.add(i);
-                    }
-                    for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
-                        edsForLayer.remove(ed);
-                    }
-                }
-
-                line2Errors.remove(line);
+                clearLineErrors(line, modifiedLinesTokens);
             }
 
             for (Position line : modifiedLinesTokens) {
@@ -452,6 +418,34 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private void clearLineErrors(Position line, Set<Position> modifiedLinesTokens) {
+        List<ErrorDescription> eds = getErrorsForLine(line, false);
+
+        if (eds == null)
+            return ;
+
+        eds = new LinkedList<ErrorDescription>(eds);
+
+        for (ErrorDescription ed : eds) {
+            List<Position> lines = errors2Lines.remove(ed);
+
+            if (lines == null) { //#	180222 
+                LOG.log(Level.WARNING, "Inconsistent error2Lines for file {1}.", new Object[] {file.getPath()}); // NOI18N
+                continue;
+            }
+
+            for (Position i : lines) {
+                line2Errors.get(i).remove(ed);
+                modifiedLinesTokens.add(i);
+            }
+            for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
+                edsForLayer.remove(ed);
+            }
+        }
+
+        line2Errors.remove(line);
     }
 
     public void changedUpdate(DocumentEvent e) {
