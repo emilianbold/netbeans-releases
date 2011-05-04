@@ -67,7 +67,7 @@ import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
 import static org.netbeans.junit.NbModuleSuite.Configuration;
 
 /**
- * Registeres application servers to IDE and adds test cases to suite only
+ * Registers application servers to IDE and adds test cases to suite only
  * if requested server is available.
  * 
  * @author Jindrich Sedek
@@ -83,6 +83,7 @@ public class J2eeTestCase extends JellyTestCase {
     private static final Logger LOG = Logger.getLogger(J2eeTestCase.class.getName());
     private static boolean serversLogged = false;
     private static List<Server> alreadyRegistered = new ArrayList<Server>();
+    private static boolean addServerTestsCalled = false;
     /** Used in self test to verify registration. */
     static boolean isSelfTest = false;
 
@@ -223,6 +224,7 @@ public class J2eeTestCase extends JellyTestCase {
      * @return clone of the test configuration
      */
     protected static Configuration addServerTests(Server server, Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
+        addServerTestsCalled = true;
         if (isRegistered(server)) {
             LOG.info("adding server tests");
             return addTest(conf, clazz, testNames);
@@ -263,11 +265,15 @@ public class J2eeTestCase extends JellyTestCase {
 
     /**
      * Returns <code>true</code> if given server is already registered in the IDE,
-     * <code>false</code> otherwise
+     * <code>false</code> otherwise. It works only in suite methods when addServerTests
+     * method was called at least once. It cannot be used in test cases.
      * @param server server to decide about
      * @return <code>true</code> if the <code>server</code> is registered
      */
     protected static boolean isRegistered(Server server) {
+        if (!addServerTestsCalled) {
+            throw new IllegalStateException("Cannot call isRegistered here. It is allowed only in suite method after addServerTests is called.");
+        }
         if (server.equals(ANY)) {
             return !alreadyRegistered.isEmpty();
         } else {

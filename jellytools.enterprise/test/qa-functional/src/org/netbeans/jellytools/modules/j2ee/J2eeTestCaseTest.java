@@ -41,6 +41,7 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
+import org.netbeans.junit.NbTestSuite;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
@@ -60,6 +61,19 @@ public class J2eeTestCaseTest extends JellyTestCase {
         super(name);
     }
 
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new J2eeTestCaseTest("testSetUp"));
+        suite.addTest(new J2eeTestCaseTest("testIsRegistered"));
+        suite.addTest(new J2eeTestCaseTest("testNoServer"));
+        suite.addTest(new J2eeTestCaseTest("testGlassfishPreferedFromTomcat"));
+        suite.addTest(new J2eeTestCaseTest("testAnyServer"));
+        suite.addTest(new J2eeTestCaseTest("testAnyServerByNames"));
+        suite.addTest(new J2eeTestCaseTest("testTomcatSByNames"));
+        suite.addTest(new J2eeTestCaseTest("testCreateAllModulesServerSuite"));
+        return suite;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -83,7 +97,16 @@ public class J2eeTestCaseTest extends JellyTestCase {
         }
         assertEquals("just one file", 1, count);
     }
-    
+
+    public void testIsRegistered() {
+        try {
+            J2eeTestCase.isRegistered(ANY);
+            fail("Exception should be thrown if isRegistered called in wrong context.");
+        } catch (IllegalStateException e) {
+            // OK
+        }
+    }
+
     public void testNoServer() {
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(conf).gui(false);
