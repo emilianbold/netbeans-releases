@@ -42,8 +42,12 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -57,7 +61,6 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -69,28 +72,35 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     private int caretOffset;
     private CompletionContext context;
     private static final RequestProcessor requestProcessor = new RequestProcessor("PHPCodeTemplateFilter");//NOI18N
-    private final Task postedTask;
+    private final Future<Future<Void>> future;
 
     public PHPCodeTemplateFilter(final JTextComponent component, final int offset) {
         this.caretOffset = offset;
-        postedTask = requestProcessor.post(new Runnable() {
-            public void run() {
-                parseDocument(component);
+        future = requestProcessor.submit(new Callable<Future<Void>>() {
+            @Override
+            public Future<Void> call() {
+                try {
+                    return parseDocument(component);
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return null;
             }
         });
     }
 
+    @Override
     public boolean accept(CodeTemplate template) {
         try {
-            if (postedTask.waitFinished(300)) {
-                if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
-                    return template.getAbbreviation().equals("fnc"); //NOI18N
-                    }
-                return accept;
-            } else {
-                postedTask.cancel();
+            future.get(300, TimeUnit.MILLISECONDS).get(300, TimeUnit.MILLISECONDS);
+            if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+                return template.getAbbreviation().equals("fnc"); //NOI18N
             }
+            return accept;
+            
+        } catch (TimeoutException ex) {
         } catch (InterruptedException ex) {
+        } catch (ExecutionException ee) {
         }
         return false;
     }
@@ -126,16 +136,13 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
     public static final class Factory implements CodeTemplateFilter.Factory {
 
+        @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new PHPCodeTemplateFilter(component, offset);
         }
     }
 
-    private void parseDocument(final JTextComponent component) {
-        try {
-            ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    private Future<Void> parseDocument(final JTextComponent component) throws ParseException {
+        return ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
     }
 }

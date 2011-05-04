@@ -71,6 +71,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
+            "exportDiff", //NOI18N
             "getBranches",  //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N
@@ -104,6 +105,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catIndexEntry",  //NOI18N
             "createBranch", //NOI18N - does not update index or files in WT
             "fetch", //NOI18N - updates only metadata
+            "exportDiff", //NOI18N
             "getBranches",  //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N

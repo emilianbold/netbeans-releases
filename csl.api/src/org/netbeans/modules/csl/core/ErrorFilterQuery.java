@@ -61,15 +61,15 @@ public class ErrorFilterQuery {
     
     public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
         Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
-        List<? extends Error> filtered = new LinkedList<Error>(parserResult.getDiagnostics());
+        List<Error> filtered = new LinkedList<Error>();
         for(ErrorFilter.Factory factory : factories) {
             ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> remained = filter.filter(parserResult);
-            if(remained != null) {
-                filtered.retainAll(remained); //disjunction if there are more filters
+            List<? extends Error> result = filter.filter(parserResult);
+            if(result != null) {
+                filtered.addAll(result); 
             }
         }
-        return filtered;
+        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
     }
     
 }

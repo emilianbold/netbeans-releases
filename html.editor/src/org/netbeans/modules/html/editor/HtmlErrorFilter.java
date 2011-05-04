@@ -42,13 +42,21 @@
 
 package org.netbeans.modules.html.editor;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.hints.HtmlHintsProvider;
 import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.AbstractLookup;
@@ -64,18 +72,47 @@ public class HtmlErrorFilter implements ErrorFilter {
     public static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
     
     private static final ErrorFilter INSTANCE = new HtmlErrorFilter();
+    private HintsProvider htmlHintsProvider;
+    private HintsManager htmlHintsManager;
+
+    public HtmlErrorFilter() {
+        htmlHintsProvider = new HtmlHintsProvider();
+        htmlHintsManager = HintsProvider.HintsManager.getManagerForMimeType(HtmlKit.HTML_MIME_TYPE);
+    }
     
     @Override
     public List<? extends Error> filter(ParserResult parserResult) {
         if(!(parserResult instanceof HtmlParserResult)) {
             return null; //not ours
         }
-        HtmlParserResult htmlParserResult = (HtmlParserResult)parserResult;
         
-        return isErrorCheckingEnabled(htmlParserResult.getSyntaxAnalyzerResult())
-                ? parserResult.getDiagnostics()
-                : Collections.<Error>emptyList();
+        //use hints setting to filter out the errors and set their severity 
+        RuleContext context = new RuleContext();
+        context.parserResult = parserResult;
+        context.manager = htmlHintsManager;
+        List<Hint> hints = new ArrayList<Hint>();
+        htmlHintsProvider.computeErrors(htmlHintsManager, context, hints, new ArrayList<Error>());
+        
+        List<Error> filtered = new ArrayList<Error>(hints.size());
+        for(Hint h : hints) {
+            //TODO fix the severity somehow - now it seems there's no away how to get 
+            //the severity set to a particular hint by the hint options.
             
+//            //use the severity defined in the hints settings
+//            HintSeverity hseverity = HintsSettings.getSeverity((GsfHintsManager)htmlHintsManager, (UserConfigurableRule)h);
+
+            DefaultError e = new DefaultError("error", //NOI18N
+                    h.getDescription(), 
+                    h.getDescription(), 
+                    h.getFile(),
+                    h.getRange().getStart(), 
+                    h.getRange().getEnd(), 
+                    Severity.WARNING);
+            
+            filtered.add(e);
+        }
+        
+        return filtered;
     }
     
     public static boolean isErrorCheckingEnabled(SyntaxAnalyzerResult result) {
