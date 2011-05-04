@@ -82,4 +82,5 @@ public interface FileSystemProviderImplementation {
     void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths);
     void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
     void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
+    boolean canExecute(FileObject fileObject);
 }

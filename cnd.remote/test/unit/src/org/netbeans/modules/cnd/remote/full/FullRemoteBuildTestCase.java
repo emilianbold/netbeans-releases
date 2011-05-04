@@ -49,13 +49,7 @@ import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -110,20 +104,12 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
             FileSystemProvider.getFileSystem(getTestExecutionEnvironment()).getRoot().refresh();
         } else {
             remoteTmpDirFO.refresh();
-        }        
-        File shadowProjectFile = new File(new File(getWorkDir(), getTestHostName()), projectName);
-        removeDirectory(shadowProjectFile);
-        String shadowProjectPath = shadowProjectFile.getAbsolutePath();
-        ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteProjectPath, shadowProjectPath, execEnv);
-        FileObject shadowProjectFO = synchronizer.createShadowProject();
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(shadowProjectFO);
-        assertNotNull("Error opening project " + shadowProjectFO, makeProject);
+        }
+        FileObject remoteProjectFO = FileSystemProvider.getFileObject(execEnv, remoteProjectPath);
+        assertNotNull("null remote project file object for " + execEnv + ':' + remoteProjectPath, remoteProjectFO);
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(remoteProjectFO);
+        assertNotNull("Error opening project " + remoteProjectFO, makeProject);
         return makeProject;
-    }
-    
-    private void doTestCodeModel(String projectName, boolean link) throws Exception {
-        MakeProject makeProject = importProject(projectName, link);
-        checkCodeModel(makeProject);
     }
     
     @ForAllEnvironments

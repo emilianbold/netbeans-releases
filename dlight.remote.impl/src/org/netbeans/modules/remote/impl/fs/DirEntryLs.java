@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.util.Exceptions;
 
 /**

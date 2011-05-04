@@ -179,7 +179,7 @@ public final class MakeActionProvider implements ActionProvider {
     private MakeProject project;
     // Project Descriptor
     private MakeConfigurationDescriptor projectDescriptor = null;
-    /** Map from commands to ant targets */
+    /** Map from commands to make targets */
     private Map<String, String[]> commands;
     private Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;

@@ -59,7 +59,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
@@ -224,7 +224,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     @Deprecated
     public boolean isReadOnly() {
-        return true;
+        return !canRead();
     }
 
     @Override
@@ -241,7 +241,21 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             return true;
         }
     }
-
+    
+    public boolean canExecute() {
+        try {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent == null) {
+                return true;
+            } else {
+                return canonicalParent.canExecute(getNameExt());
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
+    }
+    
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);

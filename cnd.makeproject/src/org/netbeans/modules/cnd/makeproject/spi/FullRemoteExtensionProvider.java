@@ -41,12 +41,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.spi;
 
-import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -56,5 +52,4 @@ public interface FullRemoteExtensionProvider {
     boolean configurationSaving(MakeConfigurationDescriptor makeConfigurationDescriptor);
     boolean configurationSaved(MakeConfigurationDescriptor makeConfigurationDescriptor, boolean success);    
     boolean canChangeHost(MakeConfiguration makeConfiguration);
-    void importProject(FileObject remoteProject, String localProjectPath, ExecutionEnvironment env) throws IOException, SAXException;
 }

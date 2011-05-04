@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.support;
+package org.netbeans.modules.remote.impl;
 
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
