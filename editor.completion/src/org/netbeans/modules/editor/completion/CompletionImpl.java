@@ -242,6 +242,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 if (localCompletionResult != null && !localCompletionResult.isQueryInvoked()) {
                     pleaseWaitTimer.restart();
                     CompletionImpl.this.refreshedQuery = false;
+                    getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);  //NOI18N
                     queryResultSets(localCompletionResult.getResultSets());
                     localCompletionResult.queryInvoked();
                 }
@@ -712,6 +713,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             } else {
                 pleaseWaitTimer.restart();
                 this.refreshedQuery = refreshedQuery;
+                getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);  //NOI18N
                 queryResultSets(completionResultSets);
                 newCompletionResult.queryInvoked();
             }
@@ -875,8 +877,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION, explicitQuery, delayQuery, queryType));
             return;
         }
-
-        getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);
+        
         LogRecord r = new LogRecord(Level.FINE, "COMPL_INVOCATION"); // NOI18N
         r.setParameters(new Object[] {explicitQuery});
         uilog(r);
