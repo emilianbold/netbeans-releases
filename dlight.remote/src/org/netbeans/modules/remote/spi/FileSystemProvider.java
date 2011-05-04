@@ -358,6 +358,16 @@ public final class FileSystemProvider {
         noProvidersWarning(fileSystem);
     }
 
+    public static boolean canExecute(FileObject fileObject) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.canExecute(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        return true;
+    }
+    
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
