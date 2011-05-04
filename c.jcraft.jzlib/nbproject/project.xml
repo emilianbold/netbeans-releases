@@ -43,6 +43,17 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="libs.jsch" default="netbeans" basedir=".">
-    <import file="../nbbuild/templates/projectized.xml"/>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>com.jcraft.jzlib</code-name-base>
+            <module-dependencies/>
+            <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>com-jcraft-jzlib.jar</runtime-relative-path>
+		<binary-origin>external/jzlib-1.0.7.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
 </project>
