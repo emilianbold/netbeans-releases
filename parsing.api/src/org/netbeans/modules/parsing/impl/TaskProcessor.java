@@ -227,7 +227,8 @@ public class TaskProcessor {
         final DeferredTask r = new DeferredTask (sources,task,sync);
         //0) Add speculatively task to be performed at the end of background scan
         todo.add (r);
-        if (Utilities.isScanInProgress()) {
+        final Set<? extends RepositoryUpdater.IndexingState> state = Utilities.getIndexingState();
+        if (state.contains(RepositoryUpdater.IndexingState.STARTING)) {
             return sync;
         }
         //1) Try to aquire javac lock, if successfull no task is running
@@ -246,8 +247,7 @@ public class TaskProcessor {
             } finally {
                 parserLock.unlock();
             }
-        }
-        else {
+        } else {
             //Otherwise interrupt currently running task and try to aquire lock
             do {
                 final Request[] request = new Request[1];
