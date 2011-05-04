@@ -59,9 +59,15 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
@@ -150,9 +156,51 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     /** Atomic actions in use to save XML files. */
     private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
 
+    public static MakeProjectHelperImpl create(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
+        FileObject substituted = substituteIfNeed(dir, projectXml);
+        if (substituted != null) {
+            dir = substituted;
+        }
+        return new MakeProjectHelperImpl(dir, projectXml, state, type);
+    }
+    
+    private static FileObject substituteIfNeed(FileObject dir, Document projectXml) {
+        if (!dir.getNameExt().endsWith("shadow")) {
+            return null;
+        }
+        Element root = projectXml.getDocumentElement();
+        if (root != null) {
+            String mode = getNodeValue(root, MakeProject.REMOTE_MODE);
+            if (RemoteProject.Mode.REMOTE_SOURCES.name().equals(mode)) {
+                String hostUid = getNodeValue(root, MakeProject.REMOTE_FILESYSTEM_HOST);
+                String remotebaseDir = getNodeValue(root, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
+                if (hostUid != null && remotebaseDir != null) {
+                    ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUid);
+                    FileObject fo = FileSystemProvider.getFileObject(env, remotebaseDir);
+                    return fo;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static String getNodeValue(Element root, String tag) {
+        if (root != null) {
+            NodeList nodeList = root.getElementsByTagName(tag);
+            if (nodeList.getLength() > 0) {
+                Node node = nodeList.item(0);
+                NodeList childNodes = node.getChildNodes();
+                if (childNodes.getLength() > 0) {                
+                    return childNodes.item(0).getNodeValue();
+                }
+            }
+        }
+        return null;
+    }
+    
     // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
     // and reload any modified files if the project is unmodified
-    public MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
+    private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
         this.state = state;
         assert state != null;

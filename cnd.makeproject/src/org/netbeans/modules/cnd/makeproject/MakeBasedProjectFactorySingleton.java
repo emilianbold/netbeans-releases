@@ -162,7 +162,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             LOG.log(Level.FINE, "no provider for {0}", type);
             return null;
         }
-        MakeProjectHelperImpl helper = new MakeProjectHelperImpl(projectDirectory, projectXml, state, provider);
+        MakeProjectHelperImpl helper = MakeProjectHelperImpl.create(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
         project2Helper.put(project, new WeakReference<MakeProjectHelperImpl>(helper));
         synchronized (helper2Project) {
