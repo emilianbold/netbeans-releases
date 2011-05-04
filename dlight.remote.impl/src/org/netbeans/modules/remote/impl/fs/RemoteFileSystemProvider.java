@@ -339,4 +339,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             fileObject.removeRecursiveListener(listener);
         }
     }
+
+    public boolean canExecute(FileObject fileObject) {
+        RemoteLogger.assertTrue(fileObject instanceof RemoteFileObjectBase, "Unexpected file object class: " + fileObject); // NOI18N
+        if (fileObject instanceof RemoteFileObjectBase) {
+            return ((RemoteFileObjectBase) fileObject).canExecute();
+        }
+        return false;
+    }    
 }

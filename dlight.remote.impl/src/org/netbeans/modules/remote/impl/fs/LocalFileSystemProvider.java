@@ -306,6 +306,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         FileUtil.removeRecursiveListener(listener, file);
     }
 
+    public boolean canExecute(FileObject fileObject) {
+        File file = FileUtil.toFile(fileObject);
+        return (file == null) ?  false : file.canExecute();
+    }
+
     /** for TEST purposes ONLY */
     /*package*/ static void testWaitLastRefreshFinished() {
         Task task = lastRefreshTask;

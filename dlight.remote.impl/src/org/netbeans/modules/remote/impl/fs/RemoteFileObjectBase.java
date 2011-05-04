@@ -241,7 +241,21 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             return true;
         }
     }
-
+    
+    public boolean canExecute() {
+        try {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent == null) {
+                return true;
+            } else {
+                return canonicalParent.canExecute(getNameExt());
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
+    }
+    
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);

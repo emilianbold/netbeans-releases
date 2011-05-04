@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 
@@ -195,6 +196,32 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         }
     }
 
+    @ForAllEnvironments
+    public void testCanReadWriteExecute() throws Exception {
+        String tempFile = null;
+        try {
+            String stdlib_h = "/usr/include/stdlib.h";
+            FileObject stdlib_fo = getFileObject(stdlib_h);
+            assertFalse("FileObject should NOT be writable: " + stdlib_fo.getPath(), stdlib_fo.canWrite());
+            assertTrue("FileObject should be readable: " + stdlib_fo.getPath(), stdlib_fo.canRead());
+            assertFalse("FileObject should NOT be executable: " + stdlib_fo.getPath(), FileSystemProvider.canExecute(stdlib_fo));            
+            tempFile = mkTempAndRefreshParent();
+            FileObject temp_fo = getFileObject(tempFile);
+            assertTrue("FileObject should be readable: " + temp_fo.getPath(), temp_fo.canRead());
+            assertTrue("FileObject should be writable: " + temp_fo.getPath(), temp_fo.canWrite());
+            assertFalse("FileObject should NOT be executable: " + temp_fo.getPath(), FileSystemProvider.canExecute(temp_fo));                        
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "chmod", "u+x", temp_fo.getPath());
+            assertEquals("chmod failed: " + res.error, 0, res.exitCode);
+            temp_fo.getParent().refresh();
+            assertTrue("FileObject should be executable: " + temp_fo.getPath(), FileSystemProvider.canExecute(temp_fo));
+            
+        } finally {
+            if (tempFile != null) {
+                removeRemoteDirIfNotNull(tempFile);
+            }
+        }
+    }
+    
     @ForAllEnvironments
     public void testReservedWindowsNames() throws Exception {
         String tempDir = null;
