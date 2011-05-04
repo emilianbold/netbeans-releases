@@ -99,7 +99,7 @@ import org.xml.sax.SAXException;
 public final class MakeProjectHelperImpl implements MakeProjectHelper {
 
     /**
-     * XML namespace of private component of Ant projects.
+     * XML namespace of private component of Make projects.
      */
     static final String PRIVATE_NS = "http://www.netbeans.org/ns/project-private/1"; // NOI18N
 
@@ -115,7 +115,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      */
     private final ProjectState state;
     /**
-     * Ant-based project type factory.
+     * Make-based project type factory.
      */
     private final MakeProjectTypeImpl type;
     /** Used as a marker that project/privateXml was not found at all, rather than found but malformed. */
@@ -219,7 +219,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
 
     /**
-     * Get the corresponding Ant-based project type factory.
+     * Get the corresponding Make-based project type factory.
      */
     @Override
     public NativeProjectType getType() {
@@ -413,7 +413,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
 
     private static synchronized RequestProcessor rp() {
         if (RP == null) {
-            RP = new RequestProcessor("AntProjectHelper.RP"); // NOI18N
+            RP = new RequestProcessor("MakeProjectHelper.RP"); // NOI18N
         }
         return RP;
     }
