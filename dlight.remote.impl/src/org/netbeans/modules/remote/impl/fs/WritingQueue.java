@@ -105,7 +105,7 @@ public class WritingQueue {
                 entry = new Entry(dstFileName);
                 entries.put(dstFileName, entry);
             }
-            entry.add(srcFile, mask, error);
+            entry.scheduleUpload(srcFile, mask, error);
         }
     }
 
@@ -178,32 +178,40 @@ public class WritingQueue {
     private class Entry implements ChangeListener {
 
         private volatile Future<Integer> currentTask;
-        private final String dstFileName;
+        private boolean reschedule;
+        
+        private final String dstFileName;        
+        
+        private File srcFile;
+        private int mask;
+        private Writer error;        
 
         public Entry(String dstFileName) {
             this.dstFileName = dstFileName;
+            this.reschedule = false;
         }
-
-        public void add(File srcFile, int mask, Writer error) {
+        
+        public void scheduleUpload(File srcFile, int mask, Writer error) {
             synchronized (lock) {
+                this.srcFile = srcFile;
+                this.mask = mask;
+                this.error = error;
                 failed.remove(dstFileName);
-                if (currentTask != null) {
+                if (currentTask == null) {
+                    scheduleUpload();
+                } else {
                     // cancel does not work with jsch sftp, reasons to be investigated                    
-                    RemoteLogger.getInstance().log(Level.FINE, "Waiting for previous upload task for {0}", dstFileName);
+                    RemoteLogger.getInstance().log(Level.FINE, "Will reschedule previous upload task for {0}", dstFileName);
                     //currentTask.cancel(true);
-                    try {
-                        currentTask.get();
-                    } catch (InterruptedException ex) {
-                        RemoteLogger.getInstance().log(Level.INFO, "InterruptedException when waiting for previous task", ex);
-                    } catch (ExecutionException ex) {
-                        RemoteLogger.getInstance().log(Level.INFO, "ExecutionException when waiting for previous task", ex);
-                    }
-                    currentTask = null;
+                    reschedule = true;
                 }
-                CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                        srcFile, execEnv, this.dstFileName, mask, error, false, this);            
-                currentTask = CommonTasksSupport.uploadFile(params);
             }
+        }
+        
+        private void scheduleUpload() {
+            CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                    srcFile, execEnv, this.dstFileName, mask, error, false, this);
+            currentTask = CommonTasksSupport.uploadFile(params);
         }
 
         @Override
@@ -228,6 +236,13 @@ public class WritingQueue {
                 if (currentTask != null && currentTask != finishedTask) {
                     // currentTask can contain either null or the last task
                     // so the finishedTask is one of previous tasks - ignore
+                    return;
+                }
+                if (reschedule) {
+                    synchronized (lock) {
+                        reschedule = false;
+                        scheduleUpload();
+                    }
                     return;
                 }
                 try {

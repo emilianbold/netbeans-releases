@@ -294,10 +294,16 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     }
 
     protected void writeFile(FileObject fo, CharSequence content) throws Exception {
+        writeFile(fo, content, 1);
+    }
+
+    protected void writeFile(FileObject fo, CharSequence content, int repeatCount) throws Exception {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
-            bw.append(content);
+            for (int i = 0; i < repeatCount; i++) {
+                bw.append(content);
+            }
         } finally {
             if (bw != null) {
                 bw.close();
