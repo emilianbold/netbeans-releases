@@ -779,7 +779,7 @@ public class VariousUtils {
         if (fileName != null) {
             File absoluteFile = new File(fileName);
             if (absoluteFile.exists()) {
-                retval = FileUtil.toFileObject(absoluteFile);
+                retval = FileUtil.toFileObject(FileUtil.normalizeFile(absoluteFile));
             } else {
                 FileObject parent = sourceFile.getParent();
                 if (parent != null) {
