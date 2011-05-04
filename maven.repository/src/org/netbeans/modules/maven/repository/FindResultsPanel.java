@@ -47,11 +47,11 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -301,6 +301,10 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         @Override
         public Image getOpenedIcon(int arg0) {
             return getIcon(arg0);
+        }
+
+        public @Override Action[] getActions(boolean context) {
+            return new Action[0];
         }
 
         public List<NBVersionInfo> getVersionInfos() {
