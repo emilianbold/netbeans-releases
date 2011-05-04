@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.dlight;
 
+import java.io.File;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -74,8 +75,13 @@ public class NormalizationTest {
 //                if (!normalizedByFileUtils.equals(rd.normalized)) {
 //                    normalizedByFileUtils = FileUtil.normalizePath(rd.path);
 //                    norm = PathUtilities.normalizeUnixPath(rd.path);
-//                }
-                assertEquals("reference data differ with returned by FileUtil.normalizePath for " + rd.path, normalizedByFileUtils, rd.normalized);
+//                }                
+                if (!normalizedByFileUtils.equals(rd.normalized)) {
+                    String canonical = new File(rd.path).getCanonicalFile().getAbsolutePath();
+                    String message = String.format("orig.path: %s, ref.data: %s, FileUtil.normalize: %s, canonical: %s",
+                            rd.path, rd.normalized, normalizedByFileUtils, canonical);
+                    assertTrue(message, false);
+                }
             }
         }
     }
