@@ -159,6 +159,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     // Public implementation
     // -----------------------------------------------------------------------
 
+    public enum IndexingState {
+        STARTING,
+        PATH_CHANGING,
+        WORKING
+    }
+
     public static synchronized RepositoryUpdater getDefault() {
         if (instance == null) {
             instance = new RepositoryUpdater();
@@ -212,7 +218,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     }
 
-    public boolean isScanInProgress() {
+    public Set<IndexingState> getIndexingState() {
         boolean beforeInitialScanStarted;
         synchronized (this) {
             beforeInitialScanStarted = state == State.CREATED || state == State.STARTED;
@@ -226,14 +232,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } catch (Exception ie) {
             openingProjects = true;
         }
+        final Set<IndexingState> result = EnumSet.noneOf(IndexingState.class);
         final boolean starting = (beforeInitialScanStarted && openingProjects);
         final boolean working = getWorker().isWorking();
         final boolean pathChanging = !PathRegistry.getDefault().isFinished();
-        final boolean result =  starting || working || pathChanging;
+        if (starting) {
+            result.add(IndexingState.STARTING);
+        }
+        if (pathChanging) {
+            result.add(IndexingState.PATH_CHANGING);
+        }
+        if (working) {
+            result.add(IndexingState.WORKING);
+        }
         LOGGER.log(Level.FINE,
-                "IsScanInProgress: {0} = (starting: {1} | working: {2} | path are changing: {3})",  //NOI18N
+                "IsScanInProgress: (starting: {0} | working: {1} | path are changing: {2})",  //NOI18N
                 new Object[] {
-                    result,
                     starting,
                     working,
                     pathChanging
@@ -271,7 +285,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (timedOut) {
                 return false;
             }
-        } while (isScanInProgress() && (timeout <= 0 || ts2 - ts1 < timeout));
+        } while (!getIndexingState().isEmpty() && (timeout <= 0 || ts2 - ts1 < timeout));
 
         return timeout <= 0 || ts2 - ts1 < timeout;
     }
@@ -1191,7 +1205,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         return true;
     }
-
+    
     public boolean isCacheFile(FileObject f) {
         return FileUtil.isParentOf(CacheFolder.getCacheFolder(), f);
     }

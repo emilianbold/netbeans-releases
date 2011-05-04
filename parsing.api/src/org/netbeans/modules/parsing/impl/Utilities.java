@@ -43,6 +43,7 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
@@ -108,16 +109,20 @@ public class Utilities {
         status = st;
     }
 
+    public static Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
+        if (status == null) {
+            return RepositoryUpdater.getDefault().getIndexingState();
+        } else {
+            return status.getIndexingState();
+        }
+    }
+
     /**
      * Asks the {@link IndexingStatus} about state of indexing
      * @return true when indexing is active
      */
     public static boolean isScanInProgress () {
-        if (status == null) {
-            return RepositoryUpdater.getDefault().isScanInProgress();
-        } else {
-            return status.isScanInProgress();
-        }
+        return !getIndexingState().isEmpty();        
     }
     //where
     private static volatile IndexingStatus status;
@@ -126,7 +131,7 @@ public class Utilities {
      * Provides state of indexing
      */
     public static interface IndexingStatus {
-        boolean isScanInProgress ();
+        Set<? extends RepositoryUpdater.IndexingState> getIndexingState ();
     }
 
     //Helpers to bridge java.source factories into parsing.api
