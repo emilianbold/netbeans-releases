@@ -1077,21 +1077,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
     private void selectOtherComponentsNode() {
         formDesigner.setSelectedNodes(formDesigner.getFormEditor().getOthersContainerNode());
-//        FormEditor formEditor = formDesigner.getFormEditor();
-//        ComponentInspector ci = ComponentInspector.getInstance();
-//        Node[] selectedNode = new Node[] { formEditor.getOthersContainerNode() };
-//        
-//        try {
-//            ci.setSelectedNodes(selectedNode, formEditor);
-//            formDesigner.clearSelectionImpl();
-//            formDesigner.repaintSelection();
-//        }
-//        catch (java.beans.PropertyVetoException ex) {
-//            org.openide.ErrorManager.getDefault().notify(
-//                org.openide.ErrorManager.INFORMATIONAL, ex);
-//        }
-//
-//        formDesigner.setSelectedNodes(selectedNode);
     }
 
     private boolean processDoubleClick(MouseEvent e) {
