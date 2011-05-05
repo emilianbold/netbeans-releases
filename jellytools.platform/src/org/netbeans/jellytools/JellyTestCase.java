@@ -62,6 +62,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import junit.framework.AssertionFailedError;
 
 import org.netbeans.junit.*;
 
@@ -340,50 +342,44 @@ public class JellyTestCase extends NbTestCase {
     private Vector openedProjects = null;
 
     /**
-     * Waits for the initial scanning to be finished. This should be better than
-     * the original solution, but will fail anyway if IDE cluster is not present.
-     *
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
+     * Waits for the source scanning to be finished.
+     * @throws AssertionFailedError if scanning was canceled or other exception appears
      */
-    public void waitScanFinished()
-    {
+    public void waitScanFinished() {
         try {
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            if (l == null)
-            {
-                l = getClass().getClassLoader();
-            }
-            Class<?> repositoryUpdaterClass = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater", true, l);
-            final Object repositoryUpdater = repositoryUpdaterClass.getMethod("getDefault").invoke(null);
+            class Wait implements Runnable {
 
-            final Method isScanInProgressMethod = repositoryUpdaterClass.getMethod("isScanInProgress");
+                boolean initialized;
+                boolean ok;
 
-            Waiter waiter = new Waiter(new Waitable() {
-                public Object actionProduced(Object anObject) {
-                    Boolean result;
+                @Override
+                public void run() {
+                    if (initialized) {
+                        ok = true;
+                        return;
+                    }
+                    initialized = true;
                     try {
-                        result = (Boolean) isScanInProgressMethod.invoke(repositoryUpdater);
+                        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                        if (loader == null) {
+                            loader = getClass().getClassLoader();
+                        }
+                        // reflection used becaues ScanDialog is in java.sourceui in java cluster
+                        // ScanDialog.runWhenScanFinished(this, "tests");
+                        Class<?> scanDialogClass = Class.forName("org.netbeans.api.java.source.ui.ScanDialog", true, loader);
+                        Method runWhenScanFinishedMethod = scanDialogClass.getDeclaredMethod("runWhenScanFinished", Runnable.class, String.class);
+                        boolean canceled = (Boolean) runWhenScanFinishedMethod.invoke(null, this, "tests");
+                        assertFalse("Scanning canceled.", canceled);
+                        assertTrue("Runnable run", ok);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
                     }
-                    catch (Exception e)
-                    {
-                        throw new JemmyException("Error during waiting for the end of scanning: ", e);
-                    }
-                    return result ? null : Boolean.TRUE;
                 }
-                public String getDescription() {
-                    return("Waiting for scanning to finish.");
-                }
-            });
-
-            Timeouts timeouts = waiter.getTimeouts();
-            timeouts.setTimeout("Waiter.WaitingTime", 600000); //set timeout for 10 minutes
-            waiter.waitAction(null);
-        }
-        catch (Exception e) {
-            throw new JemmyException("Waiting for end of scanning failed.", e);
+            }
+            Wait wait = new Wait();
+            SwingUtilities.invokeAndWait(wait);
+        } catch (Exception ex) {
+            throw (AssertionFailedError) new AssertionFailedError().initCause(ex);
         }
     }
 

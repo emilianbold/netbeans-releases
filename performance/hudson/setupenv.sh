@@ -10,6 +10,7 @@ then
 # ergonomics root
 cd "$project_root"
 rm -rf nbbuild/nbproject/private
+ant bootstrap
 
 # performance project
 cd "$performance"
@@ -17,14 +18,14 @@ cd "$performance"
 rm -rf build/test/unit/results
 rm -rf build/test/qa-functional/results
 
-ant clean -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
-ant -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
+ant clean -Dnetbeans.dest.dir=./../../netbeans
+ant -Dnetbeans.dest.dir=./../../netbeans
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../Prepare_PerformanceTests/netbeans
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../netbeans
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../netbeans
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../netbeans
 
-buildnum=`cat "$WORKSPACE"/../../../../build.number`
+buildnum=`cat "$reposdir"/build.number`
 str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
 str2="<property name=\"env.BUILD_NUMBER\" value=\"`echo $BUILD_NUMBER`\" />"
 str3="<property name=\"env.JOB_NAME\" value=\"`echo $JOB_NAME`\" />"

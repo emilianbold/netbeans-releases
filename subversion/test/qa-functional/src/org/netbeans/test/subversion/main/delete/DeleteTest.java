@@ -120,7 +120,7 @@ public class DeleteTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
@@ -227,7 +227,7 @@ public class DeleteTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
