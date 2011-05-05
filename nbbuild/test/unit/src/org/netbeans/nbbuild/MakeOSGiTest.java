@@ -96,8 +96,6 @@ public class MakeOSGiTest extends NbTestCase {
                 "OpenIDE-Module: m\nOpenIDE-Module-Java-Dependencies: Java > 1.6\n", set(), set());
         assertTranslation("{Bundle-RequiredExecutionEnvironment=JavaSE-1.7, Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi}",
                 "OpenIDE-Module: m\nOpenIDE-Module-Java-Dependencies: Java > 1.7\n", set(), set());
-        assertTranslation("{Bundle-SymbolicName=alt, Bundle-Version=0.3.1, Require-Bundle=org.netbeans.core.osgi}",
-                "OpenIDE-Module: m\nNetigso-SymbolicName: alt\nNetigso-Version: 0.3.1\n", set(), set());
     }
     private void assertTranslation(String expectedOsgi, String netbeans, Set<String> importedPackages, Set<String> exportedPackages) throws Exception {
         assertTrue(netbeans.endsWith("\n")); // JRE bug
