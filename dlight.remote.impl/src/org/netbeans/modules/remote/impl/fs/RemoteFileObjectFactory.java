@@ -182,7 +182,11 @@ public class RemoteFileObjectFactory {
 //            fo.invalidate();
 //        }
         RemoteLink fo = new RemoteLink(fileSystem, env, parent, remotePath, link);        
-        return (RemoteLink) fileObjectsCache.putIfAbsent(remotePath, fo);
+        RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
+        if (result instanceof RemoteLink) {
+            return (RemoteLink) result;
+        }
+        return fo;
     }
 
     /** 

@@ -121,8 +121,12 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
                                     GitClient client = getClient();
                                     ensureParentExists(toFile);
                                     out = new BufferedOutputStream(new FileOutputStream(toFile));
+                                    client.addNotificationListener(new DefaultFileListener(roots));
+                                    setProgress(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.preparingDiff")); //NOI18N
                                     client.exportDiff(files, diffMode, out, this);
-                                    success = true;
+                                    if (!isCanceled()) {
+                                        success = true;
+                                    }
                                 } catch (Exception ex) {
                                     logger.outputInRed(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.failed")); //NOI18N
                                     GitClientExceptionHandler.notifyException(ex, true);
@@ -133,12 +137,8 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
                                             out.close();
                                         } catch (IOException ex) { }
                                     }
-                                    if (success) {
-                                        if (toFile.length() == 0) {
-                                            toFile.delete();
-                                        } else {
-                                            Utils.openFile(toFile);
-                                        }
+                                    if (success && toFile.length() > 0) {
+                                        Utils.openFile(toFile);
                                     } else {
                                         toFile.delete();
                                     }

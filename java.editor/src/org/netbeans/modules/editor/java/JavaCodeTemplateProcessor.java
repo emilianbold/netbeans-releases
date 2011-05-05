@@ -380,6 +380,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         if (tpe != null)
                             return tpe.getSimpleName().toString();
                     }
+                    tm = resolveCapturedType(tm);
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, TYPE);
@@ -393,6 +394,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (ITERABLE_ELEMENT_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = iterableElementType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                    tm = resolveCapturedType(tm);
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
@@ -404,6 +406,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (LEFT_SIDE_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, true);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                    tm = resolveCapturedType(tm);
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
@@ -415,6 +418,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (RIGHT_SIDE_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, false);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                    tm = resolveCapturedType(tm);
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
@@ -430,6 +434,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     param2types.remove(param);
                     return ""; //NOI18N
                 } else if (tm.getKind() != TypeKind.ERROR) {
+                    tm = resolveCapturedType(tm);
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, CAST);
@@ -449,6 +454,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (UNCAUGHT_EXCEPTION_TYPE.equals(entry.getKey())) {
                 TypeMirror tm = uncaughtExceptionType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                    tm = resolveCapturedType(tm);
                     String value = Utilities.getTypeName(cInfo, tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, UNCAUGHT_EXCEPTION_TYPE);
@@ -848,6 +854,15 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         default:
             return false;
         }
+    }
+    
+    private TypeMirror resolveCapturedType(TypeMirror type) {
+        if (type.getKind() == TypeKind.TYPEVAR) {
+            WildcardType wildcard = SourceUtils.resolveCapturedType(type);
+            if (wildcard != null)
+                return wildcard.getExtendsBound();
+        }
+        return type;
     }
     
     private boolean initParsing() {

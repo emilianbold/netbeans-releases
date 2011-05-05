@@ -219,7 +219,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
 
     @Override
     public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException {
-        ExportDiffCommand cmd = new ExportDiffCommand(gitRepository.getRepository(), roots, mode, out, monitor);
+        ExportDiffCommand cmd = new ExportDiffCommand(gitRepository.getRepository(), roots, mode, out, monitor, this);
         cmd.execute();
     }
 

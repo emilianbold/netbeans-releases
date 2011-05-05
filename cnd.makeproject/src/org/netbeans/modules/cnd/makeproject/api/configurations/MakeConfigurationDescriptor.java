@@ -1136,7 +1136,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), sourceRoot);
                     String canonicalSourceRoot = null;
                     try {
-                        canonicalSourceRoot = new File(absSourceRoot).getCanonicalPath();
+                        canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
                     } catch (IOException ioe) {
                         canonicalSourceRoot = null;
                     }

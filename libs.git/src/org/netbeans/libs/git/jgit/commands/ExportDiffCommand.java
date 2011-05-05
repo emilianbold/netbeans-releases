@@ -68,6 +68,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -79,11 +80,13 @@ public class ExportDiffCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final DiffMode mode;
     private final OutputStream out;
+    private final FileListener listener;
 
-    public ExportDiffCommand (Repository repository, File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) {
+    public ExportDiffCommand (Repository repository, File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.roots = roots;
         this.monitor = monitor;
+        this.listener = listener;
         this.mode = mode;
         this.out = out;
     }
@@ -94,6 +97,7 @@ public class ExportDiffCommand extends GitCommand {
         DiffFormatter formatter = new DiffFormatter(out);
         formatter.setRepository(repository);
         ObjectReader or = null;
+        String workTreePath = repository.getWorkTree().getAbsolutePath();
         try {
             Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
             if (!pathFilters.isEmpty()) {
@@ -119,10 +123,11 @@ public class ExportDiffCommand extends GitCommand {
                 default:
                     throw new IllegalArgumentException("Unknown diff mode: " + mode);
             }
+            List<DiffEntry> diffEntries;
             if (secondTree instanceof WorkingTreeIterator) {
                 // remote when fixed in JGit, see ExportDiffTest.testDiffRenameDetectionProblem
                 formatter.setDetectRenames(false);
-                List<DiffEntry> diffEntries = formatter.scan(firstTree, secondTree);
+                diffEntries = formatter.scan(firstTree, secondTree);
                 formatter.setDetectRenames(true);
                 RenameDetector detector = formatter.getRenameDetector();
                 detector.reset();
@@ -134,7 +139,14 @@ public class ExportDiffCommand extends GitCommand {
                 formatter.format(diffEntries);
             } else {
                 formatter.setDetectRenames(true);
-                formatter.format(firstTree, secondTree);
+                diffEntries = formatter.scan(firstTree, secondTree);
+            }
+            for (DiffEntry ent : diffEntries) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                listener.notifyFile(new File(workTreePath + File.separator + ent.getNewPath()), ent.getNewPath());
+                formatter.format(ent);
             }
             formatter.flush();
         } catch (IOException ex) {

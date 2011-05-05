@@ -80,9 +80,9 @@ import org.openide.util.NbBundle;
  */
 public abstract class Disassembly implements StateModel.Listener {
     private final NativeDebuggerImpl debugger;
-    protected boolean opened = false;
-    protected boolean opening = false;
-    private final List<DebuggerAnnotation> bptAnnotations = new ArrayList<DebuggerAnnotation>();
+    protected static boolean opened = false;
+    private static boolean opening = false;
+    private static final List<DebuggerAnnotation> bptAnnotations = new ArrayList<DebuggerAnnotation>();
     private final BreakpointModel breakpointModel;
     private int disLength = 0;
     private DisText disText;
@@ -149,7 +149,7 @@ public abstract class Disassembly implements StateModel.Listener {
     }
     
     public static boolean isInDisasm() {
-        if (getCurrent().opened) {
+        if (opened) {
             //TODO: optimize
             FileObject fobj = EditorContextDispatcher.getDefault().getCurrentFile();
             if (fobj == null) {
@@ -189,10 +189,7 @@ public abstract class Disassembly implements StateModel.Listener {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
                             if (editorCookie.getOpenedPanes() == null) {
-                                Disassembly dis = getCurrent();
-                                if (dis != null) {
-                                    dis.opened = false;
-                                }
+                                opened = false;
                                 ((EditorCookie.Observable)editorCookie).removePropertyChangeListener(this);
                             }
                         }
@@ -200,10 +197,10 @@ public abstract class Disassembly implements StateModel.Listener {
                 });
             }
             getDataObject().getCookie(OpenCookie.class).open();
+            opening = true;
+            opened = true;
             Disassembly dis = getCurrent();
             if (dis != null) {
-                dis.opening = true;
-                dis.opened = true;
                 dis.debugger.registerDisassembly(dis);
                 dis.reload();
             }
@@ -217,15 +214,19 @@ public abstract class Disassembly implements StateModel.Listener {
     public static void close() {
         try {
             getDataObject().getCookie(CloseCookie.class).close();
+            opened = false;
             // TODO: check for correct close on debug close
             Disassembly dis = getCurrent();
             if (dis != null) {
-                dis.opened = false;
                 dis.debugger.registerDisassembly(null);
             }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
+    }
+    
+    public static boolean isOpened() {
+        return opened;
     }
     
     public static FileObject getFileObject() {

@@ -575,8 +575,8 @@ public final class MemoryWindow extends TopComponent
     }
     
     private static class Model {
-        public String start = "main";
-        public String length = "80";
+        public String start = "main"; //NOI18N
+        public String length = "80"; //NOI18N
         public FormatOption format = null;
     }
 }
