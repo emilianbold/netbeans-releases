@@ -1031,6 +1031,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             registerMemoryWindow(MemoryWindow.getDefault());
             MemoryWindow.getDefault().setDebugger(this);
         }
+        
+        if (Disassembly.isOpened()) {
+            registerDisassembly(getDisassembly());
+            getDisassembly().stateUpdated();
+        } else {
+            registerDisassembly(null);
+        }
     }
 
     /**
@@ -1094,8 +1101,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             getIOPack().console().getTerm().putChars(warnArray,
                     0, warnArray.length);
         }
-        
-        Disassembly.close();
+        // Close if no more sessions
+        NativeSession[] sessions = DebuggerManager.get().getSessions();
+        if (sessions.length <= 1) {
+            Disassembly.close();
+        }
 
         // Go through the array conversion otherwise we'll get
         // ConcurrentModificatonExpcetions.
