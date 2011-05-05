@@ -48,13 +48,20 @@ import org.netbeans.modules.csl.api.HintSeverity;
  *
  * @author marekfukala
  */
-public class TagsMatching extends PatternRule {
+public class Internal extends PatternRule {
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.ERROR;
+    }
 
     private static final String[] PATTERNS_SOURCES = new String[]{
-        "Stray end tag",
-        "End tag for .*? seen but there were unclosed elements",
-        "End of the file seen and there were open elements",
-        "No .*? element in scope but a .*? end tag seen"
+        "Too many messages.", 
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
@@ -63,13 +70,6 @@ public class TagsMatching extends PatternRule {
     public Pattern[] getPatterns() {
         return PATTERNS;
     }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
-    }
-    
-    
     
 
 }
