@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.model;
 
 import java.util.Collections;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.filesystems.FileObject;
@@ -59,12 +58,14 @@ public class UtilitiesTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
-        Logger.getLogger("").setLevel(Level.OFF);
-        Utilities.logger.setLevel(Level.ALL);
     }
 
     protected @Override Level logLevel() {
         return Level.FINE;
+    }
+
+    protected @Override String logRoot() {
+        return Utilities.class.getName();
     }
 
     public void testPerformPOMModelOperations() throws Exception {

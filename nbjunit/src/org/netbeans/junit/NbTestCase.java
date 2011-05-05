@@ -194,7 +194,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     * Allows easy collecting of log messages send thru java.util.logging API.
     * Overwrite and return the log level to collect logs to logging file. 
     * If the method returns non-null level, then the level is assigned to
-    * the <code>Logger.getLogger("")</code> and the messages reported to it
+    * the <code>Logger.getLogger({@linkplain #logRoot logRoot()})</code> and the messages reported to it
     * are then send into regular log file (which is accessible thru {@link NbTestCase#getLog})
     * and in case of failure the last few messages is also included
     * in <code>failure.getMessage()</code>.
@@ -206,6 +206,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     */
     protected Level logLevel() {
         return null;
+    }
+         
+    /**
+     * If overriding {@link #logLevel}, may override this as well to collect messages from only some code.
+     * @return {@code ""} (default) to collect messages from all loggers; or {@code "my.pkg"} or {@code "my.pkg.Class"} etc.
+     * @since 1.68
+     */
+    protected String logRoot() {
+        return "";
     }
          
     /**
@@ -223,7 +232,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             } catch(BackingStoreException bex) {}
             Level lev = logLevel();
             if (lev != null) {
-                Log.configure(lev, NbTestCase.this);
+                Log.configure(lev, logRoot(), NbTestCase.this);
             }
             super.run(result);
         }
