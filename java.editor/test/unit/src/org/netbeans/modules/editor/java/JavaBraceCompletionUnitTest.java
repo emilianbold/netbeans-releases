@@ -863,6 +863,66 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         );
     }
 
+    public void testSkipWhenBalanced198194a() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = a(|); i < 10; i++)"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "for (int i = a()|; i < 10; i++)"
+        );
+    }
+
+    public void testSkipWhenNotBalanced198194a() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = a(|; i < 10; i++)"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "for (int i = a()|; i < 10; i++)"
+        );
+    }
+
+    public void testSkipWhenBalanced198194b() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = a(); i < 10; i = a(|))"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "for (int i = a(); i < 10; i = a()|)"
+        );
+    }
+
+    public void testSkipWhenNotBalanced198194b() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = a(); i < 10; i = a(|)"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "for (int i = a(); i < 10; i = a()|)"
+        );
+    }
+
+    public void testSkipWhenNotBalanced198194c() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = a(); i < 10; i++) a(|;"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "for (int i = a(); i < 10; i++) a()|;"
+        );
+    }
+
+    public void testSkipWhenBalanced198194c() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "for (int i = a(); i < 10; i++) a(|);"
+        );
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals(
+                "for (int i = a(); i < 10; i++) a()|;"
+        );
+    }
+
     public void testKeepBalance148878() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "Map[|] m = new HashMap[1];"
