@@ -109,7 +109,7 @@ public class DiffTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
 
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             //modify, save file and invoke Diff
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");

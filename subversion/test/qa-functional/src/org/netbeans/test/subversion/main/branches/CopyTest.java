@@ -118,7 +118,7 @@ public class CopyTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             mh = new MessageHandler("Copying");
             TestKit.removeHandlers(log);
@@ -194,7 +194,7 @@ public class CopyTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             mh = new MessageHandler("Copying");
             TestKit.removeHandlers(log);
