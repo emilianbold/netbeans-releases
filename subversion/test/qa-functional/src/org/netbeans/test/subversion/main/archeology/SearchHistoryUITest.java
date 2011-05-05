@@ -118,7 +118,7 @@ public class SearchHistoryUITest extends JellyTestCase{
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             mh = new MessageHandler("Searching History");
             TestKit.removeHandlers(log);

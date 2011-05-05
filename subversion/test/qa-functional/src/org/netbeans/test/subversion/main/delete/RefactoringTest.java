@@ -116,7 +116,7 @@ public class RefactoringTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
 
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
