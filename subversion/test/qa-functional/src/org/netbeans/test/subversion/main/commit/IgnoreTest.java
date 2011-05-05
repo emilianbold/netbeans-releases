@@ -121,7 +121,7 @@ public class IgnoreTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
 
@@ -231,7 +231,7 @@ public class IgnoreTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             TestKit.createNewPackage(PROJECT_NAME, "xx");
 
@@ -341,7 +341,7 @@ public class IgnoreTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
