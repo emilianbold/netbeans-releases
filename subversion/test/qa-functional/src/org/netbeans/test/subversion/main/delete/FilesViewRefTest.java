@@ -137,7 +137,7 @@ public class FilesViewRefTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             TestKit.createNewPackage(PROJECT_NAME, "a.b.c");
             TestKit.createNewElement(PROJECT_NAME, "a", "AClass");

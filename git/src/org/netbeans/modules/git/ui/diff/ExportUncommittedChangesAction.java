@@ -48,11 +48,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.logging.Logger;
+import java.util.Map;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
@@ -66,6 +68,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,11 +79,27 @@ import org.openide.util.NbBundle;
 @ActionRegistration(displayName = "#LBL_ExportUncommittedChangesAction_Name")
 public class ExportUncommittedChangesAction extends SingleRepositoryAction {
 
-    private static final Logger LOG = Logger.getLogger(ExportUncommittedChangesAction.class.getName());
-    
     @Override
     protected void performAction (final File repository, final File[] roots, VCSContext context) {
-        if (roots.length == 0 || !Git.getInstance().getFileStatusCache().containsFiles(new HashSet<File>(Arrays.asList(roots)), FileInformation.STATUS_LOCAL_CHANGES, true)) {
+        exportDiff(repository, roots, DiffMode.HEAD_VS_WORKINGTREE);
+    }
+
+    void exportDiff (final Node[] selectedNodes, final DiffMode diffMode) {
+        Utils.postParallel(new Runnable () {
+            @Override
+            public void run() {
+                VCSContext context = getCurrentContext(selectedNodes);
+                Map.Entry<File, File[]> actionRoots = getActionRoots(context);
+                if (actionRoots != null) {
+                    exportDiff(actionRoots.getKey(), actionRoots.getValue(), diffMode);
+                }
+            }
+        }, 0);
+    }
+    
+    private void exportDiff (final File repository, final File[] roots, final DiffMode diffMode) {
+        final File[] files;
+        if (roots.length == 0 || (files = Git.getInstance().getFileStatusCache().listFiles(new HashSet<File>(Arrays.asList(roots)), diffModeToStatusSet(diffMode))).length == 0) {
             NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.emptyContext"), NotifyDescriptor.INFORMATION_MESSAGE); //NOI18N
             DialogDisplayer.getDefault().notify(msg);
             return;
@@ -102,8 +121,12 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
                                     GitClient client = getClient();
                                     ensureParentExists(toFile);
                                     out = new BufferedOutputStream(new FileOutputStream(toFile));
-                                    client.exportDiff(Git.getInstance().getFileStatusCache().listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES), DiffMode.HEAD_VS_WORKINGTREE, out, this);
-                                    success = true;
+                                    client.addNotificationListener(new DefaultFileListener(roots));
+                                    setProgress(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.preparingDiff")); //NOI18N
+                                    client.exportDiff(files, diffMode, out, this);
+                                    if (!isCanceled()) {
+                                        success = true;
+                                    }
                                 } catch (Exception ex) {
                                     logger.outputInRed(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.failed")); //NOI18N
                                     GitClientExceptionHandler.notifyException(ex, true);
@@ -114,12 +137,8 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
                                             out.close();
                                         } catch (IOException ex) { }
                                     }
-                                    if (success) {
-                                        if (toFile.length() == 0) {
-                                            toFile.delete();
-                                        } else {
-                                            Utils.openFile(toFile);
-                                        }
+                                    if (success && toFile.length() > 0) {
+                                        Utils.openFile(toFile);
                                     } else {
                                         toFile.delete();
                                     }
@@ -144,5 +163,17 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
         if (parent != null) {
             parent.mkdirs();
         }
+    }
+
+    private EnumSet<Status> diffModeToStatusSet (DiffMode diffMode) {
+        switch (diffMode) {
+            case HEAD_VS_WORKINGTREE:
+                return FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
+            case HEAD_VS_INDEX:
+                return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
+            case INDEX_VS_WORKINGTREE:
+                return FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING;
+        }
+        throw new IllegalArgumentException("Unknown diff mode " + diffMode);
     }
 }

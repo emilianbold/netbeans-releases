@@ -42,19 +42,20 @@
 package org.netbeans.modules.html.editor.hints;
 
 import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
  *
  * @author marekfukala
  */
-public class TagsMatching extends PatternRule {
+public class Obsolete extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
-        "Stray end tag",
-        "End tag for .*? seen but there were unclosed elements",
-        "End of the file seen and there were open elements",
-        "No .*? element in scope but a .*? end tag seen"
+        //org.whattf.checker.schematronequiv.Assertions
+        //org.whattf.checker.ConformingButObsoleteWarner
+        "The .*? attribute on the .*? element is obsolete", 
+        "The .*? element is obsolete",
+        "The .*? attribute is obsolete",
+        "The ?Content-Language? state is obsolete. Consider", 
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
@@ -63,13 +64,6 @@ public class TagsMatching extends PatternRule {
     public Pattern[] getPatterns() {
         return PATTERNS;
     }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
-    }
-    
-    
     
 
 }
