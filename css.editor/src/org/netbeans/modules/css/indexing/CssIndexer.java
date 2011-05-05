@@ -129,7 +129,10 @@ public class CssIndexer extends EmbeddingIndexer {
         }
     }
     
-    //no synchronization on the computedImportsHashCodes!
+    //1. no synchronization on the computedImportsHashCodes!
+    //2. the callers of this method will get old results if an indexing is in progress and 
+    //   if the cached hashcode changes - possibly add some kind of synchronization 
+    //   to that call (but it seems too much error prone to me)
     public static long getImportsHashCodeForRoots(Collection<FileObject> roots) {
         long hash = 5;
         for(FileObject root : roots) {
