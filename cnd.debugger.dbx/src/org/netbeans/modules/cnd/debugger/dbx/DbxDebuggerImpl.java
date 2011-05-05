@@ -258,17 +258,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 ArrayBrowserWindow.getDefault().setArrayBrowserController(arrayBrowserController);
             }
 
-            if (memoryWindow != null) {
-                MemoryWindow.getDefault().setDebugger(this);
-                // will call requestMems() in setControlPanelData
-                MemoryWindow.getDefault().setControlPanelData(memory_start, memory_length, memory_format);
-            } else if (MemoryWindow.getDefault().isShowing()) {
-                registerMemoryWindow(MemoryWindow.getDefault());
-                MemoryWindow.getDefault().setDebugger(this);
-                // will call requestMems() in setControlPanelData
-                MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
-            }
-
             if (registersWindow != null) {
                 dbx.register_notify(0, true);
             } else if (RegistersWindow.getDefault().isShowing()) {
@@ -828,7 +817,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             memoryWindow.setDebugger(null);
             // CR 6660966
             //currentMemoryWindow = null;
-            MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
+            //MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
         }
     }
     private RtcController rtcController;
@@ -3565,10 +3554,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public void updateVItem(int nitems, GPDbxVItemDynamic items[]) {
         ArrayBrowserWindow.getDefault().updateArrayView(nitems, items);
     }
-    
-    private String memory_start;
-    private String memory_length;
-    private FormatOption memory_format;
 
     @Override
     public void registerMemoryWindow(MemoryWindow mw) {
@@ -3628,7 +3613,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         String value, new_memvalue;
         char c;
         
-        if ((memory_format == DbxMemoryFormat.DECIMAL) || (memory_format == DbxMemoryFormat.OCTAL)) {
+        FormatOption memoryFormat = (memoryWindow != null) ? memoryWindow.getMemoryFormat() : null;
+        
+        if (memoryFormat == DbxMemoryFormat.DECIMAL || 
+                memoryFormat == DbxMemoryFormat.OCTAL) {
             total_len = memvalue.length();
             j = memvalue.indexOf(':', 0);
             new_memvalue = "";		// NOI18N
@@ -3652,7 +3640,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
        	        value = "";	// NOI18N
        	        valuelen = 0;
        	        maxvaluelen = 12;
-       	        if (memory_format == DbxMemoryFormat.DECIMAL) {
+       	        if (memoryFormat == DbxMemoryFormat.DECIMAL) {
        	            if (memvalue.charAt(j) == '-') {
        	                value = "-"; // NOI18N
        	                j++;
@@ -3694,9 +3682,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (!isConnected()) {
             return;
         }
-        memory_start = start;
-        memory_length = length;
-        memory_format = format;
         dbx.mem_format(start, length, format.getOption());
     }
 
