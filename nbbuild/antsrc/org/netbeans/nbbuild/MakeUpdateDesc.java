@@ -648,6 +648,7 @@ public class MakeUpdateDesc extends MatchingTask {
         module.setAttribute("downloadsize", "0"); // recalculated anyway
         Element manifest = doc.createElement("manifest");
         module.appendChild(manifest);
+        manifest.setAttribute("AutoUpdate-Show-In-Client", "false");
         manifest.setAttribute("OpenIDE-Module", cnb);
         String bundleName = loc(localized, attr, "Bundle-Name");
         manifest.setAttribute("OpenIDE-Module-Name", bundleName != null ? bundleName : cnb);

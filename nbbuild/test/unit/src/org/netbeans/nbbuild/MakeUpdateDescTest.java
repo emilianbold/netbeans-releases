@@ -74,6 +74,7 @@ public class MakeUpdateDescTest extends NbTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(e, baos);
         assertEquals("<module codenamebase='bundle' distribution='' downloadsize='0'> <manifest " +
+                "AutoUpdate-Show-In-Client='false' " +
                 "OpenIDE-Module='bundle' OpenIDE-Module-Display-Category='hello' " +
                 "OpenIDE-Module-Module-Dependencies='org.netbeans.api.progress/1 &gt; 1.19, " +
                 "org.netbeans.modules.options.api/0-1 &gt; 1.17, " +
