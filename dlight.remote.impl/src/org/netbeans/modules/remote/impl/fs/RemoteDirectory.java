@@ -384,9 +384,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public RemoteFileObjectBase[] getChildren() {
         try {
-            if (!isValid()) {
-                int i = 0;
-            }
             DirectoryStorage storage = getDirectoryStorage(null);
             List<DirEntry> entries = storage.listValid();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];

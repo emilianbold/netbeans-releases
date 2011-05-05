@@ -44,16 +44,11 @@
 package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -202,15 +197,7 @@ public class CndPathUtilitities {
         } else {
             FileObject fo = base.getFileObject(newPath);
             if (fo != null && fo.isValid()) {
-                try {
-                    // I'm not quite sure we should canonicalize here.
-                    // But toAbsolutePath(String, String) returned canonical path from the early cnd days,
-                    // so I preserve this behaviour
-                    return CndFileUtils.getCanonicalPath(fo);
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                    return fo.getPath();
-                }                        
+                return fo.getPath();
             } else {
                 // getPath always return "/" => use / as delim as well
                 return base.getPath() + '/' + path;

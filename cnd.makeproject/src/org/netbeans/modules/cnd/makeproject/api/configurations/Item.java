@@ -80,8 +80,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
-public class Item implements NativeFileItem, PropertyChangeListener {
-
+public final class Item implements NativeFileItem, PropertyChangeListener {
     private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
 
     private final String path;
