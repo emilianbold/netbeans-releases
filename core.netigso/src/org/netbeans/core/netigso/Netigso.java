@@ -118,7 +118,6 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             activator = new NetigsoActivator();
             configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this));
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
-            // helpful for diagnostics: configMap.put("felix.log.level", "4");
             FrameworkFactory frameworkFactory = lkp.lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
                 throw new IllegalStateException(
@@ -364,7 +363,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                         b = original;
                     } else {
                         b = framework.getBundleContext().installBundle(
-                            "netigso://" + bundleSymbolicName(m), is
+                            "netigso://" + m.getCodeNameBase(), is
                         );
                     }
                     is.close();
@@ -388,11 +387,6 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         return (Integer.parseInt(segments[0]) + major * 100) + "."  + segments[1] + "." + segments[2];
     }
 
-    static String bundleSymbolicName(ModuleInfo m) {
-        String n = (String) m.getAttribute("Netigso-SymbolicName");
-        return n != null ? n : m.getCodeNameBase();
-    }
-
     /** Creates a fake bundle definition that represents one NetBeans module
      *
      * @param m the module
@@ -408,17 +402,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         Manifest man = new Manifest();
         man.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         man.getMainAttributes().putValue("Bundle-ManifestVersion", "2"); // NOI18N
-        man.getMainAttributes().putValue("Bundle-SymbolicName", bundleSymbolicName(m)); // NOI18N
+        man.getMainAttributes().putValue("Bundle-SymbolicName", m.getCodeNameBase()); // NOI18N
 
-        String v = (String) m.getAttribute("Netigso-Version");
-        if (v == null && m.getSpecificationVersion() != null) {
-            v = threeDotsWithMajor(m.getSpecificationVersion().toString(), m.getCodeName());
+        if (m.getSpecificationVersion() != null) {
+            String spec = threeDotsWithMajor(m.getSpecificationVersion().toString(), m.getCodeName());
+            man.getMainAttributes().putValue("Bundle-Version", spec.toString()); // NOI18N
         }
-        if (v != null) {
-            man.getMainAttributes().putValue("Bundle-Version", v); // NOI18N
-        }
-        if (exp != null) { // XXX should an existing Export-Package really be overridden?
-            // XXX this is probably wrong - will not handle .**
+        if (exp != null) {
             man.getMainAttributes().putValue("Export-Package", exp.replaceAll("\\.\\*", "")); // NOI18N
         } else {
             man.getMainAttributes().putValue("Export-Package", m.getCodeNameBase()); // NOI18N
