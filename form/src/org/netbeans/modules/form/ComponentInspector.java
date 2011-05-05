@@ -189,17 +189,13 @@ public class ComponentInspector extends JPanel
 
     @Override
     public void panelActivated(Lookup context) {
-        if (explorerManager != null) {
-            attachActions();
-        }
+        attachActions();
         // actual context is set via setFormDesigner
     }
 
     @Override
     public void panelDeactivated() {
-        if (explorerManager != null) {
-            detachActions();
-        }
+        detachActions();
         // actual context is set via setFormDesigner
     }
 
@@ -259,6 +255,10 @@ public class ComponentInspector extends JPanel
     }
 
     void attachActions() {
+        if (explorerManager == null) {
+            return;
+        }
+
         ExplorerUtils.activateActions(explorerManager, true);
         updatePasteAction();
 
@@ -275,7 +275,9 @@ public class ComponentInspector extends JPanel
     }
 
     void detachActions() {
-        ExplorerUtils.activateActions(explorerManager, false);
+        if (explorerManager != null) {
+            ExplorerUtils.activateActions(explorerManager, false);
+        }
 
         Clipboard c = getClipboard();
         if (c instanceof ExClipboard) {
