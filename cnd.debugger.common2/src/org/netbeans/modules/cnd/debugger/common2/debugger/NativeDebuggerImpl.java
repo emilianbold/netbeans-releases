@@ -104,7 +104,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisInfoPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -1027,6 +1026,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
 	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
 	    bpt.showAnnotationsFor(true, this);
+        
+        if (memoryWindow != null || MemoryWindow.getDefault().isShowing()) {
+            registerMemoryWindow(MemoryWindow.getDefault());
+            MemoryWindow.getDefault().setDebugger(this);
+        }
     }
 
     /**
