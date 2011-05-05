@@ -51,7 +51,6 @@ import org.netbeans.MockModuleInstaller;
 import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.osgi.framework.Bundle;
 
 /**
  * Basic tests to verify the basic interaction between NetBeans module
@@ -237,38 +236,4 @@ public class NetigsoTest extends NetigsoHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-
-    public void testAltOSGiMetadata() throws Exception { // #197908
-        ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
-        mgr.mutexPrivileged().enterWriteAccess();
-        try {
-            Module m1 = mgr.create(changeManifest(new File(jars, "simple-module.jar"),
-                    "OpenIDE-Module: org.netbeans.libs.foo\n"
-                    + "Netigso-SymbolicName: org.foo\n"
-                    + "OpenIDE-Module-Specification-Version: 1.0\n"
-                    + "Netigso-Version: 3.1.0\n"
-                    + "OpenIDE-Module-Public-Packages: org.foo.*\n"), null, false, false, false);
-            assertEquals("org.netbeans.libs.foo", m1.getCodeNameBase());
-            mgr.enable(m1);
-            assertTrue(m1.isEnabled());
-            Module m2 = mgr.create(changeManifest(new File(jars, "depends-on-simple-module.jar"),
-                    "Bundle-SymbolicName: uses.foo\n"
-                    + "Require-Bundle: org.foo;bundle-version=3.1.0\n"
-                    + "Import-Package: org.foo\n"), null, false, false, false);
-            assertEquals("uses.foo", m2.getCodeNameBase());
-            mgr.enable(m2);
-            assertTrue(m2.isEnabled());
-            assertNull(NetigsoServicesTest.findBundle("org.netbeans.libs.foo"));
-            Bundle b1 = NetigsoServicesTest.findBundle("org.foo");
-            assertNotNull(b1);
-            assertEquals("3.1.0", b1.getVersion().toString());
-            Bundle b2 = NetigsoServicesTest.findBundle("uses.foo");
-            assertNotNull(b2);
-            assertEquals(Bundle.ACTIVE, b2.getState());
-            b2.loadClass("org.bar.SomethingElse");
-        } finally {
-            mgr.mutexPrivileged().exitWriteAccess();
-        }
-    }
-
 }

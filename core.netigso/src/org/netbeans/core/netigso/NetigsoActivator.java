@@ -70,9 +70,9 @@ final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
             String loc = ((Bundle) o).getLocation();
             final String pref = "netigso://"; // NOI18N
             if (loc != null && loc.startsWith(pref)) {
-                String bsn = loc.substring(pref.length());
+                String cnb = loc.substring(pref.length());
                 for (ModuleInfo mi : all) {
-                    if (bsn.equals(Netigso.bundleSymbolicName(mi))) {
+                    if (cnb.equals(mi.getCodeNameBase())) {
                         return new DelegateLoader(mi);
                     }
                 }
