@@ -91,7 +91,7 @@ public class Utilities {
 
     private Utilities() {}
 
-    static final Logger logger = Logger.getLogger(Utilities.class.getName());
+    private static final Logger logger = Logger.getLogger(Utilities.class.getName());
 
     /**
      * 
