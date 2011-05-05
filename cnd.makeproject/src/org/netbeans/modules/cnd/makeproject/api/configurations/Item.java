@@ -53,8 +53,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -83,7 +81,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 public final class Item implements NativeFileItem, PropertyChangeListener {
-    private static final Map<String, Item> added = new HashMap<String, Item>();
     private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
 
     private final String path;
@@ -100,15 +97,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             throw new IllegalStateException(ex);
         }
         String absPath = CndPathUtilitities.toAbsolutePath(baseDirFileObject, path);
-        if (added.containsKey(absPath)) {
-            absPath = CndPathUtilitities.toAbsolutePath(baseDirFileObject, path);
-        }
         this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
         this.path = CndPathUtilitities.normalizeSlashes(path);
-        Item old = added.put(absPath, this);
-        if (old != null) {
-            CndUtils.assertFalse(true, "trying to replace " + old.getPath() + " by " + this.getPath());
-        }
     }
 
     // XXX:fullRemote deprecate and remove!
