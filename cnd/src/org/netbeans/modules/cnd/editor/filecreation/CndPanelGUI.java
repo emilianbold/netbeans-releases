@@ -116,7 +116,7 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
         if (remoteProject != null) {
             final ExecutionEnvironment env = remoteProject.getSourceFileSystemHost();
             if (env.isRemote()) {
-                name += " [" + env.getDisplayName() + ']';
+                name += " [" + env.getDisplayName() + ']'; // NOI18N
                 //name = "<html>" + name + "<font color='!controlShadow'>" + env.getDisplayName() + "</html>";
             }
         }

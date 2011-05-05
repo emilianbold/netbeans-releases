@@ -4315,13 +4315,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void activate(boolean redundant) {
 
 	if (isConnected()) {
-
+            
 	    super.activate(redundant);
-
-            if (memoryWindow != null) {
-                memoryWindow.setDebugger(this);
-            }
-
+            
 	} else {
 	    // See big comment in dbx side
 	    updateActions();

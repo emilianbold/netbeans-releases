@@ -52,6 +52,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -134,11 +135,11 @@ public final class MemoryWindow extends TopComponent
 
     @Override
     protected void componentShowing () {
-        super.componentShowing ();
-	// 6661013, always connect to current debugger
-	connectToDebugger(DebuggerManager.get().currentDebugger());
+        super.componentShowing();
         needInitData=true;
         updateWindow();
+        // 6661013, always connect to current debugger
+	connectToDebugger(DebuggerManager.get().currentDebugger());
     }
 
     // interface TopComponent
@@ -165,28 +166,49 @@ public final class MemoryWindow extends TopComponent
         controlAddressCombo.requestFocusInWindow();
     }
 
-    public void setControlPanelData (String start, String length, FormatOption format) {
-	memory_start = start;
-	memory_length = length;
-	memory_format = format;
-        controlAddressCombo.getEditor().setItem(start);
-	controlLengthText.setText(length);
-        updateSelectedFormat();
+    public FormatOption getMemoryFormat() {
+        return memory_format;
     }
+
+    private final WeakHashMap<NativeDebugger, Model> models = new WeakHashMap<NativeDebugger, Model>();
     
-    public void setDebugger (NativeDebugger debugger) {
-        boolean update = this.debugger != debugger;
-	this.debugger = debugger;
+    public void setDebugger(NativeDebugger debugger) {
+//        boolean update = this.debugger != debugger;
         
-        if (update && controlFormatCombo != null && debugger != null) {
-            // set memory formats
-            updateFormats();
+        // persist current model
+        if (this.debugger != null) {
+            Model oldModel = models.get(this.debugger);
+            oldModel.start = memory_start;
+            oldModel.length = memory_length;
+            oldModel.format = memory_format;
         }
+        
+	this.debugger = debugger;
+       
+        if (debugger == null) {
+            return;
+        }
+        
+        // find and set new model
+        Model newModel = models.get(debugger);
+        if (newModel == null) {
+            newModel = new Model();
+            models.put(debugger, newModel);
+        }
+        memory_start = newModel.start;
+	memory_length = newModel.length;
+	memory_format = newModel.format;
+        controlAddressCombo.getEditor().setItem(memory_start);
+	controlLengthText.setText(memory_length);
+        // set memory formats (causes update)
+        updateFormats();
     }
     
     private void updateFormats() {
-        controlFormatCombo.setModel(new DefaultComboBoxModel(debugger.getMemoryFormats()));
-        updateSelectedFormat();
+        if (debugger != null) {
+            controlFormatCombo.setModel(new DefaultComboBoxModel(debugger.getMemoryFormats()));
+            updateSelectedFormat();
+        }
     }
     
     private void updateSelectedFormat() {
@@ -199,7 +221,7 @@ public final class MemoryWindow extends TopComponent
         controlFormatCombo.setSelectedIndex(0);
     }
 
-    protected void connectToDebugger (NativeDebugger debugger) {
+    private void connectToDebugger(NativeDebugger debugger) {
         setDebugger(debugger);
 	if (debugger == null) return;
 	debugger.registerMemoryWindow(this);
@@ -221,11 +243,7 @@ public final class MemoryWindow extends TopComponent
     }
     
     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-        String ac = actionEvent.getActionCommand();
-        if (ac.equals("comboBoxChanged")) {	// NOI18N
-            JComboBox cb = (JComboBox) actionEvent.getSource();
-            memory_start = (String) cb.getSelectedItem();
-        }
+        memory_start = (String) controlAddressCombo.getSelectedItem();
         updateMems();
     }
     
@@ -257,7 +275,7 @@ public final class MemoryWindow extends TopComponent
     }
 
     public void updateData(List<String> memLines) {
-        if ((memLines == null) || (memLines.isEmpty())) {
+        if (memLines == null) {
 	    return;
         }
 
@@ -554,5 +572,11 @@ public final class MemoryWindow extends TopComponent
     @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("MemoryBrowserWindow");
+    }
+    
+    private static class Model {
+        public String start = "main"; //NOI18N
+        public String length = "80"; //NOI18N
+        public FormatOption format = null;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
-import org.openide.text.Annotation;
+import java.util.regex.Pattern;
 
 /**
  *
- * @author Egor Ushakov
+ * @author marekfukala
  */
-public interface DisassemblyService {
-    /**
-     * Opens disassembly and show the line related to the address specified
-     * @param address
-     * @return
-     */
-    boolean showAddress(String address);
+public class Obsolete extends PatternRule {
 
-    /**
-     * Opens disassembly and show the breakpoint
-     * @param address
-     * @return
-     */
-    //boolean showBreakpoint(AddressBreakpoint b);
-
-    /**
-     * Annotates address
-     * @param address
-     * @param annotationType
-     * @return
-     */
-    Annotation annotateAddress(String address, String annotationType);
+    private static final String[] PATTERNS_SOURCES = new String[]{
+        //org.whattf.checker.schematronequiv.Assertions
+        //org.whattf.checker.ConformingButObsoleteWarner
+        "The .*? attribute on the .*? element is obsolete", 
+        "The .*? element is obsolete",
+        "The .*? attribute is obsolete",
+        "The ?Content-Language? state is obsolete. Consider", 
+    }; //NOI18N
     
-    void movePC(long address, DebuggerAnnotation pcMarket, boolean andShow);
+    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
 
-    /**
-     * Returns line number of the instruction with the address specified, -1 if not found
-     * @param address
-     * @return
-     */
-    int getAddressLine(String address);
-
-    /**
-     * Returns line number of the address breakpoint
-     * @param address
-     * @return
-     */
-    //int getBreakpointLine(AddressBreakpoint b);
-
-    /**
-     * Returns address of the instruction on the specified line
-     * @param lineNo
-     * @return
-     */
-    String getLineAddress(int lineNo);
-
-    /**
-     * @param url
-     * @return true if url is from disassembly file
-     */
-    boolean isDis(String url);
+    @Override
+    public Pattern[] getPatterns() {
+        return PATTERNS;
+    }
     
-    boolean isInDis();
+
 }

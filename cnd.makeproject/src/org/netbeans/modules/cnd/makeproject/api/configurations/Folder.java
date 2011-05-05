@@ -62,7 +62,6 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -1179,16 +1178,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     private FileObject getThisFolder() {
         String rootPath = getRootPath();
-        String absRootPath;
-        RemoteProject remoteProject = getProject().getLookup().lookup(RemoteProject.class);
-        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            absRootPath = remoteProject.resolveRelativeRemotePath(rootPath);
-        } else {
-            absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
-        }
-        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
-        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
-        return folderFile;
+        return RemoteFileUtil.getFileObject(configurationDescriptor.getBaseDirFileObject(), rootPath);
     }
     
     @Override

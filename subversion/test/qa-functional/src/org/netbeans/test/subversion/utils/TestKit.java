@@ -37,7 +37,7 @@ import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,9 +78,7 @@ public final class TestKit {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
-        //new QueueTool().waitEmpty(1000);
-        //ProjectSupport.waitScanFinished();
+        waitForScanFinishedSimple();
         
         return file;
     }
@@ -150,12 +148,24 @@ public final class TestKit {
         }
         return timeOut;
     }
+
+    public static void waitForScanFinishedSimple() {
+        while (IndexingBridge.getInstance().isIndexingInProgress()) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                //wake up
+            }
+        }
+    }
     
+/* removed to get rid of dependency on j2seproject (#178009)
     public static void waitForScanFinishedAndQueueEmpty() {
         ProjectSupport.waitScanFinished();
 //        new QueueTool().waitEmpty(1000);
 //        ProjectSupport.waitScanFinished();
     }
+*/
     
     public static void finalRemove() throws Exception {
         closeProject("JavaApp");

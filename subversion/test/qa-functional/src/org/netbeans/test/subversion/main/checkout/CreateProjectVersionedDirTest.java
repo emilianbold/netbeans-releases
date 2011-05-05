@@ -22,7 +22,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
@@ -109,7 +108,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
             npwo.selectCategory("Java");
@@ -119,7 +118,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             new JTextFieldOperator(npnlso, 1).setText(work.getAbsolutePath() + File.separator + PROJECT_NAME + File.separator+ "src"); // NOI18N
             new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
             new NewProjectWizardOperator().finish();
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedSimple();
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
