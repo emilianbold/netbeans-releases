@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE transformations PUBLIC "-//NetBeans//DTD Module Automatic Dependencies 1.0//EN" "http://www.netbeans.org/dtds/module-auto-deps-1_0.dtd">
+<transformations version="1.0">
+    <transformationgroup>
+        <description>libs.jzlib and libs.jsch renamed</description>
+        <transformation>
+            <trigger-dependency type="cancel">
+                <module-dependency codenamebase="org.netbeans.libs.jzlib"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="com.jcraft.jzlib" spec="1.0.7"/>
+                </result>
+            </implies>
+        </transformation>
+        <transformation>
+            <trigger-dependency type="cancel">
+                <module-dependency codenamebase="org.netbeans.libs.jsch"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="com.jcraft.jsch" spec="0.1.43"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
+</transformations>
