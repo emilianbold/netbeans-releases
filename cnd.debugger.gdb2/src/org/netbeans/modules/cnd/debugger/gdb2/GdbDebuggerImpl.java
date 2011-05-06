@@ -123,6 +123,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
@@ -644,8 +645,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	state().isLoaded = false;
 	stateChanged();
         
-        if (memoryWindow != null) {
-            memoryWindow.setDebugger(null);
+        if (MemoryWindow.getDefault().isShowing()) {
+            MemoryWindow.getDefault().setDebugger(null);
         }
 
         // tell debuggercore that we're going away
@@ -2870,7 +2871,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             
             state().isProcess = true;
             
-            if (get_registers) {
+            if (RegistersWindow.getDefault().isShowing()) {
                 requestRegisters();
             }
         }
@@ -3596,7 +3597,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 " 1 " + lines + ' ' + MEMORY_READ_WIDTH + " .") { // NOI18N
             @Override
             protected void onDone(MIRecord record) {
-                if (memoryWindow != null) {
+                if (MemoryWindow.getDefault().isShowing()) {
                     LinkedList<String> res = new LinkedList<String>();
                     for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
                         StringBuilder sb = new StringBuilder();
@@ -3611,7 +3612,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         sb.append(" \"").append(ascii).append("\""); //NOI18N
                         res.add(sb.toString() + "\n"); //NOI18N
                     }
-                    memoryWindow.updateData(res);
+                    MemoryWindow.getDefault().updateData(res);
                 }
                 finish();
             }
@@ -3649,7 +3650,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MICommand cmd = new MiCommandImpl("-data-list-register-values x") { // NOI18N
                 @Override
                 protected void onDone(MIRecord record) {
-                    if (registersWindow != null) {
+                    if (RegistersWindow.getDefault().isShowing()) {
                         LinkedList<String> res = new LinkedList<String>();
                         for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
                             StringBuilder sb = new StringBuilder();
@@ -3666,7 +3667,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                             sb.append(value);
                             res.add(sb.toString());
                         }
-                        registersWindow.updateData(res);
+                        RegistersWindow.getDefault().updateData(res);
                     }
                     finish();
                 }
@@ -4457,14 +4458,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
     }
 
-    private boolean get_registers = false;
-    
     @Override
     public void registerRegistersWindow(RegistersWindow w) {
-        super.registerRegistersWindow(w);
         if (w != null) {
             requestRegisters();
         }
-        get_registers = (w != null);
     }
 }

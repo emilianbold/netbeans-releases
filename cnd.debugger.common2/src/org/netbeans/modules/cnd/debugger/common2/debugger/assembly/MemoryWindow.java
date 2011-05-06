@@ -119,10 +119,6 @@ public final class MemoryWindow extends TopComponent
         return DEFAULT;
     }
     
-    public static boolean isActive() {
-        return DEFAULT != null && DEFAULT.isShowing();
-    }
-    
     private MemoryWindow() {
 	name = Catalog.get("TITLE_MemoryWindow");    //NOI18N
 	view_name = Catalog.get("TITLE_MemoryView"); //NOI18N
@@ -279,10 +275,6 @@ public final class MemoryWindow extends TopComponent
     }
 
     public void updateData(List<String> memLines) {
-        if (memLines == null) {
-	    return;
-        }
-
 	// Add new address to addressList
 	int index = addrMap(memory_start);
 	if (index == -1) {
