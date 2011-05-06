@@ -61,6 +61,7 @@ public class WeakCache<K, V> {
     private final ConcurrentMap<K, Ref<K, V>> map;
     private final ReferenceQueue<V> referenceQueue;
     private final Lock lock;
+    private final Object replacementLock = new Object();
             
     private static class Ref<K, V> extends SoftReference<V> {
         private final K key;
@@ -111,40 +112,56 @@ public class WeakCache<K, V> {
         map.remove(key, expectedRef);
     }
     
-    public V safePut(K key, V value, V expected) {
-        final Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
-        Ref<K, V> expectedRef = new Ref<K, V>(key, expected, referenceQueue);
-        if (map.replace(key, expectedRef, newRef)) {
-            return value;
-        } else {
-            Ref<K, V> curRef = map.get(key);
-            V result = curRef == null ? null : curRef.get();
-            if (result != null) {
-                return result;
-            }
-            
-            // ref was removed of unhold => try to replace it once more
-            expectedRef = new Ref<K, V>(key, null, referenceQueue);
-            if (map.replace(key, expectedRef, newRef)) {
-                return value;
-            }
-        }
-        return null;
-    }
+//    public V safePut(K key, V value, V expected) {
+//        final Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+//        Ref<K, V> expectedRef = new Ref<K, V>(key, expected, referenceQueue);
+//        if (map.replace(key, expectedRef, newRef)) {
+//            return value;
+//        } else {
+//            Ref<K, V> curRef = map.get(key);
+//            V result = curRef == null ? null : curRef.get();
+//            if (result != null) {
+//                return result;
+//            }
+//            
+//            // ref was removed of unhold => try to replace it once more
+//            expectedRef = new Ref<K, V>(key, null, referenceQueue);
+//            if (map.replace(key, expectedRef, newRef)) {
+//                return value;
+//            }
+//        }
+//        return null;
+//    }
     
     public V putIfAbsent(K key, V value) {
-        Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
-        Ref<K, V> oldRef = map.putIfAbsent(key, newRef);
-        if (oldRef == null) {
+        synchronized (replacementLock) {
+            Ref<K, V> oldRef = map.get(key);
+            if (oldRef != null) {
+                V oldValue = oldRef.get();
+                if (oldValue != null) {
+                    return oldValue;
+                }
+            }            
+            Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+            map.put(key, newRef);
             return value;
-        } else {
-            return oldRef.get();
         }
-    }
-
-    public void put(K key, V value) {
-        Ref<K, V> ref = new Ref<K, V>(key, value, referenceQueue);
-        map.put(key, ref);
+//        Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+//        Ref<K, V> oldRef;
+//        for (int i = 0; i < 5; i++) { // in fact no more than twice
+//            oldRef = map.putIfAbsent(key, newRef);
+//            if (oldRef == null) {
+//                return value;
+//            } else {
+//                V oldValue = oldRef.get();
+//                if (oldValue == null) {
+//                    map.remove(key, oldRef); // and retry
+//                } else {
+//                    return oldValue;
+//                }
+//            }                   
+//        }
+//        return null;
     }
 
     public V get(K key) {
@@ -168,7 +185,8 @@ public class WeakCache<K, V> {
                 Ref<K, V> ref;
                 while ( (ref = (Ref<K, V>) referenceQueue.poll()) != null) {
                     if (ref.key != null) {
-                        map.remove(ref.key);
+                        Ref<K, V> expectedRef = new Ref<K, V>(ref.key, null, referenceQueue);
+                        map.remove(ref.key, expectedRef);
                     }
                 }
             } finally {

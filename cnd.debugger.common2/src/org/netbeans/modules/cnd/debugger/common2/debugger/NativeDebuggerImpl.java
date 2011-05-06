@@ -162,12 +162,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private StateModelAdaptor disStateModel = new StateModelAdaptor();
     private InstBreakpointModel breakpointModel = new InstBreakpointModel();
 
-    //memory view
-    protected MemoryWindow memoryWindow = null;
-    
-    //registers view
-    protected RegistersWindow registersWindow = null;
-
     protected Executor executor;
 
     protected NativeDebuggerImpl(ContextProvider ctxProvider) {
@@ -1027,9 +1021,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
 	    bpt.showAnnotationsFor(true, this);
         
-        if (memoryWindow != null || MemoryWindow.getDefault().isShowing()) {
+        registerRegistersWindow(RegistersWindow.getDefault().isShowing() ? RegistersWindow.getDefault() : null);
+        
+        if (MemoryWindow.getDefault().isShowing()) {
             registerMemoryWindow(MemoryWindow.getDefault());
             MemoryWindow.getDefault().setDebugger(this);
+        } else {
+            registerMemoryWindow(null);
         }
         
         if (Disassembly.isOpened()) {
@@ -1626,15 +1624,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
         return null;
     }
-
-    public void registerMemoryWindow(MemoryWindow w) {
-        memoryWindow = w;
-    }
-
-    public void registerRegistersWindow(RegistersWindow w) {
-        registersWindow = w;
-    }
     
+    public void registerMemoryWindow(MemoryWindow w) {
+    }
+
     public Set<String> requestAutos() {
 	autos.clear();
 

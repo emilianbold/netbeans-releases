@@ -76,6 +76,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Keymap;
 import org.openide.NotifyDescriptor.InputLine;
 
 import org.openide.util.NbPreferences;
@@ -445,6 +446,12 @@ public final class Terminal extends JComponent {
         term.setScrollOnOutput(termOptions.getScrollOnOutput());
         if (initial)
             term.setHorizontallyScrollable(!termOptions.getLineWrap());
+	
+	if (!termOptions.getIgnoreKeymap()) {
+	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class));
+	} else {
+	    term.setKeymap(null);
+	}
 
         // If we change the font from smaller to bigger, the size
         // calculations go awry and the last few lines are forever hidden.
@@ -802,7 +809,7 @@ public final class Terminal extends JComponent {
 	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
 	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0));
 	 */
-
+	
 	comp.setActionMap(newActionMap);
 	comp.setInputMap(JComponent.WHEN_FOCUSED, newInputMap);
         term.setKeyStrokeSet((HashSet) passKeystrokes);

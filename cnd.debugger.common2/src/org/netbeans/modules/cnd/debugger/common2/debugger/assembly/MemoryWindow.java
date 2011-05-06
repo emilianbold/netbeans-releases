@@ -222,9 +222,9 @@ public final class MemoryWindow extends TopComponent
     }
 
     private void connectToDebugger(NativeDebugger debugger) {
-        setDebugger(debugger);
 	if (debugger == null) return;
 	debugger.registerMemoryWindow(this);
+        setDebugger(debugger);
     }
 
     @Override
@@ -275,10 +275,6 @@ public final class MemoryWindow extends TopComponent
     }
 
     public void updateData(List<String> memLines) {
-        if (memLines == null) {
-	    return;
-        }
-
 	// Add new address to addressList
 	int index = addrMap(memory_start);
 	if (index == -1) {

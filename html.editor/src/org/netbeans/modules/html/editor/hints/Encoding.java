@@ -56,7 +56,20 @@ public class Encoding extends PatternRule {
         "The character encoding .*? is not widely supported",
         "Using .*? instead of the declared encoding",
         "Unsupported character encoding name: .*?. Will continue sniffing",
-        "Overriding document character encoding from "
+        "Overriding document character encoding from ",
+        //ErrorReportingTokenizer
+        "The character encoding of the document was not explicit but the document contains non-ASCII",
+        "No explicit character encoding declaration has been seen yet (assumed .*?) but the document contains non-ASCII",
+        "This document is not mappable to XML 1.0 without data loss due to .*? which is not a legal XML 1.0 character",
+        "Astral non-character",
+        "Forbidden code point",
+        "Document uses the Unicode Private Use Area(s), which should not be used in publicly exchanged documents. (Charmod C073)",
+        
+        //TreeBuilder
+        "Attribute .content. would be sniffed as an internal character encoding declaration but there was no matching",
+        
+            
+            
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);

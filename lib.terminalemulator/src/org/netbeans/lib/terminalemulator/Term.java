@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
+import javax.swing.text.Keymap;
 
 /**
  * Term is a pure Java multi-purpose terminal emulator.
@@ -759,6 +760,12 @@ public class Term extends JComponent implements Accessible {
         }
         return line.stringBuffer().toString();
     }
+    
+    private Keymap keymap;
+            
+    public void setKeymap(Keymap keymap) {
+        this.keymap = keymap;
+    }
 
     /**
      * Get KeyStroke set.
@@ -829,6 +836,10 @@ public class Term extends JComponent implements Accessible {
 	    System.out.println("\tKS = " + ks);	// NOI18N
 	    System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
 	}
+        
+        if (keymap != null && keymap.getAction(ks) != null) {
+            return false;
+        }
 
         if (keystroke_set == null || !keystroke_set.contains(ks)) {
             e.consume();

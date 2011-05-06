@@ -80,10 +80,6 @@ public class JsfSupportImpl implements JsfSupport {
         return getOwnImplementation(JsfSupportProvider.get(file));
     }
     
-    public static JsfSupportImpl findFor(Document document) {
-        return getOwnImplementation(JsfSupportProvider.get(document));
-    }
-
     private static JsfSupportImpl getOwnImplementation(JsfSupport instance) {
         if(instance instanceof JsfSupportImpl) {
             return (JsfSupportImpl)instance;

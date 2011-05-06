@@ -145,8 +145,10 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                 }
                 env.putenv("LD_PRELOAD", merge); // NOI18N
                 
-                merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH"); // NOI18N
-                //merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
+                merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
+                if (merge == null || merge.isEmpty()) {
+                    merge = HostInfoUtils.getHostInfo(execEnv).getEnvironment().get("LD_LIBRARY_PATH"); // NOI18N
+                }
                 if (merge != null && !merge.isEmpty()) {
                     merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
                 } else {
@@ -195,7 +197,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         if (provider == null) {
             return;
         }
-        HashMap map = new HashMap();
+        HashMap<String, Object> map = new HashMap<String, Object>();
         if ("exec-log".equals(provider.getID())) { // NOI18N
             map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
         } else {
