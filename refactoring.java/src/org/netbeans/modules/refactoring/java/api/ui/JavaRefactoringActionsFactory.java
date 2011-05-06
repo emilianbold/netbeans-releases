@@ -49,6 +49,7 @@ import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractSuperclassAction;
 import org.netbeans.modules.refactoring.java.ui.InnerToOuterAction;
+import org.netbeans.modules.refactoring.java.ui.IntroduceParameterAction;
 import org.netbeans.modules.refactoring.java.ui.PullUpAction;
 import org.netbeans.modules.refactoring.java.ui.PushDownAction;
 import org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction;
@@ -130,4 +131,9 @@ public final class JavaRefactoringActionsFactory {
     public static ContextAwareAction extractInterfaceAction() {
         return ExtractInterfaceAction.findObject(ExtractInterfaceAction.class, true);
     }
+    
+    public static ContextAwareAction introduceParameterAction() {
+        return IntroduceParameterAction.findObject(IntroduceParameterAction.class, true);
+    }
+    
 }

@@ -53,6 +53,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -88,10 +89,13 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
      * @see #init()
      */
     private Boolean constructorRefactoring;
+    private final ParameterInfo[] paramInfos;
+    private Collection<? extends Modifier> newModifiers;
 
-    public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am) {
-        this.refactoring = refactoring;
+    public ChangeParamsTransformer(ChangeParametersRefactoring.ParameterInfo[] paramInfos, Set<ElementHandle<ExecutableElement>> am, Collection<? extends Modifier> newModifiers) {
+        this.paramInfos = paramInfos;
         this.allMethods = am;
+        this.newModifiers = newModifiers;
     }
 
     private void init() {
@@ -154,7 +158,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     
     private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments) {
         List<ExpressionTree> arguments = new ArrayList();
-        ParameterInfo[] pi = refactoring.getParameterInfo();
+        ParameterInfo[] pi = paramInfos;
         for (int i = 0; i < pi.length; i++) {
             int originalIndex = pi[i].getOriginalIndex();
             ExpressionTree vt;
@@ -243,7 +247,6 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return super.visitMethod(tree, p);
     }
 
-    ChangeParametersRefactoring refactoring;
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if (!synthConstructor && workingCopy.getTreeUtilities().isSynthetic(path))
             return;
@@ -254,7 +257,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             List<? extends VariableTree> currentParameters = current.getParameters();
             List<VariableTree> newParameters = new ArrayList<VariableTree>();
             
-            ParameterInfo[] p = refactoring.getParameterInfo();
+            ParameterInfo[] p = paramInfos;
             for (int i=0; i<p.length; i++) {
                 int originalIndex = p[i].getOriginalIndex();
                 VariableTree vt;
@@ -268,9 +271,9 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
             // apply new access modifiers if necessary
             Set<Modifier> modifiers = new HashSet<Modifier>(current.getModifiers().getFlags());
-            if (!el.getEnclosingElement().getKind().isInterface()) {
+            if (newModifiers!=null && !el.getEnclosingElement().getKind().isInterface()) {
                 modifiers.removeAll(ALL_ACCESS_MODIFIERS);
-                modifiers.addAll(refactoring.getModifiers());
+                modifiers.addAll(newModifiers);
             }
 
             //Compute new imports
