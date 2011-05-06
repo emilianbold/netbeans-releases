@@ -2235,12 +2235,14 @@ public class Reformatter implements ReformatTask {
             int alignIndent = cs.alignMultilineBinaryOp() ? col : -1;
             scan(node.getLeftOperand(), p);
             if (cs.wrapAfterBinaryOps()) {
-                spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
+                boolean containedNewLine = spaces(cs.spaceAroundBinaryOps() ? 1 : 0, false);
                 if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
                     col += tokens.token().length();
                     lastBlankLines = -1;
                     lastBlankLinesTokenIndex = -1;
                     tokens.moveNext();
+                    if (containedNewLine)
+                        newline();
                 }
                 wrapTree(cs.wrapBinaryOps(), alignIndent, cs.spaceAroundBinaryOps() ? 1 : 0, node.getRightOperand());
             } else {
@@ -2254,11 +2256,15 @@ public class Reformatter implements ReformatTask {
             int alignIndent = cs.alignMultilineTernaryOp() ? col : -1;
             scan(node.getCondition(), p);
             if (cs.wrapAfterTernaryOps()) {
-                spaces(cs.spaceAroundTernaryOps() ? 1 : 0);
+                boolean containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
                 accept(QUESTION);
+                if (containedNewLine)
+                    newline();
                 wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
-                spaces(cs.spaceAroundTernaryOps() ? 1 : 0);
+                containedNewLine = spaces(cs.spaceAroundTernaryOps() ? 1 : 0, false);
                 accept(COLON);
+                if (containedNewLine)
+                    newline();
                 wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
             } else {
                 wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
