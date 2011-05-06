@@ -193,9 +193,19 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return execute(execEnv, command, args);
     }
 
-    protected String execute(ExecutionEnvironment env, String command, String... args) {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, command, args);
-        assertEquals(command + ' ' + args + " failed: " + res.error, 0, res.exitCode);
+    protected static String execute(ExecutionEnvironment env, String command, String... args) {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, command, args);
+        assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.error, 0, res.exitCode);
+        return res.output;
+    }
+
+    protected String executeInDir(String dir, String command, String... args) {
+        return executeInDir(dir, execEnv, command, args);
+    }
+
+    protected static String executeInDir(String dir, ExecutionEnvironment env, String command, String... args) {
+        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
+        assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.error, 0, res.exitCode);
         return res.output;
     }
 

@@ -827,7 +827,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             if (!file.canWrite()) {
                 allOk = false;
-                notOkFiles.add(file.getPath());
+                notOkFiles.add(FileUtil.getFileDisplayName(file));
             }
         }
         if (!allOk) {
