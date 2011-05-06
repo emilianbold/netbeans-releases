@@ -257,14 +257,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 ArrayBrowserWindow.getDefault().setDebugger(this);
                 ArrayBrowserWindow.getDefault().setArrayBrowserController(arrayBrowserController);
             }
-
-            if (registersWindow != null) {
-                dbx.register_notify(0, true);
-            } else if (RegistersWindow.getDefault().isShowing()) {
-                registerRegistersWindow((RegistersWindow) RegistersWindow.getDefault());
-                dbx.register_notify(0, true);
-            }
-
         } else {
 
             // We really don't want to enable the actions until we have
