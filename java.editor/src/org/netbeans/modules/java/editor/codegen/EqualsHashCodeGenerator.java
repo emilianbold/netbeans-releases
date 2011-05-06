@@ -346,25 +346,31 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            Element e = description.getElementHandle().resolve(copy);
+                            TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                            ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
-                            if( generateEquals ) {
-                                for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
-                                    equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                            if (path == null) {
+                                String message = NbBundle.getMessage(EqualsHashCodeGenerator.class, "ERR_CannotFindOriginalClass");
+                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                            } else {
+                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
+                                ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
+                                if( generateEquals ) {
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
+                                        equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                                    }
+                                ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
+                                if( generateHashCode ) {
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
+                                        hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
                                 }
-                            ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
-                            if( generateHashCode ) {
-                                for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
-                                    hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
+                                generateEqualsAndHashCode(
+                                    copy, path, 
+                                    generateEquals ? equalsElements : null, 
+                                    generateHashCode ? hashCodeElements : null, 
+                                    idx
+                                );
                             }
-                            generateEqualsAndHashCode(
-                                copy, path, 
-                                generateEquals ? equalsElements : null, 
-                                generateHashCode ? hashCodeElements : null, 
-                                idx
-                            );
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);
