@@ -56,6 +56,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitUser;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.openide.util.NbBundle;
 
 /**
@@ -104,7 +105,7 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
 
     @Override
     public String getLastCanceledCommitMessage() {
-        return super.getLastCanceledCommitMessage();
+        return GitModuleConfig.getDefault().getLastCanceledCommitMessage();
     }
 
     List<String> getCommitMessages() {

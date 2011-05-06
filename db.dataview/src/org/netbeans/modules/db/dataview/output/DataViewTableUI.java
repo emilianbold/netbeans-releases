@@ -107,7 +107,10 @@ final class DataViewTableUI extends ResultSetJXTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (dView.getUpdatedRowContext().hasUpdates(row, column)) {
+        if (dView.getUpdatedRowContext().hasUpdates(
+                convertRowIndexToModel(row),
+                convertColumnIndexToModel(column)
+        )) {
             return new UpdatedResultSetCellRenderer(dView);
         }
         return super.getCellRenderer(row, column);
@@ -149,7 +152,9 @@ final class DataViewTableUI extends ResultSetJXTable {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
+            Object obj = dataView.getDataViewPageContext().getColumnData(
+                    table.convertRowIndexToModel(row),
+                    table.convertColumnIndexToModel(column));
             if (value == null) {
                 return c;
             }

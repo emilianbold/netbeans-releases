@@ -180,7 +180,7 @@ public final class ProjectImpl implements ProjectProperties {
         if (m1.size() != m2.size()) {
             return false;
         }
-        return new HashMap(m1).equals(m2);
+        return new HashMap<String, String>(m1).equals(m2);
     }
     
     private static List<SourceFileProperties> getExistingProjectItems(ProjectProxy project) {
