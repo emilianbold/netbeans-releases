@@ -74,6 +74,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -463,7 +464,15 @@ public class TaskProcessor {
             final boolean mayInterruptParser,
             final boolean sync) {
         assert source != null;
-        TaskProcessor.Request r = currentRequest.getTaskToCancel (mayInterruptParser);
+        final TaskProcessor.Request r = currentRequest.getTaskToCancel (new CancelStrategy(
+            Parser.CancelReason.SOURCE_MODIFICATION_EVENT,
+            Request.DUMMY,
+            mayInterruptParser) {
+            @Override
+            public boolean apply(final @NonNull Request request) {
+                return true;
+            }
+        });
         if (r != null) {
             try {
                 cancelTask(r.task);
@@ -1037,31 +1046,54 @@ public class TaskProcessor {
     private abstract static class CancelStrategy {
         
         private final Parser.CancelReason cancelReason;
+        private final Request cancelReplace;
+        private final boolean callDeprecatedParserCancel;
         
-        public CancelStrategy(final @NonNull Parser.CancelReason cancelReason) {
+        CancelStrategy(final @NonNull Parser.CancelReason cancelReason) {
+            this(cancelReason,null,false);
+        }
+
+        CancelStrategy(
+            final @NonNull Parser.CancelReason cancelReason,
+            final @NullAllowed Request cancelReplace,
+            final boolean callDeprecatedParserCancel) {
             Parameters.notNull("cancelReason", cancelReason);   //NOI18N
             this.cancelReason = cancelReason;
+            this.cancelReplace = cancelReplace;
+            this.callDeprecatedParserCancel = callDeprecatedParserCancel;
         }
         
-        public final Parser.CancelReason getCancelReason() {
+        public final @NonNull Parser.CancelReason getCancelReason() {
             return cancelReason;
+        }
+
+        public final @CheckForNull Request getRequestToCancel() {
+            return this.cancelReplace;
+        }
+
+        public final boolean callDeprecatedParserCancel() {
+            return callDeprecatedParserCancel;
         }
 
         public abstract boolean apply(@NonNull Request request);
     }
     
     /**
-     *  Encapsulates current request. May be trasformed into 
+     *  Encapsulates current request. May be transformed into
      *  JavaSource private static methods, but it may be less readable.
      */
     //@ThreadSafe
     private static final class CurrentRequestReference {                        
 
-        
+        //GuardedBy("CRR_LOCK")
         private Request reference;
+        //GuardedBy("CRR_LOCK")
         private Request canceledReference;
+        //GuardedBy("CRR_LOCK")
         private Parser activeParser;
+        //GuardedBy("CRR_LOCK")
         private long cancelTime;
+        //GuardedBy("CRR_LOCK")
         private boolean canceled;
         /**
          * Threading: The CurrentRequestReference has it's own private lock
@@ -1114,56 +1146,32 @@ public class TaskProcessor {
                         this.canceled = true;
                         this.cancelTime = System.currentTimeMillis();
                         parser = activeParser;
+                    } else if (canceledReference == null && cancelStrategy.getRequestToCancel()!=null) {
+                        request = cancelStrategy.getRequestToCancel();
+                        this.canceledReference = request;
+                        parser = activeParser;
                     }
                 }
                 if (parser != null) {
-                    cancelParser (parser, false, cancelStrategy.getCancelReason(), null);
-                }
-            }
-            return request;
-        }
-                        
-                
-        Request getTaskToCancel (final boolean mayCancelParser) {
-            Request request = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {    
-                Parser parser = null;
-                synchronized (CRR_LOCK) {
-                    if (this.reference != null) {
-                        assert this.canceledReference == null;
-                        request = this.reference;
-                        this.canceledReference = request;
-                        this.reference = null;
-                        this.canceled = true;
-                        //todo: Cancel parser
-                        this.cancelTime = System.currentTimeMillis();
-                    }
-                    else if (canceledReference == null)  {
-                        request = Request.DUMMY;
-                        this.canceledReference = request;
-                        //todo: Cancel parser
-                        this.cancelTime = System.currentTimeMillis();
-                    }
-                    parser = activeParser;
-                }
-                if (parser != null) {
-                    Source src = null;
-                    SourceCache sc;
-                    if (request != null && (sc = request.cache)!= null) {
-                        src = sc.getSnapshot().getSource();
-                    }
-                    if (src != null) {                        
-                        cancelParser(
-                            parser,
-                            mayCancelParser,
-                            Parser.CancelReason.SOURCE_MODIFICATION_EVENT,
-                            SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
+                    final Parser.CancelReason cancelReason = cancelStrategy.getCancelReason();
+                    if (cancelReason == Parser.CancelReason.SOURCE_MODIFICATION_EVENT) {
+                        Source src;
+                        SourceCache sc;
+                        if (request != null && (sc = request.cache)!= null && (src=sc.getSource())!=null) {
+                            cancelParser(
+                                parser,
+                                cancelStrategy.callDeprecatedParserCancel(),
+                                cancelReason,
+                                SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
+                        }
+                    } else {
+                        cancelParser (parser, false, cancelReason, null);
                     }
                 }
             }
             return request;
         }
-                                
+                                                                                
         long getCancelTime () {
             synchronized (CRR_LOCK) {
                 return this.cancelTime;
