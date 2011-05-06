@@ -59,6 +59,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -420,21 +422,26 @@ public final class EventSupport {
                     }
                 }
                 if (source != null) {
-                    Object rawValue = evt.getNewValue();
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
-                    }
-                    if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
-                        TaskProcessor.resetState(source, false, true);
-                        k24.set(true);
-                    } else {
-                        final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                        k24.set(false);
-                        support.resetTask.schedule(0);
-                    }
+                    handleCompletionActive(source, evt.getNewValue());
                 }
             }
-        }        
+        }
+
+        private void handleCompletionActive(
+                final @NonNull Source source,
+                final @NullAllowed Object rawValue) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
+            }
+            if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
+                TaskProcessor.resetState(source, false, true);
+                k24.set(true);
+            } else {
+                final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
+                k24.set(false);
+                support.resetTask.schedule(0);
+            }
+        }
     }
 
     // </editor-fold>

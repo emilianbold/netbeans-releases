@@ -82,8 +82,8 @@ public final class RegistersWindow extends TopComponent
     implements ActionListener
 {
 
-    static final String preferredID = "RegistersWindow";	// NOI18N
-    static RegistersWindow DEFAULT;
+    private static final String preferredID = "RegistersWindow";	// NOI18N
+    private static RegistersWindow DEFAULT;
 
     private transient JComponent tree = null;
     private String name;
@@ -117,10 +117,6 @@ public final class RegistersWindow extends TopComponent
             }
         }
         return DEFAULT;
-    }
-    
-    public static boolean isActive() {
-        return DEFAULT != null && DEFAULT.isShowing();
     }
     
     public RegistersWindow() {
@@ -478,16 +474,12 @@ public final class RegistersWindow extends TopComponent
     }
 
     public void updateData(List<String> regs) {
-        if (regs == null || regs.isEmpty()) {
-            return;
-        }
-        
         current_regs.clear();
         current_regs.addAll(regs);
         
         updateWindow();
     }
-
+    
     protected void HideSelectedRegisters(String regs) {
         int i, j, k, l;
         String s, regname;

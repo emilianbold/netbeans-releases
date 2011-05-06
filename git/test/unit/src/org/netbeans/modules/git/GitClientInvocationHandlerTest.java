@@ -132,6 +132,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "rename",
                 "reset",
+                "revert",
                 "setCallback",
                 "setRemote",
                 "unignore"));
@@ -142,6 +143,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "pull",
                 "remove",
                 "reset",
+                "revert",
                 "clean"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
         f.setAccessible(true);
@@ -205,6 +207,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "rename",
                 "reset",
+                "revert",
                 "setCallback",
                 "setRemote",
                 "unignore"));
@@ -293,6 +296,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "rename",
                 "reset",
+                "revert",
                 "setCallback",
                 "setRemote",
                 "unignore"));
@@ -306,6 +310,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "pull",
                 "reset",
                 "removeRemote",
+                "revert",
                 "setRemote"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
@@ -414,6 +419,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeRemote",
                 "rename",
                 "reset",
+                "revert",
                 "setCallback",
                 "setRemote",
                 "unignore"));
