@@ -44,6 +44,7 @@ package org.netbeans.modules.html.editor;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
@@ -87,9 +88,10 @@ public class HtmlErrorFilter implements ErrorFilter {
         }
         
         //use hints setting to filter out the errors and set their severity 
-        RuleContext context = new RuleContext();
+        RuleContext context = htmlHintsProvider.createRuleContext();
         context.parserResult = parserResult;
         context.manager = htmlHintsManager;
+        context.doc = (BaseDocument)parserResult.getSnapshot().getSource().getDocument(false); //should not load the document if not loaded already
         List<Hint> hints = new ArrayList<Hint>();
         htmlHintsProvider.computeErrors(htmlHintsManager, context, hints, new ArrayList<Error>());
         
