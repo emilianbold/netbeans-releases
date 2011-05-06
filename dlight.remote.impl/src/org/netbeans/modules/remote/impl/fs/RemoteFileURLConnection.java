@@ -97,8 +97,8 @@ public class RemoteFileURLConnection extends URLConnection {
 
     @Override
     public InputStream getInputStream() throws IOException {
-	if (fileObject == null) {
-            newFileNotFoundException();
+        if (fileObject == null) {
+            throw newFileNotFoundException();
         }
         if (iStream == null) {
             iStream = fileObject.getInputStream();
@@ -108,8 +108,8 @@ public class RemoteFileURLConnection extends URLConnection {
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-	if (fileObject == null) {
-            newFileNotFoundException();
+        if (fileObject == null) {
+            throw newFileNotFoundException();
         }
         if (oStream == null) {
             FileLock flock = fileObject.lock();
