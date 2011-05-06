@@ -74,6 +74,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1155,8 +1156,7 @@ public class JavacParser extends Parser {
     }
 
     private static final class EditorRegistryWeakListener extends WeakReference<PropertyChangeListener> implements PropertyChangeListener, Runnable {
-
-        private JTextComponent last;
+        private Reference<JTextComponent> last;
 
         private EditorRegistryWeakListener(final @NonNull PropertyChangeListener delegate) {
             super(delegate,org.openide.util.Utilities.activeReferenceQueue());
@@ -1166,8 +1166,8 @@ public class JavacParser extends Parser {
         public void propertyChange(PropertyChangeEvent evt) {
             final PropertyChangeListener delegate = get();
             final JTextComponent lastCandidate = EditorRegistry.focusedComponent();
-            if (delegate != null && lastCandidate != null && lastCandidate != last) {
-                last = lastCandidate;
+            if (delegate != null && lastCandidate != null && lastCandidate != getLast()) {
+                setLast(lastCandidate);
                 delegate.propertyChange(evt);
             }
         }
@@ -1175,6 +1175,20 @@ public class JavacParser extends Parser {
         @Override
         public void run() {
             EditorRegistry.removePropertyChangeListener(this);
+        }
+
+        /**
+         * @return the last
+         */
+        private JTextComponent getLast() {
+            return last == null ? null : last.get();
+        }
+
+        /**
+         * @param last the last to set
+         */
+        private void setLast(JTextComponent last) {
+            this.last = new WeakReference<JTextComponent>(last);
         }
     }
 

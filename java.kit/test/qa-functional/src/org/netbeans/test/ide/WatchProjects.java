@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
@@ -168,6 +169,12 @@ public final class WatchProjects {
         }
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
+                TopComponent tc = new TopComponent();
+                tc.setLayout(new FlowLayout());
+                tc.add(new JTextArea());
+                tc.open();
+                tc.requestVisible();
+                tc.requestActive();
                 try {
                     cleanWellKnownStaticFields();
                 } catch (Exception ex) {
