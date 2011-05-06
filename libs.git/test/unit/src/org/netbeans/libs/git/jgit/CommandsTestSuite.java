@@ -66,6 +66,7 @@ import org.netbeans.libs.git.jgit.commands.RemotesTest;
 import org.netbeans.libs.git.jgit.commands.RemoveTest;
 import org.netbeans.libs.git.jgit.commands.RenameTest;
 import org.netbeans.libs.git.jgit.commands.ResetTest;
+import org.netbeans.libs.git.jgit.commands.RevertTest;
 import org.netbeans.libs.git.jgit.commands.StatusTest;
 import org.netbeans.libs.git.jgit.commands.UnignoreTest;
 
@@ -101,6 +102,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(RemotesTest.class);
         suite.addTestSuite(RemoveTest.class);
         suite.addTestSuite(RenameTest.class);
+        suite.addTestSuite(RevertTest.class);
         suite.addTestSuite(ResetTest.class);
         suite.addTestSuite(StatusTest.class);
         suite.addTestSuite(UnignoreTest.class);
