@@ -197,7 +197,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         if (provider == null) {
             return;
         }
-        HashMap map = new HashMap();
+        HashMap<String, Object> map = new HashMap<String, Object>();
         if ("exec-log".equals(provider.getID())) { // NOI18N
             map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
         } else {
