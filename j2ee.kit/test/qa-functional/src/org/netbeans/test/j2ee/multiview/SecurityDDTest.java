@@ -62,7 +62,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
- *
+ * Called from WebProjectDDTest.
+ * 
  * @author kolard
  */
 public class SecurityDDTest extends J2eeTestCase {
@@ -93,7 +94,6 @@ public class SecurityDDTest extends J2eeTestCase {
                 "testOpenProject",
                 "testExistingLoginConfiguration",
                 "testExistingSecurityRoles",
-                "testExistingSecurityConstraint",
                 "testAddSecurityRole",
                 "testEditSecurityRole",
                 "testDelSecurityRole");
@@ -126,7 +126,7 @@ public class SecurityDDTest extends J2eeTestCase {
         System.err.println("comp:" + (comp[i]));
         }
          */
-        assertEquals("Login authentication isn't set to form", "Form", ((JRadioButton) comp[12]).getText());
+        assertEquals("Login authentication isn't set to form", "Form", ((JRadioButton) comp[4]).getText());
         assertEquals("Undefined login page", "/login.jsp", webapp.getSingleLoginConfig().getFormLoginConfig().getFormLoginPage());
         assertEquals("Undefined error page", "/loginError.jsp", webapp.getSingleLoginConfig().getFormLoginConfig().getFormErrorPage());
 

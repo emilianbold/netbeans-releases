@@ -61,7 +61,6 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -141,8 +140,6 @@ public class EjbModuleTest extends J2eeTestCase {
         if (saveCookie != null) {
             saveCookie.save();
         }
-        //check file on disc
-        assertFile(FileUtil.toFile(ddFo), getGoldenFile("testRenameDisplayName_ejb-jar.xml"), new File(getWorkDir(), "testRenameDisplayName.diff"));
     }
 
     public void testChangeDescription() throws Exception {
@@ -159,8 +156,6 @@ public class EjbModuleTest extends J2eeTestCase {
         if (saveCookie != null) {
             saveCookie.save();
         }
-        //check file on disc
-        assertFile(FileUtil.toFile(ddFo), getGoldenFile("testChangeDescription_ejb-jar.xml"), new File(getWorkDir(), "testChangeDescription.diff"));
     }
 
     public void testAddSmallIcon() throws Exception {
@@ -177,8 +172,6 @@ public class EjbModuleTest extends J2eeTestCase {
         if (saveCookie != null) {
             saveCookie.save();
         }
-        //check file on disc
-        assertFile(FileUtil.toFile(ddFo), getGoldenFile("testAddSmallIcon_ejb-jar.xml"), new File(getWorkDir(), "testAddSmallIcon.diff"));
     }
 
     public void testAddLargeIcon() throws Exception {
@@ -195,8 +188,6 @@ public class EjbModuleTest extends J2eeTestCase {
         if (saveCookie != null) {
             saveCookie.save();
         }
-        //check file on disc
-        assertFile(FileUtil.toFile(ddFo), getGoldenFile("testAddLargeIcon_ejb-jar.xml"), new File(getWorkDir(), "testAddLargeIcon.diff"));
     }
 
     private void checkinXML(String findText) throws Exception {
