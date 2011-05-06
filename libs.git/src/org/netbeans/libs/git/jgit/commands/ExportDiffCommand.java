@@ -136,7 +136,6 @@ public class ExportDiffCommand extends GitCommand {
                     or = repository.newObjectReader();
                 }
 		diffEntries = detector.compute(new ContentSource.Pair(ContentSource.create(or), ContentSource.create((WorkingTreeIterator) secondTree)), NullProgressMonitor.INSTANCE);
-                formatter.format(diffEntries);
             } else {
                 formatter.setDetectRenames(true);
                 diffEntries = formatter.scan(firstTree, secondTree);

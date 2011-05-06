@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -115,25 +116,33 @@ public final class WebBeansModelSupport {
         return ModelUnit.create(boot, compile, src);
     }
 
-    private static ClassPath getClassPath(Project project, String type) {
-        ClassPathProvider provider = project.getLookup().lookup(
+    public static ClassPath getClassPath( Project project ,  String type ) {
+        ClassPathProvider provider = project.getLookup().lookup( 
                 ClassPathProvider.class);
-        if (provider == null) {
+        if ( provider == null ){
             return null;
         }
         Sources sources = project.getLookup().lookup(Sources.class);
-        if (sources == null) {
+        if ( sources == null ){
             return null;
         }
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath[] paths = new ClassPath[sourceGroups.length];
-        int i = 0;
+        SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        SourceGroup[] webGroup = sources.getSourceGroups(
+                WebProjectConstants.TYPE_WEB_INF);
+        ClassPath[] paths = new ClassPath[ sourceGroups.length+webGroup.length];
+        int i=0;
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[i] = provider.findClassPath(rootFolder, type);
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
         }
-        return ClassPathSupport.createProxyClassPath(paths);
+        for (SourceGroup sourceGroup : webGroup) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
     }
 
     private static FileObject getFileObject(WebModule module) {
