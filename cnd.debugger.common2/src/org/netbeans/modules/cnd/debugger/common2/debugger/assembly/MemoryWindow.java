@@ -119,6 +119,10 @@ public final class MemoryWindow extends TopComponent
         return DEFAULT;
     }
     
+    public static boolean isActive() {
+        return DEFAULT != null && DEFAULT.isShowing();
+    }
+    
     private MemoryWindow() {
 	name = Catalog.get("TITLE_MemoryWindow");    //NOI18N
 	view_name = Catalog.get("TITLE_MemoryView"); //NOI18N
@@ -222,9 +226,9 @@ public final class MemoryWindow extends TopComponent
     }
 
     private void connectToDebugger(NativeDebugger debugger) {
-        setDebugger(debugger);
 	if (debugger == null) return;
 	debugger.registerMemoryWindow(this);
+        setDebugger(debugger);
     }
 
     @Override

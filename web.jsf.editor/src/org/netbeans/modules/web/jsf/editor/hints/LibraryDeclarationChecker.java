@@ -60,7 +60,6 @@ import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -104,7 +103,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         final Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
-        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.doc);
+        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
         Map<String, FaceletsLibrary> libs = Collections.emptyMap();
         if (jsfSupport != null) {
             libs = jsfSupport.getLibraries();
@@ -165,7 +164,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                         //3. check for undeclared components
 
                         List<HintFix> fixes = new ArrayList<HintFix>();
-                        List<FaceletsLibrary> libs = FixLibDeclaration.getLibsByPrefix(context.doc, node.getNamespacePrefix());
+                        List<FaceletsLibrary> libs = getLibsByPrefix(context, node.getNamespacePrefix());
 
                         for (FaceletsLibrary lib : libs){
                             FixLibDeclaration fix = new FixLibDeclaration(context.doc, node.getNamespacePrefix(), lib);
@@ -262,6 +261,21 @@ public class LibraryDeclarationChecker extends HintsProvider {
             hints.add(hint);
         }
 
+    }
+    
+    private static List<FaceletsLibrary> getLibsByPrefix(RuleContext context, String prefix){
+        List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
+        JsfSupportImpl sup = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
+
+        if (sup != null){
+            for (FaceletsLibrary lib : sup.getLibraries().values()){
+                if (prefix.equals(lib.getDefaultPrefix())){
+                    libs.add(lib);
+                }
+            }
+        }
+
+        return libs;
     }
 
     private boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, FaceletsLibrary lib) {

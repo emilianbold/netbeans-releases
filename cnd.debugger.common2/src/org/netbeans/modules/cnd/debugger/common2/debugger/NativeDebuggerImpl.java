@@ -1027,9 +1027,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
 	    bpt.showAnnotationsFor(true, this);
         
-        if (memoryWindow != null || MemoryWindow.getDefault().isShowing()) {
+        registerRegistersWindow(RegistersWindow.isActive() ? RegistersWindow.getDefault() : null);
+        
+        if (MemoryWindow.isActive()) {
             registerMemoryWindow(MemoryWindow.getDefault());
             MemoryWindow.getDefault().setDebugger(this);
+        } else {
+            registerMemoryWindow(null);
         }
         
         if (Disassembly.isOpened()) {

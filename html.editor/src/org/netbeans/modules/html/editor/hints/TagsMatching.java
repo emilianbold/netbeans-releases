@@ -54,7 +54,8 @@ public class TagsMatching extends PatternRule {
         "Stray end tag",
         "End tag for .*? seen but there were unclosed elements",
         "End of the file seen and there were open elements",
-        "No .*? element in scope but a .*? end tag seen"
+        "No .*? element in scope but a .*? end tag seen",
+        "The element .* must be terminated by the matching end-tag"
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);

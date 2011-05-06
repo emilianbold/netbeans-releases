@@ -139,7 +139,7 @@ public class DDTestUtils /*extends JellyTestCase*/ {
         return model;
     }
 
-    public void checkProperyGrpup(JspPropertyGroup prop, String name, String desc, String enc, String[] headers, String[] footers, String[] urls, boolean[] switches) {
+    public void checkPropertyGroup(JspPropertyGroup prop, String name, String desc, String enc, String[] headers, String[] footers, String[] urls, boolean[] switches) {
         JellyTestCase.assertEquals("Display name doesn't match", name, prop.getDefaultDisplayName());
         JellyTestCase.assertEquals("Description doesn't match", desc, prop.getDefaultDescription());
         JellyTestCase.assertEquals("Encoding doesn't match", enc, prop.getPageEncoding());

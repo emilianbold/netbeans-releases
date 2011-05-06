@@ -48,11 +48,14 @@ import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileObject;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -66,6 +69,10 @@ public class RemoteFileSystemParallelTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
+    static {
+        System.setProperty("jsch.connection.timeout", "30000");
+    }
+    
     private abstract class ThreadWorker implements Runnable {
         private final String name;
         private final CyclicBarrier barrier;
@@ -105,17 +112,26 @@ public class RemoteFileSystemParallelTestCase extends RemoteFileTestBase {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/stdio.h";
 
-        int threadCount = 10;
+        int threadCount = 20;
         final CyclicBarrier barrier = new CyclicBarrier(threadCount);
         final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
         final AtomicLong size = new AtomicLong(-1);
+        final AtomicReference<FileObject> fileObjectRef = new AtomicReference<FileObject>();
 
         class Worker extends ThreadWorker {
             public Worker(String name, CyclicBarrier barrier, List<Exception> exceptions) {
                 super(name, barrier, exceptions);
             }
             protected void work() throws Exception {
-                String content = readRemoteFile(absPath);
+                FileObject fo = getFileObject(absPath);
+                assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
+                if (!fileObjectRef.compareAndSet(null, fo)) {
+                    FileObject prevInstance = fileObjectRef.get();
+                    if (fo != prevInstance) {
+                        assertTrue("Different file object instances for " + absPath + ": " + prevInstance + " and " + fo, false);
+                    }
+                }
+                String content = readFile(fo);
                 int currSize = content.length();
                 size.compareAndSet(-1, currSize);
                 String text2search = "printf";
