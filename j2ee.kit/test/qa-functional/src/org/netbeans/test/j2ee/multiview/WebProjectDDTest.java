@@ -112,7 +112,7 @@ public class WebProjectDDTest extends J2eeTestCase {
     private static String[] pagesandreferencesddtests = {
         "testOpenProject", "testExistingWelcomePages", "testAddWelcomePage", "testDelWelcomePage",
         "testExistingErrorPages", "testAddErrorPage", "testModifyErrorPage", "testDelErrorPage",
-        "testExistingProperyGroups", "testModifyProperyGroup", "testDelPropertyGroup",
+        "testExistingPropertyGroups", "testModifyPropertyGroup", "testDelPropertyGroup",
         "testExistingEnvEntries", "testAddEnvEntry", "testModifyEnvEntry", "testDelEnvEntry",
         "testExistingResReferences", "testAddResReference", "testModifyResReference",
         "testDelResReference", "testExistingResEnvReferences", "testAddResEnvReference",
@@ -123,8 +123,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         "testDelMsgDstReference"};
     private static String[] securityddtests = {
         "testOpenProject", "testExistingLoginConfiguration", "testExistingSecurityRoles",
-        "testExistingSecurityConstraint", "testAddSecurityRole", "testEditSecurityRole",
-        "testDelSecurityRole"};
+        "testAddSecurityRole", "testEditSecurityRole", "testDelSecurityRole"};
 
     public static Test suite() {
 
@@ -190,8 +189,8 @@ public class WebProjectDDTest extends J2eeTestCase {
         Component[] comp = panel.getComponents();
         panel.requestFocus();
         DDTestUtils.waitForDispatchThread();
-        utils.setText(((JTextField) comp[2]), "dispname");
-        ((JTextField) comp[7]).requestFocus();
+        utils.setText(((JTextField) comp[3]), "dispname");
+        ((JTextField) comp[8]).requestFocus();
         new StepIterator() {
 
             @Override
@@ -205,8 +204,8 @@ public class WebProjectDDTest extends J2eeTestCase {
                 utils.checkInDDXML(".*<display-name>dispname</display-name>.*");
             }
         };
-        utils.setText((JTextArea) comp[4], "descript");
-        ((JCheckBox) comp[5]).requestFocus();
+        utils.setText((JTextArea) comp[5], "descript");
+        ((JCheckBox) comp[6]).requestFocus();
         new StepIterator() {
 
             @Override
@@ -220,9 +219,9 @@ public class WebProjectDDTest extends J2eeTestCase {
                 utils.checkInDDXML(".*<description>descript</description>.*");
             }
         };
-        ((JCheckBox) comp[5]).setSelected(true);
+        ((JCheckBox) comp[6]).setSelected(true);
         ddObj.modelUpdatedFromUI();
-        ((JTextField) comp[7]).requestFocus();
+        ((JTextField) comp[8]).requestFocus();
         new StepIterator() {
 
             @Override
@@ -236,8 +235,8 @@ public class WebProjectDDTest extends J2eeTestCase {
                 utils.checkInDDXML(".*<distributable/>.*");
             }
         };
-        utils.setText((JTextField) comp[7], "26");
-        ((JTextField) comp[2]).requestFocus();
+        utils.setText((JTextField) comp[8], "26");
+        ((JTextField) comp[3]).requestFocus();
         new StepIterator() {
 
             @Override
@@ -810,7 +809,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         DDBeanTableModel model = (DDBeanTableModel) ((FilterMappingsTablePanel) panel.getComponent(1)).getTable().getModel();
         String filterName = webapp.getFilter(0).getFilterName();
         String servletName = webapp.getServlet(0).getServletName();
-        model.addRow(new Object[]{filterName, null, servletName, new String[]{"REQUEST", "ERROR"}});
+        model.addRow(new Object[]{filterName, null, new String[]{servletName}, new String[]{"REQUEST", "ERROR"}});
         ddObj.modelUpdatedFromUI();
         Thread.sleep(2000);
         //check table model
@@ -863,6 +862,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         };
         //testing propagation of the changes
         panel = utils.getInnerSectionPanel("filter_mappings");
+        panel.requestFocus();
         ddObj.showElement(webapp.getFilterMapping(0));
         DDBeanTableModel model = (DDBeanTableModel) ((FilterMappingsTablePanel) panel.getComponent(1)).getTable().getModel();
         //check table model
@@ -917,6 +917,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         ddObj.openView(2);
         Utils.waitForAWTDispatchThread();
         panel = utils.getInnerSectionPanel("filter_mappings");
+        panel.requestFocus();
         DDBeanTableModel model = (DDBeanTableModel) ((FilterMappingsTablePanel) panel.getComponent(1)).getTable().getModel();
         //check table model
         int i;

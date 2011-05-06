@@ -50,7 +50,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -74,7 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
- *
+ * Called from WebProjectDDTest.
  * @author jp159440
  */
 public class PagesAndReferencesDDTest extends J2eeTestCase {
@@ -92,6 +91,7 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.out.println("############ " + getName() + " ############");
     }
     private static FileObject ddFo;
     private static WebApp webapp;
@@ -102,7 +102,7 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(PagesAndReferencesDDTest.class);
         conf = addServerTests(conf, "testOpenProject", "testExistingWelcomePages", "testAddWelcomePage",
                 "testDelWelcomePage", "testExistingErrorPages", "testAddErrorPage", "testModifyErrorPage",
-                "testDelErrorPage", "testExistingProperyGroups", "testModifyProperyGroup",
+                "testDelErrorPage", "testExistingPropertyGroups", "testModifyPropertyGroup",
                 "testDelPropertyGroup", "testExistingEnvEntries", "testAddEnvEntry", "testModifyEnvEntry",
                 "testDelEnvEntry", "testExistingResReferences", "testAddResReference", "testModifyResReference",
                 "testDelResReference", "testExistingResEnvReferences", "testAddResEnvReference",
@@ -113,12 +113,6 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
                 "testDelMsgDstReference");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
-    }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
     }
 
     public void testOpenProject() throws Exception {
@@ -306,16 +300,16 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
         utils.checkNotInDDXML(".*<error-page>.*<location>/index3.jsp</location>\\s*</error-page>.*");
     }
 
-    public void testExistingProperyGroups() throws Exception {
+    public void testExistingPropertyGroups() throws Exception {
         JspConfig jspConfig = webapp.getSingleJspConfig();
         assertNotNull("JspConfig is null", jspConfig);
         JspPropertyGroup[] propertyGroups = jspConfig.getJspPropertyGroup();
-        assertEquals("Wrong number of JspProperyGroups", 1, propertyGroups.length);
+        assertEquals("Wrong number of JspPropertyGroups", 1, propertyGroups.length);
         JspPropertyGroup propertyGrp = propertyGroups[0];
-        utils.checkProperyGrpup(propertyGrp, "PropGrpName", "PropGrpDesc", "ASCII", new String[]{"head.jsp", "head2.jsp"}, new String[]{"foot.jsp", "foot2.jsp"}, new String[]{"/*"}, new boolean[]{true, true, true});
+        utils.checkPropertyGroup(propertyGrp, "PropGrpName", "PropGrpDesc", "ASCII", new String[]{"head.jsp", "head2.jsp"}, new String[]{"foot.jsp", "foot2.jsp"}, new String[]{"/*"}, new boolean[]{true, true, true});
     }
 
-    public void testModifyProperyGroup() throws Exception {
+    public void testModifyPropertyGroup() throws Exception {
         JspPropertyGroup propertyGrp = webapp.getSingleJspConfig().getJspPropertyGroup(0);
         JPanel panel = utils.getInnerSectionPanel(propertyGrp);
         Component[] comp = panel.getComponents();
@@ -409,7 +403,7 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
             }
         };
         utils.save();
-        utils.checkProperyGrpup(propertyGrp, "newname", "newdesc", "ISO-8859-2", new String[]{"prelude.jsp"}, new String[]{"coda.jsp"}, new String[]{"*"}, new boolean[]{false, false, false});
+        utils.checkPropertyGroup(propertyGrp, "newname", "newdesc", "ISO-8859-2", new String[]{"prelude.jsp"}, new String[]{"coda.jsp"}, new String[]{"*"}, new boolean[]{false, false, false});
         String xml = ".*<jsp-config>\\s*"
                 + "<jsp-property-group>\\s*"
                 + "<description>newdesc</description>\\s*"
