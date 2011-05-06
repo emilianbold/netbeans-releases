@@ -42,14 +42,10 @@
 
 package org.netbeans.modules.web.jsfapi.spi;
 
-import com.sun.istack.internal.NotNull;
-import java.security.Policy.Parameters;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.openide.filesystems.FileObject;
