@@ -805,8 +805,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	localUpdater.batchOffForce();	// cause a pull to clear view
 
         resetCurrentLine();
-        if (memoryWindow != null) {
-            memoryWindow.setDebugger(null);
+        if (MemoryWindow.getDefault().isShowing()) {
+            MemoryWindow.getDefault().setDebugger(null);
             // CR 6660966
             //currentMemoryWindow = null;
             //MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
@@ -2468,7 +2468,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         }
 
-        if (registersWindow != null) {
+        if (RegistersWindow.getDefault().isShowing()) {
             dbx.register_notify(0, true);
         }
 
@@ -3415,7 +3415,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void registerRegistersWindow(RegistersWindow rw) {
-        super.registerRegistersWindow(rw);
         if (postedKillEngine) {
             return;
         }
@@ -3430,7 +3429,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     void setRegs(String regs) {
-	if (registersWindow != null) {
+	if (RegistersWindow.getDefault().isShowing()) {
             LinkedList<String> res = new LinkedList<String>();
             int i, j, k, l, regnamelen;
             String s, regname, regvalue;
@@ -3493,7 +3492,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     }
                 }
             }
-	    registersWindow.updateData(res);
+	    RegistersWindow.getDefault().updateData(res);
         }
     }
     private EvaluationWindow currentEvaluationWindow = null;
@@ -3564,7 +3563,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     void setMems(String mems) {
-	if (memoryWindow != null) {
+	if (MemoryWindow.getDefault().isShowing()) {
             LinkedList<String> res = new LinkedList<String>();
             int i, j, k, l, memaddrlen;
             String s, memaddr, memvalue;
@@ -3596,7 +3595,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 }
                 res.add("   " + memaddr + "  " + memvalue + "\n"); // NOI18N
             }
-	    memoryWindow.updateData(res);
+	    MemoryWindow.getDefault().updateData(res);
         }
     }
     
@@ -3605,7 +3604,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         String value, new_memvalue;
         char c;
         
-        FormatOption memoryFormat = (memoryWindow != null) ? memoryWindow.getMemoryFormat() : null;
+        FormatOption memoryFormat = MemoryWindow.getDefault().getMemoryFormat();
         
         if (memoryFormat == DbxMemoryFormat.DECIMAL || 
                 memoryFormat == DbxMemoryFormat.OCTAL) {
