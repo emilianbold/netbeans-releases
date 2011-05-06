@@ -100,6 +100,10 @@ public class SpecializationDescriptor {
         if(start != null) {
             return SpecializationDescriptor.create(TemplateUtils.getSpecializationParameters(start, file, scope, global), global);
         }
+        start = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        if(start != null) {
+            return SpecializationDescriptor.create(TemplateUtils.getSpecializationParameters(start, file, scope, global), global);
+        }
         return null;
     }
 
