@@ -64,7 +64,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -75,6 +75,9 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -84,13 +87,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private Project[] projectChoices = null;
     private JButton actionButton;
     private final boolean isRun;
+    private final FileSystem fileSystem;
     
     private static String lastSelectedExecutable = null;
     private static Project lastSelectedProject = null;
     
-    private static DefaultPicklistModel picklist = null;
-    private static String picklistHomeDir = null;
-    private static final String picklistName = "executables"; // NOI18N
     private boolean isValidating = false;
     
     private void initAccessibility() {
@@ -105,35 +106,27 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         environmentTextField.getAccessibleContext().setAccessibleDescription(getString("ENVIRONMENT_LABEL_AD"));
     }
     
-    public RunDialogPanel(String exePath, JButton actionButton, boolean isRun) {
+    public RunDialogPanel(FileObject executableFO, JButton actionButton, boolean isRun) throws FileStateInvalidException {
         this.actionButton = actionButton;
+        fileSystem = executableFO.getFileSystem();
         this.isRun = isRun;
-        initialize(exePath);
+        initialize(executableFO);
         errorLabel.setText(""); //NOI18N
         initAccessibility();
     }
     
-    private void initialize(String exePath) {
+    private void initialize(FileObject executableFO) {
         initComponents();
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
         modifiedValidateDocumentListener = new ModifiedValidateDocumentListener();
         //modifiedRunDirectoryListener = new ModifiedRunDirectoryListener();
-        if (exePath != null) {
-            executableTextField.setText(exePath);
+        if (executableFO != null) {
+            executableTextField.setText(executableFO.getPath());
         }
         if (isRun) {
             guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT"));
         } else {
             guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT_CREATE"));
-        }
-        String[] savedExePaths = getExecutablePicklist().getElementsDisplayName();
-        String feed = null;
-        if (exePath != null) {
-            feed = exePath;
-        } else if (savedExePaths.length > 0) {
-            feed = savedExePaths[0];
-        } else {
-            feed = ""; // NOI18N
         }
         
         executableTextField.getDocument().addDocumentListener(modifiedValidateDocumentListener);
@@ -430,7 +423,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             seed = getExecutablePath();
         }
         // Show the file chooser
-        FileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectWorkingDir"),
                 getString("SelectLabel"),
                 FileChooser.DIRECTORIES_ONLY,
@@ -448,8 +441,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private void projectComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboBoxActionPerformed
         int selectedIndex = projectComboBox.getSelectedIndex();
         if (selectedIndex == 0) {
-            if (new File(executableTextField.getText()).getParentFile() != null) {
-                runDirectoryTextField.setText(new File(executableTextField.getText()).getParentFile().getPath());
+            FileObject executable =  fileSystem.findResource(getExecutablePath());
+            if (executable != null && executable.isValid() && executable.getParent() != null) {
+                runDirectoryTextField.setText(executable.getParent().getPath());
             } else {
                 if (!isValidating) {
                     executableTextField.setText(""); // NOI18N
@@ -463,7 +457,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectLocationButton.setEnabled(true);
             projectFolderField.setEnabled(true);
             projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder());
-            projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), new File(getExecutablePath()).getName()));
+            if (executable != null && executable.isValid()) {
+                projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), executable.getNameExt()));
+            } else {
+                projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), "")); //NOI18N
+            }
         }
         else {
             projectKind.setEnabled(false);
@@ -503,7 +501,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
         }
         // Show the file chooser
-        FileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectExecutable"),
                 getString("SelectLabel"),
                 FileChooser.FILES_ONLY,
@@ -520,12 +518,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
 
     private void projectLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectLocationButtonActionPerformed
         String path = this.projectLocationField.getText();
-        FileChooser chooser = new FileChooser(
+        JFileChooser chooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("RunDialogPanel.Title_SelectProjectLocation"),
                 null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
-            File projectDir = chooser.getSelectedFile();
-            projectLocationField.setText(projectDir.getAbsolutePath());
+            projectLocationField.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_projectLocationButtonActionPerformed
     
@@ -606,12 +603,12 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private boolean validateExecutable() {
         String exePath = getExecutablePath();
-        File exeFile = new File(exePath);
-        if (!exeFile.exists()) {
+        FileObject exeFile = fileSystem.findResource(exePath);
+        if (exeFile == null || !exeFile.isValid()) {
             setError("ERROR_DONTEXIST", true); // NOI18N
             return false;
         }
-        if (exeFile.isDirectory()) {
+        if (exeFile.isFolder()) {
             setError("ERROR_NOTAEXEFILE", true); // NOI18N
             return false;
         }
@@ -715,15 +712,19 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 if (!validateExecutable()) {
                     return;
                 }
-                runDirectoryTextField.setText(new File(executableTextField.getText()).getParentFile().getPath());
+                FileObject executable =  fileSystem.findResource(getExecutablePath());
+                if (executable != null && executable.isValid() && executable.getParent() != null) {
+                    runDirectoryTextField.setText(executable.getParent().getPath());
+                }
             } else if (documentEvent.getDocument() == projectNameField.getDocument() ||
                        documentEvent.getDocument() == projectLocationField.getDocument()) {
                 String projectName = projectNameField.getText().trim();
                 String projectFolder = projectLocationField.getText().trim();
-                while (projectFolder.endsWith("/")) { // NOI18N
+                while (projectFolder.endsWith("/") || projectFolder.endsWith("\\")) { // NOI18N
                     projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
                 }
-                projectFolderField.setText(projectFolder + File.separatorChar + projectName);
+                
+                projectFolderField.setText(projectFolder + CndFileUtils.getFileSeparatorChar(fileSystem) + projectName);
                 if (!validateProjectLocation()) {
                     return;
                 }
@@ -772,7 +773,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
                             ExecutionEnvironmentFactory.getLocal().getHost());
                     // Working dir
-                    String wd = new File(getExecutablePath()).getParentFile().getPath();
+                    String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
                     wd = CndPathUtilitities.toRelativePath(baseDir, wd);
                     wd = CndPathUtilitities.normalizeSlashes(wd);
                     conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
@@ -848,22 +849,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private void setErrorMsg(String msg) {
         errorLabel.setText(msg);
-    }
-    
-    private static DefaultPicklistModel getExecutablePicklist() {
-        if (picklist == null) {
-            picklistHomeDir = System.getProperty("netbeans.user") + File.separator + "var" + File.separator + "picklists"; // NOI18N
-            picklist = (DefaultPicklistModel)DefaultPicklistModel.restorePicklist(picklistHomeDir, picklistName);
-            if (picklist == null) {
-                picklist = new DefaultPicklistModel(16);
-            }
-        }
-        return picklist;
-    }
-    
-    public static void addElementToExecutablePicklist(String exePath) {
-        getExecutablePicklist().addElement(exePath);
-        getExecutablePicklist().savePicklist(picklistHomeDir, picklistName);
     }
     
     /** Look up i18n strings here */
