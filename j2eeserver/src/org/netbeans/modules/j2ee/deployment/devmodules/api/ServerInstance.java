@@ -158,15 +158,7 @@ public final class ServerInstance {
      * @since 1.49
      */
     public boolean isDeployOnSaveSupported(J2eeModule module) throws InstanceRemovedException {
-        final ServerRegistry registry = ServerRegistry.getInstance();
-        // see comment at the beginning of the class
-        synchronized (registry) {
-            org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
-            IncrementalDeployment incremental = inst.getIncrementalDeployment();
-
-            // TODO missing condition on canFileDeploy - this would need started server
-            return incremental != null && incremental.isDeployOnSaveSupported();
-        }
+        return isDeployOnSaveSupported();
     }
 
     /**
