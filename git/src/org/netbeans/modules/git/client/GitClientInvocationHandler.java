@@ -95,6 +95,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "pull", //NOI18N
             "remove", //NOI18N
             "reset", //NOI18N
+            "revert", //NOI18N
             "clean")); //NOI18N
     /**
      * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
@@ -137,6 +138,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset", //NOI18N
             "removeRemote", //NOI18N - updates remotes
+            "revert", //NOI18N - creates a new head
             "setRemote")); //NOI18N - updates remotes
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;

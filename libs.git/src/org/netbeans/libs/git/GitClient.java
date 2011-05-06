@@ -375,7 +375,16 @@ public interface GitClient {
      * @throws GitException
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
-    
+
+    /**
+     * Reverts already committed changes
+     * @param revision
+     * @return 
+     * @throws org.netbeans.libs.git.GitException.MissingObjectException
+     * @throws GitException 
+     */
+    public GitRevertResult revert (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+
     /**
      * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
      */

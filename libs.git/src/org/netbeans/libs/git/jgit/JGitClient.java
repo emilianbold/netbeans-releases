@@ -43,6 +43,7 @@
 package org.netbeans.libs.git.jgit;
 
 import org.netbeans.libs.git.GitClientCallback;
+import org.netbeans.libs.git.GitException.MissingObjectException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
@@ -68,6 +69,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitPushResult;
+import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -92,6 +94,7 @@ import org.netbeans.libs.git.jgit.commands.PullCommand;
 import org.netbeans.libs.git.jgit.commands.PushCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
+import org.netbeans.libs.git.jgit.commands.RevertCommand;
 import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
 import org.netbeans.libs.git.progress.FileListener;
@@ -441,6 +444,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         Repository repository = gitRepository.getRepository();
         ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
         cmd.execute();
+    }
+
+    @Override
+    public GitRevertResult revert (String revision, ProgressMonitor monitor) throws MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        RevertCommand cmd = new RevertCommand(repository, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     @Override
