@@ -47,29 +47,24 @@ import java.util.regex.Pattern;
  *
  * @author marekfukala
  */
-public class Encoding extends PatternRule {
+public class Table extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
-        "The internal character encoding declaration specified .*? which is not a rough superset of ASCII",
-        "The encoding .*? is not",
-        "Authors should not use the character encoding",
-        "The character encoding .*? is not widely supported",
-        "Using .*? instead of the declared encoding",
-        "Unsupported character encoding name: .*?. Will continue sniffing",
-        "Overriding document character encoding from ",
-        //ErrorReportingTokenizer
-        "The character encoding of the document was not explicit but the document contains non-ASCII",
-        "No explicit character encoding declaration has been seen yet (assumed .*?) but the document contains non-ASCII",
-        "This document is not mappable to XML 1.0 without data loss due to .*? which is not a legal XML 1.0 character",
-        "Astral non-character",
-        "Forbidden code point",
-        "Document uses the Unicode Private Use Area(s), which should not be used in publicly exchanged documents. (Charmod C073)",
+        ".*?start tag in table body.",
+        "Stray .*? start tag.",
+        "No table row to close.",
+        "Start tag for .*? seen but the previous .table. is still open.",
+        "Unclosed elements on stack.",
+        "Start tag .*? seen in .table.",
+        "No cell to close.",
+        "No table row to close.",
+        ".table. closed but .caption. was still open.",
+        "Unclosed elements.",
+        ".*? end tag with .select. open.",
+        "Misplaced non-space characters insided a table.",
         
-        //TreeBuilder
-        "Attribute .content. would be sniffed as an internal character encoding declaration but there was no matching",
         
-            
-            
+        
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);

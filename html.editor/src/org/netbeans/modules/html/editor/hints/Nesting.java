@@ -47,29 +47,30 @@ import java.util.regex.Pattern;
  *
  * @author marekfukala
  */
-public class Encoding extends PatternRule {
+public class Nesting extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
-        "The internal character encoding declaration specified .*? which is not a rough superset of ASCII",
-        "The encoding .*? is not",
-        "Authors should not use the character encoding",
-        "The character encoding .*? is not widely supported",
-        "Using .*? instead of the declared encoding",
-        "Unsupported character encoding name: .*?. Will continue sniffing",
-        "Overriding document character encoding from ",
-        //ErrorReportingTokenizer
-        "The character encoding of the document was not explicit but the document contains non-ASCII",
-        "No explicit character encoding declaration has been seen yet (assumed .*?) but the document contains non-ASCII",
-        "This document is not mappable to XML 1.0 without data loss due to .*? which is not a legal XML 1.0 character",
-        "Astral non-character",
-        "Forbidden code point",
-        "Document uses the Unicode Private Use Area(s), which should not be used in publicly exchanged documents. (Charmod C073)",
+        "Heading cannot be a child of another heading.",
+        ".*? start tag found but the .*? element is already open.",
+        "Unclosed elements inside a list.",
+        "An .*? start tag seen with already an active .*? element.",
+        ".*? start tag seen when there was an open .*? element in scope.",
+        "Start tag for .*? seen when .*? was already open.",
+        "Bad start tag in .*? in",
+        ".*? start tag with .*? open",
+        ".*? start tag where end tag expected.",
+        ".*? start tag seen in",
+        ".*? element outside",
+        ".*? element between",
+        "Unclosed elements on stack.",
+        "No .*? element in scope but a .*? end tag seen.",
+        "No .*? element in list scope",
+        "Saw an end tag after .*? had been closed.",
+        "No element .*? to close.",
+        "End tag .*? violates nesting rules.",
         
-        //TreeBuilder
-        "Attribute .content. would be sniffed as an internal character encoding declaration but there was no matching",
         
-            
-            
+        
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
