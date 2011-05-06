@@ -88,10 +88,6 @@ public class CommitPanel extends javax.swing.JPanel {
         
         messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
         messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
-        if(commitMessage != null) {
-            messageTextArea.setText(commitMessage);
-        }
-        
         
         authorComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommitAuthors(), user));
         setCaretPosition(authorComboBox);
@@ -100,7 +96,7 @@ public class CommitPanel extends javax.swing.JPanel {
         setCaretPosition(commiterComboBox);
         
         Spellchecker.register (messageTextArea);  
-        
+        initCommitMessage(commitMessage);
     }
 
     private void setCaretPosition(JComboBox cbo) {
@@ -110,12 +106,11 @@ public class CommitPanel extends javax.swing.JPanel {
         }
     }
     
-    @Override
-    public void addNotify() {
-        super.addNotify();
-
-        // XXX why in notify?
+    private void initCommitMessage (String commitMessage) {
         TemplateSelector ts = new TemplateSelector(parameters.getPreferences());
+        if(commitMessage != null) {
+            messageTextArea.setText(commitMessage);
+        }
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
@@ -126,19 +121,32 @@ public class CommitPanel extends javax.swing.JPanel {
                     lastCommitMessage = messages.get(0);
                 }
             }
-            messageTextArea.setText(lastCommitMessage);
+            if (!lastCommitMessage.isEmpty()) {
+                messageTextArea.setText(lastCommitMessage);
+            }
         }
         messageTextArea.selectAll();
-        um = UndoRedoSupport.register(messageTextArea);          
+    }
+    
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (um == null) {
+            um = UndoRedoSupport.register(messageTextArea);
+        }
     }
 
     @Override
     public void removeNotify() {
+        // kind of a work-around, removeNotify is called even when a diff view is opened in the commit dialog
+        // we may unregister only when the whole dialog is shut down
+        if (getParent() == null || !getParent().isShowing()) {
+            if (um != null) {
+                um.unregister();
+                um = null;
+            }
+        }
         super.removeNotify();
-        if (um != null) {
-            um.unregister();
-            um = null;
-        }            
     }
         
     /** This method is called from within the constructor to

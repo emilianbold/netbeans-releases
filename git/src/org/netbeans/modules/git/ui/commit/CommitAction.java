@@ -135,6 +135,8 @@ public class CommitAction extends SingleRepositoryAction {
                     RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
                     GitProgressSupport support = new CommitProgressSupport(panel, commitFiles, selectedFilter, state);
                     support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+                } else if (!panel.getParameters().getCommitMessage().isEmpty()) {
+                    GitModuleConfig.getDefault().setLastCanceledCommitMessage(panel.getParameters().getCommitMessage());
                 }
             }
         });
