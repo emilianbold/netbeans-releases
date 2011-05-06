@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.jsfapi.spi;
 
+import com.sun.istack.internal.NotNull;
+import java.security.Policy.Parameters;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -62,10 +64,6 @@ import org.openide.util.Lookup;
 public abstract class JsfSupportProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JsfSupportProvider.class.getName());
-
-    public static JsfSupport get(Document document) {
-        return get(DataLoadersBridge.getDefault().getFileObject(document));
-    }
 
     public static JsfSupport get(Source source) {
         FileObject fo = source.getFileObject();
