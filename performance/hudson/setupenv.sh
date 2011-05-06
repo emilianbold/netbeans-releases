@@ -43,9 +43,6 @@ sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $
 gawk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnablePHPTest.xml > tmp.xml && mv tmp.xml "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnablePHPTest.xml 
 sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.fod.EnablePHPTest.xml 
 
-gawk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableRubyTest.xml > tmp.xml && mv tmp.xml "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableRubyTest.xml 
-sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableRubyTest.xml 
-
 gawk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableEnterpriseTest.xml > tmp.xml && mv tmp.xml "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableEnterpriseTest.xml 
 sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.fod.EnableEnterpriseTest.xml 
 

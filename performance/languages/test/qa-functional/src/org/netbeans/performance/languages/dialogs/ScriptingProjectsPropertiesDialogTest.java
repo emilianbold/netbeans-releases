@@ -103,17 +103,7 @@ public class ScriptingProjectsPropertiesDialogTest extends PerformanceTestCase {
         projectName = Projects.PHP_PROJECT;
         doMeasurement();
     }
-
-    public void testRubyProjectProperties() {
-        projectName = Projects.RUBY_PROJECT;
-        doMeasurement();
-    }
-
-    public void testRailsProjectProperties() {
-        projectName = Projects.RAILS_PROJECT;
-        doMeasurement();
-    }
-
+    
     public void testScriptingProjectProperties() {
         projectName = Projects.SCRIPTING_PROJECT;
         doMeasurement();
