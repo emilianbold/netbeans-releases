@@ -420,7 +420,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public List<Object> getElements() {
         itemsLock.readLock().lock();
         try {
-            return new ArrayList(items);
+            return new ArrayList<Object>(items);
         } finally {
             itemsLock.readLock().unlock();
         }
