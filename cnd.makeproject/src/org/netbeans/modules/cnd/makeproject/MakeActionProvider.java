@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
-import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -542,7 +541,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (actionEvent == ProjectActionEvent.PredefinedType.TEST) { // RUN TEST
             if (conf.isCompileConfiguration() && !validateProject(conf)) {
                 return true;
@@ -577,7 +575,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isLibraryConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
@@ -595,7 +592,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isApplicationConfiguration()) { // RUN MANAGED
             RunProfile runProfile = createRunProfile(conf, cancelled);
             if (runProfile == null) {
@@ -622,7 +618,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else {
             assert false;
         }
@@ -776,7 +771,6 @@ public final class MakeActionProvider implements ActionProvider {
             String path = CndFileUtils.toFile(d.getPrimaryFile()).getPath();
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else {
             assert false;
         }
