@@ -171,7 +171,7 @@ public class TaskProcessor {
         }
         includedTasks = _includedTasks;
     }
-        
+
     public static void runUserTask (final Mutex.ExceptionAction<Void> task, final Collection<Source> sources) throws ParseException {
         Parameters.notNull("task", task);
         //tzezula: ugly, Hanzy isn't here a nicer solution to distinguish single source from multi source?
@@ -188,7 +188,12 @@ public class TaskProcessor {
                 LOGGER.log(Level.WARNING, "ParserManager.parse called in AWT event thread by: {0}", stackTraceElement); // NOI18N
             }
         }
-        final Request request = currentRequest.getTaskToCancel();
+        final Request request = currentRequest.getTaskToCancel(new CancelStrategy(Parser.CancelReason.USER_TASK) {
+            @Override
+            public boolean apply(final @NonNull Request request) {
+                return true;
+            }
+        });
         try {
             if (request != null) {
                 cancelTask(request.task);
@@ -249,15 +254,22 @@ public class TaskProcessor {
             }
         } else {
             //Otherwise interrupt currently running task and try to aquire lock
+            final boolean[] isScanner = new boolean[1];
+            final CancelStrategy cancelStrategy = new CancelStrategy(Parser.CancelReason.USER_TASK) {
+                @Override
+                public boolean apply(final @NonNull Request request) {
+                    isScanner[0] = request.cache == null;
+                    return !isScanner[0];
+                }
+            };
             do {
-                final Request[] request = new Request[1];
-                boolean isScanner = currentRequest.getTaskToCancel(request);
+                final Request request = currentRequest.getTaskToCancel(cancelStrategy);
                 try {
-                    if (isScanner) {
+                    if (isScanner[0]) {
                         return sync;
                     }
-                    if (request[0] != null) {
-                        cancelTask(request[0].task);
+                    if (request != null) {
+                        cancelTask(request.task);
                     }
                     if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
@@ -280,8 +292,8 @@ public class TaskProcessor {
                     throw new ParseException ("Interupted.",e); //NOI18N
                 }
                 finally {
-                    if (!isScanner) {
-                        currentRequest.cancelCompleted(request[0]);
+                    if (!isScanner[0]) {
+                        currentRequest.cancelCompleted(request);
                     }
                 }
             } while (true);
@@ -383,7 +395,12 @@ public class TaskProcessor {
     public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);        
-        final Request request = currentRequest.getTaskToCancel (tasks);
+        final Request request = currentRequest.getTaskToCancel (new CancelStrategy(Parser.CancelReason.PARSER_RESULT_TASK) {
+            @Override
+            public boolean apply(final @NonNull Request request) {
+                return tasks.contains(request.task);
+            }
+        });
         try {
             synchronized (INTERNAL_LOCK) {
                 final Collection<Request> cr = finishedRequests.get(source);
@@ -552,7 +569,13 @@ public class TaskProcessor {
         for (Request r : requests) {
             priority = Math.min(priority, r.task.getPriority());
         }
-        final Request request = currentRequest.getTaskToCancel(priority);
+        final int pf = priority;
+        final Request request = currentRequest.getTaskToCancel(new CancelStrategy(Parser.CancelReason.PARSER_RESULT_TASK) {
+            @Override
+            public boolean apply(Request request) {
+                return pf < request.task.getPriority();
+            }
+        });
         try {
             if (request != null) {
                 cancelTask(request.task);
@@ -1010,7 +1033,22 @@ public class TaskProcessor {
             return this.t == t;
         }
     }
-    
+
+    private abstract static class CancelStrategy {
+        
+        private final Parser.CancelReason cancelReason;
+        
+        public CancelStrategy(final @NonNull Parser.CancelReason cancelReason) {
+            Parameters.notNull("cancelReason", cancelReason);   //NOI18N
+            this.cancelReason = cancelReason;
+        }
+        
+        public final Parser.CancelReason getCancelReason() {
+            return cancelReason;
+        }
+
+        public abstract boolean apply(@NonNull Request request);
+    }
     
     /**
      *  Encapsulates current request. May be trasformed into 
@@ -1063,12 +1101,12 @@ public class TaskProcessor {
             }
         }
         
-        Request getTaskToCancel (final int priority) {
+        Request getTaskToCancel (final @NonNull CancelStrategy cancelStrategy) {
             Request request = null;
             Parser parser = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (CRR_LOCK) {
-                    if (this.reference != null && priority<this.reference.task.getPriority()) {
+                    if (this.reference != null && cancelStrategy.apply(this.reference)) {
                         assert this.canceledReference == null;
                         request = this.reference;
                         this.canceledReference = request;
@@ -1079,57 +1117,13 @@ public class TaskProcessor {
                     }
                 }
                 if (parser != null) {
-                    cancelParser (parser, false, Parser.CancelReason.PARSER_RESULT_TASK, null);
+                    cancelParser (parser, false, cancelStrategy.getCancelReason(), null);
                 }
             }
             return request;
         }
-        
+                        
                 
-        Request getTaskToCancel (final Collection<? extends SchedulerTask> tasks) {
-            assert tasks != null;
-            Request request = null;
-            Parser parser = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {                
-                synchronized (CRR_LOCK) {
-                    if (this.reference != null && tasks.contains(this.reference.task)) {
-                        assert this.canceledReference == null;
-                        request = this.reference;
-                        this.canceledReference = request;
-                        this.reference = null;
-                        this.canceled = true;
-                        parser = activeParser;
-                    }
-                }
-                if (parser != null) {
-                    cancelParser(parser, false, Parser.CancelReason.PARSER_RESULT_TASK, null);
-                }
-            }
-            return request;
-        }
-        
-        Request getTaskToCancel () {
-            Request request = null;
-            Parser parser = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {                
-                synchronized (CRR_LOCK) {
-                     request = this.reference;
-                    if (request != null) {
-                        assert this.canceledReference == null;
-                        this.canceledReference = request;
-                        this.reference = null;
-                        this.canceled = true;
-                        this.cancelTime = System.currentTimeMillis();
-                        parser = activeParser;
-                    }
-                }
-                if (parser != null) {
-                    cancelParser (parser, false, Parser.CancelReason.USER_TASK, null);
-                }
-            }
-            return request;
-        }
-        
         Request getTaskToCancel (final boolean mayCancelParser) {
             Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {    
@@ -1169,40 +1163,7 @@ public class TaskProcessor {
             }
             return request;
         }
-
-        boolean getTaskToCancel (Request[] request) {
-            assert request != null;
-            assert request.length == 1;
-            boolean result = false;
-            Parser parser = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {
-                synchronized (CRR_LOCK) {
-                     request[0] = this.reference;
-                    if (request[0] != null) {
-                        result = request[0].cache == null;
-                        assert this.canceledReference == null;
-                        if (!result) {
-                            this.canceledReference = request[0];
-                            this.reference = null;
-                        }
-                        this.canceled = result;
-                        this.cancelTime = System.currentTimeMillis();
-                        parser = activeParser;
-                    }
-                }
-                if (parser != null) {
-                    cancelParser(parser, false, Parser.CancelReason.USER_TASK, null);
-                }
-            }
-            return result;
-        }
-                        
-        boolean isCanceled () {
-            synchronized (CRR_LOCK) {
-                return this.canceled;
-            }
-        }                
-        
+                                
         long getCancelTime () {
             synchronized (CRR_LOCK) {
                 return this.cancelTime;
