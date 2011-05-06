@@ -2868,11 +2868,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 updateWatches();
             }
             
+            state().isProcess = true;
+            
             if (get_registers) {
                 requestRegisters();
             }
-            
-            state().isProcess = true;
         }
 
         if (record != null) {
@@ -3645,34 +3645,36 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
         }
         
-        MICommand cmd = new MiCommandImpl("-data-list-register-values x") { // NOI18N
-            @Override
-            protected void onDone(MIRecord record) {
-                if (registersWindow != null) {
-                    LinkedList<String> res = new LinkedList<String>();
-                    for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
-                        StringBuilder sb = new StringBuilder();
-                        MITList line = ((MITList)elem);
-                        String number = line.valueOf("number").asConst().value(); //NOI18N
-                        // try to get real name
-                        try {
-                            number = regNames.get(Integer.valueOf(number));
-                        } catch (Exception e) {
-                            Exceptions.printStackTrace(e);
+        if (state().isProcess) {
+            MICommand cmd = new MiCommandImpl("-data-list-register-values x") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    if (registersWindow != null) {
+                        LinkedList<String> res = new LinkedList<String>();
+                        for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
+                            StringBuilder sb = new StringBuilder();
+                            MITList line = ((MITList)elem);
+                            String number = line.valueOf("number").asConst().value(); //NOI18N
+                            // try to get real name
+                            try {
+                                number = regNames.get(Integer.valueOf(number));
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                            sb.append(number).append(' ');
+                            String value = line.valueOf("value").asConst().value(); //NOI18N
+                            sb.append(value);
+                            res.add(sb.toString());
                         }
-                        sb.append(number).append(' ');
-                        String value = line.valueOf("value").asConst().value(); //NOI18N
-                        sb.append(value);
-                        res.add(sb.toString());
+                        registersWindow.updateData(res);
                     }
-                    registersWindow.updateData(res);
+                    finish();
                 }
-                finish();
+            };
+            // LATER: sometimes it is sent too early, need to investigate
+            if (gdb != null) {
+                gdb.sendCommand(cmd);
             }
-        };
-        // LATER: sometimes it is sent too early, need to investigate
-        if (gdb != null) {
-            gdb.sendCommand(cmd);
         }
     }
 
@@ -4460,7 +4462,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void registerRegistersWindow(RegistersWindow w) {
         super.registerRegistersWindow(w);
-        if (get_registers == false && w != null) {
+        if (w != null) {
             requestRegisters();
         }
         get_registers = (w != null);

@@ -108,7 +108,7 @@ public final class RegistersWindow extends TopComponent
     private int selected_area_end = 0;
     private int view_model = 1; // 0 - JTextArea, 1 - JTable
 
-    public static TopComponent getDefault() {
+    public static synchronized RegistersWindow getDefault() {
         if (DEFAULT == null) {
             DEFAULT = (RegistersWindow) WindowManager.getDefault().findTopComponent(preferredID);
 
@@ -117,6 +117,10 @@ public final class RegistersWindow extends TopComponent
             }
         }
         return DEFAULT;
+    }
+    
+    public static boolean isActive() {
+        return DEFAULT != null && DEFAULT.isShowing();
     }
     
     public RegistersWindow() {
@@ -157,7 +161,7 @@ public final class RegistersWindow extends TopComponent
         super.componentClosed();
     }
 
-    protected void connectToDebugger (NativeDebugger debugger) {
+    private void connectToDebugger (NativeDebugger debugger) {
 	this.debugger = debugger;
 	if (debugger == null) return;
 	debugger.registerRegistersWindow(this);
@@ -169,7 +173,7 @@ public final class RegistersWindow extends TopComponent
         tab.requestFocusInWindow();
     }
     
-    protected void updateWindow () {
+    private void updateWindow() {
         //int hsbv, vsbv;
         int i, j, k, l, m, n, carpos;
         String s;
