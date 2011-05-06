@@ -76,7 +76,9 @@ public class HintsRegistry {
     public List<Hint> gatherHints(RuleContext context) {
         List<Hint> hints = new ArrayList<Hint>();
         for(HintsProvider provider : PROVIDERS) {
-            hints.addAll(provider.compute(context));
+            if(!provider.requiresDocument() || context.doc != null) {
+                hints.addAll(provider.compute(context));
+            }
         }
         return hints;
     }
