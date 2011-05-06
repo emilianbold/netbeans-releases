@@ -100,13 +100,13 @@ public abstract class Disassembly implements StateModel.Listener {
 	    }
 	};
 
-    public Disassembly(NativeDebuggerImpl debugger, BreakpointModel breakpointModel) {
+    protected Disassembly(NativeDebuggerImpl debugger, BreakpointModel breakpointModel) {
         this.debugger = debugger;
         this.breakpointModel = breakpointModel;
         breakpointModel.addListener(breakpointListener);
     }
 
-    public NativeDebuggerImpl getDebugger() {
+    protected NativeDebuggerImpl getDebugger() {
         return debugger;
     }
     
@@ -140,7 +140,7 @@ public abstract class Disassembly implements StateModel.Listener {
         }
     }
     
-    public static Disassembly getCurrent() {
+     static Disassembly getCurrent() {
         NativeDebugger currentDebugger = org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager.get().currentDebugger();
         if (currentDebugger != null) {
             return currentDebugger.getDisassembly();
@@ -263,11 +263,11 @@ public abstract class Disassembly implements StateModel.Listener {
         }
     }
     
-    public static Line getLine(int lineNo) throws Exception {
+    static Line getLine(int lineNo) throws Exception {
         return EditorBridge.lineNumberToLine(getDataObject(), lineNo);
     }
     
-    public int getAddressLine(String address) {
+    protected int getAddressLine(String address) {
         return getAddressLine(Address.parseAddr(address));
         // had problems with string comparison: 0x01 is not equal to 0x1
         //TODO : can use binary search
