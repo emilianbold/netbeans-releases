@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.HashSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -83,7 +84,9 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     public RemoteFileObjectBase getDelegate() {
-        RemoteFileObjectBase delegate = getFileSystem().findResource(link);
+        HashSet<String> antiLoop = new HashSet<String>();
+        antiLoop.add(getPath());
+        RemoteFileObjectBase delegate = getFileSystem().findResource(link, antiLoop);
         return delegate;
     }
         
