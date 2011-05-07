@@ -107,6 +107,27 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             removeRemoteDirIfNotNull(baseDir);
         }
     }
+
+    @ForAllEnvironments
+    public void testLinkToItself() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String linkName = "link";
+            String script = 
+                    "cd " + baseDir + "; " +
+                    "ln -s " + linkName + ' ' + linkName;
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            FileObject linkFO;
+            
+            linkFO = getFileObject(baseDir + '/' + linkName);
+            linkFO.canRead();
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
     
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteLinksTestCase.class);
