@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -99,6 +100,7 @@ public class WritingQueueTestCase extends RemoteFileTestBase {
     }
     
     // see #198200 - Deadlock after closing full remote project 
+    @RandomlyFails
     @ForAllEnvironments
     public void testNonBlockingWrite() throws Exception {
         String tempFile = null;
