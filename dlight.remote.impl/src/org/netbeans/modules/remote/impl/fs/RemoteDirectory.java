@@ -94,6 +94,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final class RefLock {}
     private final Object refLock = new RefLock();    
 
+    public static RemoteDirectory createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
+            RemoteFileObjectBase parent, String remotePath, File cache) {
+        return new RemoteDirectory(fileSystem, execEnv, parent, remotePath, cache);
+    }
+
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         super(fileSystem, execEnv, parent, remotePath, cache);

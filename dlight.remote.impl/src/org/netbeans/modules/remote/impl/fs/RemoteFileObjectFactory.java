@@ -129,7 +129,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
+        fo = RemoteDirectory.createNew(fileSystem, env, parent, remotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
@@ -156,7 +156,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);
+        fo = RemotePlainFile.createNew(fileSystem, env, parent, remotePath, cacheFile, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
@@ -181,7 +181,7 @@ public class RemoteFileObjectFactory {
 //        if (fo != null) {
 //            fo.invalidate();
 //        }
-        RemoteLink fo = new RemoteLink(fileSystem, env, parent, remotePath, link);        
+        RemoteLink fo = RemoteLink.createNew(fileSystem, env, parent, remotePath, link);        
         RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {
             return (RemoteLink) result;

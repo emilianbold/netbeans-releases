@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import junit.framework.Test;
-import org.junit.Ignore;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -77,19 +76,18 @@ public class LinkListenersParityTestCase extends RemoteFileTestBase {
         try {
             final String childName = "child_file_1";
             final String subdirName = "child_folder";
-            String childLinkName = baseDirFO.getNameExt() + '/' + childName + "-link";
-            String subirLinkName = baseDirFO.getNameExt() + '/' + subdirName + "-link";
+            String childLinkName = childName + "-link";
+            String subirLinkName = subdirName + "-link";
             ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDirFO);
             executeInDir(baseDirFO.getPath(), env, "ln",  "-s", childName, childLinkName);
             executeInDir(baseDirFO.getPath(), env, "ln",  "-s", subdirName, subirLinkName);            
             baseDirFO.refresh();
             
             String prefix = baseDirFO.getPath();
-            FCL fcl = new FCL("baseDir", prefix, out, true);
             if (recursive) {
-                FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
+                FileSystemProvider.addRecursiveListener(new FCL("recursive", prefix, out, true), baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {
-                baseDirFO.addFileChangeListener(fcl);
+                baseDirFO.addFileChangeListener(new FCL("baseDir", prefix, out, true));
             }
             FileObject childFO = baseDirFO.createData(childName);
             FileObject subdirFO = baseDirFO.createFolder(subdirName);
@@ -101,7 +99,7 @@ public class LinkListenersParityTestCase extends RemoteFileTestBase {
             
             if (!recursive) {
                 subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
-                subdirLinkFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
+                subdirLinkFO.addFileChangeListener(new FCL(subdirLinkFO.getNameExt(), prefix, out, true));
             }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
@@ -169,7 +167,6 @@ public class LinkListenersParityTestCase extends RemoteFileTestBase {
         doTestListeners1(false);
     }
 
-    @Ignore
     @ForAllEnvironments
     public void testRecursiveListeners() throws Throwable {                
         if (Utilities.isWindows()) {

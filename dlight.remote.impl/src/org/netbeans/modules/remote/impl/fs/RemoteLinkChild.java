@@ -43,9 +43,6 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
-import java.net.ConnectException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -58,8 +55,14 @@ import org.openide.util.Parameters;
 public class RemoteLinkChild extends RemoteLinkBase {
 
     private final RemoteFileObjectBase delegate;
+
+    public static RemoteLinkChild createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
+        RemoteLinkChild res = new RemoteLinkChild(fileSystem, execEnv, parent, remotePath, delegate);
+        res.initListeners();
+        return res;
+    }
     
-    public RemoteLinkChild(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
+    private RemoteLinkChild(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
         super(fileSystem, execEnv, parent, remotePath);
         Parameters.notNull("delegate", delegate);
         this.delegate = delegate;

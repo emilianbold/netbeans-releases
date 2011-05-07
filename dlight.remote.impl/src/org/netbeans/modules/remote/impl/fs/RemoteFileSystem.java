@@ -438,7 +438,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     private static class RootFileObject extends RemoteDirectory {
 
-        public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
+        private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
             super(fileSystem, execEnv, null, "", cache);
         }
 

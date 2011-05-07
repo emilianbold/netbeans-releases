@@ -54,8 +54,14 @@ public final class RemoteLink extends RemoteLinkBase {
 
     private String link;
 
-    public RemoteLink(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
-        super(fileSystem, execEnv, parent, remotePath);
+    public static RemoteLink createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
+        RemoteLink res = new RemoteLink(fileSystem, execEnv, parent, remotePath, link);
+        res.initListeners();
+        return res;
+    }
+
+    private RemoteLink(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
+        super(fileSystem, execEnv, parent, remotePath);        
         setLink(link, parent);
     }
 

@@ -47,14 +47,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -66,6 +71,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         super(fileSystem, execEnv, parent, remotePath, null);
     }
     
+    protected final void initListeners() {
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null) {
+            delegate.addFileChangeListener(WeakListeners.create(FileChangeListener.class, new LinkChangeListener(delegate), delegate));
+        }
+    }
+
     public abstract RemoteFileObjectBase getDelegate();
 
     protected FileNotFoundException fileNotFoundException(String operation) {
@@ -92,7 +104,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         } else {
             childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
-        return new RemoteLinkChild(getFileSystem(), getExecutionEnvironment(), this, childAbsPath, fo);
+        return RemoteLinkChild.createNew(getFileSystem(), getExecutionEnvironment(), this, childAbsPath, fo);
     }
 
     // ------------ delegating methods -------------------
@@ -173,14 +185,6 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
     }
 
     @Override
-    public void removeFileChangeListener(FileChangeListener fcl) {
-        RemoteFileObjectBase delegate = getDelegate();
-        if (delegate != null) {
-            delegate.removeFileChangeListener(fcl);
-        }
-    }
-
-    @Override
     public FileLock lock() throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
@@ -247,13 +251,68 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         RemoteFileObjectBase delegate = getDelegate();
         return (delegate == null) ? false : delegate.canWrite();
     }
+   
+    private class LinkChangeListener implements FileChangeListener {
+        
+        private final WeakReference<RemoteFileObjectBase> delegateRef;
 
-    @Override
-    public void addFileChangeListener(FileChangeListener fcl) {
-        RemoteFileObjectBase delegate = getDelegate();
-        if (delegate != null) {
-            delegate.addFileChangeListener(fcl);
+        public LinkChangeListener(RemoteFileObjectBase delegateFileObject) {
+            this.delegateRef = new WeakReference<RemoteFileObjectBase>(delegateFileObject);
+        }        
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            fireFileAttributeChangedEvent(getListeners(), (FileAttributeEvent)transform(fe));
+        }
+
+        public void fileChanged(FileEvent fe) {
+            fireFileChangedEvent(getListeners(), transform(fe));
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            fireFileDataCreatedEvent(getListeners(), transform(fe));
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            fireFileDeletedEvent(getListeners(), transform(fe));
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            fireFileFolderCreatedEvent(getListeners(), transform(fe));
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
+        }
+        
+        private FileEvent transform(FileEvent fe) {
+            FileObject delegate = delegateRef.get();            
+            if (delegate != null) {
+                FileObject src = transform((FileObject) fe.getSource(), delegate);
+                FileObject file = transform(fe.getFile(), delegate);
+                if (file != fe.getFile() || src != fe.getSource()) {
+                    if (fe instanceof FileRenameEvent) {
+                        FileRenameEvent fre = (FileRenameEvent) fe;
+                        fe = new FileRenameEvent(src, file, fre.getName(), fre.getExt(), fe.isExpected());
+                    } else if (fe instanceof FileAttributeEvent) {
+                        FileAttributeEvent fae = (FileAttributeEvent) fe;
+                        fe = new FileAttributeEvent(src, file, fae.getName(), fae.getOldValue(), fae.getNewValue(), fe.isExpected());
+                    } else {
+                        fe = new FileEvent(src, file, fe.isExpected());
+                    }
+                }
+            }
+            return fe;
+        }
+        
+        private FileObject transform(FileObject originalFO, FileObject delegate) {
+            if (originalFO == delegate) {
+                return RemoteLinkBase.this;
+            }
+            if (originalFO.getParent() == delegate) {
+                String path = RemoteLinkBase.this.getPath() + '/' + originalFO.getNameExt();
+                return RemoteLinkChild.createNew(getFileSystem(), getExecutionEnvironment(), RemoteLinkBase.this, path, (RemoteFileObjectBase) originalFO);
+            }
+            return originalFO;
         }
     }
-
 }
