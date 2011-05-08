@@ -184,8 +184,14 @@ public class RemoteFileObjectFactory {
         RemoteLink fo = RemoteLink.createNew(fileSystem, env, parent, remotePath, link);        
         RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {
+            // (result == fo) means that result was placed into cache => we need to init listeners,
+            // otherwise there already was an object in cache => listener has been already initialized
+            if (result == fo) { 
+                ((RemoteLink) result).initListeners();
+            }
             return (RemoteLink) result;
         }
+        fo.initListeners();
         return fo;
     }
 
