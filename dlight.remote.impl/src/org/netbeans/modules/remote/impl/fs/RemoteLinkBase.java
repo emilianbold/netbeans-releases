@@ -65,8 +65,10 @@ import org.openide.util.WeakListeners;
  *
  * @author vk155633
  */
-public abstract class RemoteLinkBase extends RemoteFileObjectBase {
+public abstract class RemoteLinkBase extends RemoteFileObjectBase implements FileChangeListener {
     
+    private WeakReference<RemoteFileObjectBase> delegateRef;
+
     protected RemoteLinkBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
         super(fileSystem, execEnv, parent, remotePath, null);
     }
@@ -74,7 +76,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
     protected final void initListeners() {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            delegate.addFileChangeListener(WeakListeners.create(FileChangeListener.class, new LinkChangeListener(delegate), delegate));
+            this.delegateRef = new WeakReference<RemoteFileObjectBase>(delegate);
+            delegate.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, delegate));
         }
     }
 
@@ -252,67 +255,60 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         return (delegate == null) ? false : delegate.canWrite();
     }
    
-    private class LinkChangeListener implements FileChangeListener {
         
-        private final WeakReference<RemoteFileObjectBase> delegateRef;
 
-        public LinkChangeListener(RemoteFileObjectBase delegateFileObject) {
-            this.delegateRef = new WeakReference<RemoteFileObjectBase>(delegateFileObject);
-        }        
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        fireFileAttributeChangedEvent(getListeners(), (FileAttributeEvent)transform(fe));
+    }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            fireFileAttributeChangedEvent(getListeners(), (FileAttributeEvent)transform(fe));
-        }
+    public void fileChanged(FileEvent fe) {
+        fireFileChangedEvent(getListeners(), transform(fe));
+    }
 
-        public void fileChanged(FileEvent fe) {
-            fireFileChangedEvent(getListeners(), transform(fe));
-        }
+    public void fileDataCreated(FileEvent fe) {
+        fireFileDataCreatedEvent(getListeners(), transform(fe));
+    }
 
-        public void fileDataCreated(FileEvent fe) {
-            fireFileDataCreatedEvent(getListeners(), transform(fe));
-        }
+    public void fileDeleted(FileEvent fe) {
+        fireFileDeletedEvent(getListeners(), transform(fe));
+    }
 
-        public void fileDeleted(FileEvent fe) {
-            fireFileDeletedEvent(getListeners(), transform(fe));
-        }
+    public void fileFolderCreated(FileEvent fe) {
+        fireFileFolderCreatedEvent(getListeners(), transform(fe));
+    }
 
-        public void fileFolderCreated(FileEvent fe) {
-            fireFileFolderCreatedEvent(getListeners(), transform(fe));
-        }
+    public void fileRenamed(FileRenameEvent fe) {
+        fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
+    }
 
-        public void fileRenamed(FileRenameEvent fe) {
-            fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
-        }
-        
-        private FileEvent transform(FileEvent fe) {
-            FileObject delegate = delegateRef.get();            
-            if (delegate != null) {
-                FileObject src = transform((FileObject) fe.getSource(), delegate);
-                FileObject file = transform(fe.getFile(), delegate);
-                if (file != fe.getFile() || src != fe.getSource()) {
-                    if (fe instanceof FileRenameEvent) {
-                        FileRenameEvent fre = (FileRenameEvent) fe;
-                        fe = new FileRenameEvent(src, file, fre.getName(), fre.getExt(), fe.isExpected());
-                    } else if (fe instanceof FileAttributeEvent) {
-                        FileAttributeEvent fae = (FileAttributeEvent) fe;
-                        fe = new FileAttributeEvent(src, file, fae.getName(), fae.getOldValue(), fae.getNewValue(), fe.isExpected());
-                    } else {
-                        fe = new FileEvent(src, file, fe.isExpected());
-                    }
+    private FileEvent transform(FileEvent fe) {
+        FileObject delegate = delegateRef.get();            
+        if (delegate != null) {
+            FileObject src = transform((FileObject) fe.getSource(), delegate);
+            FileObject file = transform(fe.getFile(), delegate);
+            if (file != fe.getFile() || src != fe.getSource()) {
+                if (fe instanceof FileRenameEvent) {
+                    FileRenameEvent fre = (FileRenameEvent) fe;
+                    fe = new FileRenameEvent(src, file, fre.getName(), fre.getExt(), fe.isExpected());
+                } else if (fe instanceof FileAttributeEvent) {
+                    FileAttributeEvent fae = (FileAttributeEvent) fe;
+                    fe = new FileAttributeEvent(src, file, fae.getName(), fae.getOldValue(), fae.getNewValue(), fe.isExpected());
+                } else {
+                    fe = new FileEvent(src, file, fe.isExpected());
                 }
             }
-            return fe;
         }
-        
-        private FileObject transform(FileObject originalFO, FileObject delegate) {
-            if (originalFO == delegate) {
-                return RemoteLinkBase.this;
-            }
-            if (originalFO.getParent() == delegate) {
-                String path = RemoteLinkBase.this.getPath() + '/' + originalFO.getNameExt();
-                return RemoteLinkChild.createNew(getFileSystem(), getExecutionEnvironment(), RemoteLinkBase.this, path, (RemoteFileObjectBase) originalFO);
-            }
-            return originalFO;
+        return fe;
+    }
+
+    private FileObject transform(FileObject originalFO, FileObject delegate) {
+        if (originalFO == delegate) {
+            return RemoteLinkBase.this;
         }
+        if (originalFO.getParent() == delegate) {
+            String path = RemoteLinkBase.this.getPath() + '/' + originalFO.getNameExt();
+            return RemoteLinkChild.createNew(getFileSystem(), getExecutionEnvironment(), RemoteLinkBase.this, path, (RemoteFileObjectBase) originalFO);
+        }
+        return originalFO;
     }
 }
