@@ -119,21 +119,26 @@ public class DelegateMethodGenerator implements CodeGenerator {
             } catch (IOException ioe) {
                 return ret;
             }
+            TypeElement typeElement = (TypeElement) controller.getTrees().getElement(path);
+            if (typeElement == null || !typeElement.getKind().isClass())
+                return ret;
             List<ElementNode.Description> descriptions = computeUsableFieldsDescriptions(controller, path);
             if (!descriptions.isEmpty()) {
                 Collections.reverse(descriptions);
-                ret.add(new DelegateMethodGenerator(component, ElementNode.Description.create(descriptions)));
+                ret.add(new DelegateMethodGenerator(component, ElementHandle.create(typeElement), ElementNode.Description.create(descriptions)));
             }
             return ret;
         }
     }
 
     private JTextComponent component;
+    private ElementHandle<TypeElement> handle;
     private ElementNode.Description description;
     
     /** Creates a new instance of DelegateMethodGenerator */
-    private DelegateMethodGenerator(JTextComponent component, ElementNode.Description description) {
+    private DelegateMethodGenerator(JTextComponent component, ElementHandle<TypeElement> handle, ElementNode.Description description) {
         this.component = component;
+        this.handle = handle;
         this.description = description;
     }
 
@@ -158,15 +163,21 @@ public class DelegateMethodGenerator implements CodeGenerator {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            Element e = handle.resolve(copy);
+                            TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                            ElementHandle<? extends Element> handle = panel.getDelegateField();
-                            VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
-                            ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
-                                methods.add((ExecutableElement)elementHandle.resolve(copy));
-                            generateDelegatingMethods(copy, path, delegate, methods, idx);
+                            if (path == null) {
+                                String message = NbBundle.getMessage(DelegateMethodGenerator.class, "ERR_CannotFindOriginalClass");
+                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                            } else {
+                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
+                                ElementHandle<? extends Element> handle = panel.getDelegateField();
+                                VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
+                                ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+                                for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
+                                    methods.add((ExecutableElement)elementHandle.resolve(copy));
+                                generateDelegatingMethods(copy, path, delegate, methods, idx);
+                            }
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);
@@ -220,10 +231,6 @@ public class DelegateMethodGenerator implements CodeGenerator {
 
     static List<ElementNode.Description> computeUsableFieldsDescriptions(CompilationInfo info, TreePath path) {
         Elements elements = info.getElements();
-        TypeElement typeElement = (TypeElement) info.getTrees().getElement(path);
-        if (typeElement == null || !typeElement.getKind().isClass()) {
-            return Collections.emptyList();
-        }
         Trees trees = info.getTrees();
         Scope scope = trees.getScope(path);
         Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
