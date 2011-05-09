@@ -41,12 +41,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.j2se;
+package org.netbeans.modules.profiler.j2se.impl;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
 import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
 import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
