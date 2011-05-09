@@ -82,7 +82,8 @@ import org.openide.util.NbBundle;
  */
 public final class WLJpa2SwitchSupport {
 
-    private static final Version SWITCH_SUPPORTED_VERSION = Version.fromJsr277NotationWithFallback("10.3.4"); // NOI18N
+    private static final Version SWITCH_SUPPORTED_VERSION_MIN =
+            Version.fromJsr277NotationWithFallback("10.3.4"); // NOI18N
 
     private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar"; // NO18N
 
@@ -123,9 +124,9 @@ public final class WLJpa2SwitchSupport {
                 serverVersion = version;
             }
         }
-        return SWITCH_SUPPORTED_VERSION.getMajor().equals(version.getMajor())
-                && SWITCH_SUPPORTED_VERSION.getMinor().equals(version.getMinor())
-                && SWITCH_SUPPORTED_VERSION.getMicro().equals(version.getMicro());
+        return version != null && version.isAboveOrEqual(SWITCH_SUPPORTED_VERSION_MIN)
+                && SWITCH_SUPPORTED_VERSION_MIN.getMajor().equals(version.getMajor())
+                && SWITCH_SUPPORTED_VERSION_MIN.getMinor().equals(version.getMinor());
     }
 
     public void enable() {
