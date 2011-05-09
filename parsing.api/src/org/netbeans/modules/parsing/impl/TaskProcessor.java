@@ -197,7 +197,7 @@ public class TaskProcessor {
         });
         try {
             if (request != null) {
-                cancelTask(request.task);
+                cancelTask(request.task, Parser.CancelReason.USER_TASK);
             }            
             parserLock.lock();
             try {
@@ -270,7 +270,7 @@ public class TaskProcessor {
                         return sync;
                     }
                     if (request != null) {
-                        cancelTask(request.task);
+                        cancelTask(request.task, Parser.CancelReason.USER_TASK);
                     }
                     if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
@@ -475,7 +475,7 @@ public class TaskProcessor {
         });
         if (r != null) {
             try {
-                cancelTask(r.task);
+                cancelTask(r.task, Parser.CancelReason.SOURCE_MODIFICATION_EVENT);
             } finally {
                 if (sync) {
                     Request oldR = rst.getAndSet(r);
@@ -587,17 +587,25 @@ public class TaskProcessor {
         });
         try {
             if (request != null) {
-                cancelTask(request.task);
+                cancelTask(request.task, Parser.CancelReason.PARSER_RESULT_TASK);
             }
         } finally {
             currentRequest.cancelCompleted(request);
         }
      }
 
-    /*test*/ static void cancelTask (final @NonNull SchedulerTask task) {
+    /*test*/ static void cancelTask (
+            final @NonNull SchedulerTask task,
+            final @NonNull Parser.CancelReason reason) {
         assert task != null;
+        assert reason != null;
         assert !Thread.holdsLock(INTERNAL_LOCK);
-        task.cancel();
+        Utilities.setTaskCancelReason(reason);
+        try {
+            task.cancel();
+        } finally {
+            Utilities.setTaskCancelReason(null);
+        }
     }
 
     /*test*/ static void cancelParser(
