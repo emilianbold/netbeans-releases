@@ -40,63 +40,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.j2se.impl;
+package org.netbeans.modules.profiler.j2se;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-import org.netbeans.modules.profiler.spi.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.categories.CategoryBuilder;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(projectTypes={
-                            @ProjectType(id="org-netbeans-modules-java-j2seproject"),
-                            @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201),
-                            @ProjectType(id="org-netbeans-modules-apisupport-project"),
-                            @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
-                            @ProjectType(id="org-netbeans-modules-web-project"),
-                            @ProjectType(id="org-netbeans-modules-maven")},
-                        service=ProjectProfilingSupport.class)
-public class JavaProfilingSupport extends ProjectProfilingSupport {
-    private String[][] packages = new String[2][];
+@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes={
+    @ProjectType(id="org-netbeans-modules-java-j2seproject")
+})
+public class J2SECategoryBuilder extends CategoryBuilder {
 
-    public JavaProfilingSupport(Project project) {
-        super(project);
-    }
-
-    @Override
-    public boolean canProfileFile(FileObject file) {
-        if (!"java".equals(file.getExt()) && !"class".equals(file.getExt())) {
-            return false; // NOI18N
-        }
-
-        return SourceUtils.isRunnable(file);
-    }
-
-    @Override
-    public String getFilter(boolean useSubprojects) {
-        return ProjectUtilities.computeProjectOnlyInstrumentationFilter(getProject(), useSubprojects, packages);
-    }
-
-    @Override
-    public SourceCodeSelection[] getRootMethods(FileObject profiledClassFile) {
-        if (profiledClassFile == null) {
-            return ProjectUtilities.getProjectDefaultRoots(getProject(), packages);
-        } else {
-            // Profile Single, provide correct root methods
-            String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-            if (profiledClass != null) {
-                return new SourceCodeSelection[] { new SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
-            } else {
-                return new SourceCodeSelection[0];
-            }
-        }
+    public J2SECategoryBuilder(Project proj) {
+        super(proj, "org-netbeans-modules-java-j2seproject");
     }
 
 }
