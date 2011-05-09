@@ -94,7 +94,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             String src = stripPrefix(((FileObject) fe.getSource()).getPath());
             String obj = stripPrefix(fe.getFile().getPath());
             String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
-            out.printf("FileEvent[%s]: %s src=%s obj=%s %s\n", listenerName, eventKind, src, obj, exp);
+            out.printf("FileEvent[%-20s] %-20s SRC %-20s OBJ %-20s %s\n", listenerName, eventKind, src, obj, exp);
         }
         
         private String stripPrefix(String path) {
