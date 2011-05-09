@@ -230,7 +230,7 @@ public class TaskProcessorTest extends NbTestCase {
         boolean success = false;
         try {
             synchronized (TaskProcessor.INTERNAL_LOCK) {
-                TaskProcessor.cancelTask(task);
+                TaskProcessor.cancelTask(task, Parser.CancelReason.USER_TASK);
             }
             success = true;
         } catch (AssertionError ae) {}
@@ -238,7 +238,7 @@ public class TaskProcessorTest extends NbTestCase {
 
         success = false;
         try {
-            TaskProcessor.cancelTask(task);
+            TaskProcessor.cancelTask(task, Parser.CancelReason.USER_TASK);
             success = true;
         } catch (AssertionError ae) {}
         assertTrue("AssertionError not expected when calling cancelTask without INTERNAL_LOCK", success); //NOI18N

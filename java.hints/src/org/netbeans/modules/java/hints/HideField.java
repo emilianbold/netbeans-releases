@@ -42,6 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -64,6 +66,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -185,7 +188,7 @@ public class HideField extends AbstractHint {
     protected static synchronized Iterable<? extends Element> getAllMembers(CompilationInfo info, TypeElement clazz) {
         class CleaningWR extends WeakReference<CompilationInfo> implements Runnable {
             public CleaningWR(CompilationInfo info) {
-                super(info);
+                super(info, Utilities.activeReferenceQueue());
             }
             @Override public void run() {
                 synchronized (HideField.class) {
@@ -203,7 +206,13 @@ public class HideField extends AbstractHint {
         if (origInfo == info) {
             map = allMembersCacheTo;
         } else {
+            allMembersCacheFrom = new CleaningWR(info);
             map = allMembersCacheTo = new HashMap<TypeElement, Iterable<? extends Element>>();
+
+            if (info.getFileObject() != null) {
+                Logger.getLogger("TIMER").log(Level.FINE, "HideField.allMembersCacheTo",    //NOI18N
+                        new Object[] {info.getFileObject(), map});
+            }
         }
 
         Iterable<? extends Element> members = map.get(clazz);

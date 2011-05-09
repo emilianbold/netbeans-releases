@@ -68,7 +68,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     private final char fileTypeChar;
     private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
 
-    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    public static RemotePlainFile createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+            RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
+        return new RemotePlainFile(fileSystem, execEnv, parent, remotePath, cache, fileType);
+    }
+            
+    private RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
         super(fileSystem, execEnv, parent, remotePath, cache);
         fileTypeChar = fileType.toChar(); // TODO: pass when created

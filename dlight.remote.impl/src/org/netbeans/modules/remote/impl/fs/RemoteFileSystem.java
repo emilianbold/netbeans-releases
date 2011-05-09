@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.SwingUtilities;
@@ -246,6 +247,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             return getRoot().getFileObject(name);
         }
     }
+    
+    /*package*/ RemoteFileObjectBase findResource(String name, Set<String> antiloop) {
+        if (name.isEmpty() || name.equals("/")) {  // NOI18N
+            return getRoot();
+        } else {
+            return getRoot().getFileObject(name, antiloop);
+        }
+    }
+    
 
     @Override
     public SystemAction[] getActions() {
@@ -438,7 +448,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     private static class RootFileObject extends RemoteDirectory {
 
-        public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
+        private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
             super(fileSystem, execEnv, null, "", cache);
         }
 

@@ -140,6 +140,25 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     protected final Enumeration<FileChangeListener> getListeners() {
         return Collections.enumeration(listeners);
     }
+
+    @Override
+    public void addRecursiveListener(FileChangeListener fcl) {
+        if (isFolder()) {
+            getFileSystem().addFileChangeListener(new RecursiveListener(this, fcl, false));
+        } else {
+            addFileChangeListener(fcl);
+            return;
+        }
+    }
+
+    @Override
+    public void removeRecursiveListener(FileChangeListener fcl) {
+        if (isFolder()) {
+            getFileSystem().removeFileChangeListener(new RecursiveListener(this, fcl, false));
+        } else {
+            removeFileChangeListener(fcl);
+        }
+    }
     
     protected abstract void deleteImpl() throws IOException;
 
@@ -447,6 +466,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
