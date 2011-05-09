@@ -126,7 +126,9 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             };
 
             if (scanner.scan(javac.getTrees().getTree(method), s)) {
-                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s));
+                if (!isParameterBeingRemoved(method, s, paramTable)) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s));
+                }
             }
 
 
@@ -148,6 +150,25 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
         }
         return p;    
+    }
+
+    private boolean isParameterBeingRemoved(ExecutableElement method, String s, ParameterInfo[] paramTable) {
+        boolean beingRemoved = false;
+        for (int j = 0; j < method.getParameters().size(); j++) {
+            VariableElement variable = method.getParameters().get(j);
+            if (variable.getSimpleName().contentEquals(s)) {
+
+                boolean isInNewList = false;
+                for (ParameterInfo parameterInfo : paramTable) {
+                    if (parameterInfo.getOriginalIndex() == j) {
+                        isInNewList = true;
+                    }
+                }
+                beingRemoved = !isInNewList;
+                break;
+            }
+        }
+        return beingRemoved;
     }
 
     private static String newParMessage(String par) {
