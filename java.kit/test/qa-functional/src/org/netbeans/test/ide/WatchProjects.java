@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.Log;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -204,6 +205,18 @@ public final class WatchProjects {
         };
         OpenProjects.getDefault().open(new Project[] { p }, false);
         OpenProjects.getDefault().setMainProject(p);
+        
+        for (int i = 0; i < 10; i++) {
+            EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+            }
+        });
+        }
 
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {

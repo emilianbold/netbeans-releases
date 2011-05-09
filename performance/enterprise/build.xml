@@ -12,14 +12,14 @@
       failonerror="false"
     />
 
-    <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
+    <condition property="j2ee.appserver.path" value="c:\\space\\appserver">
         <os family="windows"/>
     </condition>
     <condition property="j2ee.appserver.path" value="/space/appserver">
         <os family="unix"/>
     </condition>
 
-    <condition property="tomcat.webserver.path" value="e:\\space\\tomcat">
+    <condition property="tomcat.webserver.path" value="c:\\space\\tomcat">
         <os family="windows"/>
     </condition>
     <condition property="tomcat.webserver.path" value="/space/tomcat">

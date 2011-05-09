@@ -183,6 +183,9 @@ public final class XMLUtil extends Object {
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.6//EN".equals(publicID)) { // NOI18N
                     return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_6.dtd").toString());
                 } else {
+                    if (systemID.endsWith(".dtd")) {
+                        return new InputSource();
+                    }
                     URL u = new URL(systemID);
                     URLConnection oc = u.openConnection();
                     oc.setConnectTimeout(5000);
