@@ -92,6 +92,7 @@ made subject to such option by the copyright holder.
 <!-- connect to db dialog: second and third steps -->
 <mapID target="db_save_password" url="csh_connectdb.html" />
 <mapID target="org.netbeans.modules.db.explorer.dlg.ConnectionPanel" url="csh_newconnectdb.html" />
+<mapID target="org.netbeans.modules.db.explorer.action.ConnectAction" url="csh_connectdb.html" />
 <mapID target="org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" url="csh_chooseschema.html" />
 
 <!-- create table dialog box csh -->

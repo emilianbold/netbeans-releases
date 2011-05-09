@@ -94,6 +94,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final class RefLock {}
     private final Object refLock = new RefLock();    
 
+    public static RemoteDirectory createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
+            RemoteFileObjectBase parent, String remotePath, File cache) {
+        return new RemoteDirectory(fileSystem, execEnv, parent, remotePath, cache);
+    }
+
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         super(fileSystem, execEnv, parent, remotePath, cache);
@@ -111,7 +116,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public RemoteFileObjectBase getFileObject(String name, String ext) {
-         return getFileObject(composeName(name, ext));
+         return getFileObject(composeName(name, ext), (Set<String>) null);
     }
 
     private DirEntry getEntry(String childNameExt) throws IOException {
@@ -236,6 +241,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public RemoteFileObjectBase getFileObject(String relativePath) {
+        return getFileObject(relativePath, (Set<String>) null);
+    }
+    
+    /*package*/ RemoteFileObjectBase getFileObject(String relativePath, Set<String> antiLoop) {
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
             return this;
@@ -255,6 +264,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (slashPos > 0) { // can't be 0 - see the check above
             // relative path contains '/' => delegate to direct parent
             String parentRemotePath = getPath() + '/' + relativePath.substring(0, slashPos); //TODO:rfs: process ../..
+            if (antiLoop != null) {
+                String absPath = getPath() + '/' + relativePath;
+                if (antiLoop.contains(absPath)) {
+                    return null;
+                }
+                antiLoop.add(absPath);
+            }
             String childNameExt = relativePath.substring(slashPos + 1);
             RemoteFileObjectBase parentFileObject = getFileSystem().findResource(parentRemotePath);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
