@@ -3078,6 +3078,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         public @Override boolean getDone() {
+            TEST_LOGGER.log(Level.FINEST, "RootsWork-started");       //NOI18N
             if (isCancelled()) {
                 return false;
             }
@@ -3878,13 +3879,19 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         @Override
         public void cancel() {
-            recordCaller();
-            
+                        
             if (notInterruptible) {
                 // ignore the request
                 return;
             }
 
+            final Parser.CancelReason cancelReason = Utilities.getTaskCancelReason();
+            if (cancelReason == Parser.CancelReason.SOURCE_MODIFICATION_EVENT) {
+                //ignore the request
+                return;
+            }
+
+            recordCaller();
             synchronized (todo) {
                 if (!cancelled) {
                     cancelled = true;
@@ -3892,6 +3899,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (cancelledWork != null) {
                         cancelledWork.setCancelled(true);
                     }
+                    TEST_LOGGER.log(Level.FINEST, "cancel");  //NOI18N
                 }
             }
         }
