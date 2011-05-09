@@ -105,7 +105,7 @@ public class ElementJavadoc {
 
     private ClasspathInfo cpInfo;
     //private Doc doc;
-    private Future<String> content;
+    private volatile Future<String> content;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
     private URL docURL = null;
@@ -154,7 +154,8 @@ public class ElementJavadoc {
      */
     public String getText() {
         try {
-            return content != null ? content.get() : null;
+            final Future<String> tmp = content;
+            return tmp != null ? tmp.get() : null;
         } catch (InterruptedException ex) {
             return null;
         } catch (ExecutionException ex) {
