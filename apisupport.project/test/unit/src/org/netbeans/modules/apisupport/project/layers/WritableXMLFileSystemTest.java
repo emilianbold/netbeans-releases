@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils.SavableTreeEditorCookie;
@@ -66,6 +67,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -77,6 +80,14 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
     
     public WritableXMLFileSystemTest(String name) {
         super(name);
+    }
+
+    protected @Override Level logLevel() {
+        return Level.FINE;
+    }
+   
+    protected @Override String logRoot() {
+        return WritableXMLFileSystem.class.getName();
     }
     
     public void testBasicStructureReads() throws Exception {
@@ -586,6 +597,17 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("#63989: correct rename handling", "    <folder name=\"folder2\">\n        <file name=\"file2.txt\">\n            <attr name=\"a\" stringvalue=\"v\"/>\n        </file>\n    </folder>\n", l.write());
         // XXX should any associated ordering attrs also be renamed? might be pleasant...
     }
+
+    public void testCopyObjectAttrs() throws Exception {
+        String someMethod = WritableXMLFileSystemTest.class.getName() + ".someMethod";
+        Layer l = new Layer("    <folder name=\"d\">\n        <file name=\"f1\">\n            <attr name=\"a\" methodvalue=\"" + someMethod + "\"/>\n        </file>\n    </folder>\n");
+        FileSystem fs = l.read();
+        FileObject f = fs.findResource("d/f1");
+        assertNotNull(f);
+        f.copy(f.getParent(), "f2", null);
+        assertEquals("    <folder name=\"d\">\n        <file name=\"f1\">\n            <attr name=\"a\" methodvalue=\"" + someMethod + "\"/>\n        </file>\n        <file name=\"f2\">\n            <attr name=\"a\" methodvalue=\"" + someMethod + "\"/>\n        </file>\n    </folder>\n", l.write());
+    }
+    public static Object someMethod() {return new Object();}
     
     public void testSomeFormattingPreserved() throws Exception {
         String orig = "    <file name=\"orig\"><!-- hi --><attr name=\"a\" boolvalue=\"true\"/>" +
@@ -741,7 +763,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         public WritableXMLFileSystem read() throws Exception {
             cookie = LayerUtils.cookieForFile(f);
-            return new WritableXMLFileSystem(f.getURL(), cookie, null);
+            return new WritableXMLFileSystem(f.getURL(), cookie, ClassPathSupport.createClassPath(System.getProperty("java.class.path")));
         }
         /**
          * Write the filesystem to the layer and retrieve the new contents.
