@@ -81,7 +81,7 @@ public class MemoryValidationTest extends IDEValidation {
 
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
-        conf = conf.addTest("testHelp");
+//        conf = conf.addTest("testHelp");
         conf = conf.addTest("testOptions");
         conf = conf.addTest("testNewProject");
         // sample project must exist before testShortcuts
