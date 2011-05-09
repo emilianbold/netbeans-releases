@@ -68,6 +68,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -91,9 +92,12 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -133,6 +137,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * TODO:
@@ -1686,6 +1691,130 @@ public class RepositoryUpdaterTest extends NbTestCase {
         handler.await();
         assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
+
+    public void testRUNotInterruptableBySourceChanges() throws Exception {
+        final Source source = Source.create(f1);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+        final RequestProcessor worker = new RequestProcessor("testRUNotInterruptableBySourceChanges", 1);   //NOI18N
+        class H extends Handler {            
+            private final Semaphore sem = new Semaphore(0);
+            private final AtomicBoolean didCancel = new AtomicBoolean();
+            private final AtomicBoolean wasCanceled = new AtomicBoolean();
+            @Override
+            public void publish(LogRecord record) {
+                if ("RootsWork-started".equals(record.getMessage())) {      //NOI18N
+                    if (!didCancel.getAndSet(true)) {
+                        final RequestProcessor.Task task = worker.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    touch(f1.getURL());
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                        task.schedule(0);
+                        task.waitFinished();
+                    }
+                } else if ("cancel".equals(record.getMessage())) {          //NOI18N
+                    wasCanceled.set(true);
+                } else if ("scanSources".equals(record.getMessage())) {  //NOI18N
+                    final List<URL> roots = (List<URL>) record.getParameters()[0];
+                    sem.release(roots.size());
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+            public boolean await(int number, long timeout, TimeUnit unit) throws InterruptedException {
+                return sem.tryAcquire(number, timeout, unit);
+            }
+            public boolean wasCanceled() {
+                return this.wasCanceled.get();
+            }
+        }
+        final H h = new H();
+        Logger log = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
+        log.setLevel(Level.FINEST);
+        log.addHandler(h);
+        final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertFalse(h.wasCanceled());
+    }
+
+    public void testRUInterruptableBySourceChanges() throws Exception {
+        final Source source = Source.create(f1);
+        final RequestProcessor worker = new RequestProcessor("testRUNotInterruptableBySourceChanges", 1);   //NOI18N
+        class H extends Handler {
+            private final Semaphore sem = new Semaphore(0);
+            private final CountDownLatch latch = new CountDownLatch(1);
+            private final AtomicBoolean didCancel = new AtomicBoolean();
+            private final AtomicBoolean wasCanceled = new AtomicBoolean();
+            @Override
+            public void publish(LogRecord record) {
+                if ("RootsWork-started".equals(record.getMessage())) {      //NOI18N
+                    if (!didCancel.getAndSet(true)) {
+                        final RequestProcessor.Task task = worker.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
+                                        }
+                                    });
+                                } catch (ParseException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                        task.schedule(0);
+                        try {
+                            latch.await(5000, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } else if ("cancel".equals(record.getMessage())) {          //NOI18N
+                    wasCanceled.set(true);
+                    latch.countDown();
+                } else if ("scanSources".equals(record.getMessage())) {  //NOI18N
+                    final List<URL> roots = (List<URL>) record.getParameters()[0];
+                    sem.release(roots.size());
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+            public boolean await(int number, long timeout, TimeUnit unit) throws InterruptedException {
+                return sem.tryAcquire(number, timeout, unit);
+            }
+            public boolean wasCanceled() {
+                return this.wasCanceled.get();
+            }
+        }
+        final H h = new H();
+        Logger log = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
+        log.setLevel(Level.FINEST);
+        log.addHandler(h);
+        final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertTrue(h.wasCanceled());
+    }
+
 
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
