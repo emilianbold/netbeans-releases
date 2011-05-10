@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import junit.framework.Test;
@@ -54,6 +55,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.remote.support.LocalFileSystemProvider;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -140,7 +142,11 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             if (baseDirFO instanceof RemoteFileObjectBase) {
                 ((RemoteFileObjectBase) baseDirFO).getFileSystem().getRefreshManager().testWaitLastRefreshFinished();
             } else {
-                LocalFileSystemProvider.testWaitLastRefreshFinished();
+                Class<?> localProvider = Class.forName("org.netbeans.modules.remote.support.LocalFileSystemProvider");
+                if (localProvider != null) {
+                    Method method = localProvider.getDeclaredMethod("testWaitLastRefreshFinished");
+                    method.invoke(null);
+                }
             }            
         } finally {
             out.close();

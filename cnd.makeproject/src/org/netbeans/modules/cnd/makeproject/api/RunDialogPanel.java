@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
@@ -617,6 +617,20 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         return true;
     }
     
+    private FileObject getExistingParent(String path) {
+        path = PathUtilities.getDirName(path);
+        FileObject fo = fileSystem.findResource(path);
+        while (fo == null) {
+            path = PathUtilities.getDirName(path);
+            if (path == null || path.length() == 0) {
+                return null;
+            } else {
+                fo = fileSystem.findResource(path);
+            }
+        }
+        return fo;
+    }
+    
     private boolean validateProjectLocation() {
         if (!PanelProjectLocationVisual.isValidProjectName(projectNameField.getText())) {
             setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
@@ -626,31 +640,26 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
             return false;
         }
-        File f = CndFileUtils.createLocalFile(projectLocationField.getText()).getAbsoluteFile();
-        if (PanelProjectLocationVisual.getCanonicalFile(f) == null) {
-            setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
-            return false;
-        }
-        final File destFolder = PanelProjectLocationVisual.getCanonicalFile(CndFileUtils.createLocalFile(projectFolderField.getText()).getAbsoluteFile()); // project folder always local
-        if (destFolder == null) {
-            setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
-            return false;
-        }
-        File projLoc = destFolder;
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            setError("RunDialogPanel.MSG_ProjectFolderReadOnly", false); // NOI18N
-            return false;
-        }
-        if (destFolder.exists()) {
-            if (destFolder.isFile()) {
+        // never use canonical as a file name validity check - it "eats" constructs like new File("*"), new File("<"), etc
+        FileObject projectDirFO = fileSystem.findResource(projectFolderField.getText()); // can be null
+        if (projectDirFO != null && projectDirFO.isValid()) {
+            if (projectDirFO.isData()) {
                 setError("RunDialogPanel.MSG_NotAFolder", false); // NOI18N
                 return false;
             }
-            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER)) {
+            FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+            if (nbProjFO != null && nbProjFO.isValid()) {
                 setError("RunDialogPanel.MSG_ProjectfolderNotEmpty", false, MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+                return false;
+            }
+        } else {
+            FileObject existingParent = getExistingParent(projectFolderField.getText());
+            if (existingParent == null) {
+                setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
+                return false;
+            }
+            if (!existingParent.canWrite()) {
+                setError("RunDialogPanel.MSG_ProjectFolderReadOnly", false); // NOI18N
                 return false;
             }
         }

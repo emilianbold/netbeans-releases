@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
+package org.netbeans.modules.remote.support;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
-import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -67,8 +66,8 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author ak119685
+ * @author Andrew Krasny
+ * @author Vladimir Kvashin
  */
 @ServiceProvider(service = org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=100)
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {
@@ -312,7 +311,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     /** for TEST purposes ONLY */
-    /*package*/ static void testWaitLastRefreshFinished() {
+    public static void testWaitLastRefreshFinished() {
         Task task = lastRefreshTask;
         if (task != null) {
             task.waitFinished();
