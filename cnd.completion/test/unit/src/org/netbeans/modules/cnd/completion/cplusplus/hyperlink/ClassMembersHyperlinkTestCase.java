@@ -1003,6 +1003,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191026.cpp", 20, 11, "bug191026.cpp", 7, 9);
     }
     
+    public void testBug158905() throws Exception {
+        // Bug 158905 - Errors in resolving of friend templates
+        performTest("bug158905.cpp", 13, 11, "bug158905.cpp", 5, 5);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
