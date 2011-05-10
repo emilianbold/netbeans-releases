@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -268,7 +269,7 @@ public class CreateDependencies implements PropertyChangeListener {
         exe = CndPathUtilitities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         updateRunProfile(baseDir, conf.getProfile(), arguments, dir, envText);
-        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectName, projectParentFolder));
         prjParams.setOpenFlag(false).setConfiguration(conf).setImportantFiles(Collections.<String>singletonList(exe).iterator());
         project = ProjectGenerator.createBlankProject(prjParams);
         return project;

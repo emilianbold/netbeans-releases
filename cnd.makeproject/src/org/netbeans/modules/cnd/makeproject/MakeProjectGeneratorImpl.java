@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -312,20 +313,20 @@ public class MakeProjectGeneratorImpl {
     }
 
     private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
-        FileObject dirFO;
-        File dir = prjParams.getProjectFolder();
-        if (!dir.exists()) {
-            //Refresh before mkdir not to depend on window focus
-            // refreshFileSystem (dir); // See 136445
-            if (!dir.mkdirs()) {
-                throw new IOException("Can not create project folder."); // NOI18N
-            }
-            // refreshFileSystem (dir); // See 136445
-        }
-        dirFO = CndFileUtils.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
-        assert dirFO.isValid() : "No such dir on disk: " + dir; // NOI18N
-        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        FileObject dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), prjParams.getProjectFolderPath());
+        //File dir = prjParams.getProjectFolder();
+        //if (!dir.exists()) {
+        //    //Refresh before mkdir not to depend on window focus
+        //    // refreshFileSystem (dir); // See 136445
+        //    if (!dir.mkdirs()) {
+        //        throw new IOException("Can not create project folder."); // NOI18N
+        //    }
+        //    // refreshFileSystem (dir); // See 136445
+        //}
+        //dirFO = CndFileUtils.toFileObject(dir);
+        assert dirFO != null : "No such dir on disk: " + prjParams.getProjectFolderPath(); // NOI18N
+        assert dirFO.isValid() : "No such dir on disk: " + prjParams.getProjectFolderPath(); // NOI18N
+        assert dirFO.isFolder() : "Not really a dir: " + prjParams.getProjectFolderPath(); // NOI18N
         return dirFO;
     }
 

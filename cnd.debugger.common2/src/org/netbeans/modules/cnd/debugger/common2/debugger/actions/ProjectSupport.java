@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * Help manage project and configuration creation for debug/attach/core.
@@ -525,7 +526,7 @@ public final class ProjectSupport {
 		// creating Project
 		try {
 		    final boolean open = true;
-                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
+                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectName, projectParentFolder));
                     prjParams.setOpenFlag(open).setConfiguration(seed.conf);
 		    seed.project =  ProjectGenerator.createBlankProject(prjParams);
 		} catch (Exception e) {
