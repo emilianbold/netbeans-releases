@@ -48,7 +48,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -212,7 +211,7 @@ public class ProjectGenerator {
                         FileObject services = FileUtil.getConfigFile("Services");
                         if (services == null) {
                             FileObject r = FileUtil.getConfigRoot();
-                            throw new IllegalArgumentException("No Services folder; SFS " + r.getFileSystem() + " contains: " + Arrays.toString(r.getChildren()));
+                            throw new IllegalArgumentException("No Services folder; SFS " + r.getFileSystem() + " contains: " + Collections.list(r.getChildren(true)));
                         }
                         throw new IllegalArgumentException("No Ant-based project factory for type " + type + "; Services folder contains: " + Collections.list(services.getChildren(true))); // NOI18N
                     }

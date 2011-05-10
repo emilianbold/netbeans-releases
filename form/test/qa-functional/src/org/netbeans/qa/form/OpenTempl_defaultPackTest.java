@@ -62,6 +62,7 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.util.Exceptions;
 
 /**
  * A Test based on JellyTestCase. JellyTestCase redirects Jemmy output
@@ -130,6 +131,11 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         openDataProjects(DATA_PROJECT_NAME);
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
         System.out.println("########  " + getName() + "  #######");
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     /** Called after every test case. */
@@ -195,11 +201,11 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public void closeDocument(String documentName) throws InterruptedException {
         FormDesignerOperator fdo = new FormDesignerOperator(documentName);
         fdo.editor();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         DocumentsDialogOperator ddo = DocumentsDialogOperator.invoke();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         ddo.selectDocument(documentName);
-        Thread.sleep(500);
+        Thread.sleep(1000);
         ddo.btCloseDocuments().doClick();
 
 
@@ -236,9 +242,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
         System.out.println(getWorkDir());
         testFormFile(name);
-        Thread.sleep(1000);
+        Thread.sleep(10000);
         testJavaFile(name);
-        Thread.sleep(1000);
+        Thread.sleep(10000);
         closeDocument(name + ".java");
 
     }
