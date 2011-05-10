@@ -47,11 +47,13 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
@@ -59,11 +61,14 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -76,15 +81,21 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
+    private static final boolean TRACE_REMOTE_CREATION = false;
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private JButton actionButton;
@@ -95,7 +106,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private static Project lastSelectedProject = null;
     
     private boolean isValidating = false;
-    
+
     private void initAccessibility() {
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("RUN_DIALOG_PANEL_AD"));
@@ -779,32 +790,20 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 progress.start();
                 try {
                     ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
-                    String projectName = projectNameField.getText().trim();
-                    String baseDir = projectFolderField.getText().trim();
-                    MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
-                            executionEnvironment.getHost());
-                    // Working dir
-                    String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
-                    wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-                    wd = CndPathUtilitities.normalizeSlashes(wd);
-                    conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
-                    // Executable
-                    String exe = getExecutablePath();
-                    exe = CndPathUtilitities.toRelativePath(baseDir, exe);
-                    exe = CndPathUtilitities.normalizeSlashes(exe);
-                    conf.getMakefileConfiguration().getOutput().setValue(exe);
-                    updateRunProfile(baseDir, conf.getProfile());
-                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, new FSPath(fileSystem, baseDir));
-                    prjParams.setOpenFlag(false)
-                             .setConfiguration(conf)
-                             .setHostUID(executionEnvironment.getHost())
-                             .setImportantFiles(Collections.<String>singletonList(exe).iterator())
-                             .setMakefileName(""); //NOI18N
-                    project = ProjectGenerator.createBlankProject(prjParams);
-                    lastSelectedProject = project;
-                    OpenProjects.getDefault().addPropertyChangeListener(this);
-                    OpenProjects.getDefault().open(new Project[]{project}, false);
-                    OpenProjects.getDefault().setMainProject(project);
+                    FileUtil.createFolder(fileSystem.getRoot(), projectFolderField.getText().trim());
+                    if (executionEnvironment.isLocal()) {
+                        project = createLocalProject();
+                    } else {
+                        FileObject projectCreator = findProjectCreator();
+                        if (projectCreator == null) {
+                            project = createLocalProject();
+                        } else {
+                            project = createRemoteProject(projectCreator);
+                            if (project == null) {
+                                project = createLocalProject();
+                            }
+                        }
+                    }
                 } finally {
                     progress.finish();
                 }
@@ -815,7 +814,119 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
         return project;
     }
+    
+    private Project createLocalProject() throws IOException, IllegalArgumentException {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        String projectName = projectNameField.getText().trim();
+        String baseDir = projectFolderField.getText().trim();
+        MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                executionEnvironment.getHost());
+        // Working dir
+        String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
+        wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+        wd = CndPathUtilitities.normalizeSlashes(wd);
+        conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
+        // Executable
+        String exe = getExecutablePath();
+        exe = CndPathUtilitities.toRelativePath(baseDir, exe);
+        exe = CndPathUtilitities.normalizeSlashes(exe);
+        conf.getMakefileConfiguration().getOutput().setValue(exe);
+        updateRunProfile(baseDir, conf.getProfile());
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, new FSPath(fileSystem, baseDir));
+        prjParams.setOpenFlag(false)
+                 .setConfiguration(conf)
+                 .setHostUID(executionEnvironment.getHost())
+                 .setImportantFiles(Collections.<String>singletonList(exe).iterator())
+                 .setMakefileName(""); //NOI18N
+        Project project = ProjectGenerator.createBlankProject(prjParams);
+        lastSelectedProject = project;
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+        OpenProjects.getDefault().open(new Project[]{project}, false);
+        OpenProjects.getDefault().setMainProject(project);
+        return project;
+    }
 
+    private Project createRemoteProject(FileObject projectCreator) {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        String java = null; 
+        try {
+            java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
+            if (java == null || java.isEmpty()) {
+                java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JAVA_HOME"); // NOI18N
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (TRACE_REMOTE_CREATION) {
+            System.err.println(projectCreator.getPath()+" "+"--jdkhome "+java+" --netbeans-project="+projectFolderField.getText().trim()+ // NOI18N
+                    " --project-create binary="+getExecutablePath()+" "+" --sources=used"); // NOI18N
+        }
+        ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
+                                     , "--jdkhome", java // NOI18N
+                                     , "--netbeans-project="+projectFolderField.getText().trim() // NOI18N
+                                     , "--project-create", "binary="+getExecutablePath() // NOI18N
+                                     , "--sources=used" // NOI18N
+                                     );
+        if (TRACE_REMOTE_CREATION) {
+            System.err.println("exitCode="+execute.exitCode); // NOI18N
+            System.err.println(execute.error);
+            System.err.println(execute.output);
+        }
+        String baseDir = projectFolderField.getText().trim();
+        FileObject toRefresh = fileSystem.findResource(PathUtilities.getDirName(baseDir));
+        if (toRefresh != null) {
+            toRefresh.refresh();
+        }
+        FileObject projectFO = fileSystem.findResource(baseDir);
+        if (projectFO == null) {
+            return null;
+        }
+        Project project = null;
+        try {
+            project = ProjectManager.getDefault().findProject(projectFO);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+        OpenProjects.getDefault().open(new Project[]{project}, false);
+        OpenProjects.getDefault().setMainProject(project);
+        return project;
+    }
+
+    private void updateRemoteProject(FileObject projectCreator) {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        String java = null; 
+        try {
+            java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
+            if (java == null || java.isEmpty()) {
+                java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JAVA_HOME"); // NOI18N
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (TRACE_REMOTE_CREATION) {
+            System.err.println(projectCreator.getPath()+" "+"--jdkhome "+java+" --netbeans-project="+projectFolderField.getText().trim()+ // NOI18N
+                    " --project-update mode=model");
+        }
+        ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
+                                     , "--jdkhome", java // NOI18N
+                                     , "--netbeans-project="+projectFolderField.getText().trim() // NOI18N
+                                     , "--project-update", "mode=model" // NOI18N
+                                     );
+        if (TRACE_REMOTE_CREATION) {
+            System.err.println("exitCode="+execute.exitCode); // NOI18N
+            System.err.println(execute.error);
+            System.err.println(execute.output);
+        }
+    }
+    
+    
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
@@ -828,19 +939,38 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 if (lastSelectedProject == null) {
                     return;
                 }
-                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                if (extension != null) {
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("DW:buildResult", getExecutablePath()); // NOI18N
-                    map.put("DW:consolidationLevel", "file"); // NOI18N
-                    map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
-                    IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
-                    extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
+                ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+                if (executionEnvironment.isLocal()) {
+                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                    if (extension != null) {
+                        Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("DW:buildResult", getExecutablePath()); // NOI18N
+                        map.put("DW:consolidationLevel", "file"); // NOI18N
+                        map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+                        IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
+                        extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
+                    }
+                } else {
+                    updateRemoteProject(findProjectCreator());
                 }
             }
         }
     }
 
+    private FileObject findProjectCreator() {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        for(CompilerSet set : CompilerSetManager.get(executionEnvironment).getCompilerSets()) {
+            if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                String directory = set.getDirectory();
+                FileObject projectCreator = fileSystem.findResource(directory+"/../lib/ide_project/bin/ide_project");
+                if (projectCreator != null && projectCreator.isValid()) {
+                    return projectCreator;
+                }
+            }
+        }
+        return null;
+    }
+            
     private void updateRunProfile(String baseDir, RunProfile runProfile) {
         // Arguments
         runProfile.setArgs(argumentTextField.getText());
