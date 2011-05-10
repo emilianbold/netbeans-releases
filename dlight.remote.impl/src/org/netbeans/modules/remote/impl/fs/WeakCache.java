@@ -133,35 +133,40 @@ public class WeakCache<K, V> {
 //        return null;
 //    }
     
-    public V putIfAbsent(K key, V value) {
-        synchronized (replacementLock) {
-            Ref<K, V> oldRef = map.get(key);
-            if (oldRef != null) {
-                V oldValue = oldRef.get();
-                if (oldValue != null) {
-                    return oldValue;
-                }
-            }            
-            Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
-            map.put(key, newRef);
-            return value;
-        }
-//        Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
-//        Ref<K, V> oldRef;
-//        for (int i = 0; i < 5; i++) { // in fact no more than twice
-//            oldRef = map.putIfAbsent(key, newRef);
-//            if (oldRef == null) {
-//                return value;
-//            } else {
+//    public V putIfAbsent(K key, V value) {
+//        synchronized (replacementLock) {
+//            Ref<K, V> oldRef = map.get(key);
+//            if (oldRef != null) {
 //                V oldValue = oldRef.get();
-//                if (oldValue == null) {
-//                    map.remove(key, oldRef); // and retry
-//                } else {
+//                if (oldValue != null) {
 //                    return oldValue;
 //                }
-//            }                   
+//            }            
+//            Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+//            map.put(key, newRef);
+//            return value;
 //        }
-//        return null;
+////        Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+////        Ref<K, V> oldRef;
+////        for (int i = 0; i < 5; i++) { // in fact no more than twice
+////            oldRef = map.putIfAbsent(key, newRef);
+////            if (oldRef == null) {
+////                return value;
+////            } else {
+////                V oldValue = oldRef.get();
+////                if (oldValue == null) {
+////                    map.remove(key, oldRef); // and retry
+////                } else {
+////                    return oldValue;
+////                }
+////            }                   
+////        }
+////        return null;
+//    }
+
+    public void put(K key, V value) {
+        Ref<K, V> ref = new Ref<K, V>(key, value, referenceQueue);
+        map.put(key, ref);
     }
 
     public V get(K key) {
@@ -179,7 +184,7 @@ public class WeakCache<K, V> {
         return map.size();
     }
 
-    public void cleanDeadEntries() {        
+    public void cleanDeadEntries() {
         if (lock.tryLock()) {
             try {
                 Ref<K, V> ref;

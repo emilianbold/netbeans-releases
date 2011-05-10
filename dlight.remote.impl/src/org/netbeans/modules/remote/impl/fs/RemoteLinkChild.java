@@ -73,6 +73,11 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
 
     @Override
+    protected String getDelegateNormalizedPath() {
+        return delegate.getPath();
+    }
+
+    @Override
     public FileType getType() {
         return delegate.getType();
     }    
