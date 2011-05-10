@@ -570,6 +570,7 @@ public final class OpenProjectList {
             }
 	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
         final OpeningProjectPanel panel = new OpeningProjectPanel(handle);
+        panel.setProjectName(projects[0].getProjectDirectory().getNameExt());
         final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true, null);
         dd.setOptions(new Object[0]);
 	    final JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(
