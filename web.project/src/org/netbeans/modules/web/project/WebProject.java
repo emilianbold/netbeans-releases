@@ -760,7 +760,25 @@ public final class WebProject implements Project {
         ProjectManager.mutex().writeAccess(new Runnable() {
 
             public void run() {
-                Library lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
+                Library lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compilation");
+                
+                // #198056 - force libraries update by deleting old versions first:
+                if (lib != null) {
+                    boolean oldNB69ver = lib.getURIContent("classpath").toString().contains("glassfish-jspparser-2.0.jar");
+                    if (oldNB69ver) {
+                        try {
+                            refHelper.getProjectLibraryManager().removeLibrary(lib);
+                            lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
+                            refHelper.getProjectLibraryManager().removeLibrary(lib);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+                
+                lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
                 if (lib == null) {
                     try {
                         refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compiler")); // NOI18N
