@@ -47,7 +47,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -59,7 +58,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -67,22 +65,17 @@ import org.openide.util.WeakListeners;
  */
 public abstract class RemoteLinkBase extends RemoteFileObjectBase implements FileChangeListener {
     
-    private WeakReference<RemoteFileObjectBase> delegateRef;
-
     protected RemoteLinkBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
         super(fileSystem, execEnv, parent, remotePath, null);
     }
     
     protected final void initListeners() {
-        RemoteFileObjectBase delegate = getDelegate();
-        if (delegate != null) {
-            this.delegateRef = new WeakReference<RemoteFileObjectBase>(delegate);
-            delegate.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, delegate));
-        }
+        getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
     }
 
     public abstract RemoteFileObjectBase getDelegate();
-
+    protected abstract String getDelegateNormalizedPath();
+ 
     protected FileNotFoundException fileNotFoundException(String operation) {
         return new FileNotFoundException("can not " + operation + ' ' + getPath() + ": can not find link target"); //NOI18N
     }
@@ -284,7 +277,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     private FileEvent transform(FileEvent fe) {
-        FileObject delegate = delegateRef.get();            
+        FileObject delegate = getDelegate();
         if (delegate != null) {
             FileObject src = transform((FileObject) fe.getSource(), delegate);
             FileObject file = transform(fe.getFile(), delegate);
