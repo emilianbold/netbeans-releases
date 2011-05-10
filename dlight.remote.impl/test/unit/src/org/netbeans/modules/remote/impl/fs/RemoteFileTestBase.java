@@ -52,6 +52,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -94,7 +96,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             String src = stripPrefix(((FileObject) fe.getSource()).getPath());
             String obj = stripPrefix(fe.getFile().getPath());
             String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
-            out.printf("FileEvent[%s]: %s src=%s obj=%s %s\n", listenerName, eventKind, src, obj, exp);
+            out.printf("FileEvent[%-20s] %-20s SRC %-20s OBJ %-20s %s\n", listenerName, eventKind, src, obj, exp);
         }
         
         private String stripPrefix(String path) {
@@ -176,6 +178,61 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             sharedLibExt = ".dylib";
         } else {
             sharedLibExt = ".so";
+        }
+    }
+
+    /**
+     * Creates a directory structure described by parameters
+     * @param env execution environment
+     * @param baseDir base directory; of not exists, it is created ; if exists, the content is removed
+     * @param creationData array of strings, a string per file; a string should have format below,
+     *        for plain file, directory and link resprctively:
+     *         "- plain-filen-name"
+     *         "d directory-name"
+     *         "l link-target link-name"
+     * @throws Exception 
+     */
+    protected static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws Exception {
+        StringBuilder script = new StringBuilder();
+        try {
+            script.append("mkdir -p \"").append(baseDir).append("\";\n");
+            script.append("cd \"").append(baseDir).append("\";\n");
+            script.append("rm -rf *").append(";\n");
+            Set<String> checkedPaths = new HashSet<String>();
+            for (String data : creationData) {
+                String[] parts = data.split(" ");
+                String path = parts[1];
+                int slashPos = path.lastIndexOf('/');
+                if (slashPos > 0) {
+                    String dir = path.substring(0, slashPos);
+                    if (!checkedPaths.contains(dir)) {
+                        checkedPaths.add(dir);
+                        script.append("mkdir -p \"").append(dir).append("\";\n");
+                    }
+                }
+                switch(data.charAt(0)) {
+                    case '-':
+                        script.append("touch \"").append(path).append("\";\n");
+                        break;
+                    case 'd':
+                        script.append("mkdir -p \"").append(path).append("\";\n");
+                        break;
+                    case 'l':
+                        String link = parts[2];
+                        script.append("ln -s \"").append(path).append("\" \"").append(link).append("\";\n");
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unexpected 1-st char: " + data);
+                }
+            }
+        } catch (Throwable thr) {
+            throw new IllegalArgumentException("Error creating script", thr);
+        }
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script.toString());
+        if (res.exitCode != 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
+        } else if (res.error != null && res.error.length() > 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
         }
     }
     
