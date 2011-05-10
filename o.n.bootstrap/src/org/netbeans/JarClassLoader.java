@@ -564,6 +564,14 @@ public class JarClassLoader extends ProxyClassLoader {
                     if (! je.isDirectory()) {
                         String itm = je.getName();
                         int slash = itm.lastIndexOf('/');
+                        if (slash == -1) {
+                            // resource in default package
+                            String res = "default/" + je.getName();
+                            if (known.add(res)) {
+                                save.append(res).append(',');
+                            }
+                            continue;
+                        }
                         String pkg = slash > 0 ? itm.substring(0, slash).replace('/','.') : "";
                         if (known.add(pkg)) save.append(pkg).append(',');
                         if (itm.startsWith("META-INF/")) {
@@ -789,6 +797,14 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (f.isDirectory()) {
                     appendAllChildren(known, save, f, prefix + f.getName() + '.');
                 } else {
+                    if (prefix.length() == 0) {
+                        // resource in default package
+                        String res = "default/" + f.getName();
+                        if (known.add(res)) {
+                            save.append(res).append(',');
+                        }
+                        continue;
+                    }
                     populated = true;
                     if (prefix.startsWith("META-INF.")) {
                        String res = prefix.substring(8).replace('.', '/').concat(f.getName());
