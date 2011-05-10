@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.gizmo.support;
-
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
+package org.netbeans.modules.web.common.api;
 
 /**
  *
- * @author mt154047
+ * @author marekfukala
  */
-public final class GizmoServiceInfo {
-
-    static{
-        GizmoServiceInfoAccessor.setDefault(new GizmoServiceInfoAccessorImpl());
-    }
-    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
-    public static final String GIZMO_PROJECT_HOST =  "GizmoProjectHost";//NOI18N
-    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    /** Session executable ID (path + time stamp) */
-    public static final String GIZMO_PROJECT_EXECUTABLE_ID = "GizmoProjectExecutableID";//NOI18N
-    public static final String GIZMO_REMOTE_EXECUTABLE = "GizmoProjectRemoteExecutable";//NOI18N
-    /** Session remote executable ID (path + time stamp) */
-    public static final String GIZMO_REMOTE_EXECUTABLE_ID = "GizmoProjectRemoteExecutableID";//NOI18N
-    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
-    public static final String CPP_COMPILER = "GizmoCppCompiler";//NOI18N
-    public static final String CPP_COMPILER_BIN_PATH = "GizmoCppCompilerBinPath";//NOI18N
-    public static final String PLATFORM = "gizmo.platform";//NOI18N
-    static final String GIZMO_RUN = "project.gizmo.run";//NOI18N
-
-    public static   boolean isPlatformSupported(String platform){
-        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
-    }
-
-    static final class GizmoServiceInfoAccessorImpl extends GizmoServiceInfoAccessor{
-
-        @Override
-        public String getGIZMO_RUN() {
-            return GIZMO_RUN;
-        }
-
-    }
-
-    private GizmoServiceInfo() {
-    }
+public class Constants {
+    
+    /**
+     * A constant used in virtual sources for the foreign content representation.
+     */
+    public static final String LANGUAGE_SNIPPET_SEPARATOR = "@@@"; //NOI18N
 }

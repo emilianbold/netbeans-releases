@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.web.common.api.Constants;
 
 /**
  * Embedding provider for Expression Language.
@@ -60,18 +61,34 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
  */
 final class ELEmbeddingProvider extends EmbeddingProvider {
 
+    private static final String ATTRIBUTE_EL_MARKER = "A"; //NOI18N
+    
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<XhtmlElTokenId> sequence = th.tokenSequence(XhtmlElTokenId.language());
         List<Embedding> embeddings = new ArrayList<Embedding>();
         sequence.moveStart();
+        boolean htmlSectionEndsWithQuotation = false;
         while (sequence.moveNext()) {
             Token t = sequence.token();
+            //unbelievable hack
+            if(t.id() == XhtmlElTokenId.HTML) {
+                char c = t.text().charAt(t.length() - 1);
+                htmlSectionEndsWithQuotation = c == '"' || c == '\'';
+            }
+            
             if (t.id() == XhtmlElTokenId.EL) {
                 embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/x-el")); //NOI18N
+                
+                if(htmlSectionEndsWithQuotation) {
+                    //it *looks like* the EL is inside an attribute
+                    //there's a need to distinguish between ELs inside or outside of attribute values
+                    embeddings.add(snapshot.create(ATTRIBUTE_EL_MARKER, "text/x-el")); //NOI18N
+                }
+                
                 // just to separate expressions for easier handling in EL parser
-                embeddings.add(snapshot.create(XhtmlElEmbeddingProvider.GENERATED_CODE, "text/x-el")); //NOI18N
+                embeddings.add(snapshot.create(Constants.LANGUAGE_SNIPPET_SEPARATOR, "text/x-el")); //NOI18N
             }
         }
         if (embeddings.isEmpty()) {
@@ -80,7 +97,7 @@ final class ELEmbeddingProvider extends EmbeddingProvider {
             return Collections.singletonList(Embedding.create(embeddings));
         }
     }
-
+    
     @Override
     public int getPriority() {
         return 100;

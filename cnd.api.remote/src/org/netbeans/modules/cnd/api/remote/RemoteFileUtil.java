@@ -175,9 +175,7 @@ public class RemoteFileUtil {
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
-                if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                    return remoteProject.getSourceFileSystemHost();
-                }
+                return remoteProject.getSourceFileSystemHost();
             }
         }
         return ExecutionEnvironmentFactory.getLocal();

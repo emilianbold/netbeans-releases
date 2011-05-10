@@ -58,13 +58,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.NewProjectWizardUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 
 public class ProjectGenerator {
 
@@ -92,14 +91,8 @@ public class ProjectGenerator {
         private Map<String, Object> templateParams;
         private String databaseConnection;
 
-        /**
-         *
-         * @param projectFolderName name of the project's folder
-         * @param projectParentFolderPath parent folder path (i.e. ~/NetbeansProjects)
-         *          where project folder is to be created
-         */
-        public ProjectParameters(String projectFolderName, String projectParentFolderPath) {
-            this(projectFolderName, CndFileUtils.createLocalFile(projectParentFolderPath, projectFolderName));
+        public ProjectParameters(String projectName, File projectFolder) {
+            this(projectName, new FSPath(CndFileUtils.getLocalFileSystem(), projectFolder.getAbsolutePath()));
         }
 
         /**
@@ -108,10 +101,10 @@ public class ProjectGenerator {
          * @param projectFolder project folder (i.e. ~/NetbeansProjects/projectName)
          */
         //XXX:fullRemote:fileSystem - change File to setFSPath
-        public ProjectParameters(String projectName, File projectFolder) {
+        public ProjectParameters(String projectName, FSPath projectFolder) {
             this.projectName = projectName;
-            this.sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
-            this.projectFolderPath = FileUtil.normalizeFile(projectFolder).getPath();
+            this.sourceEnv = FileSystemProvider.getExecutionEnvironment(projectFolder.getFileSystem());
+            this.projectFolderPath = CndFileUtils.normalizeAbsolutePath(projectFolder.getFileSystem(), projectFolder.getPath());
             this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             this.configurations = new MakeConfiguration[0];
             this.openFlag = false;
@@ -259,8 +252,9 @@ public class ProjectGenerator {
             return hostUID;
         }
 
-        public void setHostUID(String hostUID) {
+        public ProjectParameters setHostUID(String hostUID) {
             this.hostUID = hostUID;
+            return this;
         }
 
         public ExecutionEnvironment getSourceExecutionEnvironment() {
@@ -271,8 +265,9 @@ public class ProjectGenerator {
             return FileSystemProvider.getFileSystem(sourceEnv);
         }
 
-        public void setSourceExecutionEnvironment(ExecutionEnvironment env) {
+        public ProjectParameters setSourceExecutionEnvironment(ExecutionEnvironment env) {
             this.sourceEnv = env;
+            return this;
         }
         
         public CompilerSet getToolchain() {
@@ -293,8 +288,9 @@ public class ProjectGenerator {
         /**
          * @param postCreationClassName the postCreationClassName to set
          */
-        public void setPostCreationClassName(String postCreationClassName) {
+        public ProjectParameters setPostCreationClassName(String postCreationClassName) {
             this.postCreationClassName = postCreationClassName;
+            return this;
         }
 
         /**
@@ -307,8 +303,9 @@ public class ProjectGenerator {
         /**
          * @param mainProject the mainProject to set
          */
-        public void setMainProject(String mainProject) {
+        public ProjectParameters setMainProject(String mainProject) {
             this.mainProject = mainProject;
+            return this;
         }
 
         /**
@@ -321,8 +318,9 @@ public class ProjectGenerator {
         /**
          * @param subProjects the subProjects to set
          */
-        public void setSubProjects(String subProjects) {
+        public ProjectParameters setSubProjects(String subProjects) {
             this.subProjects = subProjects;
+            return this;
         }
 
         public Map<String, Object> getTemplateParams() {

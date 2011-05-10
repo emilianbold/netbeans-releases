@@ -189,16 +189,13 @@ public class TaskProcessor {
                 LOGGER.log(Level.WARNING, "ParserManager.parse called in AWT event thread by: {0}", stackTraceElement); // NOI18N
             }
         }
-        final Request request = currentRequest.getTaskToCancel(new CancelStrategy(Parser.CancelReason.USER_TASK) {
+        final Request request = currentRequest.cancel(new CancelStrategy(Parser.CancelReason.USER_TASK) {
             @Override
             public boolean apply(final @NonNull Request request) {
                 return true;
             }
         });
-        try {
-            if (request != null) {
-                cancelTask(request.task, Parser.CancelReason.USER_TASK);
-            }            
+        try {            
             parserLock.lock();
             try {
                 if (lockCount < 1) {
@@ -264,14 +261,12 @@ public class TaskProcessor {
                 }
             };
             do {
-                final Request request = currentRequest.getTaskToCancel(cancelStrategy);
+                final Request request = currentRequest.cancel(cancelStrategy);
                 try {
                     if (isScanner[0]) {
+                        assert request == null;
                         return sync;
-                    }
-                    if (request != null) {
-                        cancelTask(request.task, Parser.CancelReason.USER_TASK);
-                    }
+                    }                    
                     if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
                             if (todo.remove(r)) {
@@ -396,7 +391,7 @@ public class TaskProcessor {
     public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);        
-        final Request request = currentRequest.getTaskToCancel (new CancelStrategy(Parser.CancelReason.PARSER_RESULT_TASK) {
+        final Request request = currentRequest.cancel (new CancelStrategy(Parser.CancelReason.PARSER_RESULT_TASK) {
             @Override
             public boolean apply(final @NonNull Request request) {
                 return tasks.contains(request.task);
@@ -464,7 +459,7 @@ public class TaskProcessor {
             final boolean mayInterruptParser,
             final boolean sync) {
         assert source != null;
-        final TaskProcessor.Request r = currentRequest.getTaskToCancel (new CancelStrategy(
+        final TaskProcessor.Request r = currentRequest.cancel (new CancelStrategy(
             Parser.CancelReason.SOURCE_MODIFICATION_EVENT,
             Request.DUMMY,
             mayInterruptParser) {
@@ -473,15 +468,9 @@ public class TaskProcessor {
                 return true;
             }
         });
-        if (r != null) {
-            try {
-                cancelTask(r.task, Parser.CancelReason.SOURCE_MODIFICATION_EVENT);
-            } finally {
-                if (sync) {
-                    Request oldR = rst.getAndSet(r);
-                    assert oldR == null;
-                }
-            }
+        if (sync && r != null) {
+            Request oldR = rst.getAndSet(r);
+            assert oldR == null;            
         }
         return r;
     }
@@ -579,19 +568,13 @@ public class TaskProcessor {
             priority = Math.min(priority, r.task.getPriority());
         }
         final int pf = priority;
-        final Request request = currentRequest.getTaskToCancel(new CancelStrategy(Parser.CancelReason.PARSER_RESULT_TASK) {
+        final Request request = currentRequest.cancel(new CancelStrategy(Parser.CancelReason.PARSER_RESULT_TASK) {
             @Override
             public boolean apply(Request request) {
                 return pf < request.task.getPriority();
             }
-        });
-        try {
-            if (request != null) {
-                cancelTask(request.task, Parser.CancelReason.PARSER_RESULT_TASK);
-            }
-        } finally {
-            currentRequest.cancelCompleted(request);
-        }
+        });        
+        currentRequest.cancelCompleted(request);
      }
 
     /*test*/ static void cancelTask (
@@ -617,7 +600,7 @@ public class TaskProcessor {
         assert cancelReason != null;
         assert !Thread.holdsLock(INTERNAL_LOCK);
         if (callDeprecatedCancel) {
-            parser.cancel();
+                parser.cancel();
         }
         parser.cancel(cancelReason,event);
     }
@@ -1141,7 +1124,7 @@ public class TaskProcessor {
             }
         }
         
-        Request getTaskToCancel (final @NonNull CancelStrategy cancelStrategy) {
+        Request cancel (final @NonNull CancelStrategy cancelStrategy) {
             Request request = null;
             Parser parser = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
@@ -1160,20 +1143,36 @@ public class TaskProcessor {
                         parser = activeParser;
                     }
                 }
-                if (parser != null) {
-                    final Parser.CancelReason cancelReason = cancelStrategy.getCancelReason();
-                    if (cancelReason == Parser.CancelReason.SOURCE_MODIFICATION_EVENT) {
-                        Source src;
-                        SourceCache sc;
-                        if (request != null && (sc = request.cache)!= null && (src=sc.getSource())!=null) {
-                            cancelParser(
-                                parser,
-                                cancelStrategy.callDeprecatedParserCancel(),
-                                cancelReason,
-                                SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
+                final Parser.CancelReason cancelReason = cancelStrategy.getCancelReason();
+                try {
+                    try {
+                        if (parser != null) {
+                            if (cancelReason == Parser.CancelReason.SOURCE_MODIFICATION_EVENT) {
+                                Source src;
+                                SourceCache sc;
+                                if (request != null && (sc = request.cache)!= null && (src=sc.getSource())!=null) {
+                                    cancelParser(
+                                        parser,
+                                        cancelStrategy.callDeprecatedParserCancel(),
+                                        cancelReason,
+                                        SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
+                                }
+                            } else {
+                                cancelParser (parser, false, cancelReason, null);
+                            }
                         }
+                    } finally {
+                        if (request != null) {
+                            cancelTask(request.task, cancelReason);
+                        }
+                    }
+                } catch (Throwable t) {
+                    //If the client code in cancel throws a Throwable
+                    //log it and continue.
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
                     } else {
-                        cancelParser (parser, false, cancelReason, null);
+                        Exceptions.printStackTrace(t);
                     }
                 }
             }
