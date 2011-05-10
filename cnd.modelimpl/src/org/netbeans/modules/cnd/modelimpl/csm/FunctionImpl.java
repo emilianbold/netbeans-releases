@@ -502,6 +502,43 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 }
             }
         }
+        if(def == null && this instanceof FriendFunctionImpl) {
+            // Bug 196157 - Template friend functions highlighting problems
+            List<CsmSpecializationParameter> specializationParameters = ((FriendFunctionImpl)this).getSpecializationParameters();
+            if(!specializationParameters.isEmpty()) {
+                StringBuilder tparams = new StringBuilder();
+                tparams.append('<'); // NOI18N
+                for(int i = 0; i < specializationParameters.size(); i++) {
+                    if(i != 0) {
+                        tparams.append(','); // NOI18N
+                    }
+                    tparams.append("class"); // NOI18N
+                }
+                tparams.append('>'); // NOI18N                
+                StringBuilder params = new StringBuilder();
+                InstantiationProviderImpl.appendParametersSignature(getParameters(), params);
+                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + 
+                        getQualifiedName().toString() + tparams.toString() + params.toString();
+                def = findDefinition(prj, uname);
+                if (def == null) {
+                    for (CsmProject lib : prj.getLibraries()){
+                        def = findDefinition(lib, uname);
+                        if (def != null) {
+                            break;
+                        }
+                    }
+                }
+                if (def == null && (prj instanceof ProjectBase)) {
+                    for(CsmProject dependent : ((ProjectBase)prj).getDependentProjects()){
+                        def = findDefinition(dependent, uname);
+                        if (def != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
         return def;
     }
 
