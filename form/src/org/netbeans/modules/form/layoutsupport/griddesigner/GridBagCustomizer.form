@@ -5,7 +5,7 @@
     <Container class="javax.swing.JPanel" name="customizer">
       <Properties>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[306, 360]"/>
+          <Dimension value="[310, 360]"/>
         </Property>
       </Properties>
 
@@ -24,7 +24,7 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="leftPanel" min="-2" max="-2" attributes="1"/>
                       <Component id="rightPanel" alignment="0" min="-2" max="-2" attributes="1"/>
@@ -457,27 +457,27 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Component id="vpadLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="vPadLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="vplusPaddingButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vminusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vPlusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vMinusPaddingButton" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="2" attributes="0">
-                                  <Component id="hpadLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hPadLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="2" attributes="0">
-                                      <Component id="hminusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hMinusPaddingButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hplusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hPlusPaddingButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="bpadLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="bPadLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="bplusPaddingButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="bminusPaddingButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bPlusPaddingButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bMinusPaddingButton" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -489,27 +489,27 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="103" alignment="1" groupAlignment="2" attributes="0">
-                                      <Component id="bpadLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                      <Component id="bPadLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="bplusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="bPlusPaddingButton" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="bminusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="bMinusPaddingButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <Group type="103" alignment="1" groupAlignment="2" attributes="0">
-                                      <Component id="vpadLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vPadLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="vplusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vPlusPaddingButton" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="vminusPaddingButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vMinusPaddingButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="hplusPaddingButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="hminusPaddingButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="hPlusPaddingButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="hMinusPaddingButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="hpadLabel" min="-2" max="-2" attributes="0"/>
+                                          <Component id="hPadLabel" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -519,7 +519,7 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JButton" name="vminusPaddingButton">
+                    <Component class="javax.swing.JButton" name="vMinusPaddingButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
@@ -542,10 +542,10 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vminusPaddingButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vMinusPaddingButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="vpadLabel">
+                    <Component class="javax.swing.JLabel" name="vPadLabel">
                       <Properties>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -562,7 +562,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vplusPaddingButton">
+                    <Component class="javax.swing.JButton" name="vPlusPaddingButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
@@ -585,10 +585,10 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vplusPaddingButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vPlusPaddingButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hplusPaddingButton">
+                    <Component class="javax.swing.JButton" name="hPlusPaddingButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
@@ -611,10 +611,10 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hplusPaddingButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hPlusPaddingButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="hpadLabel">
+                    <Component class="javax.swing.JLabel" name="hPadLabel">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/horizontal.png"/>
@@ -630,7 +630,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hminusPaddingButton">
+                    <Component class="javax.swing.JButton" name="hMinusPaddingButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
@@ -653,10 +653,10 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hminusPaddingButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hMinusPaddingButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="bminusPaddingButton">
+                    <Component class="javax.swing.JButton" name="bMinusPaddingButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
@@ -679,10 +679,10 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bminusPaddingButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bMinusPaddingButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="bpadLabel">
+                    <Component class="javax.swing.JLabel" name="bPadLabel">
                       <Properties>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -690,7 +690,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="bplusPaddingButton">
+                    <Component class="javax.swing.JButton" name="bPlusPaddingButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
@@ -713,7 +713,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bplusPaddingButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bPlusPaddingButtonActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>
@@ -777,30 +777,30 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Component id="vgridLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="vGridLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="vgridMinusButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vgridPlusButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vGridMinusButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vGridPlusButton" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="2" attributes="0">
                                   <Group type="102" alignment="2" attributes="0">
-                                      <Component id="hgridMinusButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hGridMinusButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hgridPlusButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hGridPlusButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="hgridLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hGridLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="vgridRelativeButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hgridRelativeButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vGridRelativeButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hGridRelativeButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="vgridRemainderButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hgridRemainderButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vGridRemainderButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hGridRemainderButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -812,29 +812,29 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" alignment="1" attributes="0">
-                                      <Component id="hgridRemainderButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hGridRemainderButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="vgridRemainderButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vGridRemainderButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
-                                      <Component id="hgridRelativeButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hGridRelativeButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="vgridRelativeButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vGridRelativeButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="hgridPlusButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="hgridMinusButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="hGridPlusButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="hGridMinusButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hgridLabel" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hGridLabel" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="103" alignment="1" groupAlignment="2" attributes="0">
-                                      <Component id="vgridLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vGridLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="vgridMinusButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vGridMinusButton" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="vgridPlusButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vGridPlusButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -844,13 +844,13 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JToggleButton" name="vgridRelativeButton">
+                    <Component class="javax.swing.JToggleButton" name="vGridRelativeButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_relative.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vgridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vGridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -863,14 +863,17 @@
                           <Dimension value="[20, 20]"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vGridRelativeButtonActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="javax.swing.JToggleButton" name="vgridRemainderButton">
+                    <Component class="javax.swing.JToggleButton" name="vGridRemainderButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_remainder.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vgridRemainderButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vGridRemainderButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -883,14 +886,17 @@
                           <Dimension value="[20, 20]"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vGridRemainderButtonActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vgridMinusButton">
+                    <Component class="javax.swing.JButton" name="vGridMinusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vgridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vGridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -907,16 +913,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vgridMinusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vGridMinusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vgridPlusButton">
+                    <Component class="javax.swing.JButton" name="vGridPlusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vgridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vGridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -933,10 +939,10 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vgridPlusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vGridPlusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="vgridLabel">
+                    <Component class="javax.swing.JLabel" name="vGridLabel">
                       <Properties>
                         <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -953,13 +959,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hgridMinusButton">
+                    <Component class="javax.swing.JButton" name="hGridMinusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hgridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hGridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -976,16 +982,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hgridMinusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hGridMinusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hgridPlusButton">
+                    <Component class="javax.swing.JButton" name="hGridPlusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hgridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hGridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1002,16 +1008,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hgridPlusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hGridPlusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JToggleButton" name="hgridRelativeButton">
+                    <Component class="javax.swing.JToggleButton" name="hGridRelativeButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_relative.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hgridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hGridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -1024,14 +1030,17 @@
                           <Dimension value="[20, 20]"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hGridRelativeButtonActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="javax.swing.JToggleButton" name="hgridRemainderButton">
+                    <Component class="javax.swing.JToggleButton" name="hGridRemainderButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_remainder.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hgridRemainderButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hGridRemainderButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -1044,8 +1053,11 @@
                           <Dimension value="[20, 20]"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hGridRemainderButtonActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="hgridLabel">
+                    <Component class="javax.swing.JLabel" name="hGridLabel">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth.png"/>
@@ -1117,18 +1129,18 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="xgridMinusButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="xGridMinusButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="ygridMinusButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ygridPlusButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="yGridMinusButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="yGridPlusButton" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Component id="xgridPlusButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="xGridPlusButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="2" attributes="0">
-                                  <Component id="ygridRelativeButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="xgridRelativeButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="yGridRelativeButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="xGridRelativeButton" alignment="2" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -1140,18 +1152,18 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="103" alignment="0" groupAlignment="2" attributes="0">
-                                      <Component id="xgridMinusButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                                      <Component id="xgridPlusButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                      <Component id="xGridMinusButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                      <Component id="xGridPlusButton" alignment="2" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="ygridMinusButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="yGridMinusButton" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="ygridPlusButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="yGridPlusButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="2" attributes="0">
-                                      <Component id="xgridRelativeButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="xGridRelativeButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="ygridRelativeButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="yGridRelativeButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
@@ -1160,13 +1172,13 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JButton" name="xgridMinusButton">
+                    <Component class="javax.swing.JButton" name="xGridMinusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_w.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.xgridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.xGridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1183,16 +1195,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="xgridMinusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="xGridMinusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="ygridMinusButton">
+                    <Component class="javax.swing.JButton" name="yGridMinusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_n.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.ygridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.yGridMinusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1209,16 +1221,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ygridMinusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="yGridMinusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="ygridPlusButton">
+                    <Component class="javax.swing.JButton" name="yGridPlusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_s.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.ygridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.yGridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1235,16 +1247,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ygridPlusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="yGridPlusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="xgridPlusButton">
+                    <Component class="javax.swing.JButton" name="xGridPlusButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_e.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.xgridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.xGridPlusButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1261,16 +1273,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="xgridPlusButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="xGridPlusButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JToggleButton" name="xgridRelativeButton">
+                    <Component class="javax.swing.JToggleButton" name="xGridRelativeButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridx_relative.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.xgridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.xGridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -1283,14 +1295,17 @@
                           <Dimension value="[20, 20]"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="xGridRelativeButtonActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="javax.swing.JToggleButton" name="ygridRelativeButton">
+                    <Component class="javax.swing.JToggleButton" name="yGridRelativeButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridy_relative.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.ygridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.yGridRelativeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -1303,6 +1318,9 @@
                           <Dimension value="[20, 20]"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="yGridRelativeButtonActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -1317,16 +1335,12 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
                           <Component id="weightsToolGroup" alignment="0" max="32767" attributes="1"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="insetsToolGroup" alignment="0" min="-2" max="-2" attributes="1"/>
-                                  <Component id="fillToolGroup" alignment="0" min="-2" max="-2" attributes="1"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="insetsToolGroup" alignment="0" max="32767" attributes="1"/>
+                          <Component id="fillToolGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1336,9 +1350,9 @@
                       <Component id="insetsToolGroup" min="-2" pref="195" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       <Component id="fillToolGroup" min="-2" pref="47" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="weightsToolGroup" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="weightsToolGroup" pref="76" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1413,28 +1427,28 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="vplusInsetButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vPlusInsetButton" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Component id="vInsetLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="vminusInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vMinusInsetButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="2" attributes="0">
                                   <Component id="hInsetLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="2" attributes="0">
-                                      <Component id="hminusInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hMinusInsetButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hplusInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hPlusInsetButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Component id="bInsetLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="bplusInsetButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="bminusInsetButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bPlusInsetButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bMinusInsetButton" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
@@ -1447,8 +1461,8 @@
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="hplusInsetButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="hminusInsetButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="hPlusInsetButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="hMinusInsetButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                                       <Component id="hInsetLabel" min="-2" max="-2" attributes="0"/>
@@ -1456,14 +1470,14 @@
                                   <Group type="103" alignment="1" groupAlignment="2" attributes="0">
                                       <Component id="bInsetLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="bplusInsetButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="bPlusInsetButton" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="bminusInsetButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="bMinusInsetButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="vInsetLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="vplusInsetButton" min="-2" max="-2" attributes="0"/>
-                                          <Component id="vminusInsetButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vPlusInsetButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vMinusInsetButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1490,13 +1504,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vminusInsetButton">
+                    <Component class="javax.swing.JButton" name="vMinusInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vminusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vMinusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1513,16 +1527,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vminusInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vMinusInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vplusInsetButton">
+                    <Component class="javax.swing.JButton" name="vPlusInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vplusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vPlusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1539,7 +1553,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vplusInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vPlusInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="hInsetLabel">
@@ -1558,13 +1572,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hminusInsetButton">
+                    <Component class="javax.swing.JButton" name="hMinusInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hminusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hMinusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1581,16 +1595,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hminusInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hMinusInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hplusInsetButton">
+                    <Component class="javax.swing.JButton" name="hPlusInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hplusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hPlusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1607,7 +1621,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hplusInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hPlusInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="bInsetLabel">
@@ -1618,13 +1632,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="bminusInsetButton">
+                    <Component class="javax.swing.JButton" name="bMinusInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.bminusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.bMinusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1641,16 +1655,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bminusInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bMinusInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="bplusInsetButton">
+                    <Component class="javax.swing.JButton" name="bPlusInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.bplusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.bPlusInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1667,7 +1681,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bplusInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bPlusInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>
@@ -1685,9 +1699,9 @@
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
-                                      <Component id="hplusLeftInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hPlusLeftInsetButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hminusLeftInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hMinusLeftInsetButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Component id="bottomLeftCorner" min="-2" max="-2" attributes="0"/>
@@ -1695,19 +1709,19 @@
                                   </Group>
                               </Group>
                               <Group type="103" groupAlignment="2" attributes="0">
-                                  <Component id="vplusTopInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vminusTopInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vPlusTopInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vMinusTopInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
                                   <Component id="crossCenter" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vminusBottomInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vplusBottomInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vMinusBottomInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vPlusBottomInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="bottomRightCorner" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="hminusRightInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hMinusRightInsetButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hplusRightInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="hPlusRightInsetButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="topRightCorner" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -1722,29 +1736,29 @@
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="topLeftCorner" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
-                                      <Component id="vplusTopInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vPlusTopInsetButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="vminusTopInsetButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="vMinusTopInsetButton" min="-2" max="-2" attributes="0"/>
                                           <Component id="topRightCorner" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="2" attributes="0">
-                                  <Component id="hplusLeftInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hminusLeftInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hminusRightInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hPlusLeftInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hMinusLeftInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hMinusRightInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
                                   <Component id="crossCenter" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hplusRightInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hPlusRightInsetButton" alignment="2" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="bottomRightCorner" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="vminusBottomInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vMinusBottomInsetButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="vplusBottomInsetButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="vPlusBottomInsetButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="bottomLeftCorner" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -1761,13 +1775,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vplusTopInsetButton">
+                    <Component class="javax.swing.JButton" name="vPlusTopInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vplusTopInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vPlusTopInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1784,16 +1798,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vplusTopInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vPlusTopInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vminusTopInsetButton">
+                    <Component class="javax.swing.JButton" name="vMinusTopInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vminusTopInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vMinusTopInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1810,7 +1824,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vminusTopInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vMinusTopInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="topRightCorner">
@@ -1820,13 +1834,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hplusLeftInsetButton">
+                    <Component class="javax.swing.JButton" name="hPlusLeftInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hplusLeftInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hPlusLeftInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1843,16 +1857,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hplusLeftInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hPlusLeftInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hminusLeftInsetButton">
+                    <Component class="javax.swing.JButton" name="hMinusLeftInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hminusLeftInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hMinusLeftInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1869,16 +1883,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hminusLeftInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hMinusLeftInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hminusRightInsetButton">
+                    <Component class="javax.swing.JButton" name="hMinusRightInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hminusRightInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hMinusRightInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1895,16 +1909,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hminusRightInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hMinusRightInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="hplusRightInsetButton">
+                    <Component class="javax.swing.JButton" name="hPlusRightInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hplusRightInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hPlusRightInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1921,7 +1935,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hplusRightInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hPlusRightInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="bottomLeftCorner">
@@ -1931,13 +1945,13 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vminusBottomInsetButton">
+                    <Component class="javax.swing.JButton" name="vMinusBottomInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vminusBottomInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vMinusBottomInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1954,16 +1968,16 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vminusBottomInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vMinusBottomInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="javax.swing.JButton" name="vplusBottomInsetButton">
+                    <Component class="javax.swing.JButton" name="vPlusBottomInsetButton">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                           <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vplusBottomInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vPlusBottomInsetButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -1980,7 +1994,7 @@
                         </Property>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vplusBottomInsetButtonActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vPlusBottomInsetButtonActionPerformed"/>
                       </Events>
                     </Component>
                     <Component class="javax.swing.JLabel" name="bottomRightCorner">
@@ -2005,286 +2019,6 @@
                       <AuxValues>
                         <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.RigidArea"/>
                       </AuxValues>
-                    </Component>
-                  </SubComponents>
-                </Container>
-              </SubComponents>
-            </Container>
-            <Container class="javax.swing.JPanel" name="weightsToolGroup">
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="1">
-                          <Component id="weightsLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="weightsSeparator" pref="92" max="32767" attributes="0"/>
-                      </Group>
-                      <Component id="weightsPanel" alignment="0" min="-2" pref="133" max="-2" attributes="1"/>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="2" attributes="0">
-                              <Component id="weightsSeparator" alignment="2" min="-2" pref="3" max="-2" attributes="0"/>
-                              <Component id="weightsLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                          <Component id="weightsPanel" min="-2" pref="62" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JLabel" name="weightsLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.weightsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                    </Property>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JSeparator" name="weightsSeparator">
-                </Component>
-                <Container class="javax.swing.JPanel" name="weightsPanel">
-                  <Properties>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[140, 60]"/>
-                    </Property>
-                  </Properties>
-
-                  <Layout>
-                    <DimensionLayout dim="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Component id="vweightLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="vplusWeightButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vminusWeightButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="2" attributes="0">
-                                  <Component id="hweightLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="2" attributes="0">
-                                      <Component id="hminusWeightButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="hplusWeightButton" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="hweightEqualize" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="vweightEqualize" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                    <DimensionLayout dim="1">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="2" attributes="0">
-                                  <Component id="vweightLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="2" attributes="0">
-                                      <Component id="vplusWeightButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="vminusWeightButton" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="103" alignment="2" groupAlignment="1" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="hweightEqualize" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="vweightEqualize" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="hplusWeightButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Component id="hminusWeightButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                          <Component id="hweightLabel" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                  </Layout>
-                  <SubComponents>
-                    <Component class="javax.swing.JLabel" name="vweightLabel">
-                      <Properties>
-                        <Property name="horizontalAlignment" type="int" value="0"/>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_vertical.png"/>
-                        </Property>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="vminusWeightButton">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
-                        </Property>
-                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vminusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                          <Insets value="[0, 0, 0, 0]"/>
-                        </Property>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vminusWeightButtonActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="vplusWeightButton">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
-                        </Property>
-                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vplusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                          <Insets value="[0, 0, 0, 0]"/>
-                        </Property>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vplusWeightButtonActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="hweightLabel">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_horizontal.png"/>
-                        </Property>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="hminusWeightButton">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
-                        </Property>
-                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hminusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                          <Insets value="[0, 0, 0, 0]"/>
-                        </Property>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hminusWeightButtonActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="hplusWeightButton">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
-                        </Property>
-                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hplusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                          <Insets value="[0, 0, 0, 0]"/>
-                        </Property>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hplusWeightButtonActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="hweightEqualize">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_horizontal.png"/>
-                        </Property>
-                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hweightEqualize.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                          <Insets value="[0, 0, 0, 0]"/>
-                        </Property>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hweightEqualizeActionPerformed"/>
-                      </Events>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="vweightEqualize">
-                      <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_vertical.png"/>
-                        </Property>
-                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vweightEqualize.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                        </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                          <Insets value="[0, 0, 0, 0]"/>
-                        </Property>
-                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[20, 20]"/>
-                        </Property>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vweightEqualizeActionPerformed"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -2393,6 +2127,290 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vFillButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="weightsToolGroup">
+              <Properties>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[135, 80]"/>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="1">
+                          <Component id="weightsLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Component id="weightsSeparator" pref="92" max="32767" attributes="0"/>
+                      </Group>
+                      <Component id="weightsPanel" alignment="0" min="-2" pref="133" max="-2" attributes="1"/>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="weightsSeparator" alignment="2" min="-2" pref="3" max="-2" attributes="0"/>
+                              <Component id="weightsLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                          <Component id="weightsPanel" min="-2" pref="62" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="weightsLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.weightsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JSeparator" name="weightsSeparator">
+                </Component>
+                <Container class="javax.swing.JPanel" name="weightsPanel">
+                  <Properties>
+                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[140, 65]"/>
+                    </Property>
+                  </Properties>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="vWeightLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="vPlusWeightButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vMinusWeightButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="2" attributes="0">
+                                  <Component id="hWeightLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="2" attributes="0">
+                                      <Component id="hMinusWeightButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                      <Component id="hPlusWeightButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="hWeightEqualizeButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="vWeightEqualizeButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="2" attributes="0">
+                                  <Component id="vWeightLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="2" attributes="0">
+                                      <Component id="vPlusWeightButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                      <Component id="vMinusWeightButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="103" alignment="2" groupAlignment="1" attributes="0">
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Component id="hWeightEqualizeButton" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                          <Component id="vWeightEqualizeButton" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="hPlusWeightButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="hMinusWeightButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                          <Component id="hWeightLabel" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="vWeightLabel">
+                      <Properties>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_vertical.png"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="vMinusWeightButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vMinusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vMinusWeightButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="vPlusWeightButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vPlusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vPlusWeightButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="hWeightLabel">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_horizontal.png"/>
+                        </Property>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="hMinusWeightButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hMinusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hMinusWeightButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="hPlusWeightButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hPlusWeightButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hPlusWeightButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="hWeightEqualizeButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_horizontal.png"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.hWeightEqualizeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hWeightEqualizeButtonActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JButton" name="vWeightEqualizeButton">
+                      <Properties>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_vertical.png"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="org/netbeans/modules/form/layoutsupport/griddesigner/Bundle.properties" key="GridBagCustomizer.vWeightEqualizeButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                        </Property>
+                        <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[20, 20]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vWeightEqualizeButtonActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

@@ -185,10 +185,20 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return getIntFieldValue(tempXField, constraints);
     }
 
+    public boolean getGridXRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridx == GridBagConstraints.RELATIVE;
+    }
+
     @Override
     public int getGridY(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return getIntFieldValue(tempYField, constraints);
+    }
+
+    public boolean getGridYRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridy == GridBagConstraints.RELATIVE;
     }
 
     @Override
@@ -197,10 +207,30 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return getIntFieldValue(tempWidthField, constraints);
     }
 
+    public boolean getGridWidthRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridwidth == GridBagConstraints.RELATIVE;
+    }
+
+    public boolean getGridWidthRemainder(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridwidth == GridBagConstraints.REMAINDER;
+    }
+
     @Override
     public int getGridHeight(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return getIntFieldValue(tempHeightField, constraints);
+    }
+
+    public boolean getGridHeightRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridheight == GridBagConstraints.RELATIVE;
+    }
+
+    public boolean getGridHeightRemainder(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridheight == GridBagConstraints.REMAINDER;
     }
 
     public int getAnchor(Component component) {
