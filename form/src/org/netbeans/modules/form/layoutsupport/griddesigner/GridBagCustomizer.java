@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.Insets;
+import javax.swing.AbstractButton;
 import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
@@ -70,10 +71,55 @@ public class GridBagCustomizer implements GridCustomizer {
         bidiCenter = true; // default to promote bidirectional anchors over absolute ones
     }
     
+    @Override
+    public Component getComponent() {
+        return customizer;
+    }
+
+    /**
+     * Step size in component size change
+     */
+    public static final int STANDARD_SIZE_CHANGE = 1;
+
     /**
      * Step size in component size change (with Ctrl key pressed)
      */
     public static final int ACCELERATED_SIZE_CHANGE = 5;
+
+    /**
+     * Step size in component weight change (with Ctrl key pressed)
+     */
+    public static final double STANDARD_WEIGHT_CHANGE = 0.1d;
+
+    /**
+     * Step size in component weight change (with Ctrl key pressed)
+     */
+    public static final double ACCELERATED_WEIGHT_CHANGE = 0.5d;
+
+    /**
+     * Maximum number of decimal places to be preserved in weights; 10^k here means k decimal places
+     */
+    public static final double WEIGHT_NUMERIC_PRECISION = 100.0d;
+
+    /**
+     * Marker to make parameter passing more readable
+     */
+    public static final byte NO_INDIRECT_CHANGE = 0;
+
+    /**
+     * Marker to make parameter passing more readable
+     */
+    public static final byte CHANGE_RELATIVE = 1;
+
+    /**
+     * Marker to make parameter passing more readable
+     */
+    public static final byte CHANGE_REMAINDER = 2;
+
+    /**
+     * Determines that weights will be equalized across current selection
+     */
+    public static final byte WEIGHTS_EQUALIZE = 4;
 
     /**
      * Determines that anchor buttons represent absolute positioning using {@code GridBagConstraints} constants:
@@ -115,26 +161,98 @@ public class GridBagCustomizer implements GridCustomizer {
      * Parameter passing structure 
      */
     private class PaddingChange {
-        PaddingChange(int xdiff, int ydiff) {
-            this.xdiff = xdiff;
-            this.ydiff = ydiff;
+        PaddingChange(int xDiff, int yDiff, boolean reset) {
+            this.xDiff = xDiff;
+            this.yDiff = yDiff;
+            this.reset = reset;
         }
-        public final int xdiff; /** horizontal padding increase or decrease */
-        public final int ydiff; /** vertical padding increase or decrease */
-        private PaddingChange() {xdiff = ydiff = 0;}
+        public final int xDiff; /** horizontal padding increase or decrease (0 = no change) */
+        public final int yDiff; /** vertical padding increase or decrease (0 = no change) */
+        public final boolean reset; /** changes meaning of preceeding diff values: nonzero = reset request, 0 = no change */
+        private PaddingChange() {xDiff = yDiff = 0; reset = false;}
+    }
+
+    /** 
+     * Parameter passing structure 
+     */
+    private class GridSizeChange {
+        GridSizeChange(int wDiff, byte wRelRem, int hDiff, byte hRelRem, boolean reset) {
+            this.wDiff = wDiff;
+            this.wRelRem = wRelRem;
+            this.hDiff = hDiff;
+            this.hRelRem = hRelRem;
+            this.reset = reset;
+        }
+        public final int wDiff; /** absolute width in grid, increase or decrease (0 = no change) */
+        public final byte wRelRem; /** relative width, CHANGE_RELATIVE = set RELATIVE, -CHANGE_RELATIVE = unset RELATIVE, NO_INDIRECT_CHANGE = keep unchanged, CHANGE_REMAINDER = set REMAINDER, -CHANGE_REMAINDER = unset REMAINDER */
+        public final int hDiff; /** absolute height in grid, increase or decrease (0 = no change) */
+        public final byte hRelRem; /** relative height, CHANGE_RELATIVE = set RELATIVE, -CHANGE_RELATIVE = unset RELATIVE, NO_INDIRECT_CHANGE = keep unchanged, CHANGE_REMAINDER = set REMAINDER, -CHANGE_REMAINDER = unset REMAINDER */
+        public final boolean reset; /** changes meaning of preceeding diff values: nonzero = reset request, 0 = no change */
+        private GridSizeChange() {wDiff = hDiff = wRelRem = hRelRem = 0; reset = false;}
+    }
+
+    /** 
+     * Parameter passing structure 
+     */
+    private class GridPositionChange {
+        GridPositionChange(int xDiff, byte xRelative, int yDiff, byte yRelative, boolean reset) {
+            this.xDiff = xDiff;
+            this.xRelative = xRelative;
+            this.yDiff = yDiff;
+            this.yRelative = yRelative;
+            this.reset = reset;
+        }
+        public final int xDiff; /** absolute horizontal position in grid increase or decrease (0 = no change) */
+        public final byte xRelative; /** relative horizontal position, CHANGE_RELATIVE = set RELATIVE, -CHANGE_RELATIVE = unset RELATIVE, NO_INDIRECT_CHANGE = keep unchanged */
+        public final int yDiff; /** absolute vertical position in grid increase or decrease (0 = no change) */
+        public final byte yRelative; /** relative vertical position, CHANGE_RELATIVE = set RELATIVE, -CHANGE_RELATIVE = unset RELATIVE, NO_INDIRECT_CHANGE = keep unchanged */
+        public final boolean reset; /** changes meaning of preceeding diff values: nonzero = reset request, 0 = no change */
+        private GridPositionChange() {xDiff = yDiff = 0; xRelative = yRelative = 0; reset = false;}
+    }
+
+    /** 
+     * Parameter passing structure 
+     */
+    private class InsetsChange {
+        InsetsChange(int top, int left, int bottom, int right, boolean reset) {
+            this.iDiff = new Insets(top,left,bottom,right);
+            this.reset = reset;
+        }
+        public final Insets iDiff; /** absolute inset increase or decrease (0 = no change) */
+        public final boolean reset; /** changes meaning of preceeding diff values: nonzero = reset request, 0 = no change */
+        private InsetsChange() {iDiff = new Insets(0,0,0,0); reset = false;}
     }
 
     /** 
      * Parameter passing structure 
      */
     private class FillChange {
-        FillChange(int hfill, int vfill) {
-            this.hfill = hfill;
-            this.vfill = vfill;
+        FillChange(int hFill, int vFill) {
+            this.hFill = hFill;
+            this.vFill = vFill;
         }
-        public final int hfill; /** -1 = no change, 0 = NONE/VERTICAL, 1 = HORIZONTAL/BOTH */
-        public final int vfill; /** -1 = no change, 0 = NONE/HORIZONTAL, 1= VERTICAL/BOTH */
-        private FillChange() {hfill = vfill = -1;}
+        public final int hFill; /** -1 = no change, 0 = NONE/VERTICAL, 1 = HORIZONTAL/BOTH */
+        public final int vFill; /** -1 = no change, 0 = NONE/HORIZONTAL, 1= VERTICAL/BOTH */
+        private FillChange() {hFill = vFill = -1;}
+    }
+
+    /** 
+     * Parameter passing structure 
+     */
+    private class WeightChange {
+        WeightChange(double xDiff, byte xNorm, double yDiff, byte yNorm, boolean reset) {
+            this.xDiff = xDiff;
+            this.xNorm = xNorm;
+            this.yDiff = yDiff;
+            this.yNorm = yNorm;
+            this.reset = reset;
+        }
+        public final double xDiff; /** horizontal weight increase or decrease (0 = no change) */
+        public final byte xNorm; /**  NO_INDIRECT_CHANGE, or WEIGHTS_EQUALIZE */
+        public final double yDiff; /** vertical weight increase or decrease (0 = no change) */
+        public final byte yNorm; /**  NO_INDIRECT_CHANGE, or WEIGHTS_EQUALIZE */
+        public final boolean reset; /** changes meaning of preceeding diff values: nonzero = reset request, 0 = no change */
+        private WeightChange() {xDiff = yDiff = 0.0d; xNorm = yNorm = 0; reset = false;}
     }
 
     /** This method is called from within the constructor to
@@ -168,89 +286,89 @@ public class GridBagCustomizer implements GridCustomizer {
         paddingLabel = new javax.swing.JLabel();
         paddingSeparator = new javax.swing.JSeparator();
         paddingPanel = new javax.swing.JPanel();
-        vminusPaddingButton = new javax.swing.JButton();
-        vpadLabel = new javax.swing.JLabel();
-        vplusPaddingButton = new javax.swing.JButton();
-        hplusPaddingButton = new javax.swing.JButton();
-        hpadLabel = new javax.swing.JLabel();
-        hminusPaddingButton = new javax.swing.JButton();
-        bminusPaddingButton = new javax.swing.JButton();
-        bpadLabel = new javax.swing.JLabel();
-        bplusPaddingButton = new javax.swing.JButton();
+        vMinusPaddingButton = new javax.swing.JButton();
+        vPadLabel = new javax.swing.JLabel();
+        vPlusPaddingButton = new javax.swing.JButton();
+        hPlusPaddingButton = new javax.swing.JButton();
+        hPadLabel = new javax.swing.JLabel();
+        hMinusPaddingButton = new javax.swing.JButton();
+        bMinusPaddingButton = new javax.swing.JButton();
+        bPadLabel = new javax.swing.JLabel();
+        bPlusPaddingButton = new javax.swing.JButton();
         gridSizeToolGroup = new javax.swing.JPanel();
         gridSizeLabel = new javax.swing.JLabel();
         gridSizeSeparator = new javax.swing.JSeparator();
         gridSizePanel = new javax.swing.JPanel();
-        vgridRelativeButton = new javax.swing.JToggleButton();
-        vgridRemainderButton = new javax.swing.JToggleButton();
-        vgridMinusButton = new javax.swing.JButton();
-        vgridPlusButton = new javax.swing.JButton();
-        vgridLabel = new javax.swing.JLabel();
-        hgridMinusButton = new javax.swing.JButton();
-        hgridPlusButton = new javax.swing.JButton();
-        hgridRelativeButton = new javax.swing.JToggleButton();
-        hgridRemainderButton = new javax.swing.JToggleButton();
-        hgridLabel = new javax.swing.JLabel();
+        vGridRelativeButton = new javax.swing.JToggleButton();
+        vGridRemainderButton = new javax.swing.JToggleButton();
+        vGridMinusButton = new javax.swing.JButton();
+        vGridPlusButton = new javax.swing.JButton();
+        vGridLabel = new javax.swing.JLabel();
+        hGridMinusButton = new javax.swing.JButton();
+        hGridPlusButton = new javax.swing.JButton();
+        hGridRelativeButton = new javax.swing.JToggleButton();
+        hGridRemainderButton = new javax.swing.JToggleButton();
+        hGridLabel = new javax.swing.JLabel();
         gridPositionToolGroup = new javax.swing.JPanel();
         gridPositionLabel = new javax.swing.JLabel();
         gridPositionSeparator = new javax.swing.JSeparator();
         gridPositionPanel = new javax.swing.JPanel();
-        xgridMinusButton = new javax.swing.JButton();
-        ygridMinusButton = new javax.swing.JButton();
-        ygridPlusButton = new javax.swing.JButton();
-        xgridPlusButton = new javax.swing.JButton();
-        xgridRelativeButton = new javax.swing.JToggleButton();
-        ygridRelativeButton = new javax.swing.JToggleButton();
+        xGridMinusButton = new javax.swing.JButton();
+        yGridMinusButton = new javax.swing.JButton();
+        yGridPlusButton = new javax.swing.JButton();
+        xGridPlusButton = new javax.swing.JButton();
+        xGridRelativeButton = new javax.swing.JToggleButton();
+        yGridRelativeButton = new javax.swing.JToggleButton();
         rightPanel = new javax.swing.JPanel();
         insetsToolGroup = new javax.swing.JPanel();
         insetsLabel = new javax.swing.JLabel();
         insetsSeparator = new javax.swing.JSeparator();
         insetsPanel = new javax.swing.JPanel();
         vInsetLabel = new javax.swing.JLabel();
-        vminusInsetButton = new javax.swing.JButton();
-        vplusInsetButton = new javax.swing.JButton();
+        vMinusInsetButton = new javax.swing.JButton();
+        vPlusInsetButton = new javax.swing.JButton();
         hInsetLabel = new javax.swing.JLabel();
-        hminusInsetButton = new javax.swing.JButton();
-        hplusInsetButton = new javax.swing.JButton();
+        hMinusInsetButton = new javax.swing.JButton();
+        hPlusInsetButton = new javax.swing.JButton();
         bInsetLabel = new javax.swing.JLabel();
-        bminusInsetButton = new javax.swing.JButton();
-        bplusInsetButton = new javax.swing.JButton();
+        bMinusInsetButton = new javax.swing.JButton();
+        bPlusInsetButton = new javax.swing.JButton();
         insetsCross = new javax.swing.JPanel();
         topLeftCorner = new javax.swing.JLabel();
-        vplusTopInsetButton = new javax.swing.JButton();
-        vminusTopInsetButton = new javax.swing.JButton();
+        vPlusTopInsetButton = new javax.swing.JButton();
+        vMinusTopInsetButton = new javax.swing.JButton();
         topRightCorner = new javax.swing.JLabel();
-        hplusLeftInsetButton = new javax.swing.JButton();
-        hminusLeftInsetButton = new javax.swing.JButton();
-        hminusRightInsetButton = new javax.swing.JButton();
-        hplusRightInsetButton = new javax.swing.JButton();
+        hPlusLeftInsetButton = new javax.swing.JButton();
+        hMinusLeftInsetButton = new javax.swing.JButton();
+        hMinusRightInsetButton = new javax.swing.JButton();
+        hPlusRightInsetButton = new javax.swing.JButton();
         bottomLeftCorner = new javax.swing.JLabel();
-        vminusBottomInsetButton = new javax.swing.JButton();
-        vplusBottomInsetButton = new javax.swing.JButton();
+        vMinusBottomInsetButton = new javax.swing.JButton();
+        vPlusBottomInsetButton = new javax.swing.JButton();
         bottomRightCorner = new javax.swing.JLabel();
         crossCenter = new javax.swing.Box.Filler(new java.awt.Dimension(20, 20), new java.awt.Dimension(20, 20), new java.awt.Dimension(20, 20));
-        weightsToolGroup = new javax.swing.JPanel();
-        weightsLabel = new javax.swing.JLabel();
-        weightsSeparator = new javax.swing.JSeparator();
-        weightsPanel = new javax.swing.JPanel();
-        vweightLabel = new javax.swing.JLabel();
-        vminusWeightButton = new javax.swing.JButton();
-        vplusWeightButton = new javax.swing.JButton();
-        hweightLabel = new javax.swing.JLabel();
-        hminusWeightButton = new javax.swing.JButton();
-        hplusWeightButton = new javax.swing.JButton();
-        hweightEqualize = new javax.swing.JButton();
-        vweightEqualize = new javax.swing.JButton();
         fillToolGroup = new javax.swing.JPanel();
         fillLabel = new javax.swing.JLabel();
         fillSeparator = new javax.swing.JSeparator();
         fillPanel = new javax.swing.JPanel();
         hFillButton = new javax.swing.JToggleButton();
         vFillButton = new javax.swing.JToggleButton();
+        weightsToolGroup = new javax.swing.JPanel();
+        weightsLabel = new javax.swing.JLabel();
+        weightsSeparator = new javax.swing.JSeparator();
+        weightsPanel = new javax.swing.JPanel();
+        vWeightLabel = new javax.swing.JLabel();
+        vMinusWeightButton = new javax.swing.JButton();
+        vPlusWeightButton = new javax.swing.JButton();
+        hWeightLabel = new javax.swing.JLabel();
+        hMinusWeightButton = new javax.swing.JButton();
+        hPlusWeightButton = new javax.swing.JButton();
+        hWeightEqualizeButton = new javax.swing.JButton();
+        vWeightEqualizeButton = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
 
-        customizer.setPreferredSize(new java.awt.Dimension(306, 360));
+        customizer.setPreferredSize(new java.awt.Dimension(310, 360));
 
         leftPanel.setPreferredSize(new java.awt.Dimension(155, 340));
 
@@ -434,73 +552,73 @@ public class GridBagCustomizer implements GridCustomizer {
 
         paddingPanel.setPreferredSize(new java.awt.Dimension(140, 65));
 
-        vminusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        vminusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.VMinus.toolTipText")); // NOI18N
-        vminusPaddingButton.setEnabled(false);
-        vminusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vminusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vminusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vminusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vminusPaddingButton.addActionListener(formListener);
+        vMinusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        vMinusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.VMinus.toolTipText")); // NOI18N
+        vMinusPaddingButton.setEnabled(false);
+        vMinusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vMinusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vMinusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vMinusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vMinusPaddingButton.addActionListener(formListener);
 
-        vpadLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        vpadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/vertical.png"))); // NOI18N
-        vpadLabel.setMaximumSize(new java.awt.Dimension(10, 15));
-        vpadLabel.setMinimumSize(new java.awt.Dimension(10, 15));
-        vpadLabel.setPreferredSize(new java.awt.Dimension(10, 15));
+        vPadLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        vPadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/vertical.png"))); // NOI18N
+        vPadLabel.setMaximumSize(new java.awt.Dimension(10, 15));
+        vPadLabel.setMinimumSize(new java.awt.Dimension(10, 15));
+        vPadLabel.setPreferredSize(new java.awt.Dimension(10, 15));
 
-        vplusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        vplusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.VPlus.toolTipText")); // NOI18N
-        vplusPaddingButton.setEnabled(false);
-        vplusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vplusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vplusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vplusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vplusPaddingButton.addActionListener(formListener);
+        vPlusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        vPlusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.VPlus.toolTipText")); // NOI18N
+        vPlusPaddingButton.setEnabled(false);
+        vPlusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vPlusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vPlusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vPlusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vPlusPaddingButton.addActionListener(formListener);
 
-        hplusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        hplusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.HPlus.toolTipText")); // NOI18N
-        hplusPaddingButton.setEnabled(false);
-        hplusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hplusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hplusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hplusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hplusPaddingButton.addActionListener(formListener);
+        hPlusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        hPlusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.HPlus.toolTipText")); // NOI18N
+        hPlusPaddingButton.setEnabled(false);
+        hPlusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hPlusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hPlusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hPlusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hPlusPaddingButton.addActionListener(formListener);
 
-        hpadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/horizontal.png"))); // NOI18N
-        hpadLabel.setMaximumSize(new java.awt.Dimension(15, 10));
-        hpadLabel.setMinimumSize(new java.awt.Dimension(15, 10));
-        hpadLabel.setPreferredSize(new java.awt.Dimension(15, 10));
+        hPadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/horizontal.png"))); // NOI18N
+        hPadLabel.setMaximumSize(new java.awt.Dimension(15, 10));
+        hPadLabel.setMinimumSize(new java.awt.Dimension(15, 10));
+        hPadLabel.setPreferredSize(new java.awt.Dimension(15, 10));
 
-        hminusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        hminusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.HMinus.toolTipText")); // NOI18N
-        hminusPaddingButton.setEnabled(false);
-        hminusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hminusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hminusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hminusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hminusPaddingButton.addActionListener(formListener);
+        hMinusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        hMinusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.HMinus.toolTipText")); // NOI18N
+        hMinusPaddingButton.setEnabled(false);
+        hMinusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hMinusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hMinusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hMinusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hMinusPaddingButton.addActionListener(formListener);
 
-        bminusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        bminusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.BMinus.toolTipText")); // NOI18N
-        bminusPaddingButton.setEnabled(false);
-        bminusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bminusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bminusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bminusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        bminusPaddingButton.addActionListener(formListener);
+        bMinusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        bMinusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.BMinus.toolTipText")); // NOI18N
+        bMinusPaddingButton.setEnabled(false);
+        bMinusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        bMinusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        bMinusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        bMinusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bMinusPaddingButton.addActionListener(formListener);
 
-        bpadLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        bpadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/both.png"))); // NOI18N
+        bPadLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        bPadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/both.png"))); // NOI18N
 
-        bplusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        bplusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.BPlus.toolTipText")); // NOI18N
-        bplusPaddingButton.setEnabled(false);
-        bplusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bplusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bplusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bplusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        bplusPaddingButton.addActionListener(formListener);
+        bPlusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        bPlusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.BPlus.toolTipText")); // NOI18N
+        bPlusPaddingButton.setEnabled(false);
+        bPlusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        bPlusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        bPlusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        bPlusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bPlusPaddingButton.addActionListener(formListener);
 
         javax.swing.GroupLayout paddingPanelLayout = new javax.swing.GroupLayout(paddingPanel);
         paddingPanel.setLayout(paddingPanelLayout);
@@ -508,24 +626,24 @@ public class GridBagCustomizer implements GridCustomizer {
             paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(paddingPanelLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(vpadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(vPadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(vplusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vminusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(vPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(hpadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hPadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(paddingPanelLayout.createSequentialGroup()
-                        .addComponent(hminusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(hplusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(hPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(bpadLabel)
+                .addComponent(bPadLabel)
                 .addGap(0, 0, 0)
                 .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(bplusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bminusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(bPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         paddingPanelLayout.setVerticalGroup(
@@ -534,23 +652,23 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addContainerGap()
                 .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                        .addComponent(bpadLabel)
+                        .addComponent(bPadLabel)
                         .addGroup(paddingPanelLayout.createSequentialGroup()
-                            .addComponent(bplusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(0, 0, 0)
-                            .addComponent(bminusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(bMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                        .addComponent(vpadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(vPadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(paddingPanelLayout.createSequentialGroup()
-                            .addComponent(vplusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(vPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(0, 0, 0)
-                            .addComponent(vminusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(vMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, paddingPanelLayout.createSequentialGroup()
                             .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(hplusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(hminusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(hPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(hMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGap(0, 0, 0)
-                            .addComponent(hpadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(hPadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -583,78 +701,82 @@ public class GridBagCustomizer implements GridCustomizer {
 
         gridSizePanel.setPreferredSize(new java.awt.Dimension(140, 62));
 
-        vgridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_relative.png"))); // NOI18N
-        vgridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vgridRelativeButton.toolTipText")); // NOI18N
-        vgridRelativeButton.setEnabled(false);
-        vgridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vgridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vgridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_relative.png"))); // NOI18N
+        vGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridRelativeButton.toolTipText")); // NOI18N
+        vGridRelativeButton.setEnabled(false);
+        vGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridRelativeButton.addActionListener(formListener);
 
-        vgridRemainderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_remainder.png"))); // NOI18N
-        vgridRemainderButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vgridRemainderButton.toolTipText")); // NOI18N
-        vgridRemainderButton.setEnabled(false);
-        vgridRemainderButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vgridRemainderButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vgridRemainderButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridRemainderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_remainder.png"))); // NOI18N
+        vGridRemainderButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridRemainderButton.toolTipText")); // NOI18N
+        vGridRemainderButton.setEnabled(false);
+        vGridRemainderButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vGridRemainderButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vGridRemainderButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridRemainderButton.addActionListener(formListener);
 
-        vgridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        vgridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vgridMinusButton.toolTipText")); // NOI18N
-        vgridMinusButton.setEnabled(false);
-        vgridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vgridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vgridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vgridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vgridMinusButton.addActionListener(formListener);
+        vGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        vGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridMinusButton.toolTipText")); // NOI18N
+        vGridMinusButton.setEnabled(false);
+        vGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridMinusButton.addActionListener(formListener);
 
-        vgridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        vgridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vgridPlusButton.toolTipText")); // NOI18N
-        vgridPlusButton.setEnabled(false);
-        vgridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vgridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vgridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vgridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vgridPlusButton.addActionListener(formListener);
+        vGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        vGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridPlusButton.toolTipText")); // NOI18N
+        vGridPlusButton.setEnabled(false);
+        vGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridPlusButton.addActionListener(formListener);
 
-        vgridLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        vgridLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight.png"))); // NOI18N
-        vgridLabel.setMaximumSize(new java.awt.Dimension(10, 15));
-        vgridLabel.setMinimumSize(new java.awt.Dimension(10, 15));
-        vgridLabel.setPreferredSize(new java.awt.Dimension(10, 15));
+        vGridLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        vGridLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight.png"))); // NOI18N
+        vGridLabel.setMaximumSize(new java.awt.Dimension(10, 15));
+        vGridLabel.setMinimumSize(new java.awt.Dimension(10, 15));
+        vGridLabel.setPreferredSize(new java.awt.Dimension(10, 15));
 
-        hgridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        hgridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hgridMinusButton.toolTipText")); // NOI18N
-        hgridMinusButton.setEnabled(false);
-        hgridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hgridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hgridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hgridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hgridMinusButton.addActionListener(formListener);
+        hGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        hGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridMinusButton.toolTipText")); // NOI18N
+        hGridMinusButton.setEnabled(false);
+        hGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridMinusButton.addActionListener(formListener);
 
-        hgridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        hgridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hgridPlusButton.toolTipText")); // NOI18N
-        hgridPlusButton.setEnabled(false);
-        hgridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hgridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hgridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hgridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hgridPlusButton.addActionListener(formListener);
+        hGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        hGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridPlusButton.toolTipText")); // NOI18N
+        hGridPlusButton.setEnabled(false);
+        hGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridPlusButton.addActionListener(formListener);
 
-        hgridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_relative.png"))); // NOI18N
-        hgridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hgridRelativeButton.toolTipText")); // NOI18N
-        hgridRelativeButton.setEnabled(false);
-        hgridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hgridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hgridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_relative.png"))); // NOI18N
+        hGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridRelativeButton.toolTipText")); // NOI18N
+        hGridRelativeButton.setEnabled(false);
+        hGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridRelativeButton.addActionListener(formListener);
 
-        hgridRemainderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_remainder.png"))); // NOI18N
-        hgridRemainderButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hgridRemainderButton.toolTipText")); // NOI18N
-        hgridRemainderButton.setEnabled(false);
-        hgridRemainderButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hgridRemainderButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hgridRemainderButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridRemainderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_remainder.png"))); // NOI18N
+        hGridRemainderButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridRemainderButton.toolTipText")); // NOI18N
+        hGridRemainderButton.setEnabled(false);
+        hGridRemainderButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hGridRemainderButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hGridRemainderButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridRemainderButton.addActionListener(formListener);
 
-        hgridLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth.png"))); // NOI18N
-        hgridLabel.setPreferredSize(new java.awt.Dimension(15, 10));
+        hGridLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth.png"))); // NOI18N
+        hGridLabel.setPreferredSize(new java.awt.Dimension(15, 10));
 
         javax.swing.GroupLayout gridSizePanelLayout = new javax.swing.GroupLayout(gridSizePanel);
         gridSizePanel.setLayout(gridSizePanelLayout);
@@ -662,26 +784,26 @@ public class GridBagCustomizer implements GridCustomizer {
             gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gridSizePanelLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(vgridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(vGridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(vgridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vgridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(vGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addGroup(gridSizePanelLayout.createSequentialGroup()
-                        .addComponent(hgridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(hgridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(hgridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(hGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(hGridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(vgridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hgridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(vGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
                 .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(vgridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hgridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(vGridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hGridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gridSizePanelLayout.setVerticalGroup(
@@ -690,25 +812,25 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addContainerGap()
                 .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(gridSizePanelLayout.createSequentialGroup()
-                        .addComponent(hgridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hGridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(vgridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(vGridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(gridSizePanelLayout.createSequentialGroup()
-                        .addComponent(hgridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(vgridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(vGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(gridSizePanelLayout.createSequentialGroup()
                         .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(hgridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(hgridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(hGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(hGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, 0)
-                        .addComponent(hgridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(hGridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                        .addComponent(vgridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(vGridLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(gridSizePanelLayout.createSequentialGroup()
-                            .addComponent(vgridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(vGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(0, 0, 0)
-                            .addComponent(vgridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(vGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -741,55 +863,57 @@ public class GridBagCustomizer implements GridCustomizer {
 
         gridPositionPanel.setPreferredSize(new java.awt.Dimension(124, 62));
 
-        xgridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_w.png"))); // NOI18N
-        xgridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xgridMinusButton.toolTipText")); // NOI18N
-        xgridMinusButton.setEnabled(false);
-        xgridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        xgridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        xgridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        xgridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        xgridMinusButton.addActionListener(formListener);
+        xGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_w.png"))); // NOI18N
+        xGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridMinusButton.toolTipText")); // NOI18N
+        xGridMinusButton.setEnabled(false);
+        xGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        xGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        xGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        xGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridMinusButton.addActionListener(formListener);
 
-        ygridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_n.png"))); // NOI18N
-        ygridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.ygridMinusButton.toolTipText")); // NOI18N
-        ygridMinusButton.setEnabled(false);
-        ygridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        ygridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        ygridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        ygridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        ygridMinusButton.addActionListener(formListener);
+        yGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_n.png"))); // NOI18N
+        yGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridMinusButton.toolTipText")); // NOI18N
+        yGridMinusButton.setEnabled(false);
+        yGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        yGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        yGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        yGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridMinusButton.addActionListener(formListener);
 
-        ygridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_s.png"))); // NOI18N
-        ygridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.ygridPlusButton.toolTipText")); // NOI18N
-        ygridPlusButton.setEnabled(false);
-        ygridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        ygridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        ygridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        ygridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        ygridPlusButton.addActionListener(formListener);
+        yGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_s.png"))); // NOI18N
+        yGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridPlusButton.toolTipText")); // NOI18N
+        yGridPlusButton.setEnabled(false);
+        yGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        yGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        yGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        yGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridPlusButton.addActionListener(formListener);
 
-        xgridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_e.png"))); // NOI18N
-        xgridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xgridPlusButton.toolTipText")); // NOI18N
-        xgridPlusButton.setEnabled(false);
-        xgridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        xgridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        xgridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        xgridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        xgridPlusButton.addActionListener(formListener);
+        xGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_e.png"))); // NOI18N
+        xGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridPlusButton.toolTipText")); // NOI18N
+        xGridPlusButton.setEnabled(false);
+        xGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        xGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        xGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        xGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridPlusButton.addActionListener(formListener);
 
-        xgridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridx_relative.png"))); // NOI18N
-        xgridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xgridRelativeButton.toolTipText")); // NOI18N
-        xgridRelativeButton.setEnabled(false);
-        xgridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        xgridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        xgridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridx_relative.png"))); // NOI18N
+        xGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridRelativeButton.toolTipText")); // NOI18N
+        xGridRelativeButton.setEnabled(false);
+        xGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        xGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        xGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridRelativeButton.addActionListener(formListener);
 
-        ygridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridy_relative.png"))); // NOI18N
-        ygridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.ygridRelativeButton.toolTipText")); // NOI18N
-        ygridRelativeButton.setEnabled(false);
-        ygridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        ygridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        ygridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridy_relative.png"))); // NOI18N
+        yGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridRelativeButton.toolTipText")); // NOI18N
+        yGridRelativeButton.setEnabled(false);
+        yGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        yGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        yGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridRelativeButton.addActionListener(formListener);
 
         javax.swing.GroupLayout gridPositionPanelLayout = new javax.swing.GroupLayout(gridPositionPanel);
         gridPositionPanel.setLayout(gridPositionPanelLayout);
@@ -797,17 +921,17 @@ public class GridBagCustomizer implements GridCustomizer {
             gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gridPositionPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(xgridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(xGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(ygridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ygridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(yGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(yGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
-                .addComponent(xgridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(xGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(ygridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(xgridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(yGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(xGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gridPositionPanelLayout.setVerticalGroup(
@@ -816,16 +940,16 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addContainerGap()
                 .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                        .addComponent(xgridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(xgridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(xGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(xGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(gridPositionPanelLayout.createSequentialGroup()
-                            .addComponent(ygridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(yGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(0, 0, 0)
-                            .addComponent(ygridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(yGridPlusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.CENTER, gridPositionPanelLayout.createSequentialGroup()
-                        .addComponent(xgridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(xGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(ygridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(yGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -892,67 +1016,67 @@ public class GridBagCustomizer implements GridCustomizer {
         vInsetLabel.setMinimumSize(new java.awt.Dimension(10, 15));
         vInsetLabel.setPreferredSize(new java.awt.Dimension(10, 15));
 
-        vminusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        vminusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vminusInsetButton.toolTipText")); // NOI18N
-        vminusInsetButton.setEnabled(false);
-        vminusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vminusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vminusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vminusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vminusInsetButton.addActionListener(formListener);
+        vMinusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        vMinusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusInsetButton.toolTipText")); // NOI18N
+        vMinusInsetButton.setEnabled(false);
+        vMinusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vMinusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vMinusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vMinusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vMinusInsetButton.addActionListener(formListener);
 
-        vplusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        vplusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vplusInsetButton.toolTipText")); // NOI18N
-        vplusInsetButton.setEnabled(false);
-        vplusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vplusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vplusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vplusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vplusInsetButton.addActionListener(formListener);
+        vPlusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        vPlusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusInsetButton.toolTipText")); // NOI18N
+        vPlusInsetButton.setEnabled(false);
+        vPlusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vPlusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vPlusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vPlusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vPlusInsetButton.addActionListener(formListener);
 
         hInsetLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/inset_h.png"))); // NOI18N
         hInsetLabel.setMaximumSize(new java.awt.Dimension(15, 10));
         hInsetLabel.setMinimumSize(new java.awt.Dimension(15, 10));
         hInsetLabel.setPreferredSize(new java.awt.Dimension(15, 10));
 
-        hminusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        hminusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hminusInsetButton.toolTipText")); // NOI18N
-        hminusInsetButton.setEnabled(false);
-        hminusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hminusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hminusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hminusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hminusInsetButton.addActionListener(formListener);
+        hMinusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        hMinusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusInsetButton.toolTipText")); // NOI18N
+        hMinusInsetButton.setEnabled(false);
+        hMinusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hMinusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hMinusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hMinusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hMinusInsetButton.addActionListener(formListener);
 
-        hplusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        hplusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hplusInsetButton.toolTipText")); // NOI18N
-        hplusInsetButton.setEnabled(false);
-        hplusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hplusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hplusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hplusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hplusInsetButton.addActionListener(formListener);
+        hPlusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        hPlusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusInsetButton.toolTipText")); // NOI18N
+        hPlusInsetButton.setEnabled(false);
+        hPlusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hPlusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hPlusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hPlusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hPlusInsetButton.addActionListener(formListener);
 
         bInsetLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         bInsetLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/inset_both.png"))); // NOI18N
 
-        bminusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        bminusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.bminusInsetButton.toolTipText")); // NOI18N
-        bminusInsetButton.setEnabled(false);
-        bminusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bminusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bminusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bminusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        bminusInsetButton.addActionListener(formListener);
+        bMinusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        bMinusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.bMinusInsetButton.toolTipText")); // NOI18N
+        bMinusInsetButton.setEnabled(false);
+        bMinusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        bMinusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        bMinusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        bMinusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bMinusInsetButton.addActionListener(formListener);
 
-        bplusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        bplusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.bplusInsetButton.toolTipText")); // NOI18N
-        bplusInsetButton.setEnabled(false);
-        bplusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bplusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bplusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bplusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        bplusInsetButton.addActionListener(formListener);
+        bPlusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        bPlusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.bPlusInsetButton.toolTipText")); // NOI18N
+        bPlusInsetButton.setEnabled(false);
+        bPlusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        bPlusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        bPlusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        bPlusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bPlusInsetButton.addActionListener(formListener);
 
         javax.swing.GroupLayout insetsPanelLayout = new javax.swing.GroupLayout(insetsPanel);
         insetsPanel.setLayout(insetsPanelLayout);
@@ -960,24 +1084,24 @@ public class GridBagCustomizer implements GridCustomizer {
             insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(insetsPanelLayout.createSequentialGroup()
                 .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(vplusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vPlusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(insetsPanelLayout.createSequentialGroup()
                         .addComponent(vInsetLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(vminusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(vMinusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(hInsetLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(insetsPanelLayout.createSequentialGroup()
-                        .addComponent(hminusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hMinusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(hplusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(hPlusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(bInsetLabel)
                 .addGap(0, 0, 0)
                 .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(bplusInsetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bminusInsetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(bPlusInsetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bMinusInsetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         insetsPanelLayout.setVerticalGroup(
@@ -987,100 +1111,100 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(insetsPanelLayout.createSequentialGroup()
                         .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(hplusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(hminusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(hPlusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(hMinusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, 0)
                         .addComponent(hInsetLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                         .addComponent(bInsetLabel)
                         .addGroup(insetsPanelLayout.createSequentialGroup()
-                            .addComponent(bplusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bPlusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(0, 0, 0)
-                            .addComponent(bminusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(bMinusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(vInsetLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(insetsPanelLayout.createSequentialGroup()
-                            .addComponent(vplusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(vminusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(vPlusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(vMinusInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         topLeftCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_tl.png"))); // NOI18N
 
-        vplusTopInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        vplusTopInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vplusTopInsetButton.toolTipText")); // NOI18N
-        vplusTopInsetButton.setEnabled(false);
-        vplusTopInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vplusTopInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vplusTopInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vplusTopInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
-        vplusTopInsetButton.addActionListener(formListener);
+        vPlusTopInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        vPlusTopInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusTopInsetButton.toolTipText")); // NOI18N
+        vPlusTopInsetButton.setEnabled(false);
+        vPlusTopInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vPlusTopInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vPlusTopInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vPlusTopInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vPlusTopInsetButton.addActionListener(formListener);
 
-        vminusTopInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        vminusTopInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vminusTopInsetButton.toolTipText")); // NOI18N
-        vminusTopInsetButton.setEnabled(false);
-        vminusTopInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vminusTopInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vminusTopInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vminusTopInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
-        vminusTopInsetButton.addActionListener(formListener);
+        vMinusTopInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        vMinusTopInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusTopInsetButton.toolTipText")); // NOI18N
+        vMinusTopInsetButton.setEnabled(false);
+        vMinusTopInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vMinusTopInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vMinusTopInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vMinusTopInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vMinusTopInsetButton.addActionListener(formListener);
 
         topRightCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_tr.png"))); // NOI18N
 
-        hplusLeftInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        hplusLeftInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hplusLeftInsetButton.toolTipText")); // NOI18N
-        hplusLeftInsetButton.setEnabled(false);
-        hplusLeftInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hplusLeftInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hplusLeftInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hplusLeftInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
-        hplusLeftInsetButton.addActionListener(formListener);
+        hPlusLeftInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        hPlusLeftInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusLeftInsetButton.toolTipText")); // NOI18N
+        hPlusLeftInsetButton.setEnabled(false);
+        hPlusLeftInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hPlusLeftInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hPlusLeftInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hPlusLeftInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hPlusLeftInsetButton.addActionListener(formListener);
 
-        hminusLeftInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        hminusLeftInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hminusLeftInsetButton.toolTipText")); // NOI18N
-        hminusLeftInsetButton.setEnabled(false);
-        hminusLeftInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hminusLeftInsetButton.setMaximumSize(new java.awt.Dimension(18, 20));
-        hminusLeftInsetButton.setMinimumSize(new java.awt.Dimension(18, 20));
-        hminusLeftInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
-        hminusLeftInsetButton.addActionListener(formListener);
+        hMinusLeftInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        hMinusLeftInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusLeftInsetButton.toolTipText")); // NOI18N
+        hMinusLeftInsetButton.setEnabled(false);
+        hMinusLeftInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hMinusLeftInsetButton.setMaximumSize(new java.awt.Dimension(18, 20));
+        hMinusLeftInsetButton.setMinimumSize(new java.awt.Dimension(18, 20));
+        hMinusLeftInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hMinusLeftInsetButton.addActionListener(formListener);
 
-        hminusRightInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        hminusRightInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hminusRightInsetButton.toolTipText")); // NOI18N
-        hminusRightInsetButton.setEnabled(false);
-        hminusRightInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hminusRightInsetButton.setMaximumSize(new java.awt.Dimension(18, 20));
-        hminusRightInsetButton.setMinimumSize(new java.awt.Dimension(18, 20));
-        hminusRightInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
-        hminusRightInsetButton.addActionListener(formListener);
+        hMinusRightInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        hMinusRightInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusRightInsetButton.toolTipText")); // NOI18N
+        hMinusRightInsetButton.setEnabled(false);
+        hMinusRightInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hMinusRightInsetButton.setMaximumSize(new java.awt.Dimension(18, 20));
+        hMinusRightInsetButton.setMinimumSize(new java.awt.Dimension(18, 20));
+        hMinusRightInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hMinusRightInsetButton.addActionListener(formListener);
 
-        hplusRightInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        hplusRightInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hplusRightInsetButton.toolTipText")); // NOI18N
-        hplusRightInsetButton.setEnabled(false);
-        hplusRightInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hplusRightInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hplusRightInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hplusRightInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
-        hplusRightInsetButton.addActionListener(formListener);
+        hPlusRightInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        hPlusRightInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusRightInsetButton.toolTipText")); // NOI18N
+        hPlusRightInsetButton.setEnabled(false);
+        hPlusRightInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hPlusRightInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hPlusRightInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hPlusRightInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hPlusRightInsetButton.addActionListener(formListener);
 
         bottomLeftCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_bl.png"))); // NOI18N
 
-        vminusBottomInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        vminusBottomInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vminusBottomInsetButton.toolTipText")); // NOI18N
-        vminusBottomInsetButton.setEnabled(false);
-        vminusBottomInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vminusBottomInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vminusBottomInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vminusBottomInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
-        vminusBottomInsetButton.addActionListener(formListener);
+        vMinusBottomInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        vMinusBottomInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusBottomInsetButton.toolTipText")); // NOI18N
+        vMinusBottomInsetButton.setEnabled(false);
+        vMinusBottomInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vMinusBottomInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vMinusBottomInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vMinusBottomInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vMinusBottomInsetButton.addActionListener(formListener);
 
-        vplusBottomInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        vplusBottomInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vplusBottomInsetButton.toolTipText")); // NOI18N
-        vplusBottomInsetButton.setEnabled(false);
-        vplusBottomInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vplusBottomInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vplusBottomInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vplusBottomInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
-        vplusBottomInsetButton.addActionListener(formListener);
+        vPlusBottomInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        vPlusBottomInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusBottomInsetButton.toolTipText")); // NOI18N
+        vPlusBottomInsetButton.setEnabled(false);
+        vPlusBottomInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vPlusBottomInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vPlusBottomInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vPlusBottomInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vPlusBottomInsetButton.addActionListener(formListener);
 
         bottomRightCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_br.png"))); // NOI18N
 
@@ -1095,25 +1219,25 @@ public class GridBagCustomizer implements GridCustomizer {
                         .addComponent(topLeftCorner)
                         .addGap(0, 0, 0))
                     .addGroup(insetsCrossLayout.createSequentialGroup()
-                        .addComponent(hplusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hPlusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(hminusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(hMinusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(insetsCrossLayout.createSequentialGroup()
                         .addComponent(bottomLeftCorner)
                         .addGap(0, 0, 0)))
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(vplusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vminusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vPlusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vMinusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(crossCenter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vminusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vplusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(vMinusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vPlusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(bottomRightCorner)
                     .addGroup(insetsCrossLayout.createSequentialGroup()
-                        .addComponent(hminusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(hMinusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(hplusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(hPlusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(topRightCorner))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1124,25 +1248,25 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(topLeftCorner)
                     .addGroup(insetsCrossLayout.createSequentialGroup()
-                        .addComponent(vplusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(vPlusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
                         .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(vminusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(vMinusTopInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(topRightCorner))))
                 .addGap(0, 0, 0)
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(hplusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hminusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hminusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hPlusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hMinusLeftInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hMinusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(crossCenter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hplusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(hPlusRightInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(bottomRightCorner)
                     .addGroup(insetsCrossLayout.createSequentialGroup()
-                        .addComponent(vminusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(vMinusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(vplusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(vPlusBottomInsetButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(bottomLeftCorner))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1177,137 +1301,6 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGap(0, 0, 0)
                 .addComponent(insetsCross, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-        );
-
-        weightsLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.weightsLabel.text")); // NOI18N
-
-        weightsPanel.setPreferredSize(new java.awt.Dimension(140, 60));
-
-        vweightLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        vweightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_vertical.png"))); // NOI18N
-
-        vminusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        vminusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vminusWeightButton.toolTipText")); // NOI18N
-        vminusWeightButton.setEnabled(false);
-        vminusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vminusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vminusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vminusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vminusWeightButton.addActionListener(formListener);
-
-        vplusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        vplusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vplusWeightButton.toolTipText")); // NOI18N
-        vplusWeightButton.setEnabled(false);
-        vplusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vplusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vplusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vplusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        vplusWeightButton.addActionListener(formListener);
-
-        hweightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_horizontal.png"))); // NOI18N
-
-        hminusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
-        hminusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hminusWeightButton.toolTipText")); // NOI18N
-        hminusWeightButton.setEnabled(false);
-        hminusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hminusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hminusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hminusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hminusWeightButton.addActionListener(formListener);
-
-        hplusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
-        hplusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hplusWeightButton.toolTipText")); // NOI18N
-        hplusWeightButton.setEnabled(false);
-        hplusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hplusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hplusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hplusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        hplusWeightButton.addActionListener(formListener);
-
-        hweightEqualize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_horizontal.png"))); // NOI18N
-        hweightEqualize.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hweightEqualize.toolTipText")); // NOI18N
-        hweightEqualize.setEnabled(false);
-        hweightEqualize.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hweightEqualize.setMaximumSize(new java.awt.Dimension(20, 20));
-        hweightEqualize.setMinimumSize(new java.awt.Dimension(20, 20));
-        hweightEqualize.setPreferredSize(new java.awt.Dimension(20, 20));
-        hweightEqualize.addActionListener(formListener);
-
-        vweightEqualize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_vertical.png"))); // NOI18N
-        vweightEqualize.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vweightEqualize.toolTipText")); // NOI18N
-        vweightEqualize.setEnabled(false);
-        vweightEqualize.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vweightEqualize.setMaximumSize(new java.awt.Dimension(20, 20));
-        vweightEqualize.setMinimumSize(new java.awt.Dimension(20, 20));
-        vweightEqualize.setPreferredSize(new java.awt.Dimension(20, 20));
-        vweightEqualize.addActionListener(formListener);
-
-        javax.swing.GroupLayout weightsPanelLayout = new javax.swing.GroupLayout(weightsPanel);
-        weightsPanel.setLayout(weightsPanelLayout);
-        weightsPanelLayout.setHorizontalGroup(
-            weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(weightsPanelLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(vweightLabel)
-                .addGap(0, 0, 0)
-                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(vplusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vminusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(hweightLabel)
-                    .addGroup(weightsPanelLayout.createSequentialGroup()
-                        .addComponent(hminusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0)
-                        .addComponent(hplusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(hweightEqualize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(vweightEqualize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        weightsPanelLayout.setVerticalGroup(
-            weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(weightsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(vweightLabel)
-                    .addGroup(weightsPanelLayout.createSequentialGroup()
-                        .addComponent(vplusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0)
-                        .addComponent(vminusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(weightsPanelLayout.createSequentialGroup()
-                            .addComponent(hweightEqualize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(0, 0, 0)
-                            .addComponent(vweightEqualize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(weightsPanelLayout.createSequentialGroup()
-                            .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(hplusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(hminusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGap(0, 0, 0)
-                            .addComponent(hweightLabel))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout weightsToolGroupLayout = new javax.swing.GroupLayout(weightsToolGroup);
-        weightsToolGroup.setLayout(weightsToolGroupLayout);
-        weightsToolGroupLayout.setHorizontalGroup(
-            weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(weightsToolGroupLayout.createSequentialGroup()
-                .addComponent(weightsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(weightsSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
-            .addComponent(weightsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        weightsToolGroupLayout.setVerticalGroup(
-            weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(weightsToolGroupLayout.createSequentialGroup()
-                .addGroup(weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(weightsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(weightsLabel))
-                .addGap(0, 0, 0)
-                .addComponent(weightsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         fillToolGroup.setPreferredSize(new java.awt.Dimension(135, 47));
@@ -1368,19 +1361,149 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        weightsToolGroup.setPreferredSize(new java.awt.Dimension(135, 80));
+
+        weightsLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.weightsLabel.text")); // NOI18N
+
+        weightsPanel.setPreferredSize(new java.awt.Dimension(140, 65));
+
+        vWeightLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        vWeightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_vertical.png"))); // NOI18N
+
+        vMinusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        vMinusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusWeightButton.toolTipText")); // NOI18N
+        vMinusWeightButton.setEnabled(false);
+        vMinusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vMinusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vMinusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vMinusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vMinusWeightButton.addActionListener(formListener);
+
+        vPlusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        vPlusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusWeightButton.toolTipText")); // NOI18N
+        vPlusWeightButton.setEnabled(false);
+        vPlusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vPlusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vPlusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vPlusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vPlusWeightButton.addActionListener(formListener);
+
+        hWeightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_horizontal.png"))); // NOI18N
+
+        hMinusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
+        hMinusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusWeightButton.toolTipText")); // NOI18N
+        hMinusWeightButton.setEnabled(false);
+        hMinusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hMinusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hMinusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hMinusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hMinusWeightButton.addActionListener(formListener);
+
+        hPlusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
+        hPlusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusWeightButton.toolTipText")); // NOI18N
+        hPlusWeightButton.setEnabled(false);
+        hPlusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hPlusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hPlusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hPlusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hPlusWeightButton.addActionListener(formListener);
+
+        hWeightEqualizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_horizontal.png"))); // NOI18N
+        hWeightEqualizeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hWeightEqualizeButton.toolTipText")); // NOI18N
+        hWeightEqualizeButton.setEnabled(false);
+        hWeightEqualizeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hWeightEqualizeButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        hWeightEqualizeButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        hWeightEqualizeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hWeightEqualizeButton.addActionListener(formListener);
+
+        vWeightEqualizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_vertical.png"))); // NOI18N
+        vWeightEqualizeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vWeightEqualizeButton.toolTipText")); // NOI18N
+        vWeightEqualizeButton.setEnabled(false);
+        vWeightEqualizeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vWeightEqualizeButton.setMaximumSize(new java.awt.Dimension(20, 20));
+        vWeightEqualizeButton.setMinimumSize(new java.awt.Dimension(20, 20));
+        vWeightEqualizeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vWeightEqualizeButton.addActionListener(formListener);
+
+        javax.swing.GroupLayout weightsPanelLayout = new javax.swing.GroupLayout(weightsPanel);
+        weightsPanel.setLayout(weightsPanelLayout);
+        weightsPanelLayout.setHorizontalGroup(
+            weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(weightsPanelLayout.createSequentialGroup()
+                .addComponent(vWeightLabel)
+                .addGap(0, 0, 0)
+                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(vPlusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vMinusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(hWeightLabel)
+                    .addGroup(weightsPanelLayout.createSequentialGroup()
+                        .addComponent(hMinusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, 0)
+                        .addComponent(hPlusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(hWeightEqualizeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vWeightEqualizeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        weightsPanelLayout.setVerticalGroup(
+            weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(weightsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(vWeightLabel)
+                    .addGroup(weightsPanelLayout.createSequentialGroup()
+                        .addComponent(vPlusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, 0)
+                        .addComponent(vMinusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(weightsPanelLayout.createSequentialGroup()
+                            .addComponent(hWeightEqualizeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, 0)
+                            .addComponent(vWeightEqualizeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(weightsPanelLayout.createSequentialGroup()
+                            .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(hPlusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(hMinusWeightButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGap(0, 0, 0)
+                            .addComponent(hWeightLabel))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout weightsToolGroupLayout = new javax.swing.GroupLayout(weightsToolGroup);
+        weightsToolGroup.setLayout(weightsToolGroupLayout);
+        weightsToolGroupLayout.setHorizontalGroup(
+            weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(weightsToolGroupLayout.createSequentialGroup()
+                .addComponent(weightsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(weightsSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
+            .addComponent(weightsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        weightsToolGroupLayout.setVerticalGroup(
+            weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(weightsToolGroupLayout.createSequentialGroup()
+                .addGroup(weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(weightsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(weightsLabel))
+                .addGap(0, 0, 0)
+                .addComponent(weightsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(weightsToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(insetsToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(fillToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, 0))))
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(weightsToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(insetsToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(fillToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1389,7 +1512,7 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGap(0, 0, 0)
                 .addComponent(fillToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(weightsToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(weightsToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1453,107 +1576,107 @@ public class GridBagCustomizer implements GridCustomizer {
             else if (evt.getSource() == bidiAnchorButton) {
                 GridBagCustomizer.this.bidiAnchorButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vminusPaddingButton) {
-                GridBagCustomizer.this.vminusPaddingButtonActionPerformed(evt);
+            else if (evt.getSource() == vMinusPaddingButton) {
+                GridBagCustomizer.this.vMinusPaddingButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vplusPaddingButton) {
-                GridBagCustomizer.this.vplusPaddingButtonActionPerformed(evt);
+            else if (evt.getSource() == vPlusPaddingButton) {
+                GridBagCustomizer.this.vPlusPaddingButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hplusPaddingButton) {
-                GridBagCustomizer.this.hplusPaddingButtonActionPerformed(evt);
+            else if (evt.getSource() == hPlusPaddingButton) {
+                GridBagCustomizer.this.hPlusPaddingButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hminusPaddingButton) {
-                GridBagCustomizer.this.hminusPaddingButtonActionPerformed(evt);
+            else if (evt.getSource() == hMinusPaddingButton) {
+                GridBagCustomizer.this.hMinusPaddingButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == bminusPaddingButton) {
-                GridBagCustomizer.this.bminusPaddingButtonActionPerformed(evt);
+            else if (evt.getSource() == bMinusPaddingButton) {
+                GridBagCustomizer.this.bMinusPaddingButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == bplusPaddingButton) {
-                GridBagCustomizer.this.bplusPaddingButtonActionPerformed(evt);
+            else if (evt.getSource() == bPlusPaddingButton) {
+                GridBagCustomizer.this.bPlusPaddingButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vgridMinusButton) {
-                GridBagCustomizer.this.vgridMinusButtonActionPerformed(evt);
+            else if (evt.getSource() == vGridRelativeButton) {
+                GridBagCustomizer.this.vGridRelativeButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vgridPlusButton) {
-                GridBagCustomizer.this.vgridPlusButtonActionPerformed(evt);
+            else if (evt.getSource() == vGridRemainderButton) {
+                GridBagCustomizer.this.vGridRemainderButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hgridMinusButton) {
-                GridBagCustomizer.this.hgridMinusButtonActionPerformed(evt);
+            else if (evt.getSource() == vGridMinusButton) {
+                GridBagCustomizer.this.vGridMinusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hgridPlusButton) {
-                GridBagCustomizer.this.hgridPlusButtonActionPerformed(evt);
+            else if (evt.getSource() == vGridPlusButton) {
+                GridBagCustomizer.this.vGridPlusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == xgridMinusButton) {
-                GridBagCustomizer.this.xgridMinusButtonActionPerformed(evt);
+            else if (evt.getSource() == hGridMinusButton) {
+                GridBagCustomizer.this.hGridMinusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == ygridMinusButton) {
-                GridBagCustomizer.this.ygridMinusButtonActionPerformed(evt);
+            else if (evt.getSource() == hGridPlusButton) {
+                GridBagCustomizer.this.hGridPlusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == ygridPlusButton) {
-                GridBagCustomizer.this.ygridPlusButtonActionPerformed(evt);
+            else if (evt.getSource() == hGridRelativeButton) {
+                GridBagCustomizer.this.hGridRelativeButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == xgridPlusButton) {
-                GridBagCustomizer.this.xgridPlusButtonActionPerformed(evt);
+            else if (evt.getSource() == hGridRemainderButton) {
+                GridBagCustomizer.this.hGridRemainderButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vminusInsetButton) {
-                GridBagCustomizer.this.vminusInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == xGridMinusButton) {
+                GridBagCustomizer.this.xGridMinusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vplusInsetButton) {
-                GridBagCustomizer.this.vplusInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == yGridMinusButton) {
+                GridBagCustomizer.this.yGridMinusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hminusInsetButton) {
-                GridBagCustomizer.this.hminusInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == yGridPlusButton) {
+                GridBagCustomizer.this.yGridPlusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hplusInsetButton) {
-                GridBagCustomizer.this.hplusInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == xGridPlusButton) {
+                GridBagCustomizer.this.xGridPlusButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == bminusInsetButton) {
-                GridBagCustomizer.this.bminusInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == xGridRelativeButton) {
+                GridBagCustomizer.this.xGridRelativeButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == bplusInsetButton) {
-                GridBagCustomizer.this.bplusInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == yGridRelativeButton) {
+                GridBagCustomizer.this.yGridRelativeButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vplusTopInsetButton) {
-                GridBagCustomizer.this.vplusTopInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == vMinusInsetButton) {
+                GridBagCustomizer.this.vMinusInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vminusTopInsetButton) {
-                GridBagCustomizer.this.vminusTopInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == vPlusInsetButton) {
+                GridBagCustomizer.this.vPlusInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hplusLeftInsetButton) {
-                GridBagCustomizer.this.hplusLeftInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == hMinusInsetButton) {
+                GridBagCustomizer.this.hMinusInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hminusLeftInsetButton) {
-                GridBagCustomizer.this.hminusLeftInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == hPlusInsetButton) {
+                GridBagCustomizer.this.hPlusInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hminusRightInsetButton) {
-                GridBagCustomizer.this.hminusRightInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == bMinusInsetButton) {
+                GridBagCustomizer.this.bMinusInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hplusRightInsetButton) {
-                GridBagCustomizer.this.hplusRightInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == bPlusInsetButton) {
+                GridBagCustomizer.this.bPlusInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vminusBottomInsetButton) {
-                GridBagCustomizer.this.vminusBottomInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == vPlusTopInsetButton) {
+                GridBagCustomizer.this.vPlusTopInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vplusBottomInsetButton) {
-                GridBagCustomizer.this.vplusBottomInsetButtonActionPerformed(evt);
+            else if (evt.getSource() == vMinusTopInsetButton) {
+                GridBagCustomizer.this.vMinusTopInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vminusWeightButton) {
-                GridBagCustomizer.this.vminusWeightButtonActionPerformed(evt);
+            else if (evt.getSource() == hPlusLeftInsetButton) {
+                GridBagCustomizer.this.hPlusLeftInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vplusWeightButton) {
-                GridBagCustomizer.this.vplusWeightButtonActionPerformed(evt);
+            else if (evt.getSource() == hMinusLeftInsetButton) {
+                GridBagCustomizer.this.hMinusLeftInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hminusWeightButton) {
-                GridBagCustomizer.this.hminusWeightButtonActionPerformed(evt);
+            else if (evt.getSource() == hMinusRightInsetButton) {
+                GridBagCustomizer.this.hMinusRightInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hplusWeightButton) {
-                GridBagCustomizer.this.hplusWeightButtonActionPerformed(evt);
+            else if (evt.getSource() == hPlusRightInsetButton) {
+                GridBagCustomizer.this.hPlusRightInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == hweightEqualize) {
-                GridBagCustomizer.this.hweightEqualizeActionPerformed(evt);
+            else if (evt.getSource() == vMinusBottomInsetButton) {
+                GridBagCustomizer.this.vMinusBottomInsetButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == vweightEqualize) {
-                GridBagCustomizer.this.vweightEqualizeActionPerformed(evt);
+            else if (evt.getSource() == vPlusBottomInsetButton) {
+                GridBagCustomizer.this.vPlusBottomInsetButtonActionPerformed(evt);
             }
             else if (evt.getSource() == hFillButton) {
                 GridBagCustomizer.this.hFillButtonActionPerformed(evt);
@@ -1561,71 +1684,89 @@ public class GridBagCustomizer implements GridCustomizer {
             else if (evt.getSource() == vFillButton) {
                 GridBagCustomizer.this.vFillButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == vMinusWeightButton) {
+                GridBagCustomizer.this.vMinusWeightButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == vPlusWeightButton) {
+                GridBagCustomizer.this.vPlusWeightButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == hMinusWeightButton) {
+                GridBagCustomizer.this.hMinusWeightButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == hPlusWeightButton) {
+                GridBagCustomizer.this.hPlusWeightButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == hWeightEqualizeButton) {
+                GridBagCustomizer.this.hWeightEqualizeButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == vWeightEqualizeButton) {
+                GridBagCustomizer.this.vWeightEqualizeButtonActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
     private void nwAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nwAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.NORTHWEST);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_nwAnchorButtonActionPerformed
 
     private void nAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.NORTH);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_nAnchorButtonActionPerformed
 
     private void neAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_neAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.NORTHEAST);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_neAnchorButtonActionPerformed
 
     private void wAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.WEST);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_wAnchorButtonActionPerformed
 
     private void cAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.CENTER);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_cAnchorButtonActionPerformed
 
     private void eAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.EAST);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_eAnchorButtonActionPerformed
 
     private void swAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.SOUTHWEST);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_swAnchorButtonActionPerformed
 
     private void sAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.SOUTH);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_sAnchorButtonActionPerformed
 
     private void seAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seAnchorButtonActionPerformed
         int anchor = currentAnchorSpecialization(GridBagConstraints.SOUTHEAST);
         selectAnchorButtons(anchor);
-        update(-1, anchor, null, null, null);
+        update(-1, anchor, null, null, null, null, null, null);
     }//GEN-LAST:event_seAnchorButtonActionPerformed
 
     private void hFillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hFillButtonActionPerformed
         boolean hFill = hFillButton.isSelected();
-        update(-1, -1, new FillChange(hFill ? 1 : 0,-1), null, null);
+        update(-1, -1, new FillChange(hFill ? 1 : 0, -1), null, null, null, null, null);
     }//GEN-LAST:event_hFillButtonActionPerformed
 
     private void vFillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vFillButtonActionPerformed
         boolean vFill = vFillButton.isSelected();
-        update(-1, -1, new FillChange(-1, vFill ? 1 : 0), null, null);
+        update(-1, -1, new FillChange(-1, vFill ? 1 : 0), null, null, null, null, null);
     }//GEN-LAST:event_vFillButtonActionPerformed
 
     private void baselineAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_baselineAnchorButtonActionPerformed
@@ -1637,8 +1778,8 @@ public class GridBagCustomizer implements GridCustomizer {
             bidi = true;
         } else
             bidi = bidiAnchorButton.isSelected();
-        update(baseline ? ANCHOR_BASELINE : (bidi ? ANCHOR_BIDI : ANCHOR_ABSOLUTE), -1, null, null, null);
-        updateTooltips();
+        update(baseline ? ANCHOR_BASELINE : (bidi ? ANCHOR_BIDI : ANCHOR_ABSOLUTE), -1, null, null, null, null, null, null);
+        updateAnchorToolTips();
     }//GEN-LAST:event_baselineAnchorButtonActionPerformed
 
     private void bidiAnchorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bidiAnchorButtonActionPerformed
@@ -1651,196 +1792,279 @@ public class GridBagCustomizer implements GridCustomizer {
             baseline = false;
         } else
             baseline = baselineAnchorButton.isSelected();
-        update(baseline ? ANCHOR_BASELINE : (bidi ? ANCHOR_BIDI : ANCHOR_ABSOLUTE), -1, null, null, null);
-        updateTooltips();
+        update(baseline ? ANCHOR_BASELINE : (bidi ? ANCHOR_BIDI : ANCHOR_ABSOLUTE), -1, null, null, null, null, null, null);
+        updateAnchorToolTips();
     }//GEN-LAST:event_bidiAnchorButtonActionPerformed
 
-    private void hminusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hminusPaddingButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, new PaddingChange(-changeby, 0), null);
-    }//GEN-LAST:event_hminusPaddingButtonActionPerformed
+    private void hMinusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hMinusPaddingButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;        
+        update(-1, -1, null, new PaddingChange(-changeBy, 0, shift), null, null, null, null);
+    }//GEN-LAST:event_hMinusPaddingButtonActionPerformed
 
-    private void hplusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hplusPaddingButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, new PaddingChange(changeby, 0), null);
-    }//GEN-LAST:event_hplusPaddingButtonActionPerformed
+    private void hPlusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hPlusPaddingButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, new PaddingChange(changeBy, 0, false), null, null, null, null);
+    }//GEN-LAST:event_hPlusPaddingButtonActionPerformed
 
-    private void bminusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bminusPaddingButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, new PaddingChange(-changeby, -changeby), null);
-    }//GEN-LAST:event_bminusPaddingButtonActionPerformed
+    private void bMinusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bMinusPaddingButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, new PaddingChange(-changeBy, -changeBy, shift), null, null, null, null);
+    }//GEN-LAST:event_bMinusPaddingButtonActionPerformed
 
-    private void bplusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bplusPaddingButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, new PaddingChange(changeby, changeby), null);
-    }//GEN-LAST:event_bplusPaddingButtonActionPerformed
+    private void bPlusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bPlusPaddingButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, new PaddingChange(changeBy, changeBy, false), null, null, null, null);
+    }//GEN-LAST:event_bPlusPaddingButtonActionPerformed
 
-    private void bplusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bplusInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(changeby, changeby, changeby, changeby));
-    }//GEN-LAST:event_bplusInsetButtonActionPerformed
+    private void bPlusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bPlusInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(changeBy, changeBy, changeBy, changeBy, false), null, null, null);
+    }//GEN-LAST:event_bPlusInsetButtonActionPerformed
 
-    private void bminusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bminusInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(-changeby, -changeby, -changeby, -changeby));
-    }//GEN-LAST:event_bminusInsetButtonActionPerformed
+    private void bMinusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bMinusInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(-changeBy, -changeBy, -changeBy, -changeBy, shift), null, null, null);
+    }//GEN-LAST:event_bMinusInsetButtonActionPerformed
 
-    private void hminusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hminusInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, -changeby, 0, -changeby));
-    }//GEN-LAST:event_hminusInsetButtonActionPerformed
+    private void hMinusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hMinusInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(0, -changeBy, 0, -changeBy, shift), null, null, null);
+    }//GEN-LAST:event_hMinusInsetButtonActionPerformed
 
-    private void hplusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hplusInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, changeby, 0, changeby));
-    }//GEN-LAST:event_hplusInsetButtonActionPerformed
+    private void hPlusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hPlusInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(0, changeBy, 0, changeBy, false), null, null, null);
+    }//GEN-LAST:event_hPlusInsetButtonActionPerformed
 
-    private void vminusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vminusInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(-changeby, 0, -changeby, 0));
-    }//GEN-LAST:event_vminusInsetButtonActionPerformed
+    private void vMinusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vMinusInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(-changeBy, 0, -changeBy, 0, shift), null, null, null);
+    }//GEN-LAST:event_vMinusInsetButtonActionPerformed
 
-    private void vplusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vplusInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(changeby, 0, changeby, 0));
-    }//GEN-LAST:event_vplusInsetButtonActionPerformed
+    private void vPlusInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vPlusInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(changeBy, 0, changeBy, 0, false), null, null, null);
+    }//GEN-LAST:event_vPlusInsetButtonActionPerformed
 
-    private void xgridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xgridMinusButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_xgridMinusButtonActionPerformed
+    private void xGridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xGridMinusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, null, new GridPositionChange(-changeBy, NO_INDIRECT_CHANGE, 0, NO_INDIRECT_CHANGE, shift), null, null);
+    }//GEN-LAST:event_xGridMinusButtonActionPerformed
 
-    private void xgridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xgridPlusButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_xgridPlusButtonActionPerformed
+    private void xGridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xGridPlusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, null, new GridPositionChange(changeBy, NO_INDIRECT_CHANGE, 0, NO_INDIRECT_CHANGE, false), null, null);
+    }//GEN-LAST:event_xGridPlusButtonActionPerformed
 
-    private void ygridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ygridPlusButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ygridPlusButtonActionPerformed
+    private void yGridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_yGridPlusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, null, new GridPositionChange(0, NO_INDIRECT_CHANGE, changeBy, NO_INDIRECT_CHANGE, false), null, null);
+    }//GEN-LAST:event_yGridPlusButtonActionPerformed
 
-    private void ygridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ygridMinusButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ygridMinusButtonActionPerformed
+    private void yGridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_yGridMinusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, null, new GridPositionChange(0, NO_INDIRECT_CHANGE, -changeBy, NO_INDIRECT_CHANGE, shift), null, null);
+    }//GEN-LAST:event_yGridMinusButtonActionPerformed
 
-    private void hminusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hminusWeightButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hminusWeightButtonActionPerformed
+    private void hMinusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hMinusWeightButtonActionPerformed
+        double changeBy = STANDARD_WEIGHT_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_WEIGHT_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, null, null, null, new WeightChange(-changeBy, NO_INDIRECT_CHANGE, 0.0d, NO_INDIRECT_CHANGE, shift));
+    }//GEN-LAST:event_hMinusWeightButtonActionPerformed
 
-    private void hplusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hplusWeightButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hplusWeightButtonActionPerformed
+    private void hPlusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hPlusWeightButtonActionPerformed
+        double changeBy = STANDARD_WEIGHT_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_WEIGHT_CHANGE;
+        update(-1, -1, null, null, null, null, null, new WeightChange(changeBy, NO_INDIRECT_CHANGE, 0.0d, NO_INDIRECT_CHANGE, false));
+    }//GEN-LAST:event_hPlusWeightButtonActionPerformed
 
-    private void vminusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vminusWeightButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_vminusWeightButtonActionPerformed
+    private void vMinusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vMinusWeightButtonActionPerformed
+        double changeBy = STANDARD_WEIGHT_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_WEIGHT_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, null, null, null, new WeightChange(0.0d, NO_INDIRECT_CHANGE, -changeBy, NO_INDIRECT_CHANGE, shift));
+    }//GEN-LAST:event_vMinusWeightButtonActionPerformed
 
-    private void vplusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vplusWeightButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_vplusWeightButtonActionPerformed
+    private void vPlusWeightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vPlusWeightButtonActionPerformed
+        double changeBy = STANDARD_WEIGHT_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_WEIGHT_CHANGE;
+        update(-1, -1, null, null, null, null, null, new WeightChange(0.0d, NO_INDIRECT_CHANGE, changeBy, NO_INDIRECT_CHANGE, false));
+    }//GEN-LAST:event_vPlusWeightButtonActionPerformed
 
-    private void vweightEqualizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vweightEqualizeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_vweightEqualizeActionPerformed
+    private void vWeightEqualizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vWeightEqualizeButtonActionPerformed
+        update(-1, -1, null, null, null, null, null, new WeightChange(0.0d, NO_INDIRECT_CHANGE, 0.0d, WEIGHTS_EQUALIZE, false));
+    }//GEN-LAST:event_vWeightEqualizeButtonActionPerformed
 
-    private void hweightEqualizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hweightEqualizeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hweightEqualizeActionPerformed
+    private void hWeightEqualizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hWeightEqualizeButtonActionPerformed
+        update(-1, -1, null, null, null, null, null, new WeightChange(0.0d, WEIGHTS_EQUALIZE, 0.0d, NO_INDIRECT_CHANGE, false));
+    }//GEN-LAST:event_hWeightEqualizeButtonActionPerformed
 
-    private void hgridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hgridPlusButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hgridPlusButtonActionPerformed
+    private void hGridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hGridPlusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, null, null, new GridSizeChange(changeBy, NO_INDIRECT_CHANGE, 0, NO_INDIRECT_CHANGE, false), null);
+    }//GEN-LAST:event_hGridPlusButtonActionPerformed
 
-    private void hgridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hgridMinusButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hgridMinusButtonActionPerformed
+    private void hGridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hGridMinusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, null, null, new GridSizeChange(-changeBy, NO_INDIRECT_CHANGE, 0, NO_INDIRECT_CHANGE, shift), null);
+    }//GEN-LAST:event_hGridMinusButtonActionPerformed
 
-    private void vgridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vgridMinusButtonActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_vgridMinusButtonActionPerformed
+    private void vGridMinusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vGridMinusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, null, null, new GridSizeChange(0, NO_INDIRECT_CHANGE, -changeBy, NO_INDIRECT_CHANGE, shift), null);
+    }//GEN-LAST:event_vGridMinusButtonActionPerformed
 
-    private void vgridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vgridPlusButtonActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_vgridPlusButtonActionPerformed
+    private void vGridPlusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vGridPlusButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, null, null, new GridSizeChange(0, NO_INDIRECT_CHANGE, changeBy, NO_INDIRECT_CHANGE, false), null);
+    }//GEN-LAST:event_vGridPlusButtonActionPerformed
 
-    private void vplusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vplusPaddingButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, new PaddingChange(0, changeby), null);
-}//GEN-LAST:event_vplusPaddingButtonActionPerformed
+    private void vPlusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vPlusPaddingButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, new PaddingChange(0, changeBy, false), null, null, null, null);
+    }//GEN-LAST:event_vPlusPaddingButtonActionPerformed
 
-    private void vminusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vminusPaddingButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, new PaddingChange(0, -changeby), null);
-}//GEN-LAST:event_vminusPaddingButtonActionPerformed
+    private void vMinusPaddingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vMinusPaddingButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, new PaddingChange(0, -changeBy, shift), null, null, null, null);
+    }//GEN-LAST:event_vMinusPaddingButtonActionPerformed
 
-    private void vplusTopInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vplusTopInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(changeby, 0, 0, 0));
-    }//GEN-LAST:event_vplusTopInsetButtonActionPerformed
+    private void vPlusTopInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vPlusTopInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(changeBy, 0, 0, 0, false), null, null, null);
+    }//GEN-LAST:event_vPlusTopInsetButtonActionPerformed
 
-    private void vminusTopInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vminusTopInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(-changeby, 0, 0, 0));
-    }//GEN-LAST:event_vminusTopInsetButtonActionPerformed
+    private void vMinusTopInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vMinusTopInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(-changeBy, 0, 0, 0, shift), null, null, null);
+    }//GEN-LAST:event_vMinusTopInsetButtonActionPerformed
 
-    private void hplusLeftInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hplusLeftInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, changeby, 0, 0));
-    }//GEN-LAST:event_hplusLeftInsetButtonActionPerformed
+    private void hPlusLeftInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hPlusLeftInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(0, changeBy, 0, 0, false), null, null, null);
+    }//GEN-LAST:event_hPlusLeftInsetButtonActionPerformed
 
-    private void hminusLeftInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hminusLeftInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, -changeby, 0, 0));
-    }//GEN-LAST:event_hminusLeftInsetButtonActionPerformed
+    private void hMinusLeftInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hMinusLeftInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(0, -changeBy, 0, 0, shift), null, null, null);
+    }//GEN-LAST:event_hMinusLeftInsetButtonActionPerformed
 
-    private void hminusRightInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hminusRightInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, 0, 0, -changeby));
-    }//GEN-LAST:event_hminusRightInsetButtonActionPerformed
+    private void hMinusRightInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hMinusRightInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(0, 0, 0, -changeBy, shift), null, null, null);
+    }//GEN-LAST:event_hMinusRightInsetButtonActionPerformed
 
-    private void hplusRightInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hplusRightInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, 0, 0, changeby));
-    }//GEN-LAST:event_hplusRightInsetButtonActionPerformed
+    private void hPlusRightInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hPlusRightInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(0, 0, 0, changeBy, false), null, null, null);
+    }//GEN-LAST:event_hPlusRightInsetButtonActionPerformed
 
-    private void vminusBottomInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vminusBottomInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, 0, -changeby, 0));
-    }//GEN-LAST:event_vminusBottomInsetButtonActionPerformed
+    private void vMinusBottomInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vMinusBottomInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        boolean shift = ( evt.getModifiers() & ActionEvent.SHIFT_MASK ) != 0;
+        update(-1, -1, null, null, new InsetsChange(0, 0, -changeBy, 0, shift), null, null, null);
+    }//GEN-LAST:event_vMinusBottomInsetButtonActionPerformed
 
-    private void vplusBottomInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vplusBottomInsetButtonActionPerformed
-        int changeby = 1;
-        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeby = ACCELERATED_SIZE_CHANGE;
-        update(-1, -1, null, null, new Insets(0, 0, changeby, 0));
-    }//GEN-LAST:event_vplusBottomInsetButtonActionPerformed
+    private void vPlusBottomInsetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vPlusBottomInsetButtonActionPerformed
+        int changeBy = STANDARD_SIZE_CHANGE;
+        if (( evt.getModifiers() & ActionEvent.CTRL_MASK ) != 0) changeBy = ACCELERATED_SIZE_CHANGE;
+        update(-1, -1, null, null, new InsetsChange(0, 0, changeBy, 0, false), null, null, null);
+    }//GEN-LAST:event_vPlusBottomInsetButtonActionPerformed
 
-    private int currentAnchorSpecialization(int anchorbutton) {
+    private void hGridRelativeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hGridRelativeButtonActionPerformed
+        boolean hGridRelative = hGridRelativeButton.isSelected();
+        update(-1, -1, null, null, null, null, new GridSizeChange(0, hGridRelative ? CHANGE_RELATIVE : -CHANGE_RELATIVE, 0, NO_INDIRECT_CHANGE, false), null);
+    }//GEN-LAST:event_hGridRelativeButtonActionPerformed
+
+    private void hGridRemainderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hGridRemainderButtonActionPerformed
+        boolean hGridRemainder = hGridRemainderButton.isSelected();
+        update(-1, -1, null, null, null, null, new GridSizeChange(0, hGridRemainder ? CHANGE_REMAINDER : -CHANGE_REMAINDER, 0, NO_INDIRECT_CHANGE, false), null);
+    }//GEN-LAST:event_hGridRemainderButtonActionPerformed
+
+    private void vGridRelativeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vGridRelativeButtonActionPerformed
+        boolean vGridRelative = vGridRelativeButton.isSelected();
+        update(-1, -1, null, null, null, null, new GridSizeChange(0, NO_INDIRECT_CHANGE, 0, vGridRelative ? CHANGE_RELATIVE : -CHANGE_RELATIVE, false), null);
+    }//GEN-LAST:event_vGridRelativeButtonActionPerformed
+
+    private void vGridRemainderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vGridRemainderButtonActionPerformed
+        boolean vGridRemainder = vGridRemainderButton.isSelected();
+        update(-1, -1, null, null, null, null, new GridSizeChange(0, NO_INDIRECT_CHANGE, 0, vGridRemainder ? CHANGE_REMAINDER : -CHANGE_REMAINDER, false), null);
+    }//GEN-LAST:event_vGridRemainderButtonActionPerformed
+
+    private void xGridRelativeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xGridRelativeButtonActionPerformed
+        boolean xGridRelative = xGridRelativeButton.isSelected();
+        update(-1, -1, null, null, null, new GridPositionChange(0, xGridRelative ? CHANGE_RELATIVE : -CHANGE_RELATIVE, 0, NO_INDIRECT_CHANGE, false), null, null);
+    }//GEN-LAST:event_xGridRelativeButtonActionPerformed
+
+    private void yGridRelativeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_yGridRelativeButtonActionPerformed
+        boolean yGridRelative = yGridRelativeButton.isSelected();
+        update(-1, -1, null, null, null, new GridPositionChange(0, NO_INDIRECT_CHANGE, 0, yGridRelative ? CHANGE_RELATIVE : -CHANGE_RELATIVE, false), null, null);
+    }//GEN-LAST:event_yGridRelativeButtonActionPerformed
+
+    /** converts anchor of any type to the currently selected type
+     * (baseline, bi-directional or absolute)
+     * 
+     * @param anchorButton anchor to be converted.
+     * @return converted anchor
+     */
+    private int currentAnchorSpecialization(int anchorButton) {
         boolean baseline = baselineAnchorButton.isSelected();
         boolean bidi = bidiAnchorButton.isSelected();
-        return convertAnchorType(baseline ? ANCHOR_BASELINE : (bidi ? ANCHOR_BIDI : ANCHOR_ABSOLUTE),anchorbutton);
+        return convertAnchorType(baseline ? ANCHOR_BASELINE : (bidi ? ANCHOR_BIDI : ANCHOR_ABSOLUTE),anchorButton);
     }
     
-    private int convertAnchorType(int type, int currentanchor) {
+    /** converts anchor of any type to any other type
+     * (baseline, bi-directional or absolute)
+     * 
+     * @param currentAnchor anchor to be converted.
+     * @param type one of ANCHOR_BASELINE, ANCHOR_BIDI, ANCHOR_ABSOLUTE
+     * @return equivalent anchor of the requested type
+     */
+    private int convertAnchorType(int type, int currentAnchor) {
         switch(type) {
             case ANCHOR_BASELINE: {
-                switch(currentanchor) {
+                switch(currentAnchor) {
                     case GridBagConstraints.NORTHWEST: 
                     case GridBagConstraints.ABOVE_BASELINE_LEADING:
                     case GridBagConstraints.FIRST_LINE_START: return GridBagConstraints.ABOVE_BASELINE_LEADING;
@@ -1871,7 +2095,7 @@ public class GridBagCustomizer implements GridCustomizer {
                 break;
             }
             case ANCHOR_BIDI: {
-                switch(currentanchor) {
+                switch(currentAnchor) {
                     case GridBagConstraints.NORTHWEST: 
                     case GridBagConstraints.ABOVE_BASELINE_LEADING:
                     case GridBagConstraints.FIRST_LINE_START: return GridBagConstraints.FIRST_LINE_START;
@@ -1902,7 +2126,7 @@ public class GridBagCustomizer implements GridCustomizer {
                 break;
             }
             case ANCHOR_ABSOLUTE: {
-                switch(currentanchor) {
+                switch(currentAnchor) {
                     case GridBagConstraints.NORTHWEST: 
                     case GridBagConstraints.ABOVE_BASELINE_LEADING:
                     case GridBagConstraints.FIRST_LINE_START: return GridBagConstraints.NORTHWEST;
@@ -1943,15 +2167,15 @@ public class GridBagCustomizer implements GridCustomizer {
     private javax.swing.JPanel anchorToolGroup;
     private javax.swing.JPanel anchorTypePanel;
     private javax.swing.JLabel bInsetLabel;
+    private javax.swing.JButton bMinusInsetButton;
+    private javax.swing.JButton bMinusPaddingButton;
+    private javax.swing.JLabel bPadLabel;
+    private javax.swing.JButton bPlusInsetButton;
+    private javax.swing.JButton bPlusPaddingButton;
     private javax.swing.JToggleButton baselineAnchorButton;
     private javax.swing.JToggleButton bidiAnchorButton;
-    private javax.swing.JButton bminusInsetButton;
-    private javax.swing.JButton bminusPaddingButton;
     private javax.swing.JLabel bottomLeftCorner;
     private javax.swing.JLabel bottomRightCorner;
-    private javax.swing.JLabel bpadLabel;
-    private javax.swing.JButton bplusInsetButton;
-    private javax.swing.JButton bplusPaddingButton;
     private javax.swing.JToggleButton cAnchorButton;
     private javax.swing.Box.Filler crossCenter;
     private javax.swing.JPanel customizer;
@@ -1969,25 +2193,25 @@ public class GridBagCustomizer implements GridCustomizer {
     private javax.swing.JSeparator gridSizeSeparator;
     private javax.swing.JPanel gridSizeToolGroup;
     private javax.swing.JToggleButton hFillButton;
+    private javax.swing.JLabel hGridLabel;
+    private javax.swing.JButton hGridMinusButton;
+    private javax.swing.JButton hGridPlusButton;
+    private javax.swing.JToggleButton hGridRelativeButton;
+    private javax.swing.JToggleButton hGridRemainderButton;
     private javax.swing.JLabel hInsetLabel;
-    private javax.swing.JLabel hgridLabel;
-    private javax.swing.JButton hgridMinusButton;
-    private javax.swing.JButton hgridPlusButton;
-    private javax.swing.JToggleButton hgridRelativeButton;
-    private javax.swing.JToggleButton hgridRemainderButton;
-    private javax.swing.JButton hminusInsetButton;
-    private javax.swing.JButton hminusLeftInsetButton;
-    private javax.swing.JButton hminusPaddingButton;
-    private javax.swing.JButton hminusRightInsetButton;
-    private javax.swing.JButton hminusWeightButton;
-    private javax.swing.JLabel hpadLabel;
-    private javax.swing.JButton hplusInsetButton;
-    private javax.swing.JButton hplusLeftInsetButton;
-    private javax.swing.JButton hplusPaddingButton;
-    private javax.swing.JButton hplusRightInsetButton;
-    private javax.swing.JButton hplusWeightButton;
-    private javax.swing.JButton hweightEqualize;
-    private javax.swing.JLabel hweightLabel;
+    private javax.swing.JButton hMinusInsetButton;
+    private javax.swing.JButton hMinusLeftInsetButton;
+    private javax.swing.JButton hMinusPaddingButton;
+    private javax.swing.JButton hMinusRightInsetButton;
+    private javax.swing.JButton hMinusWeightButton;
+    private javax.swing.JLabel hPadLabel;
+    private javax.swing.JButton hPlusInsetButton;
+    private javax.swing.JButton hPlusLeftInsetButton;
+    private javax.swing.JButton hPlusPaddingButton;
+    private javax.swing.JButton hPlusRightInsetButton;
+    private javax.swing.JButton hPlusWeightButton;
+    private javax.swing.JButton hWeightEqualizeButton;
+    private javax.swing.JLabel hWeightLabel;
     private javax.swing.JPanel insetsCross;
     private javax.swing.JLabel insetsLabel;
     private javax.swing.JPanel insetsPanel;
@@ -2008,38 +2232,41 @@ public class GridBagCustomizer implements GridCustomizer {
     private javax.swing.JLabel topLeftCorner;
     private javax.swing.JLabel topRightCorner;
     private javax.swing.JToggleButton vFillButton;
+    private javax.swing.JLabel vGridLabel;
+    private javax.swing.JButton vGridMinusButton;
+    private javax.swing.JButton vGridPlusButton;
+    private javax.swing.JToggleButton vGridRelativeButton;
+    private javax.swing.JToggleButton vGridRemainderButton;
     private javax.swing.JLabel vInsetLabel;
-    private javax.swing.JLabel vgridLabel;
-    private javax.swing.JButton vgridMinusButton;
-    private javax.swing.JButton vgridPlusButton;
-    private javax.swing.JToggleButton vgridRelativeButton;
-    private javax.swing.JToggleButton vgridRemainderButton;
-    private javax.swing.JButton vminusBottomInsetButton;
-    private javax.swing.JButton vminusInsetButton;
-    private javax.swing.JButton vminusPaddingButton;
-    private javax.swing.JButton vminusTopInsetButton;
-    private javax.swing.JButton vminusWeightButton;
-    private javax.swing.JLabel vpadLabel;
-    private javax.swing.JButton vplusBottomInsetButton;
-    private javax.swing.JButton vplusInsetButton;
-    private javax.swing.JButton vplusPaddingButton;
-    private javax.swing.JButton vplusTopInsetButton;
-    private javax.swing.JButton vplusWeightButton;
-    private javax.swing.JButton vweightEqualize;
-    private javax.swing.JLabel vweightLabel;
+    private javax.swing.JButton vMinusBottomInsetButton;
+    private javax.swing.JButton vMinusInsetButton;
+    private javax.swing.JButton vMinusPaddingButton;
+    private javax.swing.JButton vMinusTopInsetButton;
+    private javax.swing.JButton vMinusWeightButton;
+    private javax.swing.JLabel vPadLabel;
+    private javax.swing.JButton vPlusBottomInsetButton;
+    private javax.swing.JButton vPlusInsetButton;
+    private javax.swing.JButton vPlusPaddingButton;
+    private javax.swing.JButton vPlusTopInsetButton;
+    private javax.swing.JButton vPlusWeightButton;
+    private javax.swing.JButton vWeightEqualizeButton;
+    private javax.swing.JLabel vWeightLabel;
     private javax.swing.JToggleButton wAnchorButton;
     private javax.swing.JLabel weightsLabel;
     private javax.swing.JPanel weightsPanel;
     private javax.swing.JSeparator weightsSeparator;
     private javax.swing.JPanel weightsToolGroup;
-    private javax.swing.JButton xgridMinusButton;
-    private javax.swing.JButton xgridPlusButton;
-    private javax.swing.JToggleButton xgridRelativeButton;
-    private javax.swing.JButton ygridMinusButton;
-    private javax.swing.JButton ygridPlusButton;
-    private javax.swing.JToggleButton ygridRelativeButton;
+    private javax.swing.JButton xGridMinusButton;
+    private javax.swing.JButton xGridPlusButton;
+    private javax.swing.JToggleButton xGridRelativeButton;
+    private javax.swing.JButton yGridMinusButton;
+    private javax.swing.JButton yGridPlusButton;
+    private javax.swing.JToggleButton yGridRelativeButton;
     // End of variables declaration//GEN-END:variables
 
+    /** Modifies Anchor pushbuttons selection state to show
+     * which anchor has been set for the currently selected components
+     */
     public void selectAnchorButtons(int anchor)
     {
         nwAnchorButton.setSelected(anchor == GridBagConstraints.NORTHWEST
@@ -2069,213 +2296,11 @@ public class GridBagCustomizer implements GridCustomizer {
                 || anchor == GridBagConstraints.LAST_LINE_END
                 || anchor == GridBagConstraints.BELOW_BASELINE_TRAILING);
     }
-    
-    @Override
-    public void setContext(DesignerContext context) {
-        Set<Component> components = context.getSelectedComponents();
-
-        boolean enablebuttons = !components.isEmpty();
-        if(!enablebuttons) {
-            bidiAnchorButton.setSelected(false);
-            bidiAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi.png", false)); // NOI18N
-            bidiAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAware")); // NOI18N
-            baselineAnchorButton.setSelected(false);
-            baselineAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/baseline.png", false)); // NOI18N
-            baselineAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.baselineRelated")); // NOI18N
-            selectAnchorButtons(GridBagConstraints.NONE);
-            hFillButton.setSelected(false);
-            hFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_h.png", false)); // NOI18N
-            hFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.horizontal")); // NOI18N
-            vFillButton.setSelected(false);
-            vFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_v.png", false)); // NOI18N
-            vFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.vertical")); // NOI18N
-        }
-        bidiAnchorButton.setEnabled(enablebuttons);
-        baselineAnchorButton.setEnabled(enablebuttons);
-
-        nwAnchorButton.setEnabled(enablebuttons);
-        nAnchorButton.setEnabled(enablebuttons);
-        neAnchorButton.setEnabled(enablebuttons);
-        wAnchorButton.setEnabled(enablebuttons);
-        cAnchorButton.setEnabled(enablebuttons);
-        eAnchorButton.setEnabled(enablebuttons);
-        swAnchorButton.setEnabled(enablebuttons);
-        sAnchorButton.setEnabled(enablebuttons);
-        seAnchorButton.setEnabled(enablebuttons);
-
-        hminusPaddingButton.setEnabled(enablebuttons);
-        hplusPaddingButton.setEnabled(enablebuttons);
-        vminusPaddingButton.setEnabled(enablebuttons);
-        vplusPaddingButton.setEnabled(enablebuttons);
-        bminusPaddingButton.setEnabled(enablebuttons);
-        bplusPaddingButton.setEnabled(enablebuttons);
-
-        vplusInsetButton.setEnabled(enablebuttons);
-        vminusInsetButton.setEnabled(enablebuttons);
-        hplusInsetButton.setEnabled(enablebuttons);
-        hminusInsetButton.setEnabled(enablebuttons);
-        bplusInsetButton.setEnabled(enablebuttons);
-        bminusInsetButton.setEnabled(enablebuttons);
-        vplusTopInsetButton.setEnabled(enablebuttons);
-        vminusTopInsetButton.setEnabled(enablebuttons);
-        vplusBottomInsetButton.setEnabled(enablebuttons);
-        vminusBottomInsetButton.setEnabled(enablebuttons);
-        hplusLeftInsetButton.setEnabled(enablebuttons);
-        hminusLeftInsetButton.setEnabled(enablebuttons);
-        hplusRightInsetButton.setEnabled(enablebuttons);
-        hminusRightInsetButton.setEnabled(enablebuttons);
-
-        hFillButton.setEnabled(enablebuttons);
-        vFillButton.setEnabled(enablebuttons);
-
-        if(enablebuttons) {
-            GridBagInfoProvider info = manager.getGridInfo();
-
-            /* set fill/bidi/base buttons as selected only if all selected components have the respective property set */
-            int bidi = 0, baseline = 0, center = 0;
-            boolean tlanchor = false, tcanchor = false, tranchor = false;
-            boolean lanchor = false, canchor = false, ranchor = false;
-            boolean blanchor = false, bcanchor = false, branchor = false;
-            int hfill = 0, vfill = 0;
-            for(Component component : components) {
-                int fill = info.getFill(component);
-                if(fill == GridBagConstraints.HORIZONTAL || fill == GridBagConstraints.BOTH) hfill++;
-                if(fill == GridBagConstraints.VERTICAL || fill == GridBagConstraints.BOTH) vfill++;
-                int anchor = info.getAnchor(component);
-                switch(anchor) {
-                    // baseline anchors
-                    case GridBagConstraints.ABOVE_BASELINE_LEADING: tlanchor = true; baseline++; break;
-                    case GridBagConstraints.ABOVE_BASELINE: tcanchor = true; baseline++; break;
-                    case GridBagConstraints.ABOVE_BASELINE_TRAILING: tranchor = true; baseline++; break;
-                    case GridBagConstraints.BASELINE_LEADING: lanchor = true; baseline++; break;
-                    case GridBagConstraints.BASELINE: canchor = true; baseline++; break;
-                    case GridBagConstraints.BASELINE_TRAILING: ranchor = true; baseline++; break;
-                    case GridBagConstraints.BELOW_BASELINE_LEADING: blanchor = true; baseline++; break;
-                    case GridBagConstraints.BELOW_BASELINE: bcanchor = true; baseline++; break;
-                    case GridBagConstraints.BELOW_BASELINE_TRAILING: branchor = true; baseline++; break;
-                    // bidirectional anchors
-                    case GridBagConstraints.FIRST_LINE_START: tlanchor = true; bidi++; break;
-                    case GridBagConstraints.PAGE_START: tcanchor = true; bidi++; break;
-                    case GridBagConstraints.FIRST_LINE_END: tranchor = true; bidi++; break;
-                    case GridBagConstraints.LINE_START: lanchor = true; bidi++; break;
-                    case GridBagConstraints.LINE_END: ranchor = true; bidi++; break;
-                    case GridBagConstraints.LAST_LINE_START: blanchor = true; bidi++; break;
-                    case GridBagConstraints.PAGE_END: bcanchor = true; bidi++; break;
-                    case GridBagConstraints.LAST_LINE_END: branchor = true; bidi++; break;
-                    // absolute anchors
-                    case GridBagConstraints.NORTHWEST: tlanchor = true; break;
-                    case GridBagConstraints.NORTH: tcanchor = true; break;
-                    case GridBagConstraints.NORTHEAST: tranchor = true; break;
-                    case GridBagConstraints.WEST: lanchor = true; break;
-                    case GridBagConstraints.CENTER: canchor = true; center++; break;
-                    case GridBagConstraints.EAST: ranchor = true; break;
-                    case GridBagConstraints.SOUTHWEST: blanchor = true; break;
-                    case GridBagConstraints.SOUTH: bcanchor = true; break;
-                    case GridBagConstraints.SOUTHEAST: branchor = true; break;
-                }
-            }
-            if(center != components.size()) {
-                if(baseline + bidi == 0) {
-                    bidiCenter = false;
-                } else {
-                    bidiCenter = true;
-                }
-            }
-            if(baseline + bidi > 0 && baseline + bidi + center != components.size()) {
-                bidiAnchorButton.setSelected(false);
-                bidiAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi_warning.png", false)); // NOI18N
-                bidiAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAwareWarning")); // NOI18N
-            } else {
-                bidiAnchorButton.setSelected(bidiCenter);
-                bidiAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi.png", false)); // NOI18N
-                bidiAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAware")); // NOI18N
-            }
-            baselineAnchorButton.setSelected(baseline == components.size());
-            if(baseline > 0 && baseline != components.size()) {
-                baselineAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/baseline_warning.png", false)); // NOI18N
-                baselineAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.baselineRelatedWarning")); // NOI18N
-            } else {
-                baselineAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/baseline.png", false)); // NOI18N
-                baselineAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.baselineRelated")); // NOI18N
-            }
-            nwAnchorButton.setSelected(tlanchor);
-            nAnchorButton.setSelected(tcanchor);
-            neAnchorButton.setSelected(tranchor);
-            wAnchorButton.setSelected(lanchor);
-            cAnchorButton.setSelected(canchor);
-            eAnchorButton.setSelected(ranchor);
-            swAnchorButton.setSelected(blanchor);
-            sAnchorButton.setSelected(bcanchor);
-            seAnchorButton.setSelected(branchor);
-            hFillButton.setSelected(hfill == components.size());
-            if(hfill > 0 && hfill != components.size()) {
-                hFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_h_warning.png", false)); // NOI18N
-                hFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.horizontalWarning")); // NOI18N
-            } else {
-                hFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_h.png", false)); // NOI18N
-                hFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.horizontal")); // NOI18N
-            }
-            vFillButton.setSelected(vfill==components.size());
-            if(vfill > 0 && vfill != components.size()) {
-                vFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_v_warning.png", false)); // NOI18N
-                vFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.verticalWarning")); // NOI18N
-            } else {
-                vFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_v.png", false)); // NOI18N
-                vFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.vertical")); // NOI18N
-            }
-        }
-        updateTooltips();
-    }
-
-    @Override
-    public Component getComponent() {
-        return customizer;
-    }
-
-    private void update(final int anchortype, final int anchor, final FillChange fill, final PaddingChange ipad, final Insets insets) {
-        performer.performAction(new AbstractGridAction() {
-            @Override
-            public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
-                GridBagManager gridBagManager = (GridBagManager) gridManager;
-                GridBagInfoProvider info = gridBagManager.getGridInfo();
-                int columns = info.getColumnCount();
-                int rows = info.getRowCount();
-                GridUtils.removePaddingComponents(gridManager);
-                for(Component component : context.getSelectedComponents()) {
-                    if (anchor != -1) {
-                        gridBagManager.setAnchor(component, anchor);
-                    }
-                    if (anchortype != -1) {
-                        int oldanchor = info.getAnchor(component);
-                        int newanchor = convertAnchorType(anchortype,oldanchor);
-                        if (newanchor != oldanchor) {
-                            gridBagManager.setAnchor(component, newanchor);
-                        }
-                    }
-                    if (fill != null) {
-                        if(fill.hfill != -1) gridBagManager.setHorizontalFill(component, fill.hfill == 1);
-                        if(fill.vfill != -1) gridBagManager.setVerticalFill(component, fill.vfill == 1);
-                    }
-                    if (ipad != null) {
-                        if(ipad.xdiff != 0) gridBagManager.updateIPadX(component, ipad.xdiff);
-                        if(ipad.ydiff != 0) gridBagManager.updateIPadY(component, ipad.ydiff);
-                    }
-                    if (insets != null) {
-                        if(insets.top != 0 || insets.left != 0 || insets.bottom != 0 || insets.right != 0) {
-                            gridBagManager.updateInsets(component, insets);
-                        }
-                    }
-                }
-                gridManager.updateLayout(false);
-                GridUtils.revalidateGrid(gridManager);
-                GridUtils.addPaddingComponents(gridManager, columns, rows);
-                GridUtils.revalidateGrid(gridManager);
-                return null;
-            }
-        });
-    }
-    
-    private void updateTooltips() {
+       
+    /** Updates anchor button ToolTips depending on currently active
+     * anchor type: baseline, bi-directional or absolute
+     */
+    private void updateAnchorToolTips() {
         boolean baseline = baselineAnchorButton.isSelected();
         boolean bidi = bidiAnchorButton.isSelected();
         ResourceBundle bundle = NbBundle.getBundle(GridBagCustomizer.class);
@@ -2315,5 +2340,444 @@ public class GridBagCustomizer implements GridCustomizer {
                     : "GridBagCustomizer.anchor.southEast")); // NOI18N
         seAnchorButton.setToolTipText(bundle.getString(key));
     }
+    
+    /** Updates the state of those pushbuttons in the left
+     * vertical tool box that need to indicate the special "ambiguous"
+     * state marking that some of the currently selected components
+     * have the respective property set while some do not.
+     */
+    private void updateButton(AbstractButton button, boolean nonEmptySelection, boolean allSelectedUnambiguous, String iconWarning, String toolTipWarning, String iconNormal, String toolTipNormal) {
+        button.setSelected(allSelectedUnambiguous);
+        if(nonEmptySelection && !allSelectedUnambiguous) {
+            button.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/" + iconWarning, false)); // NOI18N
+            button.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer." + toolTipWarning)); // NOI18N
+        } else {
+            button.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/" + iconNormal, false)); // NOI18N
+            button.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer." + toolTipNormal)); // NOI18N
+        }
+    }
+
+    /** Updates the state of buttons in the left
+     * vertical tool box to reflect the current component(s) selection.
+     */
+    @Override
+    public void setContext(DesignerContext context) {
+        Set<Component> components = context.getSelectedComponents();
+
+        boolean enableButtons = !components.isEmpty();
+        boolean multiple = components.size() > 1;
+        if(!enableButtons) {
+            bidiAnchorButton.setSelected(false);
+            bidiAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi.png", false)); // NOI18N
+            bidiAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAware")); // NOI18N
+            baselineAnchorButton.setSelected(false);
+            baselineAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/baseline.png", false)); // NOI18N
+            baselineAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.baselineRelated")); // NOI18N
+            selectAnchorButtons(GridBagConstraints.NONE);
+            hFillButton.setSelected(false);
+            hFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_h.png", false)); // NOI18N
+            hFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.horizontal")); // NOI18N
+            vFillButton.setSelected(false);
+            vFillButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_v.png", false)); // NOI18N
+            vFillButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.vertical")); // NOI18N
+            xGridRelativeButton.setSelected(false);
+            xGridRelativeButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridx_relative.png", false)); // NOI18N
+            xGridRelativeButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridRelativeButton.toolTipText")); // NOI18N
+            yGridRelativeButton.setSelected(false);
+            yGridRelativeButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridy_relative.png", false)); // NOI18N
+            yGridRelativeButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridRelativeButton.toolTipText")); // NOI18N
+            hGridRelativeButton.setSelected(false);
+            hGridRelativeButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_relative.png", false)); // NOI18N
+            hGridRelativeButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridRelativeButton.toolTipText")); // NOI18N
+            vGridRelativeButton.setSelected(false);
+            vGridRelativeButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_relative.png", false)); // NOI18N
+            vGridRelativeButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridRelativeButton.toolTipText")); // NOI18N
+            hGridRemainderButton.setSelected(false);
+            hGridRemainderButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_remainder.png", false)); // NOI18N
+            hGridRemainderButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridRemainderButton.toolTipText")); // NOI18N
+            vGridRemainderButton.setSelected(false);
+            vGridRemainderButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_remainder.png", false)); // NOI18N
+            vGridRemainderButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridRemainderButton.toolTipText")); // NOI18N
+        }
+        bidiAnchorButton.setEnabled(enableButtons);
+        baselineAnchorButton.setEnabled(enableButtons);
+
+        nwAnchorButton.setEnabled(enableButtons);
+        nAnchorButton.setEnabled(enableButtons);
+        neAnchorButton.setEnabled(enableButtons);
+        wAnchorButton.setEnabled(enableButtons);
+        cAnchorButton.setEnabled(enableButtons);
+        eAnchorButton.setEnabled(enableButtons);
+        swAnchorButton.setEnabled(enableButtons);
+        sAnchorButton.setEnabled(enableButtons);
+        seAnchorButton.setEnabled(enableButtons);
+
+        hMinusPaddingButton.setEnabled(enableButtons);
+        hPlusPaddingButton.setEnabled(enableButtons);
+        vMinusPaddingButton.setEnabled(enableButtons);
+        vPlusPaddingButton.setEnabled(enableButtons);
+        bMinusPaddingButton.setEnabled(enableButtons);
+        bPlusPaddingButton.setEnabled(enableButtons);
+
+        vPlusInsetButton.setEnabled(enableButtons);
+        vMinusInsetButton.setEnabled(enableButtons);
+        hPlusInsetButton.setEnabled(enableButtons);
+        hMinusInsetButton.setEnabled(enableButtons);
+        bPlusInsetButton.setEnabled(enableButtons);
+        bMinusInsetButton.setEnabled(enableButtons);
+        vPlusTopInsetButton.setEnabled(enableButtons);
+        vMinusTopInsetButton.setEnabled(enableButtons);
+        vPlusBottomInsetButton.setEnabled(enableButtons);
+        vMinusBottomInsetButton.setEnabled(enableButtons);
+        hPlusLeftInsetButton.setEnabled(enableButtons);
+        hMinusLeftInsetButton.setEnabled(enableButtons);
+        hPlusRightInsetButton.setEnabled(enableButtons);
+        hMinusRightInsetButton.setEnabled(enableButtons);
+
+        hFillButton.setEnabled(enableButtons);
+        vFillButton.setEnabled(enableButtons);
+        
+        xGridMinusButton.setEnabled(enableButtons);
+        xGridPlusButton.setEnabled(enableButtons);
+        yGridMinusButton.setEnabled(enableButtons);
+        yGridPlusButton.setEnabled(enableButtons);
+        xGridRelativeButton.setEnabled(enableButtons);
+        yGridRelativeButton.setEnabled(enableButtons);
+        vGridRelativeButton.setEnabled(enableButtons);
+        hGridRelativeButton.setEnabled(enableButtons);
+        vGridRemainderButton.setEnabled(enableButtons);
+        hGridRemainderButton.setEnabled(enableButtons);
+        hGridMinusButton.setEnabled(enableButtons);
+        hGridPlusButton.setEnabled(enableButtons);
+        vGridMinusButton.setEnabled(enableButtons);
+        vGridPlusButton.setEnabled(enableButtons);
+        
+        vPlusWeightButton.setEnabled(enableButtons);
+        vMinusWeightButton.setEnabled(enableButtons);
+        hPlusWeightButton.setEnabled(enableButtons);
+        hMinusWeightButton.setEnabled(enableButtons);
+        
+        hWeightEqualizeButton.setEnabled(multiple);
+        vWeightEqualizeButton.setEnabled(multiple);
+
+        if(enableButtons) {
+            GridBagInfoProvider info = manager.getGridInfo();
+
+            /* set fill/bidi/base buttons as selected only if all selected components have the respective property set */
+            int bidi = 0, baseline = 0, center = 0;
+            boolean tlAnchor = false, tcAnchor = false, trAnchor = false;
+            boolean lAnchor = false, cAnchor = false, rAnchor = false;
+            boolean blAnchor = false, bcAnchor = false, brAnchor = false;
+            int hFill = 0, vFill = 0;
+            int gridXRelative = 0, gridYRelative = 0;
+            int gridWRelative = 0, gridHRelative = 0;
+            int gridWRemainder = 0, gridHRemainder = 0;
+            for(Component component : components) {
+                int fill = info.getFill(component);
+                if(fill == GridBagConstraints.HORIZONTAL || fill == GridBagConstraints.BOTH) hFill++;
+                if(fill == GridBagConstraints.VERTICAL || fill == GridBagConstraints.BOTH) vFill++;
+                if(info.getGridXRelative(component)) gridXRelative++;
+                if(info.getGridYRelative(component)) gridYRelative++;
+                if(info.getGridWidthRelative(component)) gridWRelative++;
+                if(info.getGridHeightRelative(component)) gridHRelative++;
+                if(info.getGridWidthRemainder(component)) gridWRemainder++;
+                if(info.getGridHeightRemainder(component)) gridHRemainder++;
+                int anchor = info.getAnchor(component);
+                switch(anchor) {
+                    // baseline anchors
+                    case GridBagConstraints.ABOVE_BASELINE_LEADING: tlAnchor = true; baseline++; break;
+                    case GridBagConstraints.ABOVE_BASELINE: tcAnchor = true; baseline++; break;
+                    case GridBagConstraints.ABOVE_BASELINE_TRAILING: trAnchor = true; baseline++; break;
+                    case GridBagConstraints.BASELINE_LEADING: lAnchor = true; baseline++; break;
+                    case GridBagConstraints.BASELINE: cAnchor = true; baseline++; break;
+                    case GridBagConstraints.BASELINE_TRAILING: rAnchor = true; baseline++; break;
+                    case GridBagConstraints.BELOW_BASELINE_LEADING: blAnchor = true; baseline++; break;
+                    case GridBagConstraints.BELOW_BASELINE: bcAnchor = true; baseline++; break;
+                    case GridBagConstraints.BELOW_BASELINE_TRAILING: brAnchor = true; baseline++; break;
+                    // bidirectional anchors
+                    case GridBagConstraints.FIRST_LINE_START: tlAnchor = true; bidi++; break;
+                    case GridBagConstraints.PAGE_START: tcAnchor = true; bidi++; break;
+                    case GridBagConstraints.FIRST_LINE_END: trAnchor = true; bidi++; break;
+                    case GridBagConstraints.LINE_START: lAnchor = true; bidi++; break;
+                    case GridBagConstraints.LINE_END: rAnchor = true; bidi++; break;
+                    case GridBagConstraints.LAST_LINE_START: blAnchor = true; bidi++; break;
+                    case GridBagConstraints.PAGE_END: bcAnchor = true; bidi++; break;
+                    case GridBagConstraints.LAST_LINE_END: brAnchor = true; bidi++; break;
+                    // absolute anchors
+                    case GridBagConstraints.NORTHWEST: tlAnchor = true; break;
+                    case GridBagConstraints.NORTH: tcAnchor = true; break;
+                    case GridBagConstraints.NORTHEAST: trAnchor = true; break;
+                    case GridBagConstraints.WEST: lAnchor = true; break;
+                    case GridBagConstraints.CENTER: cAnchor = true; center++; break;
+                    case GridBagConstraints.EAST: rAnchor = true; break;
+                    case GridBagConstraints.SOUTHWEST: blAnchor = true; break;
+                    case GridBagConstraints.SOUTH: bcAnchor = true; break;
+                    case GridBagConstraints.SOUTHEAST: brAnchor = true; break;
+                }
+            }
+            nwAnchorButton.setSelected(tlAnchor);
+            nAnchorButton.setSelected(tcAnchor);
+            neAnchorButton.setSelected(trAnchor);
+            wAnchorButton.setSelected(lAnchor);
+            cAnchorButton.setSelected(cAnchor);
+            eAnchorButton.setSelected(rAnchor);
+            swAnchorButton.setSelected(blAnchor);
+            sAnchorButton.setSelected(bcAnchor);
+            seAnchorButton.setSelected(brAnchor);
+
+            if(center != components.size()) {
+                if(baseline + bidi == 0) {
+                    bidiCenter = false;
+                } else {
+                    bidiCenter = true;
+                }
+            }
+            if(baseline + bidi > 0 && baseline + bidi + center != components.size()) {
+                bidiAnchorButton.setSelected(false);
+                bidiAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi_warning.png", false)); // NOI18N
+                bidiAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAwareWarning")); // NOI18N
+            } else {
+                bidiAnchorButton.setSelected(bidiCenter);
+                bidiAnchorButton.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi.png", false)); // NOI18N
+                bidiAnchorButton.setToolTipText(NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.bidiAware")); // NOI18N
+            }
+            updateButton(baselineAnchorButton, baseline > 0, baseline == components.size(), 
+                         "baseline_warning.png", "anchor.baselineRelatedWarning", 
+                         "baseline.png", "anchor.baselineRelated"); // NOI18N
+            updateButton(hFillButton, hFill > 0, hFill == components.size(), 
+                         "resize_h_warning.png", "fill.horizontalWarning", 
+                         "resize_h.png", "fill.horizontal"); // NOI18N
+            updateButton(vFillButton, vFill > 0, vFill == components.size(), 
+                         "resize_v_warning.png", "fill.verticalWarning", 
+                         "resize_v.png", "fill.vertical"); // NOI18N
+            updateButton(xGridRelativeButton, gridXRelative > 0, gridXRelative == components.size(), 
+                         "gridx_relative_warning.png", "xGridRelativeButtonWarning.toolTipText", 
+                         "gridx_relative.png", "xGridRelativeButton.toolTipText"); // NOI18N
+            updateButton(yGridRelativeButton, gridYRelative > 0, gridYRelative == components.size(), 
+                         "gridy_relative_warning.png", "yGridRelativeButtonWarning.toolTipText", 
+                         "gridy_relative.png", "yGridRelativeButton.toolTipText"); // NOI18N
+            updateButton(hGridRelativeButton, gridWRelative > 0, gridWRelative == components.size(), 
+                         "gridwidth_relative_warning.png", "hGridRelativeButtonWarning.toolTipText", 
+                         "gridwidth_relative.png", "hGridRelativeButton.toolTipText"); // NOI18N
+            updateButton(vGridRelativeButton, gridHRelative > 0, gridHRelative == components.size(), 
+                         "gridheight_relative_warning.png", "vGridRelativeButtonWarning.toolTipText", 
+                         "gridheight_relative.png", "vGridRelativeButton.toolTipText"); // NOI18N
+            updateButton(hGridRemainderButton, gridWRemainder > 0, gridWRemainder == components.size(), 
+                         "gridwidth_remainder_warning.png", "hGridRemainderButtonWarning.toolTipText", 
+                         "gridwidth_remainder.png", "hGridRemainderButton.toolTipText"); // NOI18N
+            updateButton(vGridRemainderButton, gridHRemainder > 0, gridHRemainder == components.size(), 
+                         "gridheight_remainder_warning.png", "vGridRemainderButtonWarning.toolTipText", 
+                         "gridheight_remainder.png", "vGridRemainderButton.toolTipText"); // NOI18N
+        }
+        updateAnchorToolTips();
+    }
+
+    /** Updates property or multiple properties of currently selected components.
+     * Called when a property affecting button is pressed.
+     */
+    private void update(final int anchorType, final int anchor, final FillChange fill, final PaddingChange iPad, final InsetsChange insets, 
+                        final GridPositionChange gridPos, final GridSizeChange gridSize, final WeightChange weight) {
+        performer.performAction(new AbstractGridAction() {
+            @Override
+            public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
+                GridBagManager gridBagManager = (GridBagManager) gridManager;
+                GridBagInfoProvider info = gridBagManager.getGridInfo();
+                int columns = info.getColumnCount();
+                int rows = info.getRowCount();
+                double avgX = 0.0d;
+                double avgY = 0.0d;
+                if ( weight != null && (weight.xNorm != 0 || weight.yNorm != 0) ) {
+                    double noOfComponents = (double)context.getSelectedComponents().size();
+                    if(noOfComponents > 0) {
+                        for(Component component : context.getSelectedComponents()) {
+                            avgX += info.getWeightX(component);
+                            avgY += info.getWeightY(component);
+                        }
+                        avgX /= noOfComponents;
+                        avgY /= noOfComponents;
+                    }
+                }
+                GridUtils.removePaddingComponents(gridManager);
+                for(Component component : context.getSelectedComponents()) {
+                    if (anchor != -1) {
+                        gridBagManager.setAnchor(component, anchor);
+                    }
+                    if (anchorType != -1) {
+                        int oldanchor = info.getAnchor(component);
+                        int newanchor = convertAnchorType(anchorType,oldanchor);
+                        if (newanchor != oldanchor) {
+                            gridBagManager.setAnchor(component, newanchor);
+                        }
+                    }
+                    if (iPad != null) {
+                        updateIPadding(gridBagManager, component, iPad);
+                    }
+                    if (gridSize != null) {
+                        updateGridSize(gridBagManager, info, component, gridSize);
+                    }
+                    if (gridPos != null) {
+                        updateGridPosition(gridBagManager, info, component, gridPos);
+                    }
+                    if (insets != null) {
+                        updateInsets(gridBagManager, component, insets);
+                    }
+                    if (fill != null) {
+                        if (fill.hFill != -1) gridBagManager.setHorizontalFill(component, fill.hFill == 1);
+                        if (fill.vFill != -1) gridBagManager.setVerticalFill(component, fill.vFill == 1);
+                    }
+                    if (weight != null) {
+                        updateWeight(gridBagManager, info, component, weight, avgX, avgY);
+                    }
+                }
+                gridManager.updateLayout(false);
+                GridUtils.revalidateGrid(gridManager);
+                GridUtils.addPaddingComponents(gridManager, columns, rows);
+                GridUtils.revalidateGrid(gridManager);
+                return null;
+            }
+        });
+    }
+
+    /** Updates component internal padding based on PaddingChange
+     */
+    private void updateIPadding(GridBagManager gridBagManager, Component component, PaddingChange iPad) {
+        if (iPad.xDiff != 0) {
+            if (iPad.reset) {
+                gridBagManager.setIPadX(component, 0);
+            } else {
+                gridBagManager.updateIPadX(component, iPad.xDiff);
+            }
+        }
+        if (iPad.yDiff != 0) {
+            if (iPad.reset) {
+                gridBagManager.setIPadY(component, 0);
+            } else {
+                gridBagManager.updateIPadY(component, iPad.yDiff);
+            }
+        }
+    }
+    
+    /** Updates component grid size based on GridSizeChange
+     */
+    private void updateGridSize(GridBagManager gridBagManager, GridBagInfoProvider info, Component component, GridSizeChange gridSize) {
+        if (gridSize.wRelRem == NO_INDIRECT_CHANGE) {
+            if (gridSize.wDiff != 0) {
+                if (gridSize.reset) {
+                    gridBagManager.setGridWidth(component, 1);
+                } else {
+                    gridBagManager.updateGridWidth(component, gridSize.wDiff);
+                }
+            }
+        } else {
+            if (gridSize.wRelRem < 0) { // replace RELATIVE / REMAINDER by current absolute width
+                gridBagManager.setGridWidth(component, info.getGridWidth(component));
+            } else if (gridSize.wRelRem == CHANGE_RELATIVE) {
+                gridBagManager.setGridWidth(component, GridBagConstraints.RELATIVE);
+            } else { // gridSize.wrelrem == CHANGE_REMAINDER
+                gridBagManager.setGridWidth(component, GridBagConstraints.REMAINDER);
+            }
+        }
+        if (gridSize.hRelRem == NO_INDIRECT_CHANGE) {
+            if (gridSize.hDiff != 0) {
+                if (gridSize.reset) {
+                    gridBagManager.setGridHeight(component, 1);
+                } else {
+                    gridBagManager.updateGridHeight(component, gridSize.hDiff);
+                }
+            }
+        } else {
+            if (gridSize.hRelRem < 0) { // replace RELATIVE / REMAINDER by current absolute height
+                gridBagManager.setGridHeight(component, info.getGridHeight(component));
+            } else if (gridSize.hRelRem == CHANGE_RELATIVE) {
+                gridBagManager.setGridHeight(component, GridBagConstraints.RELATIVE);
+            } else { // gridSize.hrelrem == CHANGE_REMAINDER
+                gridBagManager.setGridHeight(component, GridBagConstraints.REMAINDER);
+            }
+        }
+    }
+
+    /** Updates component grid position based on GridPositionChange
+     */
+    private void updateGridPosition(GridBagManager gridBagManager, GridBagInfoProvider info, Component component, GridPositionChange gridPos) {
+        if (gridPos.xRelative == NO_INDIRECT_CHANGE) {
+            if (gridPos.xDiff != 0) {
+                if (gridPos.reset) {
+                    gridBagManager.setGridX(component, 0);
+                } else {
+                    gridBagManager.updateGridX(component, gridPos.xDiff);
+                }
+            }
+        } else {
+            if (gridPos.xRelative == -CHANGE_RELATIVE) { // replace RELATIVE by current absolute position
+                gridBagManager.setGridX(component, info.getGridX(component));
+            } else { // gridPos.xrelative == CHANGE_RELATIVE
+                gridBagManager.setGridX(component, GridBagConstraints.RELATIVE);
+            }
+        }
+        if (gridPos.yRelative == NO_INDIRECT_CHANGE) {
+            if (gridPos.yDiff != 0) {
+                if (gridPos.reset) {
+                    gridBagManager.setGridY(component, 0);
+                } else {
+                    gridBagManager.updateGridY(component, gridPos.yDiff);
+                }
+            }
+        } else {
+            if (gridPos.yRelative == -CHANGE_RELATIVE) { // replace RELATIVE by current absolute position
+                gridBagManager.setGridY(component, info.getGridY(component));
+            } else { // gridPos.yrelative == CHANGE_RELATIVE
+                gridBagManager.setGridY(component, GridBagConstraints.RELATIVE);
+            }
+        }
+    }
+
+    /** Updates component insets based on InsetsChange
+     */
+    private void updateInsets(GridBagManager gridBagManager, Component component, InsetsChange insets) {
+        if (insets.iDiff.top != 0 || insets.iDiff.left != 0 || insets.iDiff.bottom != 0 || insets.iDiff.right != 0) {
+            if (insets.reset) {
+                gridBagManager.resetInsets(component, insets.iDiff.top != 0, insets.iDiff.left != 0, insets.iDiff.bottom != 0, insets.iDiff.right != 0);
+            } else {
+                gridBagManager.updateInsets(component, insets.iDiff);
+            }
+        }
+    }
+
+    /** Updates component weight based on WeightChange
+     */
+    private void updateWeight(GridBagManager gridBagManager, GridBagInfoProvider info, Component component, WeightChange weight, double avgX, double avgY) {
+        if (weight.xNorm == NO_INDIRECT_CHANGE) {
+            if (weight.xDiff != 0.0d) {
+                if (weight.reset) {
+                    gridBagManager.setWeightX(component, 0.0d);
+                } else {
+                    double xWeight = info.getWeightX(component) + weight.xDiff > 0.0d ? info.getWeightX(component) + weight.xDiff : 0.0d;
+                    gridBagManager.setWeightX(component, Math.floor(WEIGHT_NUMERIC_PRECISION * xWeight + 0.5d) / WEIGHT_NUMERIC_PRECISION);
+                }
+            }
+        } else {
+            double xWeight = 0.0d;
+            if (weight.xNorm == WEIGHTS_EQUALIZE) {
+                xWeight = avgX;
+            }
+            gridBagManager.setWeightX(component, Math.floor(WEIGHT_NUMERIC_PRECISION * xWeight + 0.5d) / WEIGHT_NUMERIC_PRECISION);
+        }
+        if (weight.yNorm == NO_INDIRECT_CHANGE) {
+            if (weight.yDiff != 0.0d) {
+                if (weight.reset) {
+                    gridBagManager.setWeightY(component, 0.0d);
+                } else {
+                    double yWeight = info.getWeightY(component) + weight.yDiff > 0.0d ? info.getWeightY(component) + weight.yDiff : 0.0d;
+                    gridBagManager.setWeightY(component, Math.floor(WEIGHT_NUMERIC_PRECISION * yWeight + 0.5d) / WEIGHT_NUMERIC_PRECISION);
+                }
+            }
+        } else {
+            double yWeight = 0.0d;
+            if (weight.yNorm == WEIGHTS_EQUALIZE) {
+                yWeight = avgY;
+            }
+            gridBagManager.setWeightY(component, Math.floor(WEIGHT_NUMERIC_PRECISION * yWeight + 0.5d) / WEIGHT_NUMERIC_PRECISION);
+        }
+    }        
 
 }
