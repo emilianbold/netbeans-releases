@@ -350,7 +350,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                             TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                             if (path == null) {
-                                String message = NbBundle.getMessage(EqualsHashCodeGenerator.class, "ERR_CannotFindOriginalClass");
+                                String message = NbBundle.getMessage(EqualsHashCodeGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
                                 int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
