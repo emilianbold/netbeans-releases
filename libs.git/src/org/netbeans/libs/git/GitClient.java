@@ -167,6 +167,15 @@ public interface GitClient {
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
     
     /**
+     * Exports a given commit in the format accepted by git am
+     * @param commit 
+     * @param out 
+     * @param monitor 
+     * @throws GitException
+     */
+    public void exportCommit (String commit, OutputStream out, ProgressMonitor monitor) throws GitException;
+    
+    /**
      * Exports changes in files under given roots to the given output stream
      * @param roots
      * @param mode
