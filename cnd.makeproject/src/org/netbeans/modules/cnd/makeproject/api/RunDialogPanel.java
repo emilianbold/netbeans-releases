@@ -912,7 +912,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
         if (TRACE_REMOTE_CREATION) {
             System.err.println(projectCreator.getPath()+" "+"--jdkhome "+java+" --netbeans-project="+projectFolderField.getText().trim()+ // NOI18N
-                    " --project-update mode=model");
+                    " --project-update mode=model"); // NOI18N
         }
         ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
                                      , "--jdkhome", java // NOI18N
