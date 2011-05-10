@@ -77,7 +77,12 @@ public abstract class NodeProvider implements Lookup.Provider {
     public NodeProvider(Lookup lookup) {
         this.lookup = lookup;
         changeSupport = new ChangeSupport(this);
-        nodeSet = new TreeSet<Node>();
+        nodeSet = new TreeSet<Node>(new Comparator<Node>() {
+            @Override
+            public int compare(Node n1, Node n2) {
+                return n1.getDisplayName().compareTo(n2.getDisplayName());
+            }
+        });
     }
     
     /**
