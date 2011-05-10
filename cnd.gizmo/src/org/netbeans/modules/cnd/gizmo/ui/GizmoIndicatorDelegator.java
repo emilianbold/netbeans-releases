@@ -53,6 +53,14 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         return serviceInfoStorage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
     }
 
+    private String getProjectHost(DLightSession session) {
+        if (session == null) {
+            return null;
+        }
+        ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
+        return serviceInfoStorage.getValue(GizmoServiceInfo.GIZMO_PROJECT_HOST);
+    }
+    
     private String getPlatform(DLightSession session) {
         if (session == null) {
             return null;
@@ -63,6 +71,8 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
 
     private GizmoIndicatorsTopComponent getComponent(DLightSession newSession) {
         String projectFolder = getProjectFolder(newSession);
+        String projectHost = getProjectHost(newSession);
+        
         //get all opened
         GizmoIndicatorsTopComponent topComponent = GizmoIndicatorsTopComponent.findInstance();
         topComponent.setActionsProvider(this);
@@ -85,7 +95,8 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
                 return tc;
             }
             String sessionPF = getProjectFolder(tcSession);
-            if (sessionPF != null && sessionPF.equals(projectFolder)) {
+            String sessionPH = getProjectHost(tcSession);
+            if (sessionPF != null && sessionPH != null && sessionPF.equals(projectFolder) && sessionPH.equals(projectHost)) {
                 ///and old session is finished
                 if (tcSession != null && (tcSession.getState() == SessionState.ANALYZE || tcSession.getState() == SessionState.CLOSED)) {
                     //reuse

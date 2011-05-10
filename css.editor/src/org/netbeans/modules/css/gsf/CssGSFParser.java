@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.web.common.api.Constants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -82,7 +83,6 @@ public class CssGSFParser extends Parser {
 
     //string which is substituted instead of any 
     //templating language in case of css embedding
-    public static final String GENERATED_CODE = "@@@"; //NOI18N
     private static final String ERROR_MESSAGE_PREFIX = NbBundle.getMessage(CssGSFParser.class, "unexpected_symbols");
 
     @Override
@@ -138,7 +138,7 @@ public class CssGSFParser extends Parser {
     }
 
     public static  boolean containsGeneratedCode(CharSequence text) {
-        return CharSequenceUtilities.indexOf(text, GENERATED_CODE) != -1;
+        return CharSequenceUtilities.indexOf(text, Constants.LANGUAGE_SNIPPET_SEPARATOR) != -1;
     }
 
     private Error createError(ParseException pe, Snapshot snapshot, SimpleNode root) {

@@ -46,6 +46,8 @@ package org.netbeans.modules.web.el;
  * Allows to convert offset between the original and converted expressions.
  * Typical usage is conversion of the xml entity references inside the facelets expressions.
  *
+ * XXX: only shortening patterns (XX->Y) are supported so not rule like (A->BB) will work.
+ * 
  * @todo Make the class pluggable so the xml - jsf entities are not hardcoded.
  * 
  * @author marekfukala
@@ -55,23 +57,33 @@ public class ELPreprocessor {
     /** 
      * Html entity references conversion table.
      */
-    public static String[][] XML_ENTITY_REFS_CONVERSION_TABLE = new String[][]{ //NOI18N
+    public static final String[][] XML_ENTITY_REFS_CONVERSION_TABLE = new String[][]{ //NOI18N
         {"&amp;", "&"}, 
         {"&gt;", ">"}, 
         {"&lt;", "<"},
         {"&quot;", "\""},
-        {"&apos;", "'"}
+        {"&apos;", "'"}        
+    };
+    
+    //escaped chars conversion for attribute values
+    public static String[][] ESCAPED_CHARACTERS = new String[][]{
+        {"\\\\", "\\"},
+        {"\\<", "<"},
+        {"\\>", ">"},
+        {"\\\"", "\""},
+        {"\\'", "'"},
+        {"\\&", "&"},
     };
     
     private final String originalExpression;
-    private final String[][] conversionTable;
+    private final String[][][] conversionTables;
     
     private String preprocessedExpression;
     private final boolean[] diffs;
     
-    public ELPreprocessor(String expression, String[][] conversionTable) {
+    public ELPreprocessor(String expression, String[][]... conversionTables) {
         this.originalExpression = expression;
-        this.conversionTable = conversionTable;
+        this.conversionTables = conversionTables;
         this.diffs = new boolean[originalExpression.length()];
         init();
     }
@@ -109,29 +121,79 @@ public class ELPreprocessor {
     //the algorithm is far from the most effective one, but for relatively small
     //set of the patterns the complexity is acceptable
     private void init() {
+        boolean[] localDiffs = new boolean[diffs.length];
         String result = originalExpression;
-        for(String[] patternPair : conversionTable) {
-            StringBuilder resolved = new StringBuilder();
-            String source = patternPair[0];
-            String dest = patternPair[1];
-            
-            int match;
-            int lastMatchEnd = 0;
-            while((match = result.indexOf(source, lastMatchEnd)) != -1) {
-                resolved.append(result.substring(lastMatchEnd, match));
-                resolved.append(dest);
-                int patternsLenDiff = source.length() - dest.length();
-                for(int i = match; i < match + patternsLenDiff; i++) {
-                    diffs[i] = true;
-                }
+        for(String[][] table : conversionTables) {
+            for(String[] patternPair : table) {
+                //create local diffs copy - needs to be used to properly convert positions during the processing
+                System.arraycopy(diffs, 0, localDiffs, 0, diffs.length);
                 
-                lastMatchEnd = match + source.length();
+                StringBuilder resolved = new StringBuilder();
+                String source = patternPair[0];
+                String dest = patternPair[1];
+
+                assert source.length() >= dest.length() : "no expanding rules supported!"; //NOI18N
+                
+                int match;
+                int lastMatchEnd = 0;
+                while((match = result.indexOf(source, lastMatchEnd)) != -1) {
+                    resolved.append(result.substring(lastMatchEnd, match));
+                    resolved.append(dest);
+                    int originalSourceMatch = getOriginalOffset(match); //we operate on the already modified source text
+                    int patternsLenDiff = source.length() - dest.length();
+                    for(int i = originalSourceMatch; i < originalSourceMatch + patternsLenDiff; i++) {
+                        localDiffs[i] = true;
+                    }
+
+                    lastMatchEnd = match + source.length();
+                }
+                resolved.append(result.substring(lastMatchEnd));
+
+                result = resolved.toString();
+                
+                //set the locally modified diffs to the original diff array
+                //this copying is necessary so the getOriginalOffset() conversion works properly *during* the 
+                //actual source conversion where
+                System.arraycopy(localDiffs, 0, diffs, 0, diffs.length);
             }
-            resolved.append(result.substring(lastMatchEnd));
             
-            result = resolved.toString();
         }
         this.preprocessedExpression = result;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ELPreprocessor.class.getSimpleName());
+        sb.append('(');
+        sb.append(System.identityHashCode(this));
+        sb.append(')');
+        sb.append('\n');
+        for(String[][] table : conversionTables) {
+            sb.append("table:");
+            for(String[] pattern : table) {
+                sb.append('(');
+                sb.append(pattern[0]);
+                sb.append("->");
+                sb.append(pattern[1]);
+                sb.append(')');
+            }
+            sb.append(' ');
+        }
+        sb.append('\n');
+        sb.append("source:");
+        sb.append(getOriginalExpression());
+        sb.append("\n");
+        sb.append("diffs :");
+        for(int i = 0; i < diffs.length; i++) {
+            sb.append(diffs[i] ? "-" : "0");
+        }
+        sb.append("\n");
+        sb.append("result:");
+        sb.append(getPreprocessedExpression());
+        sb.append("\n");
+        
+        return sb.toString();
     }
     
 }

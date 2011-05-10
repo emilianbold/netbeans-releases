@@ -65,6 +65,7 @@ import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -196,7 +197,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
     static class Http extends ConnectionType {
 
-        private HttpPanel panel = new HttpPanel();
+        protected final HttpPanel panel = new HttpPanel();
 
         public Http(Repository repository) {
             super(repository);
@@ -461,6 +462,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
     static class SvnSSHSvnKit extends Http {
         public SvnSSHSvnKit(Repository repository) {
             super(repository);
+            Mnemonics.setLocalizedText(panel.certFileLabel, NbBundle.getMessage(HttpPanel.class, "SvnkitSSHPanel.certFileLabel.text")); // NOI18N
+            panel.certFileLabel.setToolTipText(NbBundle.getMessage(HttpPanel.class, "SvnkitSSHPanel.certFileLabel.toolTipText")); // NOI18N
         }
 
         @Override

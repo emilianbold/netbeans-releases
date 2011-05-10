@@ -73,8 +73,10 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -767,11 +769,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
                 progress.start();
                 try {
-                    String projectParentFolder = projectLocationField.getText().trim();
+                    ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
                     String projectName = projectNameField.getText().trim();
                     String baseDir = projectFolderField.getText().trim();
-                    MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
-                            ExecutionEnvironmentFactory.getLocal().getHost());
+                    MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                            executionEnvironment.getHost());
                     // Working dir
                     String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
                     wd = CndPathUtilitities.toRelativePath(baseDir, wd);
@@ -783,9 +785,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     exe = CndPathUtilitities.normalizeSlashes(exe);
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
-                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
+                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, new FSPath(fileSystem, baseDir));
                     prjParams.setOpenFlag(false)
                              .setConfiguration(conf)
+                             .setHostUID(executionEnvironment.getHost())
                              .setImportantFiles(Collections.<String>singletonList(exe).iterator())
                              .setMakefileName(""); //NOI18N
                     project = ProjectGenerator.createBlankProject(prjParams);
