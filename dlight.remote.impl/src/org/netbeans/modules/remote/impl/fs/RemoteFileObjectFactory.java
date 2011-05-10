@@ -43,11 +43,16 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -58,8 +63,15 @@ public class RemoteFileObjectFactory {
 
     private final ExecutionEnvironment env;
     private final RemoteFileSystem fileSystem;
+
     private final WeakCache<String, RemoteFileObjectBase> fileObjectsCache = new WeakCache<String, RemoteFileObjectBase>();
 
+    /** lock for both fileObjectsCache and pendingListeners */
+    private final Object lock = new Object();
+
+    private final Map<String, List<FileChangeListener>> pendingListeners = 
+            new HashMap<String, List<FileChangeListener>>();
+    
     private final RequestProcessor.Task cleaningTask;
     private static RequestProcessor RP = new RequestProcessor("File objects cache dead entries cleanup", 1); //NOI18N
     private static final int CLEAN_INTERVAL = Integer.getInteger("rfs.cache.cleanup.interval", 10000); //NOI18N
@@ -90,7 +102,7 @@ public class RemoteFileObjectFactory {
         cleaningTask.schedule(CLEAN_INTERVAL);
     }
 
-    private void cleanDeadEntries() {        
+    private void cleanDeadEntries() {
         boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
         if (trace)         {
             int size = fileObjectsCache.size();
@@ -131,7 +143,7 @@ public class RemoteFileObjectFactory {
         }
         fo = RemoteDirectory.createNew(fileSystem, env, parent, remotePath, cacheFile);
         if (fo.isValid()) {
-            RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
+            RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
                 return (RemoteDirectory)result;
             }
@@ -158,7 +170,7 @@ public class RemoteFileObjectFactory {
         }
         fo = RemotePlainFile.createNew(fileSystem, env, parent, remotePath, cacheFile, fileType);
         if (fo.isValid()) {
-            RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
+            RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
                 return (RemotePlainFile)result;
             }
@@ -182,17 +194,69 @@ public class RemoteFileObjectFactory {
 //            fo.invalidate();
 //        }
         RemoteLink fo = RemoteLink.createNew(fileSystem, env, parent, remotePath, link);        
-        RemoteFileObjectBase result = fileObjectsCache.putIfAbsent(remotePath, fo);
+        RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
             // otherwise there already was an object in cache => listener has been already initialized
             if (result == fo) { 
                 ((RemoteLink) result).initListeners();
             }
-            return (RemoteLink) result;
         }
-        fo.initListeners();
-        return fo;
+        return (RemoteLink) result;
+    }
+
+    private RemoteFileObjectBase putIfAbsent(String remotePath, RemoteFileObjectBase fo) {
+        synchronized (lock) {
+            RemoteFileObjectBase prev = fileObjectsCache.get(remotePath);
+            if (prev == null) {
+                List<FileChangeListener> listeners = pendingListeners.remove(remotePath);
+                if (listeners != null) {
+                    for (FileChangeListener l : listeners) {
+                        fo.addFileChangeListener(l);
+                    }
+                }
+                fileObjectsCache.put(remotePath, fo);
+                return fo;
+            } else {
+                return prev;
+            }
+        }
+    }
+    
+    public void addFileChangeListener(String path, FileChangeListener listener) {
+        RemoteFileObjectBase fo = getCachedFileObject(path);
+        if (fo == null) {
+            synchronized (lock) {
+                fo = getCachedFileObject(path);
+                if (fo != null) {
+                    List<FileChangeListener> listeners = pendingListeners.get(path);
+                    if (listeners == null) {
+                        listeners = new ArrayList<FileChangeListener>();
+                        pendingListeners.put(path, listeners);
+                    }
+                    listeners.add(listener);
+                }
+            }
+        } else {
+            fo.addFileChangeListener(listener);
+        }
+    }
+    
+    public void remoteFileChangeListener(String path, FileChangeListener listener) {
+        RemoteFileObjectBase fo = getCachedFileObject(path);
+        if (fo == null) {
+            synchronized (lock) {
+                fo = getCachedFileObject(path);
+                if (fo != null) {
+                    List<FileChangeListener> listeners = pendingListeners.get(path);
+                    if (listeners != null) {
+                        listeners.remove(listener);
+                    }
+                }
+            }
+        } else {
+            fo.removeFileChangeListener(listener);
+        }
     }
 
     /** 
@@ -215,7 +279,7 @@ public class RemoteFileObjectFactory {
             String changedPath = curPath.replaceFirst(path2Rename, newPath);
             fileObjectsCache.remove(curPath, fo);
             fo.renamePath(changedPath);
-            fileObjectsCache.putIfAbsent(changedPath, fo);
+            putIfAbsent(changedPath, fo);
         }
     }
         
@@ -239,8 +303,4 @@ public class RemoteFileObjectFactory {
             }
         }
     }
-
-//    /*package*/ int testGetCacheSize() {
-//        return fileObjectsCache.size();
-//    }
 }

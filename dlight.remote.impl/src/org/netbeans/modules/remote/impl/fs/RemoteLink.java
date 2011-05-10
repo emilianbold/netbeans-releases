@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
 import java.util.HashSet;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -53,7 +54,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class RemoteLink extends RemoteLinkBase {
 
-    private String link;
+    private String normalizedTargetPath;
 
     public static RemoteLink createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
         RemoteLink res = new RemoteLink(fileSystem, execEnv, parent, remotePath, link);
@@ -73,7 +74,7 @@ public final class RemoteLink extends RemoteLinkBase {
         if (!parentPath.startsWith("/")) { // NOI18N
             parentPath = "/" + parentPath; // NOI18N
         }
-        return parentPath + '/' + link; //TODO:rfs cope with ../.. , etc
+        return PathUtilities.normalizeUnixPath(parentPath + '/' + link);
     }
 
     @Override
@@ -85,12 +86,17 @@ public final class RemoteLink extends RemoteLinkBase {
     public RemoteFileObjectBase getDelegate() {
         HashSet<String> antiLoop = new HashSet<String>();
         antiLoop.add(getPath());
-        RemoteFileObjectBase delegate = getFileSystem().findResource(link, antiLoop);
+        RemoteFileObjectBase delegate = getFileSystem().findResource(normalizedTargetPath, antiLoop);
         return delegate;
     }
-        
+
+    @Override
+    protected String getDelegateNormalizedPath() {
+        return normalizedTargetPath;
+    }
+
     /*package*/ final void setLink(String link, FileObject parent) {
-        this.link = normalize(link, parent);
+        this.normalizedTargetPath = normalize(link, parent);
     }
 
     @Override
