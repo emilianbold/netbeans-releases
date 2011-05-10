@@ -675,7 +675,7 @@ public class ElementJavadoc {
                         }
                 }
             }
-        } else {
+        } else if (peDoc.isClass() || peDoc.isInterface() || peDoc.isEnum() || peDoc.isAnnotationType()) {
             PackageDoc pkg = peDoc.containingPackage();
             if (pkg != null) {
                 sb.append("<font size='+0'><b>"); //NOI18N
