@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.web.common.api.Constants;
 
 /**
  *
@@ -65,19 +66,32 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 final class JspELEmbeddingProvider extends EmbeddingProvider {
 
+    private static final String ATTRIBUTE_EL_MARKER = "A"; //NOI18N
+    
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<JspTokenId> sequence = th.tokenSequence(JspTokenId.language());
         List<Embedding> embeddings = new ArrayList<Embedding>();
         sequence.moveStart();
+        boolean inAttributeValueWithEL = false;
         while (sequence.moveNext()) {
             Token t = sequence.token();
+            if (t.id() == JspTokenId.ATTR_VALUE && t.length() == 1 && 
+                    (t.text().charAt(0) == '"' || t.text().charAt(0) == '\'')) {
+                //a quote before/after attribute value with EL inside
+                inAttributeValueWithEL = !inAttributeValueWithEL;
+            }
             if (t.id() == JspTokenId.EL) {
                 embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/x-el")); //NOI18N
+                //XXX hack - there's a need to distinguish between ELs inside or outside of attribute values
+                if(inAttributeValueWithEL) {
+                    embeddings.add(snapshot.create(ATTRIBUTE_EL_MARKER, "text/x-el")); //NOI18N
+                }
+                
                 // just to separate expressions for easier handling in EL parser
-                //XXX hack - The non-public @@@ separator defined in html.editor
-                embeddings.add(snapshot.create("@@@", "text/x-el")); //NOI18N
+                embeddings.add(snapshot.create(Constants.LANGUAGE_SNIPPET_SEPARATOR, "text/x-el")); //NOI18N
+             
             }
         }
         if (embeddings.isEmpty()) {
