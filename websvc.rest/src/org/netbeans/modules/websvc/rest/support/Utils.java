@@ -264,7 +264,7 @@ public class Utils {
                 try {
                     FileObject testFO = rs.generateTestClient(
                             rs.getLocalTargetTestRest(), rs.getBaseURL());
-                    rs.deplpoy();
+                    rs.deploy();
                     if (testFO != null) {
                         URL url = testFO.getURL();
                         if (url != null) {
