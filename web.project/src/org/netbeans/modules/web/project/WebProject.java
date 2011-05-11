@@ -149,6 +149,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -927,10 +928,10 @@ public final class WebProject implements Project {
                         // previously do not ask and use it
                         serverType = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
-                            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-                            if (servInstIDs.length > 0) {
-                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, servInstIDs[0]);
-                                platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.WAR, WebProject.this.getWebModule().getJ2eeProfile());
+                            if (instanceID != null) {
+                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, instanceID);
+                                platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                             }
                         }
                         if (platform == null) {
