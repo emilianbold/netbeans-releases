@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
@@ -328,6 +330,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (lastSelectedProject != null) {
             importer.process(this);
         }
+    }
+
+    @Override
+    public void discoverHeadersByModel(Project project) {
+        DiscoveryManagerImpl.discoverHeadersByModel(project);
     }
 
     private static class ProjectProxyImpl implements ProjectProxy {

@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
@@ -89,12 +90,37 @@ public final class DiscoveryManagerImpl {
     public static final String BUILD_EXEC_KEY = "exec-log"; //NOI18N 
     private static final RequestProcessor RP = new RequestProcessor("Discovery Manager Worker", 1); //NOI18N
     private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
+    private static final Map<NativeProject, CsmProgressListener> listeners2 = new WeakHashMap<NativeProject, CsmProgressListener>();
 
     private DiscoveryManagerImpl() {
     }
 
     public static void projectBuilt(Project project, Map<String, Object> artifacts, boolean isIncremental) {
         RP.post(new DiscoveryWorker(project, artifacts, isIncremental));
+    }
+
+    public static void discoverHeadersByModel(final Project project) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                final NativeProject np = project.getLookup().lookup(NativeProject.class);
+                CsmProgressListener listener = new CsmProgressAdapter() {
+
+                    @Override
+                    public void projectParsingFinished(CsmProject aCsmProject) {
+                        final CsmProject csmProject = CsmModelAccessor.getModel().getProject(np);
+                        if (csmProject != null && csmProject.equals(aCsmProject)) {
+                            CsmListeners.getDefault().removeProgressListener(this);
+                            DiscoveryManagerImpl.listeners2.remove(np);
+                            DiscoveryManagerImpl.fixExcludedHeaderFiles(project, ImportProject.logger);
+                        }
+                    }
+                };
+                DiscoveryManagerImpl.listeners2.put(np, listener);
+                CsmListeners.getDefault().addProgressListener(listener);
+            }
+        });
     }
 
     private static final class DiscoveryWorker implements Runnable {
@@ -165,11 +191,11 @@ public final class DiscoveryManagerImpl {
             CsmProgressListener listener = new CsmProgressAdapter() {
 
                 @Override
-                public void projectParsingFinished(CsmProject project) {
-                    if (csmProject.equals(project)) {
+                public void projectParsingFinished(CsmProject aCsmProject) {
+                    if (csmProject.equals(aCsmProject)) {
                         CsmListeners.getDefault().removeProgressListener(this);
-                        DiscoveryManagerImpl.listeners.remove(project);
-                        DiscoveryManagerImpl.fixExcludedHeaderFiles(DiscoveryWorker.this.project, null);
+                        DiscoveryManagerImpl.listeners.remove(aCsmProject);
+                        DiscoveryManagerImpl.fixExcludedHeaderFiles(DiscoveryWorker.this.project, ImportProject.logger);
                     }
                 }
             };
