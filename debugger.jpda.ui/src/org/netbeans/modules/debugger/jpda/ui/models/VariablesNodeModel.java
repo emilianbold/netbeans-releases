@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -439,6 +440,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             return LOCAL;
         if (node == "NoInfo" || node == "No current thread" || node == "NativeMethodException") // NOI18N
             return null;
+        if (node instanceof Variable) {
+            return LOCAL;
+        }
         throw new UnknownTypeException (node);
     }
     
