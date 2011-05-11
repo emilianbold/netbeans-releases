@@ -68,6 +68,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -160,7 +161,8 @@ public class MissingJavaEEForUnitTestExecutionHint extends AbstractHint {
         } catch (ClassFormatError tt) {
             // OK, show hint to add JavaEE API
         } catch (ClassNotFoundException tt) {
-            // OK, show hint to add JavaEE API
+            // #196713 - ignore this exception; it can happen for example when project classes are not compiled
+            return null;
         }
         
         Tree t = treePath.getLeaf();
