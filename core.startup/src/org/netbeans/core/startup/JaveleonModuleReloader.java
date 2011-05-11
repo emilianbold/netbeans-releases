@@ -44,14 +44,12 @@ package org.netbeans.core.startup;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -113,8 +111,9 @@ class JaveleonModuleReloader {
                 }
             }
         }
-        if(m == null)
+        if(m == null) {
             return false;
+        }
 
         // now find dependent modules which need to be class loader migrated
         dependents = mgr.simulateJaveleonReload(m);
@@ -133,8 +132,9 @@ class JaveleonModuleReloader {
             setupClassLoaderForJaveleonModule(mgr, toRefresh);
             refreshLayer(m3, toRefresh, installer, mgr);
         }
-        // done...
+        // done...      
         System.err.println("Javeleon finished module update...");
+        MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
         ev.log(Events.FINISH_DEPLOY_TEST_MODULE, jar);
         return true;
     }
@@ -177,51 +177,32 @@ class JaveleonModuleReloader {
         }
     }
 
-    private Map<Object, Object[]> retainOpenTopComponents(ClassLoader loader) {
-
-        /*
-        WindowManager manager = WindowManager.getDefault();
-        HashMap<Mode, TopComponent[]> map = new HashMap<Mode, TopComponent[]>();
-        for (Mode mode: WindowManager.getDefault().getModes())
-        map.put(mode, manager.getOpenedTopComponents(mode));
-        return map;
-         */
+    private Set</*TopComponent*/?> getOpenTopComponents(ClassLoader loader) {
          try {
-            Class classWindowManager = loader.loadClass("org.openide.windows.WindowManager");
-            Class classMode = loader.loadClass("org.openide.windows.Mode");
-            Object manager = classWindowManager.getDeclaredMethod("getDefault").invoke(null);
-            Set modes = (Set) classWindowManager.getDeclaredMethod("getModes").invoke(manager);
-            HashMap<Object, Object[]> map = new HashMap<Object, Object[]>();
-            for (Object mode : modes) {
-                map.put(mode, (Object[]) classWindowManager.getDeclaredMethod("getOpenedTopComponents", classMode).invoke(manager, mode));
-            }
-            return map;
+            Class<?> classWindowManager = loader.loadClass("org.openide.windows.WindowManager");
+            Object manager = classWindowManager.getMethod("getDefault").invoke(null);
+            Object registry = classWindowManager.getMethod("getRegistry").invoke(manager);
+            Class<?> classRegistry = loader.loadClass("org.openide.windows.TopComponent$Registry");
+            return (Set) classRegistry.getMethod("getOpened").invoke(registry);
         } catch (Exception ex) {
             //Exceptions.printStackTrace(ex);
-            return Collections.emptyMap();
+            return Collections.emptySet();
         }
     }
 
-    private void restoreOpenTopComponents(final ClassLoader loader, final Map<Object, Object[]> map) {
-        /*
-         for (Map.Entry<Mode, TopComponent[]> entry: map.entrySet())
-            for (TopComponent topComponent: entry.getValue())
-                topComponent.open();
-         */
-
-        if (map == null || map.isEmpty())
+    private void restoreOpenTopComponents(final ClassLoader loader, final Set</*TopComponent*/?> openTCs) {
+        if (openTCs == null || openTCs.isEmpty()) {
             return;
+        }
 
         // TopComponent.open must be called from the AWT thread
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Class classTopComponent = loader.loadClass("org.openide.windows.TopComponent");
-                    for (Map.Entry<Object, Object[]> entry : map.entrySet()) {
-                        for (Object topComponent : entry.getValue()) {
-                            classTopComponent.getDeclaredMethod("open").invoke(topComponent);
-                        }
+                    Class<?> classTopComponent = loader.loadClass("org.openide.windows.TopComponent");
+                    for (Object topComponent : openTCs) {
+                        classTopComponent.getMethod("open").invoke(topComponent);
                     }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -234,27 +215,27 @@ class JaveleonModuleReloader {
     private void refreshLayer(Module original, Module newModule, NbInstaller installer, ModuleManager mgr) {
         try {            
             boolean changed = layersChanged(original, newModule);
-            Map<Object, Object[]> map = null;
+            Set</*TopComponent*/?> openTCs = null;
             // Always refresh the layer. Exsitng instances created from the
             // layer will be retained and their identity preserved in the updated
             // module.
 
             if (changed) {
-                map = retainOpenTopComponents(mgr.getClassLoader());
+                openTCs = getOpenTopComponents(mgr.getClassLoader());
                 Module registeredModule = getAndClearRegisteredModule(original);
-                loadLayers(installer, registeredModule, false);
+                installer.loadLayers(Collections.singletonList(registeredModule), false);
                 //installer.unload(Collections.singletonList(registeredModule));
                 installer.dispose(registeredModule);
             }
             mgr.replaceJaveleonModule(original, newModule);
-            MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
+            
             if (changed) {
                 installer.prepare(newModule);
-                loadLayers(installer, newModule, true);
+                installer.loadLayers(Collections.singletonList(newModule), true);
                 //installer.load(Collections.singletonList(newModule));
                 registerModule(newModule);
                 
-                restoreOpenTopComponents(mgr.getClassLoader(), map);
+                restoreOpenTopComponents(mgr.getClassLoader(), openTCs);
             }
             if (!changed && !(original instanceof JaveleonModule)) {
                 // make sure to register the original module for later unloading
@@ -270,24 +251,6 @@ class JaveleonModuleReloader {
         }
     }
 
-    private void loadLayers(NbInstaller installer, Module m, boolean load) {
-        try {
-            Method loadLayers = NbInstaller.class.getDeclaredMethod("loadLayers", List.class, boolean.class);
-            loadLayers.setAccessible(true);
-            loadLayers.invoke(installer, Collections.singletonList(m), load);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
     private boolean layersChanged(Module m1, Module m2) {
         return ((CRC32Layer(m1) != CRC32Layer(m2)) || (CRC32GeneratedLayer(m1) != CRC32GeneratedLayer(m2)));
     }
@@ -297,13 +260,18 @@ class JaveleonModuleReloader {
             return -1;
         }
         try {
-            CheckedInputStream cis = new CheckedInputStream(layer.openStream(), new CRC32());
-            // Compute the CRC32 checksum
-
-            byte[] buf = new byte[1024];
-            while (cis.read(buf) >= 0) {
+            InputStream is = layer.openStream();
+            try {
+                CheckedInputStream cis = new CheckedInputStream(is, new CRC32());
+                // Compute the CRC32 checksum
+                byte[] buf = new byte[1024];
+                while (cis.read(buf) >= 0) {
+                }
+                cis.close();
+                return cis.getChecksum().getValue();
+            } finally {
+                is.close();
             }
-            return cis.getChecksum().getValue();
         } catch (IOException e) {
             return -1;
         }
