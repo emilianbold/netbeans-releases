@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api.support;
+package org.netbeans.modules.dlight.core.stack.api;
 
 /**
- *
- * @author mt154047
+ * Initially callstacks that are put into StackStorages are represented as List
+ * of CharSequence. Depending on the source of call stack the way of how to 
+ * interpret these lines could differ. 
+ * CallStackEntryParser can be passed to a StackDataStorage in case when callstack
+ * is not in a 'common' form and default stack parser cannot parse it...
+ * 
+ * Also CallStackEntryParser could know about current stack's context and based 
+ * on it parse entries appropriately.. 
  */
-public final class FunctionDatatableDescription {
+public interface CallStackEntryParser {
 
-    private final String functionIDColumnName;
-    private final String functionNameColumnName;
-    private final String offsetColumnName;
-    private final String contextIDColumnName;
-
-    public FunctionDatatableDescription(String functionIDColumnName, String functionNameColumnName, String offsetColumnName, String contextIDColumnName) {
-        this.functionIDColumnName = functionIDColumnName;
-        this.functionNameColumnName = functionNameColumnName;
-        this.offsetColumnName = offsetColumnName;
-        this.contextIDColumnName = contextIDColumnName;
-    }
-
-    public String getFunctionIDColumnName() {
-        return functionIDColumnName;
-    }
-
-    public String getFunctionNameColumnName() {
-        return functionNameColumnName;
-    }
-
-    public String getOffsetColumnName() {
-        return offsetColumnName;
-    }
-
-    public String getContextIDColumnName() {
-        return contextIDColumnName;
-    }
+    /**
+     * 
+     * @param entry - a single entry of a CallStack to be parsed
+     * @return CallStackEntry with all available information resolved
+     */
+    public CallStackEntry parseEntry(CharSequence entry);
 }

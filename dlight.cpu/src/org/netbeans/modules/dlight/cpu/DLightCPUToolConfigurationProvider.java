@@ -131,7 +131,11 @@ public final class DLightCPUToolConfigurationProvider
                     false);
             ((CallersCalleesVisualizerConfiguration) detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
         } else {
-            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
+            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(
+                    SunStudioDCConfiguration.c_name.getColumnName(), 
+                    SunStudioDCConfiguration.c_name.getColumnName(),
+                    null /* offset */, 
+                    null /* context */);
             detailsVisualizerConfigSS = new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadataSS, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
             ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
             ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
@@ -228,7 +232,11 @@ public final class DLightCPUToolConfigurationProvider
             configuration.setColumnsUIMapping(columnsUIMapping);
             return configuration;
         } else {
-            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(nameColumn.getColumnName(), null, nameColumn.getColumnName());
+            FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(
+                    nameColumn.getColumnName(), 
+                    nameColumn.getColumnName(), 
+                    null, /* offset */
+                    null /* context */);
             FunctionsListViewVisualizerConfiguration configuration = new FunctionsListViewVisualizerConfiguration(result, funcDescription, metrics);
             configuration.setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
             configuration.setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
