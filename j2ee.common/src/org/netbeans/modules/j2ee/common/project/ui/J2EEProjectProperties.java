@@ -51,13 +51,16 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
@@ -143,6 +146,32 @@ public final class J2EEProjectProperties {
         setServerProperties(null, ep, epPriv, serverLibraryName, cs, items, serverInstanceID, j2eeProfile, moduleType);
     }
 
+    /**
+     * Finds server instance matching parameters.
+     * TODO Integrate to j2eeserver together with fix for 198372.
+     * 
+     * @param serverType type of the server
+     * @param moduleType type of the module
+     * @param profile java ee profile
+     * @return matching instance url or <code>null</code>
+     * @since 1.64
+     */
+    @CheckForNull
+    public static String getMatchingInstance(String serverType, J2eeModule.Type moduleType, Profile profile) {
+        String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+        for (String instanceID : servInstIDs) {
+            try {
+                J2eePlatform platformLocal = Deployment.getDefault().getServerInstance(instanceID).getJ2eePlatform();
+                if (platformLocal.getSupportedProfiles(moduleType).contains(profile)) {
+                    return instanceID;
+                }
+            } catch (InstanceRemovedException ex) {
+                continue;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Sets all server related properties.
      */
