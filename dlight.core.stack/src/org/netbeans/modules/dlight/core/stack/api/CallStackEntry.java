@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api.support;
+package org.netbeans.modules.dlight.core.stack.api;
+
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 /**
- *
- * @author mt154047
+ * Generally callstack entry could contain following information:
+ * module, offset in a module, function name, offset within the function and
+ * information about sources. 
+ * 
+ * All this data is optional except function name. If this information is 
+ * available at the time when callstack is parsed, it will be stored in a
+ * StackStorage. 
+ * 
+ * @author ak119685
  */
-public final class FunctionDatatableDescription {
+public interface CallStackEntry {
 
-    private final String functionIDColumnName;
-    private final String functionNameColumnName;
-    private final String offsetColumnName;
-    private final String contextIDColumnName;
+    /**
+     * @return a char sequence that represents an 'original' (pre-parsed) stack entry
+     */
+    public CharSequence getOriginalEntry();
 
-    public FunctionDatatableDescription(String functionIDColumnName, String functionNameColumnName, String offsetColumnName, String contextIDColumnName) {
-        this.functionIDColumnName = functionIDColumnName;
-        this.functionNameColumnName = functionNameColumnName;
-        this.offsetColumnName = offsetColumnName;
-        this.contextIDColumnName = contextIDColumnName;
-    }
+    /**
+     * 
+     * @return name or path to a module. could be null
+     */
+    public CharSequence getModulePath();
 
-    public String getFunctionIDColumnName() {
-        return functionIDColumnName;
-    }
+    /**
+     * 
+     * @return offset of the instruction within a module. -1 if unknown
+     */
+    public long getOffsetInModule();
 
-    public String getFunctionNameColumnName() {
-        return functionNameColumnName;
-    }
+    /**
+     * 
+     * @return name of a function. Not NULL.
+     */
+    public CharSequence getFunctionName();
 
-    public String getOffsetColumnName() {
-        return offsetColumnName;
-    }
+    /**
+     * 
+     * @return offset within the function. -1 if unknown
+     */
+    public long getOffsetInFunction();
 
-    public String getContextIDColumnName() {
-        return contextIDColumnName;
-    }
+    /**
+     * 
+     * @return source file info if available or null
+     */
+    public SourceFileInfo getSourceFileInfo();
 }
