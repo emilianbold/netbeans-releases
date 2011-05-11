@@ -40,35 +40,30 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.model;
+package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.Collections;
-import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Resource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 
-public class UtilitiesTest extends NbTestCase {
-
-    public UtilitiesTest(String name) {
-        super(name);
+public class ResourceImplTest extends NbTestCase {
+    
+    public ResourceImplTest(String n) {
+        super(n);
     }
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
     }
 
-    protected @Override Level logLevel() {
-        return Level.FINE;
-    }
-
-    protected @Override String logRoot() {
-        return Utilities.class.getName();
-    }
-
-    public void testPerformPOMModelOperations() throws Exception {
+    public void testIncludes() throws Exception { // #198361
         FileObject pom = TestFileUtils.writeFile(FileUtil.toFileObject(getWorkDir()), "p0m.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n" +
                 "    <modelVersion>4.0.0</modelVersion>\n" +
@@ -78,8 +73,13 @@ public class UtilitiesTest extends NbTestCase {
                 "</project>\n");
         Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
             public @Override void performOperation(POMModel model) {
-                model.getProject().addModule("child1");
-                model.getProject().addModule("child2");
+                Resource res = model.getFactory().createResource();
+                res.setTargetPath("META-INF"); //NOI18N
+                res.setDirectory("src"); //NOI18N
+                res.addInclude("stuff/"); //NOI18N
+                Build build = model.getFactory().createBuild();
+                build.addResource(res);
+                model.getProject().setBuild(build);
             }
         }));
         assertEquals("<project xmlns='http://maven.apache.org/POM/4.0.0'>\n" +
@@ -87,10 +87,17 @@ public class UtilitiesTest extends NbTestCase {
                 "    <groupId>grp</groupId>\n" +
                 "    <artifactId>art</artifactId>\n" +
                 "    <version>1.0</version>\n" +
-                "    <modules>\n" +
-                "        <module>child1</module>\n" +
-                "        <module>child2</module>\n" +
-                "    </modules>\n" +
+                "    <build>\n" +
+                "        <resources>\n" +
+                "            <resource>\n" +
+                "                <targetPath>META-INF</targetPath>\n" +
+                "                <directory>src</directory>\n" +
+                "                <includes>\n" +
+                "                    <include>stuff/</include>\n" +
+                "                </includes>\n" +
+                "            </resource>\n" +
+                "        </resources>\n" +
+                "    </build>\n" +
                 "</project>\n",
                 pom.asText().replace("\r\n", "\n"));
     }

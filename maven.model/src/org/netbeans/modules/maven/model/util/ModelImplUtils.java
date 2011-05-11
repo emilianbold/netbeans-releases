@@ -39,60 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.model.util;
 
-package org.netbeans.modules.maven.model;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.w3c.dom.Element;
 
-import java.util.Collections;
-import java.util.logging.Level;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.test.TestFileUtils;
+public class ModelImplUtils {
 
-public class UtilitiesTest extends NbTestCase {
+    private ModelImplUtils() {}
 
-    public UtilitiesTest(String name) {
-        super(name);
-    }
-
-    protected @Override void setUp() throws Exception {
-        clearWorkDir();
-    }
-
-    protected @Override Level logLevel() {
-        return Level.FINE;
-    }
-
-    protected @Override String logRoot() {
-        return Utilities.class.getName();
-    }
-
-    public void testPerformPOMModelOperations() throws Exception {
-        FileObject pom = TestFileUtils.writeFile(FileUtil.toFileObject(getWorkDir()), "p0m.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n" +
-                "    <modelVersion>4.0.0</modelVersion>\n" +
-                "    <groupId>grp</groupId>\n" +
-                "    <artifactId>art</artifactId>\n" +
-                "    <version>1.0</version>\n" +
-                "</project>\n");
-        Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
-            public @Override void performOperation(POMModel model) {
-                model.getProject().addModule("child1");
-                model.getProject().addModule("child2");
-            }
-        }));
-        assertEquals("<project xmlns='http://maven.apache.org/POM/4.0.0'>\n" +
-                "    <modelVersion>4.0.0</modelVersion>\n" +
-                "    <groupId>grp</groupId>\n" +
-                "    <artifactId>art</artifactId>\n" +
-                "    <version>1.0</version>\n" +
-                "    <modules>\n" +
-                "        <module>child1</module>\n" +
-                "        <module>child2</module>\n" +
-                "    </modules>\n" +
-                "</project>\n",
-                pom.asText().replace("\r\n", "\n"));
+    /**
+     * Checks whether a component has a given local name.
+     * @param c an element in the document
+     * @param name a local name
+     * @return true if the names match
+     */
+    public static boolean hasName(DocumentComponent<?> c, String name) { // #198361
+        Element peer = c.getPeer();
+        return name.equals(peer.getLocalName()) || name.equals(peer.getNodeName());
     }
 
 }
