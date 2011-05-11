@@ -263,7 +263,7 @@ public class CompletionTestPerformer {
         FileObject test = CndFileUtils.toFileObject(testFile);
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath(), true, false);
         if (test == null || !test.isValid() || csmFile == null) {
-            throw new IllegalStateException("Given test file does not exist.");
+            throw new IllegalStateException("Given test file does not exist " + testFile);
         }
         log.println("File found: " + csmFile);
         return test;
