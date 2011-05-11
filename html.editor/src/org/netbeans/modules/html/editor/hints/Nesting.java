@@ -42,12 +42,18 @@
 package org.netbeans.modules.html.editor.hints;
 
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
  *
  * @author marekfukala
  */
 public class Nesting extends PatternRule {
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.ERROR;
+    }
 
     private static final String[] PATTERNS_SOURCES = new String[]{
         "Heading cannot be a child of another heading.",
@@ -68,7 +74,7 @@ public class Nesting extends PatternRule {
         "Saw an end tag after .*? had been closed.",
         "No element .*? to close.",
         "End tag .*? violates nesting rules.",
-        
+        "Element .*? not allowed as child of element .*? in this context."
         
         
     }; //NOI18N

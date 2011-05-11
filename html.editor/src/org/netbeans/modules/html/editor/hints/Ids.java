@@ -64,13 +64,6 @@ public class Ids extends PatternRule {
     public Pattern[] getPatterns() {
         return PATTERNS;
     }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
-    }
-    
-    
     
 
 }
