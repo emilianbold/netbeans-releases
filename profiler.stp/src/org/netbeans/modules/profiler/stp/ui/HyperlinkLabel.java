@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui;
+package org.netbeans.modules.profiler.stp.ui;
 
 import org.netbeans.lib.profiler.ui.components.HTMLLabel;
 import java.awt.Font;
@@ -79,7 +79,7 @@ public class HyperlinkLabel extends HTMLLabel {
                 }
 
                 public void focusLost(FocusEvent e) {
-                    HyperlinkLabel.this.setText(org.netbeans.modules.profiler.ui.HyperlinkLabel.this.normalText);
+                    HyperlinkLabel.this.setText(org.netbeans.modules.profiler.stp.ui.HyperlinkLabel.this.normalText);
                 }
             });
 

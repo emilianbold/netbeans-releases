@@ -41,16 +41,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.lib.profiler.ui.components.JExtendedRadioButton;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.DialogDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -64,7 +62,6 @@ import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -79,6 +76,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -139,9 +137,9 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
     private static NewCustomConfiguration defaultInstance;
 
     // --- UI components declaration ---------------------------------------------
-    private static final Icon ICON_MONITOR = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/telemetryWindow.png", false); // NOI18N
-    private static final Icon ICON_CPU = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/cpu.png", false); // NOI18N
-    private static final Icon ICON_MEMORY = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/memory.png", false); // NOI18N
+    private static final Icon ICON_MONITOR = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/stp/resources/monitorSmall.png", false); // NOI18N
+    private static final Icon ICON_CPU = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/stp/resources/cpuSmall.png", false); // NOI18N
+    private static final Icon ICON_MEMORY = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/stp/resources/memorySmall.png", false); // NOI18N
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -180,7 +178,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         final DialogDescriptor dd = new DialogDescriptor(ncc,
                                                          MessageFormat.format(DUPLICATE_CONFIG_DIALOG_CAPTION,
                                                                               new Object[] { originalConfiguration.getSettingsName() }));
-        final Dialog d = ProfilerDialogs.createDialog(dd);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
 
@@ -199,7 +197,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         ncc.setupUniversalConfiguration(availableConfigurations);
 
         final DialogDescriptor dd = new DialogDescriptor(ncc, NEW_CONFIG_DIALOG_CAPTION);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
 
@@ -233,7 +231,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         final DialogDescriptor dd = new DialogDescriptor(ncc, NEW_CONFIG_DIALOG_CAPTION + typeString, true,
                                                          new Object[] { ncc.okButton, DialogDescriptor.CANCEL_OPTION },
                                                          ncc.okButton, 0, null, null);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
 
@@ -254,7 +252,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         final DialogDescriptor dd = new DialogDescriptor(ncc,
                                                          MessageFormat.format(RENAME_CONFIG_DIALOG_CAPTION,
                                                                               new Object[] { originalConfiguration.getSettingsName() }));
-        final Dialog d = ProfilerDialogs.createDialog(dd);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
 

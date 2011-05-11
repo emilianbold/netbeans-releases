@@ -41,21 +41,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
-import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsDisplayer;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+//import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsDisplayer;
+//import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.openide.filesystems.FileObject;
 import java.util.Properties;
 import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.lib.profiler.TargetAppRunner;
 
 
 /**
@@ -77,7 +76,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         private FileObject profiledFile;
         private ProfilingSettings settings;
         private Project project;
-        private ProjectTypeProfiler ptp;
+//        private ProjectTypeProfiler ptp;
         private Vector<ChangeListener> changeListeners = new Vector();
         private boolean enableOverride;
         private boolean internalChange = false;
@@ -108,22 +107,23 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
 
         public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride) {
-            this.project = project;
-            ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-            this.profiledFile = profiledFile;
-            this.enableOverride = enableOverride;
-            this.isAttach = isAttach;
-            this.isModify = isModify;
+//            this.project = project;
+//            ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//            this.profiledFile = profiledFile;
+//            this.enableOverride = enableOverride;
+//            this.isAttach = isAttach;
+//            this.isModify = isModify;
         }
 
         public float getProfilingOverhead() {
-            if (settings == null) {
-                return 0f;
-            }
-
-            synchronizeBasicAdvancedPanels();
-
-            return ptp.getProfilingOverhead(createFinalSettings());
+//            if (settings == null) {
+//                return 0f;
+//            }
+//
+//            synchronizeBasicAdvancedPanels();
+//
+//            return ptp.getProfilingOverhead(createFinalSettings());
+            return 0f;
         }
 
         public void setSettings(ProfilingSettings settings) {
@@ -137,7 +137,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
                                           new Runnable() {
                     public void run() {
                         synchronizeSettings();
-                        ProfilingPointsDisplayer.displayProfilingPoints(project, CPUContents.this.settings);
+//                        ProfilingPointsDisplayer.displayProfilingPoints(project, CPUContents.this.settings);
                     }
                 });
             basicSettingsPanel.setProfilingType(settings.getProfilingType());
@@ -237,7 +237,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         public void reset() {
             settings = null;
             project = null;
-            ptp = null;
+//            ptp = null;
             profiledFile = null;
             enableOverride = false;
             isAttach = false;
@@ -308,7 +308,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         private MemorySettingsBasicPanel basicSettingsPanel = new MemorySettingsBasicPanel();
         private ProfilingSettings settings;
         private Project project;
-        private ProjectTypeProfiler ptp;
+//        private ProjectTypeProfiler ptp;
         private Vector<ChangeListener> changeListeners = new Vector();
         private boolean enableOverride;
         private boolean internalChange = false;
@@ -339,7 +339,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride) {
             this.project = project;
-            ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//            ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
             this.profiledFile = profiledFile;
             this.enableOverride = enableOverride;
             this.isAttach = isAttach;
@@ -347,13 +347,14 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         }
 
         public float getProfilingOverhead() {
-            if (settings == null) {
-                return 0f;
-            }
-
-            synchronizeBasicAdvancedPanels();
-
-            return ptp.getProfilingOverhead(createFinalSettings());
+//            if (settings == null) {
+//                return 0f;
+//            }
+//
+//            synchronizeBasicAdvancedPanels();
+//
+//            return ptp.getProfilingOverhead(createFinalSettings());
+            return 0f;
         }
 
         public void setSettings(ProfilingSettings settings) {
@@ -369,7 +370,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
                                           new Runnable() {
                     public void run() {
                         synchronizeSettings();
-                        ProfilingPointsDisplayer.displayProfilingPoints(project, MemoryContents.this.settings);
+//                        ProfilingPointsDisplayer.displayProfilingPoints(project, MemoryContents.this.settings);
                     }
                 });
             basicSettingsPanel.setProfilingType(settings.getProfilingType());
@@ -441,7 +442,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         public void reset() {
             settings = null;
             project = null;
-            ptp = null;
+//            ptp = null;
             profiledFile = null;
             enableOverride = false;
             isAttach = false;
@@ -499,7 +500,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         private MonitorSettingsBasicPanel basicSettingsPanel;
         private ProfilingSettings settings;
         private Project project;
-        private ProjectTypeProfiler ptp;
+//        private ProjectTypeProfiler ptp;
         private Vector<ChangeListener> changeListeners = new Vector();
         private boolean enableOverride;
         private boolean internalChange = false;
@@ -530,7 +531,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride) {
             this.project = project;
-            ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//            ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
             this.profiledFile = profiledFile;
             this.enableOverride = enableOverride;
             this.isAttach = isAttach;
@@ -538,13 +539,14 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         }
 
         public float getProfilingOverhead() {
-            if (settings == null) {
-                return 0f;
-            }
-
-            synchronizeBasicAdvancedPanels();
-
-            return ptp.getProfilingOverhead(createFinalSettings());
+//            if (settings == null) {
+//                return 0f;
+//            }
+//
+//            synchronizeBasicAdvancedPanels();
+//
+//            return ptp.getProfilingOverhead(createFinalSettings());
+            return 0f;
         }
 
         public void setSettings(ProfilingSettings settings) {
@@ -611,7 +613,7 @@ public class DefaultSettingsConfigurator implements SelectProfilingTask.Settings
         public void reset() {
             settings = null;
             project = null;
-            ptp = null;
+//            ptp = null;
             profiledFile = null;
             enableOverride = false;
             isAttach = false;

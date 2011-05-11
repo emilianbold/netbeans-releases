@@ -41,11 +41,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.ui.components.DiscreteProgress;
-import org.netbeans.modules.profiler.ui.HyperlinkTextArea;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
+//import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.CardLayout;
@@ -70,6 +69,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
 
 
 /**
@@ -379,11 +379,11 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         SelectProfilingTask.getDefault().updateHelpCtx();
 
         if (showingPreset && showingAdvancedSettings) {
-            ProfilerDialogs.DNSAMessage dnsa = new ProfilerDialogs.DNSAMessage("SettingsContainerPanel.switchToAdvancedSettings.presetNotification", //NOI18N
-                                                                               READONLY_SETTINGS_MSG,
-                                                                               ProfilerDialogs.DNSAMessage.INFORMATION_MESSAGE);
-            dnsa.setDNSADefault(false);
-            ProfilerDialogs.notify(dnsa);
+//            ProfilerDialogs.DNSAMessage dnsa = new ProfilerDialogs.DNSAMessage("SettingsContainerPanel.switchToAdvancedSettings.presetNotification", //NOI18N
+//                                                                               READONLY_SETTINGS_MSG,
+//                                                                               ProfilerDialogs.DNSAMessage.INFORMATION_MESSAGE);
+//            dnsa.setDNSADefault(false);
+//            ProfilerDialogs.notify(dnsa);
         }
     }
 }

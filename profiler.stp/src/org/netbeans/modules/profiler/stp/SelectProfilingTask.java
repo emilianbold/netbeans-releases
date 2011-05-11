@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -53,15 +53,12 @@ import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.ui.components.ImagePanel;
 import org.netbeans.lib.profiler.ui.components.VerticalLayout;
 import org.netbeans.lib.profiler.ui.components.XPStyleBorder;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+//import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -74,13 +71,11 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -88,12 +83,14 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
+//import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.categories.Categorization;
+//import org.netbeans.modules.profiler.NetBeansProfiler;
+//import org.netbeans.modules.profiler.categories.Categorization;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.openide.util.Lookup;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.openide.DialogDisplayer;
+//import org.openide.util.Lookup;
 
 
 /**
@@ -223,7 +220,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private static SelectProfilingTask defaultInstance;
 
     // --- UI components declaration ---------------------------------------------
-    private static final Image BACKGROUND_IMAGE = UIUtils.isNimbus() ? null : ImageUtilities.loadImage("org/netbeans/modules/profiler/ui/stp/resources/sptBar.png"); // NOI18N
+    private static final Image BACKGROUND_IMAGE = UIUtils.isNimbus() ? null : ImageUtilities.loadImage("org/netbeans/modules/profiler/stp/resources/sptBar.png"); // NOI18N
     private static final Icon MONITOR_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/monitoring.png", false); // NOI18N
     private static final Icon CPU_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/cpu.png", false); // NOI18N
     private static final Icon MEMORY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/memory.png", false); // NOI18N
@@ -337,7 +334,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                Dialog d = ProfilerDialogs.createDialog(spt.dd);
+                Dialog d = DialogDisplayer.getDefault().createDialog(spt.dd);
                 d.pack();
                 d.setVisible(true);
                 latch.countDown();
@@ -380,7 +377,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                Dialog d = ProfilerDialogs.createDialog(spt.dd);
+                Dialog d = DialogDisplayer.getDefault().createDialog(spt.dd);
                 d.pack();
                 d.setVisible(true);
                 latch.countDown();
@@ -424,7 +421,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                Dialog d = ProfilerDialogs.createDialog(spt.dd);
+                Dialog d = DialogDisplayer.getDefault().createDialog(spt.dd);
                 d.getAccessibleContext().setAccessibleDescription(d.getTitle());
                 d.pack();
                 d.setVisible(true);
@@ -443,7 +440,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     String workDir = settings.getWorkingDir().trim();
                     if (workDir.length() != 0 && !new java.io.File(workDir).exists()) {
                         settings.setWorkingDir(""); // NOI18N
-                        NetBeansProfiler.getDefaultNB().displayWarning(WORKDIR_INVALID_MSG);
+//                        NetBeansProfiler.getDefaultNB().displayWarning(WORKDIR_INVALID_MSG);
                     }
                 }
                 result = new Configuration(project, settings, null);
@@ -491,19 +488,20 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     SimpleFilter getResolvedPredefinedFilter(SimpleFilter key) {
-        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-
-        int resolvedIndex = predefinedInstrFilterKeys.indexOf(key); // takes some time for long filter values
-
-        if (resolvedIndex == -1) {
-            return null; // Should never happen
-        }
-
-        if (predefinedInstrFilters[resolvedIndex] == null) {
-            predefinedInstrFilters[resolvedIndex] = ptp.computePredefinedInstrumentationFilter(project, key, projectPackages);
-        }
-
-        return predefinedInstrFilters[resolvedIndex];
+//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//
+//        int resolvedIndex = predefinedInstrFilterKeys.indexOf(key); // takes some time for long filter values
+//
+//        if (resolvedIndex == -1) {
+//            return null; // Should never happen
+//        }
+//
+//        if (predefinedInstrFilters[resolvedIndex] == null) {
+//            predefinedInstrFilters[resolvedIndex] = ptp.computePredefinedInstrumentationFilter(project, key, projectPackages);
+//        }
+//
+//        return predefinedInstrFilters[resolvedIndex];
+        return null;
     }
 
     void setSubmitButton(JButton submitButton) {
@@ -613,25 +611,25 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             try {
 
                 if (project != null) {
-                    boolean rootMethodsPending = settings.instrRootMethodsPending;
-                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
-
-                    if (rootMethodsPending || predefinedFilterPending) {
-                        // Lazily compute default root methods
-                        if (rootMethodsPending) {
-                            settings.setInstrumentationRootMethods(org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
-                                                                                   .getDefaultRootMethods(project, profiledFile,
-                                                                                                          settings
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .getProfileUnderlyingFramework(),
-                                                                                                          projectPackages));
-                        }
-
-                        // Lazily compute instrumentation filters
-                        if (predefinedFilterPending) {
-                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .getSelectedInstrumentationFilter()));
-                        }
-                    }
+//                    boolean rootMethodsPending = settings.instrRootMethodsPending;
+//                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
+//
+//                    if (rootMethodsPending || predefinedFilterPending) {
+//                        // Lazily compute default root methods
+//                        if (rootMethodsPending) {
+//                            settings.setInstrumentationRootMethods(org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
+//                                                                                   .getDefaultRootMethods(project, profiledFile,
+//                                                                                                          settings
+//                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .getProfileUnderlyingFramework(),
+//                                                                                                          projectPackages));
+//                        }
+//
+//                        // Lazily compute instrumentation filters
+//                        if (predefinedFilterPending) {
+//                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings
+//                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .getSelectedInstrumentationFilter()));
+//                        }
+//                    }
 
                     configureMarkerEngine(settings);
                 }
@@ -649,16 +647,16 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     private void configureMarkerEngine(ProfilingSettings settings) {
-        boolean isMarksEnabled = (settings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) || (settings.getProfilingType() == ProfilingSettings.PROFILE_CPU_PART);
-        isMarksEnabled &= Categorization.isAvailable(project);
-
-        if (isMarksEnabled) {
-            Categorization ctg = new Categorization(project);
-            ctg.reset();
-            MarkingEngine.getDefault().configure(ctg.getMappings(), Lookup.getDefault().lookupAll(MarkingEngine.StateObserver.class));
-        } else {
-            MarkingEngine.getDefault().deconfigure();
-        }
+//        boolean isMarksEnabled = (settings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) || (settings.getProfilingType() == ProfilingSettings.PROFILE_CPU_PART);
+//        isMarksEnabled &= Categorization.isAvailable(project);
+//
+//        if (isMarksEnabled) {
+//            Categorization ctg = new Categorization(project);
+//            ctg.reset();
+//            MarkingEngine.getDefault().configure(ctg.getMappings(), Lookup.getDefault().lookupAll(MarkingEngine.StateObserver.class));
+//        } else {
+//            MarkingEngine.getDefault().deconfigure();
+//        }
     }
     
     private void initClosedProjectHook() {
@@ -693,7 +691,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         // projectsChoserCombo
         projectsChooserCombo = new JComboBox();
-        projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
+//        projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
         projectsChooserLabel.setLabelFor(projectsChooserCombo);
         projectsChooserCombo.getAccessibleContext().setAccessibleDescription(CHOOSER_COMBO_ACCESS_DESCR);
 
@@ -1037,7 +1035,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                                                                                    : ((TaskPresenter) selectedTask)
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .getSelectedProfilingSettings();
 
-        IDEUtils.runInProfilerRequestProcessor(new Runnable() {
+        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
                     ProfilingSettingsManager.getDefault()
                                             .storeProfilingSettings(profilingSettings.toArray(new ProfilingSettings[profilingSettings
@@ -1056,9 +1054,11 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                 if (project != null) {
                     projectPackages = new String[2][];
-                    predefinedInstrFilterKeys = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
-                                                                .getPredefinedInstrumentationFilters(project);
-                    predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
+//                    predefinedInstrFilterKeys = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
+//                                                                .getPredefinedInstrumentationFilters(project);
+//                    predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
+                    predefinedInstrFilters = null;
+                    predefinedInstrFilterKeys = null;
                 } else {
                     projectPackages = null;
                     predefinedInstrFilters = null;
@@ -1152,7 +1152,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 }
             }
         };
-        IDEUtils.runInEventDispatchThread(projectUpdater);
+        ProfilerUtils.runInEventDispatchThread(projectUpdater);
     }
 
     private void updateProjectsCombo(Object projectToSelect) { // Actually may be also EXTERNAL_APPLICATION_STRING
@@ -1193,17 +1193,19 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     private static boolean isProjectTypeSupported(final Project project) {
-        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-
-        if (ptp.isProfilingSupported(project)) {
-            return true;
-        }
-
-        return ProjectUtilities.hasAction(project, "profile"); //NOI18N
+//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//
+//        if (ptp.isProfilingSupported(project)) {
+//            return true;
+//        }
+//
+//        return ProjectUtilities.hasAction(project, "profile"); //NOI18N
+        return true;
     }
     
     private static boolean isProjectTypeSupportedForAttach(Project project) {
-        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-        return ptp.isAttachSupported(project);
+//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//        return ptp.isAttachSupported(project);
+        return true;
     }
 }

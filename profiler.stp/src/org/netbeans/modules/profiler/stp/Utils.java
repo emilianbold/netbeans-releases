@@ -42,15 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+//import org.netbeans.modules.profiler.NetBeansProfiler;
+//import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
@@ -58,7 +58,6 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import org.netbeans.modules.profiler.attach.AttachWizard;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 
 
 /**
@@ -76,10 +75,10 @@ public class Utils {
     public static AttachSettings getAttachSettings(Project project) {
         AttachSettings attachSettings = null;
 
-        try {
-            attachSettings = NetBeansProfiler.loadAttachSettings(project);
-        } catch (IOException ex) {
-        }
+//        try {
+//            attachSettings = NetBeansProfiler.loadAttachSettings(project);
+//        } catch (IOException ex) {
+//        }
 
         return attachSettings;
     }
@@ -148,12 +147,13 @@ public class Utils {
     }
 
     public static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator(Project project) {
-        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-
-        SelectProfilingTask.SettingsConfigurator configurator = ptp.getSettingsConfigurator();
-        if (configurator == null) return DefaultSettingsConfigurator.SHARED_INSTANCE;
-
-        return configurator;
+//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+//
+//        SelectProfilingTask.SettingsConfigurator configurator = ptp.getSettingsConfigurator();
+//        if (configurator == null) return DefaultSettingsConfigurator.SHARED_INSTANCE;
+//
+//        return configurator;
+        return DefaultSettingsConfigurator.SHARED_INSTANCE;
     }
 
     public static JPanel createFillerPanel() {

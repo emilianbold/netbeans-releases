@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
@@ -51,13 +51,11 @@ import org.netbeans.lib.profiler.common.filters.DefinedFilterSets;
 import org.netbeans.lib.profiler.common.filters.FilterUtils;
 import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.ui.components.JExtendedComboBox;
-import org.netbeans.modules.profiler.ui.FilterSetsPanel;
-import org.netbeans.modules.profiler.ui.GlobalFiltersPanel;
-import org.netbeans.modules.profiler.ui.HyperlinkLabel;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.ui.QuickFilterPanel;
-import org.netbeans.modules.profiler.ui.panels.PreferredInstrFilterPanel;
-import org.netbeans.modules.profiler.ui.panels.RootMethodsPanel;
+//import org.netbeans.modules.profiler.ui.FilterSetsPanel;
+//import org.netbeans.modules.profiler.ui.GlobalFiltersPanel;
+//import org.netbeans.modules.profiler.ui.QuickFilterPanel;
+//import org.netbeans.modules.profiler.ui.panels.PreferredInstrFilterPanel;
+//import org.netbeans.modules.profiler.ui.panels.RootMethodsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -86,6 +84,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -658,137 +658,137 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performCustomizeFilterSetsAction() {
-        final FilterSetsPanel filterSetsPanel = FilterSetsPanel.getDefault();
-
-        final DialogDescriptor dd = new DialogDescriptor(filterSetsPanel, FILTER_SETS_DIALOG_CAPTION, true,
-                                                         new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
-                                                         DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null, null);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
-        dd.setAdditionalOptions(new Object[] { globalFiltersButton });
-        dd.setButtonListener(this);
-
-        int itemsToSkip = 4; // Exclude Java Core Classes and QuickFilter are above Custom FilterSets + 2 separators
-
-        if (preferredInstrFilters != null) {
-            itemsToSkip += preferredInstrFilters.size(); // Preferred instrumentation filter are above Custom FilterSets
-        }
-
-        filterSetsPanel.init(Math.max(filterCombo.getSelectedIndex() - itemsToSkip, 0));
-
-        d.pack(); // allows correct resizing of textarea in FilterSetsPanel
-        d.setVisible(true);
-        dd.setButtonListener(null);
-
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            filterSetsPanel.applyChanges();
-
-            if (filterSetsPanel.getSelectedFilterSet() != null) {
-                selectedInstrumentationFilter = filterSetsPanel.getSelectedFilterSet();
-
-                //        ProfilerIDESettings.getInstance().setInstrFilterDefault(filterComboBox.getSelectedItem().toString());
-            }
-
-            updateFilterComboBoxItems();
-        }
+//        final FilterSetsPanel filterSetsPanel = FilterSetsPanel.getDefault();
+//
+//        final DialogDescriptor dd = new DialogDescriptor(filterSetsPanel, FILTER_SETS_DIALOG_CAPTION, true,
+//                                                         new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
+//                                                         DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null, null);
+//        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//        dd.setAdditionalOptions(new Object[] { globalFiltersButton });
+//        dd.setButtonListener(this);
+//
+//        int itemsToSkip = 4; // Exclude Java Core Classes and QuickFilter are above Custom FilterSets + 2 separators
+//
+//        if (preferredInstrFilters != null) {
+//            itemsToSkip += preferredInstrFilters.size(); // Preferred instrumentation filter are above Custom FilterSets
+//        }
+//
+//        filterSetsPanel.init(Math.max(filterCombo.getSelectedIndex() - itemsToSkip, 0));
+//
+//        d.pack(); // allows correct resizing of textarea in FilterSetsPanel
+//        d.setVisible(true);
+//        dd.setButtonListener(null);
+//
+//        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+//            filterSetsPanel.applyChanges();
+//
+//            if (filterSetsPanel.getSelectedFilterSet() != null) {
+//                selectedInstrumentationFilter = filterSetsPanel.getSelectedFilterSet();
+//
+//                //        ProfilerIDESettings.getInstance().setInstrFilterDefault(filterComboBox.getSelectedItem().toString());
+//            }
+//
+//            updateFilterComboBoxItems();
+//        }
     }
 
     private static void performEditGlobalFiltersAction() {
-        final GlobalFiltersPanel globalFiltersPanel = GlobalFiltersPanel.getDefault();
-
-        final DialogDescriptor dd = new DialogDescriptor(globalFiltersPanel, GLOBAL_FILTERS_DIALOG_CAPTION, true,
-                                                         new Object[] {
-                                                             globalFiltersPanel.getOKButton(),
-                                                             globalFiltersPanel.getCancelButton()
-                                                         }, globalFiltersPanel.getOKButton(), DialogDescriptor.BOTTOM_ALIGN,
-                                                         null, null);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
-        globalFiltersPanel.init();
-        d.pack(); // allows correct resizing of textarea in GlobalFiltersPanel
-        d.setVisible(true);
-
-        if (dd.getValue() == globalFiltersPanel.getOKButton()) {
-            globalFiltersPanel.applyChanges();
-            FilterSetsPanel.getDefault().processGlobalFiltersChanged();
-        }
+//        final GlobalFiltersPanel globalFiltersPanel = GlobalFiltersPanel.getDefault();
+//
+//        final DialogDescriptor dd = new DialogDescriptor(globalFiltersPanel, GLOBAL_FILTERS_DIALOG_CAPTION, true,
+//                                                         new Object[] {
+//                                                             globalFiltersPanel.getOKButton(),
+//                                                             globalFiltersPanel.getCancelButton()
+//                                                         }, globalFiltersPanel.getOKButton(), DialogDescriptor.BOTTOM_ALIGN,
+//                                                         null, null);
+//        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//        globalFiltersPanel.init();
+//        d.pack(); // allows correct resizing of textarea in GlobalFiltersPanel
+//        d.setVisible(true);
+//
+//        if (dd.getValue() == globalFiltersPanel.getOKButton()) {
+//            globalFiltersPanel.applyChanges();
+//            FilterSetsPanel.getDefault().processGlobalFiltersChanged();
+//        }
     }
 
     private void performQuickFilterAction() {
-        QuickFilterPanel quickFilterPanel = QuickFilterPanel.getDefault();
-
-        DialogDescriptor dd = new DialogDescriptor(quickFilterPanel, QUICK_FILTER_DIALOG_CAPTION, true,
-                                                   new Object[] { quickFilterPanel.getOKButton(), quickFilterPanel.getCancelButton() },
-                                                   quickFilterPanel.getOKButton(), DialogDescriptor.BOTTOM_ALIGN, null, null);
-        Dialog d = ProfilerDialogs.createDialog(dd);
-
-        quickFilterPanel.init(quickFilter);
-
-        d.pack(); // allows correct resizing of textarea in QuickFilter
-        d.setVisible(true);
-
-        if (dd.getValue() == quickFilterPanel.getOKButton()) {
-            quickFilterPanel.applyChanges();
-            filterCombo.setSelectedItem(quickFilter); // required from performProjectFilterAction()
-        }
-
-        updateControls();
-        filterCombo.requestFocus();
+//        QuickFilterPanel quickFilterPanel = QuickFilterPanel.getDefault();
+//
+//        DialogDescriptor dd = new DialogDescriptor(quickFilterPanel, QUICK_FILTER_DIALOG_CAPTION, true,
+//                                                   new Object[] { quickFilterPanel.getOKButton(), quickFilterPanel.getCancelButton() },
+//                                                   quickFilterPanel.getOKButton(), DialogDescriptor.BOTTOM_ALIGN, null, null);
+//        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//
+//        quickFilterPanel.init(quickFilter);
+//
+//        d.pack(); // allows correct resizing of textarea in QuickFilter
+//        d.setVisible(true);
+//
+//        if (dd.getValue() == quickFilterPanel.getOKButton()) {
+//            quickFilterPanel.applyChanges();
+//            filterCombo.setSelectedItem(quickFilter); // required from performProjectFilterAction()
+//        }
+//
+//        updateControls();
+//        filterCombo.requestFocus();
     }
 
     private void performRootMethodsAction() {
-        ClientUtils.SourceCodeSelection[] roots = RootMethodsPanel.getSelectedRootMethods(rootMethods, project);
-
-        if (roots != null) {
-            rootMethods = roots;
-            updateControls();
-        }
+//        ClientUtils.SourceCodeSelection[] roots = RootMethodsPanel.getSelectedRootMethods(rootMethods, project);
+//
+//        if (roots != null) {
+//            rootMethods = roots;
+//            updateControls();
+//        }
     }
 
     private void performShowFilterAction() {
-        selectedInstrumentationFilter = filterCombo.getSelectedItem();
-
-        if (!preferredInstrFilters.contains(selectedInstrumentationFilter)) {
-            return; // TODO: implement for all filters
-        }
-
-        PreferredInstrFilterPanel preferredInstrFilterPanel = PreferredInstrFilterPanel.getDefault();
-        PreferredInstrFilterPanel.FilterResolver filterComputer = new PreferredInstrFilterPanel.FilterResolver() {
-            protected String[] computeFilterValues() {
-                SimpleFilter sf = SelectProfilingTask.getDefault()
-                                                     .getResolvedPredefinedFilter((SimpleFilter) selectedInstrumentationFilter);
-                String[] fvs = FilterUtils.getSeparateFilters(sf.getFilterValue());
-
-                return fvs;
-            }
-        };
-
-        final DialogDescriptor dd = new DialogDescriptor(preferredInstrFilterPanel, MessageFormat.format(SHOW_FILTER_CAPTION, new Object[] {
-                                                         ((SimpleFilter) selectedInstrumentationFilter).getFilterName() }), true,
-                                                         new Object[] {
-                                                             preferredInstrFilterPanel.OPEN_IN_QUICKFILTER_BUTTON,
-                                                             preferredInstrFilterPanel.CLOSE_BUTTON
-                                                         }, preferredInstrFilterPanel.CLOSE_BUTTON,
-                                                         DialogDescriptor.BOTTOM_ALIGN, null, null);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
-        preferredInstrFilterPanel.init(filterComputer);
-        d.pack(); // allows correct resizing of textarea in PreferredInstrFilterPanel
-        d.setVisible(true);
-
-        if (dd.getValue() == preferredInstrFilterPanel.OPEN_IN_QUICKFILTER_BUTTON) {
-            String[] filterValues = filterComputer.getFilterValues();
-            StringBuffer sb = new StringBuffer();
-
-            for (int i = 0; i < filterValues.length; i++) {
-                sb.append(filterValues[i] + ((i == (filterValues.length - 1)) ? "" : " ")); //NOI18N
-            }
-
-            quickFilter.setFilterType(SimpleFilter.SIMPLE_FILTER_INCLUSIVE);
-            quickFilter.setFilterValue(sb.toString());
-            performQuickFilterAction();
-
-            return;
-        }
-
-        filterCombo.requestFocus();
+//        selectedInstrumentationFilter = filterCombo.getSelectedItem();
+//
+//        if (!preferredInstrFilters.contains(selectedInstrumentationFilter)) {
+//            return; // TODO: implement for all filters
+//        }
+//
+//        PreferredInstrFilterPanel preferredInstrFilterPanel = PreferredInstrFilterPanel.getDefault();
+//        PreferredInstrFilterPanel.FilterResolver filterComputer = new PreferredInstrFilterPanel.FilterResolver() {
+//            protected String[] computeFilterValues() {
+//                SimpleFilter sf = SelectProfilingTask.getDefault()
+//                                                     .getResolvedPredefinedFilter((SimpleFilter) selectedInstrumentationFilter);
+//                String[] fvs = FilterUtils.getSeparateFilters(sf.getFilterValue());
+//
+//                return fvs;
+//            }
+//        };
+//
+//        final DialogDescriptor dd = new DialogDescriptor(preferredInstrFilterPanel, MessageFormat.format(SHOW_FILTER_CAPTION, new Object[] {
+//                                                         ((SimpleFilter) selectedInstrumentationFilter).getFilterName() }), true,
+//                                                         new Object[] {
+//                                                             preferredInstrFilterPanel.OPEN_IN_QUICKFILTER_BUTTON,
+//                                                             preferredInstrFilterPanel.CLOSE_BUTTON
+//                                                         }, preferredInstrFilterPanel.CLOSE_BUTTON,
+//                                                         DialogDescriptor.BOTTOM_ALIGN, null, null);
+//        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//        preferredInstrFilterPanel.init(filterComputer);
+//        d.pack(); // allows correct resizing of textarea in PreferredInstrFilterPanel
+//        d.setVisible(true);
+//
+//        if (dd.getValue() == preferredInstrFilterPanel.OPEN_IN_QUICKFILTER_BUTTON) {
+//            String[] filterValues = filterComputer.getFilterValues();
+//            StringBuffer sb = new StringBuffer();
+//
+//            for (int i = 0; i < filterValues.length; i++) {
+//                sb.append(filterValues[i] + ((i == (filterValues.length - 1)) ? "" : " ")); //NOI18N
+//            }
+//
+//            quickFilter.setFilterType(SimpleFilter.SIMPLE_FILTER_INCLUSIVE);
+//            quickFilter.setFilterValue(sb.toString());
+//            performQuickFilterAction();
+//
+//            return;
+//        }
+//
+//        filterCombo.requestFocus();
     }
 
     private void performShowProfilingPointsAction() {

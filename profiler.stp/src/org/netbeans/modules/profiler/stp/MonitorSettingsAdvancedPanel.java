@@ -41,12 +41,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
-import org.netbeans.modules.profiler.ui.HyperlinkLabel;
+//import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.Color;
@@ -56,8 +55,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -72,6 +69,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 
 
 /**
@@ -453,20 +451,20 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
 
     // --- Private implementation ------------------------------------------------
     private void updateJavaPlatformCombo(String platformNameToSelect) {
-        List<JavaPlatform> supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms();
-        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
-        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
-
-        for (int i = 1; i < supportedPlatformNames.length; i++) {
-            supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();
-        }
-
-        javaPlatformCombo.setModel(new DefaultComboBoxModel(supportedPlatformNames));
-
-        if (platformNameToSelect != null) {
-            javaPlatformCombo.setSelectedItem(platformNameToSelect);
-        } else {
-            javaPlatformCombo.setSelectedIndex(0);
-        }
+//        List<JavaPlatform> supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms();
+//        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
+//        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
+//
+//        for (int i = 1; i < supportedPlatformNames.length; i++) {
+//            supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();
+//        }
+//
+//        javaPlatformCombo.setModel(new DefaultComboBoxModel(supportedPlatformNames));
+//
+//        if (platformNameToSelect != null) {
+//            javaPlatformCombo.setSelectedItem(platformNameToSelect);
+//        } else {
+//            javaPlatformCombo.setSelectedIndex(0);
+//        }
     }
 }

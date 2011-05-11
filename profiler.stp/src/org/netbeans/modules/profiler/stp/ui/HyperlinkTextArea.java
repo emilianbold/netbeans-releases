@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui;
+package org.netbeans.modules.profiler.stp.ui;
 
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import java.awt.Color;

@@ -196,6 +196,7 @@
                 <friend>org.netbeans.modules.profiler.nbmodule</friend>
                 <friend>org.netbeans.modules.profiler.selector.java</friend>
                 <friend>org.netbeans.modules.profiler.selector.spi</friend>
+                <friend>org.netbeans.modules.profiler.stp</friend>
                 <package>org.netbeans.modules.profiler.projectsupport</package>
                 <package>org.netbeans.modules.profiler.projectsupport.utilities</package>
             </friend-packages>

@@ -41,23 +41,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ui.HyperlinkLabel;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+//import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.openide.util.NbBundle;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.net.URL;
 import java.text.MessageFormat;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
 /**
@@ -158,9 +157,9 @@ public class AttachSettingsPanel extends JPanel {
                     if (attachSettings != null) {
                         settings = attachSettings;
                         updateSettingsHint();
-                        IDEUtils.runInProfilerRequestProcessor(new Runnable() {
+                        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                                 public void run() {
-                                    NetBeansProfiler.saveAttachSettings(project, attachSettings);
+//                                    NetBeansProfiler.saveAttachSettings(project, attachSettings);
                                 }
                             });
                     }

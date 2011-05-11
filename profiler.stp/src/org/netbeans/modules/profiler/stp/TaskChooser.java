@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui.stp;
+package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.ui.components.ComponentMorpher;
 import org.netbeans.lib.profiler.ui.components.VerticalLayout;
