@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -293,6 +294,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public static void checkForChangedName(final Project project) {
+        if (CndUtils.isStandalone()) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -310,6 +314,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
+        if (CndUtils.isStandalone()) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -327,6 +334,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
+        if (CndUtils.isStandalone()) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override

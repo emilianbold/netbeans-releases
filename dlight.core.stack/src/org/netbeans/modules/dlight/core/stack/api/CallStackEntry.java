@@ -39,36 +39,55 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.hints;
+package org.netbeans.modules.dlight.core.stack.api;
 
-import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 
 /**
- *
- * @author marekfukala
+ * Generally callstack entry could contain following information:
+ * module, offset in a module, function name, offset within the function and
+ * information about sources. 
+ * 
+ * All this data is optional except function name. If this information is 
+ * available at the time when callstack is parsed, it will be stored in a
+ * StackStorage. 
+ * 
+ * @author ak119685
  */
-public class CharacterReference extends PatternRule {
+public interface CallStackEntry {
 
-    private static final String[] PATTERNS_SOURCES = new String[]{
-        "Character reference was not terminated by a semicolon",
-        "Source text is not in Unicode Normalization Form C",
-        "The string following .&. was interpreted as a character reference",
-        "Named character reference was not terminated by a semicolon",
-        ".&. did not start a character reference",
-        "Character reference expands to",
-        "A numeric character reference expanded to",
-        "Character reference outside the permissible Unicode range."
-        
-        
-    }; //NOI18N
-    
-    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
+    /**
+     * @return a char sequence that represents an 'original' (pre-parsed) stack entry
+     */
+    public CharSequence getOriginalEntry();
 
-    @Override
-    public Pattern[] getPatterns() {
-        return PATTERNS;
-    }
+    /**
+     * 
+     * @return name or path to a module. could be null
+     */
+    public CharSequence getModulePath();
 
+    /**
+     * 
+     * @return offset of the instruction within a module. -1 if unknown
+     */
+    public long getOffsetInModule();
 
+    /**
+     * 
+     * @return name of a function. Not NULL.
+     */
+    public CharSequence getFunctionName();
+
+    /**
+     * 
+     * @return offset within the function. -1 if unknown
+     */
+    public long getOffsetInFunction();
+
+    /**
+     * 
+     * @return source file info if available or null
+     */
+    public SourceFileInfo getSourceFileInfo();
 }

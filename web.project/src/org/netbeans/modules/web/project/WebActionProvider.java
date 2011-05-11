@@ -86,12 +86,14 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
@@ -890,9 +892,9 @@ class WebActionProvider extends BaseActionProvider {
 // previously do not ask and use it
         String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
-            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-            if (servInstIDs.length > 0) {
-                setServerInstance(servInstIDs[0]);
+            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, J2eeModule.Type.WAR, ((WebProject) getProject()).getAPIWebModule().getJ2eeProfile());
+            if (instanceID != null) {
+                setServerInstance(instanceID);
                 return true;
             }
         }

@@ -39,36 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.hints;
-
-import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.HintSeverity;
+package org.netbeans.modules.dlight.core.stack.api;
 
 /**
- *
- * @author marekfukala
+ * Initially callstacks that are put into StackStorages are represented as List
+ * of CharSequence. Depending on the source of call stack the way of how to 
+ * interpret these lines could differ. 
+ * CallStackEntryParser can be passed to a StackDataStorage in case when callstack
+ * is not in a 'common' form and default stack parser cannot parse it...
+ * 
+ * Also CallStackEntryParser could know about current stack's context and based 
+ * on it parse entries appropriately.. 
  */
-public class CharacterReference extends PatternRule {
+public interface CallStackEntryParser {
 
-    private static final String[] PATTERNS_SOURCES = new String[]{
-        "Character reference was not terminated by a semicolon",
-        "Source text is not in Unicode Normalization Form C",
-        "The string following .&. was interpreted as a character reference",
-        "Named character reference was not terminated by a semicolon",
-        ".&. did not start a character reference",
-        "Character reference expands to",
-        "A numeric character reference expanded to",
-        "Character reference outside the permissible Unicode range."
-        
-        
-    }; //NOI18N
-    
-    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
-
-    @Override
-    public Pattern[] getPatterns() {
-        return PATTERNS;
-    }
-
-
+    /**
+     * 
+     * @param entry - a single entry of a CallStack to be parsed
+     * @return CallStackEntry with all available information resolved
+     */
+    public CallStackEntry parseEntry(CharSequence entry);
 }

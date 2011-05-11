@@ -208,15 +208,18 @@ public class ProjectsRootNode extends AbstractNode {
     static void checkNoLazyNode() {
         synchronized(all){
             for (ProjectsRootNode root : all) {
-                for (Node n : root.getChildren().getNodes()) {
-                    if (n instanceof BadgingNode) {
-                        ((BadgingNode)n).replaceProject(null);
-                    }
+                checkNoLazyNode(root.getChildren());
+            }
+        }
+    }
+    static void checkNoLazyNode(Children children) {
+        for (Node n : children.getNodes()) {
+            if (n instanceof BadgingNode) {
+                ((BadgingNode)n).replaceProject(null);
+            }
 
-                    if (n.getLookup().lookup(LazyProject.class) != null) {
-                        OpenProjectList.LOGGER.warning("LazyProjects remain visible");
-                    }
-                }
+            if (n.getLookup().lookup(LazyProject.class) != null) {
+                OpenProjectList.LOGGER.warning("LazyProjects remain visible");
             }
         }
     }
@@ -576,14 +579,9 @@ public class ProjectsRootNode extends AbstractNode {
                         ch.refresh(newProj);
                         OpenProjectList.log(Level.FINER, "refreshed for {0}", newProj);
                         return;
-                    }
-                    for (Node one : arr) {
-                        if (PhysicalView.isProjectDirNode(one)) {
-                            n = one;
-                            break;
-                        }
-                    }
-                    if (n == null) {
+                    } else if (arr.length == 1) {
+                        n = arr[0];
+                    } else {
                         OpenProjectList.log(Level.WARNING, "newProject yields null node: " + newProj);
                         n = Node.EMPTY;
                     }

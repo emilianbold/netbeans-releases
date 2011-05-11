@@ -39,36 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.hints;
+package org.netbeans.modules.dlight.core.stack.storage;
 
-import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.HintSeverity;
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.CallStackEntryParser;
 
 /**
  *
- * @author marekfukala
+ * @author ak119685
  */
-public class CharacterReference extends PatternRule {
+public interface StackDataStorage2 extends StackDataStorage {
 
-    private static final String[] PATTERNS_SOURCES = new String[]{
-        "Character reference was not terminated by a semicolon",
-        "Source text is not in Unicode Normalization Form C",
-        "The string following .&. was interpreted as a character reference",
-        "Named character reference was not terminated by a semicolon",
-        ".&. did not start a character reference",
-        "Character reference expands to",
-        "A numeric character reference expanded to",
-        "Character reference outside the permissible Unicode range."
-        
-        
-    }; //NOI18N
-    
-    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
+    long putStack(long contextID, List<CharSequence> stack, CallStackEntryParser parser);
 
-    @Override
-    public Pattern[] getPatterns() {
-        return PATTERNS;
-    }
-
-
+    long putSample(long contextID, List<CharSequence> stack, long timestamp, long duration, CallStackEntryParser parser);
 }

@@ -53,10 +53,12 @@ import java.util.Set;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -316,9 +318,10 @@ class EjbJarActionProvider extends BaseActionProvider {
         // previously do not ask and use it
         String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
-            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-            if (servInstIDs.length > 0) {
-                setServerInstance(servInstIDs[0]);
+            String instanceID = J2EEProjectProperties.getMatchingInstance(
+                    serverType, J2eeModule.Type.EJB, project.getAPIEjbJar().getJ2eeProfile());
+            if (instanceID != null) {
+                setServerInstance(instanceID);
                 return true;
             }
         }

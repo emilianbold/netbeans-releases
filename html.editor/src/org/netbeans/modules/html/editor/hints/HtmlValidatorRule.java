@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -92,7 +93,7 @@ public abstract class HtmlValidatorRule extends HtmlRule {
             }
 
             Hint h = new Hint(this,
-                    e.getDescription(),
+                    getModifiedErrorMessage(e.getDescription()),
                     e.getFile(),
                     new OffsetRange(from, to),
                     context.getDefaultFixes(),
@@ -106,6 +107,20 @@ public abstract class HtmlValidatorRule extends HtmlRule {
 
 
         }
+    }
+    
+    //adjusts the original validator error message according to the hint setting
+    private String getModifiedErrorMessage(String msg) {
+        //strip the "Error:, Warning:, Fatal Error:" prefixes
+        int colonIndex = msg.indexOf(':');
+        if(colonIndex > 30) {
+            return msg; //suspicious index (unexpected message type prefix)
+        }
+        StringBuilder sb = new StringBuilder(msg.substring(colonIndex + 1).trim());
+        sb.append('\n');
+        sb.append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_RuleCategory", getDisplayName()));
+        
+        return sb.toString();
     }
 
     protected abstract boolean appliesTo(HtmlRuleContext content, Error e);

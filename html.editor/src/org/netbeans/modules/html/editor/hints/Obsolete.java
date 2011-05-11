@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.hints;
 
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
  *
@@ -64,6 +65,12 @@ public class Obsolete extends PatternRule {
     public Pattern[] getPatterns() {
         return PATTERNS;
     }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.INFO;
+    }
+
     
 
 }
