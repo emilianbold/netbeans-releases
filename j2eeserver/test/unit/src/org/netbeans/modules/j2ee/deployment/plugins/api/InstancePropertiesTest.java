@@ -219,7 +219,7 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
         String url = TEST_URL_PREFIX + "keyringCleanup";
         InstanceProperties.createInstanceProperties(
                 url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
-        assertEquals(TEST_PASSWORD, String.valueOf(Keyring.read("j2eeserver:" + url)));
+        assertEquals(TEST_PASSWORD, getPasswordFromKeyring("j2eeserver:" + url));
 
         ServerRegistry.getInstance().removeServerInstance(url);
         assertNull(getPasswordFromKeyring("j2eeserver:" + url));
