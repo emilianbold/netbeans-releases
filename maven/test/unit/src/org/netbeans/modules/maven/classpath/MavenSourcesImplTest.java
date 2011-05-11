@@ -83,4 +83,29 @@ public class MavenSourcesImplTest extends NbTestCase {
         assertEquals(itsrc, grps[0].getRootFolder());
     }
 
+    public void testFragmentaryResourceDecl() throws Exception { // #195928
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<build>" +
+                "<resources>" +
+                "<resource>" +
+                "<directory>.</directory>" +
+                "<targetPath>META-INF</targetPath>" +
+                "<includes>" +
+                "<include>changelog.txt</include>" +
+                "</includes>" +
+                "</resource>" +
+                "</resources>" +
+                "</build>" +
+                "</project>");
+        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        assertEquals(0, grps.length);
+    }
+
 }
