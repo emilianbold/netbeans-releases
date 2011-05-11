@@ -777,6 +777,9 @@ public final class NbMavenProjectImpl implements Project {
             if (dir == null) {
                 continue; // #191742
             }
+            if (elem.getTargetPath() != null) {
+                continue; // #195928
+            }
             URI uri = FileUtilities.getDirURI(getProjectDirectory(), dir);
 //            if (new File(uri).exists()) {
             toRet.add(uri);
