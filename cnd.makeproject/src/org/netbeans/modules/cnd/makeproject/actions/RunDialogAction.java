@@ -156,7 +156,7 @@ public class RunDialogAction extends NodeAction {
         }
     }
 
-    private void perform(final RunDialogPanel runDialogPanel, boolean isRun) {
+    private void perform(final RunDialogPanel runDialogPanel, final boolean isRun) {
         if (WindowManager.getDefault().getRegistry().getOpened().isEmpty()){
             // It seems action was invoked from command line
             WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
@@ -167,7 +167,7 @@ public class RunDialogAction extends NodeAction {
 
                         @Override
                         public void run() {
-                            Project project = runDialogPanel.getSelectedProject();
+                            runDialogPanel.getSelectedProject(null);
                         }
                     });
                 }
@@ -186,20 +186,25 @@ public class RunDialogAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
-            Project project = runDialogPanel.getSelectedProject();
-            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-            if (conf != null && isRun) {
-                RunProfile profile = conf.getProfile();
-                String path = runDialogPanel.getExecutablePath();
-                path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                        project,
-                        PredefinedType.RUN,
-                        path, conf,
-                        profile,
-                        false);
-                ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
-            }
+            runDialogPanel.getSelectedProject(new RunDialogPanel.RunProjectAction() {
+
+                @Override
+                public void run(Project project) {
+                    MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+                    if (conf != null && isRun) {
+                        RunProfile profile = conf.getProfile();
+                        String path = runDialogPanel.getExecutablePath();
+                        path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                PredefinedType.RUN,
+                                path, conf,
+                                profile,
+                                false);
+                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+                    }
+                }
+            });
         }
     }
 

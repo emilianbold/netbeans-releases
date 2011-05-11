@@ -133,7 +133,7 @@ public class DebugDialogAction extends NodeAction {
         }
     }
 
-    protected void perform(RunDialogPanel runDialogPanel) {
+    protected void perform(final RunDialogPanel runDialogPanel) {
         if (debugButton == null) {
             init();
         }
@@ -148,20 +148,25 @@ public class DebugDialogAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == debugButton) {
-            Project project = runDialogPanel.getSelectedProject();
-            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-            if (conf != null) {
-                RunProfile profile = conf.getProfile();
-                String path = runDialogPanel.getExecutablePath();
-                path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                        project,
-                        PredefinedType.DEBUG,
-                        path, conf,
-                        profile,
-                        false);
-                ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
-            }
+            runDialogPanel.getSelectedProject(new RunDialogPanel.RunProjectAction() {
+
+                @Override
+                public void run(Project project) {
+                    MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+                    if (conf != null) {
+                        RunProfile profile = conf.getProfile();
+                        String path = runDialogPanel.getExecutablePath();
+                        path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                PredefinedType.DEBUG,
+                                path, conf,
+                                profile,
+                                false);
+                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+                    }
+                }
+            });
         }
     }
 

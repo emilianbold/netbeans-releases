@@ -141,8 +141,15 @@ import org.openide.util.RequestProcessor;
  */
 public class ImportProject implements PropertyChangeListener {
 
-    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    public static final Logger logger;
+    static {
+        logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+        if (TRACE) {
+            logger.setLevel(Level.ALL);
+        }
+    }
+    
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
     private final String nativeProjectPath;
     private final FileObject nativeProjectFO;
@@ -179,9 +186,6 @@ public class ImportProject implements PropertyChangeListener {
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
-        if (TRACE) {
-            logger.setLevel(Level.ALL);
-        }
         Boolean b = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
         fullRemote = (b == null) ? false : b.booleanValue();
         pathMode = fullRemote ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
@@ -1246,7 +1250,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
-        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, TRACE ? logger : null);
+        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, logger);
         importResult.put(Step.FixExcluded, State.Successful);
     }
 

@@ -54,6 +54,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
@@ -92,15 +94,25 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
-    private static final boolean TRACE_REMOTE_CREATION = false;
+    private static final boolean TRACE_REMOTE_CREATION = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    public static final Logger logger;
+    static {
+        logger = Logger.getLogger("org.netbeans.modules.cnd.makeproject.api.RunDialogPanel"); // NOI18N
+        if (TRACE_REMOTE_CREATION) {
+            logger.setLevel(Level.ALL);
+        }
+    }
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private JButton actionButton;
     private final boolean isRun;
     private final FileSystem fileSystem;
+    private RunProjectAction projectAction;
+    private static final RequestProcessor RP = new RequestProcessor("RunDialogPanel Worker", 1); //NOI18N
     
     private static String lastSelectedExecutable = null;
     private static Project lastSelectedProject = null;
@@ -607,10 +619,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBoxActionPerformed(null);
         //validateRunDirectory();
         projectKind.removeAllItems();
-        projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.Minimal));
-        projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
-        projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.CreateDependencies));
-        projectKind.setSelectedIndex(1);
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        if (executionEnvironment.isLocal()) {
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.Minimal));
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.CreateDependencies));
+            projectKind.setSelectedIndex(1);
+        } else {
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
+            projectKind.setSelectedIndex(0);
+        }
 
     }
     
@@ -774,7 +792,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
     }
     
-    public Project getSelectedProject() {
+    public void getSelectedProject(final RunProjectAction action) {
         Project project;
         lastSelectedExecutable = getExecutablePath();
         if (projectComboBox.getSelectedIndex() > 0) {
@@ -784,6 +802,14 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
             MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
             updateRunProfile(conf.getBaseDir(), conf.getProfile());
+            if (action != null) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        action.run(lastSelectedProject);
+                    }
+                });
+            }
         } else {
             try {
                 ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
@@ -791,6 +817,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 try {
                     ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
                     FileUtil.createFolder(fileSystem.getRoot(), projectFolderField.getText().trim());
+                    projectAction = action;
                     if (executionEnvironment.isLocal()) {
                         project = createLocalProject();
                     } else {
@@ -807,12 +834,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 } finally {
                     progress.finish();
                 }
-            } catch (Exception e) {
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
                 project = null;
             }
-            lastSelectedProject = project;
         }
-        return project;
     }
     
     private Project createLocalProject() throws IOException, IllegalArgumentException {
@@ -860,8 +886,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             Exceptions.printStackTrace(ex);
         }
         if (TRACE_REMOTE_CREATION) {
-            System.err.println(projectCreator.getPath()+" "+"--jdkhome "+java+" --netbeans-project="+projectFolderField.getText().trim()+ // NOI18N
-                    " --project-create binary="+getExecutablePath()+" "+" --sources=used"); // NOI18N
+            logger.log(Level.INFO, "#{0} --jdkhome {1} --netbeans-project={2} --project-create binary={3} --sources=used", // NOI18N
+                    new Object[]{projectCreator.getPath(), java, projectFolderField.getText().trim(), getExecutablePath()});
         }
         ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
                                      , "--jdkhome", java // NOI18N
@@ -870,9 +896,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                                      , "--sources=used" // NOI18N
                                      );
         if (TRACE_REMOTE_CREATION) {
-            System.err.println("exitCode="+execute.exitCode); // NOI18N
-            System.err.println(execute.error);
-            System.err.println(execute.output);
+            logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
+            logger.log(Level.INFO, execute.error);
+            logger.log(Level.INFO, execute.output);
         }
         String baseDir = projectFolderField.getText().trim();
         FileObject toRefresh = fileSystem.findResource(PathUtilities.getDirName(baseDir));
@@ -886,6 +912,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         Project project = null;
         try {
             project = ProjectManager.getDefault().findProject(projectFO);
+            lastSelectedProject = project;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IllegalArgumentException ex) {
@@ -897,36 +924,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         return project;
     }
 
-    private void updateRemoteProject(FileObject projectCreator) {
-        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
-        String java = null; 
-        try {
-            java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
-            if (java == null || java.isEmpty()) {
-                java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JAVA_HOME"); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (TRACE_REMOTE_CREATION) {
-            System.err.println(projectCreator.getPath()+" "+"--jdkhome "+java+" --netbeans-project="+projectFolderField.getText().trim()+ // NOI18N
-                    " --project-update mode=model"); // NOI18N
-        }
-        ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
-                                     , "--jdkhome", java // NOI18N
-                                     , "--netbeans-project="+projectFolderField.getText().trim() // NOI18N
-                                     , "--project-update", "mode=model" // NOI18N
-                                     );
-        if (TRACE_REMOTE_CREATION) {
-            System.err.println("exitCode="+execute.exitCode); // NOI18N
-            System.err.println(execute.error);
-            System.err.println(execute.output);
-        }
-    }
-    
-    
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
@@ -938,6 +935,15 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 OpenProjects.getDefault().removePropertyChangeListener(this);
                 if (lastSelectedProject == null) {
                     return;
+                }
+                if (projectAction != null) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            projectAction.run(lastSelectedProject);
+                            projectAction = null;
+                        }
+                    });
                 }
                 ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
                 if (executionEnvironment.isLocal()) {
@@ -951,7 +957,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                         extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
                     }
                 } else {
-                    updateRemoteProject(findProjectCreator());
+                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                    if (extension != null) {
+                        extension.discoverHeadersByModel(lastSelectedProject);
+                    }
                 }
             }
         }
@@ -1012,5 +1021,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         public String toString() {
             return RunDialogPanel.this.getString("ProjectItemKind_"+kind);
         }
+    }
+    
+    public static interface RunProjectAction {
+        void run(Project project);
     }
 }
