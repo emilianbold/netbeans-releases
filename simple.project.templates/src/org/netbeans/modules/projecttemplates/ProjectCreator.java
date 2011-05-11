@@ -239,20 +239,9 @@ public final class ProjectCreator {
         final FileObject projectDir = FileUtil.createFolder(dir, name);
         final GeneratedProject[] result = new GeneratedProject[1];
         projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
+            @Override
             public void run() throws IOException {
-                try {
-                    result[0] = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<GeneratedProject>() {
-
-                        public GeneratedProject run() throws Exception {
-                            return doCreateProject(handle, projectProps, projectDir, name, template, params);
-                        }
-                    });
-                } catch (MutexException ex) {
-                    IOException ioe = new IOException();
-                    ioe.initCause(ex);
-                    throw ioe;
-                }
+                result[0] = doCreateProject(handle, projectProps, projectDir, name, template, params);
             }
         });
         handle.finish();
@@ -352,16 +341,33 @@ public final class ProjectCreator {
 
         @Override
         public DataObject create(FileObject project, Map<String, String> params) throws IOException {
-            DataObject result = super.create(project, params);
-            EditableProperties ed = new EditableProperties(props);
-            FileObject file = result.getPrimaryFile();
-            FileLock lock = file.lock();
-            OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+            final DataObject result = super.create(project, params);
             try {
-                ed.store(out);
-            } finally {
-                out.close();
-                lock.releaseLock();
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws IOException {
+                        final EditableProperties ed = new EditableProperties(props);
+                        final FileObject file = result.getPrimaryFile();
+                        final FileLock lock = file.lock();
+                        try {
+                            final OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+                            try {
+                                ed.store(out);
+                            } finally {
+                                out.close();
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException me) {
+                if (me.getException() instanceof  IOException) {
+                    throw (IOException) me.getException();
+                } else {
+                    throw new IOException(me);
+                }
             }
             return result;
         }
