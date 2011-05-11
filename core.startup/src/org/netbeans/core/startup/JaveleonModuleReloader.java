@@ -44,6 +44,7 @@ package org.netbeans.core.startup;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -113,8 +114,9 @@ class JaveleonModuleReloader {
                 }
             }
         }
-        if(m == null)
+        if(m == null) {
             return false;
+        }
 
         // now find dependent modules which need to be class loader migrated
         dependents = mgr.simulateJaveleonReload(m);
@@ -188,10 +190,10 @@ class JaveleonModuleReloader {
         return map;
          */
          try {
-            Class classWindowManager = loader.loadClass("org.openide.windows.WindowManager");
-            Class classMode = loader.loadClass("org.openide.windows.Mode");
+            Class<?> classWindowManager = loader.loadClass("org.openide.windows.WindowManager");
+            Class<?> classMode = loader.loadClass("org.openide.windows.Mode");
             Object manager = classWindowManager.getDeclaredMethod("getDefault").invoke(null);
-            Set modes = (Set) classWindowManager.getDeclaredMethod("getModes").invoke(manager);
+            Set<?> modes = (Set) classWindowManager.getDeclaredMethod("getModes").invoke(manager);
             HashMap<Object, Object[]> map = new HashMap<Object, Object[]>();
             for (Object mode : modes) {
                 map.put(mode, (Object[]) classWindowManager.getDeclaredMethod("getOpenedTopComponents", classMode).invoke(manager, mode));
@@ -210,15 +212,16 @@ class JaveleonModuleReloader {
                 topComponent.open();
          */
 
-        if (map == null || map.isEmpty())
+        if (map == null || map.isEmpty()) {
             return;
+        }
 
         // TopComponent.open must be called from the AWT thread
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Class classTopComponent = loader.loadClass("org.openide.windows.TopComponent");
+                    Class<?> classTopComponent = loader.loadClass("org.openide.windows.TopComponent");
                     for (Map.Entry<Object, Object[]> entry : map.entrySet()) {
                         for (Object topComponent : entry.getValue()) {
                             classTopComponent.getDeclaredMethod("open").invoke(topComponent);
@@ -298,13 +301,18 @@ class JaveleonModuleReloader {
             return -1;
         }
         try {
-            CheckedInputStream cis = new CheckedInputStream(layer.openStream(), new CRC32());
-            // Compute the CRC32 checksum
-
-            byte[] buf = new byte[1024];
-            while (cis.read(buf) >= 0) {
+            InputStream is = layer.openStream();
+            try {
+                CheckedInputStream cis = new CheckedInputStream(is, new CRC32());
+                // Compute the CRC32 checksum
+                byte[] buf = new byte[1024];
+                while (cis.read(buf) >= 0) {
+                }
+                cis.close();
+                return cis.getChecksum().getValue();
+            } finally {
+                is.close();
             }
-            return cis.getChecksum().getValue();
         } catch (IOException e) {
             return -1;
         }
