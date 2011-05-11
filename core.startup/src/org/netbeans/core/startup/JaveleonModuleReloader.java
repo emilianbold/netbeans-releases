@@ -45,8 +45,6 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -246,7 +244,7 @@ class JaveleonModuleReloader {
             if (changed) {
                 map = retainOpenTopComponents(mgr.getClassLoader());
                 Module registeredModule = getAndClearRegisteredModule(original);
-                loadLayers(installer, registeredModule, false);
+                installer.loadLayers(Collections.singletonList(registeredModule), false);
                 //installer.unload(Collections.singletonList(registeredModule));
                 installer.dispose(registeredModule);
             }
@@ -254,7 +252,7 @@ class JaveleonModuleReloader {
             
             if (changed) {
                 installer.prepare(newModule);
-                loadLayers(installer, newModule, true);
+                installer.loadLayers(Collections.singletonList(newModule), true);
                 //installer.load(Collections.singletonList(newModule));
                 registerModule(newModule);
                 
@@ -271,24 +269,6 @@ class JaveleonModuleReloader {
         }
         catch (Throwable ex) {
             ex.printStackTrace(System.err);
-        }
-    }
-
-    private void loadLayers(NbInstaller installer, Module m, boolean load) {
-        try {
-            Method loadLayers = NbInstaller.class.getDeclaredMethod("loadLayers", List.class, boolean.class);
-            loadLayers.setAccessible(true);
-            loadLayers.invoke(installer, Collections.singletonList(m), load);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
