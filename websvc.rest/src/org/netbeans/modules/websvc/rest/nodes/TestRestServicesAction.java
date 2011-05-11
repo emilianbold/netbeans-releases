@@ -43,21 +43,10 @@
  */
 package org.netbeans.modules.websvc.rest.nodes;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
-import org.apache.tools.ant.module.api.support.ActionUtils;
+
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -82,80 +71,15 @@ public class TestRestServicesAction extends NodeAction  {
         return true;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         Project prj = activatedNodes[0].getLookup().lookup(Project.class);
-        if (prj != null) {
-                FileObject buildFo = Utils.findBuildXml(prj);
-                if (buildFo != null) {
-                    try {
-                        Properties p = setupTestRestBeans(prj);
-                        ActionUtils.runTarget(buildFo, new String[]{RestSupport.COMMAND_TEST_RESTBEANS}, p);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                } else {
-                    // if there is a rest support (e.g. in Maven projects)
-                    RestSupport rs = prj.getLookup().lookup(RestSupport.class);
-                    if (rs != null) {
-                        try {
-                            File testFolder = FileUtil.toFile(prj.getProjectDirectory());
-                            FileObject testFO = rs.generateTestClient(testFolder);
-                            if (testFO != null) {
-                                URL url = testFO.getURL();
-                                if (url != null) {
-                                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-
-                // logging usage of action
-                Object[] params = new Object[2];
-                params[0] = LogUtils.WS_STACK_JAXRS;
-                params[1] = "TEST REST"; // NOI18N
-                LogUtils.logWsAction(params);
-
-        }
+        Utils.testRestWebService(prj);
     }
 
     @Override
     public boolean asynchronous() {
         return true;
-    }
-
-    private Properties setupTestRestBeans(Project project) throws IOException {
-        Properties p = new Properties();
-        p.setProperty(RestSupport.PROP_BASE_URL_TOKEN, RestSupport.BASE_URL_TOKEN);
-
-        String path = RestSupport.RESTBEANS_TEST_DIR;
-        RestSupport rs = project.getLookup().lookup(RestSupport.class);
-        if (rs != null) {
-            try {
-                String applicationPath = rs.getApplicationPath();
-                if (applicationPath != null) {
-                    if (!applicationPath.startsWith("/")) {
-                        applicationPath = "/"+applicationPath;
-                    }
-                    p.setProperty(RestSupport.PROP_APPLICATION_PATH, applicationPath);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            AntProjectHelper helper = rs.getAntProjectHelper();
-            EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            String path1 = projectProps.getProperty(RestSupport.PROP_RESTBEANS_TEST_DIR);
-            if (path1 != null) {
-                path = path1;
-            }
-            File testdir = helper.resolveFile(path);
-            FileObject testFO = rs.generateTestClient(testdir);
-            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
-            p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
-        }
-        return p;
     }
 
 }
