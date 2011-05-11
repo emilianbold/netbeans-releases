@@ -62,12 +62,4 @@ public class Normalization extends PatternRule {
         return PATTERNS;
     }
 
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
-    }
-    
-    
-    
-
 }
