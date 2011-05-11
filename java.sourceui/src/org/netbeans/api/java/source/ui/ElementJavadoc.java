@@ -950,7 +950,7 @@ public class ElementJavadoc {
             }
         }
         StringBuilder see = new StringBuilder();
-        String since = null;
+        StringBuilder since = null;
         for (Tag tag : doc.tags()) {
             if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
@@ -978,7 +978,11 @@ public class ElementJavadoc {
                     see.append(stag.text()).append(", "); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
-                since = tag.text();
+                if (since == null) {
+                    since = new StringBuilder(tag.text());
+                } else {
+                    since.append(", ").append(tag.text()); // NOI18N
+                }
             }
         }
         StringBuilder sb = new StringBuilder();
@@ -1009,7 +1013,7 @@ public class ElementJavadoc {
         StringBuilder par = new StringBuilder();
         StringBuilder thr = new StringBuilder();
         StringBuilder ret = new StringBuilder();
-        String since = null;
+        StringBuilder since = null;
         for (Tag tag : doc.tags()) {
             if (PARAM_TAG.equals(tag.kind()) && !doc.isMethod()) {
                 par.append("<code>").append(((ParamTag)tag).parameterName()).append("</code>"); //NOI18N
@@ -1062,7 +1066,11 @@ public class ElementJavadoc {
                     see.append(stag.text()).append(", "); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
-                since = tag.text();
+                if (since == null) {
+                    since = new StringBuilder(tag.text());
+                } else {
+                    since.append(", ").append(tag.text()); // NOI18N
+                }
             }
         }
         StringBuilder sb = new StringBuilder();

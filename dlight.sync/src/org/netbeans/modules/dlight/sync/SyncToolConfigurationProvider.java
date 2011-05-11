@@ -203,7 +203,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             SunStudioDCConfiguration.c_name,
             SunStudioDCConfiguration.c_eSync,
             SunStudioDCConfiguration.c_eSyncn);
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName() ,null, SunStudioDCConfiguration.c_name.getColumnName());
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(
+                SunStudioDCConfiguration.c_name.getColumnName(), 
+                SunStudioDCConfiguration.c_name.getColumnName(),
+                null, /* offset */
+                null /* context */);
 //        indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
 //            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
 
@@ -306,13 +310,15 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             new Column("func_name", FunctionName.class, "Function", null),// NOI18N
             syncTimeColumn,
             syncCountColumn);
-        String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time) as time, COUNT(*) as count" +// NOI18N
-            " FROM sync, node AS node, func" +// NOI18N
-            " WHERE  sync.stack_id = node.node_id and node.func_id = func.func_id" +// NOI18N
-            " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
+        
+        String sql = "select stacknode.func_id as id, fname as func_name, offset, sum(sync.time) as time, count(*) as count" // NOI18N
+                + " from sync inner join stacknode on stacknode.id = sync.stack_id" // NOI18N
+                + " inner join funcnames on funcnames.id = stacknode.func_id" // NOI18N
+                + " group by stacknode.func_id, offset " // NOI18N
+                + " order by time desc"; // NOI18N
 
-        viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));// NOI18N
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id");//NOI18N
+        viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("id", "func_name", "offset", null); // NOI18N
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
             new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(syncTimeColumn, syncCountColumn));
         ColumnsUIMapping uiMapping = new ColumnsUIMapping();

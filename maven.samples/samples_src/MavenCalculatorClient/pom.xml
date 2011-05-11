@@ -42,7 +42,10 @@
             <resource>
                 <targetPath>META-INF</targetPath>
                 <directory>src</directory>
-                <includes/>
+                <includes>
+		    <include>jax-ws-catalog.xml</include>
+                    <include>wsdl/**</include>
+                </includes>
             </resource>
         </resources>
         <plugins>

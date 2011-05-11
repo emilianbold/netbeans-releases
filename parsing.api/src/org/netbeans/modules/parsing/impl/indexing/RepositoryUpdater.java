@@ -903,7 +903,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private static final int VISIBILITY_CHANGE_WINDOW = 500;
 
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
-    /* test */ static Source unitTestActiveSource;
+    /* test */ volatile static Source unitTestActiveSource;
 
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
     private final Map<URL, List<URL>>scannedBinaries2InvDependencies = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
@@ -2305,8 +2305,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
         
         protected final Source getActiveSource() {
-            if (unitTestActiveSource != null) {
-                return unitTestActiveSource;
+            final Source utActiveSrc = unitTestActiveSource;
+            if (utActiveSrc != null) {
+                return utActiveSrc;
             }
             final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
             if (jtc == null) {

@@ -555,10 +555,12 @@ public class MakeConfiguration extends Configuration {
     }
 
     private void fixupMasterLinks(MakeConfiguration makeConf) {
-        FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
+        FileObject projectDirFO = getBaseFSPath().getFileObject();
         Project project = null;
         try {
-            project = ProjectManager.getDefault().findProject(projectDirFO);
+            if (projectDirFO != null && projectDirFO.isValid()) {
+                project = ProjectManager.getDefault().findProject(projectDirFO);
+            }
         } catch (IOException ioe) {
             // Error
             return;

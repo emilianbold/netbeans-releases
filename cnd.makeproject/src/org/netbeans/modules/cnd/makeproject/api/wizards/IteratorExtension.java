@@ -60,7 +60,7 @@ public interface IteratorExtension {
     /**
      * Method discover additional project artifacts by folder or binary file
      * 
-     * @param map
+     * @param map input/output map
      */
     void discoverArtifacts(Map<String,Object> map);
 
@@ -69,21 +69,31 @@ public interface IteratorExtension {
      * Instantiate make project in simple mode.
      * 
      * @param wizard
-     * @return set make project
+     * @return set of make projects
      * @throws java.io.IOException
      */
     Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
 
     /**
      * Method invoke discovery for created project.
-     * @param map
-     * @param project
-     * @param functionToOpen
+     * 
+     * @param map input map
+     * @param project that will be configured or created
+     * @param projectKind fullness of configured project
      */
     void discoverProject(Map<String,Object> map, Project project, ProjectKind projectKind);
+    
+    /**
+     * Adds headers items in the project, changes exclude/include state of headers items
+     * according to code model. Returns immediately, listens until parse in done,
+     * tunes project on parse finish.
+     * 
+     * @param project 
+     */
+    void discoverHeadersByModel(Project project);
 
     public enum ProjectKind {
-        Minimal,
+        Minimal, // include in project com
         IncludeDependencies,
         CreateDependencies
     }

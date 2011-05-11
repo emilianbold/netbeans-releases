@@ -43,9 +43,12 @@
  */
 package org.netbeans.modules.websvc.rest.projects;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
@@ -72,6 +75,8 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
@@ -82,6 +87,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -371,6 +377,52 @@ public class WebProjectRestSupport extends WebRestSupport {
                 p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, String.valueOf(cFD)); // NOI18N
 
             }
+        }
+    }
+    
+    @Override
+    public File getLocalTargetTestRest(){
+        String path = RESTBEANS_TEST_DIR;
+        AntProjectHelper helper = getAntProjectHelper();
+        EditableProperties projectProps = helper
+                .getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String path1 = projectProps
+                .getProperty(PROP_RESTBEANS_TEST_DIR);
+        if (path1 != null) {
+            path = path1;
+        }
+        return helper.resolveFile(path);
+    }
+    
+    public FileObject generateTestClient(File testdir, String url) 
+        throws IOException 
+   {
+        FileObject fileObject = generateTestClient(testdir);
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(BASE_URL_TOKEN, url );
+        modifyFile( fileObject , map );
+        return fileObject;
+    }
+    
+    @Override
+    public String getBaseURL() throws IOException {
+        String applicationPath = getApplicationPath();
+        if (applicationPath != null) {
+            if (!applicationPath.startsWith("/")) {
+                applicationPath = "/"+applicationPath;
+            }
+        }
+        return getContextRootURL()+"||"+applicationPath;            //NOI18N
+    }
+    
+    @Override
+    public void deploy() throws IOException{
+        FileObject buildFo = Utils.findBuildXml(getProject());
+        if (buildFo != null) {
+            ExecutorTask task = ActionUtils.runTarget(buildFo,
+                    new String[] { COMMAND_DEPLOY },
+                    new Properties());
+            task.waitFinished();
         }
     }
 

@@ -128,6 +128,7 @@ import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -814,10 +815,10 @@ public class EjbJarProject implements Project, FileChangeListener {
                     // previously do not ask and use it
                     serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
-                        String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-                        if (servInstIDs.length > 0) {
-                            EjbJarProjectProperties.setServerInstance(EjbJarProject.this, EjbJarProject.this.helper, servInstIDs[0]);
-                            platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                        String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.EJB, EjbJarProject.this.getAPIEjbJar().getJ2eeProfile());
+                        if (instanceID != null) {
+                            EjbJarProjectProperties.setServerInstance(EjbJarProject.this, EjbJarProject.this.helper, instanceID);
+                            platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                         }
                     }
                     if (platform == null) {

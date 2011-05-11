@@ -57,7 +57,7 @@ public class Internal extends PatternRule {
 
     @Override
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+        return HintSeverity.INFO;
     }
 
     private static final String[] PATTERNS_SOURCES = new String[]{

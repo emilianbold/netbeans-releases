@@ -51,18 +51,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -70,8 +65,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -82,7 +75,6 @@ import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
-import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -96,7 +88,6 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -109,7 +100,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -514,7 +504,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 break;
                             }
                         }
-                        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, null);
+                        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
                         if (cd != null) {
                             cd.create();
                         }

@@ -41,34 +41,30 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
-import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
 
 /**
  *
  * @author marekfukala
  */
-public class CharacterReference extends PatternRule {
-
-    private static final String[] PATTERNS_SOURCES = new String[]{
-        "Character reference was not terminated by a semicolon",
-        "Source text is not in Unicode Normalization Form C",
-        "The string following .&. was interpreted as a character reference",
-        "Named character reference was not terminated by a semicolon",
-        ".&. did not start a character reference",
-        "Character reference expands to",
-        "A numeric character reference expanded to",
-        "Character reference outside the permissible Unicode range."
-        
-        
-    }; //NOI18N
+public class DoctypeTest extends NbTestCase {
     
-    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
-
-    @Override
-    public Pattern[] getPatterns() {
-        return PATTERNS;
+    public DoctypeTest(String name) {
+        super(name);
     }
-
-
+    
+    public void testPatterns() {
+        String str = "Error: Quirky doctype. Expected \"<!DOCTYPE html>\".\n"
+                + "From line 4, column 4; to line 5, column 16\n\n";
+//        for(int i = 0; i < str.length(); i++) {
+//            System.out.println(str.charAt(i) + " -> " + Integer.toHexString(str.charAt(i)));
+//        }
+        Error e = new DefaultError(null, null, str, null, -1, -1, Severity.WARNING);
+        PatternRule rule = new Doctype();
+        
+        assertTrue(rule.appliesTo(null, e));
+    }
 }
