@@ -1284,7 +1284,7 @@ member_declaration
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
 
 //		((LITERAL_typedef | LITERAL_static)? class_head)=>
-                ((  storage_class_specifier
+                ((LITERAL___extension__!)? (  storage_class_specifier
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
@@ -1293,7 +1293,7 @@ member_declaration
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
 		}
-		declaration[declOther]
+		(LITERAL___extension__!)? declaration[declOther]
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
