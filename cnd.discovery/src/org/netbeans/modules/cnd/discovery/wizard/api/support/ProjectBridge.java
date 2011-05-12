@@ -132,7 +132,7 @@ public class ProjectBridge {
      * Create new item. Path is converted to relative.
      */
     public Item createItem(String path){
-        return new Item(getRelativepath(path));
+        return Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), getRelativepath(path));
     }
     
     /**

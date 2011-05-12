@@ -376,9 +376,9 @@ public class ImportExecutable implements PropertyChangeListener {
                     break;
                 }
             }
-            externalItemFolder.addItem(new Item(configure.makefile.getAbsolutePath()));
+            externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getAbsolutePath()));
             if (configure.script != null) {
-                externalItemFolder.addItem(new Item(configure.script.getAbsolutePath()));
+                externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getAbsolutePath()));
             }
         }
     }

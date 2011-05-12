@@ -301,12 +301,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         if (!addGeneratedMakefileToLogicalView) {
             if (!getProjectMakefileName().isEmpty()) {
-                externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+                externalFileItems.addItem(Item.createInFileSystem(baseDirFS, getProjectMakefileName())); // NOI18N
             }
         }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
-                externalFileItems.addItem(new Item(importantItems.next()));
+                externalFileItems.addItem(Item.createInFileSystem(baseDirFS, importantItems.next()));
             }
         }
 //        addSourceFilesFromFolders(sourceFileFolders, false, false, true
@@ -314,7 +314,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (mainFilePath != null) {
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
-                srcFolder.addItem(new Item(mainFilePath));
+                srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
             }
         }
         // Handle test folders
@@ -467,7 +467,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public void setExternalFileItems(List<String> items) {
         externalFileItems.reset();
         for (String s : items) {
-            externalFileItems.addItem(new Item(s));
+            externalFileItems.addItem(Item.createInFileSystem(baseDirFS, s));
         }
     }
 
@@ -1507,7 +1507,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
             } else {
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
-                Item item = new Item(baseDirFO, path);
+                Item item = Item.createInBaseDir(baseDirFO, path);
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
