@@ -306,8 +306,8 @@ public class DiscoveryProjectGeneratorImpl {
             String root = folders[i].getAbsolutePath();
             String orphan = used.getFolder();
             if (root != null && orphan != null && orphan.startsWith(root)) {
-                String[] splitRoot = root.split("\\/");
-                String[] splitOrphan = orphan.split("\\/");
+                String[] splitRoot = root.split("\\/"); // NOI18N
+                String[] splitOrphan = orphan.split("\\/"); // NOI18N
                 int lastEquals = -1;
                 for(int j = 0; j < splitRoot.length && j < splitOrphan.length; j++) {
                     if (splitRoot[j].equals(splitOrphan[j])) {
