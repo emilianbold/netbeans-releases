@@ -9,13 +9,16 @@
 
 package org.netbeans.test.subversion.operators.actions;
 
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
  * @author peter
  */
-public class SearchHistoryAction extends Action{
+public class SearchHistoryAction extends ActionNoBlock {
+    
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
     
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
@@ -25,6 +28,6 @@ public class SearchHistoryAction extends Action{
     
     /** Creates a new instance of SEARCH HISTORY */
     public SearchHistoryAction() {
-        super("Versioning" + "|" + SEARCH_HISTORY_ITEM, SVN_ITEM + "|" + SEARCH_HISTORY_ITEM);
+        super(TEAM_ITEM + "|" + SEARCH_HISTORY_ITEM, SVN_ITEM + "|" + SEARCH_HISTORY_ITEM);
     }
 }

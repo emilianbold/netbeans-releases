@@ -59,9 +59,8 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  */
 public class CheckoutAction extends ActionNoBlock {
 
+    /** "Team" menu item. */
     public static final String TEAM_ITEM = "Team";
-
-//    public static final String VERSIONING_ITEM = "Versioning";
     
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
