@@ -102,7 +102,9 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
@@ -301,13 +303,23 @@ public final class ReferencesSupport {
                 repeat = false;
                 if (CsmOffsetUtilities.isInObject(type, offset)) {
                     parameter = null;
-                } else if (CsmKindUtilities.isFunctionPointerType(type)) {
+                }
+                if (CsmKindUtilities.isFunctionPointerType(type)) {
                     CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
                             ((CsmFunctionPointerType) type).getParameters(), null, offset);
                     if (deeperParameter != null) {
                         parameter = deeperParameter;
                         type = deeperParameter.getType();
                         repeat = true;
+                    }
+                } 
+                if (!type.getInstantiationParams().isEmpty()) {
+                    CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
+                    if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
+                        if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                            type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                            repeat = true;
+                        }
                     }
                 }
             } while (repeat);
@@ -324,6 +336,35 @@ public final class ReferencesSupport {
                     csmItem = var;
                 }
             }
+        } else if (CsmKindUtilities.isType(objUnderOffset)) {
+            CsmType type = (CsmType)objUnderOffset;
+            CsmParameter parameter = null;
+            boolean repeat;
+            do {
+                repeat = false;
+                if (CsmOffsetUtilities.isInObject(type, offset)) {
+                    parameter = null;
+                }
+                if (CsmKindUtilities.isFunctionPointerType(type)) {
+                    CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
+                            ((CsmFunctionPointerType) type).getParameters(), null, offset);
+                    if (deeperParameter != null) {
+                        parameter = deeperParameter;
+                        type = deeperParameter.getType();
+                        repeat = true;
+                    }
+                } 
+                if (!type.getInstantiationParams().isEmpty()) {
+                    CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
+                    if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
+                        if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                            type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                            repeat = true;
+                        }
+                    }
+                }
+            } while (repeat);
+            csmItem = parameter;            
         }
         if (csmItem == null) {
             int[] idFunBlk = null;

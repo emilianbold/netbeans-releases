@@ -1231,7 +1231,10 @@ public class AstRenderer {
     }
 
     public static TypeImpl renderType(AST tokType, CsmFile file) {
-
+        return renderType(tokType, file, false);
+    }
+    
+    public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecializationParams) {
         AST typeAST = tokType;
         tokType = getFirstSiblingSkipQualifiers(tokType);
 
@@ -1240,7 +1243,11 @@ public class AstRenderer {
                     tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                 AST next = tokType.getNextSibling();
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
-                return TypeFactory.createType(typeAST, file, ptrOperator, 0);
+                if(inSpecializationParams) {
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, false, true);
+                } else {
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0);
+                }                
             }
             if (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
                     tokType.getType() == CPPTokenTypes.LITERAL_class ||
