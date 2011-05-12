@@ -102,7 +102,11 @@ class SearchExecutor extends GitProgressSupport {
             return;
         }
         SearchCriteria sc = new SearchCriteria();
-        sc.setFiles(master.getRoots());
+        File[] files = master.getRoots();
+        sc.setFiles(files);
+        if (files != null && files.length == 1 && files[0].isFile()) {
+            sc.setFollowRenames(true);
+        }
         sc.setUsername(username);
         sc.setMessage(message);
         sc.setLimit(limitRevisions);

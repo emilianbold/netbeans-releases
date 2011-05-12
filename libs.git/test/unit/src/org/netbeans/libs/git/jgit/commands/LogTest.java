@@ -568,6 +568,44 @@ public class LogTest extends AbstractGitTestCase {
         assertRevisions(revision3, revisions[1]);
         assertRevisions(revision2, revisions[2]);
     }
+    
+    public void testLogFollowRename () throws Exception {
+        File f = new File(workDir, "f");
+        File to = new File(workDir, "renamed");
+        write(f, "initial content");
+        File[] files = new File[] { f, to };
+        add(files);
+        commit(files);
+
+        write(f, "modification1");
+        add(files);
+
+        GitClient client = getClient(workDir);
+        GitRevisionInfo revision1 = client.commit(files, "modification1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        client.rename(f, to, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision2 = client.commit(files, "rename", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        write(to, "modification2");
+        add(files);
+        GitRevisionInfo revision3 = client.commit(files, "modification2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        SearchCriteria crit = new SearchCriteria();
+        crit.setFiles(new File[] { to });
+        GitRevisionInfo[] revisions = client.log(crit, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, revisions.length);
+        assertRevisions(revision3, revisions[0]);
+        assertRevisions(revision2, revisions[1]);
+        
+        crit = new SearchCriteria();
+        crit.setFiles(new File[] { to });
+        crit.setFollowRenames(true);
+        revisions = client.log(crit, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(4, revisions.length);
+        assertRevisions(revision3, revisions[0]);
+        assertRevisions(revision2, revisions[1]);
+        assertRevisions(revision1, revisions[2]);
+    }
 
     private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {
         assertEquals(expected.getRevision(), info.getRevision());
