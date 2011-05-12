@@ -46,10 +46,12 @@ package org.netbeans.modules.git.ui.history;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitStatus.Status;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 
 public class RepositoryRevision {
@@ -61,6 +63,7 @@ public class RepositoryRevision {
      * List of events associated with the revision.
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
+    private String commonAncestor;
 
     public RepositoryRevision (GitRevisionInfo message) {
         this.message = message;
@@ -106,6 +109,21 @@ public class RepositoryRevision {
         text.append("\n"); // NOI18N
         text.append(getLog().getShortMessage());
         return text.toString();
+    }
+
+    String getAncestorCommit (GitClient client, ProgressMonitor pm) throws GitException {
+        if (commonAncestor == null) {
+            if (getLog().getParents().length == 1) {
+                commonAncestor = getLog().getParents()[0];
+            } else if (getLog().getParents().length > 1) {
+                GitRevisionInfo info;
+                info = client.getCommonAncestor(getLog().getParents(), pm);
+                if (info != null) {
+                    commonAncestor = info.getRevision();
+                }
+            }
+        }
+        return commonAncestor;
     }
     
     public class Event {
