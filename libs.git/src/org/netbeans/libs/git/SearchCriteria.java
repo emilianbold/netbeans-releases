@@ -43,6 +43,7 @@
 package org.netbeans.libs.git;
 
 import java.io.File;
+import java.util.Date;
 import org.openide.util.Parameters;
 
 /**
@@ -54,7 +55,12 @@ public final class SearchCriteria {
     private int limit;
     private String revisionFrom;
     private String revisionTo;
+    private Date from;
+    private Date to;
     private File[] files;
+    private boolean includeMerges = true;
+    private String username;
+    private String message;
 
     public SearchCriteria () {
         this.limit = -1;
@@ -96,5 +102,45 @@ public final class SearchCriteria {
 
     public void setRevisionTo (String revisionTo) {
         this.revisionTo = revisionTo;
+    }
+
+    public Date getFrom () {
+        return from;
+    }
+
+    public void setFrom (Date date) {
+        this.from = date;
+    }
+
+    public Date getTo () {
+        return to;
+    }
+
+    public void setTo (Date date) {
+        this.to = date;
+    }
+
+    public boolean isIncludeMerges () {
+        return includeMerges;
+    }
+
+    public void setIncludeMerges (boolean flag) {
+        this.includeMerges = flag;
+    }
+
+    public String getUsername () {
+        return username;
+    }
+
+    public void setUsername (String username) {
+        this.username = username;
+    }
+
+    public String getMessage () {
+        return message;
+    }
+
+    public void setMessage (String message) {
+        this.message = message;
     }
 }

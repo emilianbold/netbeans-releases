@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,46 +40,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.git.ui.history;
 
-package org.netbeans.libs.git.jgit;
+import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
-import org.eclipse.jgit.lib.PersonIdent;
-import org.netbeans.libs.git.GitUser;
+import java.io.File;
+import java.awt.BorderLayout;
 
-/**
- * identification of git user
- * @author Jan Becicka
- */
-public final class JGitUserInfo extends GitUser {
+@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchHistoryTopComponent")
+public class SearchHistoryTopComponent extends TopComponent {
 
-    private final String name;
-    private final String email;
+    private SearchHistoryPanel shp;
+    private SearchCriteriaPanel scp;
+    private File[] files;
+    private File repository;
 
-    public JGitUserInfo(PersonIdent authorIdent) {
-        this.name = authorIdent.getName();
-        this.email = authorIdent.getEmailAddress();
+    public SearchHistoryTopComponent () {
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
+    }
+    
+    public SearchHistoryTopComponent (File repository, File[] files) {
+        this();
+        this.repository = repository;
+        this.files = files;
+        initComponents();
     }
 
-    /**
-     * user's name
-     * @return
-     */
-    @Override
-    public String getName() {
-        return name;
+    public void search() {        
+        shp.executeSearch();
+        shp.setSearchCriteria(false);
     }
 
-    /**
-     * users email address
-     * @return
-     */
+    private void initComponents () {
+        setLayout(new BorderLayout());
+        scp = new SearchCriteriaPanel();
+        shp = new SearchHistoryPanel(repository, files, scp);
+        add(shp);
+    }
+    
     @Override
-    public String getEmailAddress() {
-        return email;
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
     }
 }

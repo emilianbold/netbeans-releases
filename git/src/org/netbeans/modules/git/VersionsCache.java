@@ -75,7 +75,7 @@ public class VersionsCache {
      *
      * @return null if the file does not exist in given revision
      */
-    public File getFileRevision(File base, String revision) throws IOException {
+    public File getFileRevision(File base, String revision, ProgressMonitor pm) throws IOException {
         if("-1".equals(revision)) return null; // NOI18N
 
         File repository = Git.getInstance().getRepositoryRoot(base);
@@ -88,9 +88,9 @@ public class VersionsCache {
                 GitClient client = Git.getInstance().getClient(repository);
                 boolean result;
                 if (GitUtils.INDEX.equals(revision)) {
-                    result = client.catIndexEntry(base, 0, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    result = client.catIndexEntry(base, 0, new FileOutputStream(tempFile), pm);
                 } else {
-                    result = client.catFile(base, revision, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    result = client.catFile(base, revision, new FileOutputStream(tempFile), pm);
                 }
                 if (!result) {
                     tempFile.delete();

@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -147,6 +146,15 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
             files.put(info.getFile(), info);
         }
         return files;
+    }
+
+    @Override
+    public String[] getParents () {
+        String[] parents = new String[revCommit.getParentCount()];
+        for (int i = 0; i < revCommit.getParentCount(); ++i) {
+            parents[i] = ObjectId.toString(revCommit.getParent(i).getId());
+        }
+        return parents;
     }
 
     private void listFiles() throws GitException {
