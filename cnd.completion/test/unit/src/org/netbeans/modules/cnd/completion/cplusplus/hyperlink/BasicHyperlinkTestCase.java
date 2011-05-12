@@ -833,6 +833,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 196966 - volatile bitfield in structure incorrectly reported as an error
         performTest("bug196966.cpp", 2, 21, "bug196966.cpp", 2, 5);
     }    
+
+    public void testBug151199() throws Exception {
+        // Bug 151199 - Unresolved parameter of pointer to function type used as template parameter
+        performTest("bug151199.cpp", 5, 26, "bug151199.cpp", 5, 22);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

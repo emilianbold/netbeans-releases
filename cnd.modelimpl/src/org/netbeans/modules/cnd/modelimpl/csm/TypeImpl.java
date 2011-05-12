@@ -262,7 +262,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 default:
                     last = token;
             }
-        }
+        }        
         return null;
     }
 
@@ -648,7 +648,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                             if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
-                                CsmType type = AstRenderer.renderType(namePart, getContainingFile());
+                                CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true);
                                 instantiationParams.add(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
