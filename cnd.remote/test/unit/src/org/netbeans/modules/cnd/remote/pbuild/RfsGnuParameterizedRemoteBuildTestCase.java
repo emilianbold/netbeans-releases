@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -151,8 +152,8 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         String tmpFile = rcs.getOutput();
         tmpFile = stripLf(tmpFile);
         for (File file : files) {
-            Future<Integer> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), env, tmpFile, 0777, null);
-            assertEquals(0, task.get().intValue());
+            Future<UploadStatus> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), env, tmpFile, 0777);
+            assertEquals(0, task.get().getExitCode());
         }
         time = System.currentTimeMillis() - time;
         System.out.printf("FILES PLAIN COPYING TOOK %d ms\n", time);

@@ -704,8 +704,7 @@ public final class DtraceDataCollector
             Util.setExecutionPermissions(Arrays.asList(finalPath));
         } else {
             try {
-                int rc = CommonTasksSupport.uploadFile(localTmpFile, trgEnv, finalPath, 0777, null).get();
-                if (rc != 0) {
+                if (!CommonTasksSupport.uploadFile(localTmpFile, trgEnv, finalPath, 0777).get().isOK()) {
                     throw new IOException("Failed to upload dtrace script"); // NOI18N
                 }
             } catch (InterruptedException ex) {

@@ -62,6 +62,7 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -328,11 +329,10 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     }
 
     protected void upload(File file, String remotePath) throws Exception {
-        StringWriter errWriter = new StringWriter();
-        Future<Integer> task = CommonTasksSupport.uploadFile(file, execEnv, remotePath, -1, errWriter);
+        Future<UploadStatus> task = CommonTasksSupport.uploadFile(file, execEnv, remotePath, -1);
+        UploadStatus res = task.get();
         assertEquals("Failed uploading " + file.getAbsolutePath() + " to " + execEnv + ":" + remotePath
-                + ": " + errWriter.toString(),
-                0, task.get().intValue());
+                + ": " + res.getError(), 0, res.getExitCode());
     }
 
     protected void mkDir(String dir) throws InterruptedException, ExecutionException, TimeoutException {

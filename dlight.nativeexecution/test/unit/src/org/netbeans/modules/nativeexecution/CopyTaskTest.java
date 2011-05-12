@@ -43,11 +43,7 @@ package org.netbeans.modules.nativeexecution;
 
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.PrintWriter;
-import java.lang.Object;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeListener;
@@ -57,12 +53,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -102,40 +97,6 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         super.tearDown();
     }
 
-    /**
-     * Test of uploadFile method, of class CopyTask.
-     */
-    public void __testCopyToLocal() throws Exception {
-        System.out.println("copyTo"); // NOI18N
-        File srcFile = createTempFile("src", null, false); // NOI18N
-        srcFile.deleteOnExit();
-        writeFile(srcFile, "123\n456\n789"); // NOI18N
-        String dstFileName = "/tmp/trg_x"; // NOI18N
-
-        CharArrayWriter err = new CharArrayWriter();
-        Future<Integer> fresult = CommonTasksSupport.uploadFile(
-                srcFile.getAbsolutePath(),
-                ExecutionEnvironmentFactory.getLocal(),
-                dstFileName, 0777, err);
-
-        if (fresult == null) {
-            System.out.println("Error: " + err.toString()); // NOI18N
-        }
-
-        int result = -1;
-        try {
-            result = fresult.get();
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        System.out.println("Done with status " + result); // NOI18N
-
-        if (result != 0) {
-            System.out.println("Error: " + err.toString()); // NOI18N
-        }
-    }
-
     @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
     public void testCopyToRemote() throws Exception {
@@ -147,17 +108,16 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         String dst = "/tmp/" + /* execEnv.getUser() + "/" +  */ src.getName(); // NOI18N
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst); // NOI18N
 
-        Future<Integer> uploadTask;
+        Future<UploadStatus> uploadTask;
         int rc;
 
-        uploadTask = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
-        rc = uploadTask.get();
-        assertEquals("Error uploading " + src.getAbsolutePath() + " to " + execEnv + ":" + dst, 0, rc);
+        uploadTask = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755);
+        UploadStatus uploadStatus = uploadTask.get();
+        assertEquals("Error uploading " + src.getAbsolutePath() + " to " + execEnv + ":" + dst + ' ' + uploadStatus.getError(), 0, uploadStatus.getExitCode());
         assertTrue(HostInfoUtils.fileExists(execEnv, dst));
 
         CommonTasksSupport.UploadParameters up = new CommonTasksSupport.UploadParameters(src, execEnv, dst);
         up.mask = 0755;
-        up.error = new PrintWriter(System.err);
         final AtomicReference<Object> ref = new AtomicReference<Object>();
         up.callback = new ChangeListener() {
             @Override
@@ -167,7 +127,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         };
         uploadTask = CommonTasksSupport.uploadFile(up);
 
-        rc = uploadTask.get();
+        rc = uploadTask.get().getExitCode();
 
         // sleep a bit since listener can be just not calleds
         if (ref.get() == null) {

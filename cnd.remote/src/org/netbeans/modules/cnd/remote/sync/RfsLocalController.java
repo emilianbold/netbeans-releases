@@ -80,6 +80,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
@@ -234,17 +235,20 @@ class RfsLocalController extends NamedRunnable {
                                 //FileState state = fileData.getState(localFile);
                                 logger.log(Level.FINEST, "uploading %s to %s started", localFile, remoteFile);
                                 long fileTime = System.currentTimeMillis();
-                                Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
+                                Future<UploadStatus> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777);
                                 try {
-                                    int rc = task.get();
+                                    UploadStatus uploadStatus = task.get();
                                     fileTime = System.currentTimeMillis() - fileTime;
                                     totalCopyingTime += fileTime;
                                     logger.log(Level.FINEST, "uploading %s to %s finished; rc=%d time = %d total time = %d ms",
-                                            localFile, remoteFile, rc, fileTime, totalCopyingTime);
-                                    if (rc == 0) {
+                                            localFile, remoteFile, uploadStatus.getExitCode(), fileTime, totalCopyingTime);
+                                    if (uploadStatus.isOK()) {
                                         fileData.setState(localFile, FileState.COPIED);
                                         respond_ok();
                                     } else {
+                                        if (err != null) {
+                                            err.println(uploadStatus.getError());
+                                        }
                                         respond_err("1"); // NOI18N
                                     }
                                 } catch (InterruptedException ex) {
