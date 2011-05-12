@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
@@ -71,6 +72,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -272,16 +274,16 @@ class SftpSupport {
             LOG.log(Level.INFO, "Error " + getTraceName(), ex);
         }
     }
-
-    private class Uploader extends Worker implements Callable<Integer> {
+    
+    private class Uploader implements Callable<UploadStatus> {
 
         private final int mask;
         private final boolean checkMd5;
         protected final String srcFileName;
         protected final String dstFileName;
+        protected StatInfo statInfo;
 
-        public Uploader(String srcFileName, String dstFileName, int mask, Writer error, boolean checkMd5) {
-            super(error);
+        public Uploader(String srcFileName, String dstFileName, int mask, boolean checkMd5) {
             this.srcFileName = srcFileName;
             this.dstFileName = dstFileName;
             this.mask = mask;
@@ -289,7 +291,63 @@ class SftpSupport {
         }
 
         @Override
-        protected void work() throws IOException, CancellationException, JSchException, SftpException, InterruptedException, ExecutionException {
+        public UploadStatus call() throws InterruptedException {
+            StringBuilder err = new StringBuilder();
+            int rc = -1;
+            try {                
+                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
+                work(err);
+                rc = 0;
+            } catch (JSchException ex) {
+                if (ex.getMessage().contains("Received message is too long: ")) { // NOI18N
+                    // This is a known issue... but we cannot
+                    // do anything with this ;(
+                    if (isUnitTest) {
+                        logException(ex);
+                    } else {
+                        Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
+                        DialogDisplayer.getDefault().notifyLater(message);
+                    }
+                    rc = 7;
+                } else {
+                    logException(ex);
+                    rc = 1;
+                }
+                err.append(ex.getMessage());
+            } catch (SftpException ex) {
+                err.append(ex.getMessage());
+                logException(ex);
+                rc = 2;
+            } catch (ConnectException ex) {
+                err.append(ex.getMessage());
+                logException(ex);
+                rc = 3;
+            } catch (InterruptedIOException ex) {
+                err.append(ex.getMessage());
+                rc = 4;
+                throw new InterruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                err.append(ex.getMessage());
+                logException(ex);
+                rc = 5;
+            } catch (CancellationException ex) {
+                err.append(ex.getMessage());
+                // no trace
+                rc = 6;
+            } catch (ExecutionException ex) {
+                err.append(ex.getMessage());
+                logException(ex);
+                rc = 7;
+            }
+            LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
+            return new UploadStatus(rc, err.toString(), statInfo);
+        }
+        
+        protected void logException(Exception ex) {
+            LOG.log(Level.INFO, "Error " + getTraceName(), ex);
+        }
+        
+        private void work(StringBuilder err) throws IOException, CancellationException, JSchException, SftpException, InterruptedException, ExecutionException {
             boolean checkDir = false;
             if (checkMd5) {
                 LOG.log(Level.FINE, "Md5 check for {0}:{1} started", new Object[]{execEnv, dstFileName});
@@ -330,13 +388,27 @@ class SftpSupport {
                     int slashPos = dstFileName.lastIndexOf('/'); //NOI18N
                     if (slashPos >= 0) {
                         String remoteDir = dstFileName.substring(0, slashPos);
-                        CommonTasksSupport.mkDir(execEnv, remoteDir, error).get();
+                        StringWriter swr = new StringWriter();
+                        CommonTasksSupport.mkDir(execEnv, remoteDir, swr).get();
+                        err.append(swr.getBuffer()).append(' ');
                     }
                 }
                 put(cftp);
                 if (mask >= 0) {
                     cftp.chmod(mask, dstFileName);
                 }
+                SftpATTRS attrs = cftp.lstat(dstFileName);
+                // can't use PathUtilities since we are in ide cluster
+                int slashPos = dstFileName.lastIndexOf('/');
+                String dirName, baseName;
+                if (slashPos < 0) {
+                    dirName = dstFileName;
+                    baseName = "";
+                } else {
+                    dirName = dstFileName.substring(0, slashPos);
+                    baseName = dstFileName.substring(slashPos + 1);
+                }
+                statInfo = createStatInfo(dirName, baseName, attrs, cftp);                
             } catch (SftpException e) {
                 throw decorateSftpException(e, dstFileName);
             } finally {
@@ -375,7 +447,6 @@ class SftpSupport {
             }
         }
 
-        @Override
         protected String getTraceName() {
             return "Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName; // NOI18N
         }
@@ -411,12 +482,12 @@ class SftpSupport {
         }
     }
     
-    /*package*/ Future<Integer> uploadFile(CommonTasksSupport.UploadParameters parameters) {
+    /*package*/ Future<UploadStatus> uploadFile(CommonTasksSupport.UploadParameters parameters) {
         Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
         Uploader uploader = new Uploader(
                 parameters.srcFile.getAbsolutePath(),
-                parameters.dstFileName, parameters.mask, parameters.error, parameters.checkMd5);
-        final FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
+                parameters.dstFileName, parameters.mask, parameters.checkMd5);
+        final FutureTask<UploadStatus> ftask = new FutureTask<UploadStatus>(uploader);
         RequestProcessor.Task requestProcessorTask = getWriteRuestProcessor().create(ftask);
         if (parameters.callback != null) {
             final ChangeListener callback = parameters.callback;

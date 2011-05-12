@@ -49,6 +49,7 @@ import java.util.MissingResourceException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -101,8 +102,8 @@ public class HelperUtility {
                         final String fileName = new File(localFile).getName();
                         final String remoteFile = hinfo.getTempDir() + '/' + fileName;
 
-                        Future<Integer> uploadTask = CommonTasksSupport.uploadFile(localFile, env, remoteFile, 0755, null, true);
-                        Integer uploadResult = uploadTask.get();
+                        Future<UploadStatus> uploadTask = CommonTasksSupport.uploadFile(localFile, env, remoteFile, 0755, true);
+                        int uploadResult = uploadTask.get().getExitCode();
                         if (uploadResult != 0) {
                             throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
                         }

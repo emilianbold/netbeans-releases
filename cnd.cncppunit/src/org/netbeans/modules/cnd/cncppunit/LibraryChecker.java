@@ -155,7 +155,7 @@ public class LibraryChecker {
 
             HostInfo remoteHostInfo = HostInfoUtils.getHostInfo(execEnv);
             String remoteDummyPath = remoteHostInfo.getTempDir() + '/' + dummyFile.getName();
-            CommonTasksSupport.uploadFile(dummyFile, execEnv, remoteDummyPath, 0644, null).get();
+            CommonTasksSupport.uploadFile(dummyFile, execEnv, remoteDummyPath, 0644).get(); // is it OK not to check upload exit code?
             dummyFile.delete();
             return remoteDummyPath;
 
