@@ -57,6 +57,7 @@ import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
 import org.netbeans.modules.profiler.LiveResultsWindow.Contributor;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -166,7 +167,7 @@ public class LiveResultsContributor extends Contributor.Adapter {
     }
 
     private void showDrillDown() {
-        IDEUtils.runInEventDispatchThread(new Runnable() {
+        ProfilerUtils.runInEventDispatchThread(new Runnable() {
 
             public void run() {
                 TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("LiveResultsGroup"); //NOI18N
@@ -185,7 +186,7 @@ public class LiveResultsContributor extends Contributor.Adapter {
     }
 
     private void hideDrillDown() {
-        IDEUtils.runInEventDispatchThread(new Runnable() {
+        ProfilerUtils.runInEventDispatchThread(new Runnable() {
 
             public void run() {
                 TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("LiveResultsGroup"); //NOI18N

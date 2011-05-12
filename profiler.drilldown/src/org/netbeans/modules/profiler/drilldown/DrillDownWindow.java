@@ -59,6 +59,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.profiler.CPUSnapshotPanel;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
 /**
@@ -107,7 +108,7 @@ public final class DrillDownWindow extends TopComponent {
     // --- Public interface ------------------------------------------------------
     public static synchronized DrillDownWindow getDefault() {
         if (defaultInstance == null) {
-            IDEUtils.runInEventDispatchThreadAndWait(new Runnable() {
+            ProfilerUtils.runInEventDispatchThreadAndWait(new Runnable() {
                     public void run() {
                         final TopComponent tc = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
 
@@ -133,7 +134,7 @@ public final class DrillDownWindow extends TopComponent {
 
     public static void closeIfOpened() {
         if (defaultInstance != null) {
-            IDEUtils.runInEventDispatchThread(new Runnable() {
+            ProfilerUtils.runInEventDispatchThread(new Runnable() {
                     public void run() {
                         if (defaultInstance.isOpened()) {
                             defaultInstance.close();

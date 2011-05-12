@@ -82,6 +82,7 @@ import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
 /**
@@ -384,7 +385,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         }
 
         if (notify) {
-            IDEUtils.runInProfilerRequestProcessor(new Runnable() {
+            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                     public void run() {
                         fireHandleProgressEvent(stopAgentStatus);
                     }
@@ -537,7 +538,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             }
         };
 
-        IDEUtils.runInProfilerRequestProcessor(task);
+        ProfilerUtils.runInProfilerRequestProcessor(task);
 
         // return (ProgressObject)this
         return this;
