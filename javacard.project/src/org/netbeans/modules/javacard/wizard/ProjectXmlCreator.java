@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.project.JCProjectType;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -55,6 +56,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.projecttemplates.FileCreator;
 import org.openide.loaders.DataObject;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
@@ -76,44 +79,60 @@ public final class ProjectXmlCreator extends FileCreator { //public for unit tes
         return DataObject.find(create(project));
     }
 
-    public FileObject create(FileObject project) throws IOException {
-        sb.setLength(0);
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //NOI18N
-        sb.append("<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n"); //NOI18N
-        write(1, "<type>org.netbeans.modules.javacard.JCPROJECT</type>"); //NOI18N
-        write(1, "<configuration>"); //NOI18N
-        write(2, "<data xmlns=\"" + JCProjectType.PROJECT_CONFIGURATION_NAMESPACE + //NOI18N
-                "\">"); //NOI18N
-        write(2, "<!-- Do not use Project Properties customizer when editing this file manually. -->"); //NOI18N
-        write(3, "<name>" + projectName + "</name>"); //NOI18N
-        write(3, "<properties>"); //NOI18N
-        write(4, "<property name=\"javacard.project.subtype\">" + kind + "</property>"); //NOI18N
-        write(3, "</properties>"); //NOI18N
-        write(3, "<source-roots>"); //NOI18N
-        write(4, "<root id=\"src.dir\"/>"); //NOI18N
-        write(3, "</source-roots>"); //NOI18N
-        write(3, "<dependencies>"); //NOI18N
-        write(3, "</dependencies>"); //NOI18N
-        write(2, "</data>"); //NOI18N
-        write(1, "</configuration>"); //NOI18N
-        write(0, "</project>"); //NOI18N
-
-        FileObject projectXml = FileUtil.createData(project, AntProjectHelper.PROJECT_XML_PATH);
-        FileLock lock = projectXml.lock();
-        OutputStream out = new BufferedOutputStream(projectXml.getOutputStream(lock));
-        PrintWriter writer = null;
+    public FileObject create(final FileObject project) throws IOException {
         try {
-            writer = new PrintWriter(out);
-            writer.println(sb.toString());
-        } finally {
-            if (writer != null) {
-                writer.flush();
-                writer.close();
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>(){
+                @Override
+                public FileObject run() throws Exception {
+                    sb.setLength(0);
+                    sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //NOI18N
+                    sb.append("<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n"); //NOI18N
+                    write(1, "<type>org.netbeans.modules.javacard.JCPROJECT</type>"); //NOI18N
+                    write(1, "<configuration>"); //NOI18N
+                    write(2, "<data xmlns=\"" + JCProjectType.PROJECT_CONFIGURATION_NAMESPACE + //NOI18N
+                            "\">"); //NOI18N
+                    write(2, "<!-- Do not use Project Properties customizer when editing this file manually. -->"); //NOI18N
+                    write(3, "<name>" + projectName + "</name>"); //NOI18N
+                    write(3, "<properties>"); //NOI18N
+                    write(4, "<property name=\"javacard.project.subtype\">" + kind + "</property>"); //NOI18N
+                    write(3, "</properties>"); //NOI18N
+                    write(3, "<source-roots>"); //NOI18N
+                    write(4, "<root id=\"src.dir\"/>"); //NOI18N
+                    write(3, "</source-roots>"); //NOI18N
+                    write(3, "<dependencies>"); //NOI18N
+                    write(3, "</dependencies>"); //NOI18N
+                    write(2, "</data>"); //NOI18N
+                    write(1, "</configuration>"); //NOI18N
+                    write(0, "</project>"); //NOI18N
+
+                    final FileObject projectXml = FileUtil.createData(project, AntProjectHelper.PROJECT_XML_PATH);
+                    final FileLock lock = projectXml.lock();
+                    try {
+                        final OutputStream out = new BufferedOutputStream(projectXml.getOutputStream(lock));
+                        PrintWriter writer = null;
+                        try {
+                            writer = new PrintWriter(out);
+                            writer.println(sb.toString());
+                        } finally {
+                            if (writer != null) {
+                                writer.flush();
+                                writer.close();
+                            }
+                            out.close();
+                        }
+                    } finally {
+                        lock.releaseLock();
+                    }
+                    return projectXml;
+                }
+            });
+        } catch (MutexException me) {
+            if (me.getException() instanceof IOException) {
+                throw (IOException) me.getException();
+            } else {
+                throw new IOException(me);
             }
-            out.close();
-            lock.releaseLock();
         }
-        return projectXml;
     }
 
     void write(int indent, String toWrite) {
