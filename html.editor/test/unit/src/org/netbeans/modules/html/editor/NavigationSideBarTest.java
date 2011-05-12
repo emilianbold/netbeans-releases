@@ -142,7 +142,7 @@ public class NavigationSideBarTest extends CslTestBase {
         });
 
         synchronized (ref) {
-            ref.wait(5000);
+            ref.wait(10000);
         }
 
         List<AstNode> content = ref.get();

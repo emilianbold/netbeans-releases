@@ -242,6 +242,16 @@ public class CollectionRemoveTest extends TestBase {
                             "}");
     }
 
+    public void testInsideItsOverride196606() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test extends java.util.ArrayList<String> {" +
+                            "    @Override public boolean remove(Object o) {" +
+                            "        return super.remove(o);\n" +
+                            "    }" +
+                            "}");
+    }
+
     static {
         NbBundle.setBranding("test");
     }

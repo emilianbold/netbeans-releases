@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.languages.ini;
 
-import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -287,10 +286,17 @@ class IniLexer implements Lexer<IniTokenId> {
         return readTillEndLine(input, true, stoppers);
     }
 
+    // #195503 - correct values are:
+    //  "lorem ' ipsum"
+    //  "lorem ' ipsum ' lorem"
+    //  "lorem \" ipsum"
+    //  "lorem \" ipsum \" lorem"
+    // and similarly for apostrophes and with quote(s) inside
     private int readTillEndLine(LexerInput input, boolean handleLongStrings, char... stoppers) {
         int ch = -1;
         int previous = -1;
-        LinkedList<Character> longStringsStack = new LinkedList<Character>();
+        int firstChar = -1;
+        boolean stop = false;
         do {
             if (previous == ESCAPE && ch == ESCAPE) {
                 // '\\'
@@ -300,35 +306,33 @@ class IniLexer implements Lexer<IniTokenId> {
             }
 
             ch = input.read();
-
             if (ch == LexerInput.EOF) {
                 // prevent infinite loop
                 break;
             }
 
-            if (handleLongStrings && previous != ESCAPE) {
-                handleLongStrings(longStringsStack, (char) ch);
+            if (handleLongStrings && firstChar == -1) {
+                firstChar = ch;
             }
-        } while (!longStringsStack.isEmpty()
-                || (longStringsStack.isEmpty() && !isEndLine(ch) && !isStopper(stoppers, ch, previous)));
+
+            // stop?
+            if (handleLongStrings && isLongString((char) firstChar)) {
+                if (ch == firstChar && previous != -1 && previous != ESCAPE) {
+                    // hard to say what to do with line like:
+                    //  key = "lorem \" ipsum \" lorem" some more text
+                    // perhaps simply read till the end of line or stopper
+                    handleLongStrings = false;
+                }
+            } else {
+                stop = isEndLine(ch) || isStopper(stoppers, ch, previous);
+            }
+        } while (!stop);
         input.backup(1);
         return ch;
     }
 
-    private void handleLongStrings(LinkedList<Character> longStringsStack, char ch) {
-        if (ch != LONG_STRING_DOUBLE && ch != LONG_STRING_SINGLE) {
-            return;
-        }
-        if (longStringsStack.isEmpty()) {
-            longStringsStack.push(ch);
-        } else {
-            Character peek = longStringsStack.peek();
-            if (peek == ch) {
-                longStringsStack.pop();
-            } else {
-                longStringsStack.push(ch);
-            }
-        }
+    private boolean isLongString(char ch) {
+        return ch == LONG_STRING_DOUBLE || ch == LONG_STRING_SINGLE;
     }
 
     private boolean isStopper(char[] stoppers, int ch, int previous) {

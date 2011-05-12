@@ -111,7 +111,7 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
                             archetype.setRepository(repository());
                         }
                         if (desc != null) {
-                            archetype.setName(desc);
+                            archetype.setDescription(desc);
                         }
                         toRet.add(archetype);
                     }

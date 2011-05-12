@@ -71,6 +71,8 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -91,6 +93,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.editor.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.api.LocaleQuery;
 import org.netbeans.modules.spellchecker.hints.AddToDictionaryHint;
@@ -119,7 +123,7 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Lahoda
  */
-public class ComponentPeer implements PropertyChangeListener, DocumentListener, ChangeListener, CaretListener {
+public class ComponentPeer implements PropertyChangeListener, DocumentListener, ChangeListener, CaretListener, AncestorListener {
 
     private static final Logger LOG = Logger.getLogger(ComponentPeer.class.getName());
     
@@ -144,9 +148,9 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private JTextComponent pane;
     private Document document;
 
-    private RequestProcessor WORKER = new RequestProcessor("Spellchecker");
+    private static final RequestProcessor WORKER = new RequestProcessor("Spellchecker", 1, false, false);
     
-    private RequestProcessor.Task checker = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task checker = WORKER.create(new Runnable() {
         public void run() {
             try {
                 process();
@@ -156,7 +160,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     });
 
-    private RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
         public void run() {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -173,7 +177,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     });
 
-    private RequestProcessor.Task computeHint = WORKER.create(new Runnable() {
+    private final RequestProcessor.Task computeHint = WORKER.create(new Runnable() {
         public void run() {
             computeHint();
         }
@@ -194,8 +198,11 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 //        reschedule();
         pane.addPropertyChangeListener(this);
         pane.addCaretListener(this);
+        pane.addAncestorListener(this);
         document = pane.getDocument();
         document.addDocumentListener(this);
+
+        ancestorAdded(null);
     }
     
     private Component parentWithListener;
@@ -409,10 +416,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     });
                 }
                 
-                FileObject file = getFile(_document);
+                FileObject file = NbEditorUtilities.getFileObject(_document);
 
-                Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
-                        new Object[] {file, System.currentTimeMillis() - startTime});
+                if (file != null) {
+                    Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
+                            new Object[] {file, System.currentTimeMillis() - startTime});
+                }
             }
         }
     }
@@ -702,6 +711,15 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             
         }
     };
+
+    public void ancestorAdded(AncestorEvent event) {
+        if (pane.getParent() != null)
+            doUpdateCurrentVisibleSpan();
+    }
+
+    public void ancestorRemoved(AncestorEvent event) {}
+
+    public void ancestorMoved(AncestorEvent event) {}
     
     private class ErrorHighlightPainter implements HighlightPainter {
         private ErrorHighlightPainter() {

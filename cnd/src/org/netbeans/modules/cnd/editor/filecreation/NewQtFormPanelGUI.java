@@ -174,7 +174,7 @@ import org.openide.loaders.DataObjectNotFoundException;
     protected void updateCreatedFile() {
         FileObject root = getTargetGroup().getRootFolder();
         String folderName = tfFolder.getText().trim();
-        String folderDisplayName = FileUtil.getFileDisplayName(root) +
+        String folderDisplayName = root.getPath() +
                 (folderName.startsWith("/") || folderName.startsWith(File.separator) ? "" : "/") + // NOI18N
                 folderName +
                 (folderName.endsWith("/") || folderName.endsWith(File.separator) || folderName.length() == 0 ? "" : "/");  // NOI18N

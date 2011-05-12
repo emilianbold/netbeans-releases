@@ -49,14 +49,14 @@ import java.util.List;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.BrokenIncludes.class)
 public class BrokenProjectService implements BrokenIncludes {
     private static WeakHashMap<ChangeListener,Boolean> listeners = new WeakHashMap<ChangeListener,Boolean>();
     private final static Object lock = new Object();

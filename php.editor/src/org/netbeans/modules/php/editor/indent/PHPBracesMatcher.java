@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.Arrays;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
@@ -104,7 +105,43 @@ public final class PHPBracesMatcher implements BracesMatcher {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (LexUtilities.textEquals(token.text(), ']')) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
+                } else if (LexUtilities.textEquals(token.text(), '$', '{')) {
+                    return new int [] { ts.offset(), ts.offset() + token.length() };
+                } else if (LexUtilities.textEquals(token.text(), ':')) {
+                    do{
+                        ts.movePrevious();;
+                        token = LexUtilities.findPreviousToken(ts,
+                                Arrays.asList(PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
+                                PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_SWITCH,
+                                PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_CURLY_CLOSE, PHPTokenId.PHP_CASE,
+                                PHPTokenId.PHP_TOKEN));
+                        id = token.id();
+                    } while (id == PHPTokenId.PHP_TOKEN && !":".equals(token.text().toString()));
+                    if(id == PHPTokenId.PHP_IF || id == PHPTokenId.PHP_ELSE || id == PHPTokenId.PHP_ELSEIF
+                            || id == PHPTokenId.PHP_FOR || id == PHPTokenId.PHP_FOREACH || id == PHPTokenId.PHP_WHILE
+                            || id == PHPTokenId.PHP_SWITCH){
+                        ts.move(offset);
+                        ts.moveNext();
+                        token = ts.token();
+                        return new int [] { ts.offset(), ts.offset() + token.length() };
+                    }
+                } else if (id == PHPTokenId.PHP_ENDFOR || id == PHPTokenId.PHP_ENDFOREACH
+                        || id == PHPTokenId.PHP_ENDIF || id == PHPTokenId.PHP_ENDSWITCH 
+                        || id == PHPTokenId.PHP_ENDWHILE) {
+                    return new int [] { ts.offset(), ts.offset() + token.length() };
+                } else if (id == PHPTokenId.PHP_ELSEIF || id == PHPTokenId.PHP_ELSE) {                    
+                    while (token.id() != PHPTokenId.PHP_CURLY_OPEN && !":".equals(token.text().toString()) && ts.moveNext()) {
+                            token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_CURLY_OPEN));
+                    }
+                    if (token.id() == PHPTokenId.PHP_TOKEN && ":".equals(token.text().toString()) && ts.moveNext()) {
+                        ts.move(offset);
+                        ts.moveNext();
+                        token = ts.token();
+                        return new int [] { ts.offset(), ts.offset() + token.length() };
+                    }
+                    
                 }
+                
             }
             return null;
         } finally {
@@ -154,6 +191,18 @@ public final class PHPBracesMatcher implements BracesMatcher {
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), ']')) {
                     r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_TOKEN, '[', PHPTokenId.PHP_TOKEN, ']');
+                    return new int [] {r.getStart(), r.getEnd() };
+                } else if (LexUtilities.textEquals(token.text(), '$', '{')) {
+                    r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
+                    return new int [] {r.getStart(), r.getEnd() };
+                } else if (LexUtilities.textEquals(token.text(), ':')) {
+                    r = LexUtilities.findFwdAlternativeSyntax(doc, ts, token);
+                    return new int [] {r.getStart(), r.getEnd() };
+                } else if (id == PHPTokenId.PHP_ENDFOR || id == PHPTokenId.PHP_ENDFOREACH
+                        || id == PHPTokenId.PHP_ENDIF || id == PHPTokenId.PHP_ENDSWITCH 
+                        || id == PHPTokenId.PHP_ENDWHILE || id == PHPTokenId.PHP_ELSEIF
+                        || id == PHPTokenId.PHP_ELSE) {
+                    r = LexUtilities.findBwdAlternativeSyntax(doc, ts, token);
                     return new int [] {r.getStart(), r.getEnd() };
                 }
             }

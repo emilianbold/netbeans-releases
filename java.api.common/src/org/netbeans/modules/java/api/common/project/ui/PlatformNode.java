@@ -55,16 +55,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -72,15 +75,23 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
 
 
@@ -101,7 +112,10 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     private final PlatformProvider pp;
 
     private PlatformNode(PlatformProvider pp, ClassPathSupport cs) {
-        super (new PlatformContentChildren (cs), Lookups.singleton (new JavadocProvider(pp)));        
+        super (new PlatformContentChildren (cs), new ProxyLookup(new Lookup[]{
+            Lookups.fixed(new PlatformEditable(pp), new JavadocProvider(pp)),
+            new PlatformFolderLookup(new InstanceContent(), pp)
+        }));
         this.pp = pp;
         this.pp.addChangeListener(this);
         setIconBaseWithExtension(PLATFORM_ICON);
@@ -156,7 +170,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get (ShowJavadocAction.class)
+            SystemAction.get (ShowJavadocAction.class),
+            SystemAction.get (EditRootAction.class),
         };
     }
 
@@ -213,7 +228,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
         @Override
         protected Node[] createNodes(SourceGroup sg) {
-            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
+            return new Node[] {ActionFilterNode.forPackage(PackageView.createPackageView(sg))};
         }
 
         private List<SourceGroup> getKeys () {            
@@ -249,7 +264,29 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return result;
         }
     }
-    
+
+    private static class PlatformEditable implements EditRootAction.Editable {
+
+        private final PlatformProvider pp;
+
+        private PlatformEditable(final @NonNull PlatformProvider pp) {
+            Parameters.notNull("pp", pp);   //NOI18N
+            this.pp = pp;
+        }
+
+        @Override
+        public boolean canEdit() {
+            return pp.getPlatform() != null;
+        }
+
+        @Override
+        public void edit() {
+            final JavaPlatform platform = pp.getPlatform();
+            assert platform != null;
+            PlatformsCustomizer.showCustomizer(platform);
+        }
+    }
+
     private static class PlatformProvider implements PropertyChangeListener {
         
         private final PropertyEvaluator evaluator;
@@ -334,6 +371,42 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }
         
         
+    }
+
+    private static class PlatformFolderLookup extends AbstractLookup {
+
+        private final InstanceContent content;
+        private final PlatformProvider platformProvider;
+
+        PlatformFolderLookup(final InstanceContent content, final PlatformProvider platformProvider) {
+            super(content);
+            this.content = content;
+            this.platformProvider = platformProvider;
+        }
+
+        @Override
+        protected void beforeLookup(Template<?> template) {
+            super.beforeLookup(template);
+            if (template.getType() == FileObject.class) {
+                final Collection<DataObject> toAdd = new ArrayList<DataObject>(1);
+                final JavaPlatform platform = platformProvider.getPlatform();
+                if (platform != null) {
+                    final Collection<? extends FileObject> folders = platform.getInstallFolders();
+                    if (!folders.isEmpty()) {
+                        final FileObject fo = folders.iterator().next();
+                        if (fo.isValid() && fo.isFolder()) {
+                            try {
+                                toAdd.add(DataFolder.find(fo));
+                            } catch (DataObjectNotFoundException ex) {
+                                //pass - clears content
+                            }
+                        }
+                    }
+                }
+                content.set(toAdd, null);
+            }
+        }
+
     }
 
 }

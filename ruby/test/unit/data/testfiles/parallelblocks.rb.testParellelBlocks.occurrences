@@ -1,1 +1,0 @@
-foo.each { ||>MARK_OCCURRENCES:i^<|| puts |>MARK_OCCURRENCES:i<| } #1

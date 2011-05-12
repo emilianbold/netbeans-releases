@@ -156,7 +156,7 @@ public class SpringHelper {
     private FileObject getApplicationContextXml(Project project) {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
-            return ((WebProjectRestSupport) rs).getApplicationContextXml();
+            return rs.getApplicationContextXml();
         }
         return null;
     }

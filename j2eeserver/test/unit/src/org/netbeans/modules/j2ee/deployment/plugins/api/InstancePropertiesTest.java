@@ -46,14 +46,20 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -190,6 +196,54 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
                             url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME, expected);
             }
         });
+    }
+
+    public void testPasswordInKeyring() throws Exception {
+        // the instance from test layer
+        assertEquals("Adminpasswd", getPasswordFromKeyring("j2eeserver:fooservice"));
+
+        // new instance
+        String url = TEST_URL_PREFIX + "passwordInKeyring";
+        InstanceProperties.createInstanceProperties(
+                url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
+        assertEquals(TEST_PASSWORD, getPasswordFromKeyring("j2eeserver:" + url));
+
+        // all password attributes are converted to keyring
+        FileObject fo = FileUtil.getConfigFile("J2EE/InstalledServers");
+        for (FileObject child : fo.getChildren()) {
+            assertNull(child.getAttribute(InstanceProperties.PASSWORD_ATTR));
+        }
+    }
+
+    public void testKeyringCleanup() throws Exception {
+        String url = TEST_URL_PREFIX + "keyringCleanup";
+        InstanceProperties.createInstanceProperties(
+                url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
+        assertEquals(TEST_PASSWORD, getPasswordFromKeyring("j2eeserver:" + url));
+
+        ServerRegistry.getInstance().removeServerInstance(url);
+        assertNull(getPasswordFromKeyring("j2eeserver:" + url));
+    }
+
+    private static String getPasswordFromKeyring(final String key) throws Exception {
+        Future<String> ret = getKeyringAccess().submit(new Callable<String>() {
+
+            @Override
+            public String call() throws Exception {
+                char[] passwd = Keyring.read(key);
+                if (passwd != null) {
+                    return String.valueOf(passwd);
+                }
+                return null;
+            }
+        });
+        return ret.get(5, TimeUnit.SECONDS);
+    }
+
+    private static RequestProcessor getKeyringAccess() throws Exception {
+        Field field = ServerRegistry.class.getDeclaredField("KEYRING_ACCESS");
+        field.setAccessible(true);
+        return (RequestProcessor) field.get(null);
     }
 
     private static void assertPropertiesEquals(Map<String, String> expected, InstanceProperties props) {

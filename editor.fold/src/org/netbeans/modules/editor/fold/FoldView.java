@@ -96,7 +96,7 @@ public class FoldView extends EditorView {
 
     private final Fold fold; // 36 + 4 = 40 bytes
     
-    private TextLayout collapsedTextLayout;
+    private TextLayout collapsedTextLayout; // 40 + 4 = 44 bytes
 
     public FoldView(JTextComponent textComponent, Fold fold) {
         super(null);
@@ -115,8 +115,10 @@ public class FoldView extends EditorView {
         if (textLayout == null) {
             return 0f;
         }
+        String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
         float span = (axis == View.X_AXIS)
-            ? textLayout.getAdvance() + (2 * EXTRA_MARGIN_WIDTH)
+            ? ((desc.length() > 0) ? textLayout.getAdvance() : 0) 
+                + (2 * EXTRA_MARGIN_WIDTH)
             : textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
         return span;
     }
@@ -165,6 +167,9 @@ public class FoldView extends EditorView {
             assert (frc != null) : "Null FontRenderContext"; // NOI18N
             Font font = textComponent.getFont();
             String text = fold.getDescription();
+            if (text.length() == 0) {
+                text = " "; // Use single space (mainly for height measurement etc.
+            }
             collapsedTextLayout = new TextLayout(text, font, frc);
         }
         return collapsedTextLayout;
@@ -226,7 +231,7 @@ public class FoldView extends EditorView {
             default:
                 throw new IllegalArgumentException("Bad direction: " + direction);
         }
-        return offset;
+        return retOffset;
     }
 
     @Override
@@ -281,9 +286,12 @@ public class FoldView extends EditorView {
                 g.drawRect(xInt, yInt, endXInt - xInt, endYInt - yInt);
                 TextLayout textLayout = getTextLayout();
                 if (textLayout != null) {
+                    String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
                     float x = (float) (allocBounds.getX() + EXTRA_MARGIN_WIDTH);
                     float y = (float) allocBounds.getY();
-                    textLayout.draw(g, x, y + textLayout.getAscent());
+                    if (desc.length() > 0) {
+                        textLayout.draw(g, x, y + textLayout.getAscent());
+                    }
                 }
             } finally {
                 g.setColor(origColor);

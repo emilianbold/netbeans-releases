@@ -58,6 +58,21 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbTestCase.logRoot">
+        <api name="nbjunit"/>
+        <summary><code>NbTestCase.logRoot</code> to collect messages from just some code</summary>
+        <version major="1" minor="68"/>
+        <date day="5" month="5" year="2011"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Overridable method to avoid excessive logging of uninteresting components.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbTestCase"/>
+        <issue number="197572"/>
+    </change>
     <change id="NbModuleSuite.failOn">
         <api name="nbjunit"/>
         <summary>Easy way to fail the test on error or warning</summary>

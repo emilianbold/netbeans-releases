@@ -109,7 +109,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
         
-        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
+        projectTextField.setText(getProjectDisplayName(project));
 
         Sources sources = ProjectUtils.getSources( project );
         if (logger.isLoggable(Level.FINE)) {
@@ -270,7 +270,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         String documentName = documentNameTextField.getText().trim();
         String docExt = FileUtil.getExtension( documentName );
         
-        String createdFileName = FileUtil.getFileDisplayName( root ) + 
+        String createdFileName = root.getPath() + 
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             folderName + 
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N

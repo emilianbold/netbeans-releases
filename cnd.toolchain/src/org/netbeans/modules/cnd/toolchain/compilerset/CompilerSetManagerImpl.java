@@ -822,6 +822,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private static final String ALIAS_SunStudio = "SunStudio"; // NOI18N
     private static final String ALIAS_OracleSolarisStudio = "OracleSolarisStudio"; // NOI18N
     private static final String[] KNOWN_STUDIO = new String[] {
+        "OracleSolarisStudio_12.3", // NOI18N
         "OracleSolarisStudioExpressSpica", // NOI18N
         "OracleSolarisStudio_12.2", // NOI18N
         "OracleSolarisStudioExpress", // NOI18N

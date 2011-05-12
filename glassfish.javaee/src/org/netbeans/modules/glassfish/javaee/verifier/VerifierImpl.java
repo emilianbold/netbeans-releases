@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,9 +47,11 @@ package org.netbeans.modules.glassfish.javaee.verifier;
 import java.io.File;
 import java.io.OutputStream;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
+import org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -77,19 +79,26 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
     @Override
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
         final String jname = FileUtil.toFile(target).getAbsolutePath();
-        DeploymentManager dm = getAssociatedSunDM(target);
+        DeploymentManager dm;
+        try {
+            dm = getAssociatedSunDM(target);
         if (dm instanceof Hk2DeploymentManager) {
             Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
             VerifierSupport.launchVerifier(jname,logger, new File(hk2dm.getProperties().getGlassfishRoot()));
         }
+        } catch (DeploymentManagerCreationException ex) {
+            ValidationException ve =  new ValidationException("Bad DM");
+            ve.initCause(ex);
+            throw ve;
+        }
     }
     
-    private DeploymentManager getAssociatedSunDM(FileObject target){
+    private DeploymentManager getAssociatedSunDM(FileObject target) throws DeploymentManagerCreationException{
         DeploymentManager dm = null;
         J2eeModuleProvider modProvider = getModuleProvider(target);
         if (modProvider != null){
             InstanceProperties serverName = modProvider.getInstanceProperties();
-            dm = serverName.getDeploymentManager();
+            dm = Hk2DeploymentFactory.createEe6().getDisconnectedDeploymentManager(serverName.getProperty(InstanceProperties.URL_ATTR));
         }
         return dm;
     }

@@ -16,12 +16,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.archive.project.ArchiveProjectProperties;
-import org.netbeans.modules.j2ee.archive.ui.JavaEePlatformUiSupport;
-import org.netbeans.modules.j2ee.archive.wizard.*;
 import org.netbeans.spi.project.ui.CustomizerProvider;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -111,7 +106,7 @@ public class CreateProjectsTest extends NbTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("CreateProjectsTest");
-        suite.addTest(new AddRemoveSjsasInstance4Test("addSjsasInstance"));
+//XXX:  suite.addTest(new AddRemoveSjsasInstance4Test("addSjsasInstance"));
         suite.addTest(new CreateProjectsTest("createFromOne4Ear"));
         suite.addTest(new CreateProjectsTest("createFromBadOne4Ear"));
         suite.addTest(new CreateProjectsTest("createFromFiveEar"));

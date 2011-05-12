@@ -52,15 +52,15 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
         // spanning all methods can be performed here such as home interfaces
         // and data sources.
     }
-
-    public String testBusinessMethod1() {
-        return null;
-    }
     
     
     
     // Add business logic below. (Right-click in editor and choose
     // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
+
+    public String testBusinessMethod1() {
+        return null;
+    }
     
     
     

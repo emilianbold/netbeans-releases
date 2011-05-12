@@ -40,49 +40,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-
 package org.netbeans.modules.maven;
 
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
-
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * factory of maven projects
  * @author  Milos Kleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=666)
+@ServiceProvider(service=ProjectFactory.class, position=666)
 public class NbMavenProjectFactory implements ProjectFactory2 {
     
-    /** Creates a new instance of NbMavenProjectFactory */
-    public NbMavenProjectFactory() {
-    }
-    
-    public boolean isProject(FileObject fileObject)
-    {
+    public @Override boolean isProject(FileObject fileObject) {
         File projectDir = FileUtil.toFile(fileObject);
         if (projectDir == null) {
             return false;
         }
-        
         File project = new File(projectDir, "pom.xml"); // NOI18N
-        if (project.isFile() && 
-            project.getAbsolutePath().contains("resources" + File.separator + "archetype-resources")) { //NOI18N
+        if (!project.isFile()) {
+            return false;
+        }
+        if (project.getAbsolutePath().contains("resources" + File.separator + "archetype-resources")) { //NOI18N
             //this is an archetype resource, happily ignore..
             return false;
         }
-        return project.isFile() &&  !"nbproject".equalsIgnoreCase(projectDir.getName()); //NOI18N
+        String projectDirName = projectDir.getName();
+        if (projectDirName.equals("nbproject")) {
+            return false; // XXX why?
+        }
+        if (projectDirName.equals("target") && new File(projectDir.getParentFile(), "pom.xml").isFile()) {
+            return false;
+        }
+        return true;
     }
 
-    public ProjectManager.Result isProject2(FileObject projectDirectory) {
+    public @Override ProjectManager.Result isProject2(FileObject projectDirectory) {
         if (isProject(projectDirectory)) {
             return new ProjectManager.Result(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true)); //NOI18N
         }
@@ -90,12 +92,8 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
     }
 
     
-    public Project loadProject(FileObject fileObject, ProjectState projectState) throws IOException
-    {
-        if (FileUtil.toFile(fileObject) == null) {
-            return null;
-        }
-        if ("nbproject".equalsIgnoreCase(fileObject.getName())) { //NOI18N
+    public @Override Project loadProject(FileObject fileObject, ProjectState projectState) throws IOException {
+        if (!isProject(fileObject)) {
             return null;
         }
         FileObject projectFile = fileObject.getFileObject("pom.xml"); //NOI18N
@@ -103,25 +101,10 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
             return null;
             
         }
-        File projectDiskFile = FileUtil.normalizeFile(FileUtil.toFile(projectFile));
-        if (projectDiskFile == null)  {
-            return null;
-        }
-        if (projectDiskFile.isFile() && 
-            projectDiskFile.getAbsolutePath().contains("resources" + File.separator + "archetype-resources")) { //NOI18N
-            //this is an archetype resource, happily ignore..
-            return null;
-        }
-        try {
-            NbMavenProjectImpl proj =  new NbMavenProjectImpl(fileObject, projectFile, projectDiskFile, projectState);
-            return proj;
-        } catch (Exception exc) {
-            ErrorManager.getDefault().getInstance(NbMavenProjectFactory.class.getName()).notify(ErrorManager.INFORMATIONAL, exc);
-            return null;
-        }
+        return new NbMavenProjectImpl(fileObject, projectFile, projectState);
     }
     
-    public void saveProject(Project project) throws IOException {
+    public @Override void saveProject(Project project) throws IOException {
         // what to do here??
     }    
 }

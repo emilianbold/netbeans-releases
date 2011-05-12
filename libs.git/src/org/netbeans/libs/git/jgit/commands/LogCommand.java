@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -131,7 +132,9 @@ public class LogCommand extends GitCommand {
                 }
             } catch (MissingObjectException ex) {
                 throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
-            } catch (Exception ex) {
+            } catch (NoHeadException ex) {
+                throw new GitException.MissingObjectException(GitObjectType.HEAD.name(), GitObjectType.HEAD);
+            } catch (IOException ex) {
                 throw new GitException(ex);
             }
         } 

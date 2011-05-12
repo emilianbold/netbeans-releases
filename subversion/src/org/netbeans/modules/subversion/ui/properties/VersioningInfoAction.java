@@ -64,7 +64,6 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VersioningInfo;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -182,7 +181,7 @@ public final class VersioningInfoAction extends ContextAction {
                 }
                 fileProps.put(getMessage("LBL_VersioningInfo_Property_RepositoryUrl"), status.getUrlString()); //NOI18N
                 fileProps.put(getMessage("LBL_VersioningInfo_Property_RepositoryRootUrl"), repositoryRootUrl); //NOI18N
-                if (status.getRevision().getNumber() > 0) {
+                if (status.getRevision() != null && status.getRevision().getNumber() > 0) {
                     fileProps.put(getMessage("LBL_VersioningInfo_Property_Revision"), status.getRevision().toString()); //NOI18N
                 }
                 if (!"".equals(binaryString)) { //NOI18N

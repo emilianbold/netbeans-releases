@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
@@ -85,6 +86,10 @@ public class RepositoryInfo {
      * fired when a set of known branches changes (a branch is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitBranch&gt;.
      */
     public static final String PROPERTY_BRANCHES = "prop.branches"; //NOI18N
+    /**
+     * fired when a set of known remotes changes (a remote is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitRemoteConfig&gt;.
+     */
+    public static final String PROPERTY_REMOTES = "prop.remotes"; //NOI18N
 
     private final Reference<File> rootRef;
     private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
@@ -94,15 +99,38 @@ public class RepositoryInfo {
     private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
     private final PropertyChangeSupport propertyChangeSupport;
     private final Map<String, GitBranch> branches;
+    private final Map<String, GitRemoteConfig> remotes;
 
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
     private final String name;
+    
+    private static final GitBranch FAKE_BRANCH = new GitBranch() {
+        @Override
+        public String getName () {
+            return GitBranch.NO_BRANCH;
+        }
+        @Override
+        public boolean isRemote () {
+            return false;
+        }
+        @Override
+        public boolean isActive () {
+            return true;
+        }
+        @Override
+        public String getId () {
+            return ""; //NOI18N
+        }
+    };
 
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
         this.branches = new HashMap<String, GitBranch>();
+        this.remotes = new HashMap<String, GitRemoteConfig>();
+        this.activeBranch = FAKE_BRANCH;
+        this.repositoryState = GitRepositoryState.SAFE;
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -129,13 +157,12 @@ public class RepositoryInfo {
 
     /**
      * Do NOT call from EDT
-     * @param repositoryRoot
      * @return
      */
     public void refresh () {
         assert !java.awt.EventQueue.isDispatchThread();
+        File root = rootRef.get();
         try {
-            File root = rootRef.get();
             if (root == null) {
                 LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
             } else {
@@ -144,16 +171,38 @@ public class RepositoryInfo {
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
+                refreshRemotes(client);
                 GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
                 setActiveBranch(newBranches);
                 setRepositoryState(newState);
             }
         } catch (GitException ex) {
-            LOG.log(Level.INFO, null, ex);
+            Level level = root.exists() ? Level.INFO : Level.FINE; // do not polute the message log with messages concerning temporary or deleted repositories
+            LOG.log(level, null, ex);
         }
     }
 
+    /**
+     * Do NOT call from EDT
+     * @return
+     */
+    public void refreshRemotes () {
+        assert !java.awt.EventQueue.isDispatchThread();
+        try {
+            File root = rootRef.get();
+            if (root == null) {
+                LOG.log(Level.WARNING, "refreshRemotes (): root is null, it has been collected in the meantime"); //NOI18N
+            } else {
+                LOG.log(Level.FINE, "refreshRemotes (): starting for {0}", root); //NOI18N
+                GitClient client = Git.getInstance().getClient(root);
+                refreshRemotes(client);
+            }
+        } catch (GitException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+    }
+    
     private void setActiveBranch (Map<String, GitBranch> branches) throws GitException {
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             if (e.getValue().isActive()) {
@@ -185,7 +234,7 @@ public class RepositoryInfo {
         boolean changed = false;
         synchronized (branches) {
             oldBranches = new HashMap<String, GitBranch>(branches);
-            if (oldBranches.size() != newBranches.size() || !branches.keySet().equals(newBranches.keySet())) {
+            if (!equalsBranches(oldBranches, newBranches)) {
                 branches.clear();
                 branches.putAll(newBranches);
                 changed = true;
@@ -193,6 +242,22 @@ public class RepositoryInfo {
         }
         if (changed) {
             propertyChangeSupport.firePropertyChange(PROPERTY_BRANCHES, oldBranches, new HashMap<String, GitBranch>(newBranches));
+        }
+    }
+
+    private void setRemotes (Map<String, GitRemoteConfig> newRemotes) {
+        Map<String, GitRemoteConfig> oldRemotes;
+        boolean changed = false;
+        synchronized (remotes) {
+            oldRemotes = new HashMap<String, GitRemoteConfig>(remotes);
+            if (!equalsRemotes(oldRemotes, newRemotes)) {
+                remotes.clear();
+                remotes.putAll(newRemotes);
+                changed = true;
+            }
+        }
+        if (changed) {
+            propertyChangeSupport.firePropertyChange(PROPERTY_REMOTES, oldRemotes, new HashMap<String, GitRemoteConfig>(newRemotes));
         }
     }
 
@@ -221,6 +286,12 @@ public class RepositoryInfo {
             return new HashMap<String, GitBranch>(branches);
         }
     }
+    
+    public Map<String, GitRemoteConfig> getRemotes () {
+        synchronized (remotes) {
+            return new HashMap<String, GitRemoteConfig>(remotes);
+        }
+    }
 
     public static void refreshAsync (File repositoryRoot) {
         RepositoryInfo info = null;
@@ -237,6 +308,42 @@ public class RepositoryInfo {
                 refreshTask.schedule(3000);
             }
         }
+    }
+
+    private static boolean equalsRemotes (Map<String, GitRemoteConfig> oldRemotes, Map<String, GitRemoteConfig> newRemotes) {
+        boolean retval = oldRemotes.size() == newRemotes.size() && oldRemotes.keySet().equals(newRemotes.keySet());
+        if (retval) {
+            for (Map.Entry<String, GitRemoteConfig> e : oldRemotes.entrySet()) {
+                GitRemoteConfig oldRemote = e.getValue();
+                GitRemoteConfig newRemote = newRemotes.get(e.getKey());
+                if (!(oldRemote.getFetchRefSpecs().equals(newRemote.getFetchRefSpecs()) && oldRemote.getPushRefSpecs().equals(newRemote.getPushRefSpecs()) && 
+                        oldRemote.getUris().equals(newRemote.getUris()) && oldRemote.getPushUris().equals(newRemote.getPushUris()))) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        return retval;
+    }
+    
+    private static boolean equalsBranches (Map<String, GitBranch> oldBranches, Map<String, GitBranch> newBranches) {
+        boolean retval = oldBranches.size() == newBranches.size() && oldBranches.keySet().equals(newBranches.keySet());
+        if (retval) {
+            for (Map.Entry<String, GitBranch> e : oldBranches.entrySet()) {
+                GitBranch oldBranch = e.getValue();
+                GitBranch newBranch = newBranches.get(e.getKey());
+                if (!oldBranch.getId().equals(newBranch.getId())) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        return retval;
+    }
+
+    private void refreshRemotes (GitClient client) throws GitException {
+        Map<String, GitRemoteConfig> newRemotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        setRemotes(newRemotes);
     }
 
     private static class RepositoryRefreshTask implements Runnable {

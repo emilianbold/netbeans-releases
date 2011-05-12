@@ -43,10 +43,17 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -57,9 +64,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -76,11 +85,14 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     private Lookup lookup;
     private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
     private final boolean useHtmlFormat;
+    private final GoToSourceCallbackAction callbackAction;
 
-    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML,
+            GoToSourceCallbackAction callbackAction) {        
         this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
+        this.callbackAction = callbackAction;
         this.useHtmlFormat = useHTML;
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
         treeView = new MyOwnBeanTreeView();
         treeView.setRootVisible(false);
@@ -92,7 +104,33 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
                 MultipleCallStackPanel.this.treeView.expandAll();
             }
         };
-        rootNode = new MultipleCallStackRootNode(expandAll);
+        Action copyAction = new AbstractAction(NbBundle.getMessage(MultipleCallStackPanel.class, "CopyStack")) {//NOI18N
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //rootNode-> StackRootNode->(childen - PlainFunctionCallChildren)PlainFunctionCallNode
+                StringBuilder content = new StringBuilder();
+                Node[] stackRootNodes = MultipleCallStackPanel.this.rootNode.getChildren().getNodes();
+                for (Node n : stackRootNodes){
+                    if (n instanceof StackRootNode){
+                        Children c = ((StackRootNode)n).getChildren();
+                        Node[] fcNodes = c.getNodes();
+                        content.append(n.getDisplayName()).append("\n");//NOI18N
+                        for (Node fcNode : fcNodes){
+                           content.append("    ").append(fcNode.getName()).append("\n");//NOI18N
+                        }                        
+                    }
+                }
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(content.toString()), new ClipboardOwner() {
+
+                    @Override
+                    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+                        //do nothing
+                    }
+                });
+            }
+        };
+        rootNode = new MultipleCallStackRootNode(expandAll, new Action[]{copyAction});
         manager.setRootContext(rootNode);//NOI18N
         final JPopupMenu popup = new JPopupMenu();
         popup.add(expandAll);
@@ -113,15 +151,21 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public static MultipleCallStackPanel createInstance() {
-        return new MultipleCallStackPanel(null, false);
+        return new MultipleCallStackPanel(null, false, null);
     }
 
     public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
-        return new MultipleCallStackPanel(sourceFileInfoDataProvider, false);
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, false, null);
     }
 
-    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML) {
-        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML);
+    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider,
+            boolean useHTML) {
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML, null);
+    }
+
+    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider,
+            boolean useHTML, GoToSourceCallbackAction callbackAction) {
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML, callbackAction);
     }
 
     @Override
@@ -177,17 +221,17 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack, Action[] actions) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions, useHtmlFormat));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions, useHtmlFormat, callbackAction));
     }
 
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, useHtmlFormat));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, useHtmlFormat, callbackAction));
     }
 
     public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
         treeView.setRootVisible(false);
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack, useHtmlFormat));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack, useHtmlFormat, callbackAction));
     }
 
     public void update() {

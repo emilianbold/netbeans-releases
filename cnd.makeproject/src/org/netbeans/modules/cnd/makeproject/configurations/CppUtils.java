@@ -50,12 +50,13 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /** Miscellaneous utility classes useful for the C/C++/Fortran module */
 public class CppUtils {
-    
+
     private CppUtils() {
     }
 
@@ -180,4 +181,17 @@ public class CppUtils {
         return ExecutionEnvironmentFactory.toUniqueID(ServerList.getDefaultRecord().getExecutionEnvironment());
     }
 
+    /*package*/ static ExecutionEnvironment convertAfterReading(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {
+        if (env.isLocal()) {
+            return makeConfiguration.getFileSystemHost();
+        }
+        return env;
+    }    
+    
+    /*package*/ static ExecutionEnvironment convertBeforeWriting(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {
+        if (env.isRemote() && env.equals(makeConfiguration.getFileSystemHost())) {
+            return ExecutionEnvironmentFactory.getLocal();
+        }
+        return env;
+    }
 }

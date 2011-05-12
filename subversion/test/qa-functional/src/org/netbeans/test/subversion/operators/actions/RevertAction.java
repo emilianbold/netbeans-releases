@@ -15,23 +15,20 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  *
  * @author peter
  */
-public class RevertAction extends ActionNoBlock{
-
-    /** "Versioning" menu item. */
-    public static final String VERSIONING_MENU_ITEM = "Versioning";
+public class RevertAction extends ActionNoBlock {
+    
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
 
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
 
-    /** "Revert" popup menu item. */
-    public static final String REVERT_MENU_ITEM = "Revert Modifications...";
-
-    /** "Revert" popup menu item. */
-    public static final String REVERT_POPUP_ITEM = "Revert Modifications...";
+    /** "Revert" menu item. */
+    public static final String REVERT_ITEM = "Revert Modifications...";
     
     /** Creates a new instance of RevertAction */
     public RevertAction() {
-        super(VERSIONING_MENU_ITEM + "|" + SVN_ITEM + "|" + REVERT_MENU_ITEM, SVN_ITEM + "|" + REVERT_POPUP_ITEM);
+        super(TEAM_ITEM + "|" + REVERT_ITEM, SVN_ITEM + "|" + REVERT_ITEM);
     }
     
 }

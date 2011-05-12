@@ -42,9 +42,12 @@
 
 package org.netbeans;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +66,12 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
     
     public StampsIdeLessThanPlatformTest(String testName) {
         super(testName);
-    }            
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -92,11 +100,6 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         l.setLevel(Level.OFF);
         l.setUseParentHandlers(false);
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
     
     public void testGenerateTimeStamps() throws IOException {
         long stamp = Stamps.moduleJARs();
@@ -118,11 +121,27 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
             fail(r);
         }
 
-        Properties p = new Properties();
-        p.load(new FileInputStream(checkSum));
-
-        assertEquals("60000", p.get(platform.getPath()));
-        assertEquals("50000", p.get(ide.getPath()));
+        int check = 0;
+        BufferedReader in = new BufferedReader(new FileReader(checkSum));
+        
+        for (;;) {
+            String line = in.readLine();
+            if (line == null) {
+                break;
+            }
+            String[] seg = line.split("=");
+            assertEquals("There should be one = in the: " + line, 2, seg.length);
+            String s = seg[0];
+            if (s.endsWith("platform")) {
+                assertEquals("Correct for platform: " + line, "60000", seg[1]);
+                check ++;
+            }
+            if (s.endsWith("ide")) {
+                assertEquals("Correct for ide: " + line, "50000", seg[1]);
+                check ++;
+            }
+        }
+        assertEquals("Two checks", 2, check);
     }        
     
 

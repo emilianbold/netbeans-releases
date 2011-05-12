@@ -90,10 +90,10 @@ public class IndentEngineIntTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "<html><h1>${title}</h1></html>";
+        String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "JavaScript");
         
         
         DataObject obj = DataObject.find(fo);
@@ -112,10 +112,7 @@ public class IndentEngineIntTest extends NbTestCase {
     }
     
     private static String readFile(FileObject fo) throws IOException {
-        byte[] arr = new byte[(int)fo.getSize()];
-        int len = fo.getInputStream().read(arr);
-        assertEquals("Fully read", arr.length, len);
-        return new String(arr);
+        return fo.asText();
     }
     
     public static final class DD extends DialogDisplayer {

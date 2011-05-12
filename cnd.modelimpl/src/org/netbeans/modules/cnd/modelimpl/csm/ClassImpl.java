@@ -244,6 +244,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
@@ -841,6 +846,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (typeAST == null) {
                 return false;
             }
+            typeAST = getFirstSiblingSkipQualifiers(typeAST);
+            if (typeAST == null) {
+                return false;
+            }
             if (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN) {
                 if (typeAST.getType() == CPPTokenTypes.LITERAL_enum) {
                     typeAST = typeAST.getNextSibling();
@@ -852,7 +861,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
             // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
-            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST.getNextSibling(), type, null);
+            typeAST = getFirstSiblingSkipQualifiers(typeAST.getNextSibling());
+            if (typeAST == null) {
+                return false;
+            }
+            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST, type, null);
             return bitFieldAdded;
         }
 
@@ -863,11 +876,19 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             AST start = startOffsetAST;
             AST prev = idAST;
             while (cont) {
-                if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
+                boolean unnamed = false;
+                AST colonAST;
+                if (idAST == null) {
+                    break;
+                } else if (idAST.getType() == CPPTokenTypes.ID) {
+                    colonAST = idAST.getNextSibling();
+                } else if (idAST.getType() == CPPTokenTypes.COLON){
+                    colonAST = idAST;
+                    unnamed = true;
+                } else {
                     break;
                 }
 
-                AST colonAST = idAST.getNextSibling();
                 if (colonAST == null || colonAST.getType() != CPPTokenTypes.COLON) {
                     break;
                 }
@@ -889,11 +910,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         start = idAST;
                     }
                 }
-                NameHolder nameHolder = NameHolder.createSimpleName(idAST);
-                FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
-                ClassImpl.this.addMember(field,!isRenderingLocalContext());
-                if (classifier != null) {
-                    classifier.addEnclosingVariable(field);
+                if(!unnamed) {
+                    NameHolder nameHolder = NameHolder.createSimpleName(idAST);
+                    FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                    ClassImpl.this.addMember(field,!isRenderingLocalContext());
+                    if (classifier != null) {
+                        classifier.addEnclosingVariable(field);
+                    }
                 }
                 added = true;
                 if (cont) {

@@ -188,11 +188,21 @@ public class CndPathUtilitities {
     }
 
     public static String toAbsolutePath(FileObject base, String path) {
-        return toAbsolutePath(base.getPath(), path);
-    }
-
-    public static String toAbsolutePath(FileObject base, FileObject path) {
-        return toAbsolutePath(base, path.getPath()); // TODO: use smarter logic (compare file systems, etc)
+        String newPath = path;
+        if (newPath == null || newPath.length() == 0) {
+            newPath = "."; // NOI18N
+        } // NOI18N
+        if (isPathAbsolute(newPath)) {
+            return newPath;
+        } else {
+            FileObject fo = base.getFileObject(newPath);
+            if (fo != null && fo.isValid()) {
+                return fo.getPath();
+            } else {
+                // getPath always return "/" => use / as delim as well
+                return base.getPath() + '/' + path;
+            }
+        }
     }
 
     /*
@@ -547,6 +557,14 @@ public class CndPathUtilitities {
         }
     }
 
+    public static boolean isIgnoredFolder(File file) {
+        if (file.isDirectory()) {
+            String name = file.getName();
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
+        }
+        return false;
+    }
+        
     /**
      * Same as String.equals, but allows arguments to be null
      */

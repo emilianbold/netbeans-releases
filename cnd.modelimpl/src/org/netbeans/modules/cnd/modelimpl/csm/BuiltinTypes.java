@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -140,7 +142,7 @@ public class BuiltinTypes {
         }
     }
     
-    private static final Map<CharSequence, CsmBuiltIn> types = new HashMap<CharSequence, CsmBuiltIn>();
+    private static final ConcurrentMap<CharSequence, CsmBuiltIn> types = new ConcurrentHashMap<CharSequence, CsmBuiltIn>();
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;
@@ -162,7 +164,10 @@ public class BuiltinTypes {
         CsmBuiltIn builtIn = types.get(text);
         if( builtIn == null ) {
             builtIn = new BuiltinImpl(text);
-            types.put(text, builtIn);
+            CsmBuiltIn old = types.putIfAbsent(text, builtIn);
+            if (old != null) {
+                builtIn = old;
+            }
         }
         return builtIn;
     }

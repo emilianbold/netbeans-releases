@@ -107,6 +107,8 @@ public class MultiSplitPane extends JPanel
             setBackground(bkColor);
             setOpaque(true);
         }
+        if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            setOpaque(false);
     }
     
     /**

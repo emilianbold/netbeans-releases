@@ -107,6 +107,7 @@ public class ModuleManagerTest extends SetupHid {
         new URLConnection(ModuleManagerTest.class.getResource("ModuleManagerTest.class")) {
             public @Override void connect() throws IOException {}
         }.setDefaultUseCaches(false);
+        ProxyURLStreamHandlerFactory.register();
     }
 
     public ModuleManagerTest(String name) {
@@ -117,7 +118,7 @@ public class ModuleManagerTest extends SetupHid {
     protected Level logLevel() {
         return Level.FINE;
     }
-
+    
     /** Load simple-module and depends-on-simple-module.
      * Make sure they can be installed and in a sane order.
      * Make sure a class from one can depend on a class from another.
@@ -1809,6 +1810,7 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testDisableAgainstRelVersRange() throws Exception {
         // #41449: org.openidex.util/3 disabled improperly when disable module w/ dep on org.openide.util/2-3
+        // related to testDisableWithAutoloadMajorRange but this probably has the test backwards
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
@@ -2510,7 +2512,7 @@ public class ModuleManagerTest extends SetupHid {
         assertDoesNotOverride(m.getClassLoader(), clazz);
     }
 
-    public void testDisableWithAutoloadMajorRange() throws Exception { // #127720
+    public void testDisableWithAutoloadMajorRange() throws Exception { // #127720; also see testDisableAgainstRelVersRange
         File m1j = new File(getWorkDir(), "m1.jar");
         createJar(m1j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m1/0"));
         File m2j = new File(getWorkDir(), "m2.jar");
@@ -2546,6 +2548,33 @@ public class ModuleManagerTest extends SetupHid {
             assertFalse(m1.isEnabled());
             assertFalse(m2.isEnabled());
             assertFalse(m3.isEnabled());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testDisableWithRegularMajorRange() throws Exception { // #197718
+        File m1j = new File(getWorkDir(), "m1.jar");
+        createJar(m1j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m1/0"));
+        File m2j = new File(getWorkDir(), "m2.jar");
+        Map<String,String> mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m2");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1/0-1");
+        createJar(m2j, Collections.<String,String>emptyMap(), mani);
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(m1j, null, false, false, false);
+            Module m2 = mgr.create(m2j, null, false, false, false);
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2)));
+            assertTrue(m1.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertEquals(Arrays.asList(m2, m1), mgr.simulateDisable(Collections.singleton(m1)));
+            mgr.disable(new HashSet<Module>(Arrays.asList(m1, m2)));
+            assertFalse(m1.isEnabled());
+            assertFalse(m2.isEnabled());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

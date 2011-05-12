@@ -110,7 +110,7 @@ public class SourceRootContainer {
     private void addFile(NativeFileItem nativeFileItem) {
         FileObject fo = nativeFileItem.getFileObject();
         FileObject parent = fo.getParent();
-        String path = CndFileUtils.getNormalizedPath(parent);
+        String path = CndFileUtils.normalizePath(parent);
         addPath(path);
         String canonicalPath;
         try {

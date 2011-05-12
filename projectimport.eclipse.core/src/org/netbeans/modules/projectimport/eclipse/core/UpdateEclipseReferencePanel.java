@@ -48,6 +48,7 @@ import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -104,9 +105,10 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
     }
 
 
-    public static boolean showEclipseReferenceResolver(EclipseProjectReference ref, Map<String,String> resolvedEntries) {
-        if (!ref.getEclipseWorkspaceLocation().exists() && resolvedEntries.get(ref.getEclipseWorkspaceLocation().getPath()) != null) {
-            ref.updateReference(null, resolvedEntries.get(ref.getEclipseWorkspaceLocation().getPath()));
+    public static boolean showEclipseReferenceResolver(@NonNull EclipseProjectReference ref, @NonNull Map<String,String> resolvedEntries) {
+        File workspace = ref.getEclipseWorkspaceLocation();
+        if (workspace != null && !workspace.exists() && resolvedEntries.get(workspace.getPath()) != null) {
+            ref.updateReference(null, resolvedEntries.get(workspace.getPath()));
         }
         if (!ref.getEclipseProjectLocation().exists() && resolvedEntries.get(ref.getEclipseProjectLocation().getParent()) != null) {
             File f = new File(resolvedEntries.get(ref.getEclipseProjectLocation().getParent()));
@@ -128,8 +130,8 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
             if (p.eclipseProjectTextField.isEnabled()) {
                 resolvedEntries.put(ref.getEclipseProjectLocation().getParent(), p.eclipseProjectTextField.getText());
             }
-            if (p.eclipseWorkspaceTextField.isEnabled()) {
-                resolvedEntries.put(ref.getEclipseWorkspaceLocation().getPath(), p.eclipseWorkspaceTextField.getText());
+            if (workspace != null && p.eclipseWorkspaceTextField.isEnabled()) {
+                resolvedEntries.put(workspace.getPath(), p.eclipseWorkspaceTextField.getText());
             }
             ref.updateReference(
                     p.eclipseProjectTextField.isEnabled() ? p.eclipseProjectTextField.getText() : null,

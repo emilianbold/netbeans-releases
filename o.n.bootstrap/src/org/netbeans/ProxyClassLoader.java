@@ -349,7 +349,15 @@ public class ProxyClassLoader extends ClassLoader {
         name = stripInitialSlash(name);
 
         int last = name.lastIndexOf('/');
-        String pkg = (last >= 0) ? name.substring(0, last).replace('/', '.') : "";
+        String pkg;
+        String cover;
+        if (last >= 0) {
+            pkg = name.substring(0, last).replace('/', '.');
+            cover = pkg;
+        } else {
+            pkg = ""; // NOI18N
+            cover = "default/" + name; // NOI18N
+        }
         String path = name.substring(0, last+1);
         
         Boolean systemPackage = sclPackages.get(pkg);
@@ -364,7 +372,7 @@ public class ProxyClassLoader extends ClassLoader {
             // else try other loaders
         }
 
-        Set<ProxyClassLoader> del = packageCoverage.get(pkg);
+        Set<ProxyClassLoader> del = packageCoverage.get(cover);
 
         if (del == null) {
             // uncovered package, go directly to SCL
@@ -412,7 +420,16 @@ public class ProxyClassLoader extends ClassLoader {
         name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
         final String path = name.substring(0, slashIdx + 1);
-        String pkg = name.startsWith("META-INF/") ? name.substring(8) : (slashIdx >= 0) ? name.substring(0, slashIdx).replace('/', '.') : "";
+        String pkg;
+        if (slashIdx >= 0) {
+            if (name.startsWith("META-INF/")) {
+                pkg = name.substring(8);
+            } else {
+                pkg = name.substring(0, slashIdx).replace('/', '.');
+            }
+        } else {
+            pkg = "default/" + name;
+        }
         List<Enumeration<URL>> sub = new ArrayList<Enumeration<URL>>();
 
         // always consult SCL first

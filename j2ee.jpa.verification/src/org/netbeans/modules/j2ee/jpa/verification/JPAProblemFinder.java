@@ -317,11 +317,13 @@ public abstract class JPAProblemFinder {
                 
                 for (PersistenceScope scope : scopes.getPersistenceScopes()){
                     FileObject persistenceXML = scope.getPersistenceXml();
-                    PersistenceXMLListener pxmlListener = new PersistenceXMLListener(file);
-                    FileChangeListener weakPXMLListener = WeakListeners.create(FileChangeListener.class, pxmlListener, null);
-                    persistenceXML.addFileChangeListener(weakPXMLListener);
-                    pxmlListeners.add(pxmlListener);
-                    LOG.fine("Added PersistenceXMLListener to " + persistenceXML.getName());
+                    if(persistenceXML!=null){//persistence xml may be deleted/renamed
+                        PersistenceXMLListener pxmlListener = new PersistenceXMLListener(file);
+                        FileChangeListener weakPXMLListener = WeakListeners.create(FileChangeListener.class, pxmlListener, null);
+                        persistenceXML.addFileChangeListener(weakPXMLListener);
+                        pxmlListeners.add(pxmlListener);
+                        LOG.fine("Added PersistenceXMLListener to " + persistenceXML.getName());
+                    }
                 }
                 
                 // persistence.xml listeners should live as long as the scopes listener

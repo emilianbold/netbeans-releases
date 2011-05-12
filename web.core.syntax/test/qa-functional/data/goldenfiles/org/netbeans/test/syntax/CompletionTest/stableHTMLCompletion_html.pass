@@ -34,17 +34,12 @@ End cursor position = 227
 ltr
 rtl
 End cursor position = 303
-[&d|, &delta;, &delta;, 361]
-⇓ &dArr;
-† &dagger;
-↓ &darr;
-° &deg;
-δ &delta;
-♦ &diams;
-÷ &divide;
-End cursor position = 369
-[<table><tr><td></|, </td, <table><tr><td></td>, 451]
+[&em|, &empty;, &empty;, 362]
+? &empty;
+? &emsp;
+End cursor position = 370
+[<table><tr><td></|, </td, <table><tr><td></td>, 452]
 </td >
 </tr >
 </table >
-End cursor position = 472
+End cursor position = 473

@@ -60,6 +60,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.storage.StandardColumns;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -91,8 +92,6 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final String ID = "dlight.tool.sync"; // NOI18N
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final String TOOL_DESCRIPTION = loc("SyncTool.ToolDescription");//NOI18N
-    private static final Column timestampColumn =
-        new Column("timestamp", Time.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
     private static final Column waiterColumn =
         new Column("waiter", Integer.class, loc("SyncTool.ColumnName.waiter"), null); // NOI18N
     private static final Column mutexColumn =
@@ -101,8 +100,6 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         new Column("blocker", Integer.class, loc("SyncTool.ColumnName.blocker"), null); // NOI18N
     private static final Column timeColumn =
         new Column("time", Time.class, loc("SyncTool.ColumnName.time"), null); // NOI18N
-    private static final Column stackColumn =
-        new Column("stackid", Long.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
     private static final Column locksColumn =
         new Column("locks", Float.class, loc("SyncTool.ColumnName.locks"), null); // NOI18N
     private static final Column threadsColumn =
@@ -112,12 +109,12 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     static {
         List<Column> rawColumns = Arrays.asList(
-            timestampColumn,
+            StandardColumns.TIMESTAMP_COLUMN,
             waiterColumn,
             mutexColumn,
             blockerColumn,
             timeColumn,
-            stackColumn);
+            StandardColumns.STACK_COLUMN);
 
         rawTableMetadata = new DataTableMetadata(
                 "sync", rawColumns, null); // NOI18N
@@ -206,7 +203,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             SunStudioDCConfiguration.c_name,
             SunStudioDCConfiguration.c_eSync,
             SunStudioDCConfiguration.c_eSyncn);
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName() ,null, SunStudioDCConfiguration.c_name.getColumnName());
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(
+                SunStudioDCConfiguration.c_name.getColumnName(), 
+                SunStudioDCConfiguration.c_name.getColumnName(),
+                null, /* offset */
+                null /* context */);
 //        indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
 //            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
 
@@ -309,13 +310,15 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             new Column("func_name", FunctionName.class, "Function", null),// NOI18N
             syncTimeColumn,
             syncCountColumn);
-        String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time) as time, COUNT(*) as count" +// NOI18N
-            " FROM sync, node AS node, func" +// NOI18N
-            " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +// NOI18N
-            " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
+        
+        String sql = "select stacknode.func_id as id, fname as func_name, offset, sum(sync.time) as time, count(*) as count" // NOI18N
+                + " from sync inner join stacknode on stacknode.id = sync.stack_id" // NOI18N
+                + " inner join funcnames on funcnames.id = stacknode.func_id" // NOI18N
+                + " group by stacknode.func_id, offset " // NOI18N
+                + " order by time desc"; // NOI18N
 
-        viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));// NOI18N
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id");//NOI18N
+        viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("id", "func_name", "offset", null); // NOI18N
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
             new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(syncTimeColumn, syncCountColumn));
         ColumnsUIMapping uiMapping = new ColumnsUIMapping();

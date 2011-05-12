@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2007, 2011 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -19,20 +18,20 @@ Once execution of your program is halted, you can step through your
 lines of code using the following commands on the Debug menu or 
 toolbar:
 <ul>
-<li><b>Step Over (F8).</b> Executes one source line or statement. 
+<li><b>Step Over (F8) <img src="../images/Step_Over.gif" alt="Step Over button">.</b> Executes one source line or statement. 
 If the source line is a function call, executes the entire function 
 without stepping through the individual function instructions.
 </li>
-<li><b>Step Into (F7).</b> Executes one source line or statement. 
+<li><b>Step Into (F7) <img src="../images/Step_Into.gif" alt="Step Into button">.</b> Executes one source line or statement. 
 If the source line is a function call, stops before the first 
 statement of the function.
 </li>
-<li><b>Step Out (Ctrl-F7).</b> Executes one source line or statement. 
+<li><b>Step Out (Ctrl-F7) <img src="../images/Step_Out.gif" alt="Step Out button">.</b> Executes one source line or statement. 
 Finishes execution of the current function and stops on the source 
 line immediately following the call to that function.
 </li>
-<li><b>Run to Cursor (F4).</b> Runs the program to the cursor location in the Source Editor
-and stops.
+<li><b>Step Into Last Function <img src="../images/Step_Into_Called.gif" alt="Step Into Called button">.</b> Attempts to step into the selected function, or if no function is selected, 
+into the last function called from the current source line
 </li>
 </ul>
 <table summary="related topics">
@@ -42,6 +41,7 @@ and stops.
 <tr valign="top">
 <td width="23"></td>
 <td>
+  <a href="RunToCursor.html">Running to the Cursor Location</a><br>
   <a href="StartingLocalDebuggingSession.html">Starting a C 
   or C++ Debugging Session</a>
 </td>

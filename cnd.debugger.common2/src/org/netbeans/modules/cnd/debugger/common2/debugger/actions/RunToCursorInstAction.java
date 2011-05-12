@@ -44,17 +44,15 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import java.lang.String;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisView;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 
 
 public class RunToCursorInstAction extends CallableSystemAction implements StateListener {
@@ -68,27 +66,30 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     } 
+    
+    static void runToDisLine(int lineNo) {
+        String address = DisassemblyUtils.getLineAddress(lineNo);
+        if (address == null || address.isEmpty()) {
+            return;
+        }
+        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	if (debugger == null) {
+	    return;
+        }
+	debugger.runToCursorInst(address);
+    }
 
     // interface CallableSystemAction
     public void performAction() {
-	DisassemblerWindow dw = DisassemblerWindow.getDefault();
-	if (dw == null)
-	    return;
-	DisView dv = dw.getView();
-	if (dv == null)
-	    return;
-	String address = dv.getCurrentAddress();
-	if (address == null)
-	    return;
-
-	NativeDebugger debugger = DebuggerManager.get().currentDebugger();
-	if (debugger == null)
-	    return;
-
-	debugger.runToCursorInst(address);
+        int lineNo = EditorContextBridge.getCurrentLineNumber();
+        if (lineNo < 0) {
+            return;
+        }
+	runToDisLine(lineNo);
     }
     
 
@@ -105,12 +106,14 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
 
 
     // interface SystemAction
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/cnd/debugger/common2/icons/run_to_cursor_instruction.png"; // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_RunToCursorInstAction")); // NOI18N

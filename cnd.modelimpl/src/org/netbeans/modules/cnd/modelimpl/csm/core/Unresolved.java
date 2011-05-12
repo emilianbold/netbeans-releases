@@ -60,10 +60,11 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.CharSequences;
 
 
@@ -173,7 +174,7 @@ public final class Unresolved implements Disposable {
 	}
     }
 
-    private static final String UNRESOLVED_FILE_FAKE_PATH = CndFileUtils.createLocalFile((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$").getAbsolutePath(); // NOI18N
+    private static final String UNRESOLVED_FILE_FAKE_PATH = FileUtil.normalizeFile(CndFileUtils.createLocalFile((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$")).getAbsolutePath(); // NOI18N
     public final class UnresolvedFile implements CsmFile, CsmIdentifiable, Disposable {
 
         private UnresolvedFile() {

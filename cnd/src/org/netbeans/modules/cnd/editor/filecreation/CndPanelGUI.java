@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
 import java.io.File;
-import java.text.MessageFormat;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -53,6 +52,9 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -106,6 +108,19 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
     @Override
     public java.awt.Dimension getPreferredSize() {
         return PREF_DIM;
+    }
+    
+    protected String getProjectDisplayName(Project project) {
+        String name = ProjectUtils.getInformation(project).getDisplayName();
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        if (remoteProject != null) {
+            final ExecutionEnvironment env = remoteProject.getSourceFileSystemHost();
+            if (env.isRemote()) {
+                name += " [" + env.getDisplayName() + ']'; // NOI18N
+                //name = "<html>" + name + "<font color='!controlShadow'>" + env.getDisplayName() + "</html>";
+            }
+        }
+        return name;
     }
     
     protected static SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {        
@@ -165,16 +180,12 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
             if (value instanceof SourceGroup) {
                 SourceGroup group = (SourceGroup)value;
-                String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
-                String groupDisplayName = group.getDisplayName();
-                if ( projectDisplayName.equals( groupDisplayName ) ) {
-                    setText( groupDisplayName );
+                FileObject rootFolder = group.getRootFolder();
+                String displayName = rootFolder.getPath();
+                if (FileSystemProvider.getExecutionEnvironment(rootFolder).isLocal()) {
+                    displayName = displayName.replace('/', File.separatorChar);
                 }
-                else {
-                    setText( MessageFormat.format( PhysicalView.GroupNode.GROUP_NAME_PATTERN,
-                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                }
-                
+                setText(displayName);                
                 setIcon( group.getIcon( false ) );
             } 
             else {

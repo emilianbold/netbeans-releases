@@ -48,8 +48,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,15 +58,17 @@ import org.openide.util.NbBundle;
  * @author  thp
  */
 /*package*/final class DirectoryChooserPanel extends javax.swing.JPanel implements PropertyChangeListener {
-    private PropertyEditorSupport editor;
-    private String seed;
+    private final PropertyEditorSupport editor;
+    private final String seed;
+    private final FileSystem fileSystem;
 
     /** Creates new form DirectoryChooserPanel */
-    public DirectoryChooserPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
+    public DirectoryChooserPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv, FileSystem fileSystem) {
         initComponents();
         
         this.seed = seed;
         this.editor = editor;
+        this.fileSystem = fileSystem;
         directoryTextField.setText(seed);
 
         propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
@@ -125,10 +128,9 @@ import org.openide.util.NbBundle;
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-            if (seed == null && FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
-	    FileChooser fileChooser = new FileChooser(getString("Run_Directory"), getString("SelectLabel"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+
+	    JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                    fileSystem, getString("Run_Directory"), getString("SelectLabel"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);
 	    if (ret == JFileChooser.CANCEL_OPTION) {
                 return;

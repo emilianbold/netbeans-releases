@@ -56,7 +56,6 @@ import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;

@@ -44,22 +44,18 @@
 package org.netbeans.qa.form.visualDevelopment;
 
 import java.util.Vector;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.EditAction;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 
-import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
 import org.netbeans.jellytools.nodes.*;
 import org.netbeans.jellytools.actions.*;
 
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.qa.form.*;
 import java.io.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
@@ -82,10 +78,13 @@ import java.io.*;
  * <BR><U>is impossible add component or components in AWT category is another as in NB r3.2 (37)</U>
  * <BR><U>component was't add correctly or generated source code is wrong</U>
  *
- * @author  Marian.Mirilovic@czech.sun.com
+ * @author  Marian.Mirilovic@oracle.com
  * @version
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
-public class AddComponents_AWT extends JellyTestCase {
+public class AddComponents_AWT extends ExtJellyTestCase {
     
     public String FILE_NAME = "clear_Frame";
     public String PACKAGE_NAME = "data";
@@ -100,6 +99,20 @@ public class AddComponents_AWT extends JellyTestCase {
         super(testName);
     }
     
+    
+     @Override
+    public void setUp() throws IOException {
+        openDataProjects(_testProjectName);
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponents_AWT.class).addTest(
+                "testAddAndCompile",
+                "testJavaFile",
+                "testFormFile"
+                ).clusters(".*").enableModules(".*").gui(true));
+
+    }
     /** Run test.
      */
     public void testAddAndCompile() {
@@ -210,19 +223,5 @@ public class AddComponents_AWT extends JellyTestCase {
         try {Thread.sleep(ms);} catch (Exception e) {}
     }
     
-    /** Suite
-     * @param args arguments from command line
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AddComponents_AWT("testAddAndCompile"));
-        //suite.addTest(new AddComponents_AWT("testFormFile"));
-        suite.addTest(new AddComponents_AWT("testJavaFile"));
-        //suite.addTest(new AddComponents_AWT("testCloseDataProject"));
-        return suite;
-    }
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+ 
 }

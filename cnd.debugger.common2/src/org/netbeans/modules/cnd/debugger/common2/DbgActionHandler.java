@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2;
 
-import java.io.File;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
-import org.openide.util.Utilities;
-import org.openide.loaders.DataNode;
 import org.openide.windows.InputOutput;
 
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -56,13 +54,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.windows.IOSelect;
 
 /**
  * Implements debug-related actions on a project.
@@ -71,9 +72,10 @@ import org.openide.nodes.Node;
 public class DbgActionHandler implements ProjectActionHandler {
     private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
-    protected ProjectActionEvent pae;
+    private ProjectActionEvent pae;
+    private NativeDebuggerInfo ndi;
 
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
     }
 
@@ -86,14 +88,20 @@ public class DbgActionHandler implements ProjectActionHandler {
     }
 
     public boolean canCancel() {
-        return false;
+        return true;
     }
 
     /*
      * Called when user cancels execution from progressbar in output window
      */
     public void cancel() {
-        // Do nothing for now. See IZ 130827 Cancel running task does not work
+        // find dbugger using ndi and kill it
+        for (NativeDebugger debugger: DebuggerManager.get().nativeDebuggers()) {
+            if (ndi == debugger.getNDI()) {
+                debugger.postKill();
+                break;
+            }
+        }
     }
 
     // interface CustomProjectActionHandler
@@ -115,29 +123,47 @@ public class DbgActionHandler implements ProjectActionHandler {
 
     private void doExecute(final String executable, final DebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
+        final RunProfile profile;
+        // The following is a hack to work around issues with dbxgui interaction with run profile.
+        // We can't use the clone becasue of dbxgui and and we can't use the original because of on windows we want to use a modified PATH.
+        // We need to figure out a better solution but this should work for now (with no regressions)
+        // See IZ 195975
+        // Same for MacOS, see IZ 196921
+        int platform = ((MakeConfiguration) configuration).getDevelopmentHost().getBuildPlatform();
+        if (platform == PlatformTypes.PLATFORM_WINDOWS || platform == PlatformTypes.PLATFORM_MACOSX) {
+            profile = pae.getProfile(); // Use clone on windows because of modified PATH
+        } else {
+            profile = configuration.getProfile(); // Don't use clone on Solaris/Linux beacuse of interaction with dbxgui. Dbxgui sets values with for instance runargs xxx ...
+        }
+
 	// DefaultProjectActionHandler's executionStarted is a no-op.
 
 	executionStarted();
 
         Runnable loadProgram = new Runnable() {
             public void run() {
-                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG) {
+                if (io != null) {
+                    IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
+                }
+                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
 		    dm.setAction(DebuggerManager.RUN);
 		    dm.removeAction(DebuggerManager.STEP);
-		    DebuggerManager.get().debug(executable,
+		    ndi = DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
-                                                DbgActionHandler.this);
+                                                DbgActionHandler.this,
+                                                profile);
 
-                } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
+                } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
 		    dm.setAction(DebuggerManager.STEP);
 		    dm.removeAction(DebuggerManager.RUN);
-		    DebuggerManager.get().debug(executable,
+		    ndi = DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
-                                                DbgActionHandler.this);
+                                                DbgActionHandler.this,
+                                                profile);
 		} else {
                     assert false;
                 }
@@ -181,27 +207,27 @@ public class DbgActionHandler implements ProjectActionHandler {
         }
     }
 
-    private static DataNode findDebuggableNode(String filePath) {
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath)));
-        if (fo == null) {
-            return null; // FIXUP
-        }
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (Exception e) {
-            // FIXUP
-        }
-        if (dataObject == null) {
-            return null; // FIXUP
-        }
-        Node node = dataObject.getNodeDelegate();
-        if (node == null) {
-            return null; // FIXUP
-        }
-        if (!(node instanceof DataNode)) {
-            return null;
-        }
-        return (DataNode)node;
-    }
+//    private static DataNode findDebuggableNode(String filePath) {
+//        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath)));
+//        if (fo == null) {
+//            return null; // FIXUP
+//        }
+//        DataObject dataObject = null;
+//        try {
+//            dataObject = DataObject.find(fo);
+//        } catch (Exception e) {
+//            // FIXUP
+//        }
+//        if (dataObject == null) {
+//            return null; // FIXUP
+//        }
+//        Node node = dataObject.getNodeDelegate();
+//        if (node == null) {
+//            return null; // FIXUP
+//        }
+//        if (!(node instanceof DataNode)) {
+//            return null;
+//        }
+//        return (DataNode)node;
+//    }
 }

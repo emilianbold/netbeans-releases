@@ -65,11 +65,11 @@ public class AnnotationsTest extends J2eeTestCase {
     public static Test suite() {
         return createAllModulesServerSuite(J2eeTestCase.Server.ANY, AnnotationsTest.class);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (firstTest && isRegistered(Server.ANY)){
+        if (firstTest) {// && isRegistered(Server.ANY) 
             JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
             openDataProjects(projectName);
             resolveServer(projectName);
@@ -79,25 +79,25 @@ public class AnnotationsTest extends J2eeTestCase {
         }
     }
 
-
+    
     public void testIssue101861() throws Exception {
-        runTest("issue101861.jspx");
+        runTest("issue101861.jspx",1);
     }
 
     public void testIssue121046() throws Exception {
-        runTest("issue121046.jsp");
+        runTest("issue121046.jsp",1);
     }
 
     public void testIssue121768() throws Exception {
-        runTest("issue121768.jsp");
+        runTest("issue121768.jsp",1);
     }
 
     public void testIssue131519() throws Exception {
-        runTest("issue131519.jsp");
+        runTest("issue131519.jsp",1);
     }
 
     public void testIssue131871() throws Exception {
-        runTest("issue131871.jsp");
+        runTest("issue131871.jsp",1);
     }
 // 159891
 //    public void testIssue133173() throws Exception {
@@ -109,19 +109,19 @@ public class AnnotationsTest extends J2eeTestCase {
 //    }
 
     public void testIssue99526() throws Exception {
-        runTest("issue99526.html");
+        runTest("issue99526.html",1);
     }
 
     public void testIssue130745() throws Exception {
-        runTest("issue130745.jsp");
+        runTest("issue130745.jsp",1);
     }
 
     public void testIssue133760() throws Exception {
-        runTest("issue133760.jsp");
+        runTest("issue133760.jsp",1);
     }
 
     public void testIssue133841() throws Exception {
-        runTest("issue133841.html");
+        runTest("issue133841.html",2);
     }
 //  159931
 //    public void testIssue134518() throws Exception {
@@ -132,25 +132,25 @@ public class AnnotationsTest extends J2eeTestCase {
 //    public void testIssue134877() throws Exception {
 //        runTest("issue134877.jsp");
 //    }
-
+    
     public void testIssue134879() throws Exception {
-        runTest("issue134879.jspf");
+        runTest("issue134879.jspf",1);
     }
 
     public void testIssue127317() throws Exception {
         runTest("issue127317.css");
     }
-    
+
 //    public void testIssue110333() throws Exception {
 //        runTest("issue110333.css");
 //    }
-
+    
     public void testIssue127289() throws Exception {
-        runTest("issue127289.html", 7);
+        runTest("issue127289.html", 8);
     }
 
     public void testIssue141159() throws Exception{
-        runTest("issue141159.jsp");
+        runTest("issue141159.jsp",1);
     }
 
     public void testAnnotationsCSS() throws Exception {
@@ -158,27 +158,27 @@ public class AnnotationsTest extends J2eeTestCase {
     }
 
     public void testMissingEndTag() throws Exception {
-        runTest("missingEndTag.html", 1);
+        runTest("missingEndTag.html", 2);
     }
 
     public void testMissingStartTag() throws Exception {
-        runTest("missingStartTag.html", 1);
+        runTest("missingStartTag.html", 2);
     }
 
     public void testUnknownCSSProperty() throws Exception {
-        runTest("unknownCSSProperty.html", 1);
+        runTest("unknownCSSProperty.html", 3);
     }
 
     public void testMissingTableContent() throws Exception {
-        runTest("missingTableContent.html", 1);
+        runTest("missingTableContent.html", 2);
     }
 
     public void testMissingTitle() throws Exception {
-        runTest("missingTitle.html", 1);
+        runTest("missingTitle.html", 2);
     }
 
     public void testAttributesWarnings() throws Exception {
-        runTest("attributesWarnings.html", 4);
+        runTest("attributesWarnings.html", 5);
     }
 
     private void runTest(String fileName) throws Exception {
@@ -218,8 +218,8 @@ public class AnnotationsTest extends J2eeTestCase {
             }
         }
     }
-  
 
+    
     protected EditorOperator openFile(String fileName) {
         if (projectName == null) {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");

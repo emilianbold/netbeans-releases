@@ -121,29 +121,11 @@ public class ScriptingNodePopupTest extends PerformanceTestCase {
         // This pushes Escape on underlying JTree which should be always visible
         dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
-    public void test_RB_NodePopup() {
-        testProject = Projects.RUBY_PROJECT;
-        docName = "ruby20kb.rb";
-        testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));
-    }
 
     public void test_PHP_NodePopup() {
         testProject = Projects.PHP_PROJECT;
         docName = "php20kb.php";
         testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));        
-    }
-   
-    public void test_RHTML_NodePopup() {
-        testProject = Projects.RAILS_PROJECT;
-        docName = "rhtml20kb.rhtml";
-        testNode(new Node(getProjectNode(testProject),"Test Files|unit"+"|"+docName));
-    }
-
-    public void test_YML_NodePopup() {
-        testProject = Projects.RAILS_PROJECT;
-        docName = "yaml20kb.yml";        
-        testNode(new Node(getProjectNode(testProject),"Test Files|unit"+"|"+docName));
     }
 
     public void test_JS_NodePopup() {

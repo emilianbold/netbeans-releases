@@ -152,6 +152,23 @@ public class NbKeymapTest extends NbTestCase {
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), def2, "continue");
     }
     
+    public void testOriginalFileIgnored() throws Exception { 
+        FileObject def1 = make("Actions/hey.instance");
+        def1.setAttribute("instanceCreate", new DummyAction("hey"));
+        FileObject def2 = make("Actions/now.instance");
+        def2.setAttribute("instanceCreate", new DummyAction("now"));
+        DataFolder netbeans = DataFolder.findFolder(makeFolder("Shortcuts"));
+        DataShadow s1 = DataShadow.create(netbeans, "C-F4", DataObject.find(def1));
+        DataShadow s2 = DataShadow.create(netbeans, "F4", DataObject.find(def2));
+        
+        s1.getPrimaryFile().setAttribute("originalFile", "nowhere");
+        s2.getPrimaryFile().setAttribute("originalFile", def1.getParent().getPath());
+        
+        NbKeymap km = new NbKeymap();
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.CTRL_MASK), def1, "hey");
+        assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), def2, "now");
+    }
+    
     public void testUnusualInstanceFileExtensions() throws Exception {
         MockServices.setServices(ENV.class);
         FileObject inst = make("Shortcuts/C-F11.xml");

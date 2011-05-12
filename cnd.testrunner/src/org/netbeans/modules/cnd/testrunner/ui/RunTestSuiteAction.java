@@ -70,7 +70,7 @@ final class RunTestSuiteAction extends BaseTestMethodNodeAction {
             Folder targetFolder = findTestFolder();
             if(targetFolder != null) {
                 if(debug) {
-                    ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookups.fixed(new Object[]{project, targetFolder}));
+                    ap.invokeAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, Lookups.fixed(new Object[]{project, targetFolder}));
                 } else {
                     ap.invokeAction(ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(new Object[]{project, targetFolder}));
                 }

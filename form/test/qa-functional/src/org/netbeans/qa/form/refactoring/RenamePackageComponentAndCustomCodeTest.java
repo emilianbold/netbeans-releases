@@ -44,7 +44,6 @@
 
 package org.netbeans.qa.form.refactoring;
 
-import java.io.IOException;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -61,6 +60,9 @@ import org.netbeans.junit.NbModuleSuite;
  * Tests form refactoring : Refactoring custom component name, custom code and package name
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 26 APRIL 2011 WORKS
  */
 public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
     private String FORM_NAME = "CustomComponentForm"; // NOI18N
@@ -77,14 +79,8 @@ public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /** 
-     * Opening default project
-     */
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-        
-    }
-    
+   
+   
     /**
      * Creates suite from particular test cases.
      * @return nb test suite

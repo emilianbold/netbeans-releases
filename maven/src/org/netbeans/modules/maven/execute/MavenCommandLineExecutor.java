@@ -187,15 +187,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 ioput.getErr().println(x.getMessage());
             }
         } catch (InterruptedException x) {
-            //TODO
-            LOGGER.log(Level.WARNING , x.getMessage(), x);
+            cancel();
         } catch (ThreadDeath death) {
-            if (preProcess != null) {
-                kill(preProcess, preProcessUUID);
-            }
-            if (process != null) {
-                kill(process, processUUID);
-            }
+            cancel();
             throw death;
         } finally {
             BuildExecutionSupport.registerFinishedItem(item);
@@ -240,6 +234,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     public boolean cancel() {
         if (preProcess != null) {
             kill(preProcess, preProcessUUID);
+            preProcess = null;
         }
         if (process != null) {
             kill(process, processUUID);

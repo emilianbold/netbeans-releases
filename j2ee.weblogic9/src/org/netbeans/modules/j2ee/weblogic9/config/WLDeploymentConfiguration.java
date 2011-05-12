@@ -64,12 +64,12 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration {
 
     @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
-        // TODO
+        throw new UnsupportedOperationException("bindDatasourceReference");
     }
 
     @Override
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, String referenceName, String jndiName) throws ConfigurationException {
-        // TODO
+        throw new UnsupportedOperationException("bindDatasourceReferenceForEjb");
     }
 
     @Override
@@ -79,14 +79,12 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration {
 
     @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
-        // TODO
-        return null;
+        throw new UnsupportedOperationException("findDatasourceJndiName");
     }
 
     @Override
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
-        // TODO
-        return null;
+        throw new UnsupportedOperationException("findDatasourceJndiNameForEjb");
     }
 
     @Override

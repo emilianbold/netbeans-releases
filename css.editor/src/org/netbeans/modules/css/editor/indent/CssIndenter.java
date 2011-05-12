@@ -121,7 +121,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
             TokenId id = token.id();
 
             if (id == CssTokenId.IDENT && ts.offset() < startOffset && balance == 0) {
-                int index = ts.index();
+                int[] index = ts.index();
                 ts.moveNext();
                 Token tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
                 ts.moveIndex(index);

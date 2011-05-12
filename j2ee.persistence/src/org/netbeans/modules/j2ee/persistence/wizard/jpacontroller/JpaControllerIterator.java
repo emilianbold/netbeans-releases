@@ -363,18 +363,5 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         private ValidationPanel(WizardDescriptor.Panel delegate) {
             super(delegate);
         }
-//        public boolean isValid() {
-//            Project project = getProject();
-//            WizardDescriptor wizardDescriptor = getWizardDescriptor();
-//            
-////            // check that this project has a valid target server
-////            if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(project)) {
-////                wizardDescriptor.putProperty("WizardPanel_errorMessage",
-////                        NbBundle.getMessage(JpaControllerIterator.class, "ERR_MissingServer")); // NOI18N
-////                return false;
-////            }
-//
-//            return super.isValid();
-//        }
     }
 }

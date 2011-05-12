@@ -46,7 +46,7 @@ import javax.swing.SwingUtilities;
 
 public class RemoteLogger {
 
-    private static java.util.logging.Logger instance =
+    private static final java.util.logging.Logger instance =
             java.util.logging.Logger.getLogger("remote.support.logger"); // NOI18N
     
     private static boolean assertionsEnabled = false;
@@ -60,6 +60,10 @@ public class RemoteLogger {
 
     public static Exception getLastAssertion() {
         return lastAssertion;
+    }
+    
+    public static boolean isDebugMode() {
+        return assertionsEnabled;
     }
 
     private RemoteLogger() {}

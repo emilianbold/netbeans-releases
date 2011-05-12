@@ -77,6 +77,10 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author  Jana.Maleckova@czech.sun.com
  * @version
+ * 
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class AddComponents_SWING extends ExtJellyTestCase {
 
@@ -95,16 +99,16 @@ public class AddComponents_SWING extends ExtJellyTestCase {
 
     /** Run test.
      */
+    @Override
     public void setUp() throws IOException {
         openDataProjects(_testProjectName);
     }
 
-    /** Run test.
-     */
-    public void testCloseDataProject() {
-//        closeDataProject();
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        ewo.closeDiscard();
+   
+    
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponents_SWING.class).addTest("testAddAndCompile").clusters(".*").enableModules(".*").gui(true));
+
     }
 
     /** Run test.
@@ -234,8 +238,5 @@ public class AddComponents_SWING extends ExtJellyTestCase {
         }
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponents_SWING.class).addTest("testAddAndCompile").clusters(".*").enableModules(".*").gui(true));
-
-    }
+    
 }

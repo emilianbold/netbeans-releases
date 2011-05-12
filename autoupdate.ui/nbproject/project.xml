@@ -126,13 +126,9 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>com.sun.tools.dlight.tools.customizer</friend>
-                <friend>org.netbeans.modules.autoupdate.pluginimporter</friend>
-                <friend>org.netbeans.modules.cnd.toolchain</friend>
-                <friend>com.microchip.mplab.nbide.embedded</friend>
+            <public-packages>
                 <package>org.netbeans.modules.autoupdate.ui.api</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>

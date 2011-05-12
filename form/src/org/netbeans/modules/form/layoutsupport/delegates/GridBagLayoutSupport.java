@@ -1158,8 +1158,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         @Override
         public void setContext(FormModel formModel, FormProperty property) {
-            FileObject formFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
-            boolean isJDK6Compatible = ClassPathUtils.isJava6ProjectPlatform(formFile);
+            boolean isJDK6Compatible = true;
+            if (formModel != null) {
+                FileObject formFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
+                isJDK6Compatible = ClassPathUtils.isJava6ProjectPlatform(formFile);
+            }
 
             // Tags
             List<String> tagList = new LinkedList<String>();

@@ -65,10 +65,12 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
@@ -81,6 +83,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -93,7 +96,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -126,10 +128,13 @@ public class ProjectActionSupport {
     private static void refreshProjectFiles(Project project) {
         try {
             Set<File> files = new HashSet<File>();
+            Set<FileObject> fileObjects = new HashSet<FileObject>();
             FileObject projectFileObject = project.getProjectDirectory();
             File f = FileUtil.toFile(projectFileObject);
             if (f != null) {
                 files.add(f);
+            } else {
+                fileObjects.add(projectFileObject);
             }
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -138,14 +143,22 @@ public class ProjectActionSupport {
                 File file = FileUtil.toFile(rootFolder);
                 if (file != null) {
                     files.add(file);
+                } else {
+                    fileObjects.add(rootFolder);
                 }
             }
             File[] array = files.toArray(new File[files.size()]);
             if (array.length > 0) {
                 FileUtil.refreshFor(array);
             }
+            if (!fileObjects.isEmpty()) {
+                for (FileObject fo : fileObjects) {
+                    FileSystemProvider.scheduleRefresh(fo);
+                }
+            }
             MakeLogicalViewProvider.refreshBrokenItems(project);
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -157,18 +170,18 @@ public class ProjectActionSupport {
      * @param type
      * @return
      */
-    public boolean canHandle(MakeConfiguration conf, ProjectActionEvent.Type type) {
+    public boolean canHandle(MakeConfiguration conf, Lookup context, ProjectActionEvent.Type type) {
         if (conf != null) {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
             CustomizerNode node = chooser.getNode();
             if (node instanceof ProjectActionHandlerFactory) {
-                if (((ProjectActionHandlerFactory) node).canHandle(type, conf)) {
+                if (((ProjectActionHandlerFactory) node).canHandle(type, context, conf)) {
                     return true;
                 }
             }
         }
         for (ProjectActionHandlerFactory factory : handlerFactories) {
-            if (factory.canHandle(type, conf)) {
+            if (factory.canHandle(type, context, conf)) {
                 return true;
             }
         }
@@ -462,6 +475,8 @@ public class ProjectActionSupport {
             if (type == PredefinedType.RUN
                     || type == PredefinedType.DEBUG
                     || type == PredefinedType.DEBUG_STEPINTO
+                    || type == PredefinedType.DEBUG_TEST
+                    || type == PredefinedType.DEBUG_STEPINTO_TEST
                     || type == PredefinedType.CHECK_EXECUTABLE
                     || type == PredefinedType.CUSTOM_ACTION) {
                 if (!checkExecutable(pae) || type == PredefinedType.CHECK_EXECUTABLE) {
@@ -472,7 +487,7 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             boolean runInExternalTerminal = false;
-            int consoleType = pae.getProfile().getConsoleType().getValue();
+            int consoleType = pae.getProfile().getConsoleType().getValue(); 
             runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
             if (!pae.getConfiguration().getDevelopmentHost().isLocalhost() && runInExternalTerminal){
                 //set to internal terminal
@@ -531,7 +546,16 @@ public class ProjectActionSupport {
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
-            handler.init(pae, paes);
+            if (additional == null) {
+                additional = BuildActionsProvider.getDefault().getActions(pae.getActionName(), paes);
+            }
+            List<OutputStreamHandler> streamHandlers = new ArrayList<OutputStreamHandler>();
+            for(BuildAction action : additional) {
+                if (action instanceof OutputStreamHandler) {
+                    streamHandlers.add((OutputStreamHandler) action);
+                }
+            }
+            handler.init(pae, paes, streamHandlers);
             progressHandle.finish();
             progressHandle = handler.canCancel() ? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();
@@ -603,11 +627,14 @@ public class ProjectActionSupport {
                     FileObject projectDirectory = project.getProjectDirectory();
                     if (projectDirectory != null) {
                         FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
-                        if (nbproject != null) {
-                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
-                            File file = FileUtil.toFile(nbproject);
-                            return file != null && file.exists();
-                        }
+                        return nbproject != null && nbproject.isValid();
+//                        Should use the check below when working with local projects?
+//                        if (nbproject != null) {
+//                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
+//                            File file = FileUtil.toFile(nbproject);
+//                            return file != null && file.exists();
+//                        }
+                        
                     }
                 }
             }
@@ -634,7 +661,7 @@ public class ProjectActionSupport {
                         makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     }
                     else if (makeConfiguration.isLibraryConfiguration()) {
-                        makeConfiguration.getProfile().setRunCommand(executable);
+                        makeConfiguration.getProfile().getRunCommand().setValue(executable);
                     }
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {
@@ -775,21 +802,27 @@ public class ProjectActionSupport {
 
         public TermAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false)); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/ui/term.png", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.TermAction.text")); // NOI18N
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String dir = null;
-            ExecutionEnvironment env = null;
             for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
+                String dir = null;
+                ExecutionEnvironment env = null;
                 ProjectActionEvent pae = handleEvents.paes[i];
-                dir = pae.getProfile().getRunDirectory();
+                String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
+                dir = pae.getProfile().getRunDirectory();                                
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                if (env.isRemote()) {
+                    if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
+                        dir = RemoteSyncSupport.getPathMap(pae.getProject()).getRemotePath(dir);
+                    }
+                }
+                TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
                 break;
             }
-            TerminalSupport.openTerminal(IOContainer.getDefault(), env, dir);
         }
     }
     
@@ -798,7 +831,7 @@ public class ProjectActionSupport {
         return NbBundle.getBundle(ProjectActionSupport.class).getString(s);
     }
 
-    private static String getString(String s, String arg) {
+    private static String getString(String s, String... arg) {
         return NbBundle.getMessage(ProjectActionSupport.class, s, arg);
     }
 }

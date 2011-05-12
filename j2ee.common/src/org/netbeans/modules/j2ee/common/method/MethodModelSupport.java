@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.common.method;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import javax.lang.model.type.ArrayType;
 import org.netbeans.api.java.source.CompilationController;
@@ -56,8 +57,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -74,6 +75,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.openide.util.Parameters;
 
 /**
@@ -223,6 +225,27 @@ public final class MethodModelSupport {
                     null
                     );
         }
+
+        // add annotations if supported
+        if (workingCopy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0) {
+            GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+            List<AnnotationTree> annotationList = new ArrayList<AnnotationTree>();
+            // create annotation list for the method
+            for (MethodModel.Annotation annotation : methodModel.getAnnotations()) {
+                AnnotationTree annotationTree = null;
+                if (annotation.getArguments() == null) { 
+                    annotationTree = genUtils.createAnnotation(annotation.getType());
+                } else {
+                    annotationTree = genUtils.createAnnotation(annotation.getType(), annotation.getArguments());
+                }
+                annotationList.add(annotationTree);
+            }
+            // annotate method with all annotations
+            for (AnnotationTree annotation : annotationList) {
+                result = genUtils.addAnnotation(result, annotation);
+            }
+        }
+
         return (MethodTree) GeneratorUtilities.get(workingCopy).importFQNs(result);
     }
     

@@ -250,6 +250,13 @@ import org.openide.util.RequestProcessor;
             public Boolean call() throws Exception {
 //                final char[] password = getPassword();
 //                final boolean rememberPassword = cbSavePassword.isSelected();
+                tpOutput.setText("");
+                TextComponentWriter textComponentWriter = new TextComponentWriter(tpOutput);
+                if (isEmpty(getLoginName())) {
+                    textComponentWriter.println(NbBundle.getMessage(CreateHostVisualPanel2.class, "EmptyLoginMessage"));
+                    return Boolean.FALSE;
+                }
+                
                 final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
 
                 tpOutput.setText("");
@@ -304,8 +311,10 @@ import org.openide.util.RequestProcessor;
     }
 
     void storeConfiguration() {
+        if (!isEmpty(getLoginName())) {
         ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
         configurationPanel.applyChanges(env);
+    }
     }
 
     // End of variables declaration
@@ -315,5 +324,9 @@ import org.openide.util.RequestProcessor;
         public void stateChanged(ValidateablePanel src) {
             fireChange();
         }
+    }
+    
+    private static boolean isEmpty(String text) {
+        return text == null || text.length() == 0;
     }
 }
