@@ -41,21 +41,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.test.subversion.operators.actions;
 
-import org.netbeans.jellytools.actions.ActionNoBlock;
+package org.netbeans.test.subversion.operators;
 
-/**
- * 
- *  @author tester
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ExploreFromHereAction;
+import org.netbeans.jellytools.actions.FindAction;
+import org.netbeans.jellytools.nodes.Node;
+
+/** Node representing Source packages node under project node.
+ * @author Jiri.Skrivanek@sun.com
  */
-public class RefactoringAction extends ActionNoBlock {
-    
-    /** "Window|Output|Refactoring Preview" menu item. */
-    private static final String MENU_ITEM = "Window|Output|Refactoring Preview";
+public class SourcePackagesNode extends Node {
 
-    /** Creates new instance of RefactoringAction */
-    public RefactoringAction() {
-        super(MENU_ITEM, null);
+    private static final String SOURCE_PACKAGES_LABEL = Bundle.getString(
+                                "org.netbeans.modules.java.j2seproject.Bundle",
+                                "NAME_src.dir");
+    static final ExploreFromHereAction exploreFromHereAction = new ExploreFromHereAction();
+    static final FindAction findAction = new FindAction();
+    
+    /** Finds Source Packages node under project with given name
+     * @param projectName display name of project
+     */
+    public SourcePackagesNode(String projectName) {
+        super(new ProjectsTabOperator().getProjectRootNode(projectName), SOURCE_PACKAGES_LABEL);
+    }
+
+    /** Finds Source Packages node under given project node.
+     * @param projectNode project node in the Projects view
+     */
+    public SourcePackagesNode(Node projectNode) {
+        super(projectNode, SOURCE_PACKAGES_LABEL);
+    }
+
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            exploreFromHereAction,
+            findAction,
+        });
+    }
+    
+    /** performs ExploreFromHereAction with this node */    
+    public void exploreFromHere() {
+        exploreFromHereAction.perform(this);
+    }
+    
+    /** performs FindAction with this node */    
+    public void find() {
+        findAction.perform(this);
     }
 }
