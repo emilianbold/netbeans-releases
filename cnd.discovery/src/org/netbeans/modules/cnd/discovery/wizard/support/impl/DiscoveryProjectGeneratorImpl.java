@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.support.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -198,9 +197,9 @@ public class DiscoveryProjectGeneratorImpl {
                         continue;
                     } else {
                         if (entry.getValue().getRoot() == null) {
-                            File folderFile = getFolderFile(entry.getValue());
+                            FileObject folderFile = getFolderFile(entry.getValue());
                             if (folderFile != null) {
-                                entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getAbsolutePath()));
+                                entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getPath()));
                             }
                         }
                     }
@@ -217,9 +216,9 @@ public class DiscoveryProjectGeneratorImpl {
                 root.addFolder(entry.getValue(), true);
             } else {
                 if (entry.getValue().getRoot() == null) {
-                    File folderFile = getFolderFile(entry.getValue());
+                    FileObject folderFile = getFolderFile(entry.getValue());
                     if (folderFile != null) {
-                        entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getAbsolutePath()));
+                        entry.getValue().setRoot(projectBridge.getRelativepath(folderFile.getPath()));
                     }
                 }
                 root.addFolder(entry.getValue(), true);
@@ -227,17 +226,23 @@ public class DiscoveryProjectGeneratorImpl {
         }
     }
 
-    private File getFolderFile(Folder folder) {
+    private FileObject getFolderFile(Folder folder) {
         for(Item item : folder.getItemsAsArray()) {
-            File parent = item.getNormalizedFile().getParentFile();
-            if (parent != null) {
-                return parent;
+            FileObject fo = item.getFileObject();
+            if (fo != null) {
+                FileObject parent = fo.getParent();
+                if (parent != null) {
+                    return parent;
+                }
             }
         }
         for(Folder f : folder.getFolders()) {
-            File parent = getFolderFile(f);
-            if (parent != null) {
-                return parent.getParentFile();
+            FileObject folderObject = getFolderFile(f);
+            if (folderObject != null) {
+                FileObject parent = folderObject.getParent();
+                if (parent != null) {
+                    return parent;
+                }
             }
         }
         return null;
@@ -295,7 +300,47 @@ public class DiscoveryProjectGeneratorImpl {
     }
 
     private Folder getOrCreateFolder(Folder folder, String name, AbstractRoot used) {
-        Folder added = folder.findFolderByName(name);
+        Folder added = null;
+        Folder[] folders = folder.getFoldersAsArray();
+        for (int i = 0; i < folders.length; i++) {
+            String root = folders[i].getAbsolutePath();
+            String orphan = used.getFolder();
+            if (root != null && orphan != null && orphan.startsWith(root)) {
+                String[] splitRoot = root.split("\\/");
+                String[] splitOrphan = orphan.split("\\/");
+                int lastEquals = -1;
+                for(int j = 0; j < splitRoot.length && j < splitOrphan.length; j++) {
+                    if (splitRoot[j].equals(splitOrphan[j])) {
+                        lastEquals = j;
+                    } else {
+                        break;
+                    }
+                }
+                if (lastEquals == splitRoot.length - 1) {
+                    // ophan is subfolder of root
+                    added = folders[i];
+                    for(int j = lastEquals + 1; j < splitOrphan.length; j++) {
+                        Folder found = null;
+                        for(Folder current : added.getFoldersAsArray()) {
+                            if (current.getName().equals(splitOrphan[j])) {
+                                found = current;
+                                break;
+                            }
+                        }
+                        if (found == null) {
+                            found = projectBridge.createFolder(added, splitOrphan[j]);
+                            added.addFolder(found, true);
+                        }
+                        added = found;
+                    }
+                    break;
+                }
+            }
+            if (name != null && name.equals(folders[i].getName())) {
+                added = folders[i];
+                break;
+            }
+        }
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
             //if (!folder.isDiskFolder()) {

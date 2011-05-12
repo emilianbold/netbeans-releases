@@ -59,6 +59,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
@@ -78,6 +80,8 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -133,6 +137,16 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
+    private FileSystem getFileSystem(ProjectProxy project) {
+        if (project != null) {
+            Project p = project.getProject();
+            if (p != null) {                
+                return RemoteFileUtil.getProjectSourceFileSystem(p);
+            }
+        }
+        return CndFileUtils.getLocalFileSystem();
+    }
+
     private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls) {
         if (isStoped.get()) {
             return true;
@@ -153,6 +167,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
+        FileSystem fileSystem  = getFileSystem(project);
         for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls)) {
             if (isStoped.get()) {
                 break;
@@ -172,10 +187,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
             boolean exist = false;
-            if (!new File(name).exists()) {
+            FileObject fo = fileSystem.findResource(name);
+            if (fo == null || !fo.isValid()) {
                   String fileFinder = Dwarf.fileFinder(file, name);
                   if (fileFinder != null) {
-                      if (new File(fileFinder).exists()) {
+                      fo = fileSystem.findResource(fileFinder);
+                      if (fo != null && fo.isValid()) {
                           if (f instanceof DwarfSource) {
                               ((DwarfSource)f).resetItemPath(fileFinder);
                               name = fileFinder;

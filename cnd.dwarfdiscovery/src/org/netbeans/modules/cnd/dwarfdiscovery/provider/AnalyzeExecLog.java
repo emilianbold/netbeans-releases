@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
@@ -72,6 +73,8 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -308,6 +311,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private List<SourceFileProperties> result;
         private final ProjectProxy project;
         private final PathMap pathMapper;
+        private final FileSystem fileSystem;
 
         public ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
@@ -318,14 +322,27 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             this.fileName = fileName;
             this.project = project;
             this.pathMapper = getPathMapper(project);
+            this.fileSystem = getFileSystem(project);
         }
 
         private PathMap getPathMapper(ProjectProxy project) {
-            Project p = project.getProject();
-            if (p != null) {                
-                return RemoteSyncSupport.getPathMap(p);
+            if (project != null) {
+                Project p = project.getProject();
+                if (p != null) {                
+                    return RemoteSyncSupport.getPathMap(p);
+                }
             }
             return null;
+        }
+
+        private FileSystem getFileSystem(ProjectProxy project) {
+            if (project != null) {
+                Project p = project.getProject();
+                if (p != null) {                
+                    return RemoteFileUtil.getProjectSourceFileSystem(p);
+                }
+            }
+            return CndFileUtils.getLocalFileSystem();
         }
         
         // Exec log format
@@ -497,11 +514,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     fullName = compilePath+"/"+what; //NOI18N
                     sourceName = what;
                 }
-                File f = new File(fullName);
-                if (f.exists() && f.isFile()) {
-                    File file = new File(fullName);
-                    fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
-                    fullName = PathCache.getString(fullName);
+                FileObject f = fileSystem.findResource(fullName);
+                if (f != null && f.isValid() && f.isData()) {
+                    fullName = PathCache.getString(f.getPath());
                     if (languageArtifacts.contains("c")) { // NOI18N
                         language = ItemProperties.LanguageKind.C;
                     } else if (languageArtifacts.contains("c++")) { // NOI18N
