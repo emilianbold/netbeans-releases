@@ -43,7 +43,6 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -97,7 +97,7 @@ public class WritingQueue {
         return instance;
     }
 
-    public void add(File srcFile, String dstFileName, int mask, Writer error) {
+    public void add(File srcFile, String dstFileName, int mask) {
         LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}:{2}", new Object[]{execEnv, dstFileName}); //NOI18N
         synchronized (lock) {
             Entry entry = entries.get(dstFileName);
@@ -105,7 +105,7 @@ public class WritingQueue {
                 entry = new Entry(dstFileName);
                 entries.put(dstFileName, entry);
             }
-            entry.scheduleUpload(srcFile, mask, error);
+            entry.scheduleUpload(srcFile, mask);
         }
     }
 
@@ -177,25 +177,23 @@ public class WritingQueue {
     
     private class Entry implements ChangeListener {
 
-        private volatile Future<Integer> currentTask;
+        private volatile Future<UploadStatus> currentTask;
         private boolean reschedule;
         
         private final String dstFileName;        
         
         private File srcFile;
         private int mask;
-        private Writer error;        
 
         public Entry(String dstFileName) {
             this.dstFileName = dstFileName;
             this.reschedule = false;
         }
         
-        public void scheduleUpload(File srcFile, int mask, Writer error) {
+        public void scheduleUpload(File srcFile, int mask) {
             synchronized (lock) {
                 this.srcFile = srcFile;
                 this.mask = mask;
-                this.error = error;
                 failed.remove(dstFileName);
                 if (currentTask == null) {
                     scheduleUpload();
@@ -210,7 +208,7 @@ public class WritingQueue {
         
         private void scheduleUpload() {
             CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                    srcFile, execEnv, this.dstFileName, mask, error, false, this);
+                    srcFile, execEnv, this.dstFileName, mask, false, this);
             currentTask = CommonTasksSupport.uploadFile(params);
         }
 
@@ -222,7 +220,7 @@ public class WritingQueue {
                 return;
             }
             try {
-                taskFinished((Future<Integer>) source);
+                taskFinished((Future<UploadStatus>) source);
             } finally {
                 synchronized (monitor) {
                     monitor.notifyAll();
@@ -230,7 +228,7 @@ public class WritingQueue {
             }
         }
 
-        private void taskFinished(Future<Integer> finishedTask) {
+        private void taskFinished(Future<UploadStatus> finishedTask) {
             LOGGER.log(Level.FINEST, "WritingQueue: Task {0} at {1} finished", new Object[]{finishedTask, execEnv});
             synchronized (lock) {
                 if (currentTask != null && currentTask != finishedTask) {
@@ -246,7 +244,7 @@ public class WritingQueue {
                     return;
                 }
                 try {
-                    if (finishedTask.get().intValue() == 0) {
+                    if (finishedTask.get().isOK()) {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} succeeded", new Object[] {execEnv, dstFileName});
                         failed.remove(dstFileName); // paranoia
                     } else {

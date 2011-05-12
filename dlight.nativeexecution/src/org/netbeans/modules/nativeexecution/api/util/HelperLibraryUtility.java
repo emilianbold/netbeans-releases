@@ -107,9 +107,8 @@ public class HelperLibraryUtility {
                             final String fileFolder = file.getParentFile().getName();
                             final String remoteFile = hinfo.getTempDir() + '/' + fileFolder +'/' +fileName;
 
-                            Future<Integer> uploadTask = CommonTasksSupport.uploadFile(lf, env, remoteFile, 0755, null, true);
-                            Integer uploadResult = uploadTask.get();
-                            if (uploadResult != 0) {
+                            Future<CommonTasksSupport.UploadStatus> uploadTask = CommonTasksSupport.uploadFile(lf, env, remoteFile, 0755, true);
+                            if (!uploadTask.get().isOK()) {
                                 throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
                             }
                             result.add(remoteFile);

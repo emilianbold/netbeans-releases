@@ -55,6 +55,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -226,7 +227,7 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
         long time = System.currentTimeMillis();        
         try {            
             @SuppressWarnings("unchecked")
-            final Future<Integer>[][] tasks = (Future<Integer>[][]) (new Future[threadCount][files.length]);            
+            final Future<UploadStatus>[][] tasks = (Future<UploadStatus>[][]) (new Future[threadCount][files.length]);
             Thread[] threads = new Thread[threadCount];
             final Exception[] threadExceptions = new Exception[threadCount];
             final CyclicBarrier barrier = new CyclicBarrier(threadCount);            
@@ -244,7 +245,7 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
                                 for (int currFile = 0; currFile < files.length; currFile++ ) {
                                     String name = files[currFile].getName();                    
                                     tasks[currThread][currFile] = CommonTasksSupport.uploadFile(
-                                            files[currFile], env, remoteDir + '/' + name /*+ '.' + currLap*/, 0600, errorWriter);
+                                            files[currFile], env, remoteDir + '/' + name /*+ '.' + currLap*/, 0600);
                                 }
                             } finally {
                                 System.err.printf("%s finished\n", threadName);
@@ -276,7 +277,9 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
                         
             for (int currLap = 0; currLap < threadCount; currLap++) {
                 for (int currFile = 0; currFile < files.length; currFile++ ) {
-                    assertEquals("RC for file " + files[currFile].getName() + " lap #" + currLap, 0, tasks[currLap][currFile].get().intValue());
+                    UploadStatus res = tasks[currLap][currFile].get();
+                    assertEquals("RC for file " + files[currFile].getName() + " lap #" + currLap + " error:" + res.getError(), 
+                            0, res.getExitCode());
                 }
             }
         } finally {

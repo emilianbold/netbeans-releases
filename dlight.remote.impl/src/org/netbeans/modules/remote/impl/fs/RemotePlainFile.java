@@ -220,7 +220,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         @Override
         public void close() throws IOException {
             delegate.close();
-            WritingQueue.getInstance(getExecutionEnvironment()).add(getCache(), getPath(), -1, null);
+            WritingQueue.getInstance(getExecutionEnvironment()).add(getCache(), getPath(), -1);
         }
 
         @Override

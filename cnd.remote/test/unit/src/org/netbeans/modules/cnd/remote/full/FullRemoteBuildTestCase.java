@@ -145,16 +145,15 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
                 fileName = replace[i+1];
             }
         }
-        String remotePath = destination + '/' + fileName;
-        PrintWriter err = new PrintWriter(System.err);
+        String remotePath = destination + '/' + fileName;        
         if (file.isFile()) {
             UploadParameters up = new CommonTasksSupport.UploadParameters(
-                    file, getTestExecutionEnvironment(), remotePath, -1, err);
-            int rc = CommonTasksSupport.uploadFile(up).get();
-            if (rc != 0) {
+                    file, getTestExecutionEnvironment(), remotePath, -1);
+            if (CommonTasksSupport.uploadFile(up).get().isOK()) {
                 throw new IOException("Error uploading " + file.getAbsolutePath() + " to " + up.dstExecEnv + ':' + up.dstFileName);
             }
         } else {
+            PrintWriter err = new PrintWriter(System.err);
             int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), remotePath, err).get();
             if (rc != 0) {
                 throw new IOException("Error creating directory  " + getTestExecutionEnvironment() + ':' + remotePath);
