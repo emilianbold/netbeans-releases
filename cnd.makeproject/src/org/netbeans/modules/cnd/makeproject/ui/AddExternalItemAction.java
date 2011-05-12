@@ -116,7 +116,7 @@ public class AddExternalItemAction extends AbstractAction {
                 items.add(item);
 	    }
             else {
-                item = new Item(itemPath);
+                item = Item.createInFileSystem(makeProjectDescriptor.getBaseDirFileSystem(), itemPath);
                 makeProjectDescriptor.getExternalItemFolder().addItem(item);
                 items.add(item);
             }

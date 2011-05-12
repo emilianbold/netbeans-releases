@@ -195,7 +195,7 @@ public class MakeTemplateListener implements OperationListener {
             }
             String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
-            Item item = new Item(itemPath);
+            Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
 
             folder.addItemAction(item);
 
@@ -208,7 +208,7 @@ public class MakeTemplateListener implements OperationListener {
             if (file.isData() && makeConfigurationDescriptor.okToChange()) {
                 String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDirFileObject(), file, project);
                 itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
-                Item item = new Item(itemPath);
+                Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
                 folder.addItemAction(item);
             }
         } else {
