@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.git.ui.history;
 
+import org.netbeans.libs.git.GitException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
@@ -59,6 +60,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.DiffStreamSource;
@@ -83,6 +86,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private boolean                 dividerSet;
     protected List<RepositoryRevision> results;
     private static final RequestProcessor rp = new RequestProcessor("GitDiff", 1, true);  // NOI18N
+    private static final Logger LOG = Logger.getLogger(DiffResultsView.class.getName());
 
     public DiffResultsView (SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
@@ -362,6 +366,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                 String[] parents = header.getLogInfoHeader().getLog().getParents();
                 if (parents.length == 1) {
                     revision1 = parents[0];
+                } else {
+                    try {
+                        revision1 = header.getLogInfoHeader().getAncestorCommit(getClient(), NULL_PROGRESS_MONITOR);
+                    } catch (GitException ex) {
+                        LOG.log(Level.INFO, null, ex);
+                    }
                 }
             }
             if (isCanceled()) {
