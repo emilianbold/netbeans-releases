@@ -47,7 +47,8 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="NBProfiler">
         <folder name="Categories">
-            <folder name="IO">
+            <!-- SAMPLE -->
+<!--            <folder name="IO">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
                 <folder name="Files">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
@@ -154,19 +155,20 @@ made subject to such option by the copyright holder.
                 <folder name=".type">
                     <folder name="javax.swing.UIManager"/>
                 </folder>
-            </folder>
+            </folder>-->
         </folder>
     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="NBProfiler">
                 <folder name="Categories">
-                    <file name="IO.shadow">
+                    <!-- SAMPLE -->
+<!--                    <file name="IO.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/IO"/>
                     </file>
                     <file name="UI.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/UI"/>
-                    </file>
+                    </file>-->
                 </folder>
             </folder>
         </folder>
