@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -227,23 +227,15 @@ public class Hk2PluginProperties {
 
             // jaxrs in 3.0
             //              {"jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "mimepull", "jsr311-api"}; //NOI18N
-            jars.add("jackson-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jackson-core-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-gf-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-multipart"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jettison"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("mimepull"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            // has the javax.ws.rs.* classes and packages
+            // Jersey is NOT part of Java EE -- but jsr311 sure is.
             jars.add("jsr311-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             // jaxrxs in 3.1
             //              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
-            jars.add("jackson-jaxrs"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jackson-mapper-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-client"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            // has the javax.ws.rs.* classes and packages... plus some Jersey imple gunk
+            // TODO: find jar that doesn't include Jersey impl gunk...
             jars.add("jersey-core"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-gf-server"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jersey-json"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
@@ -467,8 +459,11 @@ public class Hk2PluginProperties {
         }
         InetSocketAddress isa = new InetSocketAddress(host, port);
         Socket socket = new Socket();
-        socket.connect(isa, 1);
-        socket.close();
+        socket.connect(isa, 2000);
+        socket.setSoTimeout(2000);
+        try { socket.close(); } catch (IOException ioe) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, "stranded open socket to "+host+":"+port, ioe);  //NOI18N
+        }
         return true;
     }
 
@@ -483,6 +478,8 @@ public class Hk2PluginProperties {
             return isRunning(host, Integer.parseInt(port));
         } catch (NumberFormatException e) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, e); // NOI18N
+            return false;
+        } catch (java.net.ConnectException ce) {
             return false;
         } catch (IOException ioe) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, ioe); // NOI18N

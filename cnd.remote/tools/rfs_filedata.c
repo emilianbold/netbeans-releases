@@ -139,4 +139,5 @@ file_data *add_file_data(const char* filename, enum file_state state) {
     node->fd->state = state;
     node->next = adding_file_data_root;
     adding_file_data_root = node;
+    return node->fd;
 }

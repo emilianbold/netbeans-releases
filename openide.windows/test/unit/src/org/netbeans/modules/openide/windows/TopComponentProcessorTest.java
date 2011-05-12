@@ -45,10 +45,9 @@ package org.netbeans.modules.openide.windows;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.Action;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -56,7 +55,10 @@ import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.TopComponent;
-import org.w3c.dom.Document;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class TopComponentProcessorTest extends  NbTestCase {
 
@@ -133,11 +135,19 @@ public class TopComponentProcessorTest extends  NbTestCase {
     }
     
     private static void assertValidate(String xml) throws Exception {
-        DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-        f.setValidating(true);
-        DocumentBuilder b = f.newDocumentBuilder();
-        Document res = b.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")));
-        assertNotNull("Parsed OK", res);
+        XMLUtil.parse(new InputSource(new ByteArrayInputStream(xml.getBytes("UTF-8"))), false, true, XMLUtil.defaultErrorHandler(), new EntityResolver() {
+            public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                return new InputSource(new ByteArrayInputStream(new byte[0]));
+                /* XXX when #192595 is implemented, can move DTDs here from core.windows, set validate=true above, and use:
+                InputSource r = EntityCatalog.getDefault().resolveEntity(publicId, systemId);
+                if (r != null) {
+                    return r;
+                } else {
+                    throw new IOException("network connection to " + systemId);
+                }
+                 */
+            }
+        });
     }
     
     @TopComponent.Registration(

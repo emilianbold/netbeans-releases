@@ -101,6 +101,8 @@ public class DbUtil {
         String urlValue = poolValues.get(__Url);
         String driverClass = poolValues.get(__DriverClass);
         String derbyConnAttr = poolValues.get(__DerbyConnAttr);
+        String password = poolValues.get(__Password);
+        String user = poolValues.get(__User);
         
         if(driverClassName.indexOf("pointbase") != -1){
             url = poolValues.get(__DatabaseName);
@@ -122,7 +124,8 @@ public class DbUtil {
                     String urlPrefix = DriverMaps.getUrlPrefix(driverClassName, resType);
                     // !PW FIXME no access to vendor name yet.
 //                    String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
-                    String vName = "Unknown";
+                    //
+                    String vName = "Unknown";//NOI18N
                     Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
                             "Unable to compute database vendor name for datasource url.");
                     if (serverName != null) {
@@ -139,7 +142,7 @@ public class DbUtil {
                         url = url + ";SID=" + sid; //NOI18N
                     } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
                         url = url + ";databaseName=" + dbVal; //NOI18N
-                    } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
+                    } else if (Arrays.asList(VendorsDBNameProp).contains(vName) || "Unknown".equals(vName)) {//NOI18N
                         url = url + "/" + dbVal; //NOI18N
                     }
                 }
@@ -163,6 +166,26 @@ public class DbUtil {
                     }
                 }
             }
+        }
+
+        if (user == null) {
+            for(String key : poolValues.keySet()){
+                if(__User.equalsIgnoreCase(key)){
+                    user = poolValues.get(key);
+                    break;
+                }
+            }
+            poolValues.put(__User, user);
+        }
+
+        if (password == null) {
+            for(String key : poolValues.keySet()){
+                if(__Password.equalsIgnoreCase(key)){
+                    password = poolValues.get(key);
+                    break;
+                }
+            }
+            poolValues.put(__Password, password);
         }
         
         poolValues.put(__Url, url);

@@ -985,17 +985,24 @@ public final class SourcesHelper {
                 }
             } else {
                 Set<FileObject> dirs = new HashSet<FileObject>();
+                LOG.log(Level.FINE, "Calculating groups of type: {0} for: {1}", //NOI18N
+                        new Object[]{
+                            type,
+                            FileUtil.getFileDisplayName(aph.getProjectDirectory())
+                        });
                 for (TypedSourceRoot r : typedSourceRoots) {
                     if (!r.getType().equals(type)) {
                         continue;
                     }
                     File locF = r.getActualLocation();
                     if (locF == null) {
+                        LOG.log(Level.FINE, "Cannot resolve file for: {0}", r.location);    //NOI18N
                         continue;
                     }
                     listen(locF);
                     FileObject loc = FileUtil.toFileObject(locF);
                     if (loc == null) {
+                        LOG.log(Level.FINE, "Cannot resolve FileObject for: {0}", locF);    //NOI18N
                         continue;
                     }
                     if (!loc.isFolder()) {
@@ -1006,7 +1013,9 @@ public final class SourcesHelper {
                         // Already had one.
                         continue;
                     }
-                    groups.add(r.toGroup(loc));
+                    final SourceGroup sg = r.toGroup(loc);
+                    groups.add(sg);
+                    LOG.log(Level.FINE, "Added group: {0}", sg);    //NOI18N
                 }
             }
             // Remember what we computed here so we know whether to fire changes later.

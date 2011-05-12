@@ -91,4 +91,96 @@ public class PHPBracesMatcherTest extends PHPTestBase {
     public void testIssue164495_03() throws Exception {
         match2("foreach ($q['answers'] as $a)\n^{\n $tag=\"{value_$a[id]}\";\n^}");
     }
+    
+    
+    public void testIssue197709_01() throws Exception {
+        match2("if (true) ^{\n"
+                + "    echo \"Some string with braced ${variables[ $index ]} in it.\";\n"
+                + "^}");
+    }
+    
+    public void testIssue197709_02() throws Exception {
+        match2("if (true) {\n"
+                + "    echo \"Some string with braced ^${variables[ $index ]^} in it.\";\n"
+                + "}");
+    }
+    
+    public void testAlternativeSyntax_01() throws Exception {
+        match2(
+                "if ($i == 0) :\n"
+                + "    if ($j == 0) :\n"
+                + "    endif;\n"
+                + "elseif ($i == 1)^:\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else:\n"
+                + "        $l = 22;\n"
+                + "    endif;\n"
+                + "^endif;\n"
+                + "\n");
+    }
+    
+    public void testAlternativeSyntax_02() throws Exception {
+        match2(
+                "if ($i == 0) :\n"
+                + "    if ($j == 0) ^:\n"
+                + "    ^endif;\n"
+                + "elseif ($i == 1):\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else:\n"
+                + "        $l = 22;\n"
+                + "    endif;\n"
+                + "endif;\n");
+    }
+    
+    public void testAlternativeSyntax_03() throws Exception {
+        match2(   "for ($i = 0; $i < count($array); $i++) ^:\n"
+                + "    for ($i = 0; $i < count($array); $i++) :\n"
+                + "    endfor;\n"
+                + "^endfor;\n");
+    }
+    
+    public void testAlternativeSyntax_04() throws Exception {
+        match2(   "for ($i = 0; $i < count($array); $i++) :\n"
+                + "    for ($i = 0; $i < count($array); $i++) ^:\n"
+                + "    ^endfor;\n"
+                + "endfor;\n");
+    }
+    
+    public void testAlternativeSyntax_05() throws Exception {
+        match2(   "while (true)^:\n"
+                + "    while(false):\n"
+                + "        if ($a == 1):\n"
+                + "\n            "
+                + "        endif;\n"
+                + "    endwhile;\n"
+                + "^endwhile;\n");
+    }
+    
+    public void testAlternativeSyntax_06() throws Exception {
+        match2(   "while (true):\n"
+                + "    while(false)^:\n"
+                + "        if ($a == 1):\n"
+                + "\n            "
+                + "        endif;\n"
+                + "    ^endwhile;\n"
+                + "endwhile;\n");
+    }
+    
+    public void testAlternativeSyntax_07() throws Exception {
+        match2(   "switch ($i)^:\n"
+                + "    case 22:\n"
+                + "        $i = 44;\n"
+                + "        break;\n"
+                + "    case 33:\n"
+                + "    case 44:\n"
+                + "        $i = 55;\n"
+                + "        break;\n"
+                + "    default:\n"
+                + "        $i = 66;\n"
+                + "^endswitch;\n");
+    }
+    
+    
 }

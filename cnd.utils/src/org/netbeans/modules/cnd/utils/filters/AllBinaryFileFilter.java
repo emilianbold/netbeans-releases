@@ -50,12 +50,10 @@ import java.util.Set;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class AllBinaryFileFilter extends SourceFileFilter {
+public class AllBinaryFileFilter extends FileAndFileObjectFilter {
 
     private static AllBinaryFileFilter instance = null;
     private static String[] suffixes = null;
@@ -73,22 +71,19 @@ public class AllBinaryFileFilter extends SourceFileFilter {
     }
 
     @Override
-    public boolean accept(File f) {
-        if (f != null) {
-            if (f.isDirectory()) {
-                return true;
-            }
-            if (FileUtil.getExtension(f.getName()).length() == 0) {
-                // could be binary without extension
-                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(f));
-                if (fo != null && fo.isValid()) {
-                    return MIMENames.isBinary(FileUtil.getMIMEType(fo));
-                }
-            } else {
-                return super.accept(f);
-            }
-        }
-        return false;
+    protected boolean mimeAccept(File f) {
+        //if (FileUtil.getExtension(f.getName()).length() == 0) {
+            return MIMENames.isBinary(MIMESupport.getBinaryFileMIMEType(f));
+        //}
+        //return super.mimeAccept(f);
+    }
+
+    @Override
+    protected boolean mimeAccept(FileObject f) {
+        //if (FileUtil.getExtension(f.getName()).length() == 0) {
+            return MIMENames.isBinary(MIMESupport.getBinaryFileMIMEType(f));
+        //}
+        //return super.mimeAccept(f);
     }
     
     @Override
@@ -102,7 +97,6 @@ public class AllBinaryFileFilter extends SourceFileFilter {
     private String[] getAllSuffixes() {
         Set<String> allSuffixes = new HashSet<String>();
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.EXE_MIME_TYPE).getValues());
-        allSuffixes.addAll(MIMEExtensions.get(MIMENames.DLL_MIME_TYPE).getValues());
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_EXE_MIME_TYPE).getValues());
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_CORE_MIME_TYPE).getValues());
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.ELF_SHOBJ_MIME_TYPE).getValues());

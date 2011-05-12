@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.ejbjar.project.ui.EjbContainerNode;
 import org.netbeans.modules.j2ee.ejbjar.project.ui.ServerResourceNode;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -66,11 +67,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /** Utility class for creating J2EE project nodes.
@@ -87,6 +86,8 @@ public final class J2eeProjectView {
      */
     public static final String CONFIG_FILES_VIEW_NAME = "configurationFiles"; // NOI18N
     
+    private static final Logger LOGGER = Logger.getLogger(J2eeProjectView.class.getName());
+
     private static EjbNodesFactory factoryInstance = null;
     
     private J2eeProjectView() {
@@ -108,9 +109,13 @@ public final class J2eeProjectView {
     public static Node createServerResourcesNode (Project p) {
         try {
             return new ServerResourceNode(p);
+        } catch (FileStateInvalidException fsie) {
+            // Happens in cases of project deletion or unaccessible sources
+            LOGGER.log(Level.INFO, "Project directory became unavailable.", fsie); //NOI18N
+            return null;
         } catch (DataObjectNotFoundException ex) {
             // Should never happen
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
             return null;
         }
     }
@@ -118,9 +123,13 @@ public final class J2eeProjectView {
     public static Node createEjbsView(EjbJar ejbModule, Project p){
         try {
             return new EjbContainerNode(ejbModule, p, getEjbNodesFactory());
+        } catch (FileStateInvalidException fsie) {
+            // Happens in cases of project deletion or unaccessible sources
+            LOGGER.log(Level.INFO, "Project directory became unavailable.", fsie); //NOI18N
+            return null;
         } catch (DataObjectNotFoundException ex) {
-            //Should not happen 
-            Exceptions.printStackTrace(ex);
+            // Should not happen
+            LOGGER.log(Level.WARNING, null, ex);
             return null;
         }
     }

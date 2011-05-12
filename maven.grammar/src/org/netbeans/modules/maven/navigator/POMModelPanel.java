@@ -52,7 +52,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -73,10 +73,15 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelProblem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.model.pom.ModelList;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
@@ -86,6 +91,7 @@ import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMQNames;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.navigator.POMModelVisitor.POMCutHolder;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
@@ -95,6 +101,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -112,6 +119,8 @@ import org.w3c.dom.NodeList;
  * @author  mkleint
  */
 public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable, CaretListener {
+
+    private static final Logger LOG = Logger.getLogger(POMModelPanel.class.getName());
 
     private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOI18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
@@ -214,7 +223,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 if (dobj == null) {
                     return;
                 }
-                dobj = ROUtil.checkPOMFileObjectReadOnly(dobj);
+                try {
+                    dobj = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(dobj.getPrimaryFile()));
+                } catch (DataObjectNotFoundException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
                 EditorCookie.Observable ec = dobj.getLookup().lookup(EditorCookie.Observable.class);
                 if (ec == null) {
                     return;
@@ -294,17 +307,39 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder());
-                    @SuppressWarnings("unchecked")
-                    Iterator<Model> it = lin.iterator();
+                    MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
                     List<Project> prjs = new ArrayList<Project>();
                     List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
-                    while (it.hasNext()) {
-                        Model m = it.next();
+                    for (Model m : EmbedderFactory.createModelLineage(file, embedder)) {
                         File pom = m.getPomFile();
-                        //#163933 just say no to null values..
-                        if (pom == null) continue;
+                        if (pom == null) {
+                            if (m.getArtifactId() == null) { // normal for superpom
+                                continue;
+                            }
+                            Parent parent = m.getParent();
+                            String groupId = m.getGroupId();
+                            if (groupId == null && parent != null) {
+                                groupId = parent.getGroupId();
+                            }
+                            assert groupId != null;
+                            String version = m.getVersion();
+                            if (version == null && parent != null) {
+                                version = parent.getVersion();
+                            }
+                            assert version != null;
+                            Artifact a = embedder.createArtifact(groupId, m.getArtifactId(), version, m.getPackaging());
+                            try {
+                                embedder.resolve(a, Collections.<ArtifactRepository>emptyList(), embedder.getLocalRepository());
+                            } catch (Exception x) {
+                                LOG.log(Level.INFO, "could not resolve " + a, x);
+                            }
+                            pom = a.getFile();
+                            if (pom == null) {
+                                LOG.log(Level.WARNING, "#163933: null pom for {0}", m.getId());
+                                continue;
+                            }
+                        }
                         pom = FileUtil.normalizeFile(pom);
                         FileUtil.refreshFor(pom);
                         FileObject fo = FileUtil.toFileObject(pom);
@@ -316,10 +351,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                                 mdls.add(mdl);
                                 names = mdl.getPOMQNames();
                             } else {
-                                System.out.println("no model for " + pom);
+                                LOG.log(Level.WARNING, "no model for {0}", pom);
                             }
                         } else {
-                            System.out.println("no fileobject for " + pom);
+                            LOG.log(Level.WARNING, "no fileobject for {0}", pom);
                         }
                     }
                     final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration); //NOI18N
@@ -332,12 +367,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                            explorerManager.setRootContext(hold.createNode());
                         } 
                     });
-                } catch (ModelBuildingException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
+                } catch (final ModelBuildingException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(true);
-                           explorerManager.setRootContext(createErrorNode());
+                           explorerManager.setRootContext(createErrorNode(ex));
                         }
                     });
                 }
@@ -478,9 +512,16 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         return an;
     }
 
-    private static Node createErrorNode() {
+    static Node createErrorNode(ModelBuildingException x) {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Error"));
+        StringBuilder b = new StringBuilder();
+        for (ModelProblem p : x.getProblems()) {
+            if (b.length() > 0) {
+                b.append("; ");
+            }
+            b.append(p.getMessage());
+        }
+        an.setDisplayName(b.toString());
         return an;
     }
 

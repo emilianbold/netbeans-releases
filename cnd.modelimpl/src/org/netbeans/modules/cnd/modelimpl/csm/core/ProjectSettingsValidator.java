@@ -51,8 +51,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -85,6 +88,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public class ProjectSettingsValidator {
     
     private static final boolean TRACE = Boolean.getBoolean("cnd.modelimpl.validator.trace");
+    private static final Logger LOG = Logger.getLogger(ProjectSettingsValidator.class.getName());
     
     public ProjectSettingsValidator(ProjectBase csmProject) {
 	this.csmProject = csmProject;
@@ -98,6 +102,9 @@ public class ProjectSettingsValidator {
 	if( nativeProject == null ) {
 	    return;
 	}
+        if (LOG.isLoggable(Level.INFO)) {
+            LOG.log(Level.INFO, "Start CRC counting for {0}", csmProject.getName()); // NOI18N
+        }
 	long time = 0;
 	if( TraceFlags.TIMING ) {
 	    System.err.printf("ProjectSettingsValidator.storeSettings for %s\n", csmProject.getName());
@@ -130,6 +137,13 @@ public class ProjectSettingsValidator {
 	    time = System.currentTimeMillis() - time;
 	    System.err.printf("ProjectSettingsValidator.storeSettings for %s took %d ms\n", csmProject.getName(), time);
 	}
+        if (LOG.isLoggable(Level.INFO)) {
+            LOG.log(Level.INFO, "Finish CRC counting for {0}", csmProject.getName()); // NOI18N
+            LOG.log(Level.INFO, "Model state {0}", csmProject.getModel().getState()); // NOI18N
+        }
+        if (csmProject.getModel().getState() == CsmModelState.OFF) {
+            assert false : "Cannot store CRC for project "+csmProject.getName();
+        }
     }
     
     private void updateMap(List<NativeFileItem> items) {

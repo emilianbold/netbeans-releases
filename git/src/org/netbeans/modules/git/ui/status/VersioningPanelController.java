@@ -61,6 +61,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -73,7 +74,6 @@ import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
@@ -229,9 +229,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
                         refreshStatusSupport = SystemAction.get(StatusAction.class).scanStatus(context);
-                        refreshStatusSupport.getTask().waitFinished();
-                        if (!(refreshStatusSupport == null || refreshStatusSupport.isCanceled())) {
-                            refreshNodes();
+                        if (refreshStatusSupport != null) {
+                            refreshStatusSupport.getTask().waitFinished();
+                            if (!refreshStatusSupport.isCanceled()) {
+                                refreshNodes();
+                            }
                         }
                     }
                 }
@@ -332,6 +334,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             for (File f : interestingFiles) {
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
+                    if (f.equals(root)) {
+                        // huh? this is weird
+                        LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { f, root, displayStatuses });
+                        LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(f).getStatus());
+                    }
                     nodes.add(new GitStatusNode(new GitFileNode(root, f), mode));
                 }
             }
@@ -389,6 +396,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
+                            if (evt.getFile().equals(root)) {
+                                // huh? this is weird
+                                LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { evt.getFile(), root, displayStatuses });
+                                LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(evt.getFile()).getStatus());
+                            }
                             toAdd.add(new GitStatusNode(new GitFileNode(root, evt.getFile()), mode));
                         }
                     }

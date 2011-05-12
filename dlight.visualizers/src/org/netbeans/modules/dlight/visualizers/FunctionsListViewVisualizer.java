@@ -92,9 +92,9 @@ public final class FunctionsListViewVisualizer extends TableViewVisualizer<Funct
         final ColumnsUIMapping columnsUIMapping = cfgAccess.getColumnsUIMapping(getVisualizerConfiguration());
 
         String nodeLabel = columnsUIMapping == null
-                || columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null
-                ? metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName()
-                : columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
+                || columnsUIMapping.getDisplayedName(functionDatatableDescription.getFunctionNameColumnName()) == null
+                ? metadata.getColumnByName(functionDatatableDescription.getFunctionNameColumnName()).getColumnUName()
+                : columnsUIMapping.getDisplayedName(functionDatatableDescription.getFunctionNameColumnName());
 
         return new FunctionsListViewTable(getExplorerManager(), nodeLabel, columnsUIMapping, metrics);
     }

@@ -30,6 +30,7 @@ made subject to such option by the copyright holder.
         <property name="nb.root.test.prop" location="${test.modules.dir}"/>
         <property name="test-unit-sys-prop.prop1" value="value1"/>
         <property name="test-unit-sys-prop.prop2" value="${test.modules.dir}/module.jar"/>
+        <property name="test-unit-sys-prop.prop3" value="${test.modules.dir}/module.jar:${test.modules.dir}/not-exists.jar"/>
         <property name="test-unit-sys-prop.xtest.data" value="${test.modules.dir}"/>
         <path id="in.test.prop">
           <path location="${test.modules.dir}/module.jar"/>

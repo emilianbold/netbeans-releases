@@ -58,7 +58,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -79,6 +78,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
@@ -87,6 +88,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -98,6 +100,7 @@ import org.openide.windows.WindowManager;
 public class Tab extends TopComponent
 implements Runnable, ExplorerManager.Provider {
     static final long serialVersionUID =-8178367548546385799L;
+    static final RequestProcessor RP = new RequestProcessor("Favorites", 1); //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Tab.class.getName());
 
@@ -279,8 +282,8 @@ implements Runnable, ExplorerManager.Provider {
     // deserialization, so we must wait for it
     protected final void scheduleValidation() {
         valid = false;
-//            WindowManagerImpl.deferredPerformer().putRequest(this, null);
-        SwingUtilities.invokeLater(this); // TEMP
+        // initialize
+        RP.post(this, 100);
     }
 
     /* Updated accessible name of the tree view */
@@ -487,8 +490,21 @@ implements Runnable, ExplorerManager.Provider {
     /** Exchanges deserialized root context to projects root context
     * to keep the uniquennes. */
     protected void validateRootContext () {
-        Node projectsRc = FavoritesNode.getNode ();
-        setRootContext(projectsRc);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                Node n = new AbstractNode(Children.LEAF);
+                n.setName(NbBundle.getMessage(Tab.class, "MSG_Tab.rootNode.loading")); //NOI18N
+                setRootContext(n);
+            }
+        });
+        final Node projectsRc = FavoritesNode.getNode ();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                setRootContext(projectsRc);
+            }
+        });
     }
     
     
@@ -524,7 +540,7 @@ implements Runnable, ExplorerManager.Provider {
                     requestActive();
                     try {
                         final DataObject dobj = DataObject.find(file);
-                        Actions.RP.post(new Runnable() {
+                        RP.post(new Runnable() {
                             @Override
                             public void run() {
                                 Actions.Add.addToFavorites(Collections.singletonList(dobj));
@@ -595,7 +611,7 @@ implements Runnable, ExplorerManager.Provider {
 
     private static class MyBeanTreeView extends BeanTreeView {
         private void scrollNodeToVisible( final Node n ) {
-            SwingUtilities.invokeLater(new Runnable() {
+            EventQueue.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {

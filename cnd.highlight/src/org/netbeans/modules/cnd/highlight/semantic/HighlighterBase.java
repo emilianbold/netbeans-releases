@@ -81,6 +81,7 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     }
 
     // ChangeListener
+    @Override
     public void stateChanged(FontColorProvider provider) {
         updateFontColors(provider);
         //run(PhaseRunner.Phase.INIT);
@@ -105,6 +106,7 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
         }
     }
 
+    @Override
     public void cancel() {
         synchronized(listeners) {
             for(Cancellable interruptor : listeners) {

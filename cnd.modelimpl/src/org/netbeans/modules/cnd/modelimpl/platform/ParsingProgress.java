@@ -71,7 +71,19 @@ final class ParsingProgress {
      * Delay amount of milliseconds
      * that shall pass before the progress appears in status bar
      */
-    private static final int INITIAL_DELAY = 1000; // ms
+    private static final int INITIAL_DELAY;
+    static {
+        int value = 1000;
+        try {
+            value = Integer.parseInt(NbBundle.getMessage(ParsingProgress.class, "CSM_PARSING_PROGRESS_INITIAL_DELAY")); // NOI18N
+            if (value < 0) {
+                value = Integer.MAX_VALUE;
+            }
+        } catch (NumberFormatException e) {
+            
+        }
+        INITIAL_DELAY = value;
+    }
     
     /**
      * Constructs progress information for project

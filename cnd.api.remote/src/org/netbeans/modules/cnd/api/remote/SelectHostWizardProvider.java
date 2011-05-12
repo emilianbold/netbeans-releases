@@ -61,9 +61,9 @@ import org.openide.util.Lookup;
  */
 public abstract class SelectHostWizardProvider {
 
-    public static SelectHostWizardProvider createInstance(boolean allowLocal, ChangeListener changeListener) {
+    public static SelectHostWizardProvider createInstance(boolean allowLocal, boolean allowToCreateNewHostDirectly, ChangeListener changeListener) {
         SelectHostWizardProviderFactory factory = Lookup.getDefault().lookup(SelectHostWizardProviderFactory.class);
-        return (factory == null) ? null : factory.createHostWizardProvider(allowLocal, changeListener);
+        return (factory == null) ? null : factory.createHostWizardProvider(allowLocal, allowToCreateNewHostDirectly, changeListener);
     }
 
     /**

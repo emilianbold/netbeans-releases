@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.31
+#Version 1.35.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -145,6 +145,7 @@ fld public final static java.lang.String LINE_HEIGHT_CORRECTION = "line-height-c
 fld public final static java.lang.String LINE_NUMBER_VISIBLE = "line-number-visible"
 fld public final static java.lang.String MARGIN = "margin"
 fld public final static java.lang.String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"
+fld public final static java.lang.String ON_SAVE_REMOVE_TRAILING_WHITESPACE = "on-save-remove-trailing-whitespace"
 fld public final static java.lang.String POPUP_MENU_ENABLED = "popup-menu-enabled"
 fld public final static java.lang.String SCROLL_FIND_INSETS = "scroll-find-insets"
 fld public final static java.lang.String SCROLL_JUMP_INSETS = "scroll-jump-insets"

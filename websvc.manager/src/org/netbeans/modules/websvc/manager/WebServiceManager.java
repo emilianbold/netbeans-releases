@@ -215,7 +215,8 @@ public final class WebServiceManager {
         URL wsdlUrl = localWsdlFile.toURI().toURL();
 
         WsdlModelProvider wsdlModelProvider = null;
-        Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().
+            lookupAll(WsdlModelProvider.class);
         boolean notAccepted = false;
         if (providers != null) {
             for (WsdlModelProvider provider : providers) {
@@ -238,7 +239,8 @@ public final class WebServiceManager {
             URL catalogUrl = catalogFile.toURI().toURL();
 
             try {
-                wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+                wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, 
+                        catalogUrl, true );
             } catch (Exception ex) {
                 Throwable e = ex.getCause();
                 exc = (e == null ? ex : e);

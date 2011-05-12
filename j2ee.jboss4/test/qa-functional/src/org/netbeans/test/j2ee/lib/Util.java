@@ -187,7 +187,7 @@ public class Util {
             File projectDir = new File(projectParentDir, name);
             switch (type) {
                 case J2SE_PROJECT:
-                    J2SEProjectGenerator.createProject(projectDir, name, mainClass, null, null);
+                    J2SEProjectGenerator.createProject(projectDir, name, mainClass, null, null, false);
                     break;
                 case WEB_PROJECT:
                     //params[0] = serverInstanceID

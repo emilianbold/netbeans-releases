@@ -44,6 +44,8 @@ package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,20 +74,27 @@ public abstract class SingleRepositoryAction extends GitAction {
     }
 
     public final void performAction (VCSContext context) {
+        Map.Entry<File, File[]> actionRoots = getActionRoots(context);
+        if (actionRoots != null) {
+            performAction(actionRoots.getKey(), actionRoots.getValue(), context);
+        }
+    }
+    
+    protected abstract void performAction (File repository, File[] roots, VCSContext context);
+
+    protected static Entry<File, File[]> getActionRoots (VCSContext context) {
         Set<File> repositories = GitUtils.getRepositoryRoots(context);
         if (repositories.isEmpty()) {
-            LOG.log(Level.FINE, "No repository in the current context: {0}", context.getRootFiles()); //NOI18N
-            return;
+            LOG.log(Level.FINE, "No repository in the given context: {0}", context.getRootFiles()); //NOI18N
+            return null;
         }
         SimpleImmutableEntry<File, File[]> actionRoots = GitUtils.getActionRoots(context);
         if (actionRoots != null) {
             File repository = actionRoots.getKey();
             if (repositories.size() > 1) {
-                LOG.log(Level.FINE, "Multiple repositories in the current context: {0}, running only with {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
+                LOG.log(Level.FINE, "Multiple repositories in the given context: {0}, selected {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
             }
-            performAction(repository, actionRoots.getValue(), context);
         }
+        return actionRoots;
     }
-    
-    protected abstract void performAction (File repository, File[] roots, VCSContext context);
 }

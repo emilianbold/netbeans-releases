@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -77,6 +78,7 @@ import java.util.zip.ZipFile;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.ClassDataLoader;
@@ -103,8 +105,21 @@ import org.openide.util.Utilities;
  */
 public class FileObjects {
     
-    public static final Comparator<String> SIMPLE_NAME_STRING_COMPARATOR = new SimpleNameStringComparator();
-    public static final Comparator<JavaFileObject> SIMPLE_NAME_FILEOBJECT_COMPARATOR = new SimpleNameFileObjectComparator();
+    public static final Comparator<String> SIMPLE_NAME_STRING_COMPARATOR = new Comparator<String>(){
+        @Override
+        public int compare( String o1, String o2 ) {
+            return getSimpleName( o1 ).compareTo( getSimpleName( o2 ) );
+        }
+    };
+    
+    public static final Comparator<JavaFileObject> SIMPLE_NAME_FILEOBJECT_COMPARATOR = new Comparator<JavaFileObject>(){
+        @Override
+        public int compare( JavaFileObject o1, JavaFileObject o2 ) {
+            String n1 = getSimpleName( o1 );
+            String n2 = getSimpleName( o2 );
+            return n1.compareTo( n2 );
+        }
+    };
     
     
     public static final String JAVA  = JavaDataLoader.JAVA_EXTENSION;
@@ -120,7 +135,9 @@ public class FileObjects {
     public static final String RES   = "res";  //NOI18N
 
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
-    
+
+    private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();
+
     //todo: If more clients than btrace will need this, create a SPI.
     private static final Set<String> javaFlavorExt = new HashSet<String>();
     static {
@@ -178,17 +195,7 @@ public class FileObjects {
         assert zipFile != null;
         return new CachedZipFileObject (zipFile, folder, baseName, mtime);
     }
-    
-    /**
-     * Creates {@link JavaFileObject} for a regular {@link File}
-     * @param file for which the {@link JavaFileObject} should be created
-     * @pram root - the classpath root owning the file
-     * @return {@link JavaFileObject}, never returns null
-     */
-    public static InferableJavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter) {
-        return fileFileObject(file, root, filter, null);
-    }
-    
+            
     /**
      * Creates {@link JavaFileObject} for a regular {@link File}
      * @param file for which the {@link JavaFileObject} should be created
@@ -196,14 +203,22 @@ public class FileObjects {
      * @param encoding - the file's encoding
      * @return {@link JavaFileObject}, never returns null
      */
-    public static InferableJavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter, Charset encoding) {
+    public static @NonNull InferableJavaFileObject fileFileObject( final @NonNull File file, final @NonNull File root,
+            final @NullAllowed JavaFileFilterImplementation filter, final @NullAllowed Charset encoding) {
         assert file != null;
         assert root != null;
-        String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
+        final String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
         return new FileBase( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter, encoding);
     }
-    
-    public static JavaFileObject templateFileObject (final FileObject root, final String path, String name) {
+
+    /**
+     * Creates a FileObject for newly created file
+     * @param root owning the file
+     * @param path the path (separated by '/') to target folder relative to root
+     * @param name of the file
+     * @return {@link JavaFileObject}
+     */
+    public static @NonNull JavaFileObject templateFileObject (final @NonNull FileObject root, final @NonNull String path, final @NonNull String name) {
         assert root != null;
         assert path != null;        
         JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(root);
@@ -261,10 +276,12 @@ public class FileObjects {
                 return res;
             }
 
+            @Override
             protected URL getURL() throws IOException {
                 return path;
             }
 
+            @Override
             protected String getExt() {
                 String ext = super.getExt();
                 if (ext == null) {
@@ -273,6 +290,7 @@ public class FileObjects {
                 return ext;
             }
 
+            @Override
             protected String getName(boolean includeExtension) {
                 String name = super.getName(includeExtension);
                 if (name == null) {
@@ -284,6 +302,7 @@ public class FileObjects {
                 return name;
             }
 
+            @Override
             protected String getRelativePath() {
                 String relativePath = super.getRelativePath();
                 if (relativePath == null) {
@@ -310,6 +329,11 @@ public class FileObjects {
                     }
                 }
                 return false;
+            }
+
+            @Override
+            public int hashCode() {
+                return path.hashCode();
             }
 
         };
@@ -392,12 +416,22 @@ public class FileObjects {
             return new MemoryFileObject(pkgStr, nameStr, uri, lastModified, (CharBuffer)CharBuffer.allocate( length + 1 ).append( content ).append( ' ' ).flip() );
         }        
     }        
-    
+
+    /**
+     * Removes extension from fileName
+     * @param fileName to remove extension from
+     * @return the fileName without extension
+     */
     public static String stripExtension( String fileName ) {        
         int dot = fileName.lastIndexOf(".");
         return (dot == -1 ? fileName : fileName.substring(0, dot));
     }    
-    
+
+    /**
+     * Returns file extension
+     * @param fileName to get extension from
+     * @return the file extension or empty string when fileName has no extension
+     */
     public static String getExtension (final String fileName) {
         int dot = fileName.lastIndexOf('.');
         return (dot == -1 || dot == fileName.length() -1 ) ? "" : fileName.substring(dot+1);    //NOI18N
@@ -488,8 +522,14 @@ public class FileObjects {
             };
         }
     }
-                
-    public static String getBinaryName (final File file, final File root) {
+
+    /**
+     * Returns binary name of given file within a root
+     * @param file to get binary name for
+     * @param root the root owning the file
+     * @return the binary name
+     */
+    public static @NonNull String getBinaryName (final @NonNull File file, final @NonNull File root) {
         assert file != null && root != null;
         String fileName = FileObjects.getRelativePath (root, file);
         int index = fileName.lastIndexOf('.');  //NOI18N
@@ -498,71 +538,90 @@ public class FileObjects {
         }        
         return fileName.replace(File.separatorChar,'.');   //NOI18N        
     }
-    
-    public static String getSimpleName( JavaFileObject fo ) {
-        
-        String name = getName(fo,true);
-        int i = name.lastIndexOf( '$' );
-        if ( i == -1 ) {
-            return name;
-        }
-        else {
-            return name.substring( i + 1 );
-        }        
-    }
-    
-    public static String getSimpleName( String fileName ) {
-        
-        String name = getBaseName( fileName );
-        
-        int i = name.lastIndexOf( '$' );
-        if ( i == -1 ) {
-            return name;
-        }
-        else {
-            return name.substring( i + 1 );
-        }
-        
+
+    /**
+     * Converts a package name into folder using '/' as separator character
+     * @param packageName to be converted
+     * @return the folder name
+     */
+    public static @NonNull String convertPackage2Folder(final @NonNull String packageName ) {
+        return convertPackage2Folder(packageName, '/' );    //NOI18N
     }
 
-    public static String convertPackage2Folder( String packageName ) {
-        return convertPackage2Folder(packageName, '/' );
+    /**
+     * Converts a package name into folder using given separator character
+     * @param packageName to be converted
+     * @param separatorChar separator
+     * @return the folder name
+     */
+    public static @NonNull String convertPackage2Folder(final @NonNull String packageName, final char separatorChar) {
+        return packageName.replace( '.',separatorChar); //NOI18N
     }
 
-    public static String convertPackage2Folder(final String packageName, final char separatorChar) {
-        return packageName.replace( '.',separatorChar);
+    /**
+     * Converts a folder into package name
+     * @param folderName to be converted, the folder name components has to be separated by '/'
+     * @return the package name
+     */
+    public static @NonNull String convertFolder2Package (@NonNull String folderName) {
+        return convertFolder2Package (folderName, '/');    //NOI18N
     }
 
-    public static String convertFolder2Package (String packageName) {
-        return convertFolder2Package (packageName, '/');    //NOI18N
-    }
-    
-    public static String convertFolder2Package( String packageName, char folderSeparator ) {
-        return packageName.replace( folderSeparator, '.' );
+    /**
+     * Converts a folder into package name
+     * @param folderName to be converted
+     * @param separatorChar separator used in folderName
+     * @return the package name
+     */
+    public static @NonNull String convertFolder2Package( @NonNull String folderName, char folderSeparator ) {
+        return folderName.replace( folderSeparator, '.' );
     }
 
-    public static boolean isParentOf (final URL folder, final URL file) {
+    /**
+     * Checks if the given folder is a parent of the given file
+     * @param folder to test
+     * @param file to test
+     * @return true if folder is a parent of given file
+     */
+    public static boolean isParentOf (final @NonNull URL folder, final @NonNull URL file) {
         assert folder != null && file != null;
         return file.toExternalForm().startsWith(folder.toExternalForm());
     }
-    
-    public static String getRelativePath (final String packageName, final String relativeName) {
+
+    /**
+     * Resolves a relative path within a given package
+     * @param packageName in which the relative path should be resolved
+     * @param relativeName to resolve
+     * @return a relative path resolved in package as path separated by '/' character
+     */
+    public static @NonNull String getRelativePath (final @NonNull String packageName, final @NonNull String relativeName) {
+        if (packageName.isEmpty()) return relativeName;
         StringBuilder relativePath = new StringBuilder ();
-        relativePath.append(packageName.replace('.','/'));
-        relativePath.append('/');
+        relativePath.append(packageName.replace('.','/'));  //NOI18N
+        relativePath.append('/');                           //NOI18N
         relativePath.append(relativeName);
         return relativePath.toString();
     }
-    
-    public static String[] getParentRelativePathAndName (final String fqn) {        
+
+    /**
+     * Returns a tuple {parentPath,simpleName} for given fully qualified name
+     * @param fqn to get the parent name tuple for
+     * @return a tuple {parentPath, simpleName}
+     */
+    public static @NonNull String[] getParentRelativePathAndName (@NonNull final String fqn) {
         final String[] result = getPackageAndName(fqn);
         if (result != null) {
             result[0] = result[0].replace('.','/');      //NOI18N
         }
         return result;
     }     
-    
-    public static String[] getPackageAndName (final String fqn) {
+
+    /**
+     * Returns a tuple {package,simpleName} for given fully qualified name
+     * @param fqn to get the package simpleName tuple for
+     * @return a tuple {package,simpleName}
+     */
+    public static @NonNull String[] getPackageAndName (final @NonNull String fqn) {
         if (fqn.charAt(fqn.length()-1) == '.') {
             return null;
         }
@@ -587,7 +646,7 @@ public class FileObjects {
      * @param extension
      * @return the found kind
      */ 
-    public static JavaFileObject.Kind getKind (final @NullAllowed String extension) {
+    public static @NonNull JavaFileObject.Kind getKind (final @NullAllowed String extension) {
         if (extension == null) {
             return JavaFileObject.Kind.OTHER;
         }
@@ -606,8 +665,12 @@ public class FileObjects {
         }
         return JavaFileObject.Kind.OTHER;
     }
-        
-    public static void deleteRecursively (final File folder) {
+
+    /**
+     * Recursively deletes the folder
+     * @param folder to be deleted
+     */
+    public static void deleteRecursively (final @NonNull File folder) {
         assert folder != null;        
         if (folder.isDirectory()) {
             File[] children = folder.listFiles();
@@ -619,7 +682,103 @@ public class FileObjects {
         }
         folder.delete();
     }
-        
+
+    /**
+     * Returns a relative path of given file in given root
+     * @param root owning the file
+     * @param fo a file to get the relative path for
+     * @return the relative path
+     */
+    public static @NonNull String getRelativePath (final @NonNull File root, final @NonNull File fo) {
+        final String rootPath = root.getAbsolutePath();
+        final String foPath = fo.getAbsolutePath();
+        assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);    //NOI18N
+        int index = rootPath.length();
+        if (rootPath.charAt(index - 1) != File.separatorChar) {
+            index++;
+        }
+        int foIndex = foPath.length();
+        if (foIndex <= index) {
+            return ""; //NOI18N
+        }
+        return foPath.substring(index);
+    }
+
+    /**
+     * Returns a relative path of given file in given root
+     * @param root owning the file
+     * @param fo a file to get the relative path for
+     * @return the relative path
+     */
+    public static @NonNull String getRelativePath (@NonNull final URL root, @NonNull final URL fo) throws URISyntaxException {
+        final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
+        return path.replace(File.separatorChar, '/');   //NOI18N
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Private helper methods">
+    private static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
+        char[] result;
+        Reader in;
+
+        if (encoding != null) {
+            in = new InputStreamReader (ins, encoding);
+        } else {
+            in = new InputStreamReader (ins);
+        }
+        if (filter != null) {
+            in = filter.filterReader(in);
+        }
+        int red = 0;
+        try {
+            int len = (int) expectedLength;
+            if (len == 0) len++; //len - red would be 0 while reading from the stream
+            result = new char [len+1];
+            int rv;
+            while ((rv=in.read(result,red,len-red))>=0) {
+                red += rv;
+                //In case the filter enlarged the file
+                if (red == len) {
+                    char[] _tmp = new char[2*len];
+                    System.arraycopy(result, 0, _tmp, 0, len);
+                    result = _tmp;
+                    len = result.length;
+                }
+            }
+        } finally {
+            in.close();
+        }
+        result[red++]='\n'; //NOI18N
+        CharSequence buffer = CharBuffer.wrap (result, 0, red);
+        return buffer;
+    }
+
+    private static String getSimpleName(JavaFileObject fo ) {
+        String name = getName(fo,true);
+        int i = name.lastIndexOf( '$' );
+        if ( i == -1 ) {
+            return name;
+        }
+        else {
+            return name.substring( i + 1 );
+        }
+    }
+
+    private static String getSimpleName( String fileName ) {
+
+        String name = getBaseName( fileName );
+
+        int i = name.lastIndexOf( '$' );
+        if ( i == -1 ) {
+            return name;
+        }
+        else {
+            return name.substring( i + 1 );
+        }
+
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="JavaFileObject implementation">
     public static abstract class Base implements InferableJavaFileObject {
 
         protected final JavaFileObject.Kind kind;
@@ -637,21 +796,22 @@ public class FileObjects {
             this.kind = FileObjects.getKind (this.ext);
         }
                 
+        @Override
         public JavaFileObject.Kind getKind() {
             return this.kind;
         }
         
+        @Override
         public boolean isNameCompatible (String simplename, JavaFileObject.Kind k) {
-            if (this.kind != k) {
-                return false;
-            }
-	    return nameWithoutExt.equals(simplename);
+            return this.kind == k && nameWithoutExt.equals(simplename);
 	}        
         
+        @Override
         public NestingKind getNestingKind() {
             return null;
         }
         
+        @Override
         public Modifier getAccessLevel() {
             return null;
         }
@@ -669,6 +829,7 @@ public class FileObjects {
             return this.nameWithoutExt;
         }
         
+        @Override
         public String getName () {
             return this.nameWithoutExt + '.' + ext;
         }
@@ -681,6 +842,7 @@ public class FileObjects {
             return false;
         }
         
+        @Override
         public final String inferBinaryName () {
             final StringBuilder sb = new StringBuilder ();
             sb.append (this.pkgName);
@@ -715,8 +877,10 @@ public class FileObjects {
         }
     }
 
+    @Trusted
     public static class FileBase extends Base {
 
+        private static final boolean isWindows = Utilities.isWindows();
         protected final File f;
         private final JavaFileFilterImplementation filter;
         private final Charset encoding;
@@ -770,16 +934,9 @@ public class FileObjects {
 
         @Override
 	public boolean isNameCompatible(String simplename, JavaFileObject.Kind kind) {
-	    boolean res = super.isNameCompatible(simplename, kind);
-            if (res) {
-                return res;
-            }
-            else if (Utilities.isWindows()) {
-                return nameWithoutExt.equalsIgnoreCase(simplename);
-            }
-            else {
-                return false;
-            }
+            return isWindows ?
+                this.kind == kind && nameWithoutExt.equalsIgnoreCase(simplename) :
+                super.isNameCompatible(simplename, kind);
 	}
 
         @Override
@@ -818,74 +975,8 @@ public class FileObjects {
 	    return f.hashCode();
 	}
     }
-
-    public static class InvalidFileException extends IOException {
-
-        public InvalidFileException () {
-            super ();
-        }
-
-        public InvalidFileException (final FileObject fo) {
-            super (NbBundle.getMessage(FileObjects.class,"FMT_InvalidFile",FileUtil.getFileDisplayName(fo)));
-        }
-    }
-
-    public static String getRelativePath (final File root, final File fo) {
-        final String rootPath = root.getAbsolutePath();
-        final String foPath = fo.getAbsolutePath();
-        assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
-        int index = rootPath.length();
-        if (rootPath.charAt(index - 1) != File.separatorChar) {
-            index++;
-        }
-        int foIndex = foPath.length();
-        if (foIndex <= index) {
-            return ""; //NOI18N
-        }
-        return foPath.substring(index);
-    }
-
-    public static String getRelativePath (final URL root, final URL fo) throws URISyntaxException {
-        final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
-        return path.replace(File.separatorChar, '/');
-    }
-
-    public static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
-        char[] result;
-        Reader in;
-
-        if (encoding != null) {
-            in = new InputStreamReader (ins, encoding);
-        } else {
-            in = new InputStreamReader (ins);
-        }
-        if (filter != null) {
-            in = filter.filterReader(in);
-        }
-        int red = 0;
-        try {
-            int len = (int) expectedLength;
-            if (len == 0) len++; //len - red would be 0 while reading from the stream
-            result = new char [len+1];
-            int rv;
-            while ((rv=in.read(result,red,len-red))>=0) {
-                red += rv;
-                //In case the filter enlarged the file
-                if (red == len) {
-                    char[] _tmp = new char[2*len];
-                    System.arraycopy(result, 0, _tmp, 0, len);
-                    result = _tmp;
-                    len = result.length;
-                }
-            }
-        } finally {
-            in.close();
-        }
-        result[red++]='\n'; //NOI18N
-        CharSequence buffer = CharBuffer.wrap (result, 0, red);
-        return buffer;
-    }
-
+        
+    @Trusted
     private static class NewFromTemplateFileObject extends FileBase {
 
         public NewFromTemplateFileObject (File f, String packageName, String baseName, JavaFileFilterImplementation filter, Charset encoding) {
@@ -945,10 +1036,7 @@ public class FileObjects {
         }
     }
 
-    /** A subclass of FileObject representing zip entries.
-     * XXX: What happens when the archive is deleted or rebuilt?
-     */
-    public abstract static class ZipFileBase extends Base {
+    abstract static class ZipFileBase extends Base {
         
         protected final long mtime;
         protected final String resName;
@@ -960,17 +1048,19 @@ public class FileObjects {
                 this.resName = baseName;
             }
             else {
-                StringBuilder resName = new StringBuilder (folderName);
-                resName.append('/');        //NOI18N
-                resName.append(baseName);
-                this.resName = resName.toString();
+                StringBuilder rn = new StringBuilder (folderName);
+                rn.append('/');        //NOI18N
+                rn.append(baseName);
+                this.resName = rn.toString();
             }
         }
         
+        @Override
         public OutputStream openOutputStream() throws IOException {
 	    throw new UnsupportedOperationException();
 	}
 
+        @Override
 	public Reader openReader(boolean b) throws IOException {
             if (this.getKind() == JavaFileObject.Kind.CLASS) {
                 throw new UnsupportedOperationException();
@@ -980,18 +1070,23 @@ public class FileObjects {
             }
 	}
 
+        @Override
         public Writer openWriter() throws IOException {
 	    throw new UnsupportedOperationException();
 	}
         
+        @Override
         public long getLastModified() {
 	    return mtime;
 	}
 
+        @Override
 	public boolean delete() {
 	    throw new UnsupportedOperationException();
 	}
 
+        @Override
+        @SuppressWarnings("empty-statement")
 	public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
 	    Reader r = openReader(ignoreEncodingErrors);
             try {
@@ -1019,6 +1114,7 @@ public class FileObjects {
             }
 	}
         
+        @Override
         public final URI toUri () {
             URI  zdirURI = this.getArchiveURI();
             try {
@@ -1040,14 +1136,10 @@ public class FileObjects {
                     }
                     return new URI("jar:"+zdirURI.toString()+"!/"+sb.toString());    //NOI18N
                 } catch (final UnsupportedEncodingException e2) {
-                    final IllegalStateException ne = new IllegalStateException ();
-                    ne.initCause(e2);
-                    throw ne;
+                    throw new IllegalStateException(e2);
                 }
                 catch (final URISyntaxException e2) {
-                    final IllegalStateException ne = new IllegalStateException ();
-                    ne.initCause(e2);
-                    throw ne;
+                    throw new IllegalStateException(e2);
                 }
             }
         }
@@ -1070,7 +1162,8 @@ public class FileObjects {
         protected abstract long getSize() throws IOException;
         
     }
-    
+
+    @Trusted
     private static class ZipFileObject extends ZipFileBase {
 	
 
@@ -1086,6 +1179,7 @@ public class FileObjects {
             
 	}
 
+        @Override
         public InputStream openInputStream() throws IOException {            
             class ZipInputStream extends InputStream {
 
@@ -1114,18 +1208,22 @@ public class FileObjects {
                     }
                 }
 
+                @Override
                 public int read() throws IOException {
                     throw new java.lang.UnsupportedOperationException("Not supported yet.");
                 }
 
+                @Override
                 public int read(byte b[], int off, int len) throws IOException {
                     return delegate.read(b, off, len);
                 }
 
+                @Override
                 public int available() throws IOException {
                     return this.delegate.available();
                 }
 
+                @Override
                 public void close() throws IOException {
                     try {
                         this.delegate.close();
@@ -1135,17 +1233,19 @@ public class FileObjects {
                 }
 
 
-            };
+            }
             // long time = System.currentTimeMillis();
             ZipFile zf = new ZipFile (archiveFile);
             // System.out.println("ZF OPEN " + archiveFile.getPath() + " took: " + (System.currentTimeMillis() - time )+ "ms." );
             return new BufferedInputStream (new ZipInputStream (zf));
 	}
         
+        @Override
         public URI getArchiveURI () {
             return this.archiveFile.toURI();
         }
         
+        @Override
         protected long getSize () throws IOException {
             ZipFile zf = new ZipFile (archiveFile);
             try {
@@ -1156,7 +1256,8 @@ public class FileObjects {
             }
         }
     }
-    
+
+    @Trusted
     private static class FastZipFileObject extends ZipFileObject {
         
         private long offset;
@@ -1200,7 +1301,8 @@ public class FileObjects {
             return super.getSize();
         }
     }
-    
+
+    @Trusted
     private static class CachedZipFileObject extends ZipFileBase {
         
         private ZipFile zipFile;
@@ -1211,14 +1313,17 @@ public class FileObjects {
 	    this.zipFile = zipFile;            
 	}
         
+        @Override
         public InputStream openInputStream() throws IOException {
             return new BufferedInputStream (this.zipFile.getInputStream(new ZipEntry (this.resName)));
 	}
         
+        @Override
         public URI getArchiveURI () {
             return new File (this.zipFile.getName()).toURI();
         }
         
+        @Override
         protected long getSize() throws IOException {
             ZipEntry ze = this.zipFile.getEntry(this.resName);
             return ze == null ? 0L : ze.getSize();
@@ -1226,8 +1331,9 @@ public class FileObjects {
     }
     
     
-    /** Temporay FileObject for parsing input stream.
-     */    
+    /** Temporary FileObject for parsing input stream.
+     */
+    @Trusted
     private static class MemoryFileObject extends Base {
         
         private final long lastModified;
@@ -1247,19 +1353,22 @@ public class FileObjects {
 
         /**
          * Get the character content of the file, if available.
-         * @param ignoreEncodingErrors if true, encoding errros will be replaced by the 
+         * @param ignoreEncodingErrors if true, encoding errors will be replaced by the
          * default translation character; otherwise they should be reported as diagnostics.
          * @throws UnsupportedOperationException if character access is not supported
          */
+        @Override
         public java.nio.CharBuffer getCharContent(boolean ignoreEncodingErrors) throws java.io.IOException {
             return cb.duplicate();
         }
 
+        @Override
         public boolean delete() {
             // Do nothing
             return false;
         }        
 
+        @Override
         public URI toUri () {
             if (this.uri != null) {
                 return this.uri;
@@ -1274,6 +1383,7 @@ public class FileObjects {
             return isVirtual;
         }
 
+        @Override
         public long getLastModified() {
             return this.lastModified;
         }
@@ -1284,6 +1394,7 @@ public class FileObjects {
          * @return an InputStream for this  object.
          * @throws UnsupportedOperationException if the byte access is not supported
          */
+        @Override
         public InputStream openInputStream() throws java.io.IOException {
             return new ByteArrayInputStream(cb.toString().getBytes("UTF-8"));
         }
@@ -1294,6 +1405,7 @@ public class FileObjects {
          * @return an OutputStream for this  object.
          * @throws UnsupportedOperationException if byte access is not supported
          */
+        @Override
         public java.io.OutputStream openOutputStream() throws java.io.IOException {
             throw new UnsupportedOperationException();
         }
@@ -1305,6 +1417,7 @@ public class FileObjects {
          * @throws UnsupportedOperationException if character access is not supported
          * @throws IOException if an error occurs while opening the reader
          */
+        @Override
         public java.io.Reader openReader (boolean b) throws java.io.IOException {
             return new StringReader(this.cb.toString());
         }
@@ -1314,32 +1427,22 @@ public class FileObjects {
          * @throws UnsupportedOperationException if character access is not supported
          * @throws IOException if an error occurs while opening the writer
          */
+        @Override
         public java.io.Writer openWriter() throws java.io.IOException {
             throw new UnsupportedOperationException();
         }
         
-    }    
-    
-    private static class SimpleNameStringComparator implements Comparator<String> {
-        
-        public int compare( String o1, String o2 ) {
-            return getSimpleName( o1 ).compareTo( getSimpleName( o2 ) );
-        }
-                        
     }
-    
-    private static class SimpleNameFileObjectComparator implements Comparator<JavaFileObject> {
-        
-        public int compare( JavaFileObject o1, JavaFileObject o2 ) {
-            
-            String n1 = getSimpleName( o1 );
-            String n2 = getSimpleName( o2 );
-                        
-            return n1.compareTo( n2 );
+    //</editor-fold>
+
+    public static class InvalidFileException extends IOException {
+
+        public InvalidFileException () {
+            super ();
         }
-                        
+
+        public InvalidFileException (final FileObject fo) {
+            super (NbBundle.getMessage(FileObjects.class,"FMT_InvalidFile",FileUtil.getFileDisplayName(fo)));
+        }
     }
-    
-    static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();            
-    
 }

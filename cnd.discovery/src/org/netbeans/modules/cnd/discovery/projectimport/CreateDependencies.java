@@ -57,7 +57,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -69,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -184,7 +187,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         addReqProject(aProject);
                     }
                 }
-                ImportExecutable.saveMakeConfigurationDescriptor(mainProject);
+                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(mainProject);
                 for(Project aProject : projects) {
                     String executable = null;
                     if (createdProjects.containsKey(aProject)){
@@ -197,7 +200,7 @@ public class CreateDependencies implements PropertyChangeListener {
                     if (extension != null) {
                         Map<String, Object> map = new HashMap<String, Object>();
                         map.put("DW:buildResult", executable); // NOI18N
-                        map.put("DW:consolidationLevel", "file"); // NOI18N
+                        map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
                         map.put("DW:rootFolder", aProject.getProjectDirectory().getPath()); // NOI18N
                         process((DiscoveryExtension)extension, aProject, map);
                     }
@@ -233,7 +236,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         if (extension.canApply(map, lastSelectedProject)) {
                             try {
                                 extension.apply(map, lastSelectedProject);
-                                ImportExecutable.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
@@ -266,7 +269,7 @@ public class CreateDependencies implements PropertyChangeListener {
         exe = CndPathUtilitities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         updateRunProfile(baseDir, conf.getProfile(), arguments, dir, envText);
-        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectName, projectParentFolder));
         prjParams.setOpenFlag(false).setConfiguration(conf).setImportantFiles(Collections.<String>singletonList(exe).iterator());
         project = ProjectGenerator.createBlankProject(prjParams);
         return project;

@@ -1,8 +1,0 @@
-#set( $totalSetMappings = $mappings.size())
-#set( $setMappingCounter = 1)
-SET 
-#foreach($mapping in $mappings)
-    $mapping.getTarget().getAliasName() = $mapping.getSource().getAliasName()#if($setMappingCounter < $totalSetMappings), #end
-    
-#set( $setMappingCounter = $setMappingCounter + 1)
-#end

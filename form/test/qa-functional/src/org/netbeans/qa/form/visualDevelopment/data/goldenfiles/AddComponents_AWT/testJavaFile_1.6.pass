@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -74,6 +74,7 @@ public class clear_Frame extends java.awt.Frame {
         canvas1 = new java.awt.Canvas();
         menuBar1 = new java.awt.MenuBar();
         menu1 = new java.awt.Menu();
+        menu2 = new java.awt.Menu();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -101,8 +102,11 @@ public class clear_Frame extends java.awt.Frame {
         add(panel1);
         add(canvas1);
 
-        menu1.setLabel("Menu");
+        menu1.setLabel("File");
         menuBar1.add(menu1);
+
+        menu2.setLabel("Edit");
+        menuBar1.add(menu2);
 
         setMenuBar(menuBar1);
 
@@ -130,6 +134,7 @@ public class clear_Frame extends java.awt.Frame {
     private java.awt.Label label1;
     private java.awt.List list1;
     private java.awt.Menu menu1;
+    private java.awt.Menu menu2;
     private java.awt.MenuBar menuBar1;
     private java.awt.Panel panel1;
     private java.awt.ScrollPane scrollPane1;

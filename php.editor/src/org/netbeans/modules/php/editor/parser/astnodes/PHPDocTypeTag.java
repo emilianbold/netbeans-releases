@@ -57,21 +57,38 @@ public class PHPDocTypeTag extends PHPDocTag {
         "NULL", "INT", "INTEGER", "BOOL", "STRING"
         );
 
-    private final List<PHPDocNode> types;
-
-    public PHPDocTypeTag(int start, int end, PHPDocTag.Type kind, String value, List<PHPDocNode> types) {
+    private final List<PHPDocTypeNode> types;
+    protected String documentation;
+    
+    public PHPDocTypeTag(int start, int end, PHPDocTag.Type kind, String value, List<PHPDocTypeNode> types) {
         super(start, end, kind, value);
         this.types = types;
+        this.documentation = null;
     }
 
     /**
      *
      * @return list of PHPDocNode or PHPDocStaticAccessType
      */
-    public List<PHPDocNode> getTypes() {
+    public List<PHPDocTypeNode> getTypes() {
         return types;
     }
 
+    @Override
+    public String getDocumentation() {
+        if (documentation == null && types.size() > 0) {
+            PHPDocTypeNode lastType = types.get(0);
+            for (PHPDocTypeNode node : types) {
+                if (lastType.getEndOffset() < node.getEndOffset()) {
+                    lastType = node;
+                }
+            }
+            int index = getValue().indexOf(lastType.getValue());
+            documentation = getValue().substring(index + lastType.getValue().length()).trim();
+        }
+        return documentation;
+    }
+    
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

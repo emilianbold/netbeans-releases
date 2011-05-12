@@ -57,7 +57,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.api.storage.types.Time;
+import org.netbeans.modules.dlight.api.storage.StandardColumns;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
@@ -94,11 +94,11 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
 
     static {
-        final Column timestampColumn = new Column("timestamp", Time.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
+        final Column timestampColumn = StandardColumns.TIMESTAMP_COLUMN;
         final Column kindColumn = new Column("kind", Integer.class, loc("MemoryTool.ColumnName.kind"), null); // NOI18N
         final Column sizeColumn = new Column("size", Integer.class, loc("MemoryTool.ColumnName.size"), null); // NOI18N
         final Column addressColumn = new Column("address", Long.class, loc("MemoryTool.ColumnName.address"), null); // NOI18N
-        final Column stackColumn = new Column("stackid", Long.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
+        final Column stackColumn = StandardColumns.STACK_COLUMN;
 
         totalColumn = new Column("total", Integer.class, loc("MemoryTool.ColumnName.total"), null); // NOI18N
 
@@ -221,7 +221,12 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
         columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_name.getColumnName(), loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name")); // NOI18N
         columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_leakSize.getColumnName(), loc("MemoryTool.ColumnName.leak"), loc("MemoryTool.ColumnTooltip.leak")); // NOI18N
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(
+                SunStudioDCConfiguration.c_name.getColumnName(), 
+                SunStudioDCConfiguration.c_name.getColumnName(),
+                null, /* offset */
+                null /* context */
+                );
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
                 new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_leakSize, SunStudioDCConfiguration.c_leakCount));
         tableVisualizerConfiguration.setColumnsUIMapping(columnsUIMapping);
@@ -238,25 +243,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         List<Column> viewColumns = Arrays.asList(
                 new Column("func_name", FunctionName.class, loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name"), null), // NOI18N
                 metricColumn);
-
-        String sql =
-                "SELECT func.func_id AS func_id, func.func_name AS func_name, node.offset AS offset, SUM(leak.size) AS leak " + // NOI18N
-                "FROM (SELECT MAX(timestamp) AS timestamp, address, SUM(kind * size) AS size FROM mem GROUP BY address HAVING SUM(kind * size) > 0) AS leak " + // NOI18N
-                "LEFT JOIN mem ON leak.timestamp = mem.timestamp AND leak.address = mem.address " + // NOI18N
-                "LEFT JOIN node ON mem.stackid = node.node_id " + // NOI18N
-                "LEFT JOIN func ON node.func_id = func.func_id " + // NOI18N
-                "GROUP BY func_id, func_name, offset " + // NOI18N
-                "ORDER BY leak DESC"; // NOI18N
-//                "SELECT func.func_id as func_id, func.func_name as func_name, node.offset as offset, SUM(size) as leak " + // NOI18N
-//                "FROM mem, node AS node, func, ( " + // NOI18N
-//                "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
-//                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
-//                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
-//                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
-//                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
-//                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
-
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "func_id"); // NOI18N
+        
+        // TODO: maybe add context_id here... 
+        // FIXME: the query below relays on a knowledge about stacks-related DB 
+        String sql = "select stacknode.func_id as func_id, funcnames.fname as func_name, stacknode.offset as offset, sum(leaks.size) as leak " // NOI18N
+                + "from (select max(timestamp) as timestamp, address, sum(kind * size) as size from mem group by address having sum(kind * size) > 0) as leaks " // NOI18N
+                + "left join mem on leaks.timestamp = mem.timestamp and leaks.address = mem.address " // NOI18N
+                + "left join stacknode on mem.stack_id = stacknode.id " // NOI18N
+                + "left join funcnames on stacknode.func_id = funcnames.id " // NOI18N
+                + "group by func_id, fname, offset " // NOI18N
+                + "order by leak desc"; // NOI18N
+        
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_id", "func_name", "offset", null); // NOI18N
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N

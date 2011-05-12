@@ -85,6 +85,7 @@ public final class CompilationInfoImpl {
     private CompilationUnitTree compilationUnit;
 
     private JavacTaskImpl javacTask;
+    private DiagnosticListener<JavaFileObject> diagnosticListener;
     private final ClasspathInfo cpInfo;
     Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
@@ -94,6 +95,7 @@ public final class CompilationInfoImpl {
     private Snapshot snapshot;
     private final JavacParser parser;
     private final boolean isClassFile;
+    private final boolean isDetached;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase
 
     /**
@@ -103,13 +105,16 @@ public final class CompilationInfoImpl {
      * @param root the owner of the parsed file
      * @param javacTask used javac or null if new one should be created
      * @param snapshot rendered content of the file
+     * @param detached true if the CompilationInfoImpl is detached from parsing infrastructure.
      * @throws java.io.IOException
      */
     CompilationInfoImpl (final JavacParser parser,
                          final FileObject file,
                          final FileObject root,
                          final JavacTaskImpl javacTask,
-                         final Snapshot snapshot) throws IOException {
+                         final DiagnosticListener<JavaFileObject> diagnosticListener,
+                         final Snapshot snapshot,
+                         final boolean detached) throws IOException {
         assert parser != null;
         this.parser = parser;
         this.cpInfo = parser.getClasspathInfo();
@@ -120,7 +125,9 @@ public final class CompilationInfoImpl {
         assert file == null || snapshot != null;
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
+        this.diagnosticListener = diagnosticListener;
         this.isClassFile = false;
+        this.isDetached = detached;
     }
 
     /**
@@ -136,6 +143,7 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = false;
+        this.isDetached = false;
     }
 
     /**
@@ -157,6 +165,7 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = true;
+        this.isDetached = false;
     }
 
     void update (final Snapshot snapshot) throws IOException {
@@ -238,9 +247,9 @@ public final class CompilationInfoImpl {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
-        Collection<Diagnostic<? extends JavaFileObject>> errors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).getErrors(jfo).values();
-        List<Diagnostic<? extends JavaFileObject>> partialReparseErrors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).partialReparseErrors;
-        List<Diagnostic<? extends JavaFileObject>> affectedErrors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).affectedErrors;
+        Collection<Diagnostic<? extends JavaFileObject>> errors = ((DiagnosticListenerImpl)diagnosticListener).getErrors(jfo).values();
+        List<Diagnostic<? extends JavaFileObject>> partialReparseErrors = ((DiagnosticListenerImpl)diagnosticListener).partialReparseErrors;
+        List<Diagnostic<? extends JavaFileObject>> affectedErrors = ((DiagnosticListenerImpl)diagnosticListener).affectedErrors;
         List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errors.size() + 
                 (partialReparseErrors == null ? 0 : partialReparseErrors.size()) + 
                 (affectedErrors == null ? 0 : affectedErrors.size()));
@@ -353,6 +362,28 @@ public final class CompilationInfoImpl {
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
+
+    /**
+     * Returns {@link JavacTaskImpl}, when it doesn't exist
+     * it's created.
+     * @return JavacTaskImpl
+     */
+    public synchronized JavacTaskImpl getJavacTask() {
+        if (javacTask == null) {
+            diagnosticListener = new DiagnosticListenerImpl(this.jfo);
+            javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
+                    this.parser, diagnosticListener, null, isDetached);
+        }
+	return javacTask;
+    }
+
+    /**
+     * Returns current {@link DiagnosticListener}
+     * @return listener
+     */
+    DiagnosticListener<JavaFileObject> getDiagnosticListener() {
+        return diagnosticListener;
+    }
     
     /**
      * Sets the current {@link JavaSource.Phase}
@@ -378,21 +409,8 @@ public final class CompilationInfoImpl {
     void setCompilationUnit(final CompilationUnitTree compilationUnit) {
         assert compilationUnit != null;
         this.compilationUnit = compilationUnit;
-    }        
-    
-    /**
-     * Returns {@link JavacTaskImpl}, when it doesn't exist
-     * it's created.
-     * @return JavacTaskImpl
-     */
-    public synchronized JavacTaskImpl getJavacTask() {	
-        if (javacTask == null) {
-            javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
-                    this.parser, new DiagnosticListenerImpl(this.jfo), null);
-        }
-	return javacTask;
     }
-    
+                
     private boolean hasSource () {
         return this.jfo != null && !isClassFile;
     }

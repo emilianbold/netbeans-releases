@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
-import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -151,6 +150,8 @@ public final class MakeActionProvider implements ActionProvider {
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
+    public static final String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
+    public static final String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
@@ -169,12 +170,15 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_RENAME,
         COMMAND_CUSTOM_ACTION,
         COMMAND_TEST,
-        COMMAND_TEST_SINGLE,};
+        COMMAND_TEST_SINGLE,
+        COMMAND_DEBUG_TEST,
+        COMMAND_DEBUG_STEP_INTO_TEST,
+    };
     // Project
     private MakeProject project;
     // Project Descriptor
     private MakeConfigurationDescriptor projectDescriptor = null;
-    /** Map from commands to ant targets */
+    /** Map from commands to make targets */
     private Map<String, String[]> commands;
     private Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
@@ -193,6 +197,8 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String BUILD_TESTS_STEP = "build-tests"; // NOI18N
     private static final String TEST_STEP = "test"; // NOI18N
     private static final String TEST_SINGLE_STEP = "test-single"; // NOI18N
+    private static final String DEBUG_TEST_STEP = "debug-test"; // NOI18N
+    private static final String DEBUG_STEPINTO_TEST_STEP = "debug-stepinto-test"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Make Action RP", 1);// NOI18N
 
     public MakeActionProvider(MakeProject project) {
@@ -250,7 +256,14 @@ public final class MakeActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            try {
+                // it's better to set deleted flag right here, otherwise we can start saving the project
+                // #196501 - "Error synchronizing project to <login>@<host> null"
+                project.setDeleting(true);  // can't set setDeleted here since user can answer "No"
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+            } finally {
+                project.setDeleting(false);                 
+            }
             return;
         }
 
@@ -476,8 +489,12 @@ public final class MakeActionProvider implements ActionProvider {
             return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG);
+        } else if (targetName.equals(DEBUG_TEST_STEP)) {
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_TEST);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
+        } else if (targetName.equals(DEBUG_STEPINTO_TEST_STEP)) {
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
@@ -524,7 +541,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (actionEvent == ProjectActionEvent.PredefinedType.TEST) { // RUN TEST
             if (conf.isCompileConfiguration() && !validateProject(conf)) {
                 return true;
@@ -538,7 +554,7 @@ public final class MakeActionProvider implements ActionProvider {
                 args = buildCommand.substring(index + 1);
                 buildCommand = removeQuotes(buildCommand.substring(0, index));
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -559,11 +575,10 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isLibraryConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
-                path = conf.getProfile().getRunCommand();
+                path = conf.getProfile().getRunCommand().getValue();
                 if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
@@ -577,7 +592,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isApplicationConfiguration()) { // RUN MANAGED
             RunProfile runProfile = createRunProfile(conf, cancelled);
             if (runProfile == null) {
@@ -604,7 +618,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else {
             assert false;
         }
@@ -619,19 +632,27 @@ public final class MakeActionProvider implements ActionProvider {
             // On Windows we need to add paths to dynamic libraries from subprojects to PATH
             runProfile = conf.getProfile().clone(conf);
             Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
-            String path = ""; // NOI18N
+            StringBuilder path = new StringBuilder();
             // Add paths from subprojetcs
             Iterator<String> iter = subProjectOutputLocations.iterator();
+            
             while (iter.hasNext()) {
                 String location = CndPathUtilitities.naturalizeSlashes(iter.next());
-                path = location + ";" + path; // NOI18N
+                if (path.length() > 0) {
+                    path.append(';');
+                }
+                path.append(location);
             }
+            
             // Add paths from -L option
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             iter = list.iterator();
             while (iter.hasNext()) {
                 String location = CndPathUtilitities.naturalizeSlashes(iter.next());
-                path = location + ";" + path; // NOI18N
+                if (path.length() > 0) {
+                    path.append(';');
+                }
+                path.append(location);
             }
             String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
             if (userPath == null) {
@@ -640,8 +661,15 @@ public final class MakeActionProvider implements ActionProvider {
                 }
                 userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
             }
-            path = path + ";" + userPath; // NOI18N
-            runProfile.getEnvironment().putenv(pi.getPathName(), path);
+            
+            if (userPath != null && !userPath.isEmpty()) {
+                if (path.length() > 0) {
+                    path.append(';');
+                }
+                path.append(userPath);
+            }
+            
+            runProfile.getEnvironment().putenv(pi.getPathName(), path.toString());
         } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
             // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
             StringBuilder path = new StringBuilder();
@@ -743,7 +771,6 @@ public final class MakeActionProvider implements ActionProvider {
             String path = CndFileUtils.toFile(d.getPrimaryFile()).getPath();
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
-            RunDialogPanel.addElementToExecutablePicklist(path);
         } else {
             assert false;
         }
@@ -773,7 +800,7 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
-        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
@@ -787,7 +814,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         
         final String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         
         String buildCommand = null;
 
@@ -829,7 +856,7 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
-        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
@@ -890,7 +917,7 @@ public final class MakeActionProvider implements ActionProvider {
                 commandLine = "rm"; // NOI18N
                 args = "-rf " + outputFile; // NOI18N
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.CLEAN, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -902,7 +929,7 @@ public final class MakeActionProvider implements ActionProvider {
                 args = commandLine.substring(index + 1);
                 commandLine = commandLine.substring(0, index);
             }
-            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -951,7 +978,7 @@ public final class MakeActionProvider implements ActionProvider {
                     args = buildCommand.substring(index + 1);
                     buildCommand = removeQuotes(buildCommand.substring(0, index));
                 }
-                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
                 actionEvents.add(projectActionEvent);
@@ -1012,6 +1039,9 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)
                 || command.equals(COMMAND_DEBUG)
                 || command.equals(COMMAND_DEBUG_STEP_INTO)
+                || command.equals(COMMAND_DEBUG_TEST)
+                || command.equals(COMMAND_DEBUG_TEST_SINGLE)
+                || command.equals(COMMAND_DEBUG_STEP_INTO_TEST)
                 || command.equals(COMMAND_CUSTOM_ACTION)) {
             MakeConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = pd.getActiveConfiguration();
@@ -1123,8 +1153,7 @@ public final class MakeActionProvider implements ActionProvider {
             try {
                 DataObject dao = node.getCookie(DataObject.class);
                 if (dao != null) {
-                    File file = CndFileUtils.toFile(dao.getPrimaryFile());
-                    item = getProjectDescriptor().findItemByFile(file);
+                    item = getProjectDescriptor().findItemByPathSlowly(dao.getPrimaryFile().getPath());
                 }
             } catch (NullPointerException ex) {
                 // not found item
@@ -1196,6 +1225,7 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
                 if (CndUtils.isUnitTestMode()) {
+                    errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
                     new Exception(errormsg).printStackTrace();
                 } else {
                     if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {

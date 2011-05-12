@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.model.pom.impl;
 
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.util.ModelImplUtils;
 
 /**
  *
@@ -220,7 +221,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     public java.util.List<String> getModules() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 return list.getListChildren();
             }
         }
@@ -230,7 +231,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     public void addModule(String module) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 list.addListChild(module);
                 return;
             }
@@ -241,7 +242,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
                  getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 list.addListChild(module);
                 return;
             }
@@ -251,7 +252,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     public void removeModule(String module) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 list.removeListChild(module);
                 return;
             }

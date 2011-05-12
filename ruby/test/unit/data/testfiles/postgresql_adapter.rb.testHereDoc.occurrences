@@ -1,2 +1,0 @@
-  def indexes(table_name, |>MARK_OCCURRENCES:na^me<| = nil) #:nodoc:
-    result = query(<<-SQL, |>MARK_OCCURRENCES:name<|)

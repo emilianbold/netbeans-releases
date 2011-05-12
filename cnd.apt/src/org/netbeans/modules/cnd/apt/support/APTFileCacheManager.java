@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.State;
 import org.openide.filesystems.FileSystem;
@@ -63,17 +65,36 @@ public final class APTFileCacheManager {
     }
 
     private static Map<FileSystem, APTFileCacheManager> managers = new WeakHashMap<FileSystem, APTFileCacheManager>();
+    private static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private static final java.util.concurrent.locks.Lock rLock;
+    private static final java.util.concurrent.locks.Lock wLock;
+    static {
+        rLock = rwLock.readLock();
+        wLock = rwLock.writeLock();
+    }
     
     public static APTFileCacheManager getInstance(FileSystem fs) {
         Parameters.notNull("null file system", fs); //NOI18N
-        synchronized (APTFileCacheManager.class) {
-            APTFileCacheManager manager = managers.get(fs);
-            if (manager == null) {
-                manager = new APTFileCacheManager();
-                managers.put(fs, manager);
-            }
-            return manager;
+        APTFileCacheManager manager;
+        rLock.lock();
+        try {
+            manager = managers.get(fs);
+        } finally {
+            rLock.unlock();
         }        
+        if (manager == null) {
+            wLock.lock();
+            try {        
+                manager = managers.get(fs);
+                if (manager == null) {
+                    manager = new APTFileCacheManager();
+                    managers.put(fs, manager);
+                }
+            } finally {
+                wLock.unlock();
+            }
+        }
+        return manager;
     }
     
     private Reference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(null);
@@ -198,11 +219,14 @@ public final class APTFileCacheManager {
     }
 
     public static void invalidateAll() {
-        synchronized (APTFileCacheManager.class) {
+        wLock.lock();
+        try {
             for (APTFileCacheManager manager : managers.values()) {
                 manager.file2AptCacheRef.clear();
             }
             managers.clear();
+        } finally {
+            wLock.unlock();
         }
     }
 

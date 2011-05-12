@@ -131,9 +131,6 @@ made subject to such option by the copyright holder.
                         </arity>
                     </context>
                 </action>
-                <action name="javadoc">
-                    <target>bootstrap-javadoc</target>
-                </action>
                 <action name="run">
                     <target>tryme</target>
                 </action>

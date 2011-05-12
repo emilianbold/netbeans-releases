@@ -76,7 +76,7 @@ public class NbMavenProjectImplTest extends NbTestCase {
         // Now test dynamic changes to packaging:
         FileObject pd = FileUtil.toFileObject(getWorkDir()).getFileObject("prj-war");
         Project prj = ProjectManager.getDefault().findProject(pd);
-        prj.getLookup().lookup(ProjectOpenedHookImpl.class).attachUpdater(); // begin listening to pom.xml changes
+        ((NbMavenProjectImpl) prj).attachUpdater();
         TestFileUtils.writeFile(pd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj-war</artifactId>"
                 + "<packaging>jar</packaging><version>1.0</version></project>");

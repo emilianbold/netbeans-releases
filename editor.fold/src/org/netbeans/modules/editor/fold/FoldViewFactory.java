@@ -176,8 +176,10 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     @Override
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+        // For fold state changes use a higher priority
+        int priority = (evt.getFoldStateChangeCount() > 0) ? 1 : 0;
         fireEvent(Collections.singletonList(new EditorViewFactory.Change(
-                evt.getAffectedStartOffset(), evt.getAffectedEndOffset())));
+                evt.getAffectedStartOffset(), evt.getAffectedEndOffset())), priority);
     }
 
     public static final class FoldFactory implements EditorViewFactory.Factory {

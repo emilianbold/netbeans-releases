@@ -55,9 +55,13 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
     private ToolsCacheManager cacheManager;
     private int port = 22;
     private String hostName;
+    private String userName;
+    private final boolean manageUser;
 
-    public CreateHostData(ToolsCacheManager toolsCacheManager) {
+    public CreateHostData(ToolsCacheManager toolsCacheManager, boolean manageUser) {
         this.cacheManager = toolsCacheManager;
+        this.manageUser = manageUser;
+        this.userName = System.getProperty("user.name", ""); // NOI18N
     }
 
     public ToolsCacheManager getCacheManager() {
@@ -68,6 +72,18 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
         return hostName;
     }
 
+    public boolean isManagingUser() {
+        return manageUser;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String name) {
+        userName = name;
+    }
+    
     public void setHostName(String hostName) {
         this.hostName = hostName;
     }

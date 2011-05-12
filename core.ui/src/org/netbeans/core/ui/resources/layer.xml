@@ -45,14 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-
-    <folder name="WarmUp">
-        <file name="org-netbeans-core-ui-warmup-MenuWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-warmup-ContextMenuWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-warmup-DnDWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-warmup-DiagnosticTask.instance"/>
-    </folder>
-
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
 

@@ -47,6 +47,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
+import java.awt.Insets;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.netbeans.modules.form.FormUtils;
@@ -54,7 +55,7 @@ import org.netbeans.modules.form.FormUtils;
 /**
  * {@code GridInfoProvider} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GridBagInfoProvider implements GridInfoProvider {
     private Container container;
@@ -184,10 +185,20 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return getIntFieldValue(tempXField, constraints);
     }
 
+    public boolean getGridXRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridx == GridBagConstraints.RELATIVE;
+    }
+
     @Override
     public int getGridY(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return getIntFieldValue(tempYField, constraints);
+    }
+
+    public boolean getGridYRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridy == GridBagConstraints.RELATIVE;
     }
 
     @Override
@@ -196,10 +207,30 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return getIntFieldValue(tempWidthField, constraints);
     }
 
+    public boolean getGridWidthRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridwidth == GridBagConstraints.RELATIVE;
+    }
+
+    public boolean getGridWidthRemainder(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridwidth == GridBagConstraints.REMAINDER;
+    }
+
     @Override
     public int getGridHeight(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return getIntFieldValue(tempHeightField, constraints);
+    }
+
+    public boolean getGridHeightRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridheight == GridBagConstraints.RELATIVE;
+    }
+
+    public boolean getGridHeightRemainder(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridheight == GridBagConstraints.REMAINDER;
     }
 
     public int getAnchor(Component component) {
@@ -220,6 +251,21 @@ public class GridBagInfoProvider implements GridInfoProvider {
     public double getWeightY(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return constraints.weighty;
+    }
+
+    public int getIPadX(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.ipadx;
+    }
+
+    public int getIPadY(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.ipady;
+    }
+
+    public Insets getInsets(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.insets;
     }
 
 }

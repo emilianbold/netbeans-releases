@@ -120,12 +120,24 @@ public class JavaUtils {
         for (int i = 0; i < paramCount; i ++){
             TypeMirror param1 = method1.getParameters().get(i).asType();
             TypeMirror param2 = method2.getParameters().get(i).asType();
-            
+
             if (!cinfo.getTypes().isSameType(param1, param2)){
+                if (isSameDeclaredType(param1, param2)) {
+                    return true;
+                }
                 return false;
             }
         }
         
         return true;
+    }
+
+    public static boolean isSameDeclaredType(TypeMirror param1, TypeMirror param2) {
+        String classNameParam1 = extractClassNameFromType(param1);
+        // classNameParam1 == null when param1 is not declared type
+        if (classNameParam1 != null && classNameParam1.equals(extractClassNameFromType(param2))) {
+            return true;
+        }
+        return false;
     }
 }

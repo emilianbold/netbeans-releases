@@ -44,8 +44,8 @@ package org.netbeans.modules.maven.execute.ui;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.TestSkippingChecker;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 
@@ -135,18 +135,15 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         });
     }
 
-    
-    
-    private String createSpaceSeparatedList(List list) {
-        String str = ""; //NOI18N
-        if (list != null) {
-            Iterator it = list.iterator();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
-                str = str + elem + " "; //NOI18N
+    private static String createSpaceSeparatedList(List<String> list) {
+        StringBuilder b = new StringBuilder();
+        for (String s : list) {
+            if (b.length() > 0) {
+                b.append(' ');
             }
+            b.append(s);
         }
-        return str;
+        return b.toString();
     }
 
     public void readMapping(NetbeansActionMapping mapp, NbMavenProjectImpl project, ActionToGoalMapping historyMappings) {
@@ -163,29 +160,24 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         btnNext.setVisible(false);
         btnPrev.setVisible(false);
         txtGoals.setText(createSpaceSeparatedList(config.getGoals()));
-        if (config.getProperties() != null) {
-            StringBuffer buf = new StringBuffer();
-            Iterator it = config.getProperties().keySet().iterator();
-            while (it.hasNext()) {
-                String key = (String) it.next();
-                buf.append(key).append("=").append(config.getProperties().getProperty(key)).append("\n"); //NOI18N
+        Properties properties = config.getProperties();
+        if (properties != null) {
+            StringBuilder buf = new StringBuilder();
+            for (Map.Entry<?,?> entry : properties.entrySet()) {
+                if (buf.length() > 0) {
+                    buf.append('\n');
+                }
+                buf.append(entry.getKey()).append('=').append(entry.getValue());
+                if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
+                    cbSkipTests.setSelected(true);
+                }
             }
             taProperties.setText(buf.toString());
-            if (buf.toString().matches(".*maven\\.test\\.skip\\s*=\\s*true\\s*.*")) { //NOI18N
-                cbSkipTests.setSelected(true);
-            }
+            taProperties.setCaretPosition(0);
         } else {
             taProperties.setText(""); //NOI18N
         }
-        List<String> activatedProfiles = config.getActivatedProfiles();
-        if (config.getProject() != null) {
-            ProjectProfileHandler profileHandler=config.getProject().getLookup().lookup(ProjectProfileHandler.class);
-            List<String> retrieveMergedActiveProfiles =
-                    profileHandler.getMergedActiveProfiles(false);
-            txtProfiles.setText(createSpaceSeparatedList(retrieveMergedActiveProfiles));
-        } else {
-            txtProfiles.setText(createSpaceSeparatedList(activatedProfiles));
-        }
+        txtProfiles.setText(createSpaceSeparatedList(config.getActivatedProfiles()));
         
         setUpdateSnapshots(config.isUpdateSnapshots());
         setOffline(config.isOffline() != null ? config.isOffline().booleanValue() : false);
@@ -198,17 +190,20 @@ public class RunGoalsPanel extends javax.swing.JPanel {
 
     private void readMapping(NetbeansActionMapping mapp) {
         txtGoals.setText(createSpaceSeparatedList(mapp.getGoals()));
-        if (mapp.getProperties() != null) {
-            StringBuffer buf = new StringBuffer();
-            Iterator it = mapp.getProperties().keySet().iterator();
-            while (it.hasNext()) {
-                String key = (String) it.next();
-                buf.append(key).append("=").append(mapp.getProperties().getProperty(key)).append("\n"); //NOI18N
+        Properties properties = mapp.getProperties();
+        if (properties != null) {
+            StringBuilder buf = new StringBuilder();
+            for (Map.Entry<?,?> entry : properties.entrySet()) {
+                if (buf.length() > 0) {
+                    buf.append('\n');
+                }
+                buf.append(entry.getKey()).append('=').append(entry.getValue());
+                if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
+                    cbSkipTests.setSelected(true);
+                }
             }
             taProperties.setText(buf.toString());
-            if (buf.toString().matches(".*maven\\.test\\.skip\\s*=\\s*true\\s*.*")) { //NOI18N
-                cbSkipTests.setSelected(true);
-            }
+            taProperties.setCaretPosition(0);
         } else {
             taProperties.setText(""); //NOI18N
         }
@@ -242,7 +237,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(TestSkippingChecker.PROP_SKIP_TEST, "true"); //NOI18N
+            props.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         mapp.setProperties(props);
 
@@ -281,7 +276,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             token = split.nextPair();
         }
         if (cbSkipTests.isSelected()) {
-            props.setProperty(TestSkippingChecker.PROP_SKIP_TEST, "true"); //NOI18N
+            props.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //NOI18N
         }
         rc.setProperties(props);
         rc.setRecursive(isRecursive());
@@ -316,10 +311,13 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         txtRemember = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
 
+        lblGoals.setLabelFor(txtGoals);
         org.openide.awt.Mnemonics.setLocalizedText(lblGoals, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Goals")); // NOI18N
 
+        lblProfiles.setLabelFor(txtProfiles);
         org.openide.awt.Mnemonics.setLocalizedText(lblProfiles, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Profiles")); // NOI18N
 
+        jLabel2.setLabelFor(taProperties);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Properties")); // NOI18N
 
         taProperties.setColumns(20);
@@ -446,10 +444,10 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void cbSkipTestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSkipTestsActionPerformed
         String current = taProperties.getText();
-        if (current.contains(TestSkippingChecker.PROP_SKIP_TEST)) {
-            taProperties.setText(current.replaceAll(".*\\Q" + TestSkippingChecker.PROP_SKIP_TEST + "\\E\\s*=\\s*[a-z]*\\s*.*", TestSkippingChecker.PROP_SKIP_TEST + "=" + (cbSkipTests.isSelected() ? "true" : "false"))); //NOI18N
+        if (current.contains(TestChecker.PROP_SKIP_TEST)) {
+            taProperties.setText(current.replaceAll(".*\\Q" + TestChecker.PROP_SKIP_TEST + "\\E\\s*=\\s*[a-z]*\\s*.*", TestChecker.PROP_SKIP_TEST + "=" + (cbSkipTests.isSelected() ? "true" : "false"))); //NOI18N
         } else if (cbSkipTests.isSelected()) {
-            taProperties.setText(taProperties.getText() + "\n" + TestSkippingChecker.PROP_SKIP_TEST + "=true"); //NOI18N
+            taProperties.setText(taProperties.getText() + "\n" + TestChecker.PROP_SKIP_TEST + "=true"); //NOI18N
         }
         
     }//GEN-LAST:event_cbSkipTestsActionPerformed

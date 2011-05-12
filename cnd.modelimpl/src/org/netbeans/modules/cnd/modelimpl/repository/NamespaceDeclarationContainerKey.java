@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
  *
  * @author Vladimir Voskresensky
  */
-final public class NamespaceDeclarationContainerKey extends NamespaceKey {
+public final class NamespaceDeclarationContainerKey extends NamespaceKey {
 
     public NamespaceDeclarationContainerKey(CsmNamespace ns) {
         super(ns);

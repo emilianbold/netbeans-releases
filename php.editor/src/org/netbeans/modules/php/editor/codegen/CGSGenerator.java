@@ -127,13 +127,18 @@ public class CGSGenerator implements CodeGenerator {
     public void invoke() {
         String dialogTitle = null;
         JPanel panel = null;
+        String methodGenerationWay = null;
+        AntProjectHelper helper = null;
+        EditableProperties properties = null;
 
         // obtain the generation from project properties
         FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
         Project project = FileOwnerQuery.getOwner(fo);
-        AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
-        EditableProperties properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        String methodGenerationWay = properties.getProperty(GETTER_SETTER_PROJECT_PROPERTY);
+        if (project != null) {
+            helper = project.getLookup().lookup(AntProjectHelper.class);
+            properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            methodGenerationWay = properties.getProperty(GETTER_SETTER_PROJECT_PROPERTY);
+        }
         if (methodGenerationWay != null) {
             try {
                 cgsInfo.setHowToGenerate(GenWay.valueOf(methodGenerationWay));
@@ -177,8 +182,10 @@ public class CGSGenerator implements CodeGenerator {
             CodeTemplate template = manager.createTemporary(getTemplateText());
             template.insert(component);
             //save the gen type value to the project properties
-            properties.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
-            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
+            if (project != null) {
+                properties.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
+            }
         }
     }
 

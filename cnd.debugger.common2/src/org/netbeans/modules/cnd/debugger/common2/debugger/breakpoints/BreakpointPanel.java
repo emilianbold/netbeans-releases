@@ -94,7 +94,7 @@ import org.openide.filesystems.FileObject;
  */
 
 abstract public class BreakpointPanel extends javax.swing.JPanel
-    implements DocumentListener, ItemListener, HelpCtx.Provider {
+    implements DocumentListener, ItemListener, HelpCtx.Provider, ControllerProvider {
 
     
     protected NativeBreakpoint breakpoint;
@@ -557,11 +557,9 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 
     private final BptController controller = new BptController(this);
 
-    Controller getController() {
+    public Controller getController() {
 	return controller;
     }
-
-
 
     /**
      * To be called by subclass to send the breakpoint to the engine.

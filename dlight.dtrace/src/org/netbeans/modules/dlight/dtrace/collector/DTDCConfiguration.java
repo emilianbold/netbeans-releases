@@ -42,7 +42,9 @@
 package org.netbeans.modules.dlight.dtrace.collector;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -50,10 +52,20 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
 
-
 /**
- * Configuration object for creating
- * {@link org.netbeans.modules.dlight.dtrace.collector.support.DtraceDataCollector}.
+ * DTDCConfiguration is used for  
+ * {@link org.netbeans.modules.dlight.dtrace.collector.support.DtraceDataCollector}
+ * creation.
+ * <p>
+ * Several DTDCConfiguration can be provided by active/selected tool(s).
+ * <p>
+ * <code>DtraceDataCollector</code> deals with attaching dtrace(1M) to a process 
+ * and parsing script's output based on the provided DataTableMetadata. 
+ * <p>
+ * <b>Implementation Restriction</b> <br>
+ *  Only the first DataTableMetadata from the provided list is used as a 
+ *  basis for default output processing. However it is possible to provide 
+ *  own DTraceOutputParser.
  */
 public final class DTDCConfiguration implements
         DataCollectorConfiguration, IndicatorDataProviderConfiguration {
@@ -73,23 +85,21 @@ public final class DTDCConfiguration implements
      * dtrace(1M))
      */
     public static final String DTRACE_PROC = "dtrace_proc"; // NOI18N
-
     /**
      * The property which can be used when tool is created to set path to the script
      */
-    public static final String  DSCRIPT_TOOL_PROPERTY = "dtrace.script";//NOI18N
+    public static final String DSCRIPT_TOOL_PROPERTY = "dtrace.script";//NOI18N
     static final String DTDC_CONFIGURATION_ID = "DtraceDataCollectorConfigurationId"; // NOI18N
     private static DTDCConfiguration CPU_SAMPLING;
     private URL scriptUrl;
     private String args;
     private List<DataTableMetadata> datatableMetadata;
-    private DtraceParser parser;
+    private DTraceOutputParser parser;
     private List<String> requiredPrivileges;
     private boolean stackSupportEnabled = false;
     private int indicatorFiringFactor;
     private boolean standalone;
     private String prefix;
-
 
     static {
         DTDCConfigurationAccessor.setDefault(new DTDCConfigurationAccessorImpl());
@@ -110,7 +120,7 @@ public final class DTDCConfiguration implements
     }
 
     /**
-     * Sets arguments that d-tarce script should be invoked with.
+     * Sets arguments that d-trace script should be invoked with.
      *
      * @param args params string.
      */
@@ -119,16 +129,15 @@ public final class DTDCConfiguration implements
     }
 
     /**
-     * Sets parser to be used for script's output parsing.
+     * Sets parser to be used for script's output parsing. <p>
+     * <b>Note</b><br>
+     * If stackSupport is enabled with {@see setStackSupportEnabled(boolean)} 
+     * then this method has no effect and <b>default</b> parser is used!
+     * 
      * @param parser parser to use for script's output parsing.
      */
-    public void setDtraceParser(DtraceParser parser) {
+    public void setDtraceParser(DTraceOutputParser parser) {
         this.parser = parser;
-    }
-
-    DTDCConfiguration setParser(DtraceParser parser) {
-        this.parser = parser;
-        return this;
     }
 
     /**
@@ -142,18 +151,26 @@ public final class DTDCConfiguration implements
     }
 
     /**
-     * Returns list of dtrace privileges needed to successfully run the script
-     * @param requiredPrivileges list of dtrace privileges needed to
+     * Sets a list of dtrace(1M) privileges needed to successfully run the script
+     * @param requiredPrivileges list of dtrace(1M) privileges needed to
      * successfully run the script
      */
     public void setRequiredDTracePrivileges(List<String> requiredPrivileges) {
-        this.requiredPrivileges = requiredPrivileges;
+        this.requiredPrivileges = new ArrayList<String>(requiredPrivileges);
     }
 
     /**
      * With setting stackSupportEnabled to <tt>true</tt> using this method,
      * <tt>ConfigurationProvider</tt> indicates that collector is able to
      * provide stack information.
+     * <p>
+     * <b>Note:</b> <br>
+     * In this case the <b>DataAndStackParser</b> is used for output parsing
+     * even if setDtraceParser was called. Hence setting this to 
+     * <code>true</code> forces dtrace script to follow special output format!
+     * <p>
+     * @see org.netbeans.modules.dlight.dtrace.collector.support.DataAndStackParser
+     * 
      * @param stackSupportEnabled <tt>true</tt> means that stack data is
      * provided; <tt>false</tt> otherwise.
      */
@@ -188,46 +205,11 @@ public final class DTDCConfiguration implements
         this.prefix = prefix;
     }
 
-    int getIndicatorFiringFactor() {
-        return indicatorFiringFactor;
-    }
-
-    String getArgs() {
-        return args;
-    }
-
-    List<DataTableMetadata> getDatatableMetadata() {
-        return datatableMetadata;
-    }
-
-    DtraceParser getParser() {
-        return parser;
-    }
-
-    List<String> getRequiredPrivileges() {
-        return requiredPrivileges;
-    }
-
-    URL getScriptUrl() {
-        return scriptUrl;
-    }
-
-    boolean isStackSupportEnabled() {
-        return stackSupportEnabled;
-    }
-
-    boolean isStandalone() {
-        return standalone;
-    }
-
-    String getOutputPrefix() {
-        return prefix;
-    }
-
     /**
      * Returns unique ID to be used to identify configuration
      * @return unique id
      */
+    @Override
     public String getID() {
         return DTDC_CONFIGURATION_ID;
     }
@@ -245,27 +227,29 @@ public final class DTDCConfiguration implements
 
         @Override
         public String getArgs(DTDCConfiguration conf) {
-            return conf.getArgs();
+            return conf.args;
         }
 
         @Override
         public List<DataTableMetadata> getDatatableMetadata(DTDCConfiguration conf) {
-            return conf.getDatatableMetadata();
+            return conf.datatableMetadata == null ? null
+                    : Collections.unmodifiableList(conf.datatableMetadata);
         }
 
         @Override
-        public DtraceParser getParser(DTDCConfiguration conf) {
-            return conf.getParser();
+        public DTraceOutputParser getParser(DTDCConfiguration conf) {
+            return conf.parser;
         }
 
         @Override
         public List<String> getRequiredPrivileges(DTDCConfiguration conf) {
-            return conf.getRequiredPrivileges();
+            return conf.requiredPrivileges == null ? null
+                    : Collections.unmodifiableList(conf.requiredPrivileges);
         }
 
         @Override
         public URL getScriptUrl(DTDCConfiguration conf) {
-            return conf.getScriptUrl();
+            return conf.scriptUrl;
         }
 
         @Override
@@ -275,22 +259,22 @@ public final class DTDCConfiguration implements
 
         @Override
         public boolean isStackSupportEnabled(DTDCConfiguration conf) {
-            return conf.isStackSupportEnabled();
+            return conf.stackSupportEnabled;
         }
 
         @Override
         public int getIndicatorFiringFactor(DTDCConfiguration conf) {
-            return conf.getIndicatorFiringFactor();
+            return conf.indicatorFiringFactor;
         }
 
         @Override
         public boolean isStandalone(DTDCConfiguration conf) {
-            return conf.isStandalone();
+            return conf.standalone;
         }
 
         @Override
         public String getOutputPrefix(DTDCConfiguration conf) {
-            return conf.getOutputPrefix();
+            return conf.prefix;
         }
     }
 }

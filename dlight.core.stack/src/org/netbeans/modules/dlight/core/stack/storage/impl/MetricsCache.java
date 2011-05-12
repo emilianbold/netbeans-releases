@@ -49,15 +49,15 @@ import java.util.HashMap;
  */
 final class MetricsCache {
 
-    private final HashMap<Long, HashMap<Long, Metrics>> funcCache = new HashMap<Long, HashMap<Long, Metrics>>();
-    private final HashMap<Long, HashMap<Long, Metrics>> nodeCache = new HashMap<Long, HashMap<Long, Metrics>>();
+    private final HashMap<HashKey, Metrics> nodeCache = new HashMap<HashKey, Metrics>();
+    private final HashMap<HashKey, Metrics> funcCache = new HashMap<HashKey, Metrics>();
 
-    public void updateFunctionMetrics(long funcID, long bucket, long duration, boolean addIncl, boolean addExcl) {
-        updateMetrics(funcCache, funcID, bucket, duration, addIncl, addExcl);
+    public void updateFunctionMetrics(long funcID, long contextID, long bucket, long duration, boolean addIncl, boolean addExcl) {
+        updateMetrics(funcCache, funcID, contextID, bucket, duration, addIncl, addExcl);
     }
 
-    public void updateNodeMetrics(long nodeID, long bucket, long duration, boolean addIncl, boolean addExcl) {
-        updateMetrics(nodeCache, nodeID, bucket, duration, addIncl, addExcl);
+    public void updateNodeMetrics(long nodeID, long contextID, long bucket, long duration, boolean addIncl, boolean addExcl) {
+        updateMetrics(nodeCache, nodeID, contextID, bucket, duration, addIncl, addExcl);
     }
 
     /**
@@ -68,8 +68,8 @@ final class MetricsCache {
      * @param bucket ID of the time bucket to get metrics for
      * @return metrics for the specified function/time bucket
      */
-    public Metrics getAndResetFunctionMetrics(long funcID, long bucket) {
-        return getAndResetMetrics(funcCache, funcID, bucket);
+    public Metrics getAndResetFunctionMetrics(long funcID, long contextID, long bucket) {
+        return getAndResetMetrics(funcCache, funcID, contextID, bucket);
     }
 
     /**
@@ -80,45 +80,68 @@ final class MetricsCache {
      * @param bucket ID of the time bucket to get metrics for
      * @return metrics for the specified node/time bucket
      */
-    public Metrics getAndResetNodeMetrics(long nodeID, long bucket) {
-        return getAndResetMetrics(nodeCache, nodeID, bucket);
+    public Metrics getAndResetNodeMetrics(long nodeID, long contextID, long bucket) {
+        return getAndResetMetrics(nodeCache, nodeID, contextID, bucket);
     }
 
-    private synchronized void updateMetrics(HashMap<Long, HashMap<Long, Metrics>> cache, long objectID, long bucket, long duration, boolean addIncl, boolean addExcl) {
-        HashMap<Long, Metrics> objMetrics = cache.get(objectID);
+    private synchronized void updateMetrics(HashMap<HashKey, Metrics> cache, long objectID, long contextID, long bucket, long duration, boolean addIncl, boolean addExcl) {
+        HashKey key = new HashKey(objectID, contextID, bucket);
+        Metrics metrics = cache.get(key);
 
-        if (objMetrics == null) {
-            objMetrics = new HashMap<Long, Metrics>();
-            cache.put(objectID, objMetrics);
-        }
-
-        Metrics m = objMetrics.get(bucket);
-
-        if (m == null) {
-            m = new Metrics();
-            objMetrics.put(bucket, m);
+        if (metrics == null) {
+            metrics = new Metrics();
+            cache.put(key, metrics);
         }
 
         if (addIncl) {
-            m.incl += duration;
+            metrics.incl += duration;
         }
 
         if (addExcl) {
-            m.excl += duration;
+            metrics.excl += duration;
         }
     }
 
-    private synchronized Metrics getAndResetMetrics(HashMap<Long, HashMap<Long, Metrics>> cache, long objectID, long bucket) {
-        HashMap<Long, Metrics> objMetrics = cache.get(objectID);
-
-        if (objMetrics == null || objMetrics.isEmpty()) {
-            return null;
-        }
-
-        return objMetrics.remove(bucket);
+    private synchronized Metrics getAndResetMetrics(HashMap<HashKey, Metrics> cache, long objectID, long contextID, long bucket) {
+        return cache.remove(new HashKey(objectID, contextID, bucket));
     }
 
-    public static class Metrics {
+    private static final class HashKey {
+
+        private final long objID;
+        private final long contextID;
+        private final long bucket;
+
+        public HashKey(long objID, long contextID, long bucket) {
+            this.objID = objID;
+            this.contextID = contextID;
+            this.bucket = bucket;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof HashKey)) {
+                return false;
+            }
+
+            HashKey that = (HashKey) obj;
+
+            return this.objID == that.objID
+                    && this.contextID == that.contextID
+                    && this.bucket == that.bucket;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (int) (this.objID ^ (this.objID >>> 32));
+            hash = 97 * hash + (int) (this.contextID ^ (this.contextID >>> 32));
+            hash = 97 * hash + (int) (this.bucket ^ (this.bucket >>> 32));
+            return hash;
+        }
+    }
+
+    public static final class Metrics {
 
         long incl;
         long excl;

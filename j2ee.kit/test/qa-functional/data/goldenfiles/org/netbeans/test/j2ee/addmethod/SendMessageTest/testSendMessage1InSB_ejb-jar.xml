@@ -12,31 +12,31 @@
       <ejb-class>test.TestingSessionBean</ejb-class>
       <session-type>Stateless</session-type>
       <transaction-type>Container</transaction-type>
-            <ejb-ref>
-                <ejb-ref-name>ejb/MyTestingEntityBean</ejb-ref-name>
-                <ejb-ref-type>Entity</ejb-ref-type>
-                <home>test.TestingEntityRemoteHome</home>
-                <remote>test.TestingEntityRemote</remote>
-                <ejb-link>TestingEntityBean</ejb-link>
-            </ejb-ref>
             <ejb-local-ref>
-                <ejb-ref-name>ejb/TestingEntityBean</ejb-ref-name>
+                <ejb-ref-name>TestingEntityBean</ejb-ref-name>
                 <ejb-ref-type>Entity</ejb-ref-type>
                 <local-home>test.TestingEntityLocalHome</local-home>
                 <local>test.TestingEntityLocal</local>
                 <ejb-link>TestingEntityBean</ejb-link>
             </ejb-local-ref>
             <resource-ref>
-                <res-ref-name>jms/TestingMessageDestinationFactory</res-ref-name>
+                <description>jdbc:derby://localhost:1527/sample</description>
+                <res-ref-name>myTestingDatabase</res-ref-name>
+                <res-type>javax.sql.DataSource</res-type>
+                <res-auth>Container</res-auth>
+                <res-sharing-scope>Shareable</res-sharing-scope>
+            </resource-ref>
+            <resource-ref>
+                <res-ref-name>jms/TestingMessageBeanFactory</res-ref-name>
                 <res-type>javax.jms.ConnectionFactory</res-type>
                 <res-auth>Container</res-auth>
                 <res-sharing-scope>Shareable</res-sharing-scope>
             </resource-ref>
             <message-destination-ref>
-                <message-destination-ref-name>jms/TestingMessageDestination</message-destination-ref-name>
+                <message-destination-ref-name>jms/TestingMessageBean</message-destination-ref-name>
                 <message-destination-type>javax.jms.Queue</message-destination-type>
                 <message-destination-usage>Produces</message-destination-usage>
-                <message-destination-link>TestingMessageDestination</message-destination-link>
+                <message-destination-link>jms/TestingMessageBean</message-destination-link>
             </message-destination-ref>
             </session>
     <entity>
@@ -59,7 +59,7 @@
                 <field-name>cmpTestField1x</field-name>
             </cmp-field>
             <cmp-field>
-                <description>Test Field</description>
+                <description/>
                 <field-name>cmpTestField2x</field-name>
             </cmp-field>
             <primkey-field>key</primkey-field>
@@ -101,25 +101,25 @@ FROM TestingEntity o</ejb-ql>
 FROM TestingEntity o</ejb-ql>
             </query>
             </entity>
-    <message-driven>
-      <display-name>TestingMessageMDB</display-name>
-      <ejb-name>TestingMessageBean</ejb-name>
-      <ejb-class>test.TestingMessageBean</ejb-class>
-      <transaction-type>Container</transaction-type>
-      <message-destination-type>javax.jms.Queue</message-destination-type>
-      <message-destination-link>TestingMessageDestination</message-destination-link>
-      <activation-config>
-        <activation-config-property>
-          <activation-config-property-name>acknowledgeMode</activation-config-property-name>
-          <activation-config-property-value>Auto-acknowledge</activation-config-property-value>
-        </activation-config-property>
-        <activation-config-property>
-          <activation-config-property-name>destinationType</activation-config-property-name>
-          <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
-        </activation-config-property>
-      </activation-config>
-    </message-driven>
-  </enterprise-beans>
+        <message-driven>
+            <display-name>TestingMessageBeanMDB</display-name>
+            <ejb-name>TestingMessageBean</ejb-name>
+            <ejb-class>test.TestingMessageBean</ejb-class>
+            <transaction-type>Container</transaction-type>
+            <message-destination-type>javax.jms.Queue</message-destination-type>
+            <message-destination-link>jms/TestingMessageBean</message-destination-link>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>acknowledgeMode</activation-config-property-name>
+                    <activation-config-property-value>Auto-acknowledge</activation-config-property-value>
+                </activation-config-property>
+                <activation-config-property>
+                    <activation-config-property-name>destinationType</activation-config-property-name>
+                    <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+        </message-driven>
+        </enterprise-beans>
   <assembly-descriptor>
     <container-transaction>
       <method>
@@ -143,8 +143,8 @@ FROM TestingEntity o</ejb-ql>
       <trans-attribute>Required</trans-attribute>
     </container-transaction>
     <message-destination>
-      <display-name>Destination for TestingMessage</display-name>
-      <message-destination-name>TestingMessageDestination</message-destination-name>
+        <display-name>Destination for TestingMessageBeanMDB</display-name>
+        <message-destination-name>jms/TestingMessageBean</message-destination-name>
     </message-destination>
   </assembly-descriptor>
 </ejb-jar>

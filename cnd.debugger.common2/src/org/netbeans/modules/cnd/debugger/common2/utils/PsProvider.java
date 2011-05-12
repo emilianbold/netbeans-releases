@@ -58,7 +58,6 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -373,6 +372,37 @@ public abstract class PsProvider {
 	    }
 	}
     }
+    
+    private static class MacOSPsProvider extends LinuxPsProvider {
+        private final static String header_str_mac[] = {
+	    "  UID", // NOI18N
+	    "   PID", // NOI18N
+	    "  PPID", // NOI18N
+	    "   C",		// skipped // NOI18N
+	    "     STIME", // NOI18N
+	    "TTY     ",		// skipped // NOI18N
+	    "    TIME",         // skipped // NOI18N
+	    "CMD", // NOI18N
+	};
+
+        @Override
+        public String[] headerStr() {
+            return header_str_mac;
+        }
+        
+        public MacOSPsProvider(Host host) {
+            super(host);
+        }
+
+        @Override
+        protected String psCommand(String uid) {
+            if ( (uid == null) || (uid.equals(zero)) ) {
+		return "/bin/ps -ef";	// NOI18N
+	    } else {
+		return "/bin/ps -fu " + uid;		// NOI18N
+	    }
+        }
+    }
 
     /**
      * Specialization of PsProvider for Windows
@@ -454,12 +484,18 @@ public abstract class PsProvider {
                     ConnectionManager.getInstance().connectTo(exEnv);
                 }
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
-                if (hostInfo.getOSFamily() == HostInfo.OSFamily.LINUX) {
-                    psProvider = new LinuxPsProvider(host);
-                } else if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                    psProvider = new WindowsPsProvider(host);
-                } else {
-                    psProvider = new SolarisPsProvider(host);
+                switch (hostInfo.getOSFamily()) {
+                    case LINUX:
+                        psProvider = new LinuxPsProvider(host);
+                        break;
+                    case WINDOWS:
+                        psProvider = new WindowsPsProvider(host);
+                        break;
+                    case MACOSX:
+                        psProvider = new MacOSPsProvider(host);
+                        break;
+                    default:
+                        psProvider = new SolarisPsProvider(host);
                 }
             } catch (CancellationException e) {
                 // user cancelled connection attempt

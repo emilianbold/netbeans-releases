@@ -184,7 +184,8 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
             boolean wrapDone = false;
             double childrenWidth = getMajorAxisChildrenSpan(boxView);
             float childrenHeight = getMinorAxisChildrenSpan(boxView);
-            if (docView.getLineWrapType() != DocumentView.LineWrapType.NONE) {
+            // Do no word wrap in case there's RTL text anywhere in paragraph view
+            if (docView.getLineWrapType() != DocumentView.LineWrapType.NONE && !paragraphView.isRTL()) {
                 wrapInfo = null;
                 float visibleWidth = docView.getVisibleWidth();
                 // Check if major axis span (should already be updated) exceeds scrollpane width.
@@ -207,6 +208,75 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
                 boxView.setMajorAxisSpan(childrenWidth);
                 boxView.setMinorAxisSpan(childrenHeight);
             }
+        }
+    }
+
+    /**
+     * Get view index corresponding to given visualOffset depending on present
+     * TextLayout instances covering the line's views.
+     * <br/>
+     * For non-TextLayout views it gives regular results.
+     *
+     * @param boxView
+     * @param visualOffset
+     * @param last if set to false return first text-layout's view index.
+     *   If true return last text-layout's view index.
+     * @return structure with index and TextLayoutPart if any.
+     */
+    private ViewSearchResult getTextLayoutViewIndex(EditorBoxView<EditorView> boxView, double visualOffset, boolean last) {
+        ViewSearchResult result = new ViewSearchResult(boxView, visualOffset);
+        int high = size() - 1;
+        if (high == -1) {
+            result.index = -1;
+            return result;
+        }
+        int low = 0;
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            EditorView view = boxView.getEditorView(mid);
+            if (view instanceof HighlightsView) {
+                HighlightsView hView = (HighlightsView) view;
+                Object layout = hView.layout();
+                if (layout instanceof TextLayoutPart) {
+                    TextLayoutPart part = (TextLayoutPart) layout;
+                    int tlStartIndex = mid - part.index();
+                    double tlStartVisualOffset = getViewVisualOffset(tlStartIndex);
+                    double tlEndVisualOffset = getViewVisualOffset(tlStartIndex + part.viewCount());
+                    if (visualOffset >= tlStartVisualOffset && visualOffset <= tlEndVisualOffset) {
+                        // Found right text layout
+                        result.index =  last ? tlStartIndex + part.viewCount() - 1 : tlStartIndex;
+                        result.textLayoutPart = (TextLayoutPart) ((HighlightsView)boxView.getEditorView(
+                                result.index)).layout();
+                    }
+                }
+            }
+            double midVisualOffset = getViewVisualOffset(mid);
+            if (midVisualOffset < visualOffset) {
+                low = mid + 1;
+            } else if (midVisualOffset > visualOffset) {
+                high = mid - 1;
+            } else {
+                // view starting exactly at the given visual offset found
+                high = mid;
+                break;
+            }
+        }
+        result.index = Math.max(high, 0);
+        result.view = boxView.getEditorView(result.index);
+        return result;
+    }
+
+    private int getOffset(ViewSearchResult result) {
+        assert (result.textLayoutPart.index() == 0); // Start part
+        TextHitInfo hitInfo = HighlightsViewUtils.x2Index(result.textLayout(), (float) result.visualOffset);
+        return result.view.getStartOffset() + hitInfo.getCharIndex();
+    }
+
+    private void updatePartViewIndex(ViewSearchResult result) {
+        if (result.textLayoutPart != null) {
+            int offset = getOffset(result);
+            result.index = getViewIndex(offset, result.index, result.index + result.textLayoutPart.viewCount());
+            result.view = result.boxView.getEditorView(result.index);
         }
     }
 
@@ -239,6 +309,20 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
 
     @Override
     protected void paintChildren(EditorBoxView<EditorView> boxView, Graphics2D g, Shape alloc,
+            Rectangle clipBounds, double startVisualOffset, double endVisualOffset)
+    {
+        if (((ParagraphView)boxView).isRTL()) {
+            // Calculate bounds of whole text layouts since for RTL text latter index is more left visually
+            int startIndex = Math.max(getTextLayoutViewIndex(boxView, startVisualOffset, false).index, 0); // Cover no-children case
+            int endIndex = getTextLayoutViewIndex(boxView, endVisualOffset, true).index + 1;
+            paintChildren(boxView, g, alloc, clipBounds, startIndex, endIndex);
+        } else {
+            super.paintChildren(boxView, g, alloc, clipBounds, startVisualOffset, endVisualOffset);
+        }
+    }
+
+    @Override
+    protected void paintChildren(EditorBoxView<EditorView> boxView, Graphics2D g, Shape alloc,
             Rectangle clipBounds, int startIndex, int endIndex)
     {
         // Paint backward to properly paint text layout parts
@@ -250,11 +334,14 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
                 HighlightsView hView = (HighlightsView) view;
                 Object layout = hView.layout();
                 if (layout instanceof TextLayoutPart) {
+                    // Always paint whole text layout (at least due to possible RTL text)
                     TextLayoutPart part = (TextLayoutPart) layout;
                     TextLayout textLayout = part.textLayout();
                     DocumentView docView = ((ParagraphView)boxView).getDocumentView();
                     int layoutStartViewIndex = i - part.index();
-                    Rectangle2D.Double textLayoutBounds = TextLayoutUtils.textLayoutBounds(part, childAlloc);
+                    Shape textLayoutAlloc = getChildAllocation(boxView, layoutStartViewIndex,
+                            layoutStartViewIndex + part.viewCount(), alloc);
+                    Rectangle2D.Double textLayoutBounds = ViewUtils.shape2Bounds(textLayoutAlloc);
                     int endPartRelIndex = Math.min(layoutStartViewIndex + part.viewCount(), endIndex) -
                             layoutStartViewIndex;
                     TextHitInfo startHit = TextHitInfo.leading(part.offsetShift());
@@ -365,7 +452,12 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
                     EditorView view = boxView.getEditorView(i);
                     if (offset < view.getEndOffset()) {
                         Shape viewAlloc = viewAlloc(wrapLineBounds, wrapLine, i, boxView);
-                        ret = view.modelToViewChecked(offset, viewAlloc, bias);
+                        if (view instanceof HighlightsView) {
+                            // Give index hint
+                            ret = ((HighlightsView)view).modelToViewChecked(offset, viewAlloc, bias, i);
+                        } else {
+                            ret = view.modelToViewChecked(offset, viewAlloc, bias);
+                        }
                         assert (ret != null);
                         break;
                     }
@@ -378,7 +470,22 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
             return ret;
 
         } else {
-            return super.modelToViewChecked(boxView, offset, alloc, bias);
+            // [TODO] Once modified to HighlightsView == single TextLayout => use super call again
+            int index = getViewIndex(offset, bias);
+            if (index >= 0) { // When at least one child the index will fit one of them
+                // First find valid child (can lead to change of child allocation bounds)
+                EditorView view = getEditorViewChildrenValid(boxView, index);
+                Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
+                // Update the bounds with child.modelToView()
+                if (view instanceof HighlightsView) {
+                    // Give index hint
+                    return ((HighlightsView) view).modelToViewChecked(offset, childAlloc, bias, index);
+                } else {
+                    return view.modelToViewChecked(offset, childAlloc, bias);
+                }
+            } else { // No children => fallback by leaving the given bounds
+                return alloc;
+            }
         }
     }
 
@@ -391,7 +498,31 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
             IndexAndAlloc indexAndAlloc = findIndexAndAlloc(boxView, x, wrapLineAlloc, wrapLine);
             return indexAndAlloc.viewOrPart.viewToModelChecked(x, y, indexAndAlloc.alloc, biasReturn);
         } else {
-            return super.viewToModelChecked(boxView, x, y, alloc, biasReturn);
+            if (((ParagraphView)boxView).isRTL()) {
+                Rectangle2D.Double relXY = ViewUtils.shape2RelBounds(alloc, x, y);
+                ViewSearchResult result = getTextLayoutViewIndex(boxView, relXY.getX(), false);
+                if (result.textLayoutPart != null) { // first part
+                    return getOffset(result);
+                }
+            }
+            // [TODO] Once modified to HighlightsView == single TextLayout => use super call again
+            int index = getViewIndexAtPoint(boxView, x, y, alloc);
+            int offset;
+            if (index >= 0) {
+                // First find valid child (can lead to change of child allocation bounds)
+                EditorView view = getEditorViewChildrenValid(boxView, index);
+                Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
+                // forward to the child view
+                if (view instanceof HighlightsView) {
+                    // Give index hint
+                    offset = ((HighlightsView)view).viewToModelChecked(x, y, childAlloc, biasReturn, index);
+                } else {
+                    offset = view.viewToModelChecked(x, y, childAlloc, biasReturn);
+                }
+            } else { // at the end
+                offset = boxView.getStartOffset();
+            }
+            return offset;
         }
     }
 
@@ -471,8 +602,18 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
     }
     
     private int visualPosition(EditorBoxView<EditorView> boxView, Shape alloc, Bias[] biasRet, double x) {
-        double y = ViewUtils.shapeAsRect(alloc).getY();
-        int childIndex = getViewIndexAtPoint(boxView, x, y, alloc);
+        Rectangle2D allocRect = ViewUtils.shapeAsRect(alloc);
+        double y = allocRect.getY();
+        int childIndex;
+        if (((ParagraphView)boxView).isRTL()) {
+            ViewSearchResult result = getTextLayoutViewIndex(boxView, x - allocRect.getX(), false);
+            if (result.textLayoutPart != null) {
+                return getOffset(result);
+            }
+            childIndex = result.index;
+        } else {
+            childIndex = getViewIndexAtPoint(boxView, x, y, alloc);
+        }
         EditorView child = boxView.getEditorView(childIndex);
         Shape childAlloc = boxView.getChildAllocation(childIndex, alloc);
         return child.viewToModelChecked(x, y, childAlloc, biasRet);
@@ -626,4 +767,43 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
         Shape alloc;
         
     }
+
+    private static final class ViewSearchResult {
+
+        /**
+         * Box View.
+         */
+        final EditorBoxView<EditorView> boxView;
+
+        /**
+         * Visual x-offset of the search.
+         */
+        final double visualOffset;
+        
+        /**
+         * View index.
+         */
+        int index;
+        
+        /**
+         * View at index or null for invalid index.
+         */
+        EditorView view;
+
+        /**
+         * TextLayoutPart or null if the view at the index is not a text layout part.
+         */
+        TextLayoutPart textLayoutPart;
+
+        public ViewSearchResult(EditorBoxView<EditorView> boxView, double visualOffset) {
+            this.boxView = boxView;
+            this.visualOffset = visualOffset;
+        }
+        
+        TextLayout textLayout() {
+            return textLayoutPart.textLayout();
+        }
+        
+    }
+
 }

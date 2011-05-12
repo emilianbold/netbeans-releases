@@ -52,6 +52,7 @@ import javax.swing.JButton;
 import javax.swing.JRadioButton;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -69,7 +70,7 @@ public class Reset implements ActionListener {
     private boolean valid = true;
 
     Reset (File repository, File[] roots) {
-        revisionPicker = new RevisionDialogController(repository, roots);
+        revisionPicker = new RevisionDialogController(repository, roots, GitUtils.HEAD);
         panel = new ResetPanel(revisionPicker.getPanel());
     }
 

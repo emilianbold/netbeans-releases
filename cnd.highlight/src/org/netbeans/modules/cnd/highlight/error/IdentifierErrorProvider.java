@@ -134,9 +134,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             if (MAX_ERROR_LIMIT >= 0 && foundError >= MAX_ERROR_LIMIT){
                 return;
             }
-            CsmReference ref = context.getReference();
-            final CsmObject referencedObject = ref.getReferencedObject();
             if (!request.isCancelled()) {
+                CsmReference ref = context.getReference();
+                final CsmObject referencedObject = ref.getReferencedObject();
                 if (referencedObject == null) {
                     if (CsmFileReferences.isAfterUnresolved(context)) {
                         return;

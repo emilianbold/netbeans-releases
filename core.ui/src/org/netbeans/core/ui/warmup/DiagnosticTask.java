@@ -59,12 +59,14 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Task executed early after startup to log diagnostic data about 
  * JVM - memory settings, JIT type, some hardware information.
  *
  * @author  Radim Kubacki
  */
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public final class DiagnosticTask implements Runnable {
     private static final Logger LOG = Logger.getLogger(DiagnosticTask.class.getName());
     private static boolean executed;

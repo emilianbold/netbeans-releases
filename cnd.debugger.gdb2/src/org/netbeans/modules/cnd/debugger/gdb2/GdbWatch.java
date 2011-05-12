@@ -109,10 +109,6 @@ class GdbWatch extends GdbVariable implements WatchVariable {
 	// is fixed.
 	// LATER assert isWatch;
 
-	VariableModel.OutputFormatAction outputFormatAction =
-	    (VariableModel.OutputFormatAction) VariableModel.Action_OUTPUT_FORMAT;
-	outputFormatAction.setVar(this);
-
 	return new Action[] {
             WatchModel.NEW_WATCH_ACTION,
 	    null,
@@ -121,7 +117,7 @@ class GdbWatch extends GdbVariable implements WatchVariable {
 	    null,
 	    // LATER VariableModel.Action_INHERITED_MEMBERS,
 	    // LATER VariableModel.Action_DYNAMIC_TYPE,
-	    outputFormatAction,
+	    VariableModel.getOutputFormatAction(this),
 	    // LATER SystemAction.get(MaxObjectAction.class),
 	    null
 	};

@@ -68,7 +68,7 @@ public interface FileBuffer extends APTFileBuffer {
     
     public String getText(int start, int end) throws IOException;
     
-    public String getText() throws IOException;
+    public CharSequence getText() throws IOException;
     
     public long lastModified();
 

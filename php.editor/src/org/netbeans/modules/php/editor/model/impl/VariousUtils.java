@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -89,11 +89,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -198,17 +200,12 @@ public class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind() == PHPDocTag.Type.PARAM) {
-                    String parts[] = tag.getValue().trim().split("\\s+", 3); //NOI18N
-
-                    if (parts.length > 1) {
-                        String[] typeNames = parts[0].split("\\|", 2);
-                        List<QualifiedName> types = new ArrayList<QualifiedName>();
-                        for (String tName : typeNames) {
-                            types.add(QualifiedName.create(tName));
-                        }
-                        String name = parts[1].split("\\s+", 2)[0];
-                        retval.put(name, types);
+                    List<QualifiedName> types = new ArrayList<QualifiedName>();
+                    PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag)tag;
+                    for(PHPDocTypeNode type : paramTag.getTypes()) {
+                        types.add(QualifiedName.create(type.getValue()));
                     }
+                    retval.put(paramTag.getVariable().getValue(), types);
                 }
             }
         }
@@ -782,7 +779,7 @@ public class VariousUtils {
         if (fileName != null) {
             File absoluteFile = new File(fileName);
             if (absoluteFile.exists()) {
-                retval = FileUtil.toFileObject(absoluteFile);
+                retval = FileUtil.toFileObject(FileUtil.normalizeFile(absoluteFile));
             } else {
                 FileObject parent = sourceFile.getParent();
                 if (parent != null) {
@@ -862,7 +859,7 @@ public class VariousUtils {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
-                        } else if (isSelf(token) || isParent(token)) {
+                        } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
@@ -993,7 +990,7 @@ public class VariousUtils {
             classScope = (ClassScope) msi.getInScope();
         }
         if (classScope != null) {
-            if ("self".equals(clsName) || "this".equals(clsName)) {//NOI18N
+            if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
                 clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
                 ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
@@ -1053,6 +1050,10 @@ public class VariousUtils {
         return token.id().equals(PHPTokenId.PHP_SELF);
     }
 
+    private static boolean isStatic(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_STATIC);
+    }
+    
     private static boolean isParent(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_PARENT);
     }

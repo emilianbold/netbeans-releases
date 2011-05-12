@@ -141,7 +141,7 @@ public abstract class NetigsoFramework {
 
     private static NetigsoFramework framework;
     private static List<NetigsoModule> toInit = new ArrayList<NetigsoModule>();
-    private static List<Module> toEnable = new ArrayList<Module>();
+    private static ArrayList<Module> toEnable = new ArrayList<Module>();
 
     static NetigsoFramework getDefault() {
         return framework;
@@ -173,6 +173,7 @@ public abstract class NetigsoFramework {
         }
         getDefault().prepare(lkp, allModules);
         toEnable.clear();
+        toEnable.trimToSize();
         delayedInit();
         Set<String> cnbs = framework.start(allModules);
         if (cnbs == null) {

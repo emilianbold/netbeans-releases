@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
@@ -1192,7 +1192,7 @@ public class TraceModel extends TraceModelBase {
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             waitProjectParsed(getProject(), false);
             RepositoryAccessor.getRepository().debugClear();
-            fileImpl = (FileImpl) prj.findFile(absPath, false);
+            fileImpl = (FileImpl) prj.findFile(absPath, true, false);
         }
 
         if (dumpModel) {

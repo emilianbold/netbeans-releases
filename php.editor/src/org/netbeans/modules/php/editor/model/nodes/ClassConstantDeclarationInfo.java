@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -65,15 +66,18 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
     public static List<? extends ClassConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
         List<ClassConstantDeclarationInfo> retval = new ArrayList<ClassConstantDeclarationInfo>();
         List<Identifier> names = constantDeclaration.getNames();
-        for (Identifier identifier : names) {
+        
+        Iterator<Identifier> iteratorNames = constantDeclaration.getNames().iterator();
+        Iterator<Expression> iteratorInitializers = constantDeclaration.getInitializers().iterator();
+        Identifier name;
+        while (iteratorNames.hasNext()) {
             String value = null;
-            for (final Expression expression : constantDeclaration.getInitializers()) {
-                if (expression instanceof Scalar) {
-                    value = ((Scalar)expression).getStringValue();
-                    break;
-                }
+            name = iteratorNames.next();
+            Expression initializer = iteratorInitializers.next();
+            if (initializer instanceof Scalar) {
+                value = ((Scalar)initializer).getStringValue();
             }
-            retval.add(new ClassConstantDeclarationInfo(identifier, value));
+            retval.add(new ClassConstantDeclarationInfo(name, value));
         }
         return retval;
     }

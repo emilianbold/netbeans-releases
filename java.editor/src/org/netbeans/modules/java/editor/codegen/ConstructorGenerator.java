@@ -144,19 +144,21 @@ public class ConstructorGenerator implements CodeGenerator {
                 fieldsDescription = ElementNode.Description.create(controller, typeElement, fieldDescriptions, false, false);
             }
             if (constructorHandle != null || constructorDescription != null || fieldsDescription != null)
-                ret.add(new ConstructorGenerator(component, constructorHandle, constructorDescription, fieldsDescription));
+                ret.add(new ConstructorGenerator(component, ElementHandle.create(typeElement), constructorHandle, constructorDescription, fieldsDescription));
             return ret;
         }
     }
 
     private JTextComponent component;
+    private ElementHandle<TypeElement> typeHandle;
     private ElementHandle<? extends Element> constructorHandle;
     private ElementNode.Description constructorDescription;
     private ElementNode.Description fieldsDescription;
     
     /** Creates a new instance of ConstructorGenerator */
-    private ConstructorGenerator(JTextComponent component, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+    private ConstructorGenerator(JTextComponent component, ElementHandle<TypeElement> typeHandle, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
         this.component = component;
+        this.typeHandle = typeHandle;
         this.constructorHandle = constructorHandle;
         this.constructorDescription = constructorDescription;
         this.fieldsDescription = fieldsDescription;
@@ -194,30 +196,36 @@ public class ConstructorGenerator implements CodeGenerator {
                 ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                        Element e = typeHandle.resolve(copy);
+                        TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                         path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                        int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                        ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-                        if (fieldHandles != null) {
-                            for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
-                                VariableElement field = (VariableElement) elementHandle.resolve(copy);
-                                if (field == null)
-                                    return;
-                                variableElements.add(field);
+                        if (path == null) {
+                            String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+                            org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                        } else {
+                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
+                            ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
+                            if (fieldHandles != null) {
+                                for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
+                                    VariableElement field = (VariableElement) elementHandle.resolve(copy);
+                                    if (field == null)
+                                        return;
+                                    variableElements.add(field);
+                                }
+                            }
+                            if (constrHandles != null && !constrHandles.isEmpty()) {
+                                ArrayList<ExecutableElement> constrElements = new ArrayList<ExecutableElement>();
+                                for (ElementHandle<? extends Element> elementHandle : constrHandles) {
+                                    ExecutableElement constr = (ExecutableElement)elementHandle.resolve(copy);
+                                    if (constr == null)
+                                        return;
+                                    constrElements.add(constr);
+                                }
+                                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, idx);
+                            } else {
+                                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
                             }
                         }
-                        if (constrHandles != null && !constrHandles.isEmpty()) {
-                            ArrayList<ExecutableElement> constrElements = new ArrayList<ExecutableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : constrHandles) {
-                                ExecutableElement constr = (ExecutableElement)elementHandle.resolve(copy);
-                                if (constr == null)
-                                    return;
-                                constrElements.add(constr);
-                            }
-                            GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, idx);
-                        } else {
-                            GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
-                        }    
                     }
                 });
                 GeneratorUtils.guardedCommit(component, mr);

@@ -45,11 +45,11 @@ package org.netbeans.modules.php.symfony;
 import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -139,15 +139,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
         List<File> files = new LinkedList<File>();
         FileObject appConfig = phpModule.getSourceDirectory().getFileObject("config"); // NOI18N
         if (appConfig != null) {
-            List<FileObject> fileObjects = new LinkedList<FileObject>();
-            Enumeration<? extends FileObject> children = appConfig.getChildren(true);
-            while (children.hasMoreElements()) {
-                FileObject child = children.nextElement();
-                if (child.isData()
-                        && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))) {
-                    fileObjects.add(child);
-                }
-            }
+            List<FileObject> fileObjects = getConfigFilesRecursively(appConfig);
             Collections.sort(fileObjects, new Comparator<FileObject>() {
                 @Override
                 public int compare(FileObject o1, FileObject o2) {
@@ -177,6 +169,20 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
             }
         }
         return files.toArray(new File[files.size()]);
+    }
+    
+    private List<FileObject> getConfigFilesRecursively(FileObject parent) {
+        List<FileObject> result = new LinkedList<FileObject>();
+        for (FileObject child : parent.getChildren()) {
+            if (VisibilityQuery.getDefault().isVisible(child)) {
+                if (child.isData() && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))) {
+                    result.add(child);
+                } else if (child.isFolder()) {
+                    result.addAll(getConfigFilesRecursively(child));
+                }
+            }
+        }
+        return result;
     }
 
     @Override

@@ -45,7 +45,6 @@ package org.netbeans.cnd.api.lexer;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -54,9 +53,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
+import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -111,6 +110,31 @@ public final class CndLexerUtilities {
         return out;
     }
 
+    private final static class CndLexerLanguageFilterProviders {
+
+        private final static Collection<? extends CndLexerLanguageFilterProvider> providers = Lookups.forPath(CndLexerLanguageFilterProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageFilterProvider.class);
+    }
+    
+    public static Filter<CppTokenId> getFilter(Language<?> language, Document doc) {
+        if (!CndLexerLanguageFilterProviders.providers.isEmpty()) {
+            for (org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider provider : CndLexerLanguageFilterProviders.providers) {
+                Filter<CppTokenId> filter = provider.getFilter(language, doc);
+                if (filter != null) {
+                    return filter;
+                }
+            }
+        }        
+        if (language == CppTokenId.languageHeader()) {
+            return CndLexerUtilities.getHeaderFilter();
+        } else if (language == CppTokenId.languageC()) {
+            return CndLexerUtilities.getGccCFilter();
+        } else if (language == CppTokenId.languagePreproc()) {
+            return CndLexerUtilities.getPreprocFilter();
+        } else {
+            return CndLexerUtilities.getGccCppFilter();
+        }
+    }
+    
     /**
      * returns C/C++/Preprocessor tokens sequence for document
      * @param doc document
@@ -143,13 +167,32 @@ public final class CndLexerUtilities {
         return null;
     }
 
-    private static final Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
+    public static TokenSequence<TokenId> getCppTokenSequenceWithoutEmbeddings(final Document doc, final int offset) {
+        if (doc == null) {
+            return null;
+        }
+        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, true);
+        if(!tsList.isEmpty()) {
+            TokenSequence<?> ts = tsList.get(0);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (isCppLanguage(lang, false)) {
+                @SuppressWarnings("unchecked")
+                TokenSequence<TokenId> cppTS = (TokenSequence<TokenId>) ts;
+                return cppTS;
+            }
+        }
+        return null;
+    }
+    
+    private final static class CndLexerEmbeddingProviders {
+        private final static Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookups.forPath(CndLexerLanguageEmbeddingProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageEmbeddingProvider.class);
+    }
 
     public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {
-        for (CndLexerLanguageEmbeddingProvider provider : providers) {
-            Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
-            for (CppTokenId cppTokenId : embeddings.keySet()) {
-                if(embeddings.get(cppTokenId).language() == lang) {
+        if (!CndLexerEmbeddingProviders.providers.isEmpty()) {
+            for (org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider provider : CndLexerEmbeddingProviders.providers) {
+                if (provider.isKnownLanguage(lang)) {
                     return true;
                 }
             }
@@ -608,6 +651,9 @@ public final class CndLexerUtilities {
             CppTokenId.FINALLY, //C++
             CppTokenId.FRIEND, // C++
             CppTokenId.INLINE, // gcc, C++, now in C also
+            CppTokenId._INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE__,// gcc, C++, now in C also            
             CppTokenId.MUTABLE, // C++
             CppTokenId.NAMESPACE, //C++
             CppTokenId.NEW, //C++
@@ -649,6 +695,9 @@ public final class CndLexerUtilities {
     private static void addCOnlyKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.INLINE, // gcc, C++, now in C also
+            CppTokenId._INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE,// gcc, C++, now in C also
+            CppTokenId.__INLINE__,// gcc, C++, now in C also
             CppTokenId.RESTRICT, // C
             CppTokenId._BOOL, // C
             CppTokenId._COMPLEX, // C
@@ -659,8 +708,9 @@ public final class CndLexerUtilities {
 
     private static void addGccOnlyCommonCCKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
-            CppTokenId.ASM,
             CppTokenId.__ALIGNOF__,
+            CppTokenId.ASM,
+            CppTokenId._ASM,
             CppTokenId.__ASM,
             CppTokenId.__ASM__,
             CppTokenId.__ATTRIBUTE__,
@@ -670,7 +720,9 @@ public final class CndLexerUtilities {
             CppTokenId.__CONST__,
             CppTokenId.__IMAG__,
             CppTokenId.INLINE,
+            CppTokenId._INLINE,
             CppTokenId.__INLINE,
+            CppTokenId.__INLINE__,
             CppTokenId.__REAL__,
             CppTokenId.__RESTRICT,
             CppTokenId.__SIGNED,

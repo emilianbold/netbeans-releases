@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
 
 /**
  * @author Alexey Vladykin
@@ -57,7 +58,7 @@ public interface ProjectActionHandlerFactory {
      * @return <code>true</code> if created handler will be able to handle
      *          given action <code>type</code>, <code>false</code> otherwise
      */
-    boolean canHandle(ProjectActionEvent.Type type, Configuration configuration);
+    boolean canHandle(ProjectActionEvent.Type type, Lookup context, Configuration configuration);
 
     /**
      * Tells if created handler will be able to handle given project action event.

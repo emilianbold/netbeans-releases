@@ -65,6 +65,25 @@ import org.openide.filesystems.FileUtil;
  */
 public class CompositeComponentModel extends JsfPageModel {
 
+//    private static enum MavenProjectStandartDirectories {
+//        
+//        SOURCES("src/main/java"), //NOI18N
+//        RESOURCES("src/main/resources"), //NOI18N
+//        CONFIG("src/main/config"), //NOI18N
+//        WEBAPP("src/main/webapp"); //NOI18N
+//        
+//        private String path;
+//
+//        private MavenProjectStandartDirectories(String path) {
+//            this.path = path;
+//        }
+//        
+//        public String getPath() {
+//            return path;
+//        }
+//        
+//    }
+    
     //index keys
     static final String LIBRARY_NAME_KEY = "library"; //NOI18N
     static final String INTERFACE_ATTRIBUTES_KEY = "interface_attributes"; //NOI18N
@@ -125,7 +144,7 @@ public class CompositeComponentModel extends JsfPageModel {
         document.addPair(LIBRARY_NAME_KEY, libraryName, true, true);
 
         //store attributes
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         Iterator<Map<String, String>> itr = attributes.iterator();
         while (itr.hasNext()) {
             Map<String, String> attrs = itr.next();
@@ -193,10 +212,10 @@ public class CompositeComponentModel extends JsfPageModel {
         //just check if the parent's parent directory is resources and then META-INF
         FileObject folder = file;
         do {
-            if (folder.getName().equalsIgnoreCase("resources")) {
+            if (folder.getName().equalsIgnoreCase("resources")) { //NOI18N
                 //check if its parent is META-INF
                 FileObject parent = folder.getParent();
-                if (parent != null && parent.getNameExt().startsWith("META-INF")) {
+                if (parent != null && parent.getNameExt().startsWith("META-INF")) { //NOI18N
                     //the folder seems to be the right resources folder
                     return folder;
                 }
@@ -205,6 +224,17 @@ public class CompositeComponentModel extends JsfPageModel {
         } while (folder != null);
 
 
+//        //look into the standart maven project locations
+//        //src/main/webapp is covered by the 
+//        Project project = FileOwnerQuery.getOwner(file);
+//        if(project != null) {
+//            FileObject projectRoot = project.getProjectDirectory();
+//            FileObject resources = projectRoot.getFileObject("src/main/resources");
+//            if(FileUtil.isParentOf(resources, file)) {
+//                return resources;
+//            }
+//        }
+//        
         return null;
     }
 
@@ -243,6 +273,7 @@ public class CompositeComponentModel extends JsfPageModel {
 
             AstNodeUtils.visitChildren(node, new AstNodeVisitor() {
 
+                @Override
                 public void visit(AstNode node) {
                     if (node.getNameWithoutPrefix().equals(INTERFACE_TAG_NAME)) {
                         hasInterface[0] = true;
@@ -297,7 +328,7 @@ public class CompositeComponentModel extends JsfPageModel {
     }
 
 
-    static final String encode(String attributeValue) {
+    static String encode(String attributeValue) {
         //comma and equal sign needs to be encoded
         StringBuilder out = new StringBuilder();
         for(int i = 0; i < attributeValue.length(); i++) {
@@ -320,7 +351,7 @@ public class CompositeComponentModel extends JsfPageModel {
         return out.toString();
     }
 
-    static final String decode(String attributeValue) {
+    static String decode(String attributeValue) {
         //comma and equal sign needs to be encoded
         StringBuilder out = new StringBuilder();
         boolean encodeChar = false;

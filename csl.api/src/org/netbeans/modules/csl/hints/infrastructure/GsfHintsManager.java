@@ -44,7 +44,9 @@ package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -299,10 +301,12 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
 
         //HashMap<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject,DefaultMutableTreeNode>();
 
-        // XXX Probably not he best order
-        Enumeration e = folder.getData( true );
+//        // XXX Probably not he best order
+//        Enumeration e = folder.getData( true );
+        
+        Enumeration<FileObject> e = Collections.enumeration(getSortedDataRecursively(folder));
         while( e.hasMoreElements() ) {
-            FileObject o = (FileObject)e.nextElement();
+            FileObject o = e.nextElement();
             String name = o.getNameExt().toLowerCase();
 
             if ( o.canRead() ) {
@@ -317,6 +321,40 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         }
         return rules;
     }
+    
+    //XXX it seems to be very unlikely there's no elegant way how to do this
+    
+    /** returns a list of all data children of the given folder. The items are sorted
+     * according to their position attributes.
+     */
+    private static List<FileObject> getSortedDataRecursively(FileObject folder) {
+        List<FileObject> files = new LinkedList<FileObject>();
+        addChildren(files, folder);
+        return files;
+    }
+    
+    private static void addChildren(List<FileObject> items, FileObject folder) {
+        FileObject[] children = folder.getChildren();
+        Arrays.sort(children, 0, children.length, new Comparator<FileObject>() {
+            @Override
+            public int compare(FileObject t1, FileObject t2) {
+                Integer t1pos = (Integer)t1.getAttribute(POSITION_ATTR_NAME);
+                Integer t2pos = (Integer)t2.getAttribute(POSITION_ATTR_NAME);
+                int t1posp = t1pos == null ? 0 : t1pos;
+                int t2posp = t2pos == null ? 0 : t2pos;
+                return t1posp - t2posp;
+            }
+        });
+        for(FileObject fo : children) {
+            if(fo.isFolder()) {
+                addChildren(items, fo);
+            } else {
+                items.add(fo);
+            }
+        }
+    }
+    
+    private static final String POSITION_ATTR_NAME = "position"; //NOI18N
 
     private static void categorizeErrorRules(List<Pair<Rule,FileObject>> rules,
                                              Map<?,List<? extends ErrorRule>> dest,

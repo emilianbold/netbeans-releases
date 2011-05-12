@@ -51,13 +51,16 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
@@ -143,6 +146,32 @@ public final class J2EEProjectProperties {
         setServerProperties(null, ep, epPriv, serverLibraryName, cs, items, serverInstanceID, j2eeProfile, moduleType);
     }
 
+    /**
+     * Finds server instance matching parameters.
+     * TODO Integrate to j2eeserver together with fix for 198372.
+     * 
+     * @param serverType type of the server
+     * @param moduleType type of the module
+     * @param profile java ee profile
+     * @return matching instance url or <code>null</code>
+     * @since 1.64
+     */
+    @CheckForNull
+    public static String getMatchingInstance(String serverType, J2eeModule.Type moduleType, Profile profile) {
+        String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+        for (String instanceID : servInstIDs) {
+            try {
+                J2eePlatform platformLocal = Deployment.getDefault().getServerInstance(instanceID).getJ2eePlatform();
+                if (platformLocal.getSupportedProfiles(moduleType).contains(profile)) {
+                    return instanceID;
+                }
+            } catch (InstanceRemovedException ex) {
+                continue;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Sets all server related properties.
      */
@@ -403,7 +432,7 @@ public final class J2EEProjectProperties {
             serverFile = FileUtil.normalizeFile(serverFile);
             FileObject server = FileUtil.toFileObject(serverFile);
             if (server != null) {
-                roots.put(serverFile.getAbsolutePath(), J2EE_SERVER_HOME);
+                roots.put(serverFile.getAbsolutePath().replace('\\', '/'), J2EE_SERVER_HOME); // NOI18N
                 toCheck.add(server);
             }
         }
@@ -412,7 +441,7 @@ public final class J2EEProjectProperties {
             domainFile = FileUtil.normalizeFile(domainFile);
             FileObject domain = FileUtil.toFileObject(domainFile);
             if (domain != null) {
-                roots.put(domainFile.getAbsolutePath(), J2EE_DOMAIN_HOME);
+                roots.put(domainFile.getAbsolutePath().replace('\\', '/'), J2EE_DOMAIN_HOME); // NOI18N
                 toCheck.add(domain);
             }
         }
@@ -421,7 +450,7 @@ public final class J2EEProjectProperties {
             middlewareFile = FileUtil.normalizeFile(middlewareFile);
             FileObject middleware = FileUtil.toFileObject(middlewareFile);
             if (middleware != null) {
-                roots.put(middlewareFile.getAbsolutePath(), J2EE_MIDDLEWARE_HOME);
+                roots.put(middlewareFile.getAbsolutePath().replace('\\', '/'), J2EE_MIDDLEWARE_HOME); // NOI18N
                 toCheck.add(middleware);
             }
         }
@@ -474,7 +503,7 @@ public final class J2EEProjectProperties {
         if (!ok) {
             return null;
         }
-        return Collections.singletonMap(rootFile.getAbsolutePath(), J2EE_SERVER_HOME);
+        return Collections.singletonMap(rootFile.getAbsolutePath().replace('\\', '/'), J2EE_SERVER_HOME); // NOI18N
     }
 
     public static String toClasspathString(File[] classpathEntries) {
@@ -483,7 +512,7 @@ public final class J2EEProjectProperties {
         }
         StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
+            classpath.append(classpathEntries[i].getAbsolutePath().replace('\\', '/')); // NOI18N
             if (i + 1 < classpathEntries.length) {
                 classpath.append(':'); // NOI18N
             }
@@ -497,7 +526,7 @@ public final class J2EEProjectProperties {
         }
         StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
-            String path = classpathEntries[i].getAbsolutePath();
+            String path = classpathEntries[i].getAbsolutePath().replace('\\', '/'); // NOI18N
             
             if (roots != null) {
                 Map.Entry<String,String> replacement = null;
@@ -528,7 +557,7 @@ public final class J2EEProjectProperties {
         StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
             try {
-                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath());
+                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath().replace('\\', '/')); // NOI18N
             } catch (URISyntaxException ex) {
 
             }

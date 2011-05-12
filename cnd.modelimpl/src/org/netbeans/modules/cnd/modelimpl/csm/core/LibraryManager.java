@@ -443,6 +443,32 @@ public final class LibraryManager {
             PersistentUtils.writeFileSystem(fileSystem, out);
             out.writeUTF(folder);
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LibraryKey other = (LibraryKey) obj;
+            if ((this.folder == null) ? (other.folder != null) : !this.folder.equals(other.folder)) {
+                return false;
+            }
+            if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.folder != null ? this.folder.hashCode() : 0);
+            hash = 83 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+            return hash;
+        }
     }
 
     private static final class LibraryEntry {

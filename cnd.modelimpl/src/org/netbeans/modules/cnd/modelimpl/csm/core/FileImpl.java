@@ -71,8 +71,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -136,6 +136,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static int getParseCount() {
         return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
+
+    public static long getLongParseCount() {
+        return parseCount.get();
+    }
+
     private FileBuffer fileBuffer;
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be parsed.
@@ -366,21 +371,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public String getFileLanguage() {
-        String lang;
-        if (fileType == FileType.SOURCE_CPP_FILE) {
-            lang = APTLanguageSupport.GNU_CPP;
-        } else if (fileType == FileType.SOURCE_C_FILE) {
-            lang = APTLanguageSupport.GNU_C;
-        } else if (fileType == FileType.SOURCE_FORTRAN_FILE) {
-            lang = APTLanguageSupport.FORTRAN;
-        } else {
-            lang = APTLanguageSupport.GNU_CPP;
-            String name = getName().toString();
-            if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
-                lang = APTLanguageSupport.GNU_C;
-            }
-        }
-        return lang;
+        return Utils.getLanguage(fileType, getAbsolutePath().toString());
     }
 
     public APTPreprocHandler getPreprocHandler(int offset) {
@@ -517,7 +508,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         state = State.PARSED;
                                     }  // if not, someone marked it with new state
                                 }
-                                stateLock.notifyAll();
+                                postParseNotify();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
@@ -541,12 +532,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                     }
                                 }
                             } finally {
+                                postParse();
                                 synchronized (changeStateLock) {
                                     if (parsingState == ParsingState.BEING_PARSED) {
                                         state = State.PARSED;
                                     } // if not, someone marked it with new state
                                 }
-                                postParse();
+                                postParseNotify();
                                 stateLock.notifyAll();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
@@ -581,6 +573,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (isValid()) {	// FIXUP: use a special lock here
             getProjectImpl(true).getGraph().putFile(this);
         }
+    }
+
+    private void postParseNotify() {
         if (isValid()) {   // FIXUP: use a special lock here
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
@@ -589,7 +584,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             Notificator.instance().reset();
         }
     }
-
+    
     /*package*/ void onProjectParseFinished(boolean prjLibsAlreadyParsed) {
         if (fixFakeRegistrations(true)) {
             if (isValid()) {   // FIXUP: use a special lock here
@@ -921,7 +916,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 cache = tsRef.get();
                 if (cache == null) {
                     cache = new FileTokenStreamCache();
-                    tsRef = new SoftReference<FileTokenStreamCache>(cache);
+                    tsRef = new WeakReference<FileTokenStreamCache>(cache);
                 } else {
                     // could be already created by parallel thread
                     stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
@@ -1251,7 +1246,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     @Override
-    public String getText() {
+    public CharSequence getText() {
         try {
             return fileBuffer.getText();
         } catch (IOException e) {
@@ -1835,7 +1830,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public int[] getLineColumn(int offset) {
         if (offset == Integer.MAX_VALUE) {
-            offset = getText().length();
+            try {
+                offset = fileBuffer.getCharBuffer().length;
+            } catch (IOException e) {
+                DiagnosticExceptoins.register(e);
+                offset = 0;
+            }
         }
         try {
             return fileBuffer.getLineColumnByOffset(offset);

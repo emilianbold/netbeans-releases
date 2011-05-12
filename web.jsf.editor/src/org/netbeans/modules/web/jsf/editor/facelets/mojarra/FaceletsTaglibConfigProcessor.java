@@ -273,11 +273,19 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 }
             }
 
+            URL sourceUrl;
+            try {
+                sourceUrl = info.getSourceURI().toURL();
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                return;
+            }
+
             if (compositeLibraryName != null) {
                 //nothing to process inside the library definition AFAIR...
-                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, info.getSourceURL()));
+                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, sourceUrl));
             } else {
-                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(info.getSourceURL(), support, taglibNamespace);
+                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(sourceUrl, support, taglibNamespace);
                 //process the library content
                 NodeList tags =
                         documentElement.getElementsByTagNameNS(namespace, TAG);
@@ -375,6 +383,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
             String name) {
 
         String className = getNodeText(handlerClass);
+        //mfukala: (issue #184097) fix possible NPE from the code below if <handler-class> element is empty and the getNodeText() returns null
+        if(className == null) {
+            return ; //just ignre that entry
+        }
         Class<?> clazz = loadClass(className, this, null);
         taglibrary.putTagHandler(name, clazz);
 
@@ -387,6 +399,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
         String docURI = documentElement.getOwnerDocument().getDocumentURI();
         String s = getNodeText(source);
+        //mfukala: fix possible NPE from the code below if <source> element is empty and the getNodeText() returns null
+        if(s == null) {
+            return ; //just ignre that entry
+        }
         try {
             URL url = new URL(new URL(docURI), s);
             taglibrary.putUserTag(name, url);

@@ -61,9 +61,13 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.openide.util.RequestProcessor;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
@@ -103,6 +107,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     static final String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
     
     private static VersioningManager instance;
+    private static boolean initialized = false;
+    private static boolean initializing = false;
+    private static final Object INIT_LOCK = new Object();
 
     public static synchronized VersioningManager getInstance() {
         if (instance == null) {
@@ -110,6 +117,24 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             instance.init();
         }
         return instance;
+    }
+
+    public static boolean isInitialized() {
+        if(initialized && OpenProjects.getDefault().openProjects().isDone()) {
+            return true;
+        }
+        synchronized(INIT_LOCK) {
+            if(!initializing) {
+                initializing = true;
+                new RequestProcessor("Initialize VCS").post(new Runnable() {        // NOI18N
+                    @Override
+                    public void run() {                    
+                        getInstance(); // init manager                                                    
+                    }                    
+                });
+            }
+        }
+        return false;
     }
 
     // ======================================================================================================
@@ -169,14 +194,18 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     
     private VersioningManager() {
         systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-        filesystemInterceptor = new FilesystemInterceptor();
+        filesystemInterceptor = new FilesystemInterceptor(true);
     }
     
     private void init() {
-        systemsLookupResult.addLookupListener(this);
-        refreshVersioningSystems();
-        filesystemInterceptor.init(this);
-        VersioningSupport.getPreferences().addPreferenceChangeListener(this);
+        try {
+            systemsLookupResult.addLookupListener(this);
+            refreshVersioningSystems();
+            filesystemInterceptor.init(this);
+            VersioningSupport.getPreferences().addPreferenceChangeListener(this);
+        } finally {
+            initialized = true;                                    
+        }
     }
 
     private int refreshSerial;
