@@ -456,11 +456,11 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
         } // for
         if (submitted) {
-            synchronized (this) {
-                if (origBreakpointLineNumber != newBreakpointLineNumber) {
+            if (origBreakpointLineNumber != newBreakpointLineNumber) {
+                synchronized (this) {
                     lineNumberForUpdate = newBreakpointLineNumber;
-                    breakpoint.setLineNumber(newBreakpointLineNumber);
                 }
+                breakpoint.setLineNumber(newBreakpointLineNumber);
             }
             setValidity(Breakpoint.VALIDITY.VALID, failReason); // failReason is != null for partially submitted breakpoints (to some classes only)
         } else {

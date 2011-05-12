@@ -258,7 +258,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                     array = om.variables;
                 }
                 from = Math.min(from, array.length);
-                to = Math.max(to, array.length);
+                to = Math.min(to, array.length);
                 Object[] fo = new Object[to - from];
                 System.arraycopy(array, from, fo, 0, to - from);
                 return fo;
