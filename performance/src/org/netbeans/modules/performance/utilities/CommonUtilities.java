@@ -1044,4 +1044,8 @@ public class CommonUtilities {
         result[1]=pd.value;
         CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
     }
+    
+    public static void maximizeWholeNetbeansWindow() {
+        MainWindowOperator.getDefault().maximize();
+    }
 }
