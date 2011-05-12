@@ -197,7 +197,7 @@ public class TypeFactory {
         if (parent != null) {
             type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
-            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
+            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
@@ -296,7 +296,7 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.LITERAL_struct
                                             || namePart.getType() == CPPTokenTypes.LITERAL_class
                                             || namePart.getType() == CPPTokenTypes.LITERAL_union) {
-                                        CsmType t = AstRenderer.renderType(namePart, file);
+                                        CsmType t = AstRenderer.renderType(namePart, file, true);
                                         type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {

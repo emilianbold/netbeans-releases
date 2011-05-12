@@ -70,7 +70,7 @@ import org.xml.sax.SAXParseException;
  */
 public class WsdlModeler {
 
-    private WsdlModel wsdlModel;
+    private volatile WsdlModel wsdlModel;
     private URL wsdlUrl;
     private URL[] bindings;
     private URL catalog;
@@ -81,7 +81,7 @@ public class WsdlModeler {
     RequestProcessor.Task task, task1;
     int listenersSize;
     protected Properties properties;
-    private Throwable creationException;
+    private volatile Throwable creationException;
 
     /** Creates a new instance of WsdlModeler */
     WsdlModeler(URL wsdlUrl) {
@@ -181,7 +181,9 @@ public class WsdlModeler {
                     creationException = new Exception(NbBundle.getMessage(WsdlModeler.class, "ERR_CannotGenerateModel", wsdlUrl.toExternalForm()));
                 }
             } else {
-                wsdlModel = new WsdlModel(model);
+                synchronized( this ) { 
+                    wsdlModel = new WsdlModel(model);
+                }
             }
 
 

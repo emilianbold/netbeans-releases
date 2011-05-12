@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -274,7 +275,50 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             return false;
         }
     }
+    
+    public static int getEndOffset(AST node) {
+        AST ast = node;
+        if( ast == null ) {
+            return 0;
+        }
+        if (isTypeDefAST(ast)) {
+            return OffsetableBase.getEndOffset(ast);
+        }
+        ast = getLastNode(ast);
+        if( ast instanceof CsmAST ) {
+            return ((CsmAST) ast).getEndOffset();
+        }
+        return OffsetableBase.getEndOffset(node);
+    }
+    
+    private static AST getLastNode(AST first) {
+        AST last = first;
+        for( AST token = last; token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
+                case CPPTokenTypes.CSM_QUALIFIED_ID:
+                case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                    return AstUtil.getLastChildRecursively(last);
+                case CPPTokenTypes.RPAREN:
+                    return AstUtil.getLastChildRecursively(token);
+                default:
+                    last = token;
+            }
+        }        
+        return null;
+    }    
 
+    private static boolean isTypeDefAST(AST ast){
+        if (ast != null ) {
+            if (ast.getType() == CPPTokenTypes.CSM_FIELD ||
+                ast.getType() == CPPTokenTypes.CSM_GENERIC_DECLARATION) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @Override
     public void dispose() {
         super.dispose();

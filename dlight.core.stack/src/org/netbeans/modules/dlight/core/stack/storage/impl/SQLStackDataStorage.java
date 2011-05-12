@@ -372,7 +372,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
                 sqlQuery.append("where bucket >= ").append(DBProxy.timeToBucket(interval.getStart())); // NOI18N
                 sqlQuery.append(" and bucket <= ").append(DBProxy.timeToBucket(interval.getEnd())); // NOI18N
             }
-            sqlQuery.append(" group by func_id, context_id"); // NOI18N
+            sqlQuery.append(" group by func_id, fname, context_id"); // NOI18N
             sqlQuery.append(" order by ").append(metric.getMetricID()).append(" desc"); // NOI18N
 
             PreparedStatement select = stmtCache.getPreparedStatement(sqlQuery.toString());
