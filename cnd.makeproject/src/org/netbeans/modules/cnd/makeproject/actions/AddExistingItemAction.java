@@ -180,7 +180,7 @@ public class AddExistingItemAction extends NodeAction {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                         //return;
                     } else {
-                        Item item = new Item(itemPath);
+                        Item item = Item.createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
                         folder.addItemAction(item);
                         items.add(item);
                         if (CndPathUtilitities.isPathAbsolute(itemPath)) {

@@ -249,7 +249,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    addItem(new Item(path), true, setModified);
+                    addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified);
                 }
             }
         }
@@ -1201,7 +1201,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             String itemPath = fileObject.getPath();
             itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
-            Item item = new Item(itemPath);
+            Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
             addItemAction(item, false);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {

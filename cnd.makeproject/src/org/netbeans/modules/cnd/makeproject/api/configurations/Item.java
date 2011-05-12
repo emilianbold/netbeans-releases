@@ -90,7 +90,11 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     private final String normalizedPath;
     private DataObject lastDataObject = null;
 
-    public Item(FileObject baseDirFileObject, String path) {
+    public static Item createInBaseDir(FileObject baseDirFileObject, String path) {
+        return new Item(baseDirFileObject, path);
+    }
+    
+    private Item(FileObject baseDirFileObject, String path) {
         try {
             this.fileSystem = baseDirFileObject.getFileSystem();
         } catch (FileStateInvalidException ex) {
@@ -101,11 +105,15 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         this.path = CndPathUtilitities.normalizeSlashes(path);
     }
 
+    public static Item createInFileSystem(FileSystem fileSystem, String path) {
+        return new Item(fileSystem, path);
+    }
+
     // XXX:fullRemote deprecate and remove!
-    public Item(String path) {
+    private Item(FileSystem fileSystem, String path) {
         CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
         this.path = path;
-        this.fileSystem = CndFileUtils.getLocalFileSystem();
+        this.fileSystem = fileSystem; //CndFileUtils.getLocalFileSystem();
         this.normalizedPath = null;
         folder = null;
     }
@@ -161,7 +169,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else {
             oldPath = CndFileUtils.normalizeAbsolutePath(fileSystem, getAbsPath());
         }
-        Item item = f.addItem(new Item(newPath));
+        Item item = f.addItem(new Item(fileSystem, newPath));
         if (item != null && item.getFolder() != null) {
             if (item.getFolder().isProjectFiles()) {
                 copyItemConfigurations(this, item);

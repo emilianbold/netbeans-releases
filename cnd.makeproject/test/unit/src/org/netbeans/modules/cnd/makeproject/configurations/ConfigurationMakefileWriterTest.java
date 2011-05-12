@@ -127,7 +127,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
         MakeConfiguration conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
         makeConfigurationDescriptor.init(conf);
-        makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
+        makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
         LibraryItem.ProjectItem projectItem;
         projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                 "../hello1lib",
@@ -266,7 +266,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
         MakeConfiguration conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
         makeConfigurationDescriptor.init(conf);
-        makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
+        makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");

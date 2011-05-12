@@ -155,6 +155,11 @@ public class RemoteFileUtil {
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
                     return FileSystemProvider.getFileSystem(remoteProject.getSourceFileSystemHost());
                 }
+            }            
+            try {
+                return project.getProjectDirectory().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                throw new IllegalStateException(ex);
             }
         }
         return CndFileUtils.getLocalFileSystem();
