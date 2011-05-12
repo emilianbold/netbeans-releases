@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,46 +40,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.git.ui.history;
 
-package org.netbeans.libs.git.jgit;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-import org.eclipse.jgit.lib.PersonIdent;
-import org.netbeans.libs.git.GitUser;
+import java.util.*;
 
 /**
- * identification of git user
- * @author Jan Becicka
+ * Represents children of a Revision Node in Search history results table.
+ *
+ * @author Maros Sandor
  */
-public final class JGitUserInfo extends GitUser {
+class RevisionNodeChildren extends Children.Keys<RepositoryRevision.Event> {
 
-    private final String name;
-    private final String email;
+    private RepositoryRevision container;
+    private SearchHistoryPanel master;
 
-    public JGitUserInfo(PersonIdent authorIdent) {
-        this.name = authorIdent.getName();
-        this.email = authorIdent.getEmailAddress();
+    public RevisionNodeChildren(RepositoryRevision container, SearchHistoryPanel master) {
+        this.container = container;
+        this.master = master;
     }
 
-    /**
-     * user's name
-     * @return
-     */
     @Override
-    public String getName() {
-        return name;
+    protected void addNotify() {
+        refreshKeys();
     }
 
-    /**
-     * users email address
-     * @return
-     */
     @Override
-    public String getEmailAddress() {
-        return email;
+    protected void removeNotify() {
+        setKeys (Collections.<RepositoryRevision.Event>emptySet());
+    }
+    
+    private void refreshKeys() {
+        setKeys(container.getEvents());
+    }
+    
+    @Override
+    protected Node[] createNodes(RepositoryRevision.Event fn) {
+        RevisionNode node = new RevisionNode(fn, master);
+        return new Node[] { node };
+    }
+
+    public void refreshChildren() {
+        refreshKeys();
     }
 }
+

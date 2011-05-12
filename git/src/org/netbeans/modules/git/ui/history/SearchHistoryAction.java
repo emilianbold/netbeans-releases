@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.modules.git.ui.history;
 
-import org.eclipse.jgit.lib.PersonIdent;
-import org.netbeans.libs.git.GitUser;
+import java.awt.EventQueue;
+import java.io.File;
+import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
- * identification of git user
- * @author Jan Becicka
+ *
+ * @author ondra
  */
-public final class JGitUserInfo extends GitUser {
+@ActionID(id = "org.netbeans.modules.git.ui.history.SearchHistoryAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_SearchHistoryAction_Name")
+public class SearchHistoryAction extends MultipleRepositoryAction {
 
-    private final String name;
-    private final String email;
-
-    public JGitUserInfo(PersonIdent authorIdent) {
-        this.name = authorIdent.getName();
-        this.email = authorIdent.getEmailAddress();
-    }
-
-    /**
-     * user's name
-     * @return
-     */
     @Override
-    public String getName() {
-        return name;
+    protected Task performAction (final File repository, final File[] roots, final VCSContext context) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, roots);
+                tc.setDisplayName(NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", Utils.getContextDisplayName(context)));
+                tc.open();
+                tc.requestActive();
+                if (roots != null && (roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
+                    tc.search();
+                }
+            }
+        });
+        return null;
     }
 
-    /**
-     * users email address
-     * @return
-     */
-    @Override
-    public String getEmailAddress() {
-        return email;
-    }
 }
