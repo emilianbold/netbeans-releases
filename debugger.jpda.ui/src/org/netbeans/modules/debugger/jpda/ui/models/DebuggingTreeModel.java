@@ -591,6 +591,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         // there is at most one
         private RequestProcessor.Task task;
         private final PropertyChangeListener propertyChangeListener;
+        private boolean wasMethodInvoke = false;
         
         public ThreadStateListener(JPDAThread t) {
             this.tr = new WeakReference(t);
@@ -606,16 +607,24 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             // gets suspended or is resumed
             // When thread is resumed because of a method invocation, do the
             // refresh only if the method takes a long time.
-            boolean isMethodInvoking = "methodInvoke".equals(evt.getPropagationId());
+            boolean isMethodInvoking = "methodInvoke".equals(evt.getPropagationId());   // NOI18N
             boolean suspended = t.isSuspended();
             if (suspended || !isMethodInvoking) {
                 synchronized (this) {
                     if (task == null) {
                         task = RP.create(new Refresher());
                     }
-                    task.schedule(suspended ? 200 : 1000);
+                    int delay;
+                    if (!suspended || wasMethodInvoke) {
+                        delay = 1000;
+                    } else {
+                        delay = 200;
+                    }
+                    //Logger.getLogger("DEBUGGING").severe("isMethodInvoking = "+isMethodInvoking+", suspended = "+suspended+", wasMethodInvoke = "+wasMethodInvoke+" => delay = "+delay);
+                    task.schedule(delay);
                 }
             }
+            wasMethodInvoke = isMethodInvoking;
         }
 
         PropertyChangeListener getThreadPropertyChangeListener() {
