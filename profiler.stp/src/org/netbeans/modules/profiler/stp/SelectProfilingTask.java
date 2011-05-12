@@ -83,10 +83,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-//import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.lib.profiler.ui.UIUtils;
-//import org.netbeans.modules.profiler.NetBeansProfiler;
-//import org.netbeans.modules.profiler.categories.Categorization;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
@@ -630,8 +627,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 //                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .getSelectedInstrumentationFilter()));
 //                        }
 //                    }
-
-                    configureMarkerEngine(settings);
                 }
                 
                 return settings;
@@ -646,19 +641,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
     }
 
-    private void configureMarkerEngine(ProfilingSettings settings) {
-//        boolean isMarksEnabled = (settings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) || (settings.getProfilingType() == ProfilingSettings.PROFILE_CPU_PART);
-//        isMarksEnabled &= Categorization.isAvailable(project);
-//
-//        if (isMarksEnabled) {
-//            Categorization ctg = new Categorization(project);
-//            ctg.reset();
-//            MarkingEngine.getDefault().configure(ctg.getMappings(), Lookup.getDefault().lookupAll(MarkingEngine.StateObserver.class));
-//        } else {
-//            MarkingEngine.getDefault().deconfigure();
-//        }
-    }
-    
     private void initClosedProjectHook() {
         OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {

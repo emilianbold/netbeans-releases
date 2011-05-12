@@ -43,12 +43,8 @@
 package org.netbeans.modules.profiler.j2ee.marking;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -61,7 +57,6 @@ import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
-import org.netbeans.modules.profiler.categories.CustomMarker;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 
@@ -74,6 +69,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.profiler.categorization.api.CustomMarker;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
