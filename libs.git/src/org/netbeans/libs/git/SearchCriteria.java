@@ -61,6 +61,7 @@ public final class SearchCriteria {
     private boolean includeMerges = true;
     private String username;
     private String message;
+    private boolean follow;
 
     public SearchCriteria () {
         this.limit = -1;
@@ -142,5 +143,13 @@ public final class SearchCriteria {
 
     public void setMessage (String message) {
         this.message = message;
+    }
+
+    public boolean isFollow () {
+        return follow;
+    }
+
+    public void setFollowRenames (boolean flag) {
+        this.follow = flag;
     }
 }

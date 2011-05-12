@@ -53,6 +53,7 @@ import java.util.Map;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -160,6 +161,9 @@ public class LogCommand extends GitCommand {
     @Override
     protected String getCommandDescription () {
         StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
+        if (criteria != null && criteria.isFollow() && criteria.getFiles() != null && criteria.getFiles().length == 1) {
+            sb.append("--follow "); //NOI18N
+        }
         if (revision != null) {
             sb.append("--no-walk ").append(revision);
         } else if (criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
@@ -186,7 +190,11 @@ public class LogCommand extends GitCommand {
         if (files.length > 0) {
             Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getWorkTree(), files);
             if (!pathFilters.isEmpty()) {
-                walk.setTreeFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilterGroup.create(pathFilters)));
+                if (criteria.isFollow() && pathFilters.size() == 1) {
+                    walk.setTreeFilter(FollowFilter.create(pathFilters.iterator().next().getPath()));
+                } else {
+                    walk.setTreeFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilterGroup.create(pathFilters)));
+                }
             }
         }
         RevFilter filter;
