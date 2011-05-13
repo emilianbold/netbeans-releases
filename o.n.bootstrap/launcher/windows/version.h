@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,10 +42,10 @@
 
 #define COMPANY "Oracle Corporation"
 #define COMPONENT "NetBeans Platform Launcher"
-#define VER "7.0.0.0"
-#define FVER 7,0,0,0
-#define BUILD_ID "18112010"
+#define VER "7.0.1.0"
+#define FVER 7,0,1,0
+#define BUILD_ID "13052011"
 #define INTERNAL_NAME "nbexec"
-#define COPYRIGHT "\xA9 2007, 2010 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans Platform Launcher 7.0"
+#define COPYRIGHT "\xA9 2007, 2011 Oracle and/or its affiliates. All rights reserved."
+#define NAME "NetBeans Platform Launcher 7.0.1"
 
