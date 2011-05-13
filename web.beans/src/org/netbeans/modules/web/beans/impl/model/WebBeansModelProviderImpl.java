@@ -310,6 +310,7 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
     }
     
     private void addIndexListener( ) {
+        isIndexListenerAdded = true;
         final AnnotationModelHelper helper = getModel().getHelper();
         helper.getClasspathInfo().getClassIndex().addClassIndexListener( 
             new ClassIndexListener(){
