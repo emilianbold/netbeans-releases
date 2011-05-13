@@ -166,18 +166,9 @@ public final class WebApplicationModel extends BaseDescriptorModel {
             }
         }
         
-        ResourceDescriptionType type = null;
-        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.ResourceDescriptionType();
-        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1030.WeblogicWebApp) {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.web1030.ResourceDescriptionType();
-        } else {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.web90.ResourceDescriptionType();
-        }        
-        
+        ResourceDescriptionType type = bean.addResourceDescription();
         type.setResRefName(referenceName);
         type.setJndiName(jndiName);
-        bean.addResourceDescription(type);
     }
     
     public String getReferenceJndiName(String referenceName) {
@@ -208,33 +199,17 @@ public final class WebApplicationModel extends BaseDescriptorModel {
             }
         }
         
-        LibraryRefType[] libRef = null;
-        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
-            libRef = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.LibraryRefType[current.length + 1];
-            libRef[0] = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.LibraryRefType();
-        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1030.WeblogicWebApp) {
-            libRef = new org.netbeans.modules.j2ee.weblogic9.dd.web1030.LibraryRefType[current.length + 1];
-            libRef[0] = new org.netbeans.modules.j2ee.weblogic9.dd.web1030.LibraryRefType();
-        } else {
-            //TODO
-            libRef = new org.netbeans.modules.j2ee.weblogic9.dd.web90.LibraryRefType[current.length + 1];
-            libRef[0] = new org.netbeans.modules.j2ee.weblogic9.dd.web90.LibraryRefType();
-        }
-
-        
-        LibraryRefType single = libRef[0];
-        single.setLibraryName(library.getName());
+        LibraryRefType libRef = bean.addLibraryRef();
+        libRef.setLibraryName(library.getName());
         if (library.isExactMatch()) {
-            single.setExactMatch(library.isExactMatch());
+            libRef.setExactMatch(library.isExactMatch());
         }
         if (library.getSpecificationVersion() != null) {
-            single.setSpecificationVersion(library.getSpecificationVersion().toString());
+            libRef.setSpecificationVersion(library.getSpecificationVersion().toString());
         }
         if (library.getImplementationVersion() != null) {
-            single.setImplementationVersion(library.getImplementationVersion().toString());
+            libRef.setImplementationVersion(library.getImplementationVersion().toString());
         }
-        System.arraycopy(current, 0, libRef, 1, current.length);
-        bean.setLibraryRef(libRef);
     }
     
     public void setKeepJspGenerated(boolean keep) {
@@ -242,7 +217,6 @@ public final class WebApplicationModel extends BaseDescriptorModel {
         for (JspDescriptorType type : desc) {
             type.setKeepgenerated(keep);
         }
-        bean.setJspDescriptor(desc);
     }
     
     public void setDebug(boolean debug) {
@@ -250,7 +224,6 @@ public final class WebApplicationModel extends BaseDescriptorModel {
         for (JspDescriptorType type : desc) {
             type.setDebug(debug);
         }
-        bean.setJspDescriptor(desc);
     }
 
     public void setFastSwap(boolean fast) {
@@ -266,18 +239,8 @@ public final class WebApplicationModel extends BaseDescriptorModel {
         if (jspDescriptor != null && jspDescriptor.length > 0) {
             return jspDescriptor;
         }
-        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
-            jspDescriptor = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.JspDescriptorType[] {
-                new org.netbeans.modules.j2ee.weblogic9.dd.web1031.JspDescriptorType()};
-        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1030.WeblogicWebApp) {
-            jspDescriptor = new org.netbeans.modules.j2ee.weblogic9.dd.web1030.JspDescriptorType[] {
-                new org.netbeans.modules.j2ee.weblogic9.dd.web1030.JspDescriptorType()};
-        } else {
-            //TODO
-            jspDescriptor = new org.netbeans.modules.j2ee.weblogic9.dd.web90.JspDescriptorType[] {
-                new org.netbeans.modules.j2ee.weblogic9.dd.web90.JspDescriptorType()};
-        }
-        return jspDescriptor;
+        
+        return new JspDescriptorType[] {bean.addJspDescriptor()};
     }
     
     private ServerLibraryDependency getLibrary(LibraryRefType libRef) {
