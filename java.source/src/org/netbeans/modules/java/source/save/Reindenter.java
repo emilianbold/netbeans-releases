@@ -153,7 +153,8 @@ public class Reindenter implements IndentTask {
                             int idx = blockCommentLine.indexOf('\n', delta); //NOI18N
                             blockCommentLine = (idx < 0 ? blockCommentLine.substring(delta) : blockCommentLine.substring(delta, idx)).trim();
                             int prevLineStartOffset = context.lineStartOffset(ts.offset() + delta - 1);
-                            newIndents.put(startOffset, context.lineIndent(prevLineStartOffset) + (prevLineStartOffset > ts.offset() ? 0 : 1)); //NOI18N
+                            Integer prevLineIndent = newIndents.get(prevLineStartOffset);
+                            newIndents.put(startOffset, (prevLineIndent != null ? prevLineIndent : context.lineIndent(prevLineStartOffset)) + (prevLineStartOffset > ts.offset() ? 0 : 1)); //NOI18N
                         } else {
                             int idx = blockCommentLine.lastIndexOf('\n'); //NOI18N
                             if (idx > 0) {
