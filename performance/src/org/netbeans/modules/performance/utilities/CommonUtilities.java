@@ -680,8 +680,14 @@ public class CommonUtilities {
             path = runtimeTree.findPath("Servers|Tomcat"); // NOI18N
             runtimeTree.selectPath(path);
         } catch (Exception exc) {
-            exc.printStackTrace(System.err);
-            throw new Error("Cannot find Tomcat Server Node", exc);
+            try {
+                path = runtimeTree.findPath("Servers|Apache Tomcat"); // NOI18N
+                runtimeTree.selectPath(path);
+            } catch (Exception e) {
+                exc.printStackTrace(System.err);
+                e.printStackTrace(System.err);
+                throw new Error("Cannot find Tomcat Server Node", e);
+            }
         }
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
 
@@ -772,7 +778,11 @@ public class CommonUtilities {
             
             new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
+            try {
+                new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
+            } catch (Exception e) {
+                new JListOperator(addServerInstanceDialog,1).selectItem("Apache Tomcat");
+            }            
             new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
        
             JTextFieldOperator tfo=new JTextFieldOperator(addServerInstanceDialog,1);
@@ -1033,5 +1043,9 @@ public class CommonUtilities {
         long[] result=new long[2];
         result[1]=pd.value;
         CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
+    }
+    
+    public static void maximizeWholeNetbeansWindow() {
+        MainWindowOperator.getDefault().maximize();
     }
 }
