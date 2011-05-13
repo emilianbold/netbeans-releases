@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.*;
@@ -76,7 +75,9 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -381,13 +382,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     @Override
-    public CsmFile findFile(CharSequence absPath, boolean createIfPossible, boolean snapShot) {
-        CndUtils.assertAbsolutePathInConsole(absPath.toString());
+    public CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot) {
+        CndUtils.assertAbsolutePathInConsole(absPath.getPath());
         Collection<CsmProject> projects = projects();
         CsmFile ret = null;
         for (CsmProject curPrj : projects) {
-            if (curPrj instanceof ProjectBase) {
-                ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath, createIfPossible);
+            if (curPrj instanceof ProjectBase && ((ProjectBase)curPrj).getFileSystem() == absPath.getFileSystem()) {                
+                ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath.getPath(), createIfPossible);
                 if (ownerPrj != null) {
                     CsmFile csmFile = ownerPrj.findFile(absPath, createIfPossible, snapShot);
                     if (csmFile != null) {
@@ -400,9 +401,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             }
         }
         // try the same with canonical path
-        String canonical;
+        FSPath canonical = null;
         try {
-            canonical = new File(absPath.toString()).getCanonicalPath();
+            FileObject fo = absPath.getFileObject();
+            if (fo != null) {
+                canonical = FSPath.toFSPath(CndFileUtils.getCanonicalFileObject(fo));
+            }
         } catch (IOException ex) {
             canonical = null;
         }
