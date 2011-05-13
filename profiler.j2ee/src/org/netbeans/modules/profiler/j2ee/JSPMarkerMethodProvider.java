@@ -47,7 +47,7 @@ import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.profiler.categories.CustomMarker;
+import org.netbeans.modules.profiler.categorization.api.CustomMarker;
 
 /**
  *
