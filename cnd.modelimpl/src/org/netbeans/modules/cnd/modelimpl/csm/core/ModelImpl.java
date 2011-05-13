@@ -338,37 +338,31 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public Cancellable enqueue(Runnable task, CharSequence name) {
-        return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name, userProcessorTasks); // NOI18N
+        return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
     }
 
     public static ModelImpl instance() {
         return (ModelImpl) CsmModelAccessor.getModel();
     }
 
-    public Cancellable enqueueModelTask(Runnable task, String name) {
-        return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name, modelProcessorTasks); // NOI18N
-    }
-
-    void waitModelTasks() {
-        synchronized (modelProcessorTasks) {
-            while (!modelProcessorTasks.isEmpty()) {
-                try {
-                    modelProcessorTasks.wait(10000);
-                } catch (InterruptedException ex) {
-                }
-            }
-        }
+    public RequestProcessor.Task enqueueModelTask(Runnable task, String name) {
+        return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
     }
     
-    private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName, final Set<Runnable> registry) {
+    public void waitModelTasks() {
+        RequestProcessor.Task task = enqueueModelTask(new Runnable() {
+            @Override
+            public void run() {
+            }
+        }, "wait finished other tasks"); //NOI18N
+        task.waitFinished();
+    }
+    
+    private RequestProcessor.Task enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception(taskName).printStackTrace(System.err);
         }
-        synchronized (registry) {
-            registry.add(task);
-        }
-        return processor.post(new Runnable() {
-
+        final RequestProcessor.Task rpTask = processor.create(new Runnable() {
             @Override
             public void run() {
                 String oldName = Thread.currentThread().getName();
@@ -379,13 +373,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     DiagnosticExceptoins.register(thr);
                 } finally {
                     Thread.currentThread().setName(oldName);
-                    synchronized (registry) {
-                        registry.remove(task);
-                        registry.notifyAll();
-                    }
                 }
             }
         });
+        processor.post(rpTask);
+        return rpTask;
     }
 
     @Override
@@ -457,6 +449,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.shutdown");
         }
+        waitModelTasks();
         setState(CsmModelState.CLOSING);
 
         // it's now done in ProjectBase.setDisposed()
@@ -494,6 +487,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         RepositoryUtils.shutdown();
 
         ModelSupport.instance().setModel(null);
+        waitModelTasks();
     }
 
     @Override

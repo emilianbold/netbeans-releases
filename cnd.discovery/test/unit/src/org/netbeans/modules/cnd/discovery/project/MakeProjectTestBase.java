@@ -162,22 +162,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-        waitModelTasks(model);
         model.shutdown();
-        waitModelTasks(model);
         RepositoryUtils.cleanCashes();
         RepositoryUtils.debugClear();
-    }
-
-    private void waitModelTasks(ModelImpl model) {
-        Cancellable task = model.enqueueModelTask(new Runnable() {
-            @Override
-            public void run() {
-            }
-        }, "wait finished other tasks"); //NOI18N
-        if (task instanceof Task) {
-            ((Task) task).waitFinished();
-        }
     }
 
     private File detectConfigure(String path){
