@@ -23,13 +23,12 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,100 +40,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.rest.codegen;
 
-package org.netbeans.modules.websvc.rest.codegen.model;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 
 /**
+ * @author ads
  *
- * @author PeterLiu
  */
-public class EntityResourceBean {
-    
-    /**
-     * 
+class ProgressReporterImpl implements ProgressReporter {
+
+    ProgressReporterImpl( AbstractGenerator generator ) {
+        this.generator = generator;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporter#progress(java.lang.String, int)
      */
-    public enum Type {
-        CONTAINER, ITEM
+    @Override
+    public void progress( String message, int unit ) {
+        if ( message != null ){
+            generator.reportProgress(message);
+        }
     }
- 
-    private Type type;
-    private EntityClassInfo info;
-    private String name;
-    private Collection<RelatedEntityResource> superResources;
-    private Collection<RelatedEntityResource> subResources;
-    private String uriTemplate;
-    
-    
-    /** Creates a new instance of ResourceBean 
-     * @param javaSource 
-     * @param type 
-     */
-    public EntityResourceBean(Type type) {
-        this.type = type;
-        this.superResources = new ArrayList<RelatedEntityResource>();
-        this.subResources = new ArrayList<RelatedEntityResource>();
-    }
-    
-    /**
-     * 
-     * @return 
-     */
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-  
-    public void setUriTemplate(String uriTemplate) {
-        this.uriTemplate = uriTemplate;
-    }
-    
-    public String getUriTemplate() {
-        return uriTemplate;
-    }
-    
-    /**
-     * 
-     * @param resourceBean 
-     */
-    public void addSubResource(RelatedEntityResource relatedResource) {
-        subResources.add(relatedResource);
-        
-    }
-    
-    public Collection<RelatedEntityResource> getSubResources() {
-        return subResources;
-    }
-    
-    public void addSuperResource(RelatedEntityResource relatedResource) {
-        superResources.add(relatedResource);
-        
-    }
-    
-    public Collection<RelatedEntityResource> getSuperResources() {
-        return superResources;
-    }
-    
-   
-    public void setEntityClassInfo(EntityClassInfo info) {
-        this.info = info;
-    }
-    
-    public EntityClassInfo getEntityClassInfo() {
-        return info;
-    }
-    
-    public boolean isItem() {
-        return type == Type.ITEM;
-    }
-    
-    public boolean isContainer() {
-        return type == Type.CONTAINER;
-    }
+
+    private AbstractGenerator generator; 
 }

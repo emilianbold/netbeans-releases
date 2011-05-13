@@ -82,64 +82,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.rest.wizard.fromdb;
+package org.netbeans.modules.websvc.rest.codegen;
+
 
 /**
  * This class represents code generation options for invoking
  * <code>javax.persistence.EntityManager</code> .
  *
  * @author Erno Mononen
+ * @author ads
  */
 public final class RestGenerationOptions {
 
-    public enum Operation {
-
-        CREATE("javax.ws.rs.POST", "create", true ),
-        EDIT("javax.ws.rs.PUT", "edit", true ),
-        REMOVE("javax.ws.rs.DELETE", "remove", "{id}"),
-        FIND("javax.ws.rs.GET", "find", "{id}"),
-        FIND_ALL("javax.ws.rs.GET", "findAll", true),
-        FIND_RANGE("javax.ws.rs.GET", "findRange", "{from}/{to}"),
-        COUNT("javax.ws.rs.GET", "countREST", "count");
-
-        private String method, methodName, uriPath;
-        private boolean override;
-        
-        private Operation(String method, String methodName, boolean override) {
-            this.method = method;
-            this.methodName = methodName;
-            this.override = override;
-        }
-
-        private Operation(String method, String methodName) {
-            this.method = method;
-            this.methodName = methodName;
-        }
-
-        private Operation(String method, String methodName, String uriPath) {
-            this.method = method;
-            this.methodName = methodName;
-            this.uriPath = uriPath;
-        }
-        
-        public String getMethod() {
-            return method;
-        }
-
-        public String getMethodName() {
-            return methodName;
-        }
-
-        public String getUriPath() {
-            return uriPath;
-        }
-        
-        public boolean overrides(){
-            return override;
-        }
-    }
-    
-    private Operation operation;
+    private RestMethod method;
     private String returnType, body;
     private String[] parameterTypes, parameterNames, pathParams, consumes, produces;
 
@@ -199,12 +154,12 @@ public final class RestGenerationOptions {
         this.returnType = returnType;
     }
 
-    public Operation getOperation() {
-        return operation;
+    public RestMethod getRestMethod() {
+        return method;
     }
 
-    public void setOperation(Operation operation) {
-        this.operation = operation;
+    public void setRestMethod(RestMethod operation) {
+        method = operation;
     }
 
 }
