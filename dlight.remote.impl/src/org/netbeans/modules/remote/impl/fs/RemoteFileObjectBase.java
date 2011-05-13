@@ -80,10 +80,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
 
-    private byte flags;
+    private volatile byte flags;
     
     private static final byte MASK_VALID = 1;
     private static final byte CHECK_CAN_WRITE = 2;
+    private static final byte BEING_UPLOADED = 4;
     
     private static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
 
@@ -108,6 +109,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         } else {
             flags &= ~mask;
         }
+    }
+    
+    /*package*/ boolean isPendingRemoteDelivery() {
+        return getFlag(BEING_UPLOADED);
+    }
+    
+    /*package*/ void setPendingRemoteDelivery(boolean value) {
+        setFlag(BEING_UPLOADED, value);
     }
     
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -356,6 +365,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public Date lastModified() {
+        if (isPendingRemoteDelivery()) {
+            return new Date(-1);
+        }
         try {
             RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
             if (canonicalParent != null) {
