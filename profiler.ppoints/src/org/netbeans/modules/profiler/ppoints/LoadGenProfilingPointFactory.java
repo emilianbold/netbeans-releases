@@ -46,7 +46,7 @@ package org.netbeans.modules.profiler.ppoints;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.ui.LoadGeneratorCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
-import org.netbeans.modules.profiler.spi.LoadGenPlugin;
+// FIXXX import org.netbeans.modules.profiler.spi.LoadGenPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -88,23 +88,24 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private final Lookup.Result loadGenResult;
-    private final LookupListener lookupListener = new LookupListener() {
-        public void resultChanged(LookupEvent lookupEvent) {
-            available = ((Lookup.Result) lookupEvent.getSource()).allInstances().size() > 0;
-            firePropertyChange(new PropertyChangeEvent(LoadGenProfilingPointFactory.this,
-                                                       ProfilingPointFactory.AVAILABILITY_PROPERTY, false, true));
-        }
-    };
+// FIXXX 
+//    private final Lookup.Result loadGenResult;
+//    private final LookupListener lookupListener = new LookupListener() {
+//        public void resultChanged(LookupEvent lookupEvent) {
+//            available = ((Lookup.Result) lookupEvent.getSource()).allInstances().size() > 0;
+//            firePropertyChange(new PropertyChangeEvent(LoadGenProfilingPointFactory.this,
+//                                                       ProfilingPointFactory.AVAILABILITY_PROPERTY, false, true));
+//        }
+//    };
 
     private boolean available = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public LoadGenProfilingPointFactory() {
-        loadGenResult = Lookup.getDefault().lookupResult(LoadGenPlugin.class);
-        loadGenResult.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, loadGenResult));
-        available = loadGenResult.allInstances().size() > 0;
+// FIXXX         loadGenResult = Lookup.getDefault().lookupResult(LoadGenPlugin.class);
+// FIXXX         loadGenResult.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, loadGenResult));
+// FIXXX         available = loadGenResult.allInstances().size() > 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

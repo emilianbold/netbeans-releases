@@ -49,8 +49,8 @@ import org.netbeans.lib.profiler.client.RuntimeProfilingPoint.HitEvent;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.modules.profiler.ppoints.ui.LoadGeneratorCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
-import org.netbeans.modules.profiler.spi.LoadGenPlugin;
-import org.openide.util.Lookup;
+// FIXXX import org.netbeans.modules.profiler.spi.LoadGenPlugin;
+//import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.awt.BorderLayout;
@@ -449,27 +449,30 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
 
     @Override
     public void setEnabled(boolean value) {
-        LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
-
-        if (lg != null) {
-            super.setEnabled(value);
-        } else {
-            LOGGER.warning("Can not enable the Load Generator profiling point. The appropriate modules are not installed."); // NOI18N
-        }
+// FIXXX 
+//        LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
+//
+//        if (lg != null) {
+//            super.setEnabled(value);
+//        } else {
+//            LOGGER.warning("Can not enable the Load Generator profiling point. The appropriate modules are not installed."); // NOI18N
+//        }
     }
 
     @Override
     public boolean isEnabled() {
-        boolean retValue;
-
-        retValue = super.isEnabled();
-
-        if (retValue) {
-            LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
-            retValue &= (lg != null);
-        }
-
-        return retValue;
+// FIXXX 
+//        boolean retValue;
+//
+//        retValue = super.isEnabled();
+//
+//        if (retValue) {
+//            LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
+//            retValue &= (lg != null);
+//        }
+//
+//        return retValue;
+        return false;
     }
 
     public String getScriptFileName() {
@@ -573,50 +576,51 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
     }
 
     void hit(final HitEvent hitEvent, int index) {
-        LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
-        synchronized(resultsSync) {
-            if (usesEndLocation() && (index == 1)) {
-                if (lg != null) {
-                    lg.stop(getScriptFileName());
-
-                    for (Result result : results) {
-                        if ((result.getEndTimestamp() == -1) && (result.getThreadID() == hitEvent.getThreadId())) {
-                            result.setEndTimestamp(hitEvent.getTimestamp());
-
-                            break;
-                        }
-                    }
-                }
-            } else {
-                if (lg != null) {
-                    lg.start(getScriptFileName(),
-                             new LoadGenPlugin.Callback() {
-                            private long correlationId = hitEvent.getTimestamp();
-
-                            public void afterStart(LoadGenPlugin.Result result) {
-                                Result rslt = new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(),
-                                                         result == LoadGenPlugin.Result.SUCCESS);
-                                results.add(rslt);
-                                correlationId = hitEvent.getTimestamp();
-                                getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
-                            }
-
-                            public void afterStop(LoadGenPlugin.Result result) {
-                                for (Result rslt : results) {
-                                    if (rslt.getTimestamp() == correlationId) {
-                                        rslt.setEndTimestamp(correlationId);
-                                        rslt.setStopTime();
-
-                                        break;
-                                    }
-                                }
-
-                                getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
-                            }
-                        });
-                }
-            }
-        }
+// FIXXX 
+//        LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
+//        synchronized(resultsSync) {
+//            if (usesEndLocation() && (index == 1)) {
+//                if (lg != null) {
+//                    lg.stop(getScriptFileName());
+//
+//                    for (Result result : results) {
+//                        if ((result.getEndTimestamp() == -1) && (result.getThreadID() == hitEvent.getThreadId())) {
+//                            result.setEndTimestamp(hitEvent.getTimestamp());
+//
+//                            break;
+//                        }
+//                    }
+//                }
+//            } else {
+//                if (lg != null) {
+//                    lg.start(getScriptFileName(),
+//                             new LoadGenPlugin.Callback() {
+//                            private long correlationId = hitEvent.getTimestamp();
+//
+//                            public void afterStart(LoadGenPlugin.Result result) {
+//                                Result rslt = new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(),
+//                                                         result == LoadGenPlugin.Result.SUCCESS);
+//                                results.add(rslt);
+//                                correlationId = hitEvent.getTimestamp();
+//                                getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
+//                            }
+//
+//                            public void afterStop(LoadGenPlugin.Result result) {
+//                                for (Result rslt : results) {
+//                                    if (rslt.getTimestamp() == correlationId) {
+//                                        rslt.setEndTimestamp(correlationId);
+//                                        rslt.setStopTime();
+//
+//                                        break;
+//                                    }
+//                                }
+//
+//                                getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
+//                            }
+//                        });
+//                }
+//            }
+//        }
     }
 
     void reset() {

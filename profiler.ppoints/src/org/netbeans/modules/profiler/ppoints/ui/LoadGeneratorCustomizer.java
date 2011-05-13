@@ -45,13 +45,12 @@ package org.netbeans.modules.profiler.ppoints.ui;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
-import org.netbeans.modules.profiler.spi.LoadGenPlugin;
+// FIXXXimport org.netbeans.modules.profiler.spi.LoadGenPlugin;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -68,7 +67,6 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -677,22 +675,23 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
             chooser.setDialogTitle(CHOOSE_SCRIPT_DIALOG_CAPTION);
 
-            chooser.setFileFilter(new FileFilter() {
-                    private Set<String> extensions = new HashSet<String>();
-
-                    {
-                        LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
-                        extensions = lg.getSupportedExtensions();
-                    }
-
-                    public boolean accept(File f) {
-                        return f.isDirectory() || extensions.contains(FileUtil.getExtension(f.getPath()));
-                    }
-
-                    public String getDescription() {
-                        return NbBundle.getMessage(LoadGeneratorCustomizer.class, "LoadGeneratorCustomizer_SupportedFiles"); // NOI18N
-                    }
-                });
+// FIXXX            
+//            chooser.setFileFilter(new FileFilter() {
+//                    private Set<String> extensions = new HashSet<String>();
+//
+//                    {
+//                        LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
+//                        extensions = lg.getSupportedExtensions();
+//                    }
+//
+//                    public boolean accept(File f) {
+//                        return f.isDirectory() || extensions.contains(FileUtil.getExtension(f.getPath()));
+//                    }
+//
+//                    public String getDescription() {
+//                        return NbBundle.getMessage(LoadGeneratorCustomizer.class, "LoadGeneratorCustomizer_SupportedFiles"); // NOI18N
+//                    }
+//                });
 
             fileChooser = chooser;
         }
@@ -705,20 +704,21 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
     }
 
     private boolean isScriptValid() {
-        String fileName = scriptTextField.getText();
-        File file = new File(fileName);
-
-        if (file.exists() && file.isFile()) {
-            LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
-
-            if (lg == null) {
-                return false;
-            }
-
-            String ext = FileUtil.getExtension(scriptTextField.getText());
-
-            return lg.getSupportedExtensions().contains(ext);
-        }
+// FIXXX         
+//        String fileName = scriptTextField.getText();
+//        File file = new File(fileName);
+//
+//        if (file.exists() && file.isFile()) {
+//            LoadGenPlugin lg = Lookup.getDefault().lookup(LoadGenPlugin.class);
+//
+//            if (lg == null) {
+//                return false;
+//            }
+//
+//            String ext = FileUtil.getExtension(scriptTextField.getText());
+//
+//            return lg.getSupportedExtensions().contains(ext);
+//        }
 
         return false;
     }

@@ -623,7 +623,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // sampledTimingSpinner
         sampledTimingSpinner = new JExtendedSpinner(new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1)) {
                 public Dimension getPreferredSize() {
-                    return new Dimension(55, Utils.getDefaultSpinnerHeight());
+                    return new Dimension(55, getDefaultSpinnerHeight());
                 }
 
                 public Dimension getMinimumSize() {
@@ -744,7 +744,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // limitThreadsSpinner
         limitThreadsSpinner = new JExtendedSpinner(new SpinnerNumberModel(50, 1, Integer.MAX_VALUE, 1)) {
                 public Dimension getPreferredSize() {
-                    return new Dimension(55, Utils.getDefaultSpinnerHeight());
+                    return new Dimension(55, getDefaultSpinnerHeight());
                 }
 
                 public Dimension getMinimumSize() {

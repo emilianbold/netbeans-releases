@@ -44,12 +44,10 @@
 package org.netbeans.modules.profiler.ppoints.ui;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.ppoints.GlobalProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointWizard;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -58,6 +56,8 @@ import org.openide.util.actions.NodeAction;
 import java.awt.Dialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -96,13 +96,17 @@ public class InsertProfilingPointAction extends NodeAction {
 
     public void performAction(Project project) {
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
-            NetBeansProfiler.getDefaultNB().displayWarning(PROFILING_IN_PROGRESS_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    PROFILING_IN_PROGRESS_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
 
             return;
         }
 
         if (ProjectUtilities.getOpenedProjects().length == 0) {
-            NetBeansProfiler.getDefaultNB().displayWarning(NO_PROJECT_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NO_PROJECT_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
 
             return;
         }
@@ -112,7 +116,7 @@ public class InsertProfilingPointAction extends NodeAction {
 
         if (wd != null) { // if null then another PP is currently being created/customized and user is already notified
 
-            final Dialog d = ProfilerDialogs.createDialog(wd);
+            final Dialog d = DialogDisplayer.getDefault().createDialog(wd);
             d.setVisible(true);
 
             boolean createPPoint = wd.getValue() == WizardDescriptor.FINISH_OPTION;

@@ -52,15 +52,13 @@ import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.table.ExtendedTableModel;
 import org.netbeans.lib.profiler.ui.components.table.JExtendedTablePanel;
 import org.netbeans.lib.profiler.ui.components.table.SortableTableModel;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+// FIXXX import org.netbeans.modules.profiler.ProfilerIDESettings;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
 import org.netbeans.modules.profiler.ppoints.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -100,6 +98,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -274,7 +274,9 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             CodeProfilingPoint.Location location = selectedProfilingPoint.getStartLocation();
 
             if (location == null) {
-                NetBeansProfiler.getDefaultNB().displayWarning(NO_START_DEFINED_MSG);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NO_START_DEFINED_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
             } else {
                 Utils.openLocation(location);
             }
@@ -284,7 +286,9 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             CodeProfilingPoint.Location location = selectedProfilingPoint.getEndLocation();
 
             if (location == null) {
-                NetBeansProfiler.getDefaultNB().displayWarning(NO_END_DEFINED_MSG);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NO_END_DEFINED_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
             } else {
                 Utils.openLocation(location);
             }
@@ -686,11 +690,11 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         dependenciesCheckbox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, INCL_SUBPROJ_CHECKBOX_TEXT);
-        dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
+// FIXXX        dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
         toolbar.add(dependenciesCheckbox);
         dependenciesCheckbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    ProfilerIDESettings.getInstance().setIncludeProfilingPointsDependencies(dependenciesCheckbox.isSelected());
+// FIXXX                    ProfilerIDESettings.getInstance().setIncludeProfilingPointsDependencies(dependenciesCheckbox.isSelected());
                     refreshProfilingPoints();
                 }
             });

@@ -68,7 +68,6 @@ public class Utils {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     public static Dimension DIMENSION_SMALLEST = new Dimension(0, 0);
-    private static int defaultSpinnerHeight = -1;
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -102,14 +101,6 @@ public class Utils {
     public static boolean isCPUSettings(int type) {
         return (type == ProfilingSettings.PROFILE_CPU_ENTIRE) || (type == ProfilingSettings.PROFILE_CPU_PART)
                || (type == ProfilingSettings.PROFILE_CPU_STOPWATCH);
-    }
-
-    public static int getDefaultSpinnerHeight() {
-        if (defaultSpinnerHeight == -1) {
-            defaultSpinnerHeight = new JTextField().getPreferredSize().height;
-        }
-
-        return defaultSpinnerHeight;
     }
 
     public static boolean isMemorySettings(ProfilingSettings settings) {

@@ -46,7 +46,6 @@ package org.netbeans.modules.profiler.ppoints.ui;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ui.components.ThinBevelBorder;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.GlobalProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
@@ -88,6 +87,8 @@ import javax.swing.border.Border;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
 
 
@@ -279,7 +280,9 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
     public void actionPerformed(final ActionEvent e) {
         acceleratorKeyStroke = Utilities.stringToKey(e.getActionCommand());
         if (acceleratorKeyStroke == null || acceleratorKeyStroke.getModifiers() == 0) {
-            NetBeansProfiler.getDefaultNB().displayError(MessageFormat.format(INVALID_SHORTCUT_MSG, new Object[] { ACTION_NAME }));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    MessageFormat.format(INVALID_SHORTCUT_MSG, new Object[] { ACTION_NAME }),
+                                    NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
         
@@ -289,7 +292,9 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
             warningDialogOpened = true;
-            NetBeansProfiler.getDefaultNB().displayWarning(PROFILING_PROGRESS_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    PROFILING_PROGRESS_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
             warningDialogOpened = false;
 
             return;
@@ -297,7 +302,9 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (Utils.getCurrentLocation(0).equals(CodeProfilingPoint.Location.EMPTY)) {
             warningDialogOpened = true;
-            NetBeansProfiler.getDefaultNB().displayWarning(BAD_SOURCE_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    BAD_SOURCE_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
             warningDialogOpened = false;
 
             return;

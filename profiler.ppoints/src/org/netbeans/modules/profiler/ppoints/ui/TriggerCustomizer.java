@@ -288,7 +288,7 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         triggerValueSpinner = new JExtendedSpinner(percentsModel) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.max(super.getPreferredSize().width, 55),
-                                         org.netbeans.modules.profiler.stp.Utils.getDefaultSpinnerHeight());
+                                         getDefaultSpinnerHeight());
                 }
 
                 public Dimension getMinimumSize() {

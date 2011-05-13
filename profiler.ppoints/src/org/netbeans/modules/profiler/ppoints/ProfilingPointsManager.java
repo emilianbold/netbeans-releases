@@ -53,13 +53,12 @@ import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
 import org.netbeans.lib.profiler.common.event.ProfilingStateListener;
 import org.netbeans.lib.profiler.global.CommonConstants;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+// FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
+// FIXXX import org.netbeans.modules.profiler.ProfilerIDESettings;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsWindow;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityListener;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+// FIXXX import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -104,6 +103,8 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
 
 
@@ -340,7 +341,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
                     processOpenedProjectsChanged(); // will subsequently invoke projectOpened on all open projects
-                    NetBeansProfiler.getDefaultNB().addProfilingStateListener(ProfilingPointsManager.this);
+// FIXXX                     NetBeansProfiler.getDefaultNB().addProfilingStateListener(ProfilingPointsManager.this);
                     OpenProjects.getDefault().addPropertyChangeListener(ProfilingPointsManager.this);
                 }
             });
@@ -357,9 +358,12 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     public List<ProfilingPoint> getCompatibleProfilingPoints(Project project, ProfilingSettings profilingSettings, boolean sorted) {
+// FIXXX 
+//        List<ProfilingPoint> projectProfilingPoints = sorted ? getSortedProfilingPoints(project, 1, false)
+//                                                             : getProfilingPoints(project, ProfilerIDESettings.
+//                                                               getInstance().getIncludeProfilingPointsDependencies(), false); // TODO: define default sorting (current sorting of Profiling Points window?)
         List<ProfilingPoint> projectProfilingPoints = sorted ? getSortedProfilingPoints(project, 1, false)
-                                                             : getProfilingPoints(project, ProfilerIDESettings.
-                                                               getInstance().getIncludeProfilingPointsDependencies(), false); // TODO: define default sorting (current sorting of Profiling Points window?)
+                                                             : getProfilingPoints(project, true, false); // TODO: define default sorting (current sorting of Profiling Points window?)
         List<ProfilingPoint> compatibleProfilingPoints = new ArrayList();
 
         for (ProfilingPoint profilingPoint : projectProfilingPoints) {
@@ -440,8 +444,10 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     public List<ProfilingPoint> getSortedProfilingPoints(Project project, int sortBy, boolean sortOrder) {
-        List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, ProfilerIDESettings.getInstance().
-                                                                        getIncludeProfilingPointsDependencies(), false);
+// FIXXX
+//        List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, ProfilerIDESettings.getInstance().
+//                                                                        getIncludeProfilingPointsDependencies(), false);
+        List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, true, false);
         Collections.sort(sortedProfilingPoints, new ProfilingPointsComparator(sortBy, sortOrder));
 
         return sortedProfilingPoints;
@@ -709,7 +715,8 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         ValidityAwarePanel showingCustomizer = getShowingCustomizer();
 
         if (showingCustomizer != null) {
-            NetBeansProfiler.getDefaultNB().displayWarningAndWait(ANOTHER_PP_EDITED_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    ANOTHER_PP_EDITED_MSG, NotifyDescriptor.WARNING_MESSAGE));
             SwingUtilities.getWindowAncestor(showingCustomizer).requestFocus();
             showingCustomizer.requestFocusInWindow();
         } else {
@@ -733,7 +740,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
             DialogDescriptor dd = new DialogDescriptor(customizerContainer, PP_CUSTOMIZER_CAPTION, false,
                                                        new Object[] { cb, DialogDescriptor.CANCEL_OPTION },
                                                        cb, 0, helpCtx, null);
-            final Dialog d = ProfilerDialogs.createDialog(dd);
+            final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
             d.addWindowListener(new CustomizerListener(d, dd, updater));
             d.setModal(true);
             // give focus to the initial focus target
@@ -1129,12 +1136,12 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
                 try {
                     factory.saveProfilingPoints(project);
                 } catch (IOException ex) {
-                    NetBeansProfiler.getDefaultNB()
-                                    .displayError(MessageFormat.format(CANNOT_STORE_PP_MSG,
-                                                                       new Object[] {
-                                                                           factory.getType(),
-                                                                           ProjectUtils.getInformation(project).getDisplayName()
-                                                                       }));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            MessageFormat.format(CANNOT_STORE_PP_MSG,
+                               new Object[] {
+                                   factory.getType(),
+                                   ProjectUtils.getInformation(project).getDisplayName()
+                               }), NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
         }

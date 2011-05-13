@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.ppoints;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityListener;
 import org.netbeans.modules.profiler.ppoints.ui.WizardPanel1UI;
@@ -60,6 +59,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -353,7 +354,8 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         ValidityAwarePanel showingCustomizer = ProfilingPointsManager.getDefault().getShowingCustomizer();
 
         if (showingCustomizer != null) {
-            NetBeansProfiler.getDefaultNB().displayWarningAndWait(ANOTHER_PP_EDITED_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    ANOTHER_PP_EDITED_MSG, NotifyDescriptor.WARNING_MESSAGE));
             SwingUtilities.getWindowAncestor(showingCustomizer).requestFocus();
             showingCustomizer.requestFocusInWindow();
 
@@ -372,7 +374,8 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
 
                 return wizardDescriptor;
             } else {
-                NetBeansProfiler.getDefaultNB().displayError(NO_PPS_FOUND_MSG);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NO_PPS_FOUND_MSG, NotifyDescriptor.ERROR_MESSAGE));
 
                 return null;
             }

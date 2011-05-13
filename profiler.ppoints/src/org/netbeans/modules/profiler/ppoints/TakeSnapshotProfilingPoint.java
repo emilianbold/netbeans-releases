@@ -48,16 +48,14 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
 import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.results.cpu.CPUResultsSnapshot;
+// FIXXXimport org.netbeans.lib.profiler.results.cpu.CPUResultsSnapshot;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
-import org.netbeans.modules.profiler.LoadedSnapshot;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerControlPanel2;
-import org.netbeans.modules.profiler.ResultsManager;
-import org.netbeans.modules.profiler.actions.HeapDumpAction;
+// FIXXXimport org.netbeans.modules.profiler.LoadedSnapshot;
+// FIXXXimport org.netbeans.modules.profiler.ProfilerControlPanel2;
+// FIXXXimport org.netbeans.modules.profiler.ResultsManager;
+// FIXXXimport org.netbeans.modules.profiler.actions.HeapDumpAction;
 import org.netbeans.modules.profiler.ppoints.ui.TakeSnapshotCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
-import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +80,9 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.modules.profiler.utils.Utilities;
+// FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -300,10 +300,11 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                         if ((snapshotFile != null) && snapshotFile.exists()) {
                             String type = TakeSnapshotProfilingPoint.this.getSnapshotType();
                             if (type.equals(TYPE_PROFDATA_KEY) || type.equals(TYPE_HEAPDUMP_KEY)) {
-                                Utilities.openSnapshot(snapshotFile);
+// FIXXX                                Utilities.openSnapshot(snapshotFile);
                             }
                         } else {
-                            NetBeansProfiler.getDefaultNB().displayWarning(SNAPSHOT_NOT_AVAILABLE_MSG);
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    SNAPSHOT_NOT_AVAILABLE_MSG, NotifyDescriptor.WARNING_MESSAGE));
                         }
                     }
                 };
@@ -606,7 +607,8 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
     FileObject getSnapshotDirectory() throws IOException {
         if (snapshotTarget.equals(TARGET_PROJECT_KEY)) {
-            return IDEUtils.getProjectSettingsFolder(getProject(), true);
+// FIXXX             return IDEUtils.getProjectSettingsFolder(getProject(), true);
+            return null;
         } else {
             File f = new File(snapshotFile);
             f.mkdirs();
@@ -674,8 +676,11 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
     private File constructHeapDumpFile(long time) throws IOException {
         String dir = FileUtil.toFile(getSnapshotDirectory()).getAbsolutePath();
-        String heapDumpFileName = dir + File.separatorChar + HeapDumpAction.TAKEN_HEAPDUMP_PREFIX + time + "."
-                                  + ResultsManager.HEAPDUMP_EXTENSION; // NOI18N
+// FIXXX
+//        String heapDumpFileName = dir + File.separatorChar + HeapDumpAction.TAKEN_HEAPDUMP_PREFIX + time + "."
+//                                  + ResultsManager.HEAPDUMP_EXTENSION; // NOI18N
+        String heapDumpFileName = dir + File.separatorChar + "heapdump-" + time + "."
+                                  + "hprof"; // NOI18N
 
         return new File(heapDumpFileName);
     }
@@ -691,7 +696,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             if (heapdumpFile.exists()) {
                 File fixedHeapdumpFile = constructHeapDumpFile(Utils.getTimeInMillis(time));
                 heapdumpFile.renameTo(fixedHeapdumpFile);
-                ProfilerControlPanel2.getDefault().refreshSnapshotsList();
+// FIXXX                ProfilerControlPanel2.getDefault().refreshSnapshotsList();
 
                 return fixedHeapdumpFile.toURI().toURL().toExternalForm();
             }
@@ -704,34 +709,37 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         return NO_DATA_AVAILABLE_MSG;
     }
 
-    private static LoadedSnapshot takeSnapshot() throws CPUResultsSnapshot.NoDataAvailableException {
-        return ResultsManager.getDefault().prepareSnapshot();
-    }
+// FIXXX
+//    private static LoadedSnapshot takeSnapshot() throws CPUResultsSnapshot.NoDataAvailableException {
+//        return ResultsManager.getDefault().prepareSnapshot();
+//    }
 
     private String takeSnapshotHit() {
-        LoadedSnapshot loadedSnapshot = null;
-        String snapshotFilename = null;
-
-        try {
-            loadedSnapshot = takeSnapshot();
-        } catch (CPUResultsSnapshot.NoDataAvailableException e) {
-            //ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            // NOTE: this is actually a supported state - taking snapshots when no data are available, resultString remains null
-        }
-
-        if (loadedSnapshot != null) {
-            try {
-                FileObject snapshotDirectory = getSnapshotDirectory();
-                FileObject profFile = snapshotDirectory.createData(ResultsManager.getDefault()
-                                                                                 .getDefaultSnapshotFileName(loadedSnapshot),
-                                                                   ResultsManager.SNAPSHOT_EXTENSION);
-                ResultsManager.getDefault().saveSnapshot(loadedSnapshot, profFile);
-                snapshotFilename = FileUtil.toFile(profFile).toURI().toURL().toExternalForm();
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            }
-        }
-
-        return (snapshotFilename == null) ? NO_DATA_AVAILABLE_MSG : snapshotFilename;
+// FIXXX
+//        LoadedSnapshot loadedSnapshot = null;
+//        String snapshotFilename = null;
+//
+//        try {
+//            loadedSnapshot = takeSnapshot();
+//        } catch (CPUResultsSnapshot.NoDataAvailableException e) {
+//            //ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+//            // NOTE: this is actually a supported state - taking snapshots when no data are available, resultString remains null
+//        }
+//
+//        if (loadedSnapshot != null) {
+//            try {
+//                FileObject snapshotDirectory = getSnapshotDirectory();
+//                FileObject profFile = snapshotDirectory.createData(ResultsManager.getDefault()
+//                                                                                 .getDefaultSnapshotFileName(loadedSnapshot),
+//                                                                   ResultsManager.SNAPSHOT_EXTENSION);
+//                ResultsManager.getDefault().saveSnapshot(loadedSnapshot, profFile);
+//                snapshotFilename = FileUtil.toFile(profFile).toURI().toURL().toExternalForm();
+//            } catch (IOException e) {
+//                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+//            }
+//        }
+//
+//        return (snapshotFilename == null) ? NO_DATA_AVAILABLE_MSG : snapshotFilename;
+        return NO_DATA_AVAILABLE_MSG;
     }
 }

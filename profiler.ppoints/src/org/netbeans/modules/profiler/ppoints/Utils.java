@@ -88,10 +88,11 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -705,15 +706,24 @@ public class Utils {
     }
     
     public static void checkLocation(CodeProfilingPoint.Single ppoint) {
-        if (!isValidLocation(ppoint.getLocation())) NetBeansProfiler.getDefaultNB().displayWarningAndWait(
-                MessageFormat.format(INVALID_PP_LOCATION_MSG, new Object[] { ppoint.getName() }));
+        if (!isValidLocation(ppoint.getLocation()))
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    MessageFormat.format(INVALID_PP_LOCATION_MSG,
+                                    new Object[] { ppoint.getName() }),
+                                    NotifyDescriptor.WARNING_MESSAGE));
     }
     
     public static void checkLocation(CodeProfilingPoint.Paired ppoint) {
-        if (!isValidLocation(ppoint.getStartLocation())) NetBeansProfiler.getDefaultNB().displayWarningAndWait(
-                MessageFormat.format(INVALID_PP_LOCATION_MSG, new Object[] { ppoint.getName() }));
-        else if (ppoint.usesEndLocation() && !isValidLocation(ppoint.getEndLocation())) NetBeansProfiler.getDefaultNB().displayWarningAndWait(
-                MessageFormat.format(INVALID_PP_LOCATION_MSG, new Object[] { ppoint.getName() }));
+        if (!isValidLocation(ppoint.getStartLocation()))
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    MessageFormat.format(INVALID_PP_LOCATION_MSG,
+                                    new Object[] { ppoint.getName() }),
+                                    NotifyDescriptor.WARNING_MESSAGE));
+        else if (ppoint.usesEndLocation() && !isValidLocation(ppoint.getEndLocation()))
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    MessageFormat.format(INVALID_PP_LOCATION_MSG,
+                                    new Object[] { ppoint.getName() }),
+                                    NotifyDescriptor.WARNING_MESSAGE));
     }
 
     public static Project getMostActiveJavaProject() {
@@ -881,7 +891,9 @@ public class Utils {
         final int documentOffset = getDocumentOffset(location);
 
         if (documentOffset == -1) {
-            NetBeansProfiler.getDefaultNB().displayError(CANNOT_OPEN_SOURCE_MSG);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    CANNOT_OPEN_SOURCE_MSG,
+                                    NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
 

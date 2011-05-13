@@ -50,7 +50,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import java.awt.BorderLayout;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
-import org.netbeans.modules.profiler.utils.IDEUtils;
 
 
 /**

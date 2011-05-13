@@ -45,7 +45,6 @@ package org.netbeans.modules.profiler.ppoints.ui;
 
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.netbeans.modules.profiler.ppoints.TimedGlobalProfilingPoint;
-import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.openide.util.NbBundle;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -416,7 +415,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
         timeFrequencySpinner = new JExtendedSpinner(new SpinnerNumberModel(1, 1, 9999, 1)) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.max(super.getPreferredSize().width, 55),
-                                         org.netbeans.modules.profiler.stp.Utils.getDefaultSpinnerHeight());
+                                         getDefaultSpinnerHeight());
                 }
 
                 public Dimension getMinimumSize() {

@@ -459,7 +459,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // defineDepthSpinner
         defineDepthSpinner = new JExtendedSpinner(new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1)) {
                 public Dimension getPreferredSize() {
-                    return new Dimension(55, Utils.getDefaultSpinnerHeight());
+                    return new Dimension(55, getDefaultSpinnerHeight());
                 }
 
                 public Dimension getMinimumSize() {

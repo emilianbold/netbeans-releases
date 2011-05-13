@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.ppoints.ui;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.Utils;
 import org.openide.util.HelpCtx;
@@ -54,6 +53,8 @@ import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
@@ -164,7 +165,9 @@ public class ShowOppositeProfilingPointAction extends SystemAction implements Co
                         if (oppositeLocation != null) {
                             Utils.openLocation(oppositeLocation);
                         } else {
-                            NetBeansProfiler.getDefaultNB().displayWarning(NO_END_DEFINED_MSG);
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NO_END_DEFINED_MSG,
+                                    NotifyDescriptor.WARNING_MESSAGE));
                         }
                     }
                 };

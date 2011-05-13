@@ -47,7 +47,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import java.awt.BorderLayout;
@@ -61,6 +60,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 
 
@@ -111,7 +111,7 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
                                                                               new Object[] { settings.getSettingsName() }), true,
                                                          new Object[] { DialogDescriptor.OK_OPTION }, DialogDescriptor.OK_OPTION,
                                                          0, null, null);
-        final Dialog d = ProfilerDialogs.createDialog(dd);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
 
