@@ -46,20 +46,24 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.GitFileInfo.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 
@@ -149,40 +153,92 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
         return files;
     }
 
+    @Override
+    public String[] getParents () {
+        String[] parents = new String[revCommit.getParentCount()];
+        for (int i = 0; i < revCommit.getParentCount(); ++i) {
+            parents[i] = ObjectId.toString(revCommit.getParent(i).getId());
+        }
+        return parents;
+    }
+
     private void listFiles() throws GitException {
+        RevWalk revWalk = new RevWalk(repository);
+        TreeWalk walk = new TreeWalk(repository);
         try {
             ArrayList<GitFileInfo> result = new ArrayList<GitFileInfo>();
-
-            TreeWalk walk = new TreeWalk(repository);
             walk.reset();
             walk.setRecursive(true);
-            walk.addTree(revCommit.getTree().getId());
-            RevWalk revWalk = new RevWalk(repository);
-            for (int i = 0; i < revCommit.getParentCount(); ++i) {
-                RevCommit parentCommit = revWalk.parseCommit(revCommit.getParent(i).getId());
-                walk.addTree(parentCommit.getTree().getId());
-            }
-            revWalk.release();
-            walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
-
-            final int nTree = walk.getTreeCount();
-            while (walk.next()) {
-                GitStatus.Status changeType = GitStatus.Status.STATUS_ADDED;
-                final int currentMode = walk.getRawMode(0);
-                if (nTree > 1) {
-                    changeType = GitStatus.Status.STATUS_MODIFIED;
-                    final int m1 = walk.getRawMode(1);
-                    if (currentMode == 0) {
-                       changeType = GitStatus.Status.STATUS_REMOVED;
-                    } else if (!presentInParents(walk)) {
-                       changeType = GitStatus.Status.STATUS_ADDED;
-                    }
+            RevCommit parentCommit = null;
+            if (revCommit.getParentCount() > 0) {
+                for (RevCommit commit : revCommit.getParents()) {
+                    revWalk.markStart(revWalk.lookupCommit(commit));
                 }
-                result.add(new GitFileInfo(new File(repository.getWorkTree(), walk.getPathString()), walk.getPathString(), changeType));
+                revWalk.setRevFilter(RevFilter.MERGE_BASE);
+                Iterator<RevCommit> it = revWalk.iterator();
+                if (it.hasNext()) {
+                    parentCommit = it.next();
+                }
+                if (parentCommit != null) {
+                    walk.addTree(parentCommit.getTree().getId());
+                }
+            }
+            walk.addTree(revCommit.getTree().getId());
+            walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
+            if (parentCommit != null) {
+                List<DiffEntry> entries = DiffEntry.scan(walk);
+                RenameDetector rd = new RenameDetector(repository);
+                rd.addAll(entries);
+                entries = rd.compute();
+                for (DiffEntry e : entries) {
+                    Status status;
+                    File oldFile = null;
+                    String path = e.getOldPath();
+                    if (path == null) {
+                        path = e.getNewPath();
+                    }
+                    switch (e.getChangeType()) {
+                        case ADD:
+                            status = Status.ADDED;
+                            path = e.getNewPath();
+                            break;
+                        case COPY:
+                            status = Status.COPIED;
+                            oldFile = new File(repository.getWorkTree(), e.getOldPath());
+                            path = e.getNewPath();
+                            break;
+                        case DELETE:
+                            status = Status.REMOVED;
+                            path = e.getOldPath();
+                            break;
+                        case MODIFY:
+                            status = Status.MODIFIED;
+                            path = e.getOldPath();
+                            break;
+                        case RENAME:
+                            status = Status.RENAMED;
+                            oldFile = new File(repository.getWorkTree(), e.getOldPath());
+                            path = e.getNewPath();
+                            break;
+                        default:
+                            status = Status.UNKNOWN;
+                    }
+                    if (status == Status.RENAMED) {
+                        result.add(new GitFileInfo(new File(repository.getWorkTree(), e.getOldPath()), e.getOldPath(), Status.REMOVED, null));
+                    }
+                    result.add(new GitFileInfo(new File(repository.getWorkTree(), path), path, status, oldFile));
+                }
+            } else {
+                while (walk.next()) {
+                    result.add(new GitFileInfo(new File(repository.getWorkTree(), walk.getPathString()), walk.getPathString(), Status.ADDED, null));
+                }
             }
             this.modifiedFiles = result.toArray(new GitFileInfo[result.size()]);
         } catch (IOException ex) {
             throw new GitException(ex);
+        } finally {
+            revWalk.release();
+            walk.release();
         }
     }
 
