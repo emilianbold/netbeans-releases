@@ -75,6 +75,7 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
     private int sshPort = 22;
     
     private static final Logger LOG = Logger.getLogger("versioning.subversion.passwordCallback"); //NOI18N
+    protected static final boolean PRINT_PASSWORDS = "true".equals(System.getProperty("versioning.subversion.logpassword", "false")); //NOI18N
     
     /** Creates a new instance of SvnClientCallback */
     public SvnClientCallback(SVNUrl url, int handledExceptions) {
@@ -100,6 +101,9 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
         }
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, "getPassword: {0}", retval == null ? "null" : retval.isEmpty() ? "empty" : "non-empty"); //NOI18N
+            if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "getPassword: returning {0}", retval); //NOI18N
+            }
         }
         return retval;
     }
@@ -154,6 +158,9 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
         String passphrase = getCertPassword();
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, "getSSHPrivateKeyPassphrase: {0}", passphrase == null ? "null" : passphrase.isEmpty() ? "empty" : "non-empty"); //NOI18N
+            if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "getSSHPrivateKeyPassphrase: returning {0}", passphrase); //NOI18N
+            }
         }
         return passphrase;
     }
@@ -175,6 +182,9 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
         String pwd = getCertPassword();
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, "getSSLCertPwd: {0}", pwd == null ? "null" : pwd.isEmpty() ? "empty" : "non-empty"); //NOI18N
+            if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "getSSLCertPwd: returning {0}", pwd); //NOI18N
+            }
         }
         return pwd;
     }
