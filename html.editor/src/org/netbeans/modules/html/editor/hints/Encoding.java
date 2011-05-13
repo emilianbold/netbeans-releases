@@ -64,10 +64,9 @@ public class Encoding extends PatternRule {
         "Astral non-character",
         "Forbidden code point",
         "Document uses the Unicode Private Use Area(s), which should not be used in publicly exchanged documents. (Charmod C073)",
-        
         //TreeBuilder
-        "Attribute .content. would be sniffed as an internal character encoding declaration but there was no matching",
-        
+        "Attribute .content. would be sniffed as an internal character encoding declaration but there was no matching",        
+        "Internal encoding declaration .*? disagrees with the actual encoding of the document (.*?)",
             
             
     }; //NOI18N

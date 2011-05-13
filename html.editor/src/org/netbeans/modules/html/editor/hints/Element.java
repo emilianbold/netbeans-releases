@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.HintSeverity;
  *
  * @author marekfukala
  */
-public class TagSyntax extends PatternRule {
+public class Element extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
         //ErrorReportingTokenizer
@@ -65,6 +65,17 @@ public class TagSyntax extends PatternRule {
         "End of file after .<\\.",
         "Duplicate attribute",
         "Self-closing syntax (./>.) used on a non-void HTML element",
+        
+        "Text not allowed in element .*? in this context",
+        
+        //attributes
+        "Attribute .*? not allowed on element .*? at this point",
+        "Required attributes missing on element",
+        
+        //xhtml
+        "XHTML element .*? not allowed as child of XHTML element .*? in this context.",
+        "Attribute .*? not allowed on XHTML element .*? at this point.",
+        
             
     }; //NOI18N
     
