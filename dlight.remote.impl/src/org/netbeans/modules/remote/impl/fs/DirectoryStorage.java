@@ -215,11 +215,17 @@ public class DirectoryStorage {
     }
 
     public List<DirEntry> listValid() {
+        return listValid(null);
+    }
+
+    public List<DirEntry> listValid(String nameToSkip) {
         synchronized (this) {
             ArrayList<DirEntry> result = new ArrayList<DirEntry>(entries.size());
             for (DirEntry entry : entries.values()) {
                 if (entry.isValid()) {
-                    result.add(entry);
+                    if (nameToSkip == null || !nameToSkip.equals(entry.getName())) {
+                        result.add(entry);
+                    }
                 }
             }
             return result;
