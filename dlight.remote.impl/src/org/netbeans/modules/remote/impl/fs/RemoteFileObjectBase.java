@@ -287,7 +287,8 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public boolean canWrite() {
         setFlag(CHECK_CAN_WRITE, true);
-        if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {            
+        if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+            getFileSystem().addReadOnlyConnectNotification(this);
             return false;
         }
         try {

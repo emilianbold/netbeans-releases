@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.SwingUtilities;
@@ -108,6 +109,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static int dirSyncCount;
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+    private AtomicBoolean readOnlyConnectNotificationShown = new AtomicBoolean(false);
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -159,6 +161,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
         
     public void disconnected(ExecutionEnvironment env) {
+        readOnlyConnectNotificationShown.compareAndSet(true, false);
         if (execEnv.equals(env)) {
             for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
                 fo.connectionChanged();
@@ -444,6 +447,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
 
         return strBuff.toString();
+    }
+
+    void addReadOnlyConnectNotification(RemoteFileObjectBase fo) {
+        if (readOnlyConnectNotificationShown.compareAndSet(false, true)) {
+            remoteFileSupport.addPendingFile(fo);
+        }
     }
 
     private static class RootFileObject extends RemoteDirectory {
