@@ -23,13 +23,12 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,40 +40,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
-package org.netbeans.modules.websvc.rest.codegen.model;
+import org.netbeans.modules.websvc.rest.codegen.RestMethod;
 
-import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
+public enum Operation implements RestMethod {
 
-/**
- *
- * @author PeterLiu
- */
-public class RelatedEntityResource {
+    CREATE("javax.ws.rs.POST", "create", true ),
+    EDIT("javax.ws.rs.PUT", "edit", true ),
+    REMOVE("javax.ws.rs.DELETE", "remove", "{id}"),
+    FIND("javax.ws.rs.GET", "find", "{id}"),
+    FIND_ALL("javax.ws.rs.GET", "findAll", true),
+    FIND_RANGE("javax.ws.rs.GET", "findRange", "{from}/{to}"),
+    COUNT("javax.ws.rs.GET", "countREST", "count");
+
+    private String method, methodName, uriPath;
+    private boolean override;
     
-    private EntityResourceBean bean;
-    
-    private FieldInfo fieldInfo;
-    
-    private FieldInfo reverseFieldInfo;
-    
-    /** Creates a new instance of RelatedResource */
-    public RelatedEntityResource(EntityResourceBean bean, FieldInfo fieldInfo, 
-            FieldInfo reverseFieldInfo) {
-        this.bean = bean;
-        this.fieldInfo = fieldInfo;
-        this.reverseFieldInfo = reverseFieldInfo;
+    private Operation(String method, String methodName, boolean override) {
+        this.method = method;
+        this.methodName = methodName;
+        this.override = override;
+    }
+
+    private Operation(String method, String methodName) {
+        this.method = method;
+        this.methodName = methodName;
+    }
+
+    private Operation(String method, String methodName, String uriPath) {
+        this.method = method;
+        this.methodName = methodName;
+        this.uriPath = uriPath;
     }
     
-    public EntityResourceBean getResourceBean() {
-        return bean;
+    public String getMethod() {
+        return method;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public String getUriPath() {
+        return uriPath;
     }
     
-    public FieldInfo getFieldInfo() {
-        return fieldInfo;
-    }
-    
-    public FieldInfo getReverseFieldInfo() {
-        return reverseFieldInfo;
+    public boolean overrides(){
+        return override;
     }
 }

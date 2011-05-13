@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,50 +40,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.rest.codegen;
 
-package org.netbeans.modules.websvc.rest.wizard.fromdb;
-
-import org.netbeans.modules.websvc.rest.wizard.*;
-import java.awt.Component;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 
 /**
- * @author Pavel Buzek
+ * @author ads
+ *
  */
-final public class EntityResourcesSetupPanel extends AbstractPanel {
-    
-    private EntityResourcesSetupPanelVisual component;
-    private boolean javaEE6Project;
-    
-    /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor, boolean javaEE6Project) {
-        super(name, wizardDescriptor);
-        this.javaEE6Project = javaEE6Project;
-    }
-    
-    @Override
-    public boolean isFinishPanel() {
-        return true;
+enum RestFacadeMethod implements RestMethod {
+
+    CREATE("javax.ws.rs.POST", "create"),
+    EDIT("javax.ws.rs.PUT", "edit"),
+    REMOVE("javax.ws.rs.DELETE", "remove", "{id}"),
+    FIND("javax.ws.rs.GET", "find", "{id}"),
+    FIND_ALL("javax.ws.rs.GET", "findAll"),
+    FIND_RANGE("javax.ws.rs.GET", "findRange", "{max}/{first}"),
+    COUNT("javax.ws.rs.GET", "count", "count");
+
+    private RestFacadeMethod(String method, String methodName) {
+        this.method = method;
+        this.methodName = methodName;
     }
 
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName, javaEE6Project);
-            component.addChangeListener(this);
-        }
-        return component;
+    private RestFacadeMethod(String method, String methodName, String uriPath) {
+        this.method = method;
+        this.methodName = methodName;
+        this.uriPath = uriPath;
     }
     
-    @Override
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+    public String getMethod() {
+        return method;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public String getUriPath() {
+        return uriPath;
     }
     
-    @Override
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+    public boolean overrides(){
+        return false;
     }
+    
+    private String method;
+    private String methodName;
+    private String uriPath;
 }

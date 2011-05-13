@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,50 +40,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.rest.codegen;
 
-package org.netbeans.modules.websvc.rest.wizard;
-
-import java.awt.Component;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 
 /**
- * @author Pavel Buzek
  * @author ads
+ *
  */
-public final class EntityResourcesSetupPanel extends AbstractPanel {
-    
-    private EntityResourcesSetupPanelVisual component;
-    
-    /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, 
-            WizardDescriptor wizardDescriptor, boolean noController) 
-    {
-        super(name, wizardDescriptor);
-        withoutController = noController;
-    }
-    
-    public boolean isFinishPanel() {
-        return true;
-    }
+public interface RestMethod {
 
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName,
-                    withoutController);
-            component.addChangeListener(this);
-        }
-        return component;
-    }
+    String getMethod();
+
+    String getMethodName();
+
+    String getUriPath();
     
-    public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
-    
-    private boolean withoutController;
+    boolean overrides();
 }
