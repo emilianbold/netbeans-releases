@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.websvc.rest.codegen.model.Resource;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
 import org.netbeans.modules.websvc.rest.support.ZipUtil;
 import org.netbeans.modules.websvc.rest.support.ZipUtil.UnZipFilter;

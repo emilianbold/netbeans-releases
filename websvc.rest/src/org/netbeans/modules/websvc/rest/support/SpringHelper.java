@@ -114,7 +114,7 @@ public class SpringHelper {
         }
         helper = new DOMHelper(fobj);
 
-        Element emfElement = helper.findElementById(EMF_ID);
+        Element emfElement = helper.findElement(BEAN_TAG, ID_ATTR, EMF_ID);
 
         if (emfElement != null) {
             return;
