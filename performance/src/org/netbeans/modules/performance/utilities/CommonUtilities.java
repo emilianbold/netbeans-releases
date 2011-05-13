@@ -217,6 +217,7 @@ public class CommonUtilities {
         closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
                 "Memory");
+        maximizeWholeNetbeansWindow();
     }
     
     public static void closeTaskWindow() {
