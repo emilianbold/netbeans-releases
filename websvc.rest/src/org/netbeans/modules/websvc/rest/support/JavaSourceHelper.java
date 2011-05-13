@@ -651,7 +651,7 @@ public class JavaSourceHelper {
         return maker.ParameterizedType(typeTree, typeArgTrees);
     }
 
-    private static ModifiersTree createModifiersTree(WorkingCopy copy, Modifier[] modifiers, String[] annotations, Object[] annotationAttrs) {
+    public static ModifiersTree createModifiersTree(WorkingCopy copy, Modifier[] modifiers, String[] annotations, Object[] annotationAttrs) {
         TreeMaker maker = copy.getTreeMaker();
         Set<Modifier> modifierSet = new HashSet<Modifier>();
 

@@ -49,6 +49,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
@@ -68,7 +69,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
      */
     @Override
     public boolean isApplicable( InspectActionId id ) {
-        return id == InspectActionId.INJECTABLES ;
+        return id == InspectActionId.INJECTABLES_CONTEXT ;
     }
 
     @Override
@@ -106,7 +107,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model, 
                 subject);
-        final Result result = model.getInjectable(var, null);
+        DependencyInjectionResult result = model.lookupInjectables(var, null);
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
@@ -114,12 +115,12 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
-        if (result instanceof Result.Error) {
+        if (result instanceof DependencyInjectionResult.Error) {
             StatusDisplayer.getDefault().setStatusText(
-                    ((Result.Error) result).getMessage(),
+                    ((DependencyInjectionResult.Error) result).getMessage(),
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         }
-        if (result.getKind() == Result.ResultKind.DEFINITION_ERROR) {
+        if (result.getKind() == DependencyInjectionResult.ResultKind.DEFINITION_ERROR) {
             return;
         }
         CompilationController controller = model
@@ -127,15 +128,18 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
         final InjectablesModel uiModel = new InjectablesModel(result, controller, 
                 metaModel );
         final String name = var.getSimpleName().toString();
+        final Result res = (result instanceof Result) ? (Result)result :null;
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showInjectablesDialog(metaModel, model, 
-                    subject , uiModel , name );
+                    subject , uiModel , name , res );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
+                
+                @Override
                 public void run() {
                     WebBeansActionHelper.showInjectablesDialog(metaModel, 
-                            null , subject ,uiModel , name );
+                            null , subject ,uiModel , name , res);
                 }
             });
         }

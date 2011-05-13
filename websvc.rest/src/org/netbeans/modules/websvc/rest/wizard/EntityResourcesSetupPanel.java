@@ -50,14 +50,18 @@ import org.openide.util.HelpCtx;
 
 /**
  * @author Pavel Buzek
+ * @author ads
  */
-final class EntityResourcesSetupPanel extends AbstractPanel {
+public final class EntityResourcesSetupPanel extends AbstractPanel {
     
     private EntityResourcesSetupPanelVisual component;
     
     /** Create the wizard panel descriptor. */
-    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor) {
+    public EntityResourcesSetupPanel(String name, 
+            WizardDescriptor wizardDescriptor, boolean noController) 
+    {
         super(name, wizardDescriptor);
+        withoutController = noController;
     }
     
     public boolean isFinishPanel() {
@@ -66,7 +70,8 @@ final class EntityResourcesSetupPanel extends AbstractPanel {
 
     public Component getComponent() {
         if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName);
+            component = new EntityResourcesSetupPanelVisual(panelName,
+                    withoutController);
             component.addChangeListener(this);
         }
         return component;
@@ -80,4 +85,6 @@ final class EntityResourcesSetupPanel extends AbstractPanel {
         getComponent();
         return component.valid(wizardDescriptor);
     }
+    
+    private boolean withoutController;
 }

@@ -36,7 +36,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +44,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -53,6 +53,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
@@ -60,11 +61,15 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 import org.openide.util.NbBundle;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * @author ads
@@ -86,7 +91,6 @@ abstract class FieldInjectionPointLogic {
     static final String NAMED_QUALIFIER_ANNOTATION = 
                        "javax.inject.Named";                        // NOI18N
 
-    
     static final String INJECT_ANNOTATION = 
                         "javax.inject.Inject";                      // NOI18N
     
@@ -113,8 +117,8 @@ abstract class FieldInjectionPointLogic {
         return myModel;
     }
     
-    protected Result findVariableInjectable( VariableElement element, 
-            DeclaredType parentType )
+    protected DependencyInjectionResult findVariableInjectable( VariableElement element, 
+            DeclaredType parentType , ResultLookupStrategy strategy )
     {
         DeclaredType parent = parentType;
         try {
@@ -124,13 +128,13 @@ abstract class FieldInjectionPointLogic {
             TypeElement type = e.getElement();
             return new DefinitionErrorResult(element,  parentType, 
                     NbBundle.getMessage(WebBeansModelProviderImpl.class, 
-                            "ERR_BadParent", element.getSimpleName(),
+                            "ERR_BadParent", element.getSimpleName(),       // NOI18N
                              type!= null? type.toString(): null));
         }
         
-        TypeMirror type = getModel().getHelper().getCompilationController().
-            getTypes().asMemberOf(parent, element );
-        return getResult( doFindVariableInjectable(element, type,  true) );
+        TypeMirror elementType = strategy.getType(getModel(), parent , element );
+        DependencyInjectionResult result  = doFindVariableInjectable(element, elementType, true);
+        return strategy.getResult( getModel() , result );
     }
     
     protected DeclaredType getParent( Element element , DeclaredType parentType) 
@@ -152,40 +156,7 @@ abstract class FieldInjectionPointLogic {
         return parent;
     }
     
-    protected Result getResult( Result result  )
-    {
-        /*
-         * Simple filtering related to production elements types.
-         * F.e. there could be injection point with String type.
-         * String is unproxyable type ( it is final ) so it cannot 
-         * be used as injectable type. Only appropriate production element
-         * is valid injectable. But String will be found as result of previous
-         * procedure. So it should be removed.      
-         */
-        filterBeans( result );
-        
-        result = filterEnabled(result );
-        
-        return result;
-    }
-    
-    protected void filterBeans( Result result) {
-        if ( result instanceof ResultImpl ){
-            BeansFilter filter = BeansFilter.get();
-            filter.filter(((ResultImpl)result).getTypeElements() );
-        }
-    }
-    
-    protected Result filterEnabled( Result result){
-        if ( result instanceof ResultImpl ){
-            EnableBeansFilter filter = new EnableBeansFilter((ResultImpl)result,
-                    getModel());
-            return filter.filter();
-        }
-        return result;
-    }
-    
-    protected Result doFindVariableInjectable( VariableElement element,
+    protected DependencyInjectionResult doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, boolean injectRequired)
     {
         List<AnnotationMirror> quilifierAnnotations = new LinkedList<AnnotationMirror>();
@@ -285,28 +256,15 @@ abstract class FieldInjectionPointLogic {
             filterBindingsByMembers( quilifierAnnotations , productionElements , 
                      Element.class );
         }
-        /*
-         * Elements which are keys in the following map are production fields
-         * or production methods. But ONLY element instances could be not sufficient.
-         * If method is not parameterized ( as member of some generic class )
-         * then one don't need values in this hash. But method could be a
-         * member generic class which is extended by other class with real type
-         * as parameter. In this case method is inherited by child class
-         * and its type mirror should be taken into account. Accessing to 
-         * TypeMirror of element ( which is key ) should be done via Types.asMemberOf()   
-         */
-        Map<Element, List<DeclaredType>> productions = filterProductionByType( 
-                element, elementType, productionElements );
+        filterProductionByType( element, elementType, productionElements );
         
-        return createResult( element, elementType, types , productions );
+        return createResult( element, elementType, types , productionElements );
     }
 
     protected boolean isQualifier( TypeElement element, 
             AnnotationModelHelper helper, boolean event )
     {
-        QualifierChecker checker = QualifierChecker.get( event );
-        checker.init( element , helper );
-        return checker.check();
+        return AnnotationObjectProvider.isQualifier(element, helper, event);
     }
     
     protected Set<Element> getChildSpecializes( Element productionElement,
@@ -367,26 +325,61 @@ abstract class FieldInjectionPointLogic {
             {
                 hasInject = true;
             }
-            /* TODO : one needs somehow to check absence of initialization
-             * for field... 
-             */
         }
         if ( isProducer ){
             throw new InjectionPointDefinitionError(
                     NbBundle.getMessage( WebBeansModelProviderImpl.class, 
-                            "ERR_ProducerInjectPoint" , element.getSimpleName() ));
+                            "ERR_ProducerInjectPoint" ,     // NOI18N
+                            element.getSimpleName() ));
         }
-        
+        if ( element.asType().getKind() == TypeKind.TYPEVAR ){
+            throw new InjectionPointDefinitionError(
+                    NbBundle.getMessage( WebBeansModelProviderImpl.class, 
+                            "ERR_InjectPointTypeVar" ,           // NOI18N
+                            element.getSimpleName() ));
+        }
+        if ( injectRequired ){
+            checkInjectionPoint(element);
+        }
         if ( injectRequired && !hasInject ){
             throw new InjectionPointDefinitionError(
                     NbBundle.getMessage( WebBeansModelProviderImpl.class, 
-                            "ERR_NoInjectPoint" , element.getSimpleName() ));
+                            "ERR_NoInjectPoint" ,           // NOI18N
+                            element.getSimpleName() ));
         }
         return anyQualifier;
     }
     
+    private void checkInjectionPoint( VariableElement element ) 
+        throws InjectionPointDefinitionError
+    {
+        CompilationController compilationController = getModel().getHelper().
+            getCompilationController();
+        Tree tree = compilationController.getTrees().getTree( element );
+        if ( tree instanceof VariableTree ){
+            VariableTree varTree = (VariableTree)tree;
+            ExpressionTree initializer = varTree.getInitializer();
+            if ( initializer != null ){
+                throw new InjectionPointDefinitionError(NbBundle.getMessage( 
+                        FieldInjectionPointLogic.class, 
+                        "ERR_InitializedInjectionPoint"));      // NOI18N
+            }
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains(Modifier.STATIC)){
+            throw new InjectionPointDefinitionError(NbBundle.getMessage( 
+                    FieldInjectionPointLogic.class, 
+                    "ERR_StaticInjectionPoint"));      // NOI18N
+        }
+        if ( modifiers.contains(Modifier.FINAL)){
+            throw new InjectionPointDefinitionError(NbBundle.getMessage( 
+                    FieldInjectionPointLogic.class, 
+                    "ERR_FinalInjectionPoint"));      // NOI18N
+        }
+    }
+
     protected <T extends Element> void filterBindingsByMembers(
-            List<AnnotationMirror> bindingAnnotations,
+            Collection<AnnotationMirror> bindingAnnotations,
             Set<T> elementsWithBindings,  Class<T> clazz)
     {
         MemberBindingFilter<T> filter = MemberBindingFilter.get( clazz );
@@ -394,40 +387,15 @@ abstract class FieldInjectionPointLogic {
         filter.filter( elementsWithBindings );
     }
     
-    static Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
-            Element typeElement )
+    protected void filterBindingsByType( VariableElement element, 
+            TypeMirror elementType,Set<TypeElement> typesWithBindings)
     {
-        if (! (typeElement instanceof TypeElement )){
-            return Collections.emptySet();
-        }
-        Set<TypeElement> result = new HashSet<TypeElement>();
-        result.add( (TypeElement) typeElement );
-        
-        Set<TypeElement> toProcess = new HashSet<TypeElement>();
-        toProcess.add((TypeElement) typeElement );
-        while ( toProcess.size() >0 ){
-            TypeElement element = toProcess.iterator().next();
-            toProcess.remove( element );
-            Set<TypeElement> set = doGetImplementors(modelImpl, element );
-            if ( set.size() == 0 ){
-                continue;
-            }
-            result.addAll( set );
-            for (TypeElement impl : set) {
-                toProcess.add(impl);
-            }
-        }
-        return result;
+        TypeBindingFilter filter = TypeBindingFilter.get();
+        filter.init( elementType, element, getModel() );
+        filter.filter( typesWithBindings );
     }
     
-    private Result createResult( VariableElement element, TypeMirror elementType, 
-            Set<TypeElement> types,Map<Element, List<DeclaredType>> productions )
-    {
-        return new ResultImpl(element, elementType, types, productions, 
-                getModel().getHelper() );
-    }
-    
-    private Result handleNewQualifier( VariableElement element,
+    protected ResultImpl handleNewQualifier( VariableElement element,
             TypeMirror elementType,List<AnnotationMirror> quilifierAnnotations)
     {
         AnnotationMirror annotationMirror = quilifierAnnotations.get( 0 );
@@ -467,7 +435,40 @@ abstract class FieldInjectionPointLogic {
         }
         return new ResultImpl(element, elementType, getModel().getHelper());
     }
-
+    
+    static Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
+            Element typeElement )
+    {
+        if (! (typeElement instanceof TypeElement )){
+            return Collections.emptySet();
+        }
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        result.add( (TypeElement) typeElement );
+        
+        Set<TypeElement> toProcess = new HashSet<TypeElement>();
+        toProcess.add((TypeElement) typeElement );
+        while ( toProcess.size() >0 ){
+            TypeElement element = toProcess.iterator().next();
+            toProcess.remove( element );
+            Set<TypeElement> set = doGetImplementors(modelImpl, element );
+            if ( set.size() == 0 ){
+                continue;
+            }
+            result.addAll( set );
+            for (TypeElement impl : set) {
+                toProcess.add(impl);
+            }
+        }
+        return result;
+    }
+    
+    private DependencyInjectionResult createResult( VariableElement element, TypeMirror elementType, 
+            Set<TypeElement> types, Set<Element> productions )
+    {
+        return new ResultImpl(element, elementType, types, productions, 
+                getModel().getHelper() );
+    }
+    
     private void inspectHierarchy( Element productionElement,
             TypeElement implementor, Set<Element> specializeElements ,
             WebBeansModelImplementation model )
@@ -569,6 +570,7 @@ abstract class FieldInjectionPointLogic {
                     PRODUCER_ANNOTATION, 
                     EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
+                        @Override
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
                         {
@@ -583,14 +585,12 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
 
-    private Map<Element, List<DeclaredType>> filterProductionByType( 
-            VariableElement element, TypeMirror elementType, 
-            Set<Element> productionElements )
+    private void filterProductionByType( VariableElement element, 
+            TypeMirror elementType, Set<Element> productionElements )
     {
         TypeProductionFilter filter = TypeProductionFilter.get( );
         filter.init( elementType, element, getModel());
         filter.filter( productionElements );
-        return filter.getResult();
     }
     
     private void filterBindingsByDefault( Set<TypeElement> assignableTypes ){
@@ -640,13 +640,6 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
 
-    private void filterBindingsByType( VariableElement element, 
-            TypeMirror elementType,Set<TypeElement> typesWithBindings)
-    {
-        TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( elementType, element, getModel() );
-        filter.filter( typesWithBindings );
-    }
     /*
      * Method finds production elements which have appropriate binding types.
      */
@@ -704,6 +697,7 @@ abstract class FieldInjectionPointLogic {
                     annotationFQN, 
                     EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
+                        @Override
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
                                 {

@@ -99,7 +99,8 @@ public class WebBeanInjectionTargetQueryImplementation implements
                         if ( element == null ){
                             return false;
                         }
-                        List<AnnotationMirror> qualifiers = model.getQualifiers(element);
+                        List<AnnotationMirror> qualifiers = model.getQualifiers(
+                                element, true);
                         if ( qualifiers.size() == 0 ){
                             /* 
                              * @Named is special case.
