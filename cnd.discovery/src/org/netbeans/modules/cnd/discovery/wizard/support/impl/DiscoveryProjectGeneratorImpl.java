@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
@@ -120,6 +121,7 @@ public class DiscoveryProjectGeneratorImpl {
             downConfiguration(sourceRoot, ItemProperties.LanguageKind.CPP);
             downConfiguration(sourceRoot, ItemProperties.LanguageKind.C);
         }
+        projectBridge.printStaticstic(sourceRoot, ImportProject.logger);
         projectBridge.save();
         projectBridge.dispose();
     }
