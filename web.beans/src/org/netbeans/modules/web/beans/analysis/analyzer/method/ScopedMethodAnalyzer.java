@@ -109,23 +109,4 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
         }
     }
     
-    private boolean hasTypeVarParameter(TypeMirror type ){
-        if ( type.getKind() == TypeKind.TYPEVAR){
-            return true;
-        }
-        if ( type instanceof DeclaredType ){
-            List<? extends TypeMirror> typeArguments = 
-                ((DeclaredType)type).getTypeArguments();
-            for (TypeMirror typeArg : typeArguments) {
-                if ( hasTypeVarParameter(typeArg)){
-                    return true;
-                }
-            }
-        }
-        else if ( type instanceof ArrayType ){
-            return hasTypeVarParameter(((ArrayType)type).getComponentType());
-        }
-        return false;
-    }
-
 }
