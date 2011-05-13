@@ -427,6 +427,11 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         public String toString () {
             return getRevision();
         }
+
+        @Override
+        public String[] getParents () {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     /** This method is called from within the constructor to
