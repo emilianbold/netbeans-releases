@@ -155,6 +155,26 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
         // A producer/disposer method must be a non-abstract method . 
         checkAbstractMethod(element, compInfo, descriptions, isProducer,
                 disposesCount>0);
+        
+        if ( isInitializer ){
+            checkInitializerMethod(element, compInfo, descriptions);
+        }
+    }
+
+    private void checkInitializerMethod( ExecutableElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        Set<Modifier> modifiers = element.getModifiers();
+        boolean isAbstract = modifiers.contains( Modifier.ABSTRACT );
+        boolean isStatic = modifiers.contains( Modifier.STATIC );
+        if (  isAbstract || isStatic ){
+            String key = isAbstract? "ERR_AbstractInitMethod":
+                "ERR_StaticInitMethod";           // NOI18N
+            ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, compInfo, NbBundle.getMessage(
+                AnnotationsAnalyzer.class, key ));
+            descriptions.add( description );
+        }        
     }
 
     private void checkAbstractMethod( ExecutableElement element,
