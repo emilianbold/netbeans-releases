@@ -105,10 +105,12 @@ public final class DiscoveryManagerImpl {
             @Override
             public void run() {
                 final NativeProject np = project.getLookup().lookup(NativeProject.class);
+                ImportProject.logger.log(Level.INFO, "Post fixing of excluded header files for project {0}", np); //NOI18N
                 CsmProgressListener listener = new CsmProgressAdapter() {
 
                     @Override
                     public void projectParsingFinished(CsmProject aCsmProject) {
+                        ImportProject.logger.log(Level.INFO, "Model parsing finished and ready to fixing of excluded header files for project {0}", aCsmProject); //NOI18N
                         final CsmProject csmProject = CsmModelAccessor.getModel().getProject(np);
                         if (csmProject != null && csmProject.equals(aCsmProject)) {
                             CsmListeners.getDefault().removeProgressListener(this);
@@ -188,10 +190,12 @@ public final class DiscoveryManagerImpl {
         private void postModelTask() {
             final NativeProject np = project.getLookup().lookup(NativeProject.class);
             final CsmProject csmProject = CsmModelAccessor.getModel().getProject(np);
+            ImportProject.logger.log(Level.INFO, "Post fixing of excluded header files for project {0}", csmProject); //NOI18N
             CsmProgressListener listener = new CsmProgressAdapter() {
 
                 @Override
                 public void projectParsingFinished(CsmProject aCsmProject) {
+                    ImportProject.logger.log(Level.INFO, "Model parsing finished and ready to fixing of excluded header files for project {0}", aCsmProject); //NOI18N
                     if (csmProject.equals(aCsmProject)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         DiscoveryManagerImpl.listeners.remove(aCsmProject);
@@ -206,124 +210,141 @@ public final class DiscoveryManagerImpl {
 
     public static void fixExcludedHeaderFiles(Project makeProject, Logger logger) {
         CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
-            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            final CsmProject p = model.getProject(np);
-            if (p != null && np != null) {
-                Set<String> needCheck = new HashSet<String>();
-                Set<String> needAdd = new HashSet<String>();
-                Map<String, Item> normalizedItems = DiscoveryManagerImpl.initNormalizedNames(makeProject);
-                for (CsmFile file : p.getAllFiles()) {
-                    if (file instanceof FileImpl) {
-                        FileImpl impl = (FileImpl) file;
-                        NativeFileItem item = impl.getNativeFileItem();
-                        if (item == null) {
-                            String path = impl.getAbsolutePath().toString();
-                            item = normalizedItems.get(path);
-                        }
-                        boolean isLineDirective = false;
-                        if (item != null
-                                && item.getLanguage() == Language.C_HEADER
-                                && (p instanceof ProjectBase)) {
-                            ProjectBase pb = (ProjectBase) p;
-                            Set<CsmFile> parentFiles = pb.getGraph().getParentFiles(file);
-                            if (parentFiles.isEmpty()) {
-                                isLineDirective = true;
-                            }
-                        }
-                        if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
-                            if (item instanceof Item) {
-                                if (logger != null) {
-                                    logger.log(Level.FINE, "#fix excluded header for file {0}", impl.getAbsolutePath()); // NOI18N
-                                }
-                                ProjectBridge.setExclude((Item) item, false);
-                                ProjectBridge.setHeaderTool((Item) item);
-                                if (file.isHeaderFile()) {
-                                    needCheck.add(item.getAbsolutePath());
-                                }
-                            }
-                        } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {
-                            if (item instanceof Item) {
-                                if (logger != null) {
-                                    logger.log(Level.FINE, "#fix included for file {0}", impl.getAbsolutePath()); // NOI18N
-                                }
-                                ProjectBridge.setExclude((Item) item, true);
-                            }
-                        } else if (item == null) {
-                            // It should be in project?
-                            if (file.isHeaderFile()) {
-                                String path = impl.getAbsolutePath().toString();
-                                needAdd.add(path);
-                            }
-                        }
+        if (!(model instanceof ModelImpl && makeProject != null)) {
+            if (logger != null) {
+                logger.log(Level.INFO, "Failed fixing of excluded header files for project {0}", makeProject); // NOI18N
+            }
+            return;
+        }
+        NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+        if (np == null) {
+            if (logger != null) {
+                logger.log(Level.INFO, "Not found make project for fixing of excluded header files for project {0}", makeProject); // NOI18N
+            }
+            return;
+        }
+        final CsmProject p = model.getProject(np);
+        if (p == null) {
+            if (logger != null) {
+                logger.log(Level.INFO, "Not found model project for fixing of excluded header files for project {0}", np); // NOI18N
+            }
+            return;
+        }
+        if (logger != null) {
+            logger.log(Level.INFO, "Start fixing of excluded header files for project {0}", p); // NOI18N
+        }
+        Set<String> needCheck = new HashSet<String>();
+        Set<String> needAdd = new HashSet<String>();
+        Map<String, Item> normalizedItems = DiscoveryManagerImpl.initNormalizedNames(makeProject);
+        for (CsmFile file : p.getAllFiles()) {
+            if (file instanceof FileImpl) {
+                FileImpl impl = (FileImpl) file;
+                NativeFileItem item = impl.getNativeFileItem();
+                if (item == null) {
+                    String path = impl.getAbsolutePath().toString();
+                    item = normalizedItems.get(path);
+                }
+                boolean isLineDirective = false;
+                if (item != null
+                        && item.getLanguage() == Language.C_HEADER
+                        && (p instanceof ProjectBase)) {
+                    ProjectBase pb = (ProjectBase) p;
+                    Set<CsmFile> parentFiles = pb.getGraph().getParentFiles(file);
+                    if (parentFiles.isEmpty()) {
+                        isLineDirective = true;
                     }
                 }
-                if (needCheck.size() > 0 || needAdd.size() > 0) {
-                    ProjectBridge bridge = new ProjectBridge(makeProject);
-                    if (bridge.isValid()) {
-                        if (needAdd.size() > 0) {
-                            Map<String, Folder> prefferedFolders = bridge.prefferedFolders();
-                            for (String path : needAdd) {
-                                String name = path;
-                                if (Utilities.isWindows()) {
-                                    path = path.replace('\\', '/'); // NOI18N
-                                }
-                                int i = path.lastIndexOf('/'); // NOI18N
-                                if (i >= 0) {
-                                    String folderPath = path.substring(0, i);
-                                    Folder prefferedFolder = prefferedFolders.get(folderPath);
-                                    if (prefferedFolder == null) {
-                                        LinkedList<String> mkFolder = new LinkedList<String>();
-                                        while (true) {
-                                            i = folderPath.lastIndexOf('/'); // NOI18N
-                                            if (i > 0) {
-                                                mkFolder.addLast(folderPath.substring(i + 1));
-                                                folderPath = folderPath.substring(0, i);
-                                                prefferedFolder = prefferedFolders.get(folderPath);
-                                                if (prefferedFolder != null) {
-                                                    break;
-                                                }
-                                            } else {
-                                                break;
-                                            }
-                                        }
-                                        if (prefferedFolder != null) {
-                                            while (true) {
-                                                if (mkFolder.isEmpty()) {
-                                                    break;
-                                                }
-                                                String segment = mkFolder.pollLast();
-                                                prefferedFolder = prefferedFolder.addNewFolder(segment, segment, true, (Folder.Kind) null);
-                                                folderPath += "/" + segment; // NOI18N
-                                                prefferedFolders.put(folderPath, prefferedFolder);
-                                            }
-                                        }
-                                    }
-                                    if (prefferedFolder != null) {
-                                        String relPath = bridge.getRelativepath(name);
-                                        Item item = bridge.getProjectItem(relPath);
-                                        if (item == null) {
-                                            item = bridge.createItem(name);
-                                            item = prefferedFolder.addItem(item);
-                                        }
-                                        if (item != null) {
-                                            ProjectBridge.setHeaderTool(item);
-                                            if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
-                                                needCheck.add(path);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
+                    if (item instanceof Item) {
+                        if (logger != null) {
+                            logger.log(Level.FINE, "#fix excluded->included header for file {0}", impl.getAbsolutePath()); // NOI18N
                         }
-                        if (needCheck.size() > 0) {
-                            bridge.checkForNewExtensions(needCheck);
+                        ProjectBridge.setExclude((Item) item, false);
+                        ProjectBridge.setHeaderTool((Item) item);
+                        if (file.isHeaderFile()) {
+                            needCheck.add(item.getAbsolutePath());
                         }
                     }
+                } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {
+                    if (item instanceof Item) {
+                        if (logger != null) {
+                            logger.log(Level.FINE, "#fix included->excluded for file {0}", impl.getAbsolutePath()); // NOI18N
+                        }
+                        ProjectBridge.setExclude((Item) item, true);
+                    }
+                } else if (item == null) {
+                    // It should be in project?
+                    if (file.isHeaderFile()) {
+                        String path = impl.getAbsolutePath().toString();
+                        needAdd.add(path);
+                    }
                 }
-                saveMakeConfigurationDescriptor(makeProject);
             }
         }
+        if (needCheck.size() > 0 || needAdd.size() > 0) {
+            ProjectBridge bridge = new ProjectBridge(makeProject);
+            if (bridge.isValid()) {
+                if (needAdd.size() > 0) {
+                    Map<String, Folder> prefferedFolders = bridge.prefferedFolders();
+                    for (String path : needAdd) {
+                        String name = path;
+                        if (Utilities.isWindows()) {
+                            path = path.replace('\\', '/'); // NOI18N
+                        }
+                        int i = path.lastIndexOf('/'); // NOI18N
+                        if (i >= 0) {
+                            String folderPath = path.substring(0, i);
+                            Folder prefferedFolder = prefferedFolders.get(folderPath);
+                            if (prefferedFolder == null) {
+                                LinkedList<String> mkFolder = new LinkedList<String>();
+                                while (true) {
+                                    i = folderPath.lastIndexOf('/'); // NOI18N
+                                    if (i > 0) {
+                                        mkFolder.addLast(folderPath.substring(i + 1));
+                                        folderPath = folderPath.substring(0, i);
+                                        prefferedFolder = prefferedFolders.get(folderPath);
+                                        if (prefferedFolder != null) {
+                                            break;
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if (prefferedFolder != null) {
+                                    while (true) {
+                                        if (mkFolder.isEmpty()) {
+                                            break;
+                                        }
+                                        String segment = mkFolder.pollLast();
+                                        prefferedFolder = prefferedFolder.addNewFolder(segment, segment, true, (Folder.Kind) null);
+                                        folderPath += "/" + segment; // NOI18N
+                                        prefferedFolders.put(folderPath, prefferedFolder);
+                                    }
+                                }
+                            }
+                            if (prefferedFolder != null) {
+                                String relPath = bridge.getRelativepath(name);
+                                Item item = bridge.getProjectItem(relPath);
+                                if (item == null) {
+                                    item = bridge.createItem(name);
+                                    item = prefferedFolder.addItem(item);
+                                }
+                                if (item != null) {
+                                    ProjectBridge.setHeaderTool(item);
+                                    if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
+                                        needCheck.add(path);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (needCheck.size() > 0) {
+                    bridge.checkForNewExtensions(needCheck);
+                }
+            }
+        }
+        saveMakeConfigurationDescriptor(makeProject);
     }
 
     public static void saveMakeConfigurationDescriptor(Project lastSelectedProject) {
