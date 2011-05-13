@@ -45,9 +45,11 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
@@ -596,6 +598,10 @@ public class LogTest extends AbstractGitTestCase {
         assertEquals(2, revisions.length);
         assertRevisions(revision3, revisions[0]);
         assertRevisions(revision2, revisions[1]);
+        Map<File, GitFileInfo> modifiedFiles = revision2.getModifiedFiles();
+        assertEquals(2, modifiedFiles.size());
+        assertEquals(GitFileInfo.Status.RENAMED, modifiedFiles.get(to).getStatus());
+        assertEquals(GitFileInfo.Status.REMOVED, modifiedFiles.get(f).getStatus());
         
         crit = new SearchCriteria();
         crit.setFiles(new File[] { to });
@@ -605,6 +611,35 @@ public class LogTest extends AbstractGitTestCase {
         assertRevisions(revision3, revisions[0]);
         assertRevisions(revision2, revisions[1]);
         assertRevisions(revision1, revisions[2]);
+    }
+
+    public void testLogMergeFilesFromAllParents () throws Exception {
+        File f = new File(workDir, "f");
+        File f2 = new File(workDir, "f2");
+        write(f, "init");
+        write(f2, "init");
+        File[] files = new File[] { f, f2 };
+        add(files);
+        commit(files);
+
+        GitClient client = getClient(workDir);
+        client.createBranch("b", "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("b", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(f, "modification on branch");
+        add(files);
+        client.commit(files, "modification on branch", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        client.checkoutRevision("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(f2, "modification");
+        add(files);
+        client.commit(files, "modification on master", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        GitRevisionInfo revisionMerge = client.log(client.merge("b", ProgressMonitor.NULL_PROGRESS_MONITOR).getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitFileInfo> modifiedFiles = revisionMerge.getModifiedFiles();
+        assertEquals(2, modifiedFiles.size());
+        assertEquals(GitFileInfo.Status.MODIFIED, modifiedFiles.get(f).getStatus());
+        assertEquals(GitFileInfo.Status.MODIFIED, modifiedFiles.get(f2).getStatus());
     }
 
     private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {

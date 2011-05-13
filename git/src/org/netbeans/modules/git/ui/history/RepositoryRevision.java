@@ -49,8 +49,8 @@ import java.util.*;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
+import org.netbeans.libs.git.GitFileInfo.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 
@@ -144,7 +144,7 @@ public class RepositoryRevision {
         private Event (File dummyFile, String dummyPath) {
             this.path = dummyPath;
             this.file = dummyFile;
-            this.status = Status.STATUS_NORMAL;
+            this.status = Status.UNKNOWN;
         }
 
         public RepositoryRevision getLogInfoHeader () {
@@ -165,12 +165,16 @@ public class RepositoryRevision {
         
         public char getAction () {
             switch (status) {
-                case STATUS_ADDED:
+                case ADDED:
                     return 'A';
-                case STATUS_MODIFIED:
+                case MODIFIED:
                     return 'M';
-                case STATUS_REMOVED:
+                case RENAMED:
                     return 'R';
+                case COPIED:
+                    return 'C';
+                case REMOVED:
+                    return 'D';
                 default:
                     return '?';
             }
