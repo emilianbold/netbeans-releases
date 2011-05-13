@@ -50,9 +50,9 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
  * @author ads
  *
  */
-class ProgressReporterDelegate implements ProgressReporter {
+public class ProgressReporterDelegate implements ProgressReporter {
     
-    ProgressReporterDelegate(ProgressContributor contributor, ProgressPanel panel ){
+    public ProgressReporterDelegate(ProgressContributor contributor, ProgressPanel panel ){
         this.contributor = contributor;
         this.panel = panel;
     }
