@@ -59,6 +59,7 @@ public final class CsmModelAccessor {
     private static CsmModel dummy;
     private static CsmModelStateListener stateListener = new CsmModelStateListener() {
 
+        @Override
         public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
             if (newState == CsmModelState.OFF) {
                 CsmListeners.getDefault().removeModelStateListener(stateListener);
@@ -74,31 +75,38 @@ public final class CsmModelAccessor {
 
     private static class ModelStub implements CsmModel {
 
+        @Override
         public Collection<CsmProject> projects() {
             return Collections.<CsmProject>emptyList();
         }
 
+        @Override
         public CsmProject getProject(Object id) {
             return null;
         }
 
+        @Override
         public CsmFile findFile(CharSequence absPath, boolean createIfPossible, boolean snapShot) {
             return null;
         }
 
+        @Override
         public CsmModelState getState() {
             return CsmModelState.OFF;
         }
 
+        @Override
         public Cancellable enqueue(Runnable task, CharSequence name) {
             return cancellableStub;
         }
         
+        @Override
         public void scheduleReparse(Collection<CsmProject> projects) {
         }
     }
     private static final Cancellable cancellableStub = new Cancellable() {
 
+        @Override
         public boolean cancel() {
             return true;
         }
