@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.HintSeverity;
  *
  * @author marekfukala
  */
-public class AttributeSyntax extends PatternRule {
+public class Attribute extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
         //ErrorReportingTokenizer
@@ -67,9 +67,7 @@ public class AttributeSyntax extends PatternRule {
         //HtmlAttributes
         "Attribute .*? is not serializable as XML 1.0",
         
-        
-        
-        
+        "Bad value .*? for attribute .*? on element",
             
         
     }; //NOI18N
