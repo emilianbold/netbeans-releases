@@ -65,14 +65,14 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-abstract class AbstractEventAction extends AbstractWebBeansAction {
+abstract class AbstractCdiAction extends AbstractWebBeansAction {
 
-    private static final long serialVersionUID = 6874506968430055300L;
+    private static final long serialVersionUID = -2083083648443423425L;
 
-    AbstractEventAction( String name ) {
+    AbstractCdiAction( String name ) {
         super(name);
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
      */
@@ -93,6 +93,7 @@ abstract class AbstractEventAction extends AbstractWebBeansAction {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
+        
         MetaModelSupport support = new MetaModelSupport(project);
         final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
         if ( metaModel == null ){
@@ -100,29 +101,37 @@ abstract class AbstractEventAction extends AbstractWebBeansAction {
             return;
         }
         
-        final Object subject[] = new Object[1]; 
-        if ( !WebBeansActionHelper.getMethodAtDot(component, subject) ){
+        /*
+         *  this list will contain variable element name and TypeElement 
+         *  qualified name which contains variable element. 
+         */
+        final Object[] context = new Object[3];
+        if ( !findContext(component, context) ){
             return;
         }
         
         try {
             metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
 
+                @Override
                 public Void run( WebBeansModel model ) throws Exception {
-                    modelAcessAction( model , metaModel , subject ,
-                            component, fileObject );
+                    modelAcessAction(model, metaModel, context, component, 
+                            fileObject);
                     return null;
                 }
-
             });
         }
         catch (MetadataModelException e) {
-            Logger.getLogger( AbstractEventAction.class.getName()).
+            Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.INFO, e.getMessage(), e);
         }
         catch (IOException e) {
-            Logger.getLogger( AbstractEventAction.class.getName()).
+            Logger.getLogger( AbstractInjectableAction.class.getName()).
                 log( Level.WARNING, e.getMessage(), e);
         }
     }
+
+    protected abstract boolean findContext(final JTextComponent component , 
+            Object[] context);
+
 }

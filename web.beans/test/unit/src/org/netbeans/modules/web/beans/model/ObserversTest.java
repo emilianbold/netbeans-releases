@@ -254,6 +254,7 @@ public class ObserversTest extends CommonTestCase {
 		"import javax.enterprise.util.*; "+
                 "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
+                "import javax.enterprise.util.*; "+
                 "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+

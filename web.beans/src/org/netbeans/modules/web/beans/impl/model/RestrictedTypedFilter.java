@@ -67,6 +67,7 @@ import javax.lang.model.util.Types;
  */
 public class RestrictedTypedFilter extends Filter<TypeElement> {
 
+    @Override
     void filter( Set<TypeElement> elements ){
         Set<TypeElement> allImplementors = new HashSet<TypeElement>( elements );
         for (Iterator<TypeElement> iterator = allImplementors.iterator() ; 

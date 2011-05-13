@@ -42,100 +42,88 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
-import java.util.List;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.navigation.EventsModel;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.modules.web.beans.navigation.InterceptorsModel;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class InspectEventsAtCaretAction extends AbstractEventAction {
-    
-    private static final long serialVersionUID = -4645226875434261917L;
+public final class InterceptorsActionStrategy implements ModelActionStrategy {
 
-    private static final String INSPECT_EVENTS_AT_CARET =
-        "inspect-events-at-caret";                     // NOI18N
-    
-    private static final String INSPECT_EVENTS_AT_CARET_POPUP =
-        "inspect-events-at-caret-popup";               // NOI18N
-
-    public InspectEventsAtCaretAction( ) {
-        super(NbBundle.getMessage(InspectEventsAtCaretAction.class, 
-                INSPECT_EVENTS_AT_CARET));
-    }
-    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getActionCommand()
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId)
      */
     @Override
-    protected String getActionCommand() {
-        return INSPECT_EVENTS_AT_CARET;
+    public boolean isApplicable( InspectActionId id ) {
+        return id == InspectActionId.CLASS_CONTEXT|| id == InspectActionId.METHOD_CONTEXT;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#getPopupMenuKey()
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#isApplicable(org.netbeans.modules.web.beans.api.model.WebBeansModel, java.lang.Object[])
      */
     @Override
-    protected String getPopupMenuKey() {
-        return INSPECT_EVENTS_AT_CARET_POPUP;
+    public boolean isApplicable( WebBeansModel model, Object[] context ) {
+        final Object handle = context[0];
+        if ( handle == null ){
+            return false;
+        }
+        Element element = ((ElementHandle<?>)handle).resolve( 
+                model.getCompilationController());
+        if (context[2] == InspectActionId.METHOD_CONTEXT) {
+            if ( !( element instanceof ExecutableElement)) {
+                return false;
+            }
+            return model.getInterceptorBindings(element).size() >0 ;
+        }
+        // Now check all interceptor bindings for element
+        return true;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractWebBeansAction#modelAcessAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
+     * @see org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy#invokeModelAction(org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.j2ee.metadata.model.api.MetadataModel, java.lang.Object[], javax.swing.text.JTextComponent, org.openide.filesystems.FileObject)
      */
     @Override
-    protected void modelAcessAction( WebBeansModel model,
+    public void invokeModelAction( WebBeansModel model,
             final MetadataModel<WebBeansModel> metaModel, final Object[] subject,
             JTextComponent component, FileObject fileObject )
     {
         final Object handle = subject[0];
-        if ( handle == null ){
-            return;
-        }
         Element element = ((ElementHandle<?>)handle).resolve( 
                 model.getCompilationController());
-        ExecutableElement method = (ExecutableElement)element;
-        if ( model.getObserverParameter( method ) == null ){
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
-                            "LBL_NotObserverContext"), // NOI18N
-                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        if ( element == null ){
             return;
         }
-        List<VariableElement> eventInjectionPoints = model.getEventInjectionPoints( 
-                method , null );
-        CompilationController controller = model
-            .getCompilationController();
-        final EventsModel uiModel = new EventsModel(eventInjectionPoints, 
-                controller, metaModel);
-        final String name = method.getSimpleName().toString();
+        CompilationController controller = model.getCompilationController();
+        final InterceptorsResult result = model.getInterceptors(element);
+        final InterceptorsModel uiModel = new InterceptorsModel( 
+               result , controller, metaModel);
+        final String name = element.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
-            WebBeansActionHelper.showEventsDialog( metaModel, model, 
-                    subject , uiModel , name );
+            WebBeansActionHelper.showInterceptorsDialog( metaModel, model, 
+                    subject , uiModel , name, result );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    WebBeansActionHelper.showEventsDialog(metaModel, null , 
-                            subject ,uiModel , name );
+                    WebBeansActionHelper.showInterceptorsDialog(metaModel, null , 
+                            subject ,uiModel , name , result);
                 }
             });
         }
+
     }
 
 }

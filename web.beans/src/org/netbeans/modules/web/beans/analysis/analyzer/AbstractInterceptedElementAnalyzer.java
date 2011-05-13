@@ -40,97 +40,78 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.navigation.actions;
+package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.text.JTextComponent;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractObserversAction extends AbstractWebBeansAction {
+public abstract class AbstractInterceptedElementAnalyzer {
     
-    private static final long serialVersionUID = 4982816664372743149L;
+    private final static Logger LOG = Logger.getLogger( 
+            AbstractInterceptedElementAnalyzer.class.getName());
 
-    AbstractObserversAction(String name ){
-        super( name );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
-     */
-    @Override
-    public void actionPerformed( ActionEvent event, final JTextComponent component ) {
-        if ( component == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                component.getDocument());
-        if ( fileObject == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        Project project = FileOwnerQuery.getOwner( fileObject );
+    protected boolean hasInterceptorBindings(Element element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
+            return false;
         }
         MetaModelSupport support = new MetaModelSupport(project);
-        final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        if ( metaModel == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        
-        /*
-         *  this list will contain variable element name and TypeElement 
-         *  qualified name which contains variable element. 
-         */
-        final Object[] variableAtCaret = new Object[2];
-        if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret , false ) && !WebBeansActionHelper.
-                    getContextEventInjectionAtDot( component, variableAtCaret  ))
-        {
-            return;
-        }
-        
+        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
+        final ElementHandle<Element> handle = ElementHandle.create( element);
         try {
-            metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
-
-                public Void run( WebBeansModel model ) throws Exception {
-                    modelAcessAction( model , metaModel , variableAtCaret ,
-                            component, fileObject );
-                    return null;
+            return metaModel.runReadAction( 
+                    new MetadataModelAction<WebBeansModel, Boolean>() 
+            {
+                @Override
+                public Boolean run( WebBeansModel model ) throws Exception {
+                    Element element = handle.resolve( model.getCompilationController());
+                    if ( element == null ){
+                        return false;
+                    }
+                    Collection<AnnotationMirror> interceptorBindings = 
+                        model.getInterceptorBindings( element );
+                    List<? extends AnnotationMirror> annotations = 
+                        model.getCompilationController().getElements().
+                        getAllAnnotationMirrors(element);
+                    Set<AnnotationMirror> set = new HashSet<AnnotationMirror>(
+                            interceptorBindings);
+                    set.retainAll( annotations );
+                    return !set.isEmpty();
                 }
-
             });
         }
         catch (MetadataModelException e) {
-            Logger.getLogger( AbstractObserversAction.class.getName()).
-                log( Level.INFO, e.getMessage(), e);
+            LOG.log( Level.INFO , null , e);
         }
         catch (IOException e) {
-            Logger.getLogger( AbstractObserversAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
+            LOG.log( Level.INFO , null , e);
         }
+        return false;
     }
-
 }

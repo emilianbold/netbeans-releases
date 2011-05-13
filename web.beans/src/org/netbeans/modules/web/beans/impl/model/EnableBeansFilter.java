@@ -54,16 +54,24 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.CdiException;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.ErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.InjectableResultImpl;
+import org.netbeans.modules.web.beans.impl.model.results.InjectablesResultImpl;
 import org.netbeans.modules.web.beans.impl.model.results.ResolutionErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.openide.util.NbBundle;
@@ -75,19 +83,27 @@ import org.openide.util.NbBundle;
  */
 class EnableBeansFilter {
     
-    EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model )
+    static final String DECORATOR = "javax.decorator.Decorator";            // NOI18N
+    
+    static final String EXTENSION = "javax.enterprise.inject.spi.Extension";// NOI18N
+    
+    static String SCOPE = "javax.inject.Scope";                             // NOI18N
+    
+    EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model ,
+            boolean programmatic )
     {
         myResult = result;
         myHelper = model.getHelper();
         myBeansModel = model.getBeansModel();
         myModel = model;
+        isProgrammatic = programmatic;
     }
     
-    Result filter(){
+    DependencyInjectionResult filter(){
         myAlternatives = new HashSet<Element>();
         myEnabledAlternatives = new HashSet<Element>();
         
-        PackagingFilter filter = new PackagingFilter(myModel);
+        PackagingFilter filter = new PackagingFilter(getWebBeansModel());
         Set<TypeElement> typeElements = getResult().getTypeElements();
         
         // remove elements defined in compile class path which doesn't have beans.xml 
@@ -169,9 +185,14 @@ class EnableBeansFilter {
         }
         
         enabledTypes.addAll( enabledProductions);
-        String message =NbBundle.getMessage(EnableBeansFilter.class, 
-                "ERR_UnresolvedAmbiguousDependency");               // NOI81N
-        return new ResolutionErrorImpl( getResult() , message, enabledTypes);
+        if ( isProgrammatic ){
+            return new InjectablesResultImpl(getResult() , enabledTypes );
+        }
+        else {
+            String message = NbBundle.getMessage(EnableBeansFilter.class,
+                    "ERR_UnresolvedAmbiguousDependency"); // NOI81N
+            return new ResolutionErrorImpl(getResult(), message, enabledTypes);
+        }
     }
     
     /*
@@ -238,7 +259,7 @@ class EnableBeansFilter {
         Set<Element> result = new HashSet<Element>( elements );
         while( types.size() != 0 ) {
             TypeElement typeElement = (TypeElement)types.remove();
-            if ( typeElement.getKind() != ElementKind.CLASS){
+            if ( !checkClass( typeElement )){
                 result.remove( typeElement );
                 continue;
             }
@@ -247,10 +268,91 @@ class EnableBeansFilter {
         }
         return result;
     }
+    
+    private boolean checkClass( TypeElement element ){
+        if ( element.getKind() != ElementKind.CLASS ){
+            return false;
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        
+        Element enclosing = element.getEnclosingElement();
+        if ( !( enclosing instanceof PackageElement) ){
+            /*
+             * If class is inner class then it should be static.
+             */
+            if ( !modifiers.contains( Modifier.STATIC ) ){
+                return false;
+            }
+        }
+        Elements elements = getHelper().getCompilationController().getElements();
+        Types types = getHelper().getCompilationController().getTypes();
+        
+        List<? extends AnnotationMirror> allAnnotations = elements.
+            getAllAnnotationMirrors(element);
+        
+        if ( modifiers.contains( Modifier.ABSTRACT ) &&
+                !getHelper().hasAnnotation(allAnnotations, DECORATOR ) )
+        {
+            /*
+             * If class is abstract it should be Decorator.
+             */
+            return false;
+        }
+        TypeElement extensionElement = elements.getTypeElement( EXTENSION );
+        if ( extensionElement!= null ){
+            TypeMirror extensionType = extensionElement.asType();
+            /*
+             * Class doesn't implement Extension
+             */
+            if ( types.isAssignable( element.asType(), extensionType )){
+                return false;
+            }
+        }
+        /*
+         * There should be either no parameters CTOR or CTOR is annotated with @Inject
+         */
+        List<ExecutableElement> constructors = ElementFilter.constructorsIn( 
+                element.getEnclosedElements());
+        boolean foundCtor = constructors.size() ==0;
+        for (ExecutableElement ctor : constructors) {
+            if ( ctor.getParameters().size() == 0 ){
+                foundCtor = true;
+                break;
+            }
+            if ( getHelper().hasAnnotation(allAnnotations, 
+                    FieldInjectionPointLogic.INJECT_ANNOTATION))
+            {
+                foundCtor = true;
+                break;
+            }
+        }
+        return foundCtor;
+    }
 
     private void checkProxyability( TypeElement typeElement,
             LinkedList<Element> types , Set<Element> elements)
     {
+        try {
+            String scope = ParameterInjectionPointLogic.getScope(typeElement, 
+                    getWebBeansModel().getHelper());
+            Elements elementsUtil = getHelper().getCompilationController().
+                getElements();
+            TypeElement scopeElement = elementsUtil.getTypeElement(scope);
+            /*
+             * Client proxies are never required for a bean whose 
+             * scope is a pseudo-scope such as @Dependent.
+             */
+            if ( getHelper().hasAnnotation( elementsUtil.getAllAnnotationMirrors( 
+                    scopeElement), SCOPE) )
+            {
+                return;
+            }
+        }
+        catch (CdiException e) {
+            types.remove( typeElement );
+            elements.remove( typeElement);
+            return;
+        }
         /*
          * Certain legal bean types cannot be proxied by the container:
          * - classes which don't have a non-private constructor with no parameters,
@@ -263,15 +365,7 @@ class EnableBeansFilter {
             elements.remove( typeElement );
             return;
         }
-        List<ExecutableElement> methods = ElementFilter.methodsIn(
-                typeElement.getEnclosedElements()) ;
-        for (ExecutableElement executableElement : methods) {
-            if ( hasModifier(executableElement, Modifier.FINAL)){
-                types.remove(typeElement);
-                elements.remove( typeElement );
-                return;
-            }
-        }
+        checkFinalMethods(typeElement, types, elements);
         
         List<ExecutableElement> constructors = ElementFilter.constructorsIn(
                 typeElement.getEnclosedElements()) ;
@@ -290,6 +384,56 @@ class EnableBeansFilter {
             types.remove(typeElement);
             elements.remove( typeElement );
         }
+    }
+
+    private void checkFinalMethods( TypeElement typeElement,
+            LinkedList<Element> types, Set<Element> elements )
+    {
+        TypeMirror variableType = getResult().getVariableType();
+        DeclaredType beanType = getDeclaredType( variableType );
+        if ( beanType == null ){
+            return;
+        }
+        Element beanElement = beanType.asElement();
+        if ( !( beanElement instanceof TypeElement )){
+            return;
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                getHelper().getCompilationController().getElements().getAllMembers(
+                        (TypeElement)beanElement)) ;
+        for (ExecutableElement executableElement : methods) {
+            if ( hasModifier(executableElement, Modifier.FINAL)){
+                types.remove(typeElement);
+                elements.remove( typeElement );
+                return;
+            }
+            Element overloaded = getHelper().getCompilationController().
+                getElementUtilities().getImplementationOf(executableElement, 
+                        typeElement);
+            if ( overloaded == null ){
+                continue;
+            }
+            if ( hasModifier(overloaded, Modifier.FINAL)){
+                types.remove(typeElement);
+                elements.remove( typeElement );
+                return;
+            }
+        }
+    }
+    
+    private DeclaredType getDeclaredType( TypeMirror type ){
+        if ( type instanceof DeclaredType ){
+            return (DeclaredType)type;
+        }
+        if ( type instanceof TypeVariable ){
+            TypeMirror upperBound = ((TypeVariable)type).getUpperBound();
+            return getDeclaredType( upperBound );
+        }
+        else if ( type instanceof WildcardType ){
+            TypeMirror extendsBound = ((WildcardType)type).getExtendsBound();
+            return getDeclaredType( extendsBound );
+        }
+        return null;
     }
     
     private boolean hasModifier ( Element element , Modifier mod){
@@ -382,6 +526,10 @@ class EnableBeansFilter {
     private AnnotationModelHelper getHelper(){
         return myHelper;
     }
+    
+    private WebBeansModelImplementation getWebBeansModel(){
+        return myModel;
+    }
 
     private Set<Element> myAlternatives;
     private Set<Element> myEnabledAlternatives;
@@ -389,4 +537,5 @@ class EnableBeansFilter {
     private final AnnotationModelHelper myHelper;
     private final BeansModel myBeansModel;
     private WebBeansModelImplementation myModel;
+    private boolean isProgrammatic;
 }

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -58,7 +59,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
 
@@ -302,6 +303,292 @@ public class DisabledBeansTest extends CommonTestCase {
         });
     }
     
+    public void testProxyability() throws IOException{
+        createQualifier("Binding1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                "public interface Iface {" +
+                " void method(); "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public final class One implements Iface {" +
+                " public final void method() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.ApplicationScoped; "+
+                "@Binding1 "+
+                "@ApplicationScoped "+
+                "public final class Two implements Iface {" +
+                " public void method() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.SessionScoped; "+
+                "@Binding1 "+
+                "@SessionScoped "+
+                "public class Three implements Iface {" +
+                " public final void method() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Four.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.RequestScoped; "+
+                "@Binding1 "+
+                "@RequestScoped "+
+                "public class Four implements Iface {" +
+                " private Four() {}  "+
+                " public Four( int arg ) {}  "+
+                " public void method() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class TestClass {" +
+                " @Inject @Binding1 Iface myField1; "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED  ,
+                                result.getKind() );
+                        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult);
+                        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
+                        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );  
+                        assertEquals(4 , ((DependencyInjectionResult.ApplicableResult)result).
+                                getTypeElements().size());
+                        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
+                        assertTrue( injectable instanceof TypeElement );
+                        Name qualifiedName = ((TypeElement)injectable).getQualifiedName();
+                        assertEquals("Injectable element should be foo.One",
+                                "foo.One", qualifiedName.toString());
+                    }
+                }
+                assert names.contains("myField1");
+                return null;
+            }
+        });
+    };
+    
+    public void testNotManagedBeans() throws IOException{
+        createQualifier("Binding1");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class One {" +
+                "@Binding1 "+
+                " public class SubClass1 extends One {} "+
+                "@Binding1 "+
+                " public static class SubClass2 extends One {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "@javax.decorator.Decorator "+
+                "public abstract class Two {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public abstract class Three extends Two {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Four.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Four implements javax.enterprise.inject.spi.Extension {" +
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Five.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Five {" +
+                " Five( String arg ) {} "+
+                " public Five() {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Six.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Six  extends Five{" +
+                " public Six( int arg ) {} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Seven.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "@Binding1 "+
+                "public class Seven extends Five {" +
+                " @Inject "+
+                " public Seven( int arg1, String arg2 ) { } "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class TestClass {" +
+                " @Inject @Binding1 One myField1; "+
+                " @Inject @Binding1 Two myField2; "+
+                " @Inject @Binding1 Four myField3; "+
+                " @Inject @Binding1 Five myField4; "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED ,
+                                result.getKind() );
+                        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult);
+                        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
+                        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );  
+                        assertEquals(2 , ((DependencyInjectionResult.ApplicableResult)result).
+                                getTypeElements().size());
+                        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
+                        assertTrue( injectable instanceof TypeElement );
+                        Name qualifiedName = ((TypeElement)injectable).getQualifiedName();
+                        assertEquals("Injectable element should be foo.One.SubClass2",
+                                "foo.One.SubClass2", qualifiedName.toString());
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED ,
+                            result.getKind() );
+                        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult);
+                        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
+                        assertEquals(2 , ((DependencyInjectionResult.ApplicableResult)result).
+                                getTypeElements().size());
+                        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
+                        assertTrue( injectable instanceof TypeElement );
+                        Name qualifiedName = ((TypeElement)injectable).getQualifiedName();
+                        assertEquals("Injectable element should be foo.Two",
+                               "foo.Two", qualifiedName.toString());
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField3")){
+                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(DependencyInjectionResult.ResultKind.RESOLUTION_ERROR ,
+                            result.getKind() ) ;
+                        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult);
+                        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
+                        int size = ((DependencyInjectionResult.ApplicableResult)result).
+                            getTypeElements().size();
+                        assertEquals("There should be one element which is" +
+                        		" not managed bean", 1 , size);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        assertNotNull( result );
+                        assertEquals(DependencyInjectionResult.ResultKind.RESOLUTION_ERROR ,
+                                result.getKind() );
+                        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult);
+                        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
+                        assertEquals(3 , ((DependencyInjectionResult.ApplicableResult)result).
+                                getTypeElements().size());
+                        
+                        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).
+                            getTypeElements();
+                        boolean fiveFound = false;
+                        boolean sixFound = false;
+                        boolean sevenFound = false;
+                        DependencyInjectionResult.ApplicableResult applicableResult = 
+                            (DependencyInjectionResult.ApplicableResult)result;
+                        for (TypeElement typeElement : typeElements) {
+                            String name = typeElement.getQualifiedName().toString();
+                            if ( "foo.Five".equals(name)){
+                                assertFalse ( "foo.Five should be enabled",
+                                        applicableResult.isDisabled(typeElement));
+                                fiveFound =true;
+                            }
+                            else if ( "foo.Six".equals(name)){
+                                assertTrue ( "foo.Six should be disabled",
+                                        applicableResult.isDisabled(typeElement));
+                                sixFound =true;
+                            }
+                            else if ( "foo.Seven".equals(name)){
+                                assertFalse ( "foo.Seven should be enabled",
+                                        applicableResult.isDisabled(typeElement));
+                                sevenFound =true;
+                            }
+                        }
+                        assertTrue( "foo.Five should be in the list of eligible " +
+                        		"for injectoin elements", fiveFound );
+                        assertTrue( "foo.Seven should be in the list of eligible " +
+                                "for injectoin elements", sevenFound );
+                        assertTrue( "foo.Six should be in the result", sevenFound );
+                    }
+                }
+                
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                assert names.contains("myField3");
+                assert names.contains("myField4");
+                return null;
+            }
+        });
+    }
+    
     public void testVariousDisableConditions() throws IOException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
                 "package foo; " +
@@ -330,7 +617,9 @@ public class DisabledBeansTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.context.ApplicationScoped; "+
                 "@Binding1 "+
+                "@ApplicationScoped "+
                 "public final class Two implements Iface {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
@@ -395,17 +684,17 @@ public class DisabledBeansTest extends CommonTestCase {
      */
     private void checkVarious1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.RESOLUTION_ERROR, result.getKind());
         
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );  
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 1 , productions.size());
         assertEquals( 0 , typeElements.size());
@@ -417,10 +706,10 @@ public class DisabledBeansTest extends CommonTestCase {
         assertEquals("myField", production.getSimpleName().toString());
         
         assertFalse ( "production field myField is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( production ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( production ));
         
         assertTrue( "production field myField should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(production));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(production));
     }
     
     /*
@@ -432,17 +721,17 @@ public class DisabledBeansTest extends CommonTestCase {
      */
     private void checkVarious2( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.RESOLUTION_ERROR, result.getKind());
         
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );  
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );  
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 3 , typeElements.size());
@@ -477,42 +766,42 @@ public class DisabledBeansTest extends CommonTestCase {
                 threeFound );
         
         assertFalse ( "foo.Two is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertFalse ( "foo.One2 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( iface ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( iface ));
         assertFalse ( "foo.Three2 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( three ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( three ));
         
         assertTrue( "foo.Two2 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertTrue( "foo.One2 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(iface));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(iface));
         assertTrue( "foo.Three2 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(three));   
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(three));   
     }
 
     private void checkSpecializes3( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.Three2", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 3 , typeElements.size());
@@ -547,42 +836,42 @@ public class DisabledBeansTest extends CommonTestCase {
                 threeFound );
         
         assertTrue ( "foo.Two2 is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertFalse ( "foo.One2 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));
         assertFalse ( "foo.Three2 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( three ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( three ));
         
         assertTrue( "foo.Two2 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertTrue( "foo.One2 should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));
         assertFalse( "foo.Three2 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(three));   
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(three));   
     }
     
     private void checkSpecializes2( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.One1", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 2 , typeElements.size());
@@ -608,38 +897,38 @@ public class DisabledBeansTest extends CommonTestCase {
                 oneFound );
         
         assertTrue( "foo.Two1 should be disnabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertFalse( "foo.One1 should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));
         
         assertTrue ( "foo.Two1 is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertFalse( "foo.One1 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));        
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));        
     }
 
     private void checkSpecializes1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
 
         assertNotNull(result);
 
-        assertEquals(Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
 
-        assertTrue(result instanceof Result.InjectableResult);
-        assertTrue(result instanceof Result.ApplicableResult);
-        assertTrue(result instanceof Result.ResolutionResult);
+        assertTrue(result instanceof DependencyInjectionResult.InjectableResult);
+        assertTrue(result instanceof DependencyInjectionResult.ApplicableResult);
+        assertTrue(result instanceof DependencyInjectionResult.ResolutionResult);
 
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
 
         assertTrue(injectable instanceof TypeElement);
         String name = ((TypeElement) injectable).getQualifiedName().toString();
 
         assertEquals("foo.Three", name);
 
-        Set<Element> productions = ((Result.ApplicableResult) result)
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult) result)
                 .getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult) result)
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult) result)
                 .getTypeElements();
 
         assertEquals(0, productions.size());
@@ -674,27 +963,27 @@ public class DisabledBeansTest extends CommonTestCase {
                 threeFound);
 
         assertTrue("foo.One should be disabled",
-                ((Result.ApplicableResult) result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult) result).isDisabled(one));
         assertTrue("foo.Two should be disabled",
-                ((Result.ApplicableResult) result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult) result).isDisabled(two));
         assertFalse("foo.Three should be enabled",
-                ((Result.ApplicableResult) result).isDisabled(three));
+                ((DependencyInjectionResult.ApplicableResult) result).isDisabled(three));
     }
 
     private void checkAlternative2( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.RESOLUTION_ERROR, result.getKind());
         
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 3 , typeElements.size());
@@ -729,42 +1018,42 @@ public class DisabledBeansTest extends CommonTestCase {
                 threeFound );
         
         assertFalse ( "foo.Two1 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertTrue ( "foo.One1 is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));
         assertTrue ( "foo.Three is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( three ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( three ));
         
         assertFalse( "foo.Two1 should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertFalse( "foo.One1 should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));
         assertFalse( "foo.Three should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(three));        
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(three));        
     }
 
     private void checkAlternative1( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.One", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 2 , typeElements.size());
@@ -790,14 +1079,14 @@ public class DisabledBeansTest extends CommonTestCase {
                 oneFound );
         
         assertFalse( "foo.Two should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertFalse( "foo.One should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));
         
         assertFalse ( "foo.Two is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertTrue ( "foo.One is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));        
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));        
     }
 
 }
