@@ -513,7 +513,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         @Override
         public String getName() {
             return NbBundle.getMessage(RemoteFileSupport.class, 
-                readOnlyConnectNotification.get() ? "RemoteDownloadTask.TEXT_RO" : "RemoteDownloadTask.TEXT",
+                readOnlyConnectNotification.get() ? "RemoteDownloadTask.TEXT_RO" : "RemoteDownloadTask.TEXT", // NOI18N
                 execEnv.getDisplayName());
         }
 
