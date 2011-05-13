@@ -49,9 +49,11 @@ import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -149,6 +151,22 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     protected final Enumeration<FileChangeListener> getListeners() {
         return Collections.enumeration(listeners);
     }
+    
+    protected final Enumeration<FileChangeListener> getListenersWithParent() {
+        RemoteFileObjectBase p = getParent();
+        if (p == null) {
+            return getListeners();
+        }
+        Enumeration<FileChangeListener> parentListeners = p.getListeners();
+        if (!parentListeners.hasMoreElements()) {
+            return getListeners();
+        }
+        List<FileChangeListener> result = new ArrayList<FileChangeListener>(listeners);
+        while (parentListeners.hasMoreElements()) {
+            result.add(parentListeners.nextElement());
+        }
+        return Collections.enumeration(result);
+    }    
 
     @Override
     public void addRecursiveListener(FileChangeListener fcl) {

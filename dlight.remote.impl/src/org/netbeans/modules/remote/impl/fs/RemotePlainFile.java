@@ -220,8 +220,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         public void close() throws IOException {
             delegate.close();
             FileEvent ev = new FileEvent(RemotePlainFile.this, RemotePlainFile.this, true);
-            fireFileChangedEvent(getParent().getListeners(), ev);
-            fireFileChangedEvent(getListeners(), ev);
+            fireFileChangedEvent(getListenersWithParent(), ev);
             RemotePlainFile.this.setPendingRemoteDelivery(true);
             WritingQueue.getInstance(getExecutionEnvironment()).add(RemotePlainFile.this);
         }
