@@ -76,7 +76,7 @@ public class ConnectionNotifier {
         public final void run() {
             String oldName = Thread.currentThread().getName();
             try {
-                Thread.currentThread().setName(name);
+                Thread.currentThread().setName(getName());
                 runImpl();
             } finally {
                 // restore thread name - it might belong to the pool

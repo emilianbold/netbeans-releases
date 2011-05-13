@@ -49,9 +49,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,13 +63,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileSystem;
@@ -108,11 +114,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static int dirSyncCount;
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+    private AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
-        this.remoteFileSupport = new RemoteFileSupport(execEnv);
+        this.remoteFileSupport = new RemoteFileSupport();
         factory = new RemoteFileObjectFactory(this);
         refreshManager = new RefreshManager(execEnv, factory);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
@@ -149,6 +156,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
     
     public void connected(ExecutionEnvironment env) {
+        readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
             Collection<RemoteFileObjectBase> cachedFileObjects = factory.getCachedFileObjects();            
             refreshManager.scheduleRefreshOnConnect(cachedFileObjects);
@@ -159,6 +167,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
         
     public void disconnected(ExecutionEnvironment env) {
+        readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
             for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
                 fo.connectionChanged();
@@ -262,8 +271,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return NO_SYSTEM_ACTIONS;
     }
 
-    public RemoteFileSupport getRemoteFileSupport() {
-        return remoteFileSupport;
+    public void addPendingFile(RemoteFileObjectBase fo) {
+        remoteFileSupport.addPendingFile(fo);
     }
 
     @Override
@@ -446,6 +455,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return strBuff.toString();
     }
 
+    void addReadOnlyConnectNotification(RemoteFileObjectBase fo) {
+        if (readOnlyConnectNotification.compareAndSet(false, true)) {
+            remoteFileSupport.addPendingFile(fo);
+        }
+    }
+
     private static class RootFileObject extends RemoteDirectory {
 
         private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
@@ -468,4 +483,48 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
                 
     }
+    
+    private class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
+
+        public RemoteFileSupport() {
+            super(NbBundle.getMessage(RemoteFileSupport.class, "RemoteDownloadTask.TITLE", execEnv.getDisplayName()));
+        }
+        
+        @Override
+        protected void runImpl() {
+            try {
+                onConnect();
+            } catch (ConnectException ex) {
+                RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+                ConnectionNotifier.addTask(execEnv, this);
+            } catch (InterruptedException ex) {
+                RemoteLogger.finest(ex);
+            } catch (InterruptedIOException ex) {
+                RemoteLogger.finest(ex);
+            } catch (IOException ex) {
+                RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+                ConnectionNotifier.addTask(execEnv, this);
+            } catch (ExecutionException ex) {
+                RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+                ConnectionNotifier.addTask(execEnv, this);
+            }
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(RemoteFileSupport.class, 
+                readOnlyConnectNotification.get() ? "RemoteDownloadTask.TEXT_RO" : "RemoteDownloadTask.TEXT",
+                execEnv.getDisplayName());
+        }
+
+        // NB: it is always called in a specially created thread
+        private void onConnect() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
+            RemoteFileSystemManager.getInstance().fireDownloadListeners(execEnv);
+        }
+
+        public void addPendingFile(RemoteFileObjectBase fo) {
+            RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, fo.getPath()}); //NOI18N
+            ConnectionNotifier.addTask(execEnv, this);
+        }
+    }    
 }
