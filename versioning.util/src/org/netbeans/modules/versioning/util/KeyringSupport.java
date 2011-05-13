@@ -55,6 +55,7 @@ import org.netbeans.api.keyring.Keyring;
 public class KeyringSupport {
 
     private static final Logger LOG = Logger.getLogger("versioning.util.KeyringSupport"); //NOI18N
+    private static final boolean PRINT_PASSWORDS = "true".equals(System.getProperty("versioning.keyring.logpassword", "false")); //NOI18N
 
     /**
      * Saves password for a key constructed from keyPrefix and key
@@ -72,6 +73,9 @@ public class KeyringSupport {
         } else {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Saving password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+                if (PRINT_PASSWORDS) {
+                    LOG.log(Level.FINEST, "Saving password: \"{0}\"", password == null ? "null" : new String(password)); //NOI18N
+                }
             }
             Keyring.save(getKeyringKey(keyPrefix, key), password, description);
         }
@@ -85,8 +89,12 @@ public class KeyringSupport {
      */
     public static char[] read (String keyPrefix, String key) {
         char[] retval = Keyring.read(getKeyringKey(keyPrefix, key));
-        if (LOG.isLoggable(Level.FINE) && retval == null) {
-            LOG.log(Level.FINE, "No password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            if (retval == null) {
+                LOG.log(Level.FINE, "No password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+            } else if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "Getting password: {0}:{1} -- \"{2}\"", new Object[] { keyPrefix, key, retval == null ? "null" : new String(retval) }); //NOI18N
+            }
         }
         return retval;
     }
