@@ -42,22 +42,15 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.ProducerFieldAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.TypedFieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
@@ -65,37 +58,44 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author ads
  *
  */
-public class FieldElementAnalyzer implements ElementAnalyzer {
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
-     */
-    @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+public abstract class AbstractProducerAnalyzer {
+    
+    protected abstract void hasTypeVar( Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions);
+    
+    protected abstract void hasWildCard(Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions);
+    
+    protected void checkType( Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        VariableElement var = (VariableElement) element;
-        TypeMirror varType = compInfo.getTypes().asMemberOf( 
-                (DeclaredType)parent.asType(),  var );
-        for (FieldAnalyzer analyzer : ANALYZERS) {
-            analyzer.analyze(var, varType, parent, compInfo, descriptions);
+        if ( type.getKind() == TypeKind.TYPEVAR ){
+            hasTypeVar(element, type, compInfo, descriptions);
+        }
+        else if (hasWildCard(type)) {
+            hasWildCard( element, type, compInfo, descriptions);
+            return;
         }
     }
-    
-    public interface FieldAnalyzer {
-        void analyze( VariableElement element , TypeMirror elementType,
-                TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
-    }
-    
-    private static final List<FieldAnalyzer> ANALYZERS= new LinkedList<FieldAnalyzer>(); 
-    
-    static {
-        ANALYZERS.add( new TypedFieldAnalyzer() );
-        ANALYZERS.add( new ScopedFieldAnalyzer() );
-        ANALYZERS.add( new InjectionPointAnalyzer());
-        ANALYZERS.add( new DelegateFieldAnalizer());
-        ANALYZERS.add( new ProducerFieldAnalyzer());
+
+    protected boolean hasWildCard(TypeMirror typeMirror){
+        if ( typeMirror instanceof DeclaredType ){
+            List<? extends TypeMirror> typeArguments = 
+                    ((DeclaredType)typeMirror).getTypeArguments();
+            for (TypeMirror paramType : typeArguments) {
+                if ( paramType.getKind() == TypeKind.WILDCARD ){
+                    return true;
+                }
+                else {
+                    if ( hasWildCard(paramType) ){
+                        return true;
+                    }
+                }
+            }
+        }
+        else if ( typeMirror instanceof ArrayType ){
+            return hasWildCard( ((ArrayType)typeMirror).getComponentType());
+        }
+        return false;
     }
 }

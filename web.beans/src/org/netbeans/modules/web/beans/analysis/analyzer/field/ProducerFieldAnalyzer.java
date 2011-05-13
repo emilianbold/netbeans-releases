@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.field;
 import java.util.List;
 import java.util.Set;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -52,6 +53,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -62,7 +64,9 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class ProducerFieldAnalyzer implements FieldAnalyzer {
+public class ProducerFieldAnalyzer extends AbstractProducerAnalyzer 
+    implements FieldAnalyzer 
+{
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
@@ -78,6 +82,33 @@ public class ProducerFieldAnalyzer implements FieldAnalyzer {
             return;
         }
         checkSessionBean( element , parent , compInfo , descriptions );
+        checkType( element, elementType, compInfo , descriptions );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer#hasTypeVar(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void hasTypeVar( Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, NbBundle.getMessage(
+                            ProducerFieldAnalyzer.class, "ERR_ProducerHasTypeVar"));    // NOI18N
+        descriptions.add( description );        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer#hasWildCard(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void hasWildCard( Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory
+            .createError(element, compInfo, NbBundle.getMessage(
+                    ProducerFieldAnalyzer.class,"ERR_ProducerHasWildcard")); // NOI18N
+        descriptions.add(description);        
     }
 
     private void checkSessionBean( VariableElement element, TypeElement parent,

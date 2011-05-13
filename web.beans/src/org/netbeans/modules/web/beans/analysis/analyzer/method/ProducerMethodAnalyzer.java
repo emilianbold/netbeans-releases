@@ -45,16 +45,15 @@ package org.netbeans.modules.web.beans.analysis.analyzer.method;
 import java.util.List;
 import java.util.Set;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -65,7 +64,9 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class ProducerMethodAnalyzer implements MethodAnalyzer {
+public class ProducerMethodAnalyzer extends AbstractProducerAnalyzer 
+    implements MethodAnalyzer 
+{
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
@@ -80,8 +81,34 @@ public class ProducerMethodAnalyzer implements MethodAnalyzer {
         {
             return;
         }
-        checkReturnType( element, returnType, compInfo , descriptions );
+        checkType( element, returnType, compInfo , descriptions );
         checkSpecializes( element , compInfo , descriptions );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer#hasTypeVar(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void hasTypeVar( Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, NbBundle.getMessage(
+                            ProducerMethodAnalyzer.class, "ERR_ProducerReturnIsTypeVar"));    // NOI18N
+        descriptions.add( description );        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer#hasWildCard(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void hasWildCard( Element element, TypeMirror type,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory
+            .createError(element, compInfo, NbBundle.getMessage(
+                    ProducerMethodAnalyzer.class,"ERR_ProducerReturnHasWildcard")); // NOI18N
+        descriptions.add(description);        
     }
     
     private void checkSpecializes(ExecutableElement element,
@@ -120,46 +147,6 @@ public class ProducerMethodAnalyzer implements MethodAnalyzer {
                         "ERR_NoDirectSpecializedProducer"));    // NOI18N
             descriptions.add(description);
         }
-    }
-
-    private void checkReturnType( ExecutableElement element, TypeMirror returnType,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
-    {
-        if ( returnType.getKind() == TypeKind.TYPEVAR ){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
-                    ProducerMethodAnalyzer.class, "ERR_ProducerReturnIsTypeVar"));    // NOI18N
-            descriptions.add( description );
-        }
-        else if (hasWildCard(returnType)) {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
-                            ProducerMethodAnalyzer.class,
-                            "ERR_ProducerReturnHasWildcard")); // NOI18N
-            descriptions.add(description);
-            return;
-        }
-    }
-    
-    private boolean hasWildCard(TypeMirror typeMirror){
-        if ( typeMirror instanceof DeclaredType ){
-            List<? extends TypeMirror> typeArguments = 
-                    ((DeclaredType)typeMirror).getTypeArguments();
-            for (TypeMirror paramType : typeArguments) {
-                if ( paramType.getKind() == TypeKind.WILDCARD ){
-                    return true;
-                }
-                else {
-                    if ( hasWildCard(paramType) ){
-                        return true;
-                    }
-                }
-            }
-        }
-        else if ( typeMirror instanceof ArrayType ){
-            return hasWildCard( ((ArrayType)typeMirror).getComponentType());
-        }
-        return false;
     }
 
 }
