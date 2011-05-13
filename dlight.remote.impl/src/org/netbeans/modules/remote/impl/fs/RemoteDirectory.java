@@ -587,7 +587,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (problem != null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
-                    getFileSystem().getRemoteFileSupport().addPendingFile(this);
+                    getFileSystem().addPendingFile(this);
                     throw new ConnectException(problem.getMessage());
                 } else {
                     boolean fileNotFoundException = isFileNotFoundException(problem);
@@ -879,7 +879,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (problem != null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
-                    getFileSystem().getRemoteFileSupport().addPendingFile(this);
+                    getFileSystem().addPendingFile(this);
                     // valid cache can not be available
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
@@ -1121,7 +1121,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private void checkConnection(RemoteFileObjectBase fo, boolean throwConnectException) throws ConnectException {
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-            getFileSystem().getRemoteFileSupport().addPendingFile(fo);
+            getFileSystem().addPendingFile(fo);
             if (throwConnectException) {
                 throw new ConnectException();
             }

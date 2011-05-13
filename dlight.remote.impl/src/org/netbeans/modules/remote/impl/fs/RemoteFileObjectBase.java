@@ -186,10 +186,6 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         return fileSystem;
     }
 
-    protected RemoteFileSupport getRemoteFileSupport() {
-        return getFileSystem().getRemoteFileSupport();
-    }
-
     @Override
     public String getName() {
         String nameExt = getNameExt();
