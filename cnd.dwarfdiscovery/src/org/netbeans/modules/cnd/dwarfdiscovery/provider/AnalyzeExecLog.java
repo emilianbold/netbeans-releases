@@ -220,12 +220,13 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return false;
         }
-        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-        if (o == null || "".equals(o.toString())) { // NOI18N
-            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
-            return true;
-        }
-        return false;
+        return true;
+        //Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
+        //if (o == null || "".equals(o.toString())) { // NOI18N
+        //    getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
+        //    return true;
+        //}
+        //return false;
     }
 
     @Override
