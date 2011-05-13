@@ -46,7 +46,7 @@ package org.netbeans.modules.web.beans.impl.model.results;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result.Error;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.Error;
 
 
 /**
@@ -65,6 +65,7 @@ public class ErrorImpl extends BaseResult implements Error {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
      */
+    @Override
     public String getMessage(){
         return myMessage;
     }
@@ -72,6 +73,7 @@ public class ErrorImpl extends BaseResult implements Error {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
+    @Override
     public ResultKind getKind() {
         return ResultKind.RESOLUTION_ERROR;
     }

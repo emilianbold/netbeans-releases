@@ -732,6 +732,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
     public synchronized List<FunctionCall> getCallStack(final long stackId) {
         long funcID, offset, offsetInModule, srcLine, srcColumn;
         String funcName, module, srcFile;
+        StringBuilder qname = new StringBuilder();
 
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         try {
@@ -762,29 +763,38 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
                         srcColumn = rs.getLong(9);
 
                         String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
-                        StringBuilder qName = new StringBuilder(funcName);
+
+                        if (module != null) {
+                            qname.append(module);
+                            if (moduleOffset != null) {
+                                qname.append('+').append(moduleOffset);
+                            }
+                            qname.append('`');
+                        }
+
+                        qname.append(funcName);
 
                         if (offset > 0) {
-                            qName.append("+0x").append(Long.toHexString(offset)); // NOI18N
+                            qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
                         }
 
                         if (srcFile != null) {
-                            qName.append(':').append(srcFile);
+                            qname.append(':').append(srcFile);
                             if (srcLine > 0) {
-                                qName.append(':').append(srcLine);
+                                qname.append(':').append(srcLine);
                                 if (srcColumn > 0) {
-                                    qName.append(':').append(srcColumn);
+                                    qname.append(':').append(srcColumn);
                                 }
                             }
                         }
 
-                        FunctionImpl func = new FunctionImpl(funcID, -1, funcName, qName.toString(), module, moduleOffset, srcFile);
+                        FunctionImpl func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
                         result.add(new FunctionCallImpl(func, offset, Collections.<FunctionMetric, Object>emptyMap()));
                     } else {
                         break;
                     }
                 } finally {
-//                    qname.setLength(0);
+                    qname.setLength(0);
                     rs.close();
                 }
             }

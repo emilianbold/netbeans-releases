@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution;
 
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.File;
 import java.util.concurrent.Future;
@@ -55,6 +56,7 @@ import org.junit.BeforeClass;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -115,6 +117,10 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         UploadStatus uploadStatus = uploadTask.get();
         assertEquals("Error uploading " + src.getAbsolutePath() + " to " + execEnv + ":" + dst + ' ' + uploadStatus.getError(), 0, uploadStatus.getExitCode());
         assertTrue(HostInfoUtils.fileExists(execEnv, dst));
+
+        StatInfo statFomrUpload = uploadStatus.getStatInfo();
+        StatInfo stat = FileInfoProvider.stat(execEnv, dst).get();
+        assertEquals("Stat got from upload differ", stat.toExternalForm(), statFomrUpload.toExternalForm());
 
         CommonTasksSupport.UploadParameters up = new CommonTasksSupport.UploadParameters(src, execEnv, dst);
         up.mask = 0755;

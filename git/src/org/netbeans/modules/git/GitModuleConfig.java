@@ -86,6 +86,8 @@ public final class GitModuleConfig {
     private static final String GURI_PASSWORD           = "guri_password";
     
     private static final String DELIMITER               = "<=~=>";              // NOI18N
+    private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
+    private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -280,6 +282,20 @@ public final class GitModuleConfig {
     
     public void setShowCloneCompleted(boolean bl) {
         getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
+    }
+
+    public boolean getShowHistoryMerges() {
+        return getPreferences().getBoolean(KEY_SHOW_HISTORY_MERGES, true);
+    }
+
+    public void setShowHistoryMerges(boolean bShowMerges) {
+        getPreferences().putBoolean(KEY_SHOW_HISTORY_MERGES, bShowMerges);
+    }
+    public boolean getShowFileInfo() {
+        return getPreferences().getBoolean(KEY_SHOW_FILE_INFO, false);
+    }
+    public void setShowFileInfo(boolean info) {
+        getPreferences().putBoolean(KEY_SHOW_FILE_INFO, info);
     }
     
     private final HashMap<String, GitURI> cachedUris = new HashMap<String, GitURI>(5);

@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -56,7 +59,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.api.model.CdiException;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
@@ -70,6 +76,9 @@ import org.openide.util.NbBundle;
 abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic 
     implements WebBeansModelProvider 
 {
+    
+    static final String CONTEXT_DEPENDENT_ANNOTATION = 
+        "javax.enterprise.context.Dependent";                       // NOI18N
 
     static final String DISPOSES_ANNOTATION = 
             "javax.enterprise.inject.Disposes";                     // NOI18N
@@ -82,34 +91,8 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         super( model );
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
-     */
-    @Override
-    public Result lookupInjectables( VariableElement element,
-            DeclaredType parentType )
-    {
-        DeclaredType parent = parentType;
-        try {
-            parent = getParent(element, parentType);
-        }
-        catch (DefinitionError e) {
-            TypeElement type = e.getElement();
-            return new DefinitionErrorResult(element,  parentType, 
-                    NbBundle.getMessage(WebBeansModelProviderImpl.class, 
-                            "ERR_BadParent", element.getSimpleName(),
-                             type!= null? type.toString(): null));
-        }
-        
-        TypeMirror elementType = getParameterType( element , parent , 
-                INSTANCE_INTERFACE);
-        Result result = doFindVariableInjectable(element, elementType, true);
-        // TODO: return appropriate result based on <code>result</code>
-        return null;
-    }
-    
-    protected Result findParameterInjectable( VariableElement element , 
-            DeclaredType parentType ) 
+    protected DependencyInjectionResult findParameterInjectable( VariableElement element , 
+            DeclaredType parentType , ResultLookupStrategy strategy ) 
     {
         DeclaredType parent = parentType;
         try {
@@ -150,9 +133,9 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
                 isInjectionPoint = true;
             }
         }
-        TypeMirror elementType = parameterTypes.get(index);
+        TypeMirror elementType = strategy.getType( getModel(), parameterTypes.get(index));
         
-        Result result = null;
+        DependencyInjectionResult result = null;
         boolean disposes = AnnotationObjectProvider.hasAnnotation( element, 
                 DISPOSES_ANNOTATION, getModel().getHelper());
         boolean observes = AnnotationObjectProvider.hasAnnotation( element, 
@@ -190,7 +173,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         }
 
         if ( isInjectionPoint ){
-            return getResult(result );
+            return strategy.getResult(getModel(), result );
         }
         else {
             return new DefinitionErrorResult(element, elementType, 
@@ -218,18 +201,129 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         return false;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.ResolutionResult#getScope(javax.lang.model.element.Element)
+     */
+    @Override
+    public String getScope( Element element ) throws CdiException {
+        return getScope(element , getModel().getHelper());
+    }
+    
+    public static String getScope( Element element, AnnotationModelHelper helper )
+            throws CdiException
+    {
+        String scope = getDeclaredScope(element, helper);
+        if (scope != null) {
+            return scope;
+        }
+        List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl
+                .getAllStereotypes(element, helper);
+        for (AnnotationMirror annotationMirror : stereotypes) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            Element annotationElement = annotationType.asElement();
+            String declaredScope = getDeclaredScope(annotationElement, helper);
+            if (declaredScope == null) {
+                continue;
+            }
+            if (scope == null) {
+                scope = declaredScope;
+            }
+            else if (!scope.equals(declaredScope)) {
+                throw new CdiException(NbBundle.getMessage(ParameterInjectionPointLogic.class,
+                        "ERR_DefaultScopeCollision", scope, declaredScope)); // NOI18N
+            }
+        }
+        if (scope != null) {
+            return scope;
+        }
+        return CONTEXT_DEPENDENT_ANNOTATION;
+    }
+    
+    static String getDeclaredScope( Element element , 
+            AnnotationModelHelper helper ) throws CdiException
+    {
+        List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+        ScopeChecker scopeChecker = ScopeChecker.get();
+        NormalScopeChecker normalScopeChecker = NormalScopeChecker.get();
+        String scope = getDeclaredScope(helper, annotationMirrors, scopeChecker, 
+                normalScopeChecker, true);
+        if ( scope != null ){
+            return scope;
+        }
+        
+        annotationMirrors = helper.getCompilationController().getElements().
+            getAllAnnotationMirrors( element );
+        return getDeclaredScope(helper, annotationMirrors, scopeChecker, 
+                normalScopeChecker, false );
+    }
+
+    private static String getDeclaredScope( AnnotationModelHelper helper,
+            List<? extends AnnotationMirror> annotationMirrors,
+            ScopeChecker scopeChecker , NormalScopeChecker normalScopeChecker ,
+            boolean singleScopeRequired ) throws CdiException
+    {
+        List<? extends AnnotationMirror> annotations = annotationMirrors;
+        if ( !singleScopeRequired ){
+            annotations = new ArrayList<AnnotationMirror>( 
+                    annotationMirrors);
+            Collections.reverse( annotations );
+        }
+        String scope = null;
+        for (AnnotationMirror annotationMirror : annotations ) {
+            String declaredScope = null;
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            Element annotationElement = annotationType.asElement();
+            if ( annotationElement instanceof TypeElement ){
+                TypeElement annotation = (TypeElement)annotationElement;
+                scopeChecker.init(annotation, helper );
+                if ( scopeChecker.check() ){
+                    declaredScope = annotation.getQualifiedName().toString();
+                }
+                normalScopeChecker.init( annotation, helper );
+                if ( normalScopeChecker.check() ){
+                    declaredScope = annotation.getQualifiedName().toString();
+                }
+                if ( declaredScope != null ){
+                    if ( !singleScopeRequired ){
+                        return declaredScope;
+                    }
+                    if ( scope != null ){
+                        throw new CdiException(NbBundle.getMessage(
+                                ParameterInjectionPointLogic.class, 
+                                "ERR_SeveralScopes"));                      // NOI18N
+                    }
+                    else {
+                        scope = declaredScope;
+                    }
+                }
+            }
+        }
+        return scope;
+    }
+    
     protected TypeMirror getParameterType( Element element , DeclaredType parentType, 
             String... interfaceFqns) 
     {
-        TypeMirror parameterType = null;
+        return getParameterType(getCompilationController(),
+                element, parentType, interfaceFqns);
+    }
+    
+    static TypeMirror getParameterType( CompilationController controller, 
+            Element element , DeclaredType parentType, String... interfaceFqns) 
+    {
         TypeMirror elementType = null;
         if ( parentType == null ) {
             elementType = element.asType();
         }
         else {
-            elementType = getCompilationController().getTypes().
-                asMemberOf(parentType, element);
+            elementType = controller.getTypes().asMemberOf(parentType, element);
         }
+        return getParameterType(elementType,interfaceFqns);
+    }
+
+    static TypeMirror getParameterType( TypeMirror elementType, 
+            String... interfaceFqns )
+    {
         if ( elementType instanceof DeclaredType ){
             DeclaredType declaredType = (DeclaredType)elementType;
             Element elementDeclaredType = declaredType.asElement();
@@ -241,12 +335,12 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
                         List<? extends TypeMirror> typeArguments = declaredType
                                 .getTypeArguments();
                         if (typeArguments.size() > 0) {
-                            parameterType = typeArguments.get(0);
+                            return typeArguments.get(0);
                         }
                     }
                 }
             }
         }
-        return parameterType;
+        return null;
     }
 }

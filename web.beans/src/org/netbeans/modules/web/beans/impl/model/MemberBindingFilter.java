@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,7 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
         return null;
     }
 
-    void init( List<AnnotationMirror> bindingAnnotations,
+    void init( Collection<AnnotationMirror> bindingAnnotations,
             WebBeansModelImplementation impl )
     {
         myImpl = impl;
@@ -174,11 +175,11 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
         return myImpl;
     }
     
-    private List<AnnotationMirror> getBindingAnnotations(){
+    private Collection<AnnotationMirror> getBindingAnnotations(){
         return myBindingAnnotations;
     }
 
     private WebBeansModelImplementation myImpl;
-    private List<AnnotationMirror> myBindingAnnotations;
+    private Collection<AnnotationMirror> myBindingAnnotations;
     private Class<T> myClass;
 }

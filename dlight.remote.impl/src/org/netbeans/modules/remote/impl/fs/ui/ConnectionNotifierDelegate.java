@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.remote.impl.fs.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +55,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -60,7 +71,9 @@ import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -173,13 +186,15 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         String title, details;
         ImageIcon icon;
 
+        String text = null;
         if (error == null) {
             StringBuilder reasons = new StringBuilder();
             for (ConnectionNotifier.NamedRunnable task : tasks) {
-                reasons.append(' ');
                 reasons.append(task.getName());
+                reasons.append(' ');
             }
-            title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString, reasons);
+            text = reasons.toString();
+            title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/exclamation.gif", false); // NOI18N
             details = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.DETAILS", envString);
         } else {
@@ -188,9 +203,41 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
             String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
             details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
         }
-        Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, onClickAction, NotificationDisplayer.Priority.HIGH);
+        JComponent baloonComponent = createDetails(text, details, onClickAction);
+        JComponent popupComponent = createDetails(text, details, onClickAction);
+        Notification n = NotificationDisplayer.getDefault().notify(title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH);
         synchronized (this) {
             notification = n;
+        }
+    }
+    
+    private JComponent createDetails(String explanationText, String buttonText, ActionListener action) {
+        Parameters.notNull("action", action); //NOI18N
+        try {
+            buttonText = "<html><u>" + XMLUtil.toElementContent(buttonText); //NOI18N
+        } catch( CharConversionException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
+        JButton btn = new JButton(buttonText);
+        btn.setFocusable(false);
+        btn.setBorder(BorderFactory.createEmptyBorder());
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.addActionListener(action);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setForeground(Color.blue);
+        if(explanationText == null || explanationText.length() == 0) {
+            return btn;
+        } else {
+            final JComponent res = new JPanel(new BorderLayout());
+            JLabel text = new JLabel(explanationText);
+            text.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+            res.add(text, BorderLayout.CENTER);
+            res.add(btn, BorderLayout.SOUTH);
+            res.setOpaque(false);
+            return res;
         }
     }
 

@@ -65,7 +65,14 @@ made subject to such option by the copyright holder.
         <delete file="${antlr.apt.output.tokenTypes}"/>
     </target>
     
-    <target name="antlr" depends="init-antlr" unless="up-to-date">
+    <target name="check-up-to-date">
+        <uptodate property="antlr.up-to-date" targetfile="${antlr.apt.output.dir}/APTGeneratedTokenTypes.txt">
+            <srcfiles dir="${antlr.apt.grammar.dir}" includes="*.g"/>
+        </uptodate>
+        <echo message="antlr checkUptodate result: ${antlr.up-to-date}"/>
+    </target>
+    
+    <target name="antlr" depends="init-antlr, check-up-to-date" unless="antlr.up-to-date">
         <mkdir dir="${antlr.apt.output.dir}"/>
         <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
             <arg value="-o"/>

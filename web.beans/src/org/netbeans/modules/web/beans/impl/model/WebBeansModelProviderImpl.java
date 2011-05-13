@@ -46,6 +46,7 @@ package org.netbeans.modules.web.beans.impl.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +70,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.openide.util.NbBundle;
 
 
@@ -77,7 +78,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
+public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     
     protected WebBeansModelProviderImpl(WebBeansModelImplementation model){
         super( model );
@@ -99,29 +100,20 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return getModel().getHelper().resolveType( fqn );
     }
 
-    public Result getInjectable(VariableElement element, DeclaredType parentType) 
-    {
-        /* 
-         * Element could be injection point. One need first if all to check this.  
-         */
-        Element parent = element.getEnclosingElement();
-        
-        if ( parent instanceof TypeElement){
-            return findVariableInjectable(element, parentType );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
+     */
+    @Override
+    public DependencyInjectionResult lookupInjectables(VariableElement element, DeclaredType parentType)  {
+        TypeMirror type = getParameterType(element, null, INSTANCE_INTERFACE);
+        if ( type != null ){
+            return lookupInjectables(element, parentType , 
+                    ResultLookupStrategy.MULTI_LOOKUP_STRATEGY);
         }
-        else if ( parent instanceof ExecutableElement ){
-            // Probably injected field in method. One need to check method.
-            /*
-             * There are two cases where parameter is injected :
-             * 1) Method has some annotation which require from 
-             * parameters to be injection points.
-             * 2) Method is disposer method. In this case injectable
-             * is producer corresponding method.
-             */
-            return findParameterInjectable(element, parentType );
+        else {
+            return lookupInjectables(element, parentType , 
+                ResultLookupStrategy.SINGLE_LOOKUP_STRATEGY );
         }
-        
-        return null;
     }
     
     /* (non-Javadoc)
@@ -145,44 +137,71 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return false;
     }
 
-    private boolean isMethodParameterInjection( VariableElement element,
-            ExecutableElement parent )
-            throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
-    {
-        List<? extends AnnotationMirror> annotations = 
-            getModel().getHelper().getCompilationController().getElements().
-            getAllAnnotationMirrors(parent);
-        if (isDisposeParameter( element, parent, annotations)){
-            return true;
-        }
-        /*
-         * Parameter with @Observes annotation is not plain injection point. 
-         */
-        boolean hasObserves = AnnotationObjectProvider.hasAnnotation(element, 
-                OBSERVES_ANNOTATION, getModel().getHelper());
-        if ( !hasObserves && isObservesParameter(element, parent, annotations)){
-            return true;
-        }
-        return getModel().getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||
-            getModel().getHelper().hasAnnotation(annotations, PRODUCER_ANNOTATION);
-    }
-
-    public List<AnnotationMirror> getQualifiers(Element element) {
-        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
-        List<? extends AnnotationMirror> annotations = getModel().getHelper().
-            getCompilationController().getElements().getAllAnnotationMirrors( 
-                    element);
+    @Override
+    public List<AnnotationMirror> getQualifiers(Element element, boolean all ) {
+        final boolean event = getParameterType(element, null, EVENT_INTERFACE) != null;
         
-        boolean event = getParameterType(element, null, EVENT_INTERFACE) != null;
-        
-        for (AnnotationMirror annotationMirror : annotations) {
-            DeclaredType type = annotationMirror.getAnnotationType();
-            TypeElement annotationElement = (TypeElement)type.asElement();
-            if ( isQualifier( annotationElement , getModel().getHelper(), event) ){
-                result.add( annotationMirror );
+        final LinkedHashSet<AnnotationMirror> result = new LinkedHashSet<AnnotationMirror>();
+        final AnnotationObjectProvider.AnnotationHandleStrategy strategy = new 
+            AnnotationObjectProvider.AnnotationHandleStrategy() {
+                
+                @Override
+                public void handleAnnotation( AnnotationMirror annotationMirror,
+                        TypeElement annotation )
+                {
+                    result.add( annotationMirror );
+                }
+            };
+        AnnotationObjectProvider.findQualifiers(element, getModel().getHelper(), 
+                event, strategy);
+        boolean isType = element instanceof TypeElement;
+        boolean isMethod = element instanceof ExecutableElement;
+        if ( all && ( isType || isMethod ) ){
+            AnnotationObjectProvider.SpecializeVisitor visitor = new 
+                AnnotationObjectProvider.SpecializeVisitor() {
+                
+                @Override
+                public boolean visit( ExecutableElement overridenElement ) {
+                    collectQualifiers(overridenElement);
+                    return false;
+                }
+                
+                @Override
+                public boolean visit( TypeElement superElement ) {
+                    collectQualifiers(superElement);
+                    return false;
+                }
+                
+                private void collectQualifiers( Element element ){
+                    AnnotationObjectProvider.findQualifiers(element, 
+                            getModel().getHelper(), event, strategy);
+                }
+            };
+            if ( isType ){
+                AnnotationObjectProvider.visitSpecializes((TypeElement)element, 
+                        getModel().getHelper(), visitor);
+            }
+            else if ( isMethod ){
+                MemberCheckerFilter.visitSpecializes((ExecutableElement)element, 
+                        getModel().getHelper(), visitor);
             }
         }
-        return result;
+        return new ArrayList<AnnotationMirror>( result );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#hasImplicitDefaultQualifier(javax.lang.model.element.Element)
+     */
+    @Override
+    public boolean hasImplicitDefaultQualifier( Element element ) {
+        boolean event = getParameterType(element, null, EVENT_INTERFACE) != null;
+        Set<String> qualifiers = AnnotationObjectProvider.getQualifiers(element,
+                getModel().getHelper(), event);
+        if ( qualifiers.size() == 1 ){
+            String qualifier = qualifiers.iterator().next();
+            return qualifier.equals( NAMED_QUALIFIER_ANNOTATION );
+        }
+        return qualifiers.size() == 0;
     }
 
     /* (non-Javadoc)
@@ -290,6 +309,54 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return result;
     }
     
+    protected DependencyInjectionResult lookupInjectables( VariableElement element,
+            DeclaredType parentType , ResultLookupStrategy strategy)
+    {
+        /* 
+         * Element could be injection point. One need first if all to check this.  
+         */
+        Element parent = element.getEnclosingElement();
+        
+        if ( parent instanceof TypeElement){
+            return findVariableInjectable(element, parentType , strategy);
+        }
+        else if ( parent instanceof ExecutableElement ){
+            // Probably injected field in method. One need to check method.
+            /*
+             * There are two cases where parameter is injected :
+             * 1) Method has some annotation which require from 
+             * parameters to be injection points.
+             * 2) Method is disposer method. In this case injectable
+             * is producer corresponding method.
+             */
+            return findParameterInjectable(element, parentType, strategy);
+        }
+        
+        return null;
+    }
+    
+    private boolean isMethodParameterInjection( VariableElement element,
+            ExecutableElement parent )
+            throws org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError
+    {
+        List<? extends AnnotationMirror> annotations = 
+            getModel().getHelper().getCompilationController().getElements().
+            getAllAnnotationMirrors(parent);
+        if (isDisposeParameter( element, parent, annotations)){
+            return true;
+        }
+        /*
+         * Parameter with @Observes annotation is not plain injection point. 
+         */
+        boolean hasObserves = AnnotationObjectProvider.hasAnnotation(element, 
+                OBSERVES_ANNOTATION, getModel().getHelper());
+        if ( !hasObserves && isObservesParameter(element, parent, annotations)){
+            return true;
+        }
+        return getModel().getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||
+            getModel().getHelper().hasAnnotation(annotations, PRODUCER_ANNOTATION);
+    }
+    
     private void setCachedResult( List<Element> list) {
         myNamedElement = new ArrayList<ElementHandle<? extends Element>>( list.size());
         for( Element element : list ){
@@ -315,22 +382,27 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         helper.getClasspathInfo().getClassIndex().addClassIndexListener( 
             new ClassIndexListener(){
             
+                @Override
                 public void typesAdded(final TypesEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void typesRemoved(final TypesEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void typesChanged(final TypesEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void rootsAdded(RootsEvent event) {
                     setDirty();
                 }
 
+                @Override
                 public void rootsRemoved(RootsEvent event) {
                     setDirty();
                 }
@@ -358,8 +430,9 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         else if ( element instanceof ExecutableElement ){
             String name = doGetName(element, element);
             if ( name == null ){
-                Element specialized = MemberCheckerFilter.getSpecialized( element, 
-                        getModel(), NAMED_QUALIFIER_ANNOTATION);
+                Element specialized = MemberCheckerFilter.getSpecialized( 
+                        (ExecutableElement)element, getModel(), 
+                        NAMED_QUALIFIER_ANNOTATION);
                 if ( specialized!= null ){
                     return doGetName(element , specialized);
                 }
@@ -392,23 +465,28 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
     
     private static void doGetStereotypes( Element element , 
             List<AnnotationMirror> result ,Set<Element>  foundStereotypesElement,
-            StereotypeChecker checker , AnnotationModelHelper helper ) 
+            final StereotypeChecker checker , AnnotationModelHelper helper ) 
     {
-        List<? extends AnnotationMirror> annotationMirrors = helper.
-            getCompilationController().getElements().getAllAnnotationMirrors( element );
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            TypeElement annotationElement = (TypeElement)annotationMirror.
-                getAnnotationType().asElement();
-            if ( foundStereotypesElement.contains( annotationElement)){
-                continue;
+        TransitiveAnnotationHandler handler = new TransitiveAnnotationHandler(){
+
+            @Override
+            public boolean proceed( Element annotatedElement,
+                    TypeElement element , boolean isTargetAnnotation) 
+            {
+                return isTargetAnnotation;
             }
-            if ( isStereotype( annotationElement, checker ) ){
-                foundStereotypesElement.add( annotationElement );
-                result.add(annotationMirror);
-                doGetStereotypes(annotationElement, result, 
-                        foundStereotypesElement, checker , helper);
+            
+            /* (non-Javadoc)
+             * @see org.netbeans.modules.web.beans.impl.model.DecoratorInterceptorLogic.TransitiveAnnotationHandler#isTargetAnotation(javax.lang.model.element.TypeElement)
+             */
+            @Override
+            public boolean isTargetAnotation( TypeElement element ) {
+                return isStereotype( element, checker );
             }
-        }
+            
+        };
+        transitiveVisitAnnotatedElements(element, result, foundStereotypesElement, 
+                helper, handler);
     }
     
     private String getNamedName( Element element, AnnotationMirror namedAnnotation )

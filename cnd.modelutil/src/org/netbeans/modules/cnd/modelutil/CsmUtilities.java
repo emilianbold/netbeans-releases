@@ -97,6 +97,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -426,8 +427,7 @@ public class CsmUtilities {
                 if (files.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
-                        String normPath = fo.getPath();
-                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, waitParsing, snapShot);
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(fo), waitParsing, snapShot);
                         if (csmFile != null) {
                             files.add(csmFile);
                         }

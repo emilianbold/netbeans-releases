@@ -43,14 +43,9 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -58,7 +53,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -85,21 +79,21 @@ class TypeProductionFilter extends Filter<Element> {
     {
         myImpl = model;
         myType = elementType;
-        myResult = new HashMap<Element, List<DeclaredType>>();
         myOriginalElement = injectionPoint;
     }
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.Filter#filterElements(java.util.Set)
      */
+    @Override
     void filter( Set<Element> productionElements ){
         if ( filterPrimitives(productionElements ) ){
-            fillSimpleResult(productionElements);
+            //fillSimpleResult(productionElements);
             return;
         }
         
         if ( filterArray(productionElements) ){
-            fillSimpleResult(productionElements);
+            //fillSimpleResult(productionElements);
             return ;
         }
         
@@ -112,11 +106,19 @@ class TypeProductionFilter extends Filter<Element> {
         {
             Element productionElement = iterator.next();
 
-            TypeElement enclosingElement = getImplementation().getHelper().
-                getCompilationController().getElementUtilities().
-                enclosingTypeElement( productionElement );
+            TypeMirror mirror = null;
+            if (productionElement.getKind() == ElementKind.FIELD) {
+                mirror = productionElement.asType();
+            }
+            else if (productionElement.getKind() == ElementKind.METHOD)
+            {
+                mirror = ((ExecutableType) productionElement.asType()).getReturnType();
+            }
+            if ( !filter.isAssignable(mirror, productionElement )){
+                iterator.remove();
+            }
             
-            List<DeclaredType> derived = getDerived( enclosingElement);
+            /*List<DeclaredType> derived = getDerived( enclosingElement);
             
             for (DeclaredType declaredType : derived) {
                 TypeMirror mirror = null;
@@ -141,18 +143,14 @@ class TypeProductionFilter extends Filter<Element> {
                     /*
                      * call <code>asMemberOf</code> could be a problem for
                      * productionElment and derived. In this case just skip
-                     */
+                     *
                     continue;
                 }
-            }
+            }*/
         }
     }
     
-    Map<Element, List<DeclaredType>> getResult() {
-        return myResult;
-    }
-    
-    private void addResult( Element productionElement, DeclaredType type )
+    /*private void addResult( Element productionElement, DeclaredType type )
     {
         List<DeclaredType> list = myResult.get( productionElement );
         if ( list == null ){
@@ -170,8 +168,15 @@ class TypeProductionFilter extends Filter<Element> {
             DeclaredType type = (DeclaredType)enclosingElement.asType();
             myResult.put( element , Collections.singletonList(type) );
         }
-    }
+    }*/
     
+    /*
+     * From the spec : producer or disposer method is not inherited.
+     *                 producer field is not inherited.
+     * It means no need to look at the derived classes and inherited 
+     * production there. If method is explicitly defined in the 
+     * derived class it will be in the original production list
+     * as separate element. 
     private List<DeclaredType> getDerived( TypeElement element ) 
     {
         if ( !isGeneric( element ) ){
@@ -193,7 +198,7 @@ class TypeProductionFilter extends Filter<Element> {
     private boolean isGeneric( TypeElement element ) {
         //DeclaredType type = (DeclaredType)element.asType();
         return element.getTypeParameters().size()!=0;
-    }
+    }*/
 
     private boolean filterArray( Set<? extends Element> productionElements)
     {
@@ -348,7 +353,6 @@ class TypeProductionFilter extends Filter<Element> {
 
     private WebBeansModelImplementation myImpl;
     private TypeMirror myType;
-    private Map<Element, List<DeclaredType>> myResult;
     private Element myOriginalElement;
     
     

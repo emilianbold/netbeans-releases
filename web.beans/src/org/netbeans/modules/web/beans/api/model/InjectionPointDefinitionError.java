@@ -52,7 +52,7 @@ import javax.lang.model.element.Element;
  * @author ads
  *
  */
-public class InjectionPointDefinitionError extends Exception {
+public class InjectionPointDefinitionError extends CdiException {
 
     private static final long serialVersionUID = -6893993336079352757L;
 
