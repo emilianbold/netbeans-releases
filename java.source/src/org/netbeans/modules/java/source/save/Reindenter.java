@@ -152,16 +152,21 @@ public class Reindenter implements IndentTask {
                         if (delta > 0) {
                             int idx = blockCommentLine.indexOf('\n', delta); //NOI18N
                             blockCommentLine = (idx < 0 ? blockCommentLine.substring(delta) : blockCommentLine.substring(delta, idx)).trim();
+                            int prevLineStartOffset = context.lineStartOffset(ts.offset() + delta - 1);
+                            Integer prevLineIndent = newIndents.get(prevLineStartOffset);
+                            newIndents.put(startOffset, (prevLineIndent != null ? prevLineIndent : context.lineIndent(prevLineStartOffset)) + (prevLineStartOffset > ts.offset() ? 0 : 1)); //NOI18N
                         } else {
                             int idx = blockCommentLine.lastIndexOf('\n'); //NOI18N
                             if (idx > 0) {
                                 blockCommentLine = blockCommentLine.substring(idx).trim();
                             }
+                            newIndents.put(startOffset, getNewIndent(startOffset, endOffset) + 1);
                         }
-                    }
-                    newIndents.put(startOffset, getNewIndent(startOffset, endOffset) + (blockCommentLine != null ? 1 : 0));
-                    if (blockCommentLine != null && !blockCommentLine.startsWith("*")) { //NOI18N
-                        linesToAddStar.add(startOffset);
+                        if (!blockCommentLine.startsWith("*")) { //NOI18N
+                            linesToAddStar.add(startOffset);
+                        }
+                    } else {
+                        newIndents.put(startOffset, getNewIndent(startOffset, endOffset));
                     }
                 }
                 while (!startOffsets.isEmpty()) {
