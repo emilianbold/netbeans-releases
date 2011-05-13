@@ -50,10 +50,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -86,6 +88,17 @@ public class ScopedFieldAnalyzer extends AbstractScopedAnalyzer implements
     protected void checkScope( TypeElement scopeElement, Element element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
+        if ( scopeElement.getQualifiedName().contentEquals( AnnotationUtil.DEPENDENT)){
+            return;
+        }
+        if (hasTypeVarParameter(element.asType())) {
+            ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, NbBundle.getMessage(
+                            ScopedFieldAnalyzer.class,
+                            "ERR_WrongScopeParameterizedProducer", // NOI18N
+                            scopeElement.getQualifiedName().toString()));
+            descriptions.add(description);
+        }
     }
 
 }

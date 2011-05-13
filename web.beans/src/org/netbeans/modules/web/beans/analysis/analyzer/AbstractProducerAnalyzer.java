@@ -77,25 +77,29 @@ public abstract class AbstractProducerAnalyzer {
             return;
         }
     }
-
-    protected boolean hasWildCard(TypeMirror typeMirror){
+    
+    protected boolean hasType(TypeMirror typeMirror, TypeKind kind ){
         if ( typeMirror instanceof DeclaredType ){
             List<? extends TypeMirror> typeArguments = 
                     ((DeclaredType)typeMirror).getTypeArguments();
             for (TypeMirror paramType : typeArguments) {
-                if ( paramType.getKind() == TypeKind.WILDCARD ){
+                if ( paramType.getKind() == kind ){
                     return true;
                 }
                 else {
-                    if ( hasWildCard(paramType) ){
+                    if ( hasType(paramType, kind) ){
                         return true;
                     }
                 }
             }
         }
         else if ( typeMirror instanceof ArrayType ){
-            return hasWildCard( ((ArrayType)typeMirror).getComponentType());
+            return hasType( ((ArrayType)typeMirror).getComponentType(), kind);
         }
         return false;
+    }
+
+    private boolean hasWildCard(TypeMirror typeMirror){
+        return hasType(typeMirror, TypeKind.WILDCARD);
     }
 }

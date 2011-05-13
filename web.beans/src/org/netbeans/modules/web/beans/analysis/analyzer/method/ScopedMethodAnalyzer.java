@@ -102,7 +102,7 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
                 ErrorDescription description = CdiEditorAnalysisFactory.
                     createError( element, compInfo, 
                             NbBundle.getMessage(ScopedMethodAnalyzer.class, 
-                                    "ERR_WrangScopeParameterizedProducerReturn",    // NOI18N
+                                    "ERR_WrongScopeParameterizedProducerReturn",    // NOI18N
                                     scopeElement.getQualifiedName().toString()));
                 descriptions.add( description );
             }

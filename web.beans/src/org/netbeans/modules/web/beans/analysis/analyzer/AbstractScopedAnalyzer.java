@@ -49,6 +49,10 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -118,6 +122,25 @@ public abstract class AbstractScopedAnalyzer  {
     
     protected abstract void checkScope( TypeElement scopeElement, Element element, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions );
+    
+    protected boolean hasTypeVarParameter(TypeMirror type ){
+        if ( type.getKind() == TypeKind.TYPEVAR){
+            return true;
+        }
+        if ( type instanceof DeclaredType ){
+            List<? extends TypeMirror> typeArguments = 
+                ((DeclaredType)type).getTypeArguments();
+            for (TypeMirror typeArg : typeArguments) {
+                if ( hasTypeVarParameter(typeArg)){
+                    return true;
+                }
+            }
+        }
+        else if ( type instanceof ArrayType ){
+            return hasTypeVarParameter(((ArrayType)type).getComponentType());
+        }
+        return false;
+    }
 
     private boolean informCdiException(Exception exception , Element element, 
             CompilationInfo compInfo, List<ErrorDescription> descriptions)
