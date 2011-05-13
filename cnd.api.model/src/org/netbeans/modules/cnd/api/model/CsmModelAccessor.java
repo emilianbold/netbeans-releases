@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 
@@ -86,7 +87,7 @@ public final class CsmModelAccessor {
         }
 
         @Override
-        public CsmFile findFile(CharSequence absPath, boolean createIfPossible, boolean snapShot) {
+        public CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot) {
             return null;
         }
 
