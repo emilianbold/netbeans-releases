@@ -45,7 +45,7 @@ package org.netbeans.modules.profiler.stp;
 
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.java.platform.JavaPlatform;
-//import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
+// FIXXX import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.Color;
@@ -451,6 +451,7 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
 
     // --- Private implementation ------------------------------------------------
     private void updateJavaPlatformCombo(String platformNameToSelect) {
+// FIXXX         
 //        List<JavaPlatform> supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms();
 //        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
 //        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;

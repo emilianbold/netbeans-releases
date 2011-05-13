@@ -51,11 +51,11 @@ import org.netbeans.lib.profiler.common.filters.DefinedFilterSets;
 import org.netbeans.lib.profiler.common.filters.FilterUtils;
 import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.ui.components.JExtendedComboBox;
-//import org.netbeans.modules.profiler.ui.FilterSetsPanel;
-//import org.netbeans.modules.profiler.ui.GlobalFiltersPanel;
-//import org.netbeans.modules.profiler.ui.QuickFilterPanel;
-//import org.netbeans.modules.profiler.ui.panels.PreferredInstrFilterPanel;
-//import org.netbeans.modules.profiler.ui.panels.RootMethodsPanel;
+// FIXXX import org.netbeans.modules.profiler.ui.FilterSetsPanel;
+// FIXXX import org.netbeans.modules.profiler.ui.GlobalFiltersPanel;
+// FIXXX import org.netbeans.modules.profiler.ui.QuickFilterPanel;
+// FIXXX import org.netbeans.modules.profiler.ui.panels.PreferredInstrFilterPanel;
+// FIXXX import org.netbeans.modules.profiler.ui.panels.RootMethodsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -658,6 +658,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performCustomizeFilterSetsAction() {
+// FIXXX         
 //        final FilterSetsPanel filterSetsPanel = FilterSetsPanel.getDefault();
 //
 //        final DialogDescriptor dd = new DialogDescriptor(filterSetsPanel, FILTER_SETS_DIALOG_CAPTION, true,
@@ -693,6 +694,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private static void performEditGlobalFiltersAction() {
+// FIXXX         
 //        final GlobalFiltersPanel globalFiltersPanel = GlobalFiltersPanel.getDefault();
 //
 //        final DialogDescriptor dd = new DialogDescriptor(globalFiltersPanel, GLOBAL_FILTERS_DIALOG_CAPTION, true,
@@ -713,6 +715,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performQuickFilterAction() {
+// FIXXX         
 //        QuickFilterPanel quickFilterPanel = QuickFilterPanel.getDefault();
 //
 //        DialogDescriptor dd = new DialogDescriptor(quickFilterPanel, QUICK_FILTER_DIALOG_CAPTION, true,
@@ -735,6 +738,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performRootMethodsAction() {
+// FIXXX         
 //        ClientUtils.SourceCodeSelection[] roots = RootMethodsPanel.getSelectedRootMethods(rootMethods, project);
 //
 //        if (roots != null) {
@@ -744,6 +748,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performShowFilterAction() {
+// FIXXX         
 //        selectedInstrumentationFilter = filterCombo.getSelectedItem();
 //
 //        if (!preferredInstrFilters.contains(selectedInstrumentationFilter)) {

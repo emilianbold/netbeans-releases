@@ -49,8 +49,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-//import org.netbeans.modules.profiler.NetBeansProfiler;
-//import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+// FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
+// FIXXX import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
@@ -74,6 +74,7 @@ public class Utils {
     public static AttachSettings getAttachSettings(Project project) {
         AttachSettings attachSettings = null;
 
+// FIXXX         
 //        try {
 //            attachSettings = NetBeansProfiler.loadAttachSettings(project);
 //        } catch (IOException ex) {
@@ -138,6 +139,7 @@ public class Utils {
     }
 
     public static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator(Project project) {
+// FIXXX         
 //        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
 //
 //        SelectProfilingTask.SettingsConfigurator configurator = ptp.getSettingsConfigurator();

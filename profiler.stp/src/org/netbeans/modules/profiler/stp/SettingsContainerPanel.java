@@ -44,7 +44,7 @@
 package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.ui.components.DiscreteProgress;
-//import org.netbeans.modules.profiler.ui.ProfilerDialogs;
+// FIXXX import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.CardLayout;

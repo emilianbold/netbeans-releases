@@ -125,7 +125,7 @@ public class ProfilingSettingsManager {
 
         try {
             // get settings folder used for resolving filesystem for atomic action
-//            FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(project, false);
+// FIXXX             FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(project, false);
             FileObject settingsStorage = null;
             if (settingsStorage != null) {
                 // make final copies for atomic action
@@ -220,7 +220,7 @@ public class ProfilingSettingsManager {
             }
             
             // get settings folder used for resolving filesystem for atomic action
-//            FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(project, true);
+// FIXXX             FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(project, true);
             FileObject settingsStorage = null;
             if (settingsStorage == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "Cannot create project settings folder for " // NOI18N
@@ -278,6 +278,7 @@ public class ProfilingSettingsManager {
 
     private FileObject getProfilingSettingsStorage(Project project)
                                             throws IOException {
+// FIXXX         
 //        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(project, true);
 //        FileObject profilingSettingsStorage = projectSettingsFolder.getFileObject(PROFILING_SETTINGS_STORAGE_FILENAME,
 //                                                                                  PROFILING_SETTINGS_STORAGE_FILEEXT);
@@ -295,6 +296,7 @@ public class ProfilingSettingsManager {
 
     private FileObject createProfilingSettingsStorage(Project project)
                                                throws IOException {
+// FIXXX         
 //        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(project, true);
 //        FileObject profilingSettingsStorage = projectSettingsFolder.createData(PROFILING_SETTINGS_STORAGE_FILENAME,
 //                                                                               PROFILING_SETTINGS_STORAGE_FILEEXT);

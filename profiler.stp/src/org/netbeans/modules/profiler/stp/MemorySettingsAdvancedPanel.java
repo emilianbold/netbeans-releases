@@ -45,7 +45,7 @@ package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
-//import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
+// FIXXX import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.Color;
@@ -761,6 +761,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
     // --- Private implementation ------------------------------------------------
     private void updateJavaPlatformCombo(String platformNameToSelect) {
+// FIXXX         
 //        List<JavaPlatform> supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms();
 //        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
 //        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;

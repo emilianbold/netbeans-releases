@@ -45,7 +45,7 @@ package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.AttachSettings;
-//import org.netbeans.modules.profiler.NetBeansProfiler;
+// FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.openide.util.NbBundle;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -159,7 +159,7 @@ public class AttachSettingsPanel extends JPanel {
                         updateSettingsHint();
                         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                                 public void run() {
-//                                    NetBeansProfiler.saveAttachSettings(project, attachSettings);
+// FIXXX                               NetBeansProfiler.saveAttachSettings(project, attachSettings);
                                 }
                             });
                     }

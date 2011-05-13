@@ -53,7 +53,7 @@ import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.ui.components.ImagePanel;
 import org.netbeans.lib.profiler.ui.components.VerticalLayout;
 import org.netbeans.lib.profiler.ui.components.XPStyleBorder;
-//import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+// FIXXX import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -87,6 +87,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 //import org.openide.util.Lookup;
 
 
@@ -437,7 +438,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     String workDir = settings.getWorkingDir().trim();
                     if (workDir.length() != 0 && !new java.io.File(workDir).exists()) {
                         settings.setWorkingDir(""); // NOI18N
-//                        NetBeansProfiler.getDefaultNB().displayWarning(WORKDIR_INVALID_MSG);
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    WORKDIR_INVALID_MSG, NotifyDescriptor.WARNING_MESSAGE));
                     }
                 }
                 result = new Configuration(project, settings, null);
@@ -485,6 +487,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     SimpleFilter getResolvedPredefinedFilter(SimpleFilter key) {
+// FIXXX         
 //        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
 //
 //        int resolvedIndex = predefinedInstrFilterKeys.indexOf(key); // takes some time for long filter values
@@ -608,6 +611,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             try {
 
                 if (project != null) {
+// FIXXX                     
 //                    boolean rootMethodsPending = settings.instrRootMethodsPending;
 //                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
 //
@@ -673,7 +677,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         // projectsChoserCombo
         projectsChooserCombo = new JComboBox();
-//        projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
+        projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
         projectsChooserLabel.setLabelFor(projectsChooserCombo);
         projectsChooserCombo.getAccessibleContext().setAccessibleDescription(CHOOSER_COMBO_ACCESS_DESCR);
 
@@ -1036,6 +1040,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                 if (project != null) {
                     projectPackages = new String[2][];
+// FIXXX                     
 //                    predefinedInstrFilterKeys = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
 //                                                                .getPredefinedInstrumentationFilters(project);
 //                    predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
@@ -1175,6 +1180,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     private static boolean isProjectTypeSupported(final Project project) {
+// FIXXX         
 //        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
 //
 //        if (ptp.isProfilingSupported(project)) {
@@ -1186,6 +1192,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
     
     private static boolean isProjectTypeSupportedForAttach(Project project) {
+// FIXXX         
 //        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
 //        return ptp.isAttachSupported(project);
         return true;
