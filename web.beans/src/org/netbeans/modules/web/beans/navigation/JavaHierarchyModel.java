@@ -54,4 +54,5 @@ interface JavaHierarchyModel extends TreeModel {
     void fireTreeNodesChanged();
     
     void update();
+    
 }

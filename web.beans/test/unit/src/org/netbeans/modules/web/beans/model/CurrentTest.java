@@ -72,10 +72,6 @@ public class CurrentTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){
-        
-    }
-    
     public void testDefault() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
                 "package foo; " +

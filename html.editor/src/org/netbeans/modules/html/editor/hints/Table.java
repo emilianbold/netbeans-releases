@@ -62,7 +62,7 @@ public class Table extends PatternRule {
         "Unclosed elements.",
         ".*? end tag with .select. open.",
         "Misplaced non-space characters insided a table.",
-        
+        "A table row was \\d? columns wide and exceeded the column count established by the first row (\\d?).",
         
         
     }; //NOI18N
