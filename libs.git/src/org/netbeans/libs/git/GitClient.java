@@ -214,6 +214,15 @@ public interface GitClient {
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Returns a common ancestor for given revisions or null if none found.
+     * @param revisions
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
      * @param roots 
      * @param monitor

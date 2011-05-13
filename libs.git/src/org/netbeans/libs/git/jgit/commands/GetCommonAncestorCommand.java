@@ -40,50 +40,67 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.jgit.commands;
 
-import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
- * @author Jan Becicka
+ * @author ondra
  */
-public final class GitFileInfo {
+public class GetCommonAncestorCommand extends GitCommand {
+    private final String[] revisions;
+    private GitRevisionInfo revision;
 
-    public static enum Status {
-        ADDED,
-        MODIFIED,
-        RENAMED,
-        COPIED,
-        REMOVED,
-        UNKNOWN
+    public GetCommonAncestorCommand (Repository repository, String[] revisions, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.revisions = revisions;
+    }
+
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+            RevWalk walk = new RevWalk(repository);
+            try {
+                for (String rev : revisions) {
+                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, rev)));
+                }
+                walk.setRevFilter(RevFilter.MERGE_BASE);
+                Iterator<RevCommit> it = walk.iterator();
+                if (it.hasNext()) {
+                    revision = new JGitRevisionInfo(it.next(), repository);
+                }
+            } catch (MissingObjectException ex) {
+                throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
+            } catch (IOException ex) {
+                throw new GitException(ex);
+            } finally {
+                walk.release();
+            }
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        StringBuilder sb = new StringBuilder("git merge-base "); //NOI18N
+        for (String s : revisions) {
+            sb.append(s).append(' ');
+        }
+        return sb.toString();
     }
     
-    private String relativePath;
-    private Status status;
-    private final File file;
-    private File originalFile;
-
-    public GitFileInfo (File file, String relativePath, Status status, File originalFile) {
-        this.relativePath = relativePath;
-        this.status = status;
-        this.file = file;
-        this.originalFile = originalFile;
-    }
-
-    public String getRelativePath() {
-        return relativePath;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public File getFile () {
-        return file;
-    }
-    
-    public File getOriginalFile () {
-        return originalFile;
+    public GitRevisionInfo getRevision () {
+        return revision;
     }
 }

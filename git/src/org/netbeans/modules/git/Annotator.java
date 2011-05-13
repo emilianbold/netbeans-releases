@@ -76,6 +76,7 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.diff.ExportUncommittedChangesAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.ignore.UnignoreAction;
 import org.netbeans.modules.git.ui.init.InitAction;
@@ -187,6 +188,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(FetchAction.class));
                 actions.add(SystemAction.get(PullAction.class));
                 actions.add(SystemAction.get(PushAction.class));
+                actions.add(SystemAction.get(SearchHistoryAction.class));
             }
         } else {
             Lookup lkp = context.getElements();
@@ -240,6 +242,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PullAction.class), NbBundle.getMessage(PullAction.class, "LBL_PullAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
             }
         }
 

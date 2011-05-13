@@ -52,6 +52,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -390,7 +392,54 @@ public class ProjectBridge {
         makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         return resultSet;
     }
+        
+    public void printStaticstic(Folder sourceRoot, Logger logger) {
+        if (logger.isLoggable(Level.INFO)) {
+            int all = 0;
+            int c = 0;
+            int c_excluded = 0;
+            int cpp = 0;
+            int cpp_excluded = 0;
+            int header = 0;
+            int header_excluded = 0;
+            for(Item item : sourceRoot.getAllItemsAsArray()) {
+                all++;
+                MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+                if (itemConfiguration == null) {
+                    continue;
+                }
+                boolean excluded = itemConfiguration.getExcluded().getValue();
+                switch (itemConfiguration.getTool()) {
+                    case CCCompiler:
+                        if (excluded) {
+                            cpp_excluded++;
+                        } else {
+                            cpp++;
+                        }
+                        break;
+                    case CCompiler:
+                        if (excluded) {
+                            c_excluded++;
+                        } else {
+                            c++;
+                        }
+                        break;
+                    case CustomTool:
+                        if (excluded) {
+                            header_excluded++;
+                        } else {
+                            header++;
+                        }
+                        break;
+                }
+            }
+            logger.log(Level.INFO, "Project {0} configuration has:\n\tC files {1} + excluded {2}\n\tC++ files {3} + excluded {4}\n\tHeader files {5} + excluded {6}\n\tAll items {7}",
+                    new Object[]{project, c, c_excluded, cpp, cpp_excluded, header, header_excluded, all});
+        }
+    }
     
+
     public void setupProject(List<String> includes, List<String> macros, ItemProperties.LanguageKind lang){
         MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
         if (extConf != null) {

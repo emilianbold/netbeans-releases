@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.dlight.core.stack.api.impl;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.core.stack.api.CallStackEntry;
 import org.netbeans.modules.dlight.core.stack.api.CallStackEntryParser;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
@@ -60,8 +62,8 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
     @Override
     public CallStackEntry parseEntry(final CharSequence entry) {
         int pos1, pos2;
-        final StackPart modulePart;
-        final StackPart functionPart;
+        final EntryWithOffset modulePart;
+        final EntryWithOffset functionPart;
         final SourceFileInfo srcFileInfo;
 
         pos1 = searchRight(entry, '`', 0);
@@ -69,7 +71,7 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
         if (pos1 < 0) {
             modulePart = null;
         } else {
-            modulePart = StackPart.parse(entry.subSequence(0, pos1), '+');
+            modulePart = EntryWithOffset.parse(entry.subSequence(0, pos1));
         }
 
         pos2 = searchRight(entry, ':', pos1 + 1);
@@ -81,7 +83,7 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
             srcFileInfo = parceSourceFileInfo(entry.subSequence(pos2 + 1, entry.length()));
         }
 
-        functionPart = StackPart.parse(entry.subSequence(pos1 + 1, pos2), '+');
+        functionPart = EntryWithOffset.parse(entry.subSequence(pos1 + 1, pos2));
 
         return new CallStackEntry() {
 
@@ -151,29 +153,36 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
         return new SourceFileInfo(entry.subSequence(0, pos1), line, column);
     }
 
-    private static class StackPart {
+    private static class EntryWithOffset {
 
+        private static final Pattern pattern = Pattern.compile("^(.*)\\+([0-9]+)$"); // NOI18N
+        private static final Pattern hexPattern = Pattern.compile("^(.*)\\+0x([0-9a-fA-F]+)$"); // NOI18N
         private final CharSequence entry;
         private final long offset;
 
-        public StackPart(CharSequence entry, long offset) {
+        public EntryWithOffset(CharSequence entry, long offset) {
             this.entry = entry;
             this.offset = offset;
         }
 
         @Override
         public String toString() {
-            return entry + ":" + offset; // NOI18N
+            return entry + "+0x" + Long.toHexString(offset); // NOI18N
         }
 
-        private static StackPart parse(CharSequence part, char offsetSeparator) {
-            int pos = searchRight(part, offsetSeparator, 0);
-            if (pos >= 0) {
-                long _offset = Long.decode(part.subSequence(pos + 1, part.length()).toString());
-                return new StackPart(part.subSequence(0, pos), _offset);
-            } else {
-                return new StackPart(part, -1);
+        private static EntryWithOffset parse(CharSequence part) {
+
+            Matcher m = pattern.matcher(part);
+            if (m.matches()) {
+                return new EntryWithOffset(m.group(1), Long.parseLong(m.group(2)));
             }
+
+            m = hexPattern.matcher(part);
+            if (m.matches()) {
+                return new EntryWithOffset(m.group(1), Long.parseLong(m.group(2), 16));
+            }
+
+            return new EntryWithOffset(part, -1);
         }
     }
 }

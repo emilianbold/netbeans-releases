@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.spi.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
@@ -185,6 +186,7 @@ public abstract class CndFileSystemProvider {
             Collection<? extends CndFileSystemProvider> instances =
                     Lookup.getDefault().lookupAll(CndFileSystemProvider.class);
             cache = instances.toArray(new CndFileSystemProvider[instances.size()]);
+            CndUtils.assertTrueInConsole(cache.length > 0, "CndFileSystemProvider NOT FOUND"); // NOI18N
         }
 
         @Override
