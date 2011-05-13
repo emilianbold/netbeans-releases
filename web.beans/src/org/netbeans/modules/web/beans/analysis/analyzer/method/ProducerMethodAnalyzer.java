@@ -43,8 +43,10 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -79,6 +81,45 @@ public class ProducerMethodAnalyzer implements MethodAnalyzer {
             return;
         }
         checkReturnType( element, returnType, compInfo , descriptions );
+        checkSpecializes( element , compInfo , descriptions );
+    }
+    
+    private void checkSpecializes(ExecutableElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions)
+    {
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
+                compInfo ))
+        {
+            return;
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains( Modifier.STATIC )){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, NbBundle.getMessage(
+                        ProducerMethodAnalyzer.class, 
+                        "ERR_StaticSpecializesProducer"));    // NOI18N
+            descriptions.add(description);
+        }
+        ExecutableElement overridenMethod = compInfo.getElementUtilities().
+            getOverriddenMethod( element );
+        if ( overridenMethod == null ){
+            return;
+        }
+        TypeElement superClass = compInfo.getElementUtilities().
+            enclosingTypeElement( overridenMethod );
+        TypeElement containingClass = compInfo.getElementUtilities().
+            enclosingTypeElement( element );
+        TypeMirror typeDirectSuper = containingClass.getSuperclass();
+        if ( !superClass.equals(compInfo.getTypes().asElement(typeDirectSuper)) || 
+                !AnnotationUtil.hasAnnotation(overridenMethod, 
+                        AnnotationUtil.SPECIALIZES, compInfo))
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, NbBundle.getMessage(
+                        ProducerMethodAnalyzer.class, 
+                        "ERR_NoDirectSpecializedProducer"));    // NOI18N
+            descriptions.add(description);
+        }
     }
 
     private void checkReturnType( ExecutableElement element, TypeMirror returnType,

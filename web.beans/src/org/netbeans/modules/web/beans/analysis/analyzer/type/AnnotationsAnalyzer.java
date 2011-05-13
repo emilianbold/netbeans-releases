@@ -150,13 +150,11 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
     private void checkSession( TypeElement element,
             CompilationInfo compInfo, List<ErrorDescription> descriptions )
     {
-        if ( AnnotationUtil.getAnnotationMirror(element, compInfo, 
-                AnnotationUtil.STATEFUL, AnnotationUtil.STATELESS, 
-                AnnotationUtil.SINGLETON)!= null )
+        if ( AnnotationUtil.isSessionBean(element, compInfo) )
         {
             ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
-                AnnotationsAnalyzer.class,  "ERR_SesssionBeanID")); // NOI18N
+                createError( element, compInfo, NbBundle.getMessage(
+                        AnnotationsAnalyzer.class,  "ERR_SesssionBeanID")); // NOI18N
             descriptions.add( description );
         }
     }

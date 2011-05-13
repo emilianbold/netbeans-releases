@@ -125,6 +125,8 @@ public final class AnnotationUtil {
     public static final String DELEGATE_FQN =
                                         "javax.decorator.Delegate";                 // NOI18N
     
+    public static final String SPECIALIZES = "javax.enterprise.inject.Specializes"; // NOI18N
+    
     private AnnotationUtil(){
     }
     
@@ -162,5 +164,12 @@ public final class AnnotationUtil {
             }
         }
         return null;
+    }
+    
+    public static boolean isSessionBean(TypeElement element , 
+            CompilationInfo compInfo )
+    {
+        return getAnnotationMirror(element, compInfo, STATEFUL, STATELESS, 
+                SINGLETON)!= null;
     }
 }
