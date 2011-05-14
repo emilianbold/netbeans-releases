@@ -44,7 +44,6 @@
 package org.netbeans.modules.sendopts;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -69,12 +68,10 @@ final class HandlerImpl extends Object {
             return 0;
         } catch (CommandException ex) {
             PrintStream ps = new PrintStream(err);
-            try {
-                ps.println(NbBundle.getMessage(HandlerImpl.class, "MSG_Error", ex.getLocalizedMessage()));
-                err.flush();
-            } catch (IOException io) {
-                io.printStackTrace(ps);
-            }
+            ps.println(ex.getLocalizedMessage());
+            // XXX pst is not useful, only in verbose mode
+            // the question is how to turn that mode on
+            // ex.printStackTrace(ps);
             return ex.getExitCode();
         }
     }
