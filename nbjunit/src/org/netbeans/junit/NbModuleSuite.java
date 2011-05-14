@@ -126,6 +126,7 @@ public class NbModuleSuite {
         final List<String> clusterRegExp;
         /** each odd is cluster reg exp, each even is module reg exp */
         final List<String> moduleRegExp;
+        final List<String> startupArgs;
         final ClassLoader parentClassLoader;
         final boolean reuseUserDir;
         final boolean gui;
@@ -137,6 +138,7 @@ public class NbModuleSuite {
         private Configuration(
             List<String> clusterRegExp,
             List<String> moduleRegExp,
+            List<String> startupArgs,
             ClassLoader parent,
             List<Item> testItems,
             Class<? extends TestCase> latestTestCase,
@@ -149,6 +151,7 @@ public class NbModuleSuite {
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
+            this.startupArgs = startupArgs;
             this.parentClassLoader = parent;
             this.tests = testItems;
             this.reuseUserDir = reuseUserDir;
@@ -162,7 +165,7 @@ public class NbModuleSuite {
 
         static Configuration create(Class<? extends TestCase> clazz) {            
             return new Configuration(
-                null, null, ClassLoader.getSystemClassLoader().getParent(),
+                null, null, null, ClassLoader.getSystemClassLoader().getParent(),
                 Collections.<Item>emptyList(), clazz, false, true, true, false
                 , null, null);
         }
@@ -190,7 +193,7 @@ public class NbModuleSuite {
                 list = null;
             }
             return new Configuration(
-                list, moduleRegExp, parentClassLoader, tests,
+                list, moduleRegExp, startupArgs, parentClassLoader, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
             , failOnMessage, failOnException);
@@ -231,14 +234,48 @@ public class NbModuleSuite {
             arr.add(clusterRegExp);
             arr.add(moduleRegExp);
             return new Configuration(
-                this.clusterRegExp, arr, parentClassLoader,
+                this.clusterRegExp, arr, startupArgs, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir, gui,
+                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
+        }
+        
+        /**
+         * Appends one or more command line arguments which will be used to 
+         * start the application.  Arguments which take a parameter should
+         * usually be specified as two separate strings.  Also note that this
+         * method cannot handle arguments which must be passed directly to the 
+         * JVM (such as memory settings or system properties), those should be 
+         * instead specified in the <code>test.run.args</code> property (e.g.
+         * in the module's <code>project.properties</code> file).
+         * 
+         * @param arguments command line arguments to append; each value
+         * specified here will be passed a separate argument when starting
+         * the application under test.
+         * @return clone of this configuration object with the specified
+         * command line arguments appended to any which may have already 
+         * been present
+         * @since 1.67
+         */
+        public Configuration addStartupArgument(String... arguments) {
+            if (arguments == null || arguments.length < 1){
+                throw new IllegalStateException("Must specify at least one startup argument");
+            }
+
+            List<String> newArgs = new ArrayList<String>();
+            if (startupArgs != null) {
+                newArgs.addAll(startupArgs);
+            }
+            newArgs.addAll(Arrays.asList(arguments));
+
+            return new Configuration(
+                clusterRegExp, moduleRegExp, newArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
         }
 
         Configuration classLoader(ClassLoader parent) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parent, tests,
+                clusterRegExp, moduleRegExp, startupArgs, parent, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
             , failOnMessage, failOnException);
@@ -262,7 +299,7 @@ public class NbModuleSuite {
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(true, latestTestCaseClass, testNames));
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
         }
@@ -288,7 +325,7 @@ public class NbModuleSuite {
                 newTests.add(new Item(true, test, testNames));
             }
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, test, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
             , failOnMessage, failOnException);
@@ -296,7 +333,7 @@ public class NbModuleSuite {
         
         /**
          * Add new {@link  junit.framework.Test} to run. The implementation must
-         * have no parametter constructor. TastCase can be also passed as an argument
+         * have no parameter constructor. TastCase can be also passed as an argument
          * of this method than it's delegated to
          * {@link Configuration#addTest(java.lang.Class, java.lang.String[]) }
          *  
@@ -313,7 +350,7 @@ public class NbModuleSuite {
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(false, test, null));
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
             , failOnMessage, failOnException);
@@ -330,7 +367,7 @@ public class NbModuleSuite {
          */
         public Configuration enableClasspathModules(boolean enable) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enable, honorAutoEager, failOnMessage, failOnException);
         }
@@ -348,7 +385,7 @@ public class NbModuleSuite {
          */
         public Configuration honorAutoloadEager(boolean honor) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honor
             , failOnMessage, failOnException);
@@ -363,7 +400,7 @@ public class NbModuleSuite {
          */
         public Configuration failOnMessage(Level level) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
                 , level, failOnException);
@@ -378,7 +415,7 @@ public class NbModuleSuite {
          */
         public Configuration failOnException(Level level) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
                 , failOnMessage, level);
@@ -399,8 +436,9 @@ public class NbModuleSuite {
         private Configuration getReady() {
             List<Item> newTests = new ArrayList<Item>(tests);
             addLatest(newTests);
+
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
@@ -417,7 +455,7 @@ public class NbModuleSuite {
          */
         public Configuration gui(boolean gui) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
@@ -431,7 +469,7 @@ public class NbModuleSuite {
          */
         public Configuration reuseUserDir(boolean reuse) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader, tests,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader, tests,
                 latestTestCaseClass, reuse, gui, enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
         }
@@ -762,6 +800,10 @@ public class NbModuleSuite {
             args.add("--nosplash");
             if (!config.gui) {
                 args.add("--nogui");
+            }
+
+            if (config.startupArgs != null) {
+                args.addAll(config.startupArgs);
             }
 
             Test handler = NbModuleLogHandler.registerBuffer(config.failOnMessage, config.failOnException);

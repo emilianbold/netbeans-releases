@@ -390,4 +390,18 @@ public class NbModuleSuiteTest extends TestCase {
 
         assertProperty("t.one", "OK");
     }
+    
+    public void testAddStartupArgument()throws Exception{
+        System.setProperty("t.arg", "No");
+
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(NbModuleSuiteT.class)
+                .gui(false)
+                .addStartupArgument("--branding", "sample")
+        );
+
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("t.arg", "OK");
+    }
 }
