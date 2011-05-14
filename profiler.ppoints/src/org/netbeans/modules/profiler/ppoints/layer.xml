@@ -101,14 +101,14 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="AnnotationTypes">
-            <file name="resetResultsProfilingPoint.xml" url="ppoints/ui/resources/resetResultsProfilingPoint.xml"/>
-            <file name="resetResultsProfilingPointD.xml" url="ppoints/ui/resources/resetResultsProfilingPointD.xml"/>
-            <file name="stopwatchProfilingPoint.xml" url="ppoints/ui/resources/stopwatchProfilingPoint.xml"/>
-            <file name="stopwatchProfilingPointD.xml" url="ppoints/ui/resources/stopwatchProfilingPointD.xml"/>
-            <file name="takeSnapshotProfilingPoint.xml" url="ppoints/ui/resources/takeSnapshotProfilingPoint.xml"/>
-            <file name="takeSnapshotProfilingPointD.xml" url="ppoints/ui/resources/takeSnapshotProfilingPointD.xml"/>
-            <file name="loadgenProfilingPoint.xml" url="ppoints/ui/resources/loadgenProfilingPoint.xml"/>
-            <file name="loadgenProfilingPointD.xml" url="ppoints/ui/resources/loadgenProfilingPointD.xml"/>
+            <file name="resetResultsProfilingPoint.xml" url="ui/resources/resetResultsProfilingPoint.xml"/>
+            <file name="resetResultsProfilingPointD.xml" url="ui/resources/resetResultsProfilingPointD.xml"/>
+            <file name="stopwatchProfilingPoint.xml" url="ui/resources/stopwatchProfilingPoint.xml"/>
+            <file name="stopwatchProfilingPointD.xml" url="ui/resources/stopwatchProfilingPointD.xml"/>
+            <file name="takeSnapshotProfilingPoint.xml" url="ui/resources/takeSnapshotProfilingPoint.xml"/>
+            <file name="takeSnapshotProfilingPointD.xml" url="ui/resources/takeSnapshotProfilingPointD.xml"/>
+            <file name="loadgenProfilingPoint.xml" url="ui/resources/loadgenProfilingPoint.xml"/>
+            <file name="loadgenProfilingPointD.xml" url="ui/resources/loadgenProfilingPointD.xml"/>
             <folder name="SingleProfilePointActions">
                 <file name="org-netbeans-modules-profiler-ppoints-ui-EnableDisableProfilingPointAction.instance">
                     <attr name="position" intvalue="100"/>
