@@ -267,10 +267,17 @@ public class UnusedAssignmentOrBranch implements CancellableTask<CompilationInfo
     @ServiceProvider(service=JavaSourceTaskFactory.class)
     public static final class JavaFactoryImpl extends EditorAwareJavaSourceTaskFactory implements PreferenceChangeListener, LookupListener {
 
-        private final Result<FontColorSettings> fcsResult;
-
         public JavaFactoryImpl() {
             super(Phase.RESOLVED, Priority.LOW);
+        }
+
+        private Result<FontColorSettings> fcsResult;
+        private boolean initialized;
+
+        private synchronized void initialize() {
+            if (initialized) return;
+
+            initialized = true;
 
             Preferences unusedAssignmentPrefs = RulesManager.getPreferences(UNUSED_ASSIGNMENT_ID, HintsSettings.getCurrentProfileId());
             unusedAssignmentPrefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, unusedAssignmentPrefs));
@@ -278,6 +285,7 @@ public class UnusedAssignmentOrBranch implements CancellableTask<CompilationInfo
             Preferences deadBranchPrefs = RulesManager.getPreferences(DEAD_BRANCH_ID, HintsSettings.getCurrentProfileId());
             deadBranchPrefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, deadBranchPrefs));
 
+            //cannot run in the constructor - would lead to a deadlock:
             fcsResult = MimeLookup.getLookup("text/x-java").lookupResult(FontColorSettings.class);
             fcsResult.addLookupListener(WeakListeners.create(LookupListener.class, this, fcsResult));
             fcsResult.allItems();
@@ -285,6 +293,7 @@ public class UnusedAssignmentOrBranch implements CancellableTask<CompilationInfo
 
         @Override
         protected CancellableTask<CompilationInfo> createTask(FileObject file) {
+            initialize();
             return new UnusedAssignmentOrBranch();
         }
         
