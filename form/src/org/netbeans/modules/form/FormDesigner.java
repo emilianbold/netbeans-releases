@@ -103,9 +103,15 @@ import org.openide.nodes.Children;
  *
  * @author Tran Duc Trung, Tomas Pavek, Josef Kozak
  */
-
-public class FormDesigner extends TopComponent implements MultiViewElement
-{
+@MultiViewElement.Registration(
+    displayName="#CTL_DesignTabCaption",
+    iconBase=FormEditorSupport.iconURL,
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=FormEditorSupport.MV_FORM_ID,
+    mimeType="text/x-form",
+    position=2000
+)
+public class FormDesigner extends TopComponent implements MultiViewElement {
     static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
 
     // UI components composition
@@ -168,7 +174,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // ----------
     // constructors and setup
 
-    FormDesigner(FormEditor formEditor) {
+    public FormDesigner(Lookup context) {
+        final FormDataObject formDataObject = context.lookup(FormDataObject.class);
+        FormEditorSupport sup = context.lookup(FormEditorSupport.class);
+        FormEditor fe = sup.getFormEditor(true);
         setIcon(ImageUtilities.loadImage(iconURL));
         setLayout(new BorderLayout());
 
@@ -188,18 +197,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             new EmptyBorder(new Insets(6, 6, 6, 6))));
         add(loadingPanel, BorderLayout.CENTER);
 
-        this.formEditor = formEditor;
+        this.formEditor = fe;
         
-        if (formEditor != null) { // Issue 67879
+        if (formDataObject != null) { // Issue 67879
             explorerManager = new ExplorerManager();
 
             ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
-            final FormDataObject formDataObject = formEditor.getFormDataObject();
             lookup = new FormProxyLookup(new Lookup[] {
                 ExplorerUtils.createLookup(explorerManager, map),
                 PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile()),
                 Lookup.EMPTY, // placeholder for UndoRedo.Provider
-                formDataObject.getNodeDelegate().getLookup() // so FDO is found in multiview TC lookup
+                formDataObject.getNodeDelegate().getLookup() // so FDO is found in multiview TC context
                 // last two items may change, see switchXXXInLookup methods
             });
             associateLookup(lookup);
