@@ -79,7 +79,16 @@ MultiViewElement, CloneableEditorSupport.Pane, Serializable {
     static final long serialVersionUID = 430840231840923L;
     
     private MultiViewCloneableEditor editor;
-    
+
+    /** Constructor suitable for use with {@link Registration} annotation. 
+     * The {@link Lookup} parameter is expected to contain 
+     * {@link CloneableEditorSupport}, otherwise it yields an exception
+     * 
+     * @param lookup context for the editor. Should contain instance of {@link CloneableEditorSupport}
+     *   class
+     * @throws IllegalArgumentException if {@link CloneableEditorSupport} is not present
+     *   in provided {@link Lookup}
+     */
     public MultiViewEditorElement(Lookup lookup) {
         CloneableEditorSupport sup = lookup.lookup(CloneableEditorSupport.class);
         if (sup == null) {

@@ -48,6 +48,8 @@ import java.io.Serializable;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElement.Registration;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
@@ -80,12 +82,13 @@ import org.openide.windows.TopComponent;
     }
  
     /** Factory method to create multiview for a given mime type. The list
-     * of {@link MultiViewElement}s is taken from {@link MimeLookup#getLookup(mimeType)}.
+     * of {@link MultiViewElement}s to display is taken from {@link MimeLookup#getLookup(mimeType)}.
      * The <code>context</code> parameter has to be Serializable, so the top component
      * can be persisted and later, when deserialized, it can again recreate the 
      * {@link Lookup}. Suitable candidate for an object that implements both
      * {@link Serializable} as well as {@link Lookup.Provider} is 
      * <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>.
+     * To register your elements into particular mime type see {@link Registration}.
      * 
      * @param context lookup provider representing the object to displayed in the multiview
      * @param mimeType the mime type to seek for elements in
@@ -102,7 +105,7 @@ import org.openide.windows.TopComponent;
 
     /** Factory method to create cloneable multiview for a given mime type. 
      * The way to obtain individual elements is the same as in 
-     * {@link #createMultiView(java.lang.String, org.openide.util.Lookup)}.
+     * {@link #createMultiView}.
      * 
      * @param context lookup representing the object to be displayed in the multiview
      * @param mimeType the mime type to seek for elements in

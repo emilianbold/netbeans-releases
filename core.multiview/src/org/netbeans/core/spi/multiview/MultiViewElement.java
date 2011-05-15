@@ -173,9 +173,9 @@ public interface MultiViewElement {
    
     /** Registers a {@link MultiViewElement}, so it is available in 
      * {@link MimeLookup} and can be found and located by 
-     * {@link MultiViews#createCloneableMultiView(java.lang.String, org.openide.util.Lookup)}
+     * {@link MultiViews#createCloneableMultiView}
      * and
-     * {@link MultiViews#createMultiView(java.lang.String, org.openide.util.Lookup)}
+     * {@link MultiViews#createMultiView}
      * factory methods. 
      * <p>
      * The element class may have default constructor or a constructor that 
@@ -191,7 +191,7 @@ public interface MultiViewElement {
         public String[] mimeType();
         
         /** Gets persistence type of multi view element, the TopComponent will decide
-         * on it's onw persistenceType based on the sum of all it's elements.
+         * on it's own persistenceType based on the sum of all it's elements.
          * {@link org.openide.windows.TopComponent#PERSISTENCE_ALWAYS} has higher priority than {@link org.openide.windows.TopComponent#PERSISTENCE_ONLY_OPENED}
          * and {@link org.openide.windows.TopComponent#PERSISTENCE_NEVER} has lowest priority.
          * The {@link org.openide.windows.TopComponent} will be stored only if at least one element requesting persistence
