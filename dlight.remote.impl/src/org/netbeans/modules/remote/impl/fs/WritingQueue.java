@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,15 +96,16 @@ public class WritingQueue {
         return instance;
     }
 
-    public void add(File srcFile, String dstFileName, int mask) {
+    public void add(RemotePlainFile fo) {
+        String dstFileName = fo.getPath();
         LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}:{2}", new Object[]{execEnv, dstFileName}); //NOI18N
         synchronized (lock) {
             Entry entry = entries.get(dstFileName);
             if (entry == null) {
-                entry = new Entry(dstFileName);
+                entry = new Entry(fo);
                 entries.put(dstFileName, entry);
             }
-            entry.scheduleUpload(srcFile, mask);
+            entry.scheduleUpload();
         }
     }
 
@@ -180,36 +180,26 @@ public class WritingQueue {
         private volatile Future<UploadStatus> currentTask;
         private boolean reschedule;
         
-        private final String dstFileName;        
-        
-        private File srcFile;
-        private int mask;
+        private final RemotePlainFile fo;
 
-        public Entry(String dstFileName) {
-            this.dstFileName = dstFileName;
+        public Entry(RemotePlainFile fo) {
             this.reschedule = false;
+            this.fo = fo;
         }
         
-        public void scheduleUpload(File srcFile, int mask) {
+        private void scheduleUpload() {
             synchronized (lock) {
-                this.srcFile = srcFile;
-                this.mask = mask;
-                failed.remove(dstFileName);
                 if (currentTask == null) {
-                    scheduleUpload();
+                    CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                            fo.getCache(), execEnv, fo.getPath(), -1, false, this);
+                    currentTask = CommonTasksSupport.uploadFile(params);
                 } else {
                     // cancel does not work with jsch sftp, reasons to be investigated                    
-                    RemoteLogger.getInstance().log(Level.FINE, "Will reschedule previous upload task for {0}", dstFileName);
+                    RemoteLogger.getInstance().log(Level.FINE, "Will reschedule previous upload task for {0}", fo);
                     //currentTask.cancel(true);
                     reschedule = true;
                 }
             }
-        }
-        
-        private void scheduleUpload() {
-            CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                    srcFile, execEnv, this.dstFileName, mask, false, this);
-            currentTask = CommonTasksSupport.uploadFile(params);
         }
 
         @Override
@@ -244,19 +234,23 @@ public class WritingQueue {
                     return;
                 }
                 try {
-                    if (finishedTask.get().isOK()) {
-                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} succeeded", new Object[] {execEnv, dstFileName});
-                        failed.remove(dstFileName); // paranoia
+                    UploadStatus uploadStatus = finishedTask.get();
+                    if (uploadStatus.isOK()) {
+                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} succeeded", new Object[] {execEnv, fo});
+                        failed.remove(fo.getPath()); // paranoia                        
+                        fo.getParent().updateStat(fo, uploadStatus.getStatInfo());
                     } else {
-                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} failed", new Object[] {execEnv, dstFileName});
-                        failed.add(dstFileName);
+                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} failed", new Object[] {execEnv, fo});
+                        failed.add(fo.getPath());
+                        fo.setPendingRemoteDelivery(false);
                     }
+                    fo.getParent();                                        
                 } catch (InterruptedException ex) {
                     // don't report InterruptedException
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex); // should never be the case - the task is done
                 } finally {
-                    entries.remove(dstFileName);
+                    entries.remove(fo.getPath());
                 }
             }
         }

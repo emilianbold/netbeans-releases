@@ -79,6 +79,8 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporter;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporterDelegate;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -189,6 +191,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final ProgressPanel progressPanel = new ProgressPanel();
         final JComponent progressComponent = AggregateProgressFactory.createProgressComponent(handle);
         
+        final ProgressReporter reporter = new ProgressReporterDelegate( 
+                progressContributor, progressPanel ); 
+        
         final Runnable r = new Runnable() {
 
             public void run() {
@@ -209,7 +214,10 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             else
                             {
 //                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
-                                JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
+                                JpaControllerIterator.generateJpaControllers(reporter, 
+                                        entities, project, jpaControllerPkg, 
+                                        jpaControllerPackageFileObject, 
+                                        embeddedPkSupport, false);
                             }
                             FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
                             if (jsf2Generator || "Facelets".equals(preferredLanguage)) {

@@ -69,6 +69,7 @@ public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
         return new WebBeansModelImpl( modelSource );
     }
     
+    @Override
     public WebBeansModel getModel(ModelSource source) {
         return (WebBeansModel) super.getModel(source);
     }

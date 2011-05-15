@@ -1654,6 +1654,26 @@ public class ReindenterTest extends NbTestCase {
         }
     }
 
+    public void testNewLineIndentationAtWrongIndentedMultilineCommentStart() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n   /*|\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+    }
+
+    public void testLineIndentationAtWrongIndentedMultilineCommentStart() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n   /*\n|\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideWrongIndentedMultilineComment() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n   /*\n    *|\n    */\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+    }
+
+    public void testLineIndentationInsideWrongIndentedMultilineComment() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n   /*\n    *\n|\n    */\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideMethodInvocation() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        System.arraycopy(arr,|);\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        System.arraycopy(arr,\n                );\n    }\n}\n");

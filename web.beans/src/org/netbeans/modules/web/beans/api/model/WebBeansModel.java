@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -70,7 +70,7 @@ public final class WebBeansModel {
     }
 
     /**
-     * Find injectable element that is used for given injection point.
+     * Find injectable elements that could be used for given injection point.
      * 
      * <code>parentType</code> parameter could be a null . In this case 
      * type definition which contains <code>element</code> is used as parentType.  
@@ -80,24 +80,10 @@ public final class WebBeansModel {
      * real class in generic type parameter ). Type of element in this case
      * is not just <code>element.asType()<code>. It is 
      * <code>CompilationInfo.getTypes().asMemberOf(parentType,element)<code>.
-     * This is significant difference.  
-     *    
-     * @param element injection point
-     * @param parentType parent type of <code>element</code>
-     * @return search result information
-     */
-    public Result getInjectable( VariableElement element , DeclaredType parentType ) 
-    {
-        if ( getProvider() == null ){
-            return null;
-        }
-        return getProvider().getInjectable(element, parentType);
-    }
-    
-    /**
-     * Find injectable elements that could be used for given injection point.
-     * This method differs from {@link #getInjectable(VariableElement, DeclaredType)}
-     * by injection point type. Injection point could be defined via 
+     * This is significant difference. 
+     * 
+     * Return value depends on injection point type.
+     * Injection point could be defined via 
      * programmatic lookup which is dynamically specify injectable type.
      * Such situation appears when injection point uses Instance<?> interface. 
      * In case of @Any binding usage this list will contain all 
@@ -105,18 +91,15 @@ public final class WebBeansModel {
      * that implements or extends type parameter for Instance<> ). 
      * 
      * See <code>parentType</code> parameter explanation in 
-     * {@link #getInjectable(VariableElement, DeclaredType)}.
+     * {@link #lookupInjectables(VariableElement, DeclaredType)}.
      * 
      * @param element injection point
      * @param parentType parent type of <code>element</code>
      * @return search result information
      */
-    public Result lookupInjectables( VariableElement element , 
+    public DependencyInjectionResult lookupInjectables( VariableElement element , 
             DeclaredType parentType)
     {
-        if ( getProvider() == null ){
-            return null;
-        }
         return getProvider().lookupInjectables(element, parentType);
     }
     
@@ -138,9 +121,6 @@ public final class WebBeansModel {
     public boolean isInjectionPoint( VariableElement element )  
         throws InjectionPointDefinitionError
     {
-        if ( getProvider() == null ){
-            return false;
-        }
         return getProvider().isInjectionPoint(element);
     }
     
@@ -176,16 +156,12 @@ public final class WebBeansModel {
      * Instance<?> interface with qualifier annotations.
      * Typesafe resolution in this case could not be done 
      * statically and method 
-     * {@link #lookupInjectables(VariableElement, DeclaredType)} should
+     * {@link #lookupInjectables1(VariableElement, DeclaredType)} should
      * be used to access to possible bean types.
      * @param element  element for check
      * @return true if element is dynamic injection point
      */
-    public boolean isDynamicInjectionPoint( VariableElement element ) 
-    {
-        if ( getProvider() == null ){
-            return false;
-        }
+    public boolean isDynamicInjectionPoint( VariableElement element ) {
         return getProvider().isDynamicInjectionPoint(element);
     }
     
@@ -195,9 +171,6 @@ public final class WebBeansModel {
      * @return list of elements annotated with @Named
      */
     public List<Element> getNamedElements(){
-        if ( getProvider() == null ){
-            return Collections.emptyList();
-        }
         return getProvider().getNamedElements( );
     }
     
@@ -208,9 +181,6 @@ public final class WebBeansModel {
      * @return name of element
      */
     public String getName( Element element ){
-        if ( getProvider() == null ){
-            return null;
-        }
         return getProvider().getName( element);
     }
     
@@ -222,9 +192,6 @@ public final class WebBeansModel {
      * @return type with given FQN <code>fqn</code>
      */
     public TypeMirror resolveType(String fqn){
-        if ( getProvider() == null ){
-            return null;
-        }
         return getProvider().resolveType(fqn);
     }
     
@@ -236,11 +203,23 @@ public final class WebBeansModel {
      * Returns all qualifiers for <code>element</code>.
      * <code>element</code> could be variable ( injection point , producer field ),
      * type element ( bean type with binding ) and production method. 
-     * @param element element with bindings
+     * @param element element with qualifiers
+     * @param all if <code>true</code> all annotations ( including inherited by @Specializes ) will be returned
      * @return list of all bindings for <code>element</code>
      */
-    public List<AnnotationMirror> getQualifiers( Element element ){
-        return getProvider().getQualifiers( element );
+    public List<AnnotationMirror> getQualifiers( Element element , boolean all){
+        return getProvider().getQualifiers( element , all );
+    }
+    
+    /**
+     * If <code>element</code> has no declared qualifiers or just @Named 
+     * qualifier then it has implicit @Default qualifier.
+     *  
+     * @param element element with qualifiers
+     * @return true if element has @Default qualifier which is not declared explicitly 
+     */
+    public boolean hasImplicitDefaultQualifier( Element element ){
+        return getProvider().hasImplicitDefaultQualifier( element );
     }
     
     /**
@@ -282,6 +261,54 @@ public final class WebBeansModel {
     public VariableElement getObserverParameter(ExecutableElement element )
     {
         return getProvider().getObserverParameter( element );
+    }
+    
+    /**
+     * Returns Scope FQN for the specified <code>element</code>.
+     * @param element element which scope needs to be got
+     * @return scope of the element
+     */
+    public String getScope( Element element ) throws CdiException{
+        return getProvider().getScope( element );
+    }
+    
+    /**
+     * Returns decorators for given type <code>element</code>.
+     * Decorator resolution is described in the 8.3 section of JSR-299 spec:
+     * - element bean should be assignable to the @Delegate injection point according special rules
+     * - decorator should be also enabled in the beans.xml
+     * The latter condition is not checked here. One should ask the
+     * BeansModel ( it is accessed via AbstractModelImplementation ) for
+     * enabled decorators. 
+     * @param element decorated element
+     * @return collection of matched decorators
+     */
+    public Collection<TypeElement> getDecorators( TypeElement element ){
+        return getProvider().getDecorators( element );
+    }
+    
+    /**
+     * Lookup interceptors ( classes annotated with @Interceptor ) which 
+     * are resolved for <code>element</code>.
+     * The <code>element</code> could be Class definition ( TypeElment ) 
+     * or method ( ExecutableElement ).
+     * Interceptors could be applied to the methods only but class 
+     * could also have interceptor bindings so this method could be 
+     * useful for classes also. 
+     * @param element type element or method element
+     * @return found interceptors  
+     */
+    public InterceptorsResult getInterceptors( Element element ){
+        return getProvider().getInterceptors( element );
+    }
+    
+    /**
+     * Returns interceptor bindings declared for <code>element</code>. 
+     * @param element element annotated with interceptor bindings
+     * @return interceptor bindings 
+     */
+    public Collection<AnnotationMirror> getInterceptorBindings( Element element ){
+        return getProvider().getInterceptorBindings(element);
     }
     
     public AbstractModelImplementation getModelImplementation(){

@@ -67,7 +67,7 @@ abstract class AbstractWebBeansAction extends BaseAction {
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
         putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
-                InspectInjectablesAtCaretAction.class,
+                AbstractWebBeansAction.class,
                 getPopupMenuKey()));
 
         putValue("noIconInMenu", Boolean.TRUE);             // NOI18N

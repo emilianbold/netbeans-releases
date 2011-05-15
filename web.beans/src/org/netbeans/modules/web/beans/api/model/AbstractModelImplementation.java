@@ -74,13 +74,13 @@ public abstract class AbstractModelImplementation {
     public ModelUnit getModelUnit(){
         return myUnit;
     }
+    
+    public BeansModel getBeansModel(){
+        return BeansModelFactory.getModel(getModelUnit());
+    }
 
     protected WebBeansModel getModel(){
         return myModel;
-    }
-    
-    protected BeansModel getBeansModel(){
-        return BeansModelFactory.getModel(getModelUnit());
     }
     
     protected WebBeansModelProvider getProvider(){

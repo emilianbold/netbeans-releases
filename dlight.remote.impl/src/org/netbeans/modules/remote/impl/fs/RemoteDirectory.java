@@ -74,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileEvent;
@@ -356,7 +357,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             storage = storageRef.get();
         }
         if (storage == null) {
-            File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+            File storageFile = getStorageFile();
             if (storageFile.exists()) {
                 Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
                 try  {
@@ -548,7 +549,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         String name2Rename = directChild2Rename.getName();
         String ext2Rename = directChild2Rename.getExt();
         String path2Rename = directChild2Rename.getPath();
-        File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
 
         checkConnection(this, true);
 
@@ -587,7 +587,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (problem != null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
-                    getFileSystem().getRemoteFileSupport().addPendingFile(this);
+                    getFileSystem().addPendingFile(this);
                     throw new ConnectException(problem.getMessage());
                 } else {
                     boolean fileNotFoundException = isFileNotFoundException(problem);
@@ -731,7 +731,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                     }
                 }
-                storage = new DirectoryStorage(storageFile, newEntries.values());
+                storage = new DirectoryStorage(getStorageFile(), newEntries.values());
                 storage.store();
             } else {
                 storage.touch();
@@ -768,6 +768,38 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
+    /*package */void updateStat(RemotePlainFile fo, StatInfo statInfo) {
+        RemoteLogger.assertTrue(fo.getNameExt().equals(statInfo.getName()));
+        RemoteLogger.assertFalse(statInfo.isDirectory());
+        RemoteLogger.assertFalse(statInfo.isLink());
+        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        if (trace) {trace("waiting for lock");} // NOI18N
+        writeLock.lock();
+        try {
+            DirectoryStorage storage = getExistingDirectoryStorage();
+            if (storage == DirectoryStorage.EMPTY) {
+                Exceptions.printStackTrace(new IllegalStateException("Update stat is called but remote directory cache does not exist")); // NOI18N
+            } else {
+                List<DirEntry> entries = storage.listValid(fo.getNameExt());                
+                DirEntry entry = new DirEntrySftp(statInfo, fo.getCache().getName());
+                entries.add(entry);
+                DirectoryStorage newStorage = new DirectoryStorage(getStorageFile(), entries);
+                try {
+                    newStorage.store();
+                } catch (IOException ex) {                    
+                    Exceptions.printStackTrace(ex); // what else can we do?..
+                }
+                synchronized (refLock) {
+                    storageRef = new SoftReference<DirectoryStorage>(newStorage);
+                }
+                fo.setPendingRemoteDelivery(false);
+                fireFileChangedEvent(getListeners(), new FileEvent(fo, fo, true));
+            }
+        } finally {
+            writeLock.unlock();
+        }
+    }
+    
     private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
@@ -779,7 +811,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         DirectoryStorage storage = null;
 
-        File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+        File storageFile = getStorageFile();
 
         // check whether it is cached in memory
         synchronized (refLock) {
@@ -879,7 +911,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (problem != null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
-                    getFileSystem().getRemoteFileSupport().addPendingFile(this);
+                    getFileSystem().addPendingFile(this);
                     // valid cache can not be available
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
@@ -1036,7 +1068,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 for (DirEntry entry : entriesToFireChanged) {
                     RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
                     if (fo != null) {
-                        fireFileChangedEvent(getListeners(), new FileEvent(fo));
+                        if (fo.isPendingRemoteDelivery()) {
+                            RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
+                        } else {
+                            fireFileChangedEvent(getListeners(), new FileEvent(fo));
+                        }
                     }
                 }
                 //fireFileChangedEvent(getListeners(), new FileEvent(this));
@@ -1121,7 +1157,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private void checkConnection(RemoteFileObjectBase fo, boolean throwConnectException) throws ConnectException {
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-            getFileSystem().getRemoteFileSupport().addPendingFile(fo);
+            getFileSystem().addPendingFile(fo);
             if (throwConnectException) {
                 throw new ConnectException();
             }
@@ -1240,4 +1276,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ DirectoryStorage testGetExistingDirectoryStorage() {
         return getExistingDirectoryStorage();
     }    
+    
+    private File getStorageFile() {
+        return new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
+    }
 }

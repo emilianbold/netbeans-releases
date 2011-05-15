@@ -43,18 +43,22 @@
  */
 package org.netbeans.modules.web.beans.model.spi;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 
 
 /**
@@ -63,15 +67,13 @@ import org.netbeans.modules.web.beans.api.model.Result;
  */
 public interface WebBeansModelProvider {
 
-    Result getInjectable( VariableElement element , DeclaredType parentType);
-    
-    Result lookupInjectables( VariableElement element , DeclaredType parentType);
+    DependencyInjectionResult lookupInjectables( VariableElement element , DeclaredType parentType);
     
     boolean isDynamicInjectionPoint( VariableElement element );
     
     boolean isInjectionPoint( VariableElement element ) throws InjectionPointDefinitionError;
     
-    List<AnnotationMirror> getQualifiers( Element element );
+    List<AnnotationMirror> getQualifiers( Element element , boolean all );
 
     List<Element> getNamedElements( );
 
@@ -84,9 +86,19 @@ public interface WebBeansModelProvider {
             DeclaredType parentType);
 
     VariableElement getObserverParameter( ExecutableElement element);
+    
+    String getScope( Element element ) throws CdiException;
 
     CompilationController getCompilationController();
 
     TypeMirror resolveType( String fqn);
+
+    boolean hasImplicitDefaultQualifier( Element element );
+
+    Collection<TypeElement> getDecorators( TypeElement element );
+
+    InterceptorsResult getInterceptors( Element element );
+
+    Collection<AnnotationMirror> getInterceptorBindings( Element element );
 
 }

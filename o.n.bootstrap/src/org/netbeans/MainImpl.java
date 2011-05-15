@@ -242,9 +242,7 @@ final class MainImpl extends Object {
     public static void finishInitialization() {
         int r = CLIHandler.finishInitialization (false);
         if (r != 0) {
-            // Not much to do about it.
-            System.err.println ("Post-initialization command-line options could not be run."); // NOI18N
-            //System.err.println("r=" + r + " args=" + java.util.Arrays.asList(args.getArguments()));
+            TopSecurityManager.exit(r);
         }
     }
 

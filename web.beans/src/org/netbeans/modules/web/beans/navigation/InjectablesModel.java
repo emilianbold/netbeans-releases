@@ -55,8 +55,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,11 +71,10 @@ import javax.swing.tree.TreeNode;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.filesystems.FileObject;
 
@@ -93,25 +92,26 @@ public final class InjectablesModel extends DefaultTreeModel
     
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
 
-    public InjectablesModel(Result result, 
+    public InjectablesModel(DependencyInjectionResult result, 
             CompilationController controller ,MetadataModel<WebBeansModel> model ) 
     {
         super(null);
         
         myModel = model;
-        if ( result.getKind() == Result.ResultKind.DEFINITION_ERROR || 
-                !( result instanceof Result.ApplicableResult))
+        if ( result.getKind() == DependencyInjectionResult.ResultKind.DEFINITION_ERROR || 
+                !( result instanceof DependencyInjectionResult.ApplicableResult))
         {
             myTypeHandles= Collections.emptyList();
             myProductionHandles = Collections.emptyMap();
             return;
         }
         
-        Result.ApplicableResult applicableResult = (Result.ApplicableResult) result;
+        DependencyInjectionResult.ApplicableResult applicableResult = 
+            (DependencyInjectionResult.ApplicableResult) result;
         Set<TypeElement> typeElements = applicableResult.getTypeElements();
         
         myProductionHandles = new HashMap<ElementHandle<?>, 
-            List<TypeMirrorHandle<DeclaredType>>>();
+            ElementHandle<TypeElement>>();
         
         myDisabledBeans = new HashSet<ElementHandle<?>>();
         Set<Element> disabled = new HashSet<Element>();
@@ -126,50 +126,49 @@ public final class InjectablesModel extends DefaultTreeModel
             }
         }
         
-        Map<Element, List<DeclaredType>> allProductions = 
-            applicableResult.getAllProductions();
-        for (Entry<Element, List<DeclaredType>> entry : allProductions.entrySet()) {
-            ElementHandle<Element> handleKey = ElementHandle.create( entry.getKey());
-            List<TypeMirrorHandle<DeclaredType>> list = 
-                new ArrayList<TypeMirrorHandle<DeclaredType>>( entry.getValue().size());
-            for (DeclaredType type : entry.getValue()) {
-                TypeMirrorHandle<DeclaredType> typeHandle = 
-                    TypeMirrorHandle.create( type );
-                list.add( typeHandle );
-            }
-            myProductionHandles.put(handleKey,  list );
-            if ( applicableResult.isDisabled(entry.getKey())){
+        Set<Element> productions = applicableResult.getProductions();
+        Map<Element,TypeElement> productionMap = new HashMap<Element, TypeElement>();
+        for (Element production : productions) {
+            ElementHandle<Element> handleKey = ElementHandle.create( production );
+            TypeElement clazz = controller.getElementUtilities().
+                enclosingTypeElement(production);
+            myProductionHandles.put(handleKey,  ElementHandle.create( clazz ) );
+            productionMap.put( production,  clazz );
+            if ( applicableResult.isDisabled(production)){
                 myDisabledBeans.add( handleKey );
-                disabled.add( entry.getKey() );
+                disabled.add( production );
             }
         }
 
-        update( typeElements, allProductions, disabled , controller);
+        update( typeElements, productionMap, disabled , controller);
     }
     
+    @Override
     public void update() {
         update( myTypeHandles , myProductionHandles );
     }
 
+    @Override
     public void fireTreeNodesChanged() {
         super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), 
                 null, null);
     }
-
+    
     private void update( final List<ElementHandle<TypeElement>> typeHandles ,
-            final Map<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>> 
+            final Map<ElementHandle<?>,ElementHandle<TypeElement>> 
             productions ) 
     {
         try {
             getModel().runReadAction(
                     new MetadataModelAction<WebBeansModel, Void>() {
 
+                        @Override
                         public Void run( WebBeansModel model ) {
                             Set<Element> disabled = new HashSet<Element>();
                             List<TypeElement> typesList = fillTypes(typeHandles, 
                                     model, disabled);
                             
-                            Map<Element, List<DeclaredType>> productionsMap = 
+                            Map<Element, TypeElement> productionsMap = 
                                 fillProductions( productions, model , disabled);
 
                             update(typesList, productionsMap , disabled , model
@@ -188,17 +187,17 @@ public final class InjectablesModel extends DefaultTreeModel
         }
     }
     
-    private Map<Element, List<DeclaredType>> fillProductions(
-            Map<ElementHandle<?>, List<TypeMirrorHandle<DeclaredType>>> productions,
+    private Map<Element, TypeElement> fillProductions(
+            Map<ElementHandle<?>, ElementHandle<TypeElement>> productions,
             WebBeansModel model, Set<Element> disabled )
     {
-        Map<Element, List<DeclaredType>> result;
+        Map<Element, TypeElement> result;
         if ( productions == null || productions.size() == 0){
             result = Collections.emptyMap();
         }
         else {
-            result = new HashMap<Element, List<DeclaredType>>();
-            for(Entry<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>>
+            result = new HashMap<Element, TypeElement>();
+            for(Entry<ElementHandle<?>,ElementHandle<TypeElement>>
                 entry : productions.entrySet() )
             {
                 ElementHandle<?> handle = entry.getKey();
@@ -207,26 +206,8 @@ public final class InjectablesModel extends DefaultTreeModel
                     if (myDisabledBeans.contains(handle)) {
                         disabled.add(element);
                     }
-                    List<DeclaredType> list = new ArrayList<DeclaredType>( 
-                            entry.getValue().size());
-                    for( TypeMirrorHandle<DeclaredType> mirrorHandle : 
-                        entry.getValue())
-                    {
-                        DeclaredType mirror = mirrorHandle.resolve( 
-                                model.getCompilationController());
-                        if ( mirror!= null){
-                            list.add( mirror );
-                        }
-                        else {
-                            LOG.warning(mirrorHandle.toString()
-                                    + " cannot be resolved using: " // NOI18N
-                                    + model.getCompilationController()
-                                            .getClasspathInfo());
-                        }
-                    }
-                    if ( list.size() >0 ){
-                        result.put(element, list);
-                    }
+                    result.put(element, entry.getValue().resolve( 
+                            model.getCompilationController()));
                 }
                 else {
                     LOG.warning(handle.toString()
@@ -275,7 +256,7 @@ public final class InjectablesModel extends DefaultTreeModel
     }
 
     private void update(final Collection<TypeElement> typeElements, 
-            final Map<Element, List<DeclaredType>> productions, final 
+            final Map<Element, TypeElement> productions, final 
             Set<Element> disabledBeans,
             CompilationController controller) 
     {
@@ -298,41 +279,26 @@ public final class InjectablesModel extends DefaultTreeModel
                     disabledBeans.contains(element), controller);
         }
         
-        for (Entry<Element,List<DeclaredType>> entry : productions.entrySet()){
+        for (Entry<Element,TypeElement> entry : productions.entrySet()){
             Element element = entry.getKey();
             FileObject fileObject = SourceUtils.getFile(ElementHandle
                     .create(element), controller.getClasspathInfo());
             if ( element instanceof ExecutableElement ){
                 // Method definition
                 MethodTreeNode node = new MethodTreeNode(fileObject, 
-                        (ExecutableElement)element, entry.getValue().get( 0 ),
+                        (ExecutableElement)element, 
+                        (DeclaredType)entry.getValue().asType(),
                         disabledBeans.contains( element), controller);
                 insertTreeNode( elementMap , (ExecutableElement)element , 
                         node , root ,  controller);
-                if ( entry.getValue().size() >1 ){
-                    /*
-                     *  TODO : tree could be extended with children : 
-                     *  executable element  may be considered as parent
-                     *  for type mirrors that are this executable element
-                     *  viewed as member of DeclaredType ( item in entry.getValue() ).
-                     */
-                }
             }
             else  {
                 // Should be produces field.
                 InjectableTreeNode<Element> node = 
                     new InjectableTreeNode<Element>(fileObject, element,  
-                            entry.getValue().get( 0 ), 
+                            (DeclaredType)entry.getValue().asType(), 
                             disabledBeans.contains(element),controller);
                 insertTreeNode( elementMap , node , root );
-                if ( entry.getValue().size() >1 ){
-                    /*
-                     *  TODO : tree could be extended with children : 
-                     *  field element  may be considered as parent
-                     *  for type mirrors that are this filed 
-                     *  viewed as member of DeclaredType ( item in entry.getValue() ).
-                     */
-                }
             }
         }
 
@@ -355,9 +321,6 @@ public final class InjectablesModel extends DefaultTreeModel
             }
             TypeTreeNode injectableNode = (TypeTreeNode)entry.getValue();
             TypeElement typeElement = (TypeElement)key;
-            if (typeElement == null ){
-                continue;
-            }
             if ( controller.getTypes().isAssignable( element.asType(), 
                     typeElement.asType()))
             {
@@ -422,9 +385,6 @@ public final class InjectablesModel extends DefaultTreeModel
                 MethodTreeNode injectableNode = (MethodTreeNode) entry
                         .getValue();
                 ExecutableElement method = (ExecutableElement) key;
-                if (method == null) {
-                    continue;
-                }
 
                 int index = overriddenMethods.indexOf( method);
                 if ( index != -1 ) {
@@ -448,10 +408,12 @@ public final class InjectablesModel extends DefaultTreeModel
         Enumeration<?> children = parentNode.children();
         List<MethodTreeNode> movedChildren = new LinkedList<MethodTreeNode>();
         while (children.hasMoreElements()) {
-            MethodTreeNode childNode = (MethodTreeNode) children.nextElement();
-            if (childNode.overridesMethod(element, controller))
-            {
-                movedChildren.add(childNode);
+            Object child = children.nextElement();
+            if (child instanceof MethodTreeNode) {
+                MethodTreeNode childNode = (MethodTreeNode)child;
+                if (childNode.overridesMethod(element, controller)) {
+                    movedChildren.add(childNode);
+                }
             }
         }
 
@@ -475,7 +437,7 @@ public final class InjectablesModel extends DefaultTreeModel
     }
     
     private List<ElementHandle<TypeElement>> myTypeHandles;
-    private Map<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>> myProductionHandles;
+    private Map<ElementHandle<?>,ElementHandle<TypeElement>> myProductionHandles;
     private Set<ElementHandle<?>> myDisabledBeans;
     private MetadataModel<WebBeansModel> myModel;
 }

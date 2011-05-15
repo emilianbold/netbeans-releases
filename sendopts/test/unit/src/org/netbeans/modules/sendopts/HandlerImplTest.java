@@ -54,17 +54,13 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.api.sendopts.CommandException;
-import org.netbeans.api.sendopts.Processor;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
-import org.openide.util.Lookup;
 
 /**
- *
- * @author jarda
  */
 public class HandlerImplTest extends NbTestCase {
     static Object key;
@@ -78,6 +74,7 @@ public class HandlerImplTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         OP.arr = new Option[] { Option.withoutArgument(Option.NO_SHORT_NAME, "haha") };
         MockServices.setServices(OP.class);
@@ -108,6 +105,7 @@ public class HandlerImplTest extends NbTestCase {
     }
     public void testErrorMessageForInlinedThrowable() {
         key = new Exception() {
+            @Override
             public String getLocalizedMessage() {
                 return "LOC";
             }

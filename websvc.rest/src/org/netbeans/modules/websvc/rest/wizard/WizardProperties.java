@@ -50,7 +50,7 @@ public class WizardProperties {
     public static final String SCOPE = "Scope"; // NOI18N
     public static final String ENTITY_CLASSES = "EntityClasses"; //NOI18N
     public static final String RESOURCE_PACKAGE = "resourcePackage"; //NOI18N
-    public static final String CONVERTER_PACKAGE = "converterPackage"; //NOI18N
+    public static final String CONTROLLER_PACKAGE = "controllerPackage"; //NOI18N
     public static final String PERSISTENCE_UNIT_NAME = "PersistenceUnitName";       //NOI18N
     public static final String PERSISTENCE_UNIT = "PersistenceUnit";        //NOI18N
     public static final String ENTITY_RESOURCE_MODEL = "EntityResourceModel";       //NOI18N

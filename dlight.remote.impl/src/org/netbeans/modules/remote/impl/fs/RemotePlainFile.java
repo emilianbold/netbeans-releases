@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
@@ -104,6 +105,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return null;
     }
 
+    @Override
+    public RemoteDirectory getParent() {
+        return (RemoteDirectory) super.getParent(); // cast guaranteed by constructor
+    }
+    
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
         // TODO: check error processing
@@ -185,14 +191,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         }
         return new DelegateOutputStream();
     }
-
-//    @Override
-//    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-//        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-//        if (parent != null) {
-//            parent.ensureChildSync(this);
-//        }
-//    }
+   
 
     @Override
     public FileType getType() {
@@ -220,7 +219,10 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         @Override
         public void close() throws IOException {
             delegate.close();
-            WritingQueue.getInstance(getExecutionEnvironment()).add(getCache(), getPath(), -1);
+            FileEvent ev = new FileEvent(RemotePlainFile.this, RemotePlainFile.this, true);
+            fireFileChangedEvent(getListenersWithParent(), ev);
+            RemotePlainFile.this.setPendingRemoteDelivery(true);
+            WritingQueue.getInstance(getExecutionEnvironment()).add(RemotePlainFile.this);
         }
 
         @Override

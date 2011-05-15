@@ -56,9 +56,10 @@ import org.openide.filesystems.FileObject;
 public interface ModelActionStrategy {
 
     public enum InspectActionId {
-        OBSERVERS,
-        EVENTS,
-        INJECTABLES;
+        OBSERVERS_CONTEXT,
+        METHOD_CONTEXT,
+        INJECTABLES_CONTEXT,
+        CLASS_CONTEXT;
     }
     
     boolean isApplicable( InspectActionId id );
