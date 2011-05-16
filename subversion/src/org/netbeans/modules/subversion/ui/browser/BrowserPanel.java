@@ -61,7 +61,6 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
-import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
@@ -200,13 +199,14 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         
         private void setupColumns() {
             ResourceBundle loc = NbBundle.getBundle(BrowserPanel.class);            
-            Node.Property [] columns = new Node.Property[4];
-            columns[0] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));        // NOI18N
-            columns[1] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_DATE,     String.class, loc.getString("LBL_BrowserTree_Column_Date"),     loc.getString("LBL_BrowserTree_Column_Date_Desc"));            // NOI18N
-            columns[2] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_AUTHOR,   String.class, loc.getString("LBL_BrowserTree_Column_Author"),   loc.getString("LBL_BrowserTree_Column_Author_Desc"));          // NOI18N
-            columns[3] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_HISTORY,  String.class, loc.getString("LBL_BrowserTree_Column_History"),  loc.getString("LBL_BrowserTree_Column_History_Desc"));         // NOI18N    
-            
-            setProperties(columns);
+            setPropertyColumns(RepositoryPathNode.PROPERTY_NAME_REVISION, loc.getString("LBL_BrowserTree_Column_Revision"), //NOI18N
+                RepositoryPathNode.PROPERTY_NAME_DATE, loc.getString("LBL_BrowserTree_Column_Date"), //NOI18N
+                RepositoryPathNode.PROPERTY_NAME_AUTHOR, loc.getString("LBL_BrowserTree_Column_Author"), //NOI18N
+                RepositoryPathNode.PROPERTY_NAME_HISTORY, loc.getString("LBL_BrowserTree_Column_History")); //NOI18N
+            setPropertyColumnDescription(RepositoryPathNode.PROPERTY_NAME_REVISION, loc.getString("LBL_BrowserTree_Column_Revision_Desc")); //NOI18N
+            setPropertyColumnDescription(RepositoryPathNode.PROPERTY_NAME_DATE, loc.getString("LBL_BrowserTree_Column_Date_Desc")); //NOI18N
+            setPropertyColumnDescription(RepositoryPathNode.PROPERTY_NAME_AUTHOR, loc.getString("LBL_BrowserTree_Column_Author_Desc")); //NOI18N
+            setPropertyColumnDescription(RepositoryPathNode.PROPERTY_NAME_HISTORY, loc.getString("LBL_BrowserTree_Column_History_Desc")); //NOI18N
         }    
     
         private void setDefaultColumnSizes() {

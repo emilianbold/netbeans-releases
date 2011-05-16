@@ -45,7 +45,9 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
@@ -441,26 +443,34 @@ public class RepositoryPathNode extends AbstractNode {
     private final static String HISTORY_DISPLAY_NAME = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Name");
     private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");
 
-    private class RevisionProperty extends NodeProperty<String> {
+    private class RevisionProperty extends NodeProperty<Object> {
         public RevisionProperty() {
-            super(PROPERTY_NAME_REVISION, String.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
+            super(PROPERTY_NAME_REVISION, Object.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
         }
 
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
             SVNRevision r = entry.getLastChangedRevision();
-            return r != null ? r.toString() : "";
+            if (r instanceof SVNRevision.Number) {
+                return ((SVNRevision.Number) r).getNumber();
+            } else if (r == null) {
+                return "";
+            } else {
+                return r.toString();
+            }
         }
     }
 
-    private class DateProperty extends NodeProperty<String> {
+    private class DateProperty extends NodeProperty<Object> {
 
         public DateProperty() {
-            super(PROPERTY_NAME_DATE, String.class, PROPERTY_NAME_DATE, PROPERTY_NAME_DATE);
+            super(PROPERTY_NAME_DATE, Object.class, PROPERTY_NAME_DATE, PROPERTY_NAME_DATE);
         }
 
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public Object getValue() {
             Date date = entry.getLastChangedDate();
-            return date != null ? DateFormat.getDateTimeInstance().format(date) : "";
+            return date == null ? "" : date; //NOI18N
         }
     }
 
@@ -508,6 +518,9 @@ public class RepositoryPathNode extends AbstractNode {
         public String toString() {
             try {
                 Object obj = getValue();
+                if (obj instanceof Date) {
+                    obj = DateFormat.getDateTimeInstance().format((Date) obj);
+                }
                 return obj != null ? obj.toString() : "";
             } catch (Exception e) {
                 Subversion.LOG.log(Level.INFO, null, e);
@@ -519,8 +532,12 @@ public class RepositoryPathNode extends AbstractNode {
             return false;
         }
 
-        public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport();
+        public PropertyEditor getPropertyEditor () {
+            try {
+                return new RevisionPropertyEditor(getValue());
+            } catch (Exception e) {
+                return new PropertyEditorSupport();
+            }
         }
     }
 
@@ -594,6 +611,36 @@ public class RepositoryPathNode extends AbstractNode {
                     ++expanded;
                 }
             }
+        }
+    }
+    
+    private static class RevisionPropertyEditor extends PropertyEditorSupport {
+
+        private static final JLabel renderer = new JLabel();
+
+        static {
+            renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        }
+
+        public RevisionPropertyEditor(Object value) {
+            setValue(value);
+        }
+
+        @Override
+        public void paintValue (Graphics gfx, Rectangle box) {
+            renderer.setForeground(gfx.getColor());
+            Object val = getValue();
+            if (val instanceof Date) {
+                val = DateFormat.getDateTimeInstance().format((Date) val);
+            }
+            renderer.setText(val.toString());
+            renderer.setBounds(box);
+            renderer.paint(gfx);
+        }
+
+        @Override
+        public boolean isPaintable () {
+            return true;
         }
     }
 
