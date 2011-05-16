@@ -778,7 +778,14 @@ public abstract class BaseActionProvider implements ActionProvider {
                 //The file was not found under the source roots
                 return null;
             }
-            FileObject file = files[0];
+            final FileObject file = files[0];
+            assert file != null;
+            if (!file.isValid()) {
+                LOG.log(Level.WARNING,
+                        "FileObject to execute: {0} is not valid.",
+                        FileUtil.getFileDisplayName(file));   //NOI18N
+                return null;
+            }
             String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
             p.setProperty("javac.includes", clazz); // NOI18N
             // Convert foo/FooTest.java -> foo.FooTest

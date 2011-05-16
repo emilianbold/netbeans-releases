@@ -738,9 +738,13 @@ public class SourceUtils {
      * @return the classes containing main method
      * @throws IllegalArgumentException when file does not exist or is not a java source file.
      */
-    public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject fo) {
-        if (fo == null || !fo.isValid() || fo.isVirtual()) {
-            throw new IllegalArgumentException ();
+    public static Collection<ElementHandle<TypeElement>> getMainClasses (final @NonNull FileObject fo) {
+        Parameters.notNull("fo", fo);   //NOI18N
+        if (!fo.isValid()) {
+            throw new IllegalArgumentException ("FileObject : " + FileUtil.getFileDisplayName(fo) + " is not valid.");  //NOI18N
+        }
+        if (fo.isVirtual()) {
+            throw new IllegalArgumentException ("FileObject : " + FileUtil.getFileDisplayName(fo) + " is virtual.");  //NOI18N
         }
         final JavaSource js = JavaSource.forFileObject(fo);        
         if (js == null) {
