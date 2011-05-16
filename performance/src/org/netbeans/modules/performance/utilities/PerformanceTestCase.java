@@ -1154,7 +1154,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     public static void prepareForMeasurements() {
         disableStatusBarEffects();
         disablePHPReadmeHTML();
-        MainWindowOperator.getDefault().maximize();
     }
 
     private void initializeProfiling() {

@@ -58,6 +58,26 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.Configuration.addStartupArgument">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.addStartupArgument</summary>
+        <version major="1" minor="69"/>
+        <date day="8" month="4" year="2011"/>
+        <author login="tomwheeler"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>NbModuleSuite.Configuration now has a
+                <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addStartupArgument(java.lang.String...)">
+                addStartupArgument</a>
+                method which allows one to append one or more command line 
+                arguments which will be used to start the application.  
+                Arguments which must be passed directly to the JVM should
+                still be specified in the <code>test.run.args</code> property.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+        <issue number="197065" />
+    </change>
     <change id="NbTestCase.logRoot">
         <api name="nbjunit"/>
         <summary><code>NbTestCase.logRoot</code> to collect messages from just some code</summary>
@@ -410,7 +430,6 @@ made subject to such option by the copyright holder.
       <class package="org.netbeans.junit" name="Log"/>
       <issue number="35067" />
     </change>
-
 </changes>
 
     <htmlcontents>

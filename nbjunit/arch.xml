@@ -72,8 +72,10 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-   Module contains NetBeans extension to JUnit. It is a library used in XTest 
-   and library wrapper module.
+   Module contains NetBeans extension to JUnit.  It provides classes and
+   methods which allow one to verify performance, memory consumption, 
+   file output and other aspects of the IDE or applications built
+   on the NetBeans Platform.
   </p>
  </answer>
 
@@ -154,10 +156,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-what">
   <p>
-   Module contains NetBeans extension to JUnit. It is a library used in XTest 
-   and library wrapper module. <!-- See
-   <a href="http://xtest.netbeans.org/NbJUnit/NbJUnit-overview.html">overview.</a>
-   -->
+   Module contains NetBeans extension to JUnit. 
   </p>
  </answer>
 
@@ -245,7 +244,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-jre">
   <p>
-   1.4
+   1.5
   </p>
  </answer>
 
@@ -297,7 +296,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-non-nb">
   <p>
-   XTest.
+   JUnit.
   </p>
  </answer>
 

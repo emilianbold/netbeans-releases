@@ -65,6 +65,7 @@ import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -206,11 +207,7 @@ public final class FileBasedFileSystem extends FileSystem {
         }               
         File f = new File(name);
         if (name.contains("..")) {
-            try {
-                f = f.getCanonicalFile();
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Cannot canonicalize " + f, ex);
-            }
+            f = FileUtil.normalizeFile(f);
         }
         return getFileObject(f);
     }
