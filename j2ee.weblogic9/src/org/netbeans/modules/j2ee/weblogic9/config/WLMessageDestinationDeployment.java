@@ -39,20 +39,50 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.dd.model;
+package org.netbeans.modules.j2ee.weblogic9.config;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface WeblogicEnterpriseBeanType {
+public class WLMessageDestinationDeployment implements MessageDestinationDeployment {
+
+    private final WLDeploymentManager manager;
+
+    public WLMessageDestinationDeployment(WLDeploymentManager manager) {
+        this.manager = manager;
+    }
+
+    @Override
+    public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
+        // TODO
+    }
+
+    @Override
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        if (manager.isRemote()) {
+            // TODO remote not supported yet
+            return Collections.emptySet();
+        }
+        
+        String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        File domainPath = FileUtil.normalizeFile(new File(domainDir));
+        FileObject domainConfig = WLPluginProperties.getDomainConfigFileObject(manager);
+        return new HashSet<MessageDestination>(
+                WLMessageDestinationSupport.getMessageDestinations(domainPath, domainConfig, true));
+    }
     
-    void setEjbName(String name);
-
-    String getEjbName();
-
-    ResourceDescriptionType addResourceDescription();
-
-    ResourceDescriptionType[] getResourceDescription();
-
 }

@@ -156,6 +156,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
+        props.put(WLPluginProperties.HOST_ATTR, host);
+        props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
         }
