@@ -117,7 +117,33 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                              "testdir/mountdir10/",
         };
     }
+    public void testLinks() throws Exception {
+        FileObject fo = root.getFileObject("testdir/mountdir9");
+        
+        File dir = FileUtil.toFile(fo);
+        assertNotNull("Dir exists", dir);
 
+        File file = new File(dir, "origFile");
+        file.createNewFile();
+        File dirLink = new File(dir.getAbsolutePath() + "_link");
+        Process exec = Runtime.getRuntime().exec(new String[]{"ln", "-s",
+                    dir.getAbsolutePath(), dirLink.getAbsolutePath()});
+        exec.waitFor();
+        exec.destroy();
+        if (exec.exitValue() != 0) {
+            assertFalse("May fail on not Unix", Utilities.isUnix());
+            return;
+        }
+        
+        FileObject linkDirFO = FileUtil.toFileObject(dirLink);
+        String selfName = "../" + dirLink.getName() + "/" + file.getName();
+        FileObject fileObject = linkDirFO.getFileObject(selfName);
+        FileObject findResource =
+                fileObject.getFileSystem().findResource(dirLink.getAbsolutePath() + "/"
+                + selfName);
+        assertEquals(fileObject, findResource);
+        assertEquals(linkDirFO, fileObject.getParent());
+    }
     
     public void testFileTypeNotRemembered() throws Exception {
         String newFileName = "test";
