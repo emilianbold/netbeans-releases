@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import static org.junit.Assert.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -198,6 +203,18 @@ public class FlowTest extends NbTestCase {
                     "1");
     }
 
+    public void testIncorrectDeadBranch() throws Exception {
+        performDeadBranchTest("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void i() {\n" +
+                              "        if (!i.getAndSet(true)) {\n" +
+                              "            System.err.println(\"\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "    private final java.util.concurrent.atomic.AtomicBoolean i = new java.util.concurrent.atomic.AtomicBoolean();\n" +
+                              "}\n");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 
@@ -264,6 +281,32 @@ public class FlowTest extends NbTestCase {
         }
 
         assertEquals(new HashSet<String>(Arrays.asList(assignments)), actual);
+    }
+
+    private void performDeadBranchTest(String code) throws Exception {
+        List<String> splitted = new LinkedList<String>(Arrays.asList(code.split(Pattern.quote("|"))));
+        List<Integer> goldenSpans = new ArrayList<Integer>(splitted.size() - 1);
+        StringBuilder realCode = new StringBuilder();
+
+        realCode.append(splitted.remove(0));
+
+        for (String s : splitted) {
+            goldenSpans.add(realCode.length());
+            realCode.append(s);
+        }
+
+        prepareTest(realCode.toString(), false);
+
+        FlowResult flow = Flow.assignmentsForUse(info, new AtomicBoolean());
+
+        List<Integer> actual = new ArrayList<Integer>(2 * flow.getDeadBranches().size());
+
+        for (Tree dead : flow.getDeadBranches()) {
+            actual.add((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), dead));
+            actual.add((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), dead));
+        }
+
+        assertEquals(goldenSpans, actual);
     }
 
 }
