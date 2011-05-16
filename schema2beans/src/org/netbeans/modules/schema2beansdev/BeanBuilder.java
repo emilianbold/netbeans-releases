@@ -79,6 +79,7 @@ public class BeanBuilder {
 	
         boolean		isRoot;
         boolean         isAbstract;
+        boolean         isExtended;
 
         private boolean canBeEmpty = false;
 
@@ -215,7 +216,15 @@ public class BeanBuilder {
         public void setTypeSetExternally(boolean value) {
             typeSetExternally = value;
         }
-		
+
+        public boolean isExtended() {
+            return isExtended;
+        }
+
+        public void setExtended(boolean isExtended) {
+            this.isExtended = isExtended;
+        }
+        
         public String toString() {
             return this.beanName +
                 ((this.type == 
@@ -748,6 +757,7 @@ public class BeanBuilder {
                     */
                     if (extensionNode.isCreated()) {
                         BeanElement extensionBE = (BeanElement) extensionNode.getObject();
+                        extensionBE.setExtended(true);
                         String extendsName = extensionBE.getFullClassType();
                         e.setExtends(extendsName);
                         addToBeanInterfaceExtends(e, extendsName+"Interface");

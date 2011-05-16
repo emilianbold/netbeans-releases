@@ -308,7 +308,7 @@ public class CssHelpResolver {
             File f = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
             if (f != null) {
                 try {
-                    URL urll = f.toURL();
+                    URL urll = f.toURI().toURL(); //toURI should escape the illegal characters like spaces
                     HELP_ZIP_URL = FileUtil.getArchiveRoot(urll);
                 } catch (java.net.MalformedURLException e) {
                     ErrorManager.getDefault().notify(e);
