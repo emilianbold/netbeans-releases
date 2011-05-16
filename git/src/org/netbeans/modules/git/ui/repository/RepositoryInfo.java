@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -241,7 +242,7 @@ public class RepositoryInfo {
             }
         }
         if (changed) {
-            propertyChangeSupport.firePropertyChange(PROPERTY_BRANCHES, oldBranches, new HashMap<String, GitBranch>(newBranches));
+            propertyChangeSupport.firePropertyChange(PROPERTY_BRANCHES, Collections.unmodifiableMap(oldBranches), Collections.unmodifiableMap(new HashMap<String, GitBranch>(newBranches)));
         }
     }
 
@@ -257,7 +258,7 @@ public class RepositoryInfo {
             }
         }
         if (changed) {
-            propertyChangeSupport.firePropertyChange(PROPERTY_REMOTES, oldRemotes, new HashMap<String, GitRemoteConfig>(newRemotes));
+            propertyChangeSupport.firePropertyChange(PROPERTY_REMOTES, Collections.unmodifiableMap(oldRemotes), Collections.unmodifiableMap(new HashMap<String, GitRemoteConfig>(newRemotes)));
         }
     }
 

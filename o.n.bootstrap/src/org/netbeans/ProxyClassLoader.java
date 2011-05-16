@@ -373,6 +373,17 @@ public class ProxyClassLoader extends ClassLoader {
         }
 
         Set<ProxyClassLoader> del = packageCoverage.get(cover);
+        if (pkg.length() == 0) {
+            Set<ProxyClassLoader> snd = packageCoverage.get(pkg);
+            if (snd != null) {
+                if (del != null) {
+                    del = new HashSet<ProxyClassLoader>(del);
+                    del.addAll(snd);
+                } else {
+                    del = snd;
+                }
+            }
+        }
 
         if (del == null) {
             // uncovered package, go directly to SCL
@@ -421,6 +432,7 @@ public class ProxyClassLoader extends ClassLoader {
         final int slashIdx = name.lastIndexOf('/');
         final String path = name.substring(0, slashIdx + 1);
         String pkg;
+        String fallDef = null;
         if (slashIdx >= 0) {
             if (name.startsWith("META-INF/")) {
                 pkg = name.substring(8);
@@ -429,6 +441,7 @@ public class ProxyClassLoader extends ClassLoader {
             }
         } else {
             pkg = "default/" + name;
+            fallDef = "";
         }
         List<Enumeration<URL>> sub = new ArrayList<Enumeration<URL>>();
 
@@ -436,6 +449,17 @@ public class ProxyClassLoader extends ClassLoader {
         if (shouldDelegateResource(path, null)) sub.add(systemCL.getResources(name));
         
         Set<ProxyClassLoader> del = packageCoverage.get(pkg);
+        if (fallDef != null) {
+            Set<ProxyClassLoader> snd = packageCoverage.get(fallDef);
+            if (snd != null) {
+                if (del != null) {
+                    del = new HashSet<ProxyClassLoader>(del);
+                    del.addAll(snd);
+                } else {
+                    del = snd;
+                }
+            }
+        }
 
         if (del != null) {
             for (ProxyClassLoader pcl : parents) { // all our accessible parents
