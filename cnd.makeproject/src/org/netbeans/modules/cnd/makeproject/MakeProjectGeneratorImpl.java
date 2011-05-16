@@ -58,6 +58,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -86,6 +87,7 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.loaders.CreateFromTemplateHandler;
@@ -102,6 +104,17 @@ public class MakeProjectGeneratorImpl {
 
     public static String getDefaultProjectFolder() {
         return ProjectChooser.getProjectsFolder().getPath();
+    }
+
+    public static String getDefaultProjectFolder(ExecutionEnvironment env) {
+        try {
+            return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+        } catch (CancellationException ex) {
+            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+        }
+        return null;
     }
 
     public static String getValidProjectName(String projectFolder) {
