@@ -39,9 +39,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -93,24 +91,10 @@ public class TraceModelBase {
     }
 
     protected final void shutdown(boolean clearCache) {
-        waitModelTasks();
         model.shutdown();
-        waitModelTasks();
         if (clearCache){
             RepositoryUtils.cleanCashes();
             RepositoryUtils.debugClear();
-        }
-    }
-
-    private void waitModelTasks() {
-        Cancellable task = model.enqueueModelTask(new Runnable() {
-
-            @Override
-            public void run() {
-            }
-        }, "wait finished other tasks"); //NOI18N
-        if (task instanceof Task) {
-            ((Task) task).waitFinished();
         }
     }
 
