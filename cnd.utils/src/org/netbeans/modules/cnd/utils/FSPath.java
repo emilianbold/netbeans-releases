@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.utils;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;  
@@ -73,7 +74,7 @@ public final class FSPath {
 
     public FSPath(FileSystem fileSystem, String path) {
         this.fileSystem = fileSystem;
-        this.path = path;
+        this.path = CndFileUtils.normalizeAbsolutePath(fileSystem, path);
     }
 
     public FileSystem getFileSystem() {
