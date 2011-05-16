@@ -170,7 +170,7 @@ public class SvnClientExceptionHandler {
         this.commandLine = commandLine;
     }      
 
-    public boolean handleException() throws Exception {
+    public boolean handleException() throws SVNClientException {
         if(exceptionMask != EX_UNKNOWN) {
             if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
                 return handleRepositoryConnectError();
@@ -251,7 +251,7 @@ public class SvnClientExceptionHandler {
         }
     }
 
-    private boolean handleNoCertificateError() throws Exception {
+    private boolean handleNoCertificateError() throws SVNClientException {
         
         SVNUrl url = getSVNUrl(); // get the remote host url
         String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(); // NOI18N
@@ -261,7 +261,11 @@ public class SvnClientExceptionHandler {
         File certFile = CertificateFile.getSystemCertFile(realmString);
         File nbCertFile = CertificateFile.getNBCertFile(realmString);
         if( !nbCertFile.exists() &&  certFile.exists() ) {            
-            FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));            
+            try {
+                FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
+            } catch (IOException ex) {
+                throw new SVNClientException(ex);
+            }
             return true;
         }
 
@@ -270,8 +274,7 @@ public class SvnClientExceptionHandler {
         try {
             socket = getSSLSocket(hostString, url.getPort(), null, url);
         } catch (Exception e) {
-            Subversion.LOG.log(Level.SEVERE, null, e);
-            return false;
+            throw new SVNClientException(e);
         }
         if(socket == null) {
             return false;
@@ -282,8 +285,7 @@ public class SvnClientExceptionHandler {
         try {
             serverCerts = socket.getSession().getPeerCertificates();
         } catch (SSLPeerUnverifiedException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex);
-            return false;
+            throw new SVNClientException(ex);
         }
         for (int i = 0; i < serverCerts.length; i++) {                        
             if(serverCerts[i] instanceof X509Certificate) {                                
@@ -321,11 +323,9 @@ public class SvnClientExceptionHandler {
             cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex);
-            return false;
+            throw new SVNClientException(ex);
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex);
-            return false;
+            throw new SVNClientException(ex);
         }
             
         return true;                
