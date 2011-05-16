@@ -498,8 +498,12 @@ public final class CommandBasedDeployer {
 
             @Override
             public void run() {
-                String[] execParams = new String[parameters.length + 1];
+                int length = deploymentManager.isRemote() ? parameters.length + 2 : parameters.length + 1;
+                String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
+                if (deploymentManager.isRemote()) {
+                    execParams[execParams.length - 2] = "-upload"; // NOI18N
+                }
                 if (parameters.length > 0) {
                     System.arraycopy(parameters, 0, execParams, 0, parameters.length);
                 }

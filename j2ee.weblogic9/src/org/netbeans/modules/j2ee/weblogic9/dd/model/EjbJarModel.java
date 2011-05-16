@@ -149,18 +149,9 @@ public final class EjbJarModel extends BaseDescriptorModel {
             }
         }
         
-        ResourceDescriptionType type = null;
-        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEjbJar) {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.ResourceDescriptionType();
-        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEjbJar) {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.ResourceDescriptionType();
-        } else {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb90.ResourceDescriptionType();
-        }        
-        
+        ResourceDescriptionType type = enterpriseBean.addResourceDescription();
         type.setResRefName(referenceName);
         type.setJndiName(jndiName);
-        enterpriseBean.addResourceDescription(type);        
     }
 
     public String getReferenceJndiName(String ejbName, String referenceName) {
@@ -192,16 +183,8 @@ public final class EjbJarModel extends BaseDescriptorModel {
             }
         }
         
-        WeblogicEnterpriseBeanType type = null;
-        if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEjbJar) {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEnterpriseBeanType();
-        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEjbJar) {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEnterpriseBeanType();
-        } else {
-            type = new org.netbeans.modules.j2ee.weblogic9.dd.ejb90.WeblogicEnterpriseBeanType();
-        }
+        WeblogicEnterpriseBeanType type = bean.addWeblogicEnterpriseBean();
         type.setEjbName(name);
-        bean.addWeblogicEnterpriseBean(type);
         return type;
     }
 }

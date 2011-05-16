@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.dd.model;
 
-/**
- *
- * @author Petr Hejl
- */
-public interface WeblogicEnterpriseBeanType {
-    
-    void setEjbName(String name);
 
-    String getEjbName();
+@Schema2Beans(
+    schema="../../resources/weblogic-jms_10_3_1.xsd",
+    schemaType=SchemaType.XML_SCHEMA,
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    validate=true,
+    attrProp=true,
+    removeUnreferencedNodes=true,
+    docRoot="weblogic-jms",
+    mddFile="../../resources/weblogic-jms_10_3_1.mdd"
+)
+package org.netbeans.modules.j2ee.weblogic9.dd.jms1031;
 
-    ResourceDescriptionType addResourceDescription();
-
-    ResourceDescriptionType[] getResourceDescription();
-
-}
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
