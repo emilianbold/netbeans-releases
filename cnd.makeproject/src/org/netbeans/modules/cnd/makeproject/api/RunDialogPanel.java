@@ -481,7 +481,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectLocationField.setEnabled(true);
             projectLocationButton.setEnabled(true);
             projectFolderField.setEnabled(true);
-            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder());
+            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder(FileSystemProvider.getExecutionEnvironment(fileSystem)));
             if (executable != null && executable.isValid()) {
                 projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), executable.getNameExt()));
             } else {
