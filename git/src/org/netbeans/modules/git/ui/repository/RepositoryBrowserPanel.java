@@ -634,6 +634,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (branches.isEmpty()) {
                 BranchesTopChildren.this.branches.clear();
             } else {
+                branches = new java.util.HashMap<String, GitBranch>(branches);
                 BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
                 for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
                     GitBranch newBranchInfo = branches.get(e.getKey());
