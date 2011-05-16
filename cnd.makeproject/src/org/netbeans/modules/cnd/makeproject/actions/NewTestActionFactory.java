@@ -128,8 +128,11 @@ public final class NewTestActionFactory {
             this.generateCode = generateCode;
             
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
-            if(mcd != null && mcd.getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                this.setEnabled(false);
+            if(mcd != null) {
+                MakeConfiguration activeConfiguration = mcd.getActiveConfiguration();
+                if(activeConfiguration != null && activeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                    this.setEnabled(false);
+                }
             }
         }
 
