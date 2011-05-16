@@ -47,6 +47,7 @@ import java.lang.annotation.ElementType;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Set;
@@ -62,11 +63,13 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -97,6 +100,65 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
         Set<ElementType> targets = checkDefinition( element , compInfo, descriptions );
         checkInterceptorBindings( element , targets, metaModel , 
                 compInfo , descriptions );
+        checkTransitiveStereotypes( element , targets, compInfo , descriptions  );
+    }
+
+    private void checkTransitiveStereotypes( TypeElement element,
+            final Set<ElementType> targets, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions )
+    {
+        final AnnotationModelHelper helper = AnnotationModelHelper.create( 
+                compInfo.getClasspathInfo());
+        final ElementHandle<TypeElement> handle = ElementHandle.create(element);
+        try {
+            String badStereotype = helper.runJavaSourceTask( new Callable<String>() {
+                
+                @Override
+                public String call() {
+                    TypeElement resolved = handle.resolve( 
+                            helper.getCompilationController());
+                    if ( resolved == null ){
+                        return null;
+                    }
+                    List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl.
+                            getAllStereotypes(resolved, helper);   
+                    for (AnnotationMirror stereotypeAnnotation : stereotypes) {
+                        Element element = stereotypeAnnotation.
+                            getAnnotationType().asElement();
+                        if ( element instanceof TypeElement ){
+                            TypeElement stereotype = (TypeElement)element;
+                            Set<ElementType> declaredTargetTypes = 
+                                TargetAnalyzer.getDeclaredTargetTypes(helper, stereotype);
+                            if ( declaredTargetTypes!= null && 
+                                    declaredTargetTypes.size() ==1 && 
+                                        declaredTargetTypes.contains( ElementType.TYPE))
+                            {
+                                if ( targets.size() == 1 && 
+                                        targets.contains( ElementType.TYPE))
+                                {
+                                    continue;
+                                }
+                                else {
+                                    return stereotype.getQualifiedName().toString();
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                }
+            });
+            if ( badStereotype != null ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, 
+                        NbBundle.getMessage(StereotypeAnalyzer.class, 
+                        "ERR_IncorrectTransitiveTarget", badStereotype ));
+                descriptions.add( description );
+            }
+        }
+        catch (IOException e) {
+            LOG.log( Level.INFO , null, e );
+        }
+        
     }
 
     private void checkInterceptorBindings( TypeElement element,  Set<ElementType>
@@ -223,4 +285,5 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
         }
         
     }
+    
 }
