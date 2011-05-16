@@ -296,12 +296,14 @@ public class AnimationLayer implements ActionListener {
      */
     public void paint(Graphics g) {
         if (timer.isRunning()) {
-            g.drawImage(containerImage, 0, 0, null);
+            Graphics gClip = g.create();
+            gClip.setClip(0, 0, containerImage.getWidth(null), containerImage.getHeight(null));
+            gClip.drawImage(containerImage, 0, 0, null);
             for (Component comp : components) {
-                paintComponent(g, comp);
+                paintComponent(gClip, comp);
             }
             for (Component comp : vipComponents) {
-                paintComponent(g, comp);
+                paintComponent(gClip, comp);
             }
             if (phase == 1f) {
                 timer.stop();
@@ -312,6 +314,7 @@ public class AnimationLayer implements ActionListener {
                     comp.validate();
                 }
             }
+            gClip.dispose();
         }
     }
 
