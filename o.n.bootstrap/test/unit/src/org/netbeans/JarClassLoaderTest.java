@@ -157,9 +157,16 @@ public class JarClassLoaderTest extends NbTestCase {
         assertEquals("One query to b.jar now", 1, arr[3].queried);
         
     }
+    public void testCanLoadFromDefaultPackageCachedOldFormat() throws Exception {
+        doCanLoadCached("META-INF,/MANIFEST.MF,package");
+    }
     public void testCanLoadFromDefaultPackageCached() throws Exception {
+        doCanLoadCached("META-INF,/MANIFEST.MF,package,default/resource.txt");
+    }
+    
+    private void doCanLoadCached(String covPkg) throws Exception {
         final File jar = new File(getWorkDir(), "default-package-resource-cached.jar");
-        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", "META-INF/MANIFEST.MF:Covered-Packages: META-INF,/MANIFEST.MF,package,default/resource.txt\n");
+        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", "META-INF/MANIFEST.MF:Covered-Packages: " + covPkg + ",\n");
 
         Module fake = new Module(null, null, null, null) {
 	    public List<File> getAllJars() {throw new UnsupportedOperationException();}

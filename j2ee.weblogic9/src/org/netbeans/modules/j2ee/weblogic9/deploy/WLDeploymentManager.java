@@ -188,6 +188,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return port;
     }
 
+    public boolean isRemote() {
+        // TODO optimize
+        return Boolean.parseBoolean(getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+    }
+    
     @CheckForNull
     public synchronized Version getServerVersion() {
         init();
