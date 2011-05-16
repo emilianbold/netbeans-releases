@@ -41,18 +41,16 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.dd.model;
 
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+
 /**
  *
  * @author Petr Hejl
  */
-public interface WeblogicEnterpriseBeanType {
+public interface WeblogicJms extends CommonDDBean {
     
-    void setEjbName(String name);
-
-    String getEjbName();
-
-    ResourceDescriptionType addResourceDescription();
-
-    ResourceDescriptionType[] getResourceDescription();
+    QueueType[] getQueue();
+    
+    TopicType[] getTopic();
 
 }

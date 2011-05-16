@@ -45,14 +45,8 @@ package org.netbeans.modules.j2ee.weblogic9.dd.model;
  *
  * @author Petr Hejl
  */
-public interface WeblogicEnterpriseBeanType {
+public interface TopicType {
     
-    void setEjbName(String name);
-
-    String getEjbName();
-
-    ResourceDescriptionType addResourceDescription();
-
-    ResourceDescriptionType[] getResourceDescription();
+    String getName();
 
 }

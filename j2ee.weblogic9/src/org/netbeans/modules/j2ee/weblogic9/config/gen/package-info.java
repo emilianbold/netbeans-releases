@@ -51,7 +51,7 @@
         docRoot="deployment-plan"
     ),
     @Schema2Beans(
-        schema="../../resources/weblogic-jdbc-data-source.xsd",
+        schema="../../resources/jdbc-data-source.xsd",
         schemaType=SchemaType.XML_SCHEMA,
         outputType=OutputType.TRADITIONAL_BASEBEAN,
         validate=true,
