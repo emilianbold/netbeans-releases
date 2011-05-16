@@ -1838,6 +1838,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private CsmFile findFileByPath(CharSequence absolutePath, boolean createIfPossible) {
+        absolutePath = CndFileUtils.normalizeAbsolutePath(fileSystem, absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(absolutePath) == null) {
             if (!createIfPossible) {
