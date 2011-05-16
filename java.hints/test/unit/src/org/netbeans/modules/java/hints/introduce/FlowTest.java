@@ -215,6 +215,57 @@ public class FlowTest extends NbTestCase {
                               "}\n");
     }
 
+    public void testTryCatch() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            ii = 2;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "2");
+    }
+
+    public void testTryCatchFinally() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            ii = 2;\n" +
+                    "        } finally {\n" +
+                    "            ii = 3;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "3");
+    }
+
+    public void testTryFinally() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } finally {\n" +
+                    "            ii = 3;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "3");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 
