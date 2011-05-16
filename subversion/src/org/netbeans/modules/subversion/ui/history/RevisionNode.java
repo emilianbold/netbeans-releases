@@ -162,7 +162,7 @@ class RevisionNode extends AbstractNode {
 
         public PropertyEditor getPropertyEditor() {
             try {
-                return new RevisionPropertyEditor((String) getValue());
+                return new RevisionPropertyEditor(getValue());
             } catch (Exception e) {
                 return super.getPropertyEditor();
             }
@@ -184,17 +184,18 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class DateProperty extends CommitNodeProperty<String> {
+    private class DateProperty extends CommitNodeProperty<Object> {
 
         public DateProperty() {
-            super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
+            super(COLUMN_NAME_DATE, Object.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
         }
 
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
-                return DateFormat.getDateTimeInstance().format(container.getLog().getDate());
+                return container.getLog().getDate();
             } else {
-                return ""; // NOI18N
+                return ""; //NOI18N
             }
         }
     }
@@ -264,13 +265,17 @@ class RevisionNode extends AbstractNode {
             renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
         }
 
-        public RevisionPropertyEditor(String value) {
+        public RevisionPropertyEditor(Object value) {
             setValue(value);
         }
 
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
-            renderer.setText((String) getValue());
+            Object val = getValue();
+            if (val instanceof Date) {
+                val = DateFormat.getDateTimeInstance().format((Date) val);
+            }
+            renderer.setText(val.toString());
             renderer.setBounds(box);
             renderer.paint(gfx);
         }
