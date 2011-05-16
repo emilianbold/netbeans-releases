@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.*;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
 import org.netbeans.spi.actions.AbstractSavable;
@@ -459,13 +460,17 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public void setModified(boolean modif) {
         if (this.modif != modif) {
             this.modif = modif;
-            DOSavable dos = new DOSavable(this);
+            Savable present = getLookup().lookup(AbstractSavable.class);
             if (modif) {
                 syncModified.add (this);
-                dos.add();
+                if (present == null) {
+                    new DOSavable(this).add();
+                }
             } else {
                 syncModified.remove (this);
-                dos.remove();
+                if (present == null) {
+                    new DOSavable(this).remove();
+                }
             }
             firePropertyChange(DataObject.PROP_MODIFIED,
                                !modif ? Boolean.TRUE : Boolean.FALSE,
