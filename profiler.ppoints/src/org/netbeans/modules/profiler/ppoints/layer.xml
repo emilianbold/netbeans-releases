@@ -140,5 +140,18 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="profiler_pp.settings" url="profiler_pp.settings"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="profiler_pp.wstcref" url="profiler_pp.wstcref">
+                    <attr name="position" intvalue="1550"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     
 </filesystem>
