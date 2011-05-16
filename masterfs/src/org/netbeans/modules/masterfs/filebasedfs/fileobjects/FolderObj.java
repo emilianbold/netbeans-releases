@@ -74,6 +74,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
@@ -111,11 +112,7 @@ public final class FolderObj extends BaseFileObj {
         }
         File file = new File(getFileName().getFile(), relativePath);
         if (relativePath.contains("..")) {
-            try {
-                file = file.getCanonicalFile();
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Cannot canonicalize " + file, ex);
-            }
+            file = FileUtil.normalizeFile(file);
         }
         
         FileObjectFactory factory = getFactory();
