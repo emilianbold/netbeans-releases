@@ -52,7 +52,9 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.TypeElement;
 
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
@@ -73,7 +75,8 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
         if (target == null) {
             handleNoTarget();
         }
-        return hasReqiredTarget( target , getDeclaredTargetTypes( target ));
+        return hasReqiredTarget( target , getDeclaredTargetTypes( getHelper(), 
+                target ));
     }
     
     public Set<ElementType> getDeclaredTargetTypes() {
@@ -83,7 +86,19 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
         if (target == null) {
             return Collections.emptySet();
         }
-        return getDeclaredTargetTypes( target );
+        return getDeclaredTargetTypes( getHelper(), target );
+    }
+    
+    public static Set<ElementType> getDeclaredTargetTypes( 
+            AnnotationModelHelper helper, TypeElement element ) 
+    {
+        Map<String, ? extends AnnotationMirror> types = helper
+                .getAnnotationsByType(element.getAnnotationMirrors());
+        AnnotationMirror target = types.get(Target.class.getCanonicalName());
+        if (target == null) {
+            return Collections.emptySet();
+        }
+        return getDeclaredTargetTypes( helper, target );
     }
     
     /* (non-Javadoc)
@@ -100,11 +115,13 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
 
     protected abstract void handleNoTarget();
     
-    private Set<ElementType> getDeclaredTargetTypes(AnnotationMirror target){
-        AnnotationParser parser = AnnotationParser.create(getHelper());
+    private static Set<ElementType> getDeclaredTargetTypes(
+            AnnotationModelHelper helper, AnnotationMirror target)
+    {
+        AnnotationParser parser = AnnotationParser.create(helper);
         final Set<String> elementTypes = new HashSet<String>();
         parser.expectEnumConstantArray( AnnotationUtil.VALUE, 
-                getHelper().resolveType(
+                helper.resolveType(
                 ElementType.class.getCanonicalName()), 
                 new ArrayValueHandler() {
                     
