@@ -168,7 +168,7 @@ public class SavableDataObjectTest extends NbTestCase {
             
             @Override
             public String findDisplayName() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return "SaveMe";
             }
 
             @Override
