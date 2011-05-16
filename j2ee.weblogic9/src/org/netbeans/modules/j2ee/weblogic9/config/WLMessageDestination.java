@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,67 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.j2ee.weblogic9.config;
 
-@Multiple({
-    @Schema2Beans(
-        schema="../../resources/weblogic-deployment-plan.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="deployment-plan"
-    ),
-    @Schema2Beans(
-        schema="../../resources/jdbc-data-source.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jdbc-data-source"
-    )
-})
-package org.netbeans.modules.j2ee.weblogic9.config.gen;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
-import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
-import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
-import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+/**
+ *
+ * @author Petr Hejl
+ */
+public class WLMessageDestination implements MessageDestination {
+
+    private final String name;
+
+    private final Type type;
+
+    private final File origin;
+
+    private final boolean system;
+
+    public WLMessageDestination(String name, Type type, File origin, boolean system) {
+        this.name = name;
+        this.type = type;
+        this.origin = origin;
+        this.system = system;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WLMessageDestination other = (WLMessageDestination) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 43 * hash + (this.type != null ? this.type.hashCode() : 0);
+        return hash;
+    }
+}

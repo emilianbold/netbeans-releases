@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.j2ee.weblogic9.config;
 
-@Multiple({
-    @Schema2Beans(
-        schema="../../resources/weblogic-deployment-plan.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="deployment-plan"
-    ),
-    @Schema2Beans(
-        schema="../../resources/jdbc-data-source.xsd",
-        schemaType=SchemaType.XML_SCHEMA,
-        outputType=OutputType.TRADITIONAL_BASEBEAN,
-        validate=true,
-        attrProp=true,
-        removeUnreferencedNodes=true,
-        docRoot="jdbc-data-source"
-    )
-})
-package org.netbeans.modules.j2ee.weblogic9.config.gen;
+import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
-import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
-import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+/**
+ *
+ * @author Petr Hejl
+ */
+public class WLMessageDestinationDeployment implements MessageDestinationDeployment {
+
+    private final WLDeploymentManager manager;
+
+    public WLMessageDestinationDeployment(WLDeploymentManager manager) {
+        this.manager = manager;
+    }
+
+    @Override
+    public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
+        // TODO
+    }
+
+    @Override
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        if (manager.isRemote()) {
+            // TODO remote not supported yet
+            return Collections.emptySet();
+        }
+        
+        String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        File domainPath = FileUtil.normalizeFile(new File(domainDir));
+        FileObject domainConfig = WLPluginProperties.getDomainConfigFileObject(manager);
+        return new HashSet<MessageDestination>(
+                WLMessageDestinationSupport.getMessageDestinations(domainPath, domainConfig, true));
+    }
+    
+}

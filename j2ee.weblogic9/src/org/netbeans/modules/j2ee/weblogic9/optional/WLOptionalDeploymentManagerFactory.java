@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
@@ -56,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasourceManager;
+import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDriverDeployer;
@@ -120,6 +122,11 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
     @Override
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
         return new WLDatasourceManager((WLDeploymentManager) dm);
+    }
+
+    @Override
+    public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
+        return new WLMessageDestinationDeployment((WLDeploymentManager) dm);
     }
 
     @Override
