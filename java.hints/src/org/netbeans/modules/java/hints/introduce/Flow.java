@@ -44,23 +44,58 @@
 
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EmptyStatementTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -501,7 +536,182 @@ public class Flow {
 
             return null;
         }
-        
+
+        public Boolean visitWildcard(WildcardTree node, Void p) {
+            super.visitWildcard(node, p);
+            return null;
+        }
+
+        public Boolean visitUnionType(UnionTypeTree node, Void p) {
+            super.visitUnionType(node, p);
+            return null;
+        }
+
+        public Boolean visitTypeParameter(TypeParameterTree node, Void p) {
+            super.visitTypeParameter(node, p);
+            return null;
+        }
+
+        public Boolean visitTypeCast(TypeCastTree node, Void p) {
+            super.visitTypeCast(node, p);
+            return null;
+        }
+
+        public Boolean visitTry(TryTree node, Void p) {
+            super.visitTry(node, p);
+            return null;
+        }
+
+        public Boolean visitThrow(ThrowTree node, Void p) {
+            super.visitThrow(node, p);
+            return null;
+        }
+
+        public Boolean visitSynchronized(SynchronizedTree node, Void p) {
+            super.visitSynchronized(node, p);
+            return null;
+        }
+
+        public Boolean visitSwitch(SwitchTree node, Void p) {
+            super.visitSwitch(node, p);
+            return null;
+        }
+
+        public Boolean visitReturn(ReturnTree node, Void p) {
+            super.visitReturn(node, p);
+            return null;
+        }
+
+        public Boolean visitPrimitiveType(PrimitiveTypeTree node, Void p) {
+            super.visitPrimitiveType(node, p);
+            return null;
+        }
+
+        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
+            super.visitParenthesized(node, p);
+            return null;
+        }
+
+        public Boolean visitParameterizedType(ParameterizedTypeTree node, Void p) {
+            super.visitParameterizedType(node, p);
+            return null;
+        }
+
+        public Boolean visitOther(Tree node, Void p) {
+            super.visitOther(node, p);
+            return null;
+        }
+
+        public Boolean visitNewClass(NewClassTree node, Void p) {
+            super.visitNewClass(node, p);
+            return null;
+        }
+
+        public Boolean visitNewArray(NewArrayTree node, Void p) {
+            super.visitNewArray(node, p);
+            return null;
+        }
+
+        public Boolean visitModifiers(ModifiersTree node, Void p) {
+            super.visitModifiers(node, p);
+            return null;
+        }
+
+        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            super.visitMethodInvocation(node, p);
+            return null;
+        }
+
+        public Boolean visitLabeledStatement(LabeledStatementTree node, Void p) {
+            super.visitLabeledStatement(node, p);
+            return null;
+        }
+
+        public Boolean visitInstanceOf(InstanceOfTree node, Void p) {
+            super.visitInstanceOf(node, p);
+            return null;
+        }
+
+        public Boolean visitImport(ImportTree node, Void p) {
+            super.visitImport(node, p);
+            return null;
+        }
+
+        public Boolean visitExpressionStatement(ExpressionStatementTree node, Void p) {
+            super.visitExpressionStatement(node, p);
+            return null;
+        }
+
+        public Boolean visitErroneous(ErroneousTree node, Void p) {
+            super.visitErroneous(node, p);
+            return null;
+        }
+
+        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            super.visitEnhancedForLoop(node, p);
+            return null;
+        }
+
+        public Boolean visitEmptyStatement(EmptyStatementTree node, Void p) {
+            super.visitEmptyStatement(node, p);
+            return null;
+        }
+
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            super.visitContinue(node, p);
+            return null;
+        }
+
+        public Boolean visitCompilationUnit(CompilationUnitTree node, Void p) {
+            super.visitCompilationUnit(node, p);
+            return null;
+        }
+
+        public Boolean visitClass(ClassTree node, Void p) {
+            super.visitClass(node, p);
+            return null;
+        }
+
+        public Boolean visitCatch(CatchTree node, Void p) {
+            super.visitCatch(node, p);
+            return null;
+        }
+
+        public Boolean visitCase(CaseTree node, Void p) {
+            super.visitCase(node, p);
+            return null;
+        }
+
+        public Boolean visitBreak(BreakTree node, Void p) {
+            super.visitBreak(node, p);
+            return null;
+        }
+
+        public Boolean visitBlock(BlockTree node, Void p) {
+            super.visitBlock(node, p);
+            return null;
+        }
+
+        public Boolean visitAssert(AssertTree node, Void p) {
+            super.visitAssert(node, p);
+            return null;
+        }
+
+        public Boolean visitArrayType(ArrayTypeTree node, Void p) {
+            super.visitArrayType(node, p);
+            return null;
+        }
+
+        public Boolean visitArrayAccess(ArrayAccessTree node, Void p) {
+            super.visitArrayAccess(node, p);
+            return null;
+        }
+
+        public Boolean visitAnnotation(AnnotationTree node, Void p) {
+            super.visitAnnotation(node, p);
+            return null;
+        }
+
         private Map<VariableElement, State> mergeOr(Map<VariableElement, State> into, Map<VariableElement, State> what) {
             for (Entry<VariableElement, State> e : what.entrySet()) {
                 State stt = into.get(e.getKey());
