@@ -226,6 +226,7 @@ public class WritingQueue {
                     // so the finishedTask is one of previous tasks - ignore
                     return;
                 }
+                currentTask = null;
                 if (reschedule) {
                     synchronized (lock) {
                         reschedule = false;
