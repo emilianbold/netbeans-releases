@@ -537,6 +537,30 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitTry(TryTree node, Void p) {
+            scan(node.getResources(), null);
+
+            Map<VariableElement, State> oldVariable2State = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
+
+            scan(node.getBlock(), null);
+
+            for (CatchTree ct : node.getCatches()) {
+                Map<VariableElement, State> variable2StateBeforeCatch = variable2State;
+
+                variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
+
+                scan(ct, null);
+
+                variable2State = mergeOr(variable2StateBeforeCatch, variable2State);
+            }
+
+            scan(node.getFinallyBlock(), null);
+            
+            return null;
+        }
+
         public Boolean visitWildcard(WildcardTree node, Void p) {
             super.visitWildcard(node, p);
             return null;
@@ -554,11 +578,6 @@ public class Flow {
 
         public Boolean visitTypeCast(TypeCastTree node, Void p) {
             super.visitTypeCast(node, p);
-            return null;
-        }
-
-        public Boolean visitTry(TryTree node, Void p) {
-            super.visitTry(node, p);
             return null;
         }
 
