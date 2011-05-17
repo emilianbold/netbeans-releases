@@ -103,4 +103,6 @@ public abstract class TimeSeriesIndicatorConfigurationAccessor {
     public abstract String getPersistencePrefix(TimeSeriesIndicatorConfiguration conf);
 
     public abstract long getExtent(TimeSeriesIndicatorConfiguration conf);
+    
+    public abstract int getLegendWidth(TimeSeriesIndicatorConfiguration conf);
 }
