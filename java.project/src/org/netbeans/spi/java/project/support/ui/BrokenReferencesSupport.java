@@ -70,7 +70,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 
@@ -91,6 +90,8 @@ import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 public class BrokenReferencesSupport {
 
     private static final RequestProcessor RP = new RequestProcessor(BrokenReferencesSupport.class);
+
+    private static final boolean suppressBrokenRefAlert = Boolean.getBoolean("BrokenReferencesSupport.suppressBrokenRefAlert"); //NOI18N
     
     /** Is Broken References alert shown now? */
     private static BrokenReferencesModel.Context context;
@@ -236,7 +237,7 @@ public class BrokenReferencesSupport {
         "LBL_Broken_References_Resolve_Panel_Title=Resolve Reference Problems"
     })
     private static synchronized void showAlertImpl(@NullAllowed final BrokenReferencesModel.BrokenProject broken) {        
-        if (!JavaProjectSettings.isShowAgainBrokenRefAlert()) {
+        if (!JavaProjectSettings.isShowAgainBrokenRefAlert() || suppressBrokenRefAlert) {
             return;
         } else if (context == null) {
             assert rpTask == null;
