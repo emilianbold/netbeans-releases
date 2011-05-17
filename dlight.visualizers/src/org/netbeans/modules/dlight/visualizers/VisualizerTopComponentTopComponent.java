@@ -322,7 +322,16 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
         @Override
         public int compare(VisualizerToolbarComponent o1, VisualizerToolbarComponent o2) {
-            return Integer.valueOf(vcompAccess.getPosition(o1)).compareTo(Integer.valueOf(vcompAccess.getPosition(o2)));
+            //return Integer.valueOf(vcompAccess.getPosition(o1)).compareTo(Integer.valueOf(vcompAccess.getPosition(o2)));
+            // Never equals - same position doesn't means that components are
+            // the same
+            int pos1 = vcompAccess.getPosition(o1);
+            int pos2 = vcompAccess.getPosition(o2);
+            if (pos1 < pos2) {
+                return -1;
+            } else {
+                return 1;
+            }             
         }
     }
 }
