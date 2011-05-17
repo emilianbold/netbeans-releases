@@ -81,6 +81,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
@@ -638,8 +639,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
                 for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
                     GitBranch newBranchInfo = branches.get(e.getKey());
-                    // refresh also branches that changed head or active state
-                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() != e.getValue().isActive())) {
+                    // do not refresh branches that don't change their active state or head id
+                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() == e.getValue().isActive())) {
                         branches.remove(e.getKey());
                     }
                 }
@@ -864,9 +865,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class TagsNode extends RepositoryBrowserNode {
 
         public TagsNode (File repository) {
-            super(Children.LEAF);
-            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tags.png"); //NOI18N
+            super(new TagChildren(repository));
             assert repository != null;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tags.png"); //NOI18N
         }
 
         @Override
@@ -878,6 +879,215 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String getName () {
             return NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.TagsNode.name"); //NOI18N
         }
+
+        @Override
+        public Action[] getPopupActions (boolean context) {
+            return new Action[] {
+                new AbstractAction(NbBundle.getMessage(BranchesTopNode.class, "LBL_RepositoryPanel.RefreshTagsAction.name")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        ((TagChildren) getChildren()).refreshTags();
+                    }
+                }
+            };
+        }
+    }
+
+    private class TagChildren extends Children.Keys<GitTag> implements PropertyChangeListener {
+        private final java.util.Map<String, GitTag> tags = new TreeMap<String, GitTag>();
+        private final File repository;
+
+        private TagChildren (File repository) {
+            this.repository = repository;
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+        }
+
+        
+        @Override
+        protected void addNotify () {
+            super.addNotify();
+            refreshTags();
+        }
+
+        @Override
+        protected void removeNotify () {
+            setKeys(Collections.<GitTag>emptySet());
+            super.removeNotify();
+        }
+
+        @Override
+        protected Node[] createNodes (GitTag key) {
+            return new Node[] { new TagNode(repository, key) };
+        }
+
+        private void refreshTags () {
+            new GitProgressSupport.NoOutputLogging() {
+                @Override
+                protected void perform () {
+                    try {
+                        GitClient client = getClient();
+                        final java.util.Map<String, GitTag> tags = client.getTags(NULL_PROGRESS_MONITOR, false);
+                        if (!isCanceled()) {
+                            refreshTags(tags);
+                        }
+                    } catch (GitException ex) {
+                        LOG.log(Level.INFO, "refreshTags()", ex); //NOI18N
+                    }
+                }
+            }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingTags")); //NOI18N
+        }
+        
+        private void refreshTags (java.util.Map<String, GitTag> tags) {
+            if (tags.isEmpty()) {
+                this.tags.clear();
+            } else {
+                tags = new java.util.HashMap<String, GitTag>(tags);
+                this.tags.keySet().retainAll(tags.keySet());
+                for (java.util.Map.Entry<String, GitTag> e : this.tags.entrySet()) {
+                    GitTag newTagInfo = tags.get(e.getKey());
+                    // do not refresh tags they keep the same
+                    if (newTagInfo != null && (newTagInfo.getTaggedObjectId().equals(e.getValue().getTaggedObjectId()) 
+                            || newTagInfo.getMessage().equals(e.getValue().getMessage()))) {
+                        tags.remove(e.getKey());
+                    }
+                }
+                this.tags.putAll(tags);
+            }
+            setKeys(this.tags.values().toArray(new GitTag[this.tags.values().size()]));
+        }
+
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            if (RepositoryInfo.PROPERTY_TAGS.equals(evt.getPropertyName())) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        refreshTags((java.util.Map<String, GitTag>) evt.getNewValue());
+                    }
+                });
+            }
+        }
+    }
+
+    private class TagNode extends RepositoryBrowserNode {
+        private boolean active;
+        private final String tagName;
+        private String revisionId;
+        private final String message;
+        private final PropertyChangeListener list;
+
+        public TagNode (File repository, GitTag tag) {
+            super(Children.LEAF, Lookups.fixed(new Revision(tag.getTaggedObjectId(), tag.getTagName())));
+            tagName = tag.getTagName();
+            message = tag.getMessage();
+            revisionId = tag.getTaggedObjectId();
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tag.png"); //NOI18N
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                @Override
+                public void propertyChange (PropertyChangeEvent evt) {
+                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                        refreshActiveBranch((GitBranch) evt.getNewValue());
+                    }
+                }
+            }, info));
+            refreshActiveBranch(info.getActiveBranch());
+        }
+
+        @Override
+        public String getDisplayName () {
+            return getName(false);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return getName(true);
+        }
+
+        @Override
+        public String getName() {
+            return getName(false);
+        }
+        
+        public String getName (boolean html) {
+            StringBuilder sb = new StringBuilder();
+            if (active && html) {
+                sb.append("<html><strong>").append(tagName).append("</strong>"); //NOI18N
+            } else {
+                sb.append(tagName);
+            }
+            if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
+                sb.append(" - ").append(revisionId); //NOI18N
+            }
+            return sb.toString();
+        }
+
+        private void refreshActiveBranch (GitBranch activeBranch) {
+            String oldHtmlName = getHtmlDisplayName();
+            if (activeBranch.getId().equals(revisionId)) {
+                active = true;
+            } else {
+                active = false;
+            }
+            String newHtmlName = getHtmlDisplayName();
+            if (!oldHtmlName.equals(newHtmlName)) {
+                fireDisplayNameChange(null, null);
+            }
+        }
+
+        @Override
+        public String getShortDescription () {
+            return message;
+        }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                            action.checkoutRevision(currRepository, tagName);
+                        }
+                    }, 0);
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            CreateBranchAction action = SystemAction.get(CreateBranchAction.class);
+                            action.createBranch(currRepository, tagName);
+                        }
+                    }, 0);
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            MergeRevisionAction action = SystemAction.get(MergeRevisionAction.class);
+                            action.mergeRevision(currRepository, tagName);
+                        }
+                    }, 0);
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return !active;
+                }
+            });
+            return actions.toArray(new Action[actions.size()]);
+        }
+        
     }
     //</editor-fold>
 
