@@ -266,6 +266,48 @@ public class FlowTest extends NbTestCase {
                     "3");
     }
 
+    public void testSwitch1() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p, int r) {\n" +
+                    "        int ii;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; break;\n" +
+                    "            case 1: if (r > 5) {\n" +
+                    "                         ii = 5;\n" +
+                    "                         break;\n" +
+                    "                    }\n" +
+                    "                    ii = 2;\n" +
+                    "            case 2: ii = 3; break;\n" +
+                    "            default: ii = 4; break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "5",
+                    "3",
+                    "4");
+    }
+
+    public void testSwitch2() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p) {\n" +
+                    "        int ii;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; break;\n" +
+                    "            case 1: ii = 2;\n" +
+                    "            case 2: ii = 3; return;\n" +
+                    "            default: ii = 4; break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "4");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

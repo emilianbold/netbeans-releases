@@ -81,6 +81,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -96,6 +97,8 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -175,12 +178,28 @@ public class Flow {
         
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, Flow.State>();
         private Map<Tree, State> use2Values = new IdentityHashMap<Tree, State>();
+        private Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private boolean inParameters;
         private final Set<Tree> deadBranches = new HashSet<Tree>();
 
         public VisitorImpl(CompilationInfo info, AtomicBoolean cancel) {
             super(cancel);
             this.info = info;
+        }
+
+        @Override
+        public Boolean scan(Tree tree, Void p) {
+            Boolean result = super.scan(tree, p);
+
+            Collection<Map<VariableElement, State>> toResume = resumeAfter.remove(tree);
+
+            if (toResume != null) {
+                for (Map<VariableElement, State> s : toResume) {
+                    variable2State = mergeOr(variable2State, s);
+                }
+            }
+
+            return result;
         }
 
         @Override
@@ -561,6 +580,34 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitReturn(ReturnTree node, Void p) {
+            super.visitReturn(node, p);
+            variable2State = new HashMap<VariableElement, State>();
+            return null;
+        }
+
+        public Boolean visitBreak(BreakTree node, Void p) {
+            super.visitBreak(node, p);
+
+            StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            Collection<Map<VariableElement, State>> r = resumeAfter.get(target);
+
+            if (r == null) {
+                resumeAfter.put(target, r = new ArrayList<Map<VariableElement, State>>());
+            }
+
+            r.add(new HashMap<VariableElement, State>(variable2State));
+
+            variable2State = new HashMap<VariableElement, State>();
+            
+            return null;
+        }
+
+        public Boolean visitSwitch(SwitchTree node, Void p) {
+            super.visitSwitch(node, p);
+            return null;
+        }
+
         public Boolean visitWildcard(WildcardTree node, Void p) {
             super.visitWildcard(node, p);
             return null;
@@ -588,16 +635,6 @@ public class Flow {
 
         public Boolean visitSynchronized(SynchronizedTree node, Void p) {
             super.visitSynchronized(node, p);
-            return null;
-        }
-
-        public Boolean visitSwitch(SwitchTree node, Void p) {
-            super.visitSwitch(node, p);
-            return null;
-        }
-
-        public Boolean visitReturn(ReturnTree node, Void p) {
-            super.visitReturn(node, p);
             return null;
         }
 
@@ -698,11 +735,6 @@ public class Flow {
 
         public Boolean visitCase(CaseTree node, Void p) {
             super.visitCase(node, p);
-            return null;
-        }
-
-        public Boolean visitBreak(BreakTree node, Void p) {
-            super.visitBreak(node, p);
             return null;
         }
 
