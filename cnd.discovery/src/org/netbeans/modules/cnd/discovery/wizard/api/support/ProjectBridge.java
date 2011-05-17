@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -83,7 +84,8 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class ProjectBridge {
-    private String baseFolder;
+    private final String baseFolder;
+    private final FileSystem baseFolderFileSystem;
     private final MakeConfigurationDescriptor makeConfigurationDescriptor;
     private Project project;
     private Set<Project> resultSet = new HashSet<Project>();
@@ -96,8 +98,10 @@ public class ProjectBridge {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
             makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+            baseFolderFileSystem = makeConfigurationDescriptor.getBaseDirFileSystem();
         } else {
             makeConfigurationDescriptor = null;
+            baseFolderFileSystem = null;
         }
     }
 
@@ -120,6 +124,7 @@ public class ProjectBridge {
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        baseFolderFileSystem = makeConfigurationDescriptor.getBaseDirFileSystem();
     }
     
     public Folder createFolder(Folder parent, String name){
@@ -130,11 +135,15 @@ public class ProjectBridge {
         makeConfigurationDescriptor.addSourceRootRaw(path);
     }
     
+    public FileSystem getBaseFolderFileSystem() {
+        return baseFolderFileSystem;
+    }
+    
     /**
      * Create new item. Path is converted to relative.
      */
     public Item createItem(String path){
-        return Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), getRelativepath(path));
+        return Item.createInFileSystem(baseFolderFileSystem, getRelativepath(path));
     }
     
     /**

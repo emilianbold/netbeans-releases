@@ -127,7 +127,7 @@ public class RunDialogAction extends NodeAction {
         perform(executableFO, isRun);
     }
 
-    private String getMime(DataObject dob) {
+    protected String getMime(DataObject dob) {
         FileObject primaryFile = dob == null ? null : dob.getPrimaryFile();
         String mime = primaryFile == null ? "" : primaryFile.getMIMEType();// NOI18N
         return mime;
@@ -147,7 +147,7 @@ public class RunDialogAction extends NodeAction {
         return true;
     }
 
-    private void perform(FileObject executableFO, boolean isRun) {
+    protected void perform(FileObject executableFO, boolean isRun) {
         init(isRun);
         try {
             perform(new RunDialogPanel(executableFO, runButton, isRun), isRun);
@@ -213,12 +213,12 @@ public class RunDialogAction extends NodeAction {
         return new HelpCtx(RunDialogAction.class); // FIXUP ???
     }
 
-    private ResourceBundle bundle;
-
     private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(RunDialogAction.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(RunDialogAction.class, s);
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 }
