@@ -367,7 +367,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         header.setBackground(c);
         header.setHorizontalAlignment(SwingConstants.CENTER);
         for (int i=0; i<columns; i++) {
-            header.setText(Integer.toString(i+1));
+            header.setText(Integer.toString(i));
             header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
             headerHeight = header.getPreferredSize().height;
             int start = extendedBound(columnBounds, i);
@@ -381,7 +381,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         // Paint the rows
         for (int i=0; i<rows; i++) {
-            header.setText(Integer.toString(i+1));
+            header.setText(Integer.toString(i));
             Border border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
             header.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0,HEADER_GAP/2,0,HEADER_GAP/2)));
             int start = extendedBound(rowBounds, i);
