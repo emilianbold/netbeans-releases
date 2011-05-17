@@ -64,7 +64,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.awt.ActionID;
@@ -151,19 +150,19 @@ public class CloneAction extends GitAction {
                 private void log (Map<String, GitTransportUpdate> updates) {
                     OutputLogger logger = getLogger();
                     if (updates.isEmpty()) {
-                        logger.output(NbBundle.getMessage(FetchAction.class, "MSG_FetchAction.updates.noChange")); //NOI18N
+                        logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.noChange")); //NOI18N
                     } else {
                         for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                             GitTransportUpdate update = e.getValue();
                             if (update.getType() == Type.BRANCH) {
-                                logger.output(NbBundle.getMessage(FetchAction.class, "MSG_FetchAction.updates.updateBranch", new Object[] { //NOI18N
+                                logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateBranch", new Object[] { //NOI18N
                                     update.getLocalName(), 
                                     update.getOldObjectId(),
                                     update.getNewObjectId(),
                                     update.getResult(),
                                 }));
                             } else {
-                                logger.output(NbBundle.getMessage(FetchAction.class, "MSG_FetchAction.updates.updateTag", new Object[] { //NOI18N
+                                logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateTag", new Object[] { //NOI18N
                                     update.getLocalName(), 
                                     update.getResult(),
                                 }));
@@ -172,7 +171,7 @@ public class CloneAction extends GitAction {
                     }
                 }
             };
-            supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(FetchAction.class, "LBL_FetchAction.progressName")); //NOI18N
+            supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(CloneAction.class, "LBL_CloneAction.progressName")); //NOI18N
         }
     }
 
