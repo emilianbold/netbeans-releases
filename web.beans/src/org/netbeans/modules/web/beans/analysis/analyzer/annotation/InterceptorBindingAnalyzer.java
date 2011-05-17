@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,11 +82,11 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
             InterceptorBindingAnalyzer.class.getName());
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         if ( !AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.INTERCEPTOR_BINDING_FQN , compInfo))
@@ -94,12 +95,18 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
         }
         InterceptorTargetAnalyzer analyzer = new InterceptorTargetAnalyzer(
                 element, compInfo, descriptions);
+        if ( cancel.get() ){
+            return;
+        }
         if (!analyzer.hasRuntimeRetention()) {
             ErrorDescription description = CdiEditorAnalysisFactory
                     .createError(element, compInfo, NbBundle
                             .getMessage(InterceptorBindingAnalyzer.class,
                                     INCORRECT_RUNTIME));
             descriptions.add(description);
+        }
+        if ( cancel.get() ){
+            return;
         }
         if (!analyzer.hasTarget()) {
             ErrorDescription description = CdiEditorAnalysisFactory
@@ -109,7 +116,13 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
             descriptions.add(description);
         }
         else {
+            if ( cancel.get() ){
+                return;
+            }
             Set<ElementType> declaredTargetTypes = analyzer.getDeclaredTargetTypes();
+            if ( cancel.get() ){
+                return;
+            }
             checkTransitiveInterceptorBindings( element, declaredTargetTypes, 
                     compInfo , descriptions);
         }

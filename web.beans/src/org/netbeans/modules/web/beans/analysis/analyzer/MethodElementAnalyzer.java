@@ -89,7 +89,8 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
                 if ( cancel.get() ){
                     return;
                 }
-                analyzer.analyze(method, returnType, parent, compInfo, descriptions);
+                analyzer.analyze(method, returnType, parent, compInfo, 
+                        descriptions, cancel );
             }
         }
     }
@@ -97,7 +98,7 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
     public interface MethodAnalyzer {
         void analyze( ExecutableElement element , TypeMirror returnType,
                 TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
+                List<ErrorDescription> descriptions, AtomicBoolean cancel );
     }
     
     private static final List<MethodAnalyzer> ANALYZERS= new LinkedList<MethodAnalyzer>(); 

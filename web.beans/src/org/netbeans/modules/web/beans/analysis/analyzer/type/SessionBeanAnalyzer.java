@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,11 +78,12 @@ public class SessionBeanAnalyzer implements ClassAnalyzer{
             SessionBeanAnalyzer.class.getName() );  
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
+            AtomicBoolean cancel )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
@@ -91,6 +93,9 @@ public class SessionBeanAnalyzer implements ClassAnalyzer{
                 compInfo);
         boolean isStateless = AnnotationUtil.hasAnnotation(element, AnnotationUtil.STATELESS, 
                 compInfo);
+        if ( cancel.get() ){
+            return;
+        }
         MetaModelSupport support = new MetaModelSupport(project);
         MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
         final ElementHandle<TypeElement> handle = ElementHandle.create( element);

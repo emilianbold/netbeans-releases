@@ -43,14 +43,12 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -71,26 +69,27 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 compInfo))
         {
-            analyzeScope(element, compInfo, descriptions);
+            analyzeScope(element, compInfo, descriptions, cancel );
         }
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
+            AtomicBoolean cancel)
     {
         if ( scopeElement.getQualifiedName().contentEquals( AnnotationUtil.DEPENDENT)){
             return;
@@ -98,6 +97,9 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
         TypeMirror methodType = element.asType();
         if ( methodType instanceof ExecutableType ){
             TypeMirror returnType = ((ExecutableType)methodType).getReturnType();
+            if ( cancel.get() ){
+                return;
+            }
             if ( hasTypeVarParameter( returnType )){
                 ErrorDescription description = CdiEditorAnalysisFactory.
                     createError( element, compInfo, 

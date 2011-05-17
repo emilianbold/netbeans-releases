@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,50 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+package org.netbeans.libs.git.jgit.commands;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle;
-
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.jgit.JGitTag;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * @author ads
  *
+ * @author ondra
  */
-public class TypedFieldAnalyzer extends AbstractTypedAnalyzer implements FieldAnalyzer {
+public class ListTagCommand extends GitCommand {
+    private Map<String, GitTag> allTags;
+    private final boolean all;
+
+    public ListTagCommand (Repository repository, boolean all, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.all = all;
+    }
 
     @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions, AtomicBoolean cancel  )
-    {
-        analyze(element, elementType, compInfo, descriptions, cancel );
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        Map<String, Ref> tags = repository.getTags();
+        allTags = new HashMap<String, GitTag>(tags.size());
+        RevWalk walk = new RevWalk(repository);
+        try {
+            for (Map.Entry<String, Ref> e : tags.entrySet()) {
+                GitTag tag = new JGitTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
+                if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
+                    allTags.put(tag.getTagName(), tag);
+                }
+            }
+        } catch (MissingObjectException ex) {
+            throw new GitException.MissingObjectException(ex.getObjectId().getName(), GitObjectType.TAG);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        } finally {
+            walk.release();
+        }
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
+
     @Override
-    protected void addError( Element element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
-    {
-        ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
-                TypedFieldAnalyzer.class, "ERR_BadRestritedFieldType"));
-        descriptions.add( description );        
+    protected String getCommandDescription () {
+        return "git tag -l"; //NOI18N
     }
-    
+
+    public Map<String, GitTag> getTags () {
+        return allTags;
+    }
+
 }

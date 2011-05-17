@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.libs.git;
 
 /**
  *
  * @author ondra
  */
-public enum GitObjectType {
-    COMMIT {
-        @Override
-        public String toString() {
-            return "COMMIT"; //NOI18N
-        }
-    },
-    BLOB {
-        @Override
-        public String toString() {
-            return "BLOB"; //NOI18N
-        }
-    },
-    HEAD {
-        @Override
-        public String toString() {
-            return "HEAD"; //NOI18N
-        }
-    },
-    TAG {
-        @Override
-        public String toString() {
-            return "TAG"; //NOI18N
-        }
-    },
-    TREE {
-        @Override
-        public String toString() {
-            return "TREE"; //NOI18N
-        }
-    },
-    UNKNOWN {
-        @Override
-        public String toString() {
-            return "ANY"; //NOI18N
-        }
-    }
+public interface GitTag {
+    
+    public String getTagId ();
+
+    public String getTagName ();
+    
+    public String getTaggedObjectId ();
+    
+    public String getMessage ();
+    
+    public GitUser getTagger ();
+    
+    public GitObjectType getTaggedObjectType ();
+    
 }

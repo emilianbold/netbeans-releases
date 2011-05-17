@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -63,14 +64,12 @@ public class TypedClassAnalizer extends AbstractTypedAnalyzer implements
     ClassAnalyzer
 {
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
+            AtomicBoolean cancel )
     {
-        analyze(element, element.asType() , compInfo, descriptions);
+        analyze(element, element.asType() , compInfo, descriptions, cancel );
     }
     
     /* (non-Javadoc)

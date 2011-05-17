@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -66,17 +67,19 @@ import org.openide.util.NbBundle;
 public class AnnotationsAnalyzer implements ClassAnalyzer {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
+            AtomicBoolean cancel )
     {
-        checkDecoratorInterceptor( element , compInfo , descriptions );
+        checkDecoratorInterceptor( element , compInfo , descriptions , cancel);
     }
 
     private void checkDecoratorInterceptor( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
+            AtomicBoolean cancel )
     {
         boolean isDecorator = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.DECORATOR, compInfo);
@@ -89,11 +92,23 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             descriptions.add( description );
         }
         if ( isDecorator || isInterceptor ){
+            if ( cancel.get() ){
+                return;
+            }
             checkProducerFields( element , isDecorator , compInfo , descriptions );
+            if ( cancel.get() ){
+                return;
+            }
             checkMethods( element , isDecorator , compInfo , descriptions );
+            if ( cancel.get() ){
+                return;
+            }
             checkSession( element , compInfo , descriptions);
         }
         if ( isDecorator ){
+            if ( cancel.get() ){
+                return;
+            }
             checkDelegateInjectionPoint(element , compInfo , descriptions);
         }
     }

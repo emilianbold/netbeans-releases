@@ -464,7 +464,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         File file = null;
         try {
             URI uri = new URI(comboEditor.getText());
-            file = new File(uri);
+            if (uri.isAbsolute()) {
+                file = new File(uri);
+            } else {
+                file = new File(comboEditor.getText());
+            }
         } catch (URISyntaxException ex) {
             //
         }
