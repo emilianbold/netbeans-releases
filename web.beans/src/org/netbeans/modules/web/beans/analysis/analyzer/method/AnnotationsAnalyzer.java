@@ -175,7 +175,7 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
     {
         AnnotationMirror annotation = AnnotationUtil.getAnnotationMirror( 
                 var , AnnotationUtil.NAMED, compInfo);
-        if ( annotation.getElementValues().size() == 0 ){
+        if ( annotation!= null && annotation.getElementValues().size() == 0 ){
             ErrorDescription description = CdiEditorAnalysisFactory.
                 createError(var, compInfo, "ERR_ParameterNamedInjectionPoint");
             descriptions.add( description );

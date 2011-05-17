@@ -61,9 +61,9 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.impl.model.results.InterceptorsResultImpl;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -102,13 +102,13 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
         final InterceptorBindingChecker interceptorChecker = new InterceptorBindingChecker(
                 getModel().getHelper() );
         final StereotypeChecker stereotypeChecker = new StereotypeChecker( 
-                getModel().getHelper());
+                getModel().getHelper().getHelper());
         TransitiveAnnotationHandler handler = new IntereptorBindingHandler(
                 interceptorChecker, stereotypeChecker);
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
         Set<Element> foundInterceptorBindings = new HashSet<Element>(); 
         transitiveVisitAnnotatedElements(element, result, foundInterceptorBindings, 
-                getModel().getHelper(), handler);
+                getModel().getHelper().getHelper(), handler);
         
         if ( element.getKind() == ElementKind.METHOD ){
             TypeElement enclosedClass = getCompilationController().
@@ -164,10 +164,10 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
 
     static void transitiveVisitAnnotatedElements( Element element,
             List<AnnotationMirror> result, Set<Element> foundElements,
-            AnnotationModelHelper helper, TransitiveAnnotationHandler handler )
+            AnnotationHelper helper, TransitiveAnnotationHandler handler )
     {
         List<? extends AnnotationMirror> annotationMirrors = helper
-                .getCompilationController().getElements().getAllAnnotationMirrors(element);
+                .getCompilationInfo().getElements().getAllAnnotationMirrors(element);
         for (AnnotationMirror annotationMirror : annotationMirrors) {
             TypeElement annotationElement = (TypeElement) annotationMirror
                     .getAnnotationType().asElement();
