@@ -109,6 +109,7 @@ public class BaseDescriptorModel {
                     }
                 }
             });
+            FileUtil.refreshFor(file);
         } catch (IOException e) {
             String msg = NbBundle.getMessage(EjbJarModel.class, "MSG_WriteToFileFailed", file.getPath());
             throw new ConfigurationException(msg, e);
