@@ -53,7 +53,12 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
  * @author sp153251
  */
 public class Mapping implements IMapping {
+    private final ManagedType parent;
 
+    public Mapping(ManagedType parent){
+        this.parent = parent;
+    }
+    
     @Override
     public IMappingType getMappingType() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -66,7 +71,7 @@ public class Mapping implements IMapping {
 
     @Override
     public IManagedType getParent() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return parent;
     }
 
     @Override
@@ -86,7 +91,7 @@ public class Mapping implements IMapping {
 
     @Override
     public int compareTo(IMapping o) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getName().compareTo(o.getName());
     }
     
 }
