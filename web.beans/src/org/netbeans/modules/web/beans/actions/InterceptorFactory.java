@@ -93,8 +93,13 @@ public class InterceptorFactory implements Factory {
                 }
                 int dot = component.getCaret().getDot();
                 TreePath tp = controller.getTreeUtilities().pathFor(dot);
+                if ( tp == null ){
+                    return result;
+                }
                 Element contextElement = controller.getTrees().getElement(tp );
-                if ( contextElement.getKind() != ElementKind.ANNOTATION_TYPE ){
+                if ( contextElement == null || 
+                        contextElement.getKind() != ElementKind.ANNOTATION_TYPE )
+                {
                     return result;
                 }
                 

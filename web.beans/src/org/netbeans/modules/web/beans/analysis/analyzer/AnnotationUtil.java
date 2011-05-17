@@ -45,17 +45,12 @@ package org.netbeans.modules.web.beans.analysis.analyzer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 
 
 /**
@@ -178,22 +173,4 @@ public final class AnnotationUtil {
                 SINGLETON)!= null;
     }
     
-    public static AnnotationModelHelper getHelper(CompilationInfo info ){
-        Project project = FileOwnerQuery.getOwner( info.getFileObject() );
-        if ( project == null ){
-            return null;
-        }
-        synchronized ( HELPERS ) {
-            AnnotationModelHelper helper = HELPERS.get(project);
-            if ( helper != null){
-                return helper;
-            }
-            helper = AnnotationModelHelper.create( info.getClasspathInfo());
-            HELPERS.put(project, helper);
-            return helper;
-        }
-    }
-    
-    private static final WeakHashMap<Project, AnnotationModelHelper> HELPERS = 
-        new WeakHashMap<Project, AnnotationModelHelper>();
 }

@@ -60,6 +60,7 @@ import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.actions.ConnectAction;
@@ -413,10 +414,22 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             if (branch != null) {
                 branchLabel = branch.getName();
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
-                    // not on a branch, show at least part of commit id
-                    branchLabel = branch.getId();
-                    if (branchLabel.length() > 10) {
-                        branchLabel = branchLabel.substring(0, 10) + "..."; //NOI18N
+                    Map<String, GitTag> tags = info.getTags();
+                    StringBuilder tagLabel = new StringBuilder(); //NOI18N
+                    for (GitTag tag : tags.values()) {
+                        if (tag.getTaggedObjectId().equals(branch.getId())) {
+                            tagLabel.append(",").append(tag.getTagName());
+                        }
+                    }
+                    if (tagLabel.length() <= 1) {
+                        // not on a branch or tag, show at least part of commit id
+                        branchLabel = branch.getId();
+                        if (branchLabel.length() > 7) {
+                            branchLabel = branchLabel.substring(0, 7) + "..."; //NOI18N
+                        }
+                    } else {
+                        tagLabel.delete(0, 1);
+                        branchLabel = tagLabel.toString();
                     }
                 }
             }

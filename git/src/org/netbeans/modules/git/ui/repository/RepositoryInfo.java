@@ -61,6 +61,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.openide.util.RequestProcessor;
@@ -88,6 +89,10 @@ public class RepositoryInfo {
      */
     public static final String PROPERTY_BRANCHES = "prop.branches"; //NOI18N
     /**
+     * fired when a set of known tags changes (a tag is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitTag&gt;.
+     */
+    public static final String PROPERTY_TAGS = "prop.tags"; //NOI18N
+    /**
      * fired when a set of known remotes changes (a remote is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitRemoteConfig&gt;.
      */
     public static final String PROPERTY_REMOTES = "prop.remotes"; //NOI18N
@@ -100,6 +105,7 @@ public class RepositoryInfo {
     private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
     private final PropertyChangeSupport propertyChangeSupport;
     private final Map<String, GitBranch> branches;
+    private final Map<String, GitTag> tags;
     private final Map<String, GitRemoteConfig> remotes;
 
     private GitBranch activeBranch;
@@ -129,6 +135,7 @@ public class RepositoryInfo {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
         this.branches = new HashMap<String, GitBranch>();
+        this.tags = new HashMap<String, GitTag>();
         this.remotes = new HashMap<String, GitRemoteConfig>();
         this.activeBranch = FAKE_BRANCH;
         this.repositoryState = GitRepositoryState.SAFE;
@@ -172,6 +179,8 @@ public class RepositoryInfo {
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
+                Map<String, GitTag> newTags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, false);
+                setTags(newTags);
                 refreshRemotes(client);
                 GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
@@ -246,6 +255,22 @@ public class RepositoryInfo {
         }
     }
 
+    private void setTags (Map<String, GitTag> newTags) {
+        Map<String, GitTag> oldTags;
+        boolean changed = false;
+        synchronized (tags) {
+            oldTags = new HashMap<String, GitTag>(tags);
+            if (!equalsTags(oldTags, newTags)) {
+                tags.clear();
+                tags.putAll(newTags);
+                changed = true;
+            }
+        }
+        if (changed) {
+            propertyChangeSupport.firePropertyChange(PROPERTY_TAGS, Collections.unmodifiableMap(oldTags), Collections.unmodifiableMap(new HashMap<String, GitTag>(newTags)));
+        }
+    }
+
     private void setRemotes (Map<String, GitRemoteConfig> newRemotes) {
         Map<String, GitRemoteConfig> oldRemotes;
         boolean changed = false;
@@ -287,7 +312,13 @@ public class RepositoryInfo {
             return new HashMap<String, GitBranch>(branches);
         }
     }
-    
+
+    public Map<String, GitTag> getTags () {
+        synchronized (tags) {
+            return new HashMap<String, GitTag>(tags);
+        }
+    }
+
     public Map<String, GitRemoteConfig> getRemotes () {
         synchronized (remotes) {
             return new HashMap<String, GitRemoteConfig>(remotes);
@@ -334,6 +365,26 @@ public class RepositoryInfo {
                 GitBranch oldBranch = e.getValue();
                 GitBranch newBranch = newBranches.get(e.getKey());
                 if (!oldBranch.getId().equals(newBranch.getId())) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        return retval;
+    }
+
+    private static boolean equalsTags (Map<String, GitTag> oldTags, Map<String, GitTag> newTags) {
+        boolean retval = oldTags.size() == newTags.size() && oldTags.keySet().equals(newTags.keySet());
+        if (retval) {
+            for (Map.Entry<String, GitTag> e : oldTags.entrySet()) {
+                GitTag oldTag = e.getValue();
+                GitTag newTag = newTags.get(e.getKey());
+                if (!(oldTag.getMessage().equals(newTag.getMessage())
+                        && oldTag.getTagId().equals(newTag.getTagId())
+                        && oldTag.getTagName().equals(newTag.getTagName())
+                        && oldTag.getTaggedObjectId().equals(newTag.getTaggedObjectId())
+                        && oldTag.getTaggedObjectType().equals(newTag.getTaggedObjectType())
+                        && oldTag.getTagger().toString().equals(newTag.getTagger().toString()))) {
                     retval = false;
                     break;
                 }

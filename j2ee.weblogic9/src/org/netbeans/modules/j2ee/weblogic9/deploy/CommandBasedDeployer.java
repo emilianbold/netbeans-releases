@@ -83,7 +83,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLApplicationModule;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
+import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.openide.filesystems.FileObject;
@@ -351,11 +353,24 @@ public final class CommandBasedDeployer {
     }
 
     public ProgressObject deployDatasource(final Collection<WLDatasource> datasources) {
+        return deployApplicationModule(datasources, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Datasource"));
+    }
+
+    public ProgressObject deployMessageDestinations(final Collection<WLMessageDestination> destinations) {
+        return deployApplicationModule(destinations, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_JMS"));
+    }   
+
+    private ProgressObject deployApplicationModule(
+            final Collection<? extends WLApplicationModule> modules, final String moduleDisplayName) {
+
+        final String upperDisplayName = moduleDisplayName.length() <= 0 ? moduleDisplayName :
+                Character.toUpperCase(moduleDisplayName.charAt(0)) + moduleDisplayName.substring(1);
+
         final WLProgressObject progress = new WLProgressObject(new TargetModuleID[0]);
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Started")));
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Started", upperDisplayName)));
 
         DEPLOYMENT_RP.submit(new Runnable() {
 
@@ -363,16 +378,17 @@ public final class CommandBasedDeployer {
             public void run() {
                 boolean failed = false;
                 LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (WLDatasource datasource: datasources) {
-                    if (datasource.getOrigin() == null) {
-                        LOGGER.log(Level.INFO, "Could not deploy {0}", datasource.getName());
+                for (WLApplicationModule appModule: modules) {
+                    if (appModule.getOrigin() == null) {
+                        LOGGER.log(Level.INFO, "Could not deploy {0}", appModule.getName());
                         continue;
                     }
                     ExecutionService service = createService("-deploy", lineProcessor, "-name",
-                            datasource.getName(), "-upload", datasource.getOrigin().getAbsolutePath());
+                            appModule.getName(), "-upload", appModule.getOrigin().getAbsolutePath());
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Deploying", datasource.getName())));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Deploying",
+                                new Object[] {moduleDisplayName, appModule.getName()})));
 
                     Future<Integer> result = service.run();
                     try {
@@ -381,8 +397,8 @@ public final class CommandBasedDeployer {
                             failed = true;
                             progress.fireProgressEvent(null, new WLDeploymentStatus(
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed",
-                                        lineProcessor.getLastLine())));
+                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Failed",
+                                        new Object[]{upperDisplayName, lineProcessor.getLastLine()})));
                             FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
                             break;
                         } else {
@@ -392,7 +408,8 @@ public final class CommandBasedDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed_Interrupted")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Failed_Interrupted",
+                                    upperDisplayName)));
                         result.cancel(true);
                         Thread.currentThread().interrupt();
                         break;
@@ -400,21 +417,24 @@ public final class CommandBasedDeployer {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed_Timeout")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Failed_Timeout",
+                                    upperDisplayName)));
                         result.cancel(true);
                         break;
                     } catch (ExecutionException ex) {
                         failed = true;
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed_With_Message")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Failed_With_Message",
+                                    new Object[]{upperDisplayName, ex.getLocalizedMessage()})));
                         break;
                     }
                 }
                 if (!failed) {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Completed")));
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Completed",
+                                upperDisplayName)));
                 }
             }
         });
