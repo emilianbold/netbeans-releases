@@ -244,11 +244,9 @@ public class RepositoryInfo {
         boolean changed = false;
         synchronized (branches) {
             oldBranches = new HashMap<String, GitBranch>(branches);
-            if (!equalsBranches(oldBranches, newBranches)) {
-                branches.clear();
-                branches.putAll(newBranches);
-                changed = true;
-            }
+            branches.clear();
+            branches.putAll(newBranches);
+            changed = !equalsBranches(oldBranches, newBranches);
         }
         if (changed) {
             propertyChangeSupport.firePropertyChange(PROPERTY_BRANCHES, Collections.unmodifiableMap(oldBranches), Collections.unmodifiableMap(new HashMap<String, GitBranch>(newBranches)));
