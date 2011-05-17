@@ -482,6 +482,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.jpql</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.moduleinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>

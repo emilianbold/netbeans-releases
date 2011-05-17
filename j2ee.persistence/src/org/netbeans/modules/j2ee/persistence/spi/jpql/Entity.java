@@ -54,17 +54,17 @@ import org.eclipse.persistence.jpa.jpql.spi.IType;
  * @author sp153251
  */
 public class Entity implements IEntity {
-    private final String name;
     private final ManagedTypeProvider provider;
+    private final org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity;
 
-    public Entity(String name, ManagedTypeProvider provider){
-        this.name = name;
+    public Entity(org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity, ManagedTypeProvider provider){
+        this.entity = entity;
         this.provider = provider;
     }
     
     @Override
     public String getName() {
-        return name;
+        return entity.getName();
     }
 
     @Override

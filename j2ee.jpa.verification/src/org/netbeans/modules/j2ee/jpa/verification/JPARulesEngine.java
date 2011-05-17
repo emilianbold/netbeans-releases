@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.HasNoArgConstruct
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdClassOverridesEqualsAndHashCode;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.JPAAnnotsOnlyOnAccesor;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.JPQLValidation;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.LegalCombinationOfAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NoIdClassOnEntitySubclass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
@@ -92,6 +93,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new LegalCombinationOfAnnotations());
         classRules.add(new JPAAnnotsOnlyOnAccesor());
         classRules.add(new QueriesProperlyDefined());
+        //classRules.add(new JPQLValidation());
         classRules.add(new OnlyEntityOrMappedSuperclassCanUseIdClass());
     }
     
