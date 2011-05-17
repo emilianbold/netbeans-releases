@@ -525,9 +525,21 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommandWorkingDir().setValue(path);
         } else if (element.equals(BUILD_COMMAND_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(getString(currentText));
+            String val = getString(currentText);
+            if (descriptorVersion < 76) {
+                // starting from v76 we call commands directly
+                // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
+                val = val.replace("$(MAKE)", "${MAKE}");
+            }
+            ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(val);
         } else if (element.equals(CLEAN_COMMAND_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(getString(currentText));
+            String val = getString(currentText);
+            if (descriptorVersion < 76) {
+                // starting from v76 we call commands directly
+                // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
+                val = val.replace("$(MAKE)", "${MAKE}");
+            }
+            ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(val);
         } else if (element.equals(EXECUTABLE_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
