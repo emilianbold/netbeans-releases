@@ -368,6 +368,24 @@ public final class FileSystemProvider {
         return true;
     }
     
+    public static void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                provider.addFileChangeListener(listener, fileSystem, path);
+            }
+        }
+        noProvidersWarning(fileSystem);
+    }
+    
+    public static void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                provider.addFileChangeListener(listener, env, path);
+            }
+        }
+        noProvidersWarning(env);
+    }
+    
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {

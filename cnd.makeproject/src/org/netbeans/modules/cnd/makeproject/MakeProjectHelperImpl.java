@@ -65,6 +65,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -81,12 +82,12 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
-import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.WeakSet;
@@ -116,6 +117,11 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      * Project base directory.
      */
     private final FileObject dir;
+    
+    /**
+     * File system project directory belongs to
+     */
+    private FileSystem fileSystem;
     /**
      * State object permitting modifications.
      */
@@ -202,6 +208,11 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     // and reload any modified files if the project is unmodified
     private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
+        try {
+            this.fileSystem = dir.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
         this.state = state;
         assert state != null;
         this.type = type;
@@ -214,14 +225,18 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         if (resolveFileObject != null) {
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
-            FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH)); //XXX:fullRemote: introduce a special listener
+            FileSystemProvider.addFileChangeListener(fileListener, fileSystem, PROJECT_XML_PATH);
         }
         resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
         if (resolveFileObject != null) {
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
-            FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH)); //XXX:fullRemote: introduce a special listener
+            FileSystemProvider.addFileChangeListener(fileListener, fileSystem, PRIVATE_XML_PATH);
         }
+    }
+    
+    public FileSystem getFileSystem() {
+        return fileSystem;
     }
 
     @Override
@@ -242,29 +257,42 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
     }
 
-    //XXX:fullRemote: deprecate and remove
-    @Override
-    public File resolveFile(String filename) throws IllegalArgumentException {
-        Parameters.notNull("filename", filename);
-        File basedir = new File(dir.getPath());
-        if (!basedir.isAbsolute()) {
-            throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
+    private String resolvePath(String filename) throws IllegalArgumentException {
+        if (filename == null) {
+            throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
         }
-        File f;
+        String result;
         if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
-            // Shortcut - simple relative path. Potentially faster.
-            f = new File(basedir, filename.replace('/', File.separatorChar));
+            result = dir.getPath() + CndFileUtils.getFileSeparatorChar(fileSystem) + filename;
         } else {
-            // All other cases.
-            String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-            f = new File(machinePath);
-            if (!f.isAbsolute()) {
-                f = new File(basedir, machinePath);
-            }
-            assert f.isAbsolute();
+            result = filename;
         }
-        return FileUtil.normalizeFile(f);
+        return FileSystemProvider.normalizeAbsolutePath(result, fileSystem);
     }
+    
+//    //XXX:fullRemote: deprecate and remove
+//    @Override
+//    public File resolveFile(String filename) throws IllegalArgumentException {
+//        Parameters.notNull("filename", filename);
+//        File basedir = new File(dir.getPath());
+//        if (!basedir.isAbsolute()) {
+//            throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
+//        }
+//        File f;
+//        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
+//            // Shortcut - simple relative path. Potentially faster.
+//            f = new File(basedir, filename.replace('/', File.separatorChar));
+//        } else {
+//            // All other cases.
+//            String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
+//            f = new File(machinePath);
+//            if (!f.isAbsolute()) {
+//                f = new File(basedir, machinePath);
+//            }
+//            assert f.isAbsolute();
+//        }
+//        return FileUtil.normalizeFile(f);
+//    }
 
     /**
      * Get the corresponding Make-based project type factory.
@@ -1089,8 +1117,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         private String[] computeFrom(String[] list, boolean excludeProjectLibraryPrivate) {
             List<String> result = new ArrayList<String>(list.length);
             for (String val : list) {
-                File f = h.resolveFile(val);
-                result.add(f.getAbsolutePath());
+                result.add(h.resolvePath(val));
             }
             // XXX should remove overlaps somehow
             return result.toArray(new String[result.size()]);

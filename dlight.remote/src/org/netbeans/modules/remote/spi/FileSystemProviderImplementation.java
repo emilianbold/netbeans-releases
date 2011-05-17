@@ -83,4 +83,6 @@ public interface FileSystemProviderImplementation {
     void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
     void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
     boolean canExecute(FileObject fileObject);
+    public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path);
+    public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path);
 }
