@@ -616,7 +616,7 @@ public class DiscoveryProjectGeneratorImpl {
             }
         }
         if (needAdd.size()>0) {
-            AbstractRoot additional = UnusedFactory.createRoot(needAdd);
+            AbstractRoot additional = UnusedFactory.createRoot(needAdd, projectBridge.getBaseFolderFileSystem());
             if (additional.getName().isEmpty()) {
                 for(AbstractRoot aRoot : additional.getChildren()) {
                     addAdditionalPreferedFolder(folder, aRoot);
@@ -860,7 +860,7 @@ public class DiscoveryProjectGeneratorImpl {
             String path = pair.fileConfiguration.getFilePath();
             folders.put(path,pair);
         }
-        AbstractRoot additional = UnusedFactory.createRoot(folders.keySet());
+        AbstractRoot additional = UnusedFactory.createRoot(folders.keySet(), projectBridge.getBaseFolderFileSystem());
         if (additional.getName().isEmpty()) {
             for(AbstractRoot aRoot : additional.getChildren()) {
                 addFolder(sourceRoot, aRoot, folders, lang);
