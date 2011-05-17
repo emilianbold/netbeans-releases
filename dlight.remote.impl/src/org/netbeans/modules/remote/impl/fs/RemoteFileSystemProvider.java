@@ -339,6 +339,17 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             fileObject.removeRecursiveListener(listener);
         }
     }
+    
+    public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem, "Unexpected file system class: " + fileSystem); // NOI18N
+        ((RemoteFileSystem) fileSystem).getFactory().addFileChangeListener(path, listener);
+        
+    }
+
+    public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path) {
+        RemoteLogger.assertTrue(env.isRemote(), "Unexpected ExecutionEnvironment: should be remote"); // NOI18N
+        RemoteFileSystemManager.getInstance().getFileSystem(env).getFactory().addFileChangeListener(path, listener);
+    }    
 
     public boolean canExecute(FileObject fileObject) {
         RemoteLogger.assertTrue(fileObject instanceof RemoteFileObjectBase, "Unexpected file object class: " + fileObject); // NOI18N

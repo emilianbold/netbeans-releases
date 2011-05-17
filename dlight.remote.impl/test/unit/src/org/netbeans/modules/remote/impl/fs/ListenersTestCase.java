@@ -164,6 +164,28 @@ public class ListenersTestCase extends RemoteFileTestBase {
     public void testListeners() throws Exception {
         doTestListeners(false);
     }
+    
+    @ForAllEnvironments
+    public void testPendingListeners() throws Exception {
+        String baseDir = null;
+        try {          
+            baseDir = mkTempAndRefreshParent(true);
+            Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
+            FileObject baseDirFO = getFileObject(baseDir);
+            FCL fcl = new FCL("baseDir", evMap);
+            baseDirFO.addFileChangeListener(fcl);
+            String childName = "child_file_1";
+            assertNull("Should be null", baseDirFO.getFileObject(childName));
+            String childPath = baseDirFO.getPath() + '/' + childName;
+            FileSystemProvider.addFileChangeListener(new FCL(childPath, evMap), execEnv, childPath);
+            FileObject childFO = baseDirFO.createData(childName);            
+            FileEvent fe;
+            fe = evMap.get(childFO);
+            assertNotNull("No file event for " + childFO, fe);
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }        
+    }
            
 //    @ForAllEnvironments
 //    public void testRecursiveListeners() throws Exception {
