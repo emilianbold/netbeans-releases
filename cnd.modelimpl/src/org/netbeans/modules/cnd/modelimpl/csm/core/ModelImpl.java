@@ -742,7 +742,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             closeProject(platformProject, true);
         }
         for (LibProjectImpl lib : libs) {
-            closeProject(lib.getPlatformProject(), true);
+            Object platformProject = lib.getPlatformProject();
+            CndUtils.assertNotNull(platformProject, "No Platform project for ", lib);
+            closeProject(platformProject, true);
         }
         LibraryManager.getInstance().cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
