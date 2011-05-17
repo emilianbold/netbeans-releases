@@ -50,7 +50,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
@@ -75,12 +78,12 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
             TypeElement parent, CompilationInfo compInfo,
             List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
-        checkProductionObserverDisposerInject( element , compInfo ,descriptions,
-                cancel );
+        checkProductionObserverDisposerInject( element , parent , 
+                compInfo ,descriptions, cancel );
     }
 
     private void checkProductionObserverDisposerInject(
-            ExecutableElement element, CompilationInfo compInfo,
+            ExecutableElement element, TypeElement parent, CompilationInfo compInfo,
             List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         boolean isProducer = AnnotationUtil.hasAnnotation(element, 
@@ -162,12 +165,13 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
                 disposesCount>0);
         
         if ( isInitializer ){
-            checkInitializerMethod(element, compInfo, descriptions);
+            checkInitializerMethod(element, parent , compInfo, descriptions);
         }
     }
 
-    private void checkInitializerMethod( ExecutableElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    private void checkInitializerMethod( ExecutableElement element, 
+            TypeElement parent, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions )
     {
         Set<Modifier> modifiers = element.getModifiers();
         boolean isAbstract = modifiers.contains( Modifier.ABSTRACT );
@@ -179,7 +183,19 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
             createError( element, compInfo, NbBundle.getMessage(
                 AnnotationsAnalyzer.class, key ));
             descriptions.add( description );
-        }        
+        }    
+        TypeMirror method = compInfo.getTypes().asMemberOf(
+                (DeclaredType)parent.asType() , element);
+        if ( method instanceof ExecutableType ){
+            List<? extends TypeVariable> typeVariables = 
+                ((ExecutableType)method).getTypeVariables();
+            if ( typeVariables != null && typeVariables.size() > 0 ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, NbBundle.getMessage(
+                            AnnotationsAnalyzer.class, "ERR_GenericInitMethod" ));
+                descriptions.add( description );
+            }
+        }
     }
 
     private void checkAbstractMethod( ExecutableElement element,
