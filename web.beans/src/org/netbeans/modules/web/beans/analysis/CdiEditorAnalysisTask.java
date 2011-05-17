@@ -59,6 +59,7 @@ class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
     
     CdiEditorAnalysisTask(FileObject javaFile){
         myFileObject = javaFile;
+        myTask = new AtomicReference<CdiAnalysisTask>();
     }
 
     /* (non-Javadoc)
