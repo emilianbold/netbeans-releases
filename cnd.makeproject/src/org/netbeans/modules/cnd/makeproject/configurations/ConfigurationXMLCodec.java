@@ -529,7 +529,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", "${MAKE}");
+                val = val.replace("$(MAKE)", "${MAKE}"); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(val);
         } else if (element.equals(CLEAN_COMMAND_ELEMENT)) {
@@ -537,7 +537,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", "${MAKE}");
+                val = val.replace("$(MAKE)", "${MAKE}"); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(val);
         } else if (element.equals(EXECUTABLE_PATH_ELEMENT)) {
