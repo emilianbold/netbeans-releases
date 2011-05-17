@@ -61,7 +61,6 @@ import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
-import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**

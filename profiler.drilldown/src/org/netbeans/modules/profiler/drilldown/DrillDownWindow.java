@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.drilldown;
 
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
-import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -58,7 +57,6 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
-import org.netbeans.modules.profiler.CPUSnapshotPanel;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
@@ -72,8 +70,8 @@ public final class DrillDownWindow extends TopComponent {
 
     // -----
     // I18N String constants
-    private static final String DRILLDOWN_CAPTION = NbBundle.getMessage(CPUSnapshotPanel.class, "DrillDownWindow_DrillDownCaption"); // NOI18N
-    private static final String DRILLDOWN_ACCESS_DESCR = NbBundle.getMessage(CPUSnapshotPanel.class,
+    private static final String DRILLDOWN_CAPTION = NbBundle.getMessage(DrillDownWindow.class, "DrillDownWindow_DrillDownCaption"); // NOI18N
+    private static final String DRILLDOWN_ACCESS_DESCR = NbBundle.getMessage(DrillDownWindow.class,
                                                                              "DrillDownWindow_DrillDownAccessDescr"); // NOI18N
                                                                                                                       // -----
     private static final String HELP_CTX_KEY = "DrillDownWindow.HelpCtx"; // NOI18N
