@@ -76,7 +76,7 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
             if ( cancel.get() ){
                 return;
             }
-            analyzer.analyze( subject, compInfo, descriptions);
+            analyzer.analyze( subject, compInfo, descriptions, cancel );
         }
     }
 
@@ -84,7 +84,7 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
         public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
         
         void analyze( TypeElement element , CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
+                List<ErrorDescription> descriptions, AtomicBoolean cancel );
     }
 
     private static final List<AnnotationAnalyzer> ANALYZERS = 

@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Set;
@@ -83,23 +84,38 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
     private static final Logger LOG = Logger.getLogger( StereotypeAnalyzer.class.getName() );
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel)
     {
         boolean isStereotype = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.STEREOTYPE_FQN, compInfo);
         if ( !isStereotype ){
             return;
         }
+        if ( cancel.get() ){
+            return;
+        }
         MetadataModel<WebBeansModel> metaModel = analyzeScope((Element)element, 
-                compInfo, descriptions);
+                compInfo, descriptions, cancel );
+        if (metaModel == null || cancel.get() ){
+            return;
+        }
         checkName( element, compInfo, descriptions);
+        if ( cancel.get() ){
+            return;
+        }
         Set<ElementType> targets = checkDefinition( element , compInfo, descriptions );
+        if ( cancel.get() ){
+            return;
+        }
         checkInterceptorBindings( element , targets, metaModel , 
                 compInfo , descriptions );
+        if ( cancel.get() ){
+            return;
+        }
         checkTransitiveStereotypes( element , targets, compInfo , descriptions  );
     }
 
@@ -252,11 +268,12 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
+            AtomicBoolean cancel )
     {
     }
 

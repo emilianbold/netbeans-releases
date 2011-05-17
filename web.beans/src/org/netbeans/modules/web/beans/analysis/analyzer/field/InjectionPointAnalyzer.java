@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,17 +80,17 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
     private static final Logger LOG = Logger.getLogger( 
             InjectionPointAnalyzer.class.getName() );  
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
     @Override
     public void analyze( final VariableElement element, TypeMirror elementType,
             TypeElement parent, final CompilationInfo compInfo,
-            final List<ErrorDescription> descriptions )
+            final List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
             return ;
+        }
+        if ( cancel.get() ){
+            return;
         }
         MetaModelSupport support = new MetaModelSupport(project);
         MetadataModel<WebBeansModel> metaModel = support.getMetaModel();

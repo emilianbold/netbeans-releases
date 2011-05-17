@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -67,19 +68,20 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
-        checkProductionObserverDisposerInject( element , compInfo ,descriptions);
+        checkProductionObserverDisposerInject( element , compInfo ,descriptions,
+                cancel );
     }
 
     private void checkProductionObserverDisposerInject(
             ExecutableElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         boolean isProducer = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.PRODUCES_FQN, compInfo);
@@ -89,6 +91,9 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
         int disposesCount = 0;
         List<? extends VariableElement> parameters = element.getParameters();
         for (VariableElement param : parameters) {
+            if ( cancel.get() ){
+                return;
+            }
             if ( AnnotationUtil.hasAnnotation( param, AnnotationUtil.OBSERVES_FQN, 
                     compInfo))
             {

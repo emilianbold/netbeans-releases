@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,10 +79,14 @@ public abstract class AbstractScopedAnalyzer  {
             AbstractScopedAnalyzer.class.getName() );  
 
     public MetadataModel<WebBeansModel> analyzeScope( Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
+            AtomicBoolean cancel )
     {
         Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
         if ( project == null ){
+            return null;
+        }
+        if ( cancel.get() ){
             return null;
         }
         MetaModelSupport support = new MetaModelSupport(project);
@@ -101,11 +106,14 @@ public abstract class AbstractScopedAnalyzer  {
                     return model.getScope( element );
                 }
             });
+            if ( cancel.get() ){
+                return metaModel;
+            }
             TypeElement scopeElement = compInfo.getElements().getTypeElement( scope );
             if ( scopeElement == null ){
                 return metaModel;
             }
-            checkScope( scopeElement , element , compInfo, descriptions );
+            checkScope( scopeElement , element , compInfo, descriptions , cancel);
         }
         catch (MetadataModelException e) {
             if ( !informCdiException(e, element, compInfo, descriptions) ){
@@ -121,7 +129,8 @@ public abstract class AbstractScopedAnalyzer  {
     }
     
     protected abstract void checkScope( TypeElement scopeElement, Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions );
+            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
+            AtomicBoolean cancel );
     
     protected boolean hasTypeVarParameter(TypeMirror type ){
         if ( type.getKind() == TypeKind.TYPEVAR){

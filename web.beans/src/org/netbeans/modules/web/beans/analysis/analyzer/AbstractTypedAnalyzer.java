@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -65,7 +66,8 @@ public abstract class AbstractTypedAnalyzer {
     private static final String TYPED = "javax.enterprise.inject.Typed";    // NOI18N
     
     public void analyze( Element element, TypeMirror elementType, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
+            AtomicBoolean cancel )
     {
         AnnotationMirror typedMirror = AnnotationUtil.getAnnotationMirror(element, 
                 TYPED, compInfo);
@@ -86,6 +88,9 @@ public abstract class AbstractTypedAnalyzer {
             }
         }
         if ( restrictedTypes == null ){
+            return;
+        }
+        if ( cancel.get() ){
             return;
         }
         Object value = restrictedTypes.getValue();
