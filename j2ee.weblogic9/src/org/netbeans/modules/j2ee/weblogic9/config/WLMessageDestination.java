@@ -48,7 +48,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  *
  * @author Petr Hejl
  */
-public class WLMessageDestination implements MessageDestination {
+public class WLMessageDestination implements MessageDestination, WLApplicationModule {
 
     private final String name;
 
@@ -73,6 +73,15 @@ public class WLMessageDestination implements MessageDestination {
     @Override
     public Type getType() {
         return type;
+    }
+
+    @Override
+    public File getOrigin() {
+        return origin;
+    }
+
+    public boolean isSystem() {
+        return system;
     }
 
     @Override

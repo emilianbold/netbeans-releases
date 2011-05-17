@@ -42,20 +42,41 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 
@@ -64,22 +85,137 @@ import org.openide.util.NbBundle;
  *
  */
 public class AnnotationsAnalyzer implements MethodAnalyzer {
+    
+    private static final Logger LOG = Logger.getLogger( AnnotationsAnalyzer.class.getName() );
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+    {
+        checkProductionObserverDisposerInject( element , parent , 
+                compInfo ,descriptions, cancel );
+        if ( cancel.get()){
+            return;
+        }
+        checkInjectionPoint( element , parent, compInfo , descriptions, cancel );
+    }
+
+    private void checkInjectionPoint( final ExecutableElement element, 
+            TypeElement parent, final CompilationInfo compInfo, 
+            final List<ErrorDescription> descriptions, final AtomicBoolean cancel )
+    {
+        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
+        if ( project == null ){
+            return ;
+        }
+        if ( cancel.get() ){
+            return;
+        }
+        MetaModelSupport support = new MetaModelSupport(project);
+        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
+        final ElementHandle<ExecutableElement> handle = ElementHandle.create( element);
+        final ElementHandle<TypeElement> parentHandle = ElementHandle.create( parent);
+        try {
+            metaModel.runReadAction( 
+                    new MetadataModelAction<WebBeansModel, Void>() 
+            {
+                @Override
+                public Void run( WebBeansModel model ) throws Exception {
+                    ExecutableElement method = handle.resolve(
+                            model.getCompilationController());
+                    TypeElement parent = parentHandle.resolve(
+                            model.getCompilationController());
+                    if ( method == null || parent == null ){
+                        return null;
+                    }
+                    for( VariableElement var : method.getParameters()){
+                        if ( cancel.get() ){
+                            return null;
+                        }
+                        if ( model.isInjectionPoint( var )){
+                            checkName( method, var , 
+                                    model.getCompilationController() , descriptions );
+                            if( !model.isDynamicInjectionPoint(var)) {
+                                DependencyInjectionResult result = model.
+                                    lookupInjectables( var,  (DeclaredType)parent.asType());
+                                checkResult(result, var , 
+                                        model.getCompilationController() , 
+                                        descriptions );
+                            }
+                        }
+                    }
+                    return null;
+                }
+
+            });
+        }
+        catch (MetadataModelException e) {
+            if ( informInjectionPointDefError(e, element, compInfo, 
+                    descriptions))
+            {
+                LOG.log( Level.INFO , null , e);
+            }
+        }
+        catch (IOException e) {
+            if ( informInjectionPointDefError(e, element, compInfo, 
+                    descriptions))
+            {
+                LOG.log( Level.INFO , null , e);
+            }
+        }
+    }
+    
+    private void checkName( ExecutableElement element, VariableElement var,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        AnnotationMirror annotation = AnnotationUtil.getAnnotationMirror( 
+                var , AnnotationUtil.NAMED, compInfo);
+        if ( annotation!= null && annotation.getElementValues().size() == 0 ){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError(var, compInfo, "ERR_ParameterNamedInjectionPoint");
+            descriptions.add( description );
+        }
+    }
+
+    private void checkResult( DependencyInjectionResult result ,
+            Element element, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        checkProductionObserverDisposerInject( element , compInfo ,descriptions);
+        if ( result instanceof DependencyInjectionResult.Error ){
+            ResultKind kind = result.getKind();
+            Severity severity = Severity.WARNING;
+            if ( kind == DependencyInjectionResult.ResultKind.DEFINITION_ERROR){
+                severity = Severity.ERROR;
+            }
+            String message = ((DependencyInjectionResult.Error)result).getMessage();
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createNotification(severity, element , compInfo, message);
+            descriptions.add( description );
+        }
+    }
+
+    private boolean informInjectionPointDefError(Exception exception , Element element, 
+            CompilationInfo compInfo, List<ErrorDescription> descriptions)
+    {
+        Throwable cause = exception.getCause();
+        if ( cause instanceof InjectionPointDefinitionError ){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, 
+                    cause.getMessage());
+            descriptions.add( description );
+            return true;
+        }
+        return false;
     }
 
     private void checkProductionObserverDisposerInject(
-            ExecutableElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            ExecutableElement element, TypeElement parent, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         boolean isProducer = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.PRODUCES_FQN, compInfo);
@@ -89,6 +225,9 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
         int disposesCount = 0;
         List<? extends VariableElement> parameters = element.getParameters();
         for (VariableElement param : parameters) {
+            if ( cancel.get() ){
+                return;
+            }
             if ( AnnotationUtil.hasAnnotation( param, AnnotationUtil.OBSERVES_FQN, 
                     compInfo))
             {
@@ -157,12 +296,13 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
                 disposesCount>0);
         
         if ( isInitializer ){
-            checkInitializerMethod(element, compInfo, descriptions);
+            checkInitializerMethod(element, parent , compInfo, descriptions);
         }
     }
 
-    private void checkInitializerMethod( ExecutableElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    private void checkInitializerMethod( ExecutableElement element, 
+            TypeElement parent, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions )
     {
         Set<Modifier> modifiers = element.getModifiers();
         boolean isAbstract = modifiers.contains( Modifier.ABSTRACT );
@@ -174,7 +314,19 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
             createError( element, compInfo, NbBundle.getMessage(
                 AnnotationsAnalyzer.class, key ));
             descriptions.add( description );
-        }        
+        }    
+        TypeMirror method = compInfo.getTypes().asMemberOf(
+                (DeclaredType)parent.asType() , element);
+        if ( method instanceof ExecutableType ){
+            List<? extends TypeVariable> typeVariables = 
+                ((ExecutableType)method).getTypeVariables();
+            if ( typeVariables != null && typeVariables.size() > 0 ){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, NbBundle.getMessage(
+                            AnnotationsAnalyzer.class, "ERR_GenericInitMethod" ));
+                descriptions.add( description );
+            }
+        }
     }
 
     private void checkAbstractMethod( ExecutableElement element,

@@ -47,10 +47,10 @@ import java.lang.annotation.ElementType;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -63,11 +63,11 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -83,23 +83,38 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
     private static final Logger LOG = Logger.getLogger( StereotypeAnalyzer.class.getName() );
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel)
     {
         boolean isStereotype = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.STEREOTYPE_FQN, compInfo);
         if ( !isStereotype ){
             return;
         }
+        if ( cancel.get() ){
+            return;
+        }
         MetadataModel<WebBeansModel> metaModel = analyzeScope((Element)element, 
-                compInfo, descriptions);
+                compInfo, descriptions, cancel );
+        if (metaModel == null || cancel.get() ){
+            return;
+        }
         checkName( element, compInfo, descriptions);
+        if ( cancel.get() ){
+            return;
+        }
         Set<ElementType> targets = checkDefinition( element , compInfo, descriptions );
+        if ( cancel.get() ){
+            return;
+        }
         checkInterceptorBindings( element , targets, metaModel , 
                 compInfo , descriptions );
+        if ( cancel.get() ){
+            return;
+        }
         checkTransitiveStereotypes( element , targets, compInfo , descriptions  );
     }
 
@@ -107,58 +122,37 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
             final Set<ElementType> targets, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        final AnnotationModelHelper helper = AnnotationModelHelper.create( 
-                compInfo.getClasspathInfo());
-        final ElementHandle<TypeElement> handle = ElementHandle.create(element);
-        try {
-            String badStereotype = helper.runJavaSourceTask( new Callable<String>() {
-                
-                @Override
-                public String call() {
-                    TypeElement resolved = handle.resolve( 
-                            helper.getCompilationController());
-                    if ( resolved == null ){
-                        return null;
+        AnnotationHelper helper = new AnnotationHelper(compInfo);
+        List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl
+                .getAllStereotypes(element, helper);
+        for (AnnotationMirror stereotypeAnnotation : stereotypes) {
+            Element annotationElement = stereotypeAnnotation
+                    .getAnnotationType().asElement();
+            if (annotationElement instanceof TypeElement) {
+                TypeElement stereotype = (TypeElement) annotationElement;
+                Set<ElementType> declaredTargetTypes = TargetAnalyzer
+                        .getDeclaredTargetTypes(helper, stereotype);
+                if (declaredTargetTypes != null
+                        && declaredTargetTypes.size() == 1
+                        && declaredTargetTypes.contains(ElementType.TYPE))
+                {
+                    if (targets.size() == 1
+                            && targets.contains(ElementType.TYPE))
+                    {
+                        continue;
                     }
-                    List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl.
-                            getAllStereotypes(resolved, helper);   
-                    for (AnnotationMirror stereotypeAnnotation : stereotypes) {
-                        Element element = stereotypeAnnotation.
-                            getAnnotationType().asElement();
-                        if ( element instanceof TypeElement ){
-                            TypeElement stereotype = (TypeElement)element;
-                            Set<ElementType> declaredTargetTypes = 
-                                TargetAnalyzer.getDeclaredTargetTypes(helper, stereotype);
-                            if ( declaredTargetTypes!= null && 
-                                    declaredTargetTypes.size() ==1 && 
-                                        declaredTargetTypes.contains( ElementType.TYPE))
-                            {
-                                if ( targets.size() == 1 && 
-                                        targets.contains( ElementType.TYPE))
-                                {
-                                    continue;
-                                }
-                                else {
-                                    return stereotype.getQualifiedName().toString();
-                                }
-                            }
-                        }
+                    else {
+                        String fqn = stereotype.getQualifiedName().toString();
+                        ErrorDescription description = CdiEditorAnalysisFactory
+                                .createError(element, compInfo,NbBundle.getMessage(
+                                                StereotypeAnalyzer.class,
+                                                "ERR_IncorrectTransitiveTarget",    // NOI18N
+                                                fqn));
+                        descriptions.add(description);
                     }
-                    return null;
                 }
-            });
-            if ( badStereotype != null ){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
-                        NbBundle.getMessage(StereotypeAnalyzer.class, 
-                        "ERR_IncorrectTransitiveTarget", badStereotype ));
-                descriptions.add( description );
             }
         }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null, e );
-        }
-        
     }
 
     private void checkInterceptorBindings( TypeElement element,  Set<ElementType>
@@ -252,11 +246,12 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
+            AtomicBoolean cancel )
     {
     }
 

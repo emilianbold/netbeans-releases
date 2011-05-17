@@ -73,6 +73,9 @@ public class CtorAnalyzer implements ElementAnalyzer {
         ExecutableElement ctor = (ExecutableElement)element;
         List<? extends VariableElement> parameters = ctor.getParameters();
         for (VariableElement param : parameters) {
+            if ( cancel.get() ){
+                return;
+            }
             boolean isDisposer = AnnotationUtil.hasAnnotation(param, 
                     AnnotationUtil.DISPOSES_FQN, compInfo);
             boolean isObserver = AnnotationUtil.hasAnnotation(param, 

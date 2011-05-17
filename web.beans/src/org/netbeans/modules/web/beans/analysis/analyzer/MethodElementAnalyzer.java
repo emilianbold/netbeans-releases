@@ -81,12 +81,16 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
         TypeMirror methodType = compInfo.getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  method );
         if ( methodType instanceof ExecutableType ){
+            if ( cancel.get()){
+                return;
+            }
             TypeMirror returnType = ((ExecutableType) methodType).getReturnType();
             for (MethodAnalyzer analyzer : ANALYZERS) {
                 if ( cancel.get() ){
                     return;
                 }
-                analyzer.analyze(method, returnType, parent, compInfo, descriptions);
+                analyzer.analyze(method, returnType, parent, compInfo, 
+                        descriptions, cancel );
             }
         }
     }
@@ -94,7 +98,7 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
     public interface MethodAnalyzer {
         void analyze( ExecutableElement element , TypeMirror returnType,
                 TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
+                List<ErrorDescription> descriptions, AtomicBoolean cancel );
     }
     
     private static final List<MethodAnalyzer> ANALYZERS= new LinkedList<MethodAnalyzer>(); 

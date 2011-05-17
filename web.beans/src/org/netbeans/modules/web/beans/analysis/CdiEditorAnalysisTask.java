@@ -42,28 +42,11 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 
@@ -76,7 +59,7 @@ class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
     
     CdiEditorAnalysisTask(FileObject javaFile){
         myFileObject = javaFile;
-        cancel = new AtomicBoolean( false );
+        myTask = new AtomicReference<CdiAnalysisTask>();
     }
 
     /* (non-Javadoc)
@@ -84,72 +67,26 @@ class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
      */
     @Override
     public void run( CompilationInfo compInfo ) throws Exception {
-        cancel.set(false);
-        List<ErrorDescription> problems = new LinkedList<ErrorDescription>();
-        
-        List<? extends TypeElement> types = compInfo.getTopLevelElements();
-        for (TypeElement typeElement : types) {
-            if ( isCancelled() ){
-                break;
-            }
-            analyzeType(typeElement, null,  compInfo, problems);
-        }
-        HintsController.setErrors(myFileObject, "CDI Analyser", problems); //NOI18N
-    }
-    
-    private void analyzeType(TypeElement typeElement , TypeElement parent ,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions)
-    {
-        ElementKind kind = typeElement.getKind();
-        ElementAnalyzer analyzer = ANALIZERS.get( kind );
-        if ( analyzer != null ){
-            analyzer.analyze(typeElement, parent, compInfo, descriptions, cancel);
-        }
-        if ( isCancelled() ){
+        if ( !WebBeansActionHelper.isEnabled() ){
             return;
         }
-        List<? extends Element> enclosedElements = typeElement.getEnclosedElements();
-        List<TypeElement> types = ElementFilter.typesIn(enclosedElements);
-        for (TypeElement innerType : types) {
-            analyzeType(innerType, typeElement , compInfo, descriptions);
-        }
-        Set<Element> enclosedSet = new HashSet<Element>( enclosedElements );
-        enclosedSet.removeAll( types );
-        for(Element element : enclosedSet ){
-            if ( isCancelled() ){
-                return;
-            }
-            analyzer = ANALIZERS.get( element.getKind() );
-            if ( analyzer == null ){
-                continue;
-            }
-            analyzer.analyze(element, typeElement, compInfo, descriptions,
-                    cancel);
-        }
+        CdiAnalysisTask task = new CdiAnalysisTask( );
+        myTask.set( task );
+        task.run( compInfo );
+        HintsController.setErrors(myFileObject, "CDI Analyser", task.getProblems()); //NOI18N
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.api.java.source.CancellableTask#cancel()
      */
     @Override
     public void cancel() {
-        cancel.set( true );
+        CdiAnalysisTask task = myTask.get();
+        if ( task != null ){
+            task.stop();
+        }
     }
     
-    private boolean isCancelled(){
-        return cancel.get();
-    }
-    
-    private AtomicBoolean cancel;
     private FileObject myFileObject;
-    private static final Map<ElementKind,ElementAnalyzer> ANALIZERS = 
-        new HashMap<ElementKind, ElementAnalyzer>();
-
-    static {
-        ANALIZERS.put(ElementKind.CLASS, new ClassElementAnalyzer());
-        ANALIZERS.put(ElementKind.FIELD, new FieldElementAnalyzer());
-        ANALIZERS.put(ElementKind.METHOD, new MethodElementAnalyzer());
-        ANALIZERS.put(ElementKind.CONSTRUCTOR, new CtorAnalyzer());
-        ANALIZERS.put(ElementKind.ANNOTATION_TYPE, new AnnotationElementAnalyzer());
-    }
+    private AtomicReference<CdiAnalysisTask> myTask;
 }

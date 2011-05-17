@@ -51,7 +51,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
@@ -62,13 +62,13 @@ import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
  */
 public abstract class RuntimeRetentionAnalyzer {
     
-    public void init( Element element, AnnotationModelHelper helper ) {
+    public void init( Element element, AnnotationHelper helper ) {
         myHelper = helper;
         myElement = element;
     }
     
     public void init( Element element, CompilationInfo info  ) {
-        init( element , AnnotationModelHelper.create( info.getClasspathInfo()));
+        init( element , new AnnotationHelper(info));
     }
     
     public boolean hasRuntimeRetention() {
@@ -95,10 +95,10 @@ public abstract class RuntimeRetentionAnalyzer {
         return myElement;
     }
     
-    protected AnnotationModelHelper getHelper(){
+    protected AnnotationHelper getHelper(){
         return myHelper;
     }
     
-    private AnnotationModelHelper myHelper;
+    private AnnotationHelper myHelper;
     private Element myElement;
 }

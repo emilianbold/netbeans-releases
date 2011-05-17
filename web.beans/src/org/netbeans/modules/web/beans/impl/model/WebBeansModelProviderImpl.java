@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.TypesEvent;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
@@ -215,7 +216,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
             return name;
         }
         List<AnnotationMirror> allStereotypes = getAllStereotypes(element, 
-                getModel().getHelper());
+                getModel().getHelper().getHelper());
         for (AnnotationMirror annotationMirror : allStereotypes) {
             DeclaredType annotationType = annotationMirror.getAnnotationType();
             TypeElement annotation = (TypeElement)annotationType.asElement();
@@ -290,7 +291,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     }
     
     public static List<AnnotationMirror> getAllStereotypes( Element element ,
-            AnnotationModelHelper helper  ) 
+            AnnotationHelper helper  ) 
     {
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
         Set<Element> foundStereotypesElement = new HashSet<Element>(); 
@@ -465,7 +466,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     
     private static void doGetStereotypes( Element element , 
             List<AnnotationMirror> result ,Set<Element>  foundStereotypesElement,
-            final StereotypeChecker checker , AnnotationModelHelper helper ) 
+            final StereotypeChecker checker , AnnotationHelper helper ) 
     {
         TransitiveAnnotationHandler handler = new TransitiveAnnotationHandler(){
 

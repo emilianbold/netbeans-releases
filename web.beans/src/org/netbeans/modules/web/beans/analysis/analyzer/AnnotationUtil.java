@@ -172,4 +172,5 @@ public final class AnnotationUtil {
         return getAnnotationMirror(element, compInfo, STATEFUL, STATELESS, 
                 SINGLETON)!= null;
     }
+    
 }

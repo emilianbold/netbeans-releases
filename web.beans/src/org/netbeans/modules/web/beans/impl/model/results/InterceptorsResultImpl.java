@@ -90,7 +90,8 @@ public class InterceptorsResultImpl implements InterceptorsResult {
      */
     @Override
     public List<AnnotationMirror> getAllStereotypes( Element element ) {
-        return WebBeansModelProviderImpl.getAllStereotypes(element, getHelper());
+        return WebBeansModelProviderImpl.getAllStereotypes(element, 
+                getHelper().getHelper());
     }
 
     /* (non-Javadoc)
@@ -203,7 +204,7 @@ public class InterceptorsResultImpl implements InterceptorsResult {
         List<? extends AnnotationMirror> annotationMirrors = 
             helper.getCompilationController().getElements().
                 getAllAnnotationMirrors( element );
-        StereotypeChecker checker = new StereotypeChecker( helper);
+        StereotypeChecker checker = new StereotypeChecker( helper.getHelper());
         for (AnnotationMirror annotationMirror : annotationMirrors) {
             TypeElement annotationElement = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();

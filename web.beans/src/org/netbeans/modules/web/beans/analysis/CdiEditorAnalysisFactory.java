@@ -80,7 +80,7 @@ import com.sun.source.util.SourcePositions;
 public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
 
     public CdiEditorAnalysisFactory( ){
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "text/x-java");    // NOI18N
+        super(Phase.RESOLVED, Priority.LOW, "text/x-java");    // NOI18N
     }
 
     /* (non-Javadoc)

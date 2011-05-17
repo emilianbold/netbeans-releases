@@ -65,7 +65,7 @@ public abstract class RuntimeAnnotationChecker extends TargetAnalyzer {
     protected static final String VALUE = "value";                // NOI18N
     
     public void init( TypeElement element, AnnotationModelHelper helper  ) {
-        init( (Element)element , helper );
+        init( (Element)element , helper.getHelper() );
     }
 
     public boolean check() {

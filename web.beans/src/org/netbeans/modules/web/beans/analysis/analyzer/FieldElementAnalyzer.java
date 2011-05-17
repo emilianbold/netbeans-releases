@@ -79,14 +79,18 @@ public class FieldElementAnalyzer implements ElementAnalyzer {
         TypeMirror varType = compInfo.getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  var );
         for (FieldAnalyzer analyzer : ANALYZERS) {
-            analyzer.analyze(var, varType, parent, compInfo, descriptions);
+            if ( cancel.get()){
+                return;
+            }
+            analyzer.analyze(var, varType, parent, compInfo, descriptions,
+                    cancel );
         }
     }
     
     public interface FieldAnalyzer {
         void analyze( VariableElement element , TypeMirror elementType,
                 TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
+                List<ErrorDescription> descriptions, AtomicBoolean cancel );
     }
     
     private static final List<FieldAnalyzer> ANALYZERS= new LinkedList<FieldAnalyzer>(); 
