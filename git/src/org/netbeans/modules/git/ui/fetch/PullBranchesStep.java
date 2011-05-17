@@ -169,7 +169,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     private void markMergingBranch () {
         mergingBranch = null;
         for (BranchMapping mapping : branches.getSelectedBranches()) {
-            if (currentBranch.equals(mapping.getRemoteBranchName()) || mergingBranch == null) {
+            if (mapping.getRemoteBranchName().equals(currentBranch) || mergingBranch == null) {
                 mergingBranch = MessageFormat.format(REMOTE_BRANCH_NAME_WITH_REMOTE, new Object[] { mapping.getRemoteName(), mapping.getRemoteBranchName() });
             }
         }
