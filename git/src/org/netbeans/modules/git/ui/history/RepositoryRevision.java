@@ -46,11 +46,13 @@ package org.netbeans.modules.git.ui.history;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitFileInfo.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 
@@ -64,15 +66,21 @@ public class RepositoryRevision {
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
     private String commonAncestor;
+    private final Set<GitTag> tags;
+    private final Set<GitBranch> branches;
 
-    public RepositoryRevision (GitRevisionInfo message) {
+    public RepositoryRevision (GitRevisionInfo message, Set<GitTag> tags, Set<GitBranch> branches) {
         this.message = message;
+        this.tags = tags;
+        this.branches = branches;
         initEvents();
         
     }
 
-    RepositoryRevision (GitRevisionInfo message, File dummyFile, String dummyFileRelativePath) {
+    RepositoryRevision (GitRevisionInfo message, Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath) {
         this.message = message;
+        this.tags = tags;
+        this.branches = branches;
         if (dummyFile != null && dummyFileRelativePath != null) {
             events.add(new Event(dummyFile, dummyFileRelativePath));
         }
@@ -124,6 +132,14 @@ public class RepositoryRevision {
             }
         }
         return commonAncestor;
+    }
+
+    public GitBranch[] getBranches () {
+        return branches == null ? new GitBranch[0] : branches.toArray(new GitBranch[branches.size()]);
+    }
+
+    public GitTag[] getTags () {
+        return tags == null ? new GitTag[0] : tags.toArray(new GitTag[tags.size()]);
     }
     
     public class Event {
