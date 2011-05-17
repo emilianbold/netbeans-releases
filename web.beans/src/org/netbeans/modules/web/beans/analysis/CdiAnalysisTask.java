@@ -105,16 +105,23 @@ class CdiAnalysisTask {
         Set<Element> enclosedSet = new HashSet<Element>( enclosedElements );
         enclosedSet.removeAll( types );
         for(Element element : enclosedSet ){
-            if ( isCancelled() ){
-                return;
-            }
-            analyzer = ANALIZERS.get( element.getKind() );
-            if ( analyzer == null ){
-                continue;
-            }
-            analyzer.analyze(element, typeElement, compInfo, descriptions,
-                    cancel);
+            analyze(typeElement, compInfo, descriptions, element);
         }
+    }
+
+    private void analyze( TypeElement typeElement, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions, Element element )
+    {
+        ElementAnalyzer analyzer;
+        if ( isCancelled() ){
+            return;
+        }
+        analyzer = ANALIZERS.get( element.getKind() );
+        if ( analyzer == null ){
+            return;
+        }
+        analyzer.analyze(element, typeElement, compInfo, descriptions,
+                cancel);
     }
     
     List<ErrorDescription> getProblems(){
