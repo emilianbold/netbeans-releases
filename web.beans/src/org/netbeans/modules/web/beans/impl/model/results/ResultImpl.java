@@ -119,7 +119,8 @@ public class ResultImpl extends BaseResult implements DependencyInjectionResult.
      */
     @Override
     public List<AnnotationMirror> getAllStereotypes( Element element ) {
-        return WebBeansModelProviderImpl.getAllStereotypes(element, getHelper());
+        return WebBeansModelProviderImpl.getAllStereotypes(element, 
+                getHelper().getHelper());
     }
     
     /* (non-Javadoc)

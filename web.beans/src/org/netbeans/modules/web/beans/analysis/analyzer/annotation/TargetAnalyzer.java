@@ -54,7 +54,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
@@ -90,7 +90,7 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
     }
     
     public static Set<ElementType> getDeclaredTargetTypes( 
-            AnnotationModelHelper helper, TypeElement element ) 
+            AnnotationHelper helper, TypeElement element ) 
     {
         Map<String, ? extends AnnotationMirror> types = helper
                 .getAnnotationsByType(element.getAnnotationMirrors());
@@ -116,7 +116,7 @@ public abstract class TargetAnalyzer extends RuntimeRetentionAnalyzer
     protected abstract void handleNoTarget();
     
     private static Set<ElementType> getDeclaredTargetTypes(
-            AnnotationModelHelper helper, AnnotationMirror target)
+            AnnotationHelper helper, AnnotationMirror target)
     {
         AnnotationParser parser = AnnotationParser.create(helper);
         final Set<String> elementTypes = new HashSet<String>();
