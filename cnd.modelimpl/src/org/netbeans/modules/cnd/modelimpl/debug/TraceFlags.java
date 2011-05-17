@@ -159,6 +159,8 @@ public class TraceFlags {
 
     // experimental expression evaluator for template instantiations
     public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.deep.variable.provider", false); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
 
     public static final List<String> logMacros;
     static {
