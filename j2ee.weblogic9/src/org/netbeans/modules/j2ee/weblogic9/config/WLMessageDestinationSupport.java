@@ -61,6 +61,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.MessageModel;
@@ -210,6 +211,10 @@ public class WLMessageDestinationSupport {
         FileObject resource = FileUtil.toFileObject(resourceDir);
 
         return getMessageDestinations(null, resource, false);
+    }
+
+    public org.netbeans.modules.j2ee.deployment.common.api.MessageDestination createMessageDestination(String name, Type type) {
+        return null;
     }
 
     private static class JmsSystemResourceHandler extends DefaultHandler {

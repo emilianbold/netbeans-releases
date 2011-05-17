@@ -106,6 +106,7 @@ public final class AnnotationModelHelper {
 
     private AnnotationScanner annotationScanner;
     private CompilationController controller;
+    private AnnotationHelper helper;
 
     public static AnnotationModelHelper create(ClasspathInfo cpi) {
         return new AnnotationModelHelper(cpi);
@@ -113,6 +114,7 @@ public final class AnnotationModelHelper {
 
     private AnnotationModelHelper(ClasspathInfo cpi) {
         this.cpi = cpi;
+        this.helper = new AnnotationHelper( this );
     }
 
     public ClasspathInfo getClasspathInfo() {
@@ -292,9 +294,13 @@ public final class AnnotationModelHelper {
     public AnnotationScanner getAnnotationScanner() {
         assertUserActionTaskThread();
         if (annotationScanner == null) {
-            annotationScanner = new AnnotationScanner(this);
+            annotationScanner = new AnnotationScanner( getHelper());
         }
         return annotationScanner;
+    }
+    
+    public AnnotationHelper getHelper(){
+        return helper;
     }
 
     /**
@@ -312,93 +318,48 @@ public final class AnnotationModelHelper {
             }
         }
     }
-
+    
     /**
      * @param typeName must be the name of a type element
      * (resolvable by {@link javax.lang.model.util.Elements#getTypeElement}).
      */
     public TypeMirror resolveType(String typeName) {
         assertUserActionTaskThread();
-        TypeElement type = getCompilationController().getElements().getTypeElement(typeName);
-        if (type != null) {
-            return type.asType();
-        }
-        return null;
+        return getHelper().resolveType(typeName);
     }
 
     public boolean isSameRawType(TypeMirror type1, String type2ElementName) {
         assertUserActionTaskThread();
-        TypeElement type2Element = getCompilationController().getElements().getTypeElement(type2ElementName);
-        if (type2Element != null) {
-            Types types = getCompilationController().getTypes();
-            TypeMirror type2 = types.erasure(type2Element.asType());
-            return types.isSameType(types.erasure(type1), type2);
-        }
-        return false;
+        return getHelper().isSameRawType(type1, type2ElementName);
     }
 
     public List<? extends TypeElement> getSuperclasses(TypeElement type) {
         assertUserActionTaskThread();
-        List<TypeElement> result = new ArrayList<TypeElement>();
-        TypeElement currentType = type;
-        for (;;) {
-            currentType = getSuperclass(currentType);
-            if (currentType != null) {
-                result.add(currentType);
-            } else {
-                break;
-            }
-        }
-        return Collections.unmodifiableList(result);
+        return getHelper().getSuperclasses(type);
     }
 
     public TypeElement getSuperclass(TypeElement type) {
         assertUserActionTaskThread();
-        TypeMirror supertype = type.getSuperclass();
-        if (TypeKind.DECLARED.equals(supertype.getKind())) {
-            Element element = ((DeclaredType)supertype).asElement();
-            if (ElementKind.CLASS.equals(element.getKind())) {
-                TypeElement superclass = (TypeElement)element;
-                if (!superclass.getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
-                    return superclass;
-                }
-            }
-        }
-        return null;
+        return getHelper().getSuperclass(type);
     }
 
-    public boolean hasAnnotation(List<? extends AnnotationMirror> annotations, String annotationTypeName) {
+    public boolean hasAnnotation(List<? extends AnnotationMirror> annotations, 
+            String annotationTypeName) 
+    {
         assertUserActionTaskThread();
-        for (AnnotationMirror annotation : annotations) {
-            String typeName = getAnnotationTypeName(annotation.getAnnotationType());
-            if (annotationTypeName.equals(typeName)) {
-                return true;
-            }
-        }
-        return false;
+        return getHelper().hasAnnotation(annotations, annotationTypeName);
     }
 
     public boolean hasAnyAnnotation(List<? extends AnnotationMirror> annotations, Set<String> annotationTypeNames) {
         assertUserActionTaskThread();
-        for (AnnotationMirror annotation : annotations) {
-            String annotationTypeName = getAnnotationTypeName(annotation.getAnnotationType());
-            if (annotationTypeName != null && annotationTypeNames.contains(annotationTypeName)) {
-                return true;
-            }
-        }
-        return false;
+        return getHelper().hasAnyAnnotation(annotations, annotationTypeNames);
     }
 
-    public Map<String, ? extends AnnotationMirror> getAnnotationsByType(List<? extends AnnotationMirror> annotations) {
+    public Map<String, ? extends AnnotationMirror> getAnnotationsByType(
+            List<? extends AnnotationMirror> annotations) 
+    {
         assertUserActionTaskThread();
-        Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
-        for (AnnotationMirror annotation : annotations) {
-            String typeName = getAnnotationTypeName(annotation.getAnnotationType());
-            if (typeName != null) {
-                result.put(typeName, annotation);
-            }
-        }
-        return Collections.unmodifiableMap(result);
+        return getHelper().getAnnotationsByType(annotations);
     }
 
     /**
@@ -407,14 +368,7 @@ public final class AnnotationModelHelper {
      */
     public String getAnnotationTypeName(DeclaredType typeMirror) {
         assertUserActionTaskThread();
-        if (!TypeKind.DECLARED.equals(typeMirror.getKind())) {
-            return null;
-        }
-        Element element = typeMirror.asElement();
-        if (!ElementKind.ANNOTATION_TYPE.equals(element.getKind())) {
-            return null;
-        }
-        return ((TypeElement)element).getQualifiedName().toString();
+        return getHelper().getAnnotationTypeName(typeMirror);
     }
 
     private final class ClassIndexListenerImpl implements ClassIndexListener {

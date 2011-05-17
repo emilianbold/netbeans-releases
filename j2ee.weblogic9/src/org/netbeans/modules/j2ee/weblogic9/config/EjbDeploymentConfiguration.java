@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.dd.model.BaseDescriptorModel;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.EjbJarModel;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.openide.DialogDisplayer;
@@ -82,8 +83,12 @@ import org.openide.util.lookup.Lookups;
 public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
         implements ModuleConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
 
+    private final ConfigurationModifier<EjbJarModel> modifier = new ConfigurationModifier<EjbJarModel>();
+
     private final File file;
+
     private final J2eeModule j2eeModule;
+
     private final DataObject dataObject;
     
     private final Version serverVersion;
@@ -191,97 +196,6 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
             throw new ConfigurationException(msg, ioe);
         }
     }
-    
-    // private helper methods -------------------------------------------------
-    
-    /**
-     * Perform webLogicWebApp changes defined by the webLogicWebApp modifier. Update editor
-     * content and save changes, if appropriate.
-     *
-     * @param modifier
-     */
-    private void modifyWeblogicEjbJar(WeblogicEjbJarModifier modifier) throws ConfigurationException {
-        assert dataObject != null : "DataObject has not been initialized yet"; // NIO18N
-        try {
-            // get the document
-            EditorCookie editor = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-            StyledDocument doc = editor.getDocument();
-            if (doc == null) {
-                doc = editor.openDocument();
-            }
-            
-            // get the up-to-date model
-            EjbJarModel newWeblogicEjbJar = null;
-            try {
-                // try to create a graph from the editor content
-                byte[] docString = doc.getText(0, doc.getLength()).getBytes();
-                newWeblogicEjbJar = EjbJarModel.forInputStream(new ByteArrayInputStream(docString));
-            } catch (RuntimeException e) {
-                EjbJarModel oldWeblogicEjbJar = getWeblogicEjbJar();
-                if (oldWeblogicEjbJar == null) {
-                    // neither the old graph is parseable, there is not much we can do here
-                    // TODO: should we notify the user?
-                    String msg = NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_configFileCannotParse", file.getPath());
-                    throw new ConfigurationException(msg);
-                }
-                // current editor content is not parseable, ask whether to override or not
-                NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_weblogicEjbJarXmlNotValid"),
-                        NotifyDescriptor.OK_CANCEL_OPTION);
-                Object result = DialogDisplayer.getDefault().notify(notDesc);
-                if (result == NotifyDescriptor.CANCEL_OPTION) {
-                    // keep the old content
-                    return;
-                }
-                // use the old graph
-                newWeblogicEjbJar = oldWeblogicEjbJar;
-            }
-            
-            // perform changes
-            modifier.modify(newWeblogicEjbJar);
-            
-            // save, if appropriate
-            boolean modified = dataObject.isModified();
-            replaceDocument(doc, newWeblogicEjbJar);
-            if (!modified) {
-                SaveCookie cookie = (SaveCookie)dataObject.getCookie(SaveCookie.class);
-                if (cookie != null) {
-                    cookie.save();
-                }
-            }
-            synchronized (this) {
-                weblogicEjbJar = newWeblogicEjbJar;
-            }
-        } catch (BadLocationException ble) {
-            // this should not occur, just log it if it happens
-            Exceptions.printStackTrace(ble);
-        } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
-            throw new ConfigurationException(msg, ioe);
-        }
-    }
-
-    /**
-     * Replace the content of the document by the graph.
-     */
-    private void replaceDocument(final StyledDocument doc, EjbJarModel graph) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            graph.write(out);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-        NbDocument.runAtomic(doc, new Runnable() {
-            public void run() {
-                try {
-                    doc.remove(0, doc.getLength());
-                    doc.insertString(0, out.toString(), null);
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
-            }
-        });
-    }
 
     @Override
     public void bindDatasourceReferenceForEjb(final String ejbName, final String ejbType,
@@ -292,12 +206,12 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
             return;
         }
 
-        modifyWeblogicEjbJar(new WeblogicEjbJarModifier() {
+        modifier.modify(new WeblogicEjbJarModifier() {
             @Override
             public void modify(EjbJarModel webLogicEjbJar) {
                 webLogicEjbJar.setReference(ejbName, ejbType, referenceName, jndiName);
             }
-        });
+        }, dataObject, file);
     }
 
     @Override
@@ -317,7 +231,23 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
         return EjbJarModel.generate(serverVersion);
     }
 
-    private interface WeblogicEjbJarModifier {
-        void modify(EjbJarModel context);
+    private abstract class WeblogicEjbJarModifier implements ConfigurationModifier.DescriptorModifier<EjbJarModel> {
+
+        @Override
+        public EjbJarModel load() throws IOException {
+            return getWeblogicEjbJar();
+        }
+
+        @Override
+        public EjbJarModel load(byte[] source) throws IOException {
+            return EjbJarModel.forInputStream(new ByteArrayInputStream(source));
+        }
+
+        @Override
+        public void save(EjbJarModel context) {
+            synchronized (EjbDeploymentConfiguration.this) {
+                weblogicEjbJar = context;
+            }
+        }
     }    
 }

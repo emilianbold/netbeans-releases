@@ -78,18 +78,16 @@ public class ModelUnit {
     
     @Override
     public int hashCode() {       
-        return computeClassPathHash(getBootPath()) + 
-            computeClassPathHash(getCompilePath()) +
-                computeClassPathHash(getSourcePath());
+        return 37*(37*myBootPath.hashCode() + myCompilePath.hashCode()) 
+            +mySourcePath.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ModelUnit) {
             ModelUnit unit = (ModelUnit) obj;
-            return equals(unit.getBootPath(), myBootPath)
-                && equals(unit.getCompilePath(), myCompilePath)
-                && equals(unit.getSourcePath(), mySourcePath);
+            return myBootPath.equals( unit.myBootPath ) && myCompilePath.equals(
+                    unit.myCompilePath ) && mySourcePath.equals( mySourcePath );
         } 
         else {
             return false;

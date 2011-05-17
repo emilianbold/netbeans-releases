@@ -50,10 +50,14 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 
 /**
@@ -115,18 +119,19 @@ class SearchExecutor extends GitProgressSupport {
         sc.setRevisionTo(toRevision);
         sc.setFrom(from);
         sc.setTo(to);
-        GitRevisionInfo[] messages;
         try {
-            messages = getClient().log(sc, this);
+            GitClient client = getClient();
+            GitRevisionInfo[] messages = client.log(sc, this);
             if (!isCanceled()) {
-                appendResults(messages);
+                RepositoryInfo info = RepositoryInfo.getInstance(getRepositoryRoot());
+                appendResults(messages, info.getBranches().values(), info.getTags().values());
             }
         } catch (GitException ex) {
             GitClientExceptionHandler.notifyException(ex, true);
         }
     }
 
-    private void appendResults (GitRevisionInfo[] logMessages) {
+    private void appendResults (GitRevisionInfo[] logMessages, Collection<GitBranch> allBranches, Collection<GitTag> allTags) {
         final List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         File dummyFile = null;
         String dummyFileRelativePath = null;
@@ -138,10 +143,22 @@ class SearchExecutor extends GitProgressSupport {
         for (int i = 0; i < logMessages.length && !isCanceled(); ++i) {
             GitRevisionInfo logMessage = logMessages[i];
             RepositoryRevision rev;
+            Set<GitBranch> branches = new HashSet<GitBranch>();
+            Set<GitTag> tags = new HashSet<GitTag>();
+            for (GitBranch b : allBranches) {
+                if (b.getId().equals(logMessage.getRevision())) {
+                    branches.add(b);
+                }
+            }
+            for (GitTag t : allTags) {
+                if (t.getTaggedObjectId().equals(logMessage.getRevision())) {
+                    tags.add(t);
+                }
+            }
             if (showAllPaths) {
-                rev = new RepositoryRevision(logMessage);
+                rev = new RepositoryRevision(logMessage, tags, branches);
             } else {
-                rev = new RepositoryRevision(logMessage, dummyFile, dummyFileRelativePath);
+                rev = new RepositoryRevision(logMessage, tags, branches, dummyFile, dummyFileRelativePath);
             }
             results.add(rev);
         }

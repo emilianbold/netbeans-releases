@@ -60,10 +60,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
@@ -488,7 +491,23 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
                     // add revision
                     String rev = container.getLog().getRevision();
-                    sd.insertString(0, rev.length() > 7 ? rev.substring(0, 7) : rev, null);
+                    StringBuilder labels = new StringBuilder();
+                    boolean isHead = false;
+                    for (GitBranch b : container.getBranches()) {
+                        if (b.getName() != GitBranch.NO_BRANCH) {
+                            labels.append(b.getName()).append(" ");
+                        }
+                    }
+                    if (isHead) {
+                        labels.insert(0, " ").insert(0, GitUtils.HEAD);
+                    }
+                    for (GitTag b : container.getTags()) {
+                        labels.append(b.getTagName()).append(" ");
+                    }
+                    if (labels.length() > 0) {
+                        sd.insertString(0, labels.toString(), null);
+                    }
+                    sd.insertString(sd.getLength(), rev.length() > 7 ? rev.substring(0, 7) : rev, null);
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
 
                     // add author

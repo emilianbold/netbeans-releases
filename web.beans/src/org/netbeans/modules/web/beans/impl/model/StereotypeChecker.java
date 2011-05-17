@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeVerifier;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
 
@@ -64,7 +64,7 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
     
     static final String STEREOTYPE = "javax.enterprise.inject.Stereotype";  //NOI18N
     
-    public StereotypeChecker(AnnotationModelHelper helper ){
+    public StereotypeChecker(AnnotationHelper helper ){
         init(null, helper);
     }
     
