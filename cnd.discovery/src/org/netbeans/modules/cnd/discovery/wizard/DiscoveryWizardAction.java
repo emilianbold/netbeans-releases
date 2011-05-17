@@ -202,14 +202,10 @@ public final class DiscoveryWizardAction extends NodeAction {
                     StringTokenizer st = new StringTokenizer(path, "/\\"); // NOI18N
                     while(st.hasMoreTokens()){
                         String segment = st.nextToken();
-                        newBase.append(File.separator);
+                        newBase.append(CndFileUtils.getFileSeparatorChar(make.getBaseDirFileSystem()));
                         newBase.append(segment);
                         if (rootName.equals(segment) && st.hasMoreTokens()) {
-                            //try {
-                                return CndFileUtils.normalizeFile(new File(newBase.toString())).getAbsolutePath();
-                            //} catch (IOException ex) {
-                            //    ex.printStackTrace();
-                            //}
+                            return newBase.toString();
                         }
                     }
                 }
