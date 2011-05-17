@@ -63,6 +63,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -84,6 +85,9 @@ class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
      */
     @Override
     public void run( CompilationInfo compInfo ) throws Exception {
+        if ( !WebBeansActionHelper.isEnabled() ){
+            return;
+        }
         cancel.set(false);
         List<ErrorDescription> problems = new LinkedList<ErrorDescription>();
         
