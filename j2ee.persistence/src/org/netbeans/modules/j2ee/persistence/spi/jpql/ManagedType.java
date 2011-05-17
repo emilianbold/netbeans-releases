@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import javax.lang.model.element.Element;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
@@ -52,11 +53,11 @@ import org.eclipse.persistence.jpa.jpql.spi.IType;
  * @author sp153251
  */
 public class ManagedType implements IManagedType {
-    private final String name;
+    private final Element element;
     private final IManagedTypeProvider provider;
 
-    public ManagedType(String name, IManagedTypeProvider provider){
-        this.name = name;
+    public ManagedType(Element element, IManagedTypeProvider provider){
+        this.element = element;
         this.provider = provider;
     }
     
@@ -87,7 +88,7 @@ public class ManagedType implements IManagedType {
 
     @Override
     public int compareTo(IManagedType o) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getType().getName().compareTo(o.getType().getName());
     }
     
 }

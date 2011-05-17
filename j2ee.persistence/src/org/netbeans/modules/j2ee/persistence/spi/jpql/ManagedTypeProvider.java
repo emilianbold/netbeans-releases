@@ -74,7 +74,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
 
     @Override
     public IManagedType getManagedType(String name) {
-        return new ManagedType(name, this);
+        return new ManagedType(null, this);//TODO
     }
 
     @Override
