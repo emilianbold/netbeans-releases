@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -69,19 +70,25 @@ public class ProducerMethodAnalyzer extends AbstractProducerAnalyzer
 {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions, AtomicBoolean cancel )
     {
         if  ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 compInfo ))
         {
             return;
         }
+        if ( cancel.get() ){
+            return;
+        }
         checkType( element, returnType, compInfo , descriptions );
+        if ( cancel.get() ){
+            return;
+        }
         checkSpecializes( element , compInfo , descriptions );
     }
     

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -68,11 +69,12 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions,
+            AtomicBoolean cancel )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.INTERCEPTOR, 
                 compInfo ))
@@ -86,6 +88,9 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
                 element.getEnclosedElements());
         ExecutableElement badMethod = null;
         for (ExecutableElement method : methods) {
+            if ( cancel.get() ){
+                return;
+            }
             modifiers = method.getModifiers();
             if ( !modifiers.contains( Modifier.FINAL )){
                 continue;
@@ -99,6 +104,9 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
             break;
         }
         if ( badMethod == null && !isFinal ){
+            return;
+        }
+        if ( cancel.get() ){
             return;
         }
         boolean hasIBindings = hasInterceptorBindings(element, compInfo, descriptions);

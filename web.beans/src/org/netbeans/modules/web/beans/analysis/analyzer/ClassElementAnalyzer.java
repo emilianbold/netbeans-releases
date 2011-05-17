@@ -80,13 +80,13 @@ public class ClassElementAnalyzer implements ElementAnalyzer {
             if ( cancel.get() ){
                 return;
             }
-            analyzer.analyze( subject, parent, compInfo, descriptions);
+            analyzer.analyze( subject, parent, compInfo, descriptions, cancel);
         }
     }
 
     public interface ClassAnalyzer {
         void analyze( TypeElement element , TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions);
+                List<ErrorDescription> descriptions, AtomicBoolean cancel );
     }
 
     private static final List<ClassAnalyzer> ANALYZERS= new LinkedList<ClassAnalyzer>(); 
