@@ -79,6 +79,9 @@ public class FieldElementAnalyzer implements ElementAnalyzer {
         TypeMirror varType = compInfo.getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  var );
         for (FieldAnalyzer analyzer : ANALYZERS) {
+            if ( cancel.get()){
+                return;
+            }
             analyzer.analyze(var, varType, parent, compInfo, descriptions);
         }
     }

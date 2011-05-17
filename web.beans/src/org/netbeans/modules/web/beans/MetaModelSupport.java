@@ -44,6 +44,10 @@ package org.netbeans.modules.web.beans;
 
 
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.WeakHashMap;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -70,14 +74,22 @@ public class MetaModelSupport {
     }
     
     public MetadataModel<WebBeansModel> getMetaModel(){
-        ClassPath boot = getClassPath(  ClassPath.BOOT);
-        ClassPath compile = getClassPath( ClassPath.COMPILE );
-        ClassPath src = getClassPath( ClassPath.SOURCE);
-        if ( boot == null || compile == null || src == null ){
-            return null;
+        synchronized (MODELS) {
+            MetadataModel<WebBeansModel> metadataModel = MODELS.get( myProject );
+            if ( metadataModel != null ){
+                return metadataModel;
+            }
+            ClassPath boot = getClassPath(  ClassPath.BOOT);
+            ClassPath compile = getClassPath( ClassPath.COMPILE );
+            ClassPath src = getClassPath( ClassPath.SOURCE);
+            if ( boot == null || compile == null || src == null ){
+                return null;
+            }
+            ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
+            metadataModel = WebBeansModelFactory.getMetaModel( modelUnit );
+            MODELS.put( myProject, metadataModel );
+            return metadataModel;
         }
-        ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
-        return WebBeansModelFactory.getMetaModel( modelUnit );
     }
     
     public ClassPath getClassPath( String type ) {
@@ -114,4 +126,7 @@ public class MetaModelSupport {
     }
     
     private Project myProject; 
+    
+    private static WeakHashMap<Project, MetadataModel<WebBeansModel>>
+        MODELS = new WeakHashMap<Project, MetadataModel<WebBeansModel>>();
 }
