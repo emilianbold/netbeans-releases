@@ -165,6 +165,19 @@ public interface GitClient {
      * @throws GitException  an error occurs
      */
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Creates a tag for any object represented by a given taggedObjectId
+     * @param tagName
+     * @param taggedObject
+     * @param message
+     * @param signed
+     * @param forceUpdate
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException;
     
     /**
      * Exports a given commit in the format accepted by git am
@@ -212,6 +225,15 @@ public interface GitClient {
      * @return
      */
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns all tags in the repository
+     * @param monitor
+     * @param allTags if set to false, only commit tags, otherwise tags for all objects are returned
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean allTags) throws GitException;
 
     /**
      * Returns a common ancestor for given revisions or null if none found.

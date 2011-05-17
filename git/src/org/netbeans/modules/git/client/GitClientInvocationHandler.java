@@ -77,6 +77,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getCommonAncestor", //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N
+            "getTags", //NOI18N
             "getRemote", //NOI18N
             "getRemotes", //NOI18N
             "getRepositoryState",  //NOI18N
@@ -107,6 +108,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "createBranch", //NOI18N - does not update index or files in WT
+            "createTag", //NOI18N - does not update index or files in WT
             "fetch", //NOI18N - updates only metadata
             "exportCommit", //NOI18N
             "exportDiff", //NOI18N
@@ -117,6 +119,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getRemote", //NOI18N
             "getRemotes", //NOI18N
             "getRepositoryState",  //NOI18N
+            "getTags", //NOI18N
             "getUser",  //NOI18N
             "ignore",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
@@ -136,6 +139,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "checkoutRevision", //NOI18N // current head changes
             "commit", //NOI18N
             "createBranch", //NOI18N // should refresh set of known branches
+            "createTag", //NOI18N - should refresh set of available tags
             "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
             "pull", //NOI18N // creates a new head
