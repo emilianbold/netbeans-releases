@@ -64,21 +64,6 @@ public class ModelUnit {
                 compilePath, sourcePath);
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals( Object obj ) {
-        if ( obj instanceof ModelUnit ){
-            ModelUnit unit = (ModelUnit) obj;
-            return myBootPath.equals( unit.myBootPath ) && myCompilePath.equals(
-                    unit.myCompilePath ) && mySourcePath.equals( mySourcePath );
-        }
-        else {
-            return false;
-        }
-    }
-    
     public ClassPath getBootPath() {
         return myBootPath;
     }
@@ -91,15 +76,26 @@ public class ModelUnit {
         return mySourcePath;
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
-    public int hashCode() {
-        return 37*(37*myBootPath.hashCode() + myCompilePath.hashCode()) 
-            +mySourcePath.hashCode();
+    public int hashCode() {       
+        return computeClassPathHash(getBootPath()) + 
+            computeClassPathHash(getCompilePath()) +
+                computeClassPathHash(getSourcePath());
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ModelUnit) {
+            ModelUnit unit = (ModelUnit) obj;
+            return equals(unit.getBootPath(), myBootPath)
+                && equals(unit.getCompilePath(), myCompilePath)
+                && equals(unit.getSourcePath(), mySourcePath);
+        } 
+        else {
+            return false;
+        }
+    }
+
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath)
     {
@@ -108,6 +104,28 @@ public class ModelUnit {
     
     public ClasspathInfo getClassPathInfo(){
         return myClassPathInfo;
+    }
+    
+    private static boolean equals(ClassPath cp1, ClassPath cp2) {
+        if (cp1.entries().size() != cp2.entries().size()) {
+            return false;
+        }
+        for (int i = 0; i < cp1.entries().size(); i++) {
+            if (!cp1.entries().get(i).getURL().equals(
+                    cp2.entries().get(i).getURL())) 
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static int computeClassPathHash(ClassPath classPath) {
+        int hashCode = 0;
+        for (ClassPath.Entry entry : classPath.entries()) {
+            hashCode = 37*hashCode + entry.getURL().getPath().hashCode();
+        }
+        return hashCode;
     }
     
     FileObject getSourceFileObject(){
