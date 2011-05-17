@@ -856,25 +856,21 @@ public class Utilities {
     }
     
     private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
-        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (!codeNameBase.equals(mi.getCodeNameBase())) {
-                continue;
-            }
-            if (mi instanceof Module) {
-                Module m = (Module)mi;
-                if (specificationVersion == null || m == null) {
-                    err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
-                    return m;
-                } else {
-                    SpecificationVersion version = m.getSpecificationVersion();
-                    if (version == null) {
-                        err.log(Level.FINER, "No version for {0}", m);
-                        return null;
-                    }
-                    final int res = version.compareTo(specificationVersion);
-                    err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
-                    return res >= 0 ? m : null;
+        ModuleInfo mi = ModuleCache.getInstance().find(codeNameBase);
+        if (mi instanceof Module) {
+            Module m = (Module)mi;
+            if (specificationVersion == null) {
+                err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
+                return m;
+            } else {
+                SpecificationVersion version = m.getSpecificationVersion();
+                if (version == null) {
+                    err.log(Level.FINER, "No version for {0}", m);
+                    return null;
                 }
+                final int res = version.compareTo(specificationVersion);
+                err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
+                return res >= 0 ? m : null;
             }
         }
         return null;
