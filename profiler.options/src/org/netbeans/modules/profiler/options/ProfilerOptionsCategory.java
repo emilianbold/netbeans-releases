@@ -44,7 +44,7 @@
 package org.netbeans.modules.profiler.options;
 
 import org.netbeans.modules.profiler.ProfilerIDESettings;
-import org.netbeans.modules.profiler.ui.panels.ProfilerOptionsPanel;
+import org.netbeans.modules.profiler.options.ui.ProfilerOptionsPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
