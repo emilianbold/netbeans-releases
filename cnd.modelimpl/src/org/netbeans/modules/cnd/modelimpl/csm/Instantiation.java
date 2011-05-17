@@ -1163,15 +1163,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         protected final CsmType instantiatedType;
         protected final boolean inst;
         protected CsmClassifier resolved;
+//        protected CsmTemplateParameter parameter;
 
         private Type(CsmType type, CsmInstantiation instantiation) {
             this.instantiation = instantiation;
             inst = type.isInstantiation();
             CsmType origType = type;
             CsmType newType = type;
+//            parameter = null;
 
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
+//                parameter = paramType.getParameter();
                 newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
                     newType = TypeFactory.createType(newType, origType.getPointerDepth(), origType.isReference(), origType.getArrayDepth(), origType.isConst());
@@ -1416,7 +1419,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                             Resolver resolver = ResolverFactory.createResolver(this);
                             try {
                                 if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), getStartOffset());
+                                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
+                                    if(isTemplateParameterTypeBased()) {
+//                                        mapping.remove(getResolvedTemplateParameter());
+                                    }
+                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), mapping, getContainingFile(), getStartOffset());
                                 } else {
                                     return null;
                                 }
@@ -1479,6 +1486,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             }
             return false;
         }        
+        
+//        public CsmTemplateParameter getResolvedTemplateParameter() {
+//            CsmType baseType = originalType;
+//            while(baseType instanceof Type) {
+//                if(((Type)baseType).parameter != null) {
+//                    return ((Type)baseType).parameter;
+//                }
+//                baseType = ((Type)baseType).originalType;
+//            }
+//            return null;
+//        }         
         
         @Override
         public String toString() {
