@@ -61,6 +61,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -182,7 +183,7 @@ public final class Utils {
             }
             return new RevWalk(repository).parseCommit(commitId);
         } catch (MissingObjectException ex) {
-            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
+            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {
             throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", revision)); //NOI18N
         } catch (IOException ex) {
@@ -195,6 +196,20 @@ public final class Utils {
             return repository.resolve(objectId);
         } catch (AmbiguousObjectException ex) {
             throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
+
+    public static RevObject findObject (Repository repository, String objectId) throws GitException.MissingObjectException, GitException {
+        try {
+            ObjectId commitId = parseObjectId(repository, objectId);
+            if (commitId == null) {
+                throw new GitException.MissingObjectException(objectId, GitObjectType.UNKNOWN);
+            }
+            return new RevWalk(repository).parseAny(commitId);
+        } catch (MissingObjectException ex) {
+            throw new GitException.MissingObjectException(objectId, GitObjectType.UNKNOWN, ex);
         } catch (IOException ex) {
             throw new GitException(ex);
         }
