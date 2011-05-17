@@ -123,8 +123,7 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
             final Set<ElementType> targets, CompilationInfo compInfo,
             List<ErrorDescription> descriptions )
     {
-        final AnnotationModelHelper helper = AnnotationModelHelper.create( 
-                compInfo.getClasspathInfo());
+        final AnnotationModelHelper helper = AnnotationUtil.getHelper(compInfo);
         final ElementHandle<TypeElement> handle = ElementHandle.create(element);
         try {
             String badStereotype = helper.runJavaSourceTask( new Callable<String>() {
