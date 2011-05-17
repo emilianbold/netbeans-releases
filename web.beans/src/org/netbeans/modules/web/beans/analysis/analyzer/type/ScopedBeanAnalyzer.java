@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -73,24 +74,35 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
+            AtomicBoolean cancel )
     {
-        analyzeScope(element, compInfo, descriptions);
+        analyzeScope(element, compInfo, descriptions, cancel );
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
+            AtomicBoolean cancel )
     {
-        checkProxiability(scopeElement, element, compInfo, descriptions); 
+        if ( cancel.get() ){
+            return;
+        }
+        checkProxiability(scopeElement, element, compInfo, descriptions);
+        if ( cancel.get() ){
+            return;
+        }
         checkPublicField(scopeElement , element , compInfo , descriptions );
+        if ( cancel.get() ){
+            return;
+        }
         checkParameterizedBean(scopeElement , element , compInfo , descriptions);
     }
 

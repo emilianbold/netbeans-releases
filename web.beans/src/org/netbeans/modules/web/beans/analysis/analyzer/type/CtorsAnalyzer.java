@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -63,16 +64,20 @@ import org.openide.util.NbBundle;
 public class CtorsAnalyzer implements ClassAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
+            AtomicBoolean cancel )
     {
         List<ExecutableElement> constructors = ElementFilter.constructorsIn(
                 element.getEnclosedElements());
         int injectCtorCount = 0;
         for (ExecutableElement ctor : constructors) {
+            if ( cancel.get() ){
+                return;
+            }
             if ( AnnotationUtil.hasAnnotation( ctor , AnnotationUtil.INJECT_FQN, 
                     compInfo))
             {

@@ -68,7 +68,7 @@ public abstract class RuntimeRetentionAnalyzer {
     }
     
     public void init( Element element, CompilationInfo info  ) {
-        init( element , AnnotationModelHelper.create( info.getClasspathInfo()));
+        init( element , AnnotationUtil.getHelper(info));
     }
     
     public boolean hasRuntimeRetention() {

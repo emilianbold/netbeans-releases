@@ -867,9 +867,14 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_WHILE_STATEMENT:
                                         indentRule = true;
-                                        ws = countWSBeforeAStatement(docOptions.wrapWhileStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
-                                        newLines = ws.lines;
-                                        countSpaces = ws.spaces;
+                                        if (!isBeforeEmptyStatement(formatTokens, index)) {
+                                            ws = countWSBeforeAStatement(docOptions.wrapWhileStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                            newLines = ws.lines;
+                                            countSpaces = ws.spaces;
+                                        } else {
+                                            newLines = 0;
+                                            countSpaces = docOptions.spaceBeforeSemi ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_BEFORE_DO_STATEMENT:
                                         indentRule = true;
@@ -1869,6 +1874,20 @@ public class TokenFormatter {
 		}
 		return length;
 	    }
+
+            private boolean isBeforeEmptyStatement(List<FormatToken> formatTokens, int index) {
+                FormatToken token = formatTokens.get(index);
+                boolean value = false;
+                index++;
+                while (index < formatTokens.size() && (token.getOldText() == null
+                        && token.getId() != FormatToken.Kind.WHITESPACE)) {
+                    token = formatTokens.get(index);
+                    index++;
+                }
+                
+                value = index < formatTokens.size() && ";".equals(token.getOldText());
+                return value;
+            }
 	});
     }
 

@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -64,12 +65,12 @@ import org.openide.util.NbBundle;
 public class DelegateFieldAnalizer implements FieldAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( VariableElement element, TypeMirror elementType,
             TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
                 compInfo))

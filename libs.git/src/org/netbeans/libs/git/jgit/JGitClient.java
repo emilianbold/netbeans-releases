@@ -46,6 +46,7 @@ import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitException.MissingObjectException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
 import org.netbeans.libs.git.jgit.commands.ListBranchCommand;
 import org.netbeans.libs.git.GitBranch;
@@ -83,6 +84,7 @@ import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.GetCommonAncestorCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.CreateTagCommand;
 import org.netbeans.libs.git.jgit.commands.ExportCommitCommand;
 import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
 import org.netbeans.libs.git.jgit.commands.FetchCommand;
@@ -90,6 +92,7 @@ import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
+import org.netbeans.libs.git.jgit.commands.ListTagCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.PullCommand;
@@ -223,6 +226,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
+    public GitTag createTag (String tagName, String taggedObjectId, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException {
+        CreateTagCommand cmd = new CreateTagCommand(gitRepository.getRepository(), tagName, taggedObjectId, message, signed, forceUpdate, monitor);
+        cmd.execute();
+        return cmd.getTag();
+    }
+
+    @Override
     public void exportCommit (String commit, OutputStream out, ProgressMonitor monitor) throws GitException {
         ExportCommitCommand cmd = new ExportCommitCommand(gitRepository.getRepository(), commit, out, monitor, this);
         cmd.execute();
@@ -255,6 +265,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         ListBranchCommand cmd = new ListBranchCommand(gitRepository.getRepository(), all, monitor);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    @Override
+    public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean all) throws GitException {
+        ListTagCommand cmd = new ListTagCommand(gitRepository.getRepository(), all, monitor);
+        cmd.execute();
+        return cmd.getTags();
     }
 
     @Override

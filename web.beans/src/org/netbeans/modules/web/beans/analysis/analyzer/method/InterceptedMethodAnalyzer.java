@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -68,12 +69,12 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
 {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.STATIC ) || 
@@ -84,6 +85,9 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
         boolean finalMethod = modifiers.contains( Modifier.FINAL );
         boolean finalClass = parent.getModifiers().contains( Modifier.FINAL);
         if ( !finalMethod && !finalClass ){
+            return;
+        }
+        if ( cancel.get() ){
             return;
         }
         if ( hasInterceptorBindings(element, compInfo, descriptions)){
