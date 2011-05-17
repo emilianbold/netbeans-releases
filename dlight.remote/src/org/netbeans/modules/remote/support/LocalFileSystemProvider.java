@@ -310,6 +310,20 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return (file == null) ?  false : file.canExecute();
     }
 
+    public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        addFileChangeListener(path, listener);
+    }
+
+    public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path) {
+        addFileChangeListener(path, listener);
+    }
+    
+    private void addFileChangeListener(String path, FileChangeListener listener) {
+        File file = new File(path);
+        file = FileUtil.normalizeFile(file);
+        FileUtil.addFileChangeListener(listener, file);
+    }
+    
     /** for TEST purposes ONLY */
     public static void testWaitLastRefreshFinished() {
         Task task = lastRefreshTask;
