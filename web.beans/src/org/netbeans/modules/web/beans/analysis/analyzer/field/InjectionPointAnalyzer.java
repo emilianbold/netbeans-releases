@@ -107,7 +107,9 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
                     if ( var == null ){
                         return null;
                     }
-                    if ( model.isInjectionPoint( var ) ){
+                    if ( model.isInjectionPoint( var ) &&
+                            !model.isDynamicInjectionPoint(var))
+                    {
                         DependencyInjectionResult result = model.lookupInjectables( var,  null);
                         checkResult(result, element , compInfo , descriptions );
                     }

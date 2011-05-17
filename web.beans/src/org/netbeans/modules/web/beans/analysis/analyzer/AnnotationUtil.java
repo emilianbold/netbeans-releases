@@ -51,7 +51,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
