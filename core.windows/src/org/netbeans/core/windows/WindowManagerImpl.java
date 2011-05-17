@@ -533,7 +533,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     /** */
-    /*private*/ ModeImpl createModeImpl(String name, int kind, int state, boolean permanent) {
+    public ModeImpl createModeImpl(String name, int kind, int state, boolean permanent) {
         if(name == null) {
             name = ModeImpl.getUnusedModeName();
         }
@@ -820,6 +820,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Attaches TopComponent to one side of mode, it removes it from original one. */
     public void attachTopComponentToSide(TopComponent tc, ModeImpl attachMode, String side) {
         central.attachTopComponentsToSide(new TopComponent[] {tc}, attachMode, side);
+    }
+    
+    /** Attaches given mode to one of the given reference mode */
+    public void attachModeToSide(ModeImpl referenceMode, ModeImpl modeToAdd, String side) {
+        central.attachModeToSide(referenceMode, modeToAdd, side);
     }
     
     // XXX

@@ -1598,6 +1598,16 @@ final class Central implements ControllerHandler {
         attachTopComponentsToSide(tcs, attachMode, side, true);
     }
     
+    /**
+     * Adds the given mode to the side of the reference mode.
+     * @param referenceMode
+     * @param modeToAdd
+     * @param side 
+     */
+    void attachModeToSide( ModeImpl referenceMode, ModeImpl modeToAdd, String side ) {
+        model.addModeToSide(modeToAdd, referenceMode, side);
+    }
+    
     /** Creates new mode on side of specified one and puts there the TopComponentS. */
     private void attachTopComponentsToSide(TopComponent[] tcs, ModeImpl attachMode, String side, boolean fireEvents) {
         if(tcs == null || tcs.length == 0) {
