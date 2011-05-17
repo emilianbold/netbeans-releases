@@ -312,7 +312,13 @@ public class RepositoryInfo {
             return new HashMap<String, GitBranch>(branches);
         }
     }
-    
+
+    public Map<String, GitTag> getTags () {
+        synchronized (tags) {
+            return new HashMap<String, GitTag>(tags);
+        }
+    }
+
     public Map<String, GitRemoteConfig> getRemotes () {
         synchronized (remotes) {
             return new HashMap<String, GitRemoteConfig>(remotes);
