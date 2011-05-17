@@ -81,6 +81,9 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
         TypeMirror methodType = compInfo.getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  method );
         if ( methodType instanceof ExecutableType ){
+            if ( cancel.get()){
+                return;
+            }
             TypeMirror returnType = ((ExecutableType) methodType).getReturnType();
             for (MethodAnalyzer analyzer : ANALYZERS) {
                 if ( cancel.get() ){
