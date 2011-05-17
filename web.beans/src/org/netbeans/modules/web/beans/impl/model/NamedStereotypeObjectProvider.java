@@ -79,6 +79,7 @@ class NamedStereotypeObjectProvider extends AbstractObjectProvider<NamedStereoty
                 getAnnotation(), 
                 EnumSet.of(ElementKind.ANNOTATION_TYPE), 
                 new AnnotationHandler() {
+                        @Override
                         public void handleAnnotation(TypeElement type, 
                                 Element element, AnnotationMirror annotation) 
                         {
@@ -121,7 +122,7 @@ class NamedStereotypeObjectProvider extends AbstractObjectProvider<NamedStereoty
             return true; 
         }
         List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl.
-            getAllStereotypes(type, helper);
+            getAllStereotypes(type, helper.getHelper());
         for (AnnotationMirror annotationMirror : stereotypes) {
             TypeElement annotation = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();

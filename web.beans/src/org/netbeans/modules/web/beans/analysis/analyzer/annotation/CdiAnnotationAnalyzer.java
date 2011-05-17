@@ -42,20 +42,11 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
-import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -67,9 +58,6 @@ import org.openide.util.NbBundle;
  */
 abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
     
-    private static final Logger LOG = Logger.getLogger( 
-            CdiAnnotationAnalyzer.class.getName()); 
-    
     CdiAnnotationAnalyzer(TypeElement element, CompilationInfo compInfo, 
             List<ErrorDescription> descriptions) 
     {
@@ -77,58 +65,6 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
         myDescriptions = descriptions;
         myCompInfo = compInfo;
     }
-    
-    @Override
-    public boolean hasTarget() {
-        try {
-            return getHelper().runJavaSourceTask( new Callable<Boolean>() {
-
-                @Override
-                public Boolean call() throws Exception {
-                    return CdiAnnotationAnalyzer.super.hasTarget();
-                }
-            });
-        }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null, e);
-        }
-        return true;
-    }
-    
-    @Override
-    public boolean hasRuntimeRetention() {
-        try {
-            return getHelper().runJavaSourceTask( new Callable<Boolean>() {
-
-                @Override
-                public Boolean call() throws Exception {
-                    return CdiAnnotationAnalyzer.super.hasRuntimeRetention();
-                }
-            });
-        }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null, e);
-        }
-        return true;
-    }
-    
-    @Override
-    public Set<ElementType> getDeclaredTargetTypes() {
-        try {
-            return getHelper().runJavaSourceTask( new Callable<Set<ElementType>>() {
-
-                @Override
-                public Set<ElementType> call() throws Exception {
-                    return CdiAnnotationAnalyzer.super.getDeclaredTargetTypes();
-                }
-            });
-        }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null, e);
-        }
-        return Collections.emptySet();
-    }
-    
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#handleNoTarget()
@@ -139,7 +75,7 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
             return;
         }
         ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( getOriginalElement(), getCompilationInfo(), 
+            createError( getElement(), getCompilationInfo(), 
                     NbBundle.getMessage(ScopeAnalyzer.class, "ERR_NoTarget" ,   // NOI18N
                             getCdiMetaAnnotation()));      
         getDescriptions().add( description );
@@ -154,30 +90,13 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
             return;
         }
         ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( getOriginalElement(), getCompilationInfo(), 
+            createError( getElement(), getCompilationInfo(), 
                     NbBundle.getMessage(ScopeAnalyzer.class, "ERR_NoRetention", // NOI18N
                             getCdiMetaAnnotation()));      
         getDescriptions().add( description );
     }
     
     protected abstract String getCdiMetaAnnotation();
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.RuntimeRetentionAnalyzer#getElement()
-     */
-    @Override
-    protected Element getElement() {
-        /* This method requires redefinition : helper has its own
-         * compilation controller. so the original Element is in the other 
-         * Java model. As consequence one need the same element in the helper Java model.  
-         */
-        ElementHandle<Element> handle = ElementHandle.create(getOriginalElement());
-        return handle.resolve(getHelper().getCompilationController());
-    }
-    
-    protected Element getOriginalElement(){
-        return super.getElement();
-    }
     
     protected List<ErrorDescription> getDescriptions(){
         return myDescriptions;

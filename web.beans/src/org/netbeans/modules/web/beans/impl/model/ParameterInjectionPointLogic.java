@@ -217,7 +217,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
             return scope;
         }
         List<AnnotationMirror> stereotypes = WebBeansModelProviderImpl
-                .getAllStereotypes(element, helper);
+                .getAllStereotypes(element, helper.getHelper());
         for (AnnotationMirror annotationMirror : stereotypes) {
             DeclaredType annotationType = annotationMirror.getAnnotationType();
             Element annotationElement = annotationType.asElement();
