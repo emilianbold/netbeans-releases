@@ -42,71 +42,15 @@
 package org.netbeans.modules.j2ee.weblogic9.config;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
  *
  * @author Petr Hejl
  */
-public class WLMessageDestination implements MessageDestination, WLApplicationModule {
-
-    private final String name;
-
-    private final Type type;
-
-    private final File origin;
-
-    private final boolean system;
-
-    public WLMessageDestination(String name, Type type, File origin, boolean system) {
-        this.name = name;
-        this.type = type;
-        this.origin = origin;
-        this.system = system;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public Type getType() {
-        return type;
-    }
-
-    @Override
-    public File getOrigin() {
-        return origin;
-    }
-
-    public boolean isSystem() {
-        return system;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final WLMessageDestination other = (WLMessageDestination) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.type != other.type) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 43 * hash + (this.type != null ? this.type.hashCode() : 0);
-        return hash;
-    }
+public interface WLApplicationModule {
+    
+    String getName();
+    
+    File getOrigin();
+    
 }
