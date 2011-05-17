@@ -40,47 +40,63 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.jgit.commands;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.jgit.JGitTag;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public enum GitObjectType {
-    COMMIT {
-        @Override
-        public String toString() {
-            return "COMMIT"; //NOI18N
-        }
-    },
-    BLOB {
-        @Override
-        public String toString() {
-            return "BLOB"; //NOI18N
-        }
-    },
-    HEAD {
-        @Override
-        public String toString() {
-            return "HEAD"; //NOI18N
-        }
-    },
-    TAG {
-        @Override
-        public String toString() {
-            return "TAG"; //NOI18N
-        }
-    },
-    TREE {
-        @Override
-        public String toString() {
-            return "TREE"; //NOI18N
-        }
-    },
-    UNKNOWN {
-        @Override
-        public String toString() {
-            return "ANY"; //NOI18N
+public class ListTagCommand extends GitCommand {
+    private Map<String, GitTag> allTags;
+    private final boolean all;
+
+    public ListTagCommand (Repository repository, boolean all, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.all = all;
+    }
+
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        Map<String, Ref> tags = repository.getTags();
+        allTags = new HashMap<String, GitTag>(tags.size());
+        RevWalk walk = new RevWalk(repository);
+        try {
+            for (Map.Entry<String, Ref> e : tags.entrySet()) {
+                GitTag tag = new JGitTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
+                if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
+                    allTags.put(tag.getTagName(), tag);
+                }
+            }
+        } catch (MissingObjectException ex) {
+            throw new GitException.MissingObjectException(ex.getObjectId().getName(), GitObjectType.TAG);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        } finally {
+            walk.release();
         }
     }
+
+    @Override
+    protected String getCommandDescription () {
+        return "git tag -l"; //NOI18N
+    }
+
+    public Map<String, GitTag> getTags () {
+        return allTags;
+    }
+
 }
