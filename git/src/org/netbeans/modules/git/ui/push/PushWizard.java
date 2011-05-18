@@ -47,6 +47,7 @@ import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +125,7 @@ class PushWizard  implements ChangeListener {
         return wizardIterator.selectUriStep.getSelectedUri();
     }
     
-    Collection<PushBranchMapping> getPushMappings () {
+    Collection<PushMapping> getPushMappings () {
         return wizardIterator.pushBranchesStep.getSelectedMappings();
     }
     
@@ -175,16 +176,19 @@ class PushWizard  implements ChangeListener {
         public synchronized void nextPanel () {
             if (current() == selectUriStep) {
                 Map<String, GitBranch> remoteBranches = selectUriStep.getRemoteBranches();
+                Map<String, String> remoteTags = selectUriStep.getRemoteTags();
                 if (remoteBranches != null) {
-                    pushBranchesStep.fillRemoteBranches(remoteBranches);
+                    pushBranchesStep.fillRemoteBranches(remoteBranches, remoteTags == null ? Collections.<String, String>emptyMap() : remoteTags);
                 }
                 pushBranchesStep.setAsLastPanel(!selectUriStep.isConfiguredRemoteSelected());
                 selectUriStep.storeURI();
             } else if (current() == pushBranchesStep) {
-                Collection<PushBranchMapping> mappings = pushBranchesStep.getSelectedMappings();
+                Collection<PushMapping> mappings = pushBranchesStep.getSelectedMappings();
                 Set<String> remoteBranches = new HashSet<String>(mappings.size());
-                for (PushBranchMapping mapping : mappings) {
-                    remoteBranches.add(mapping.getRemoteRepositoryBranchName());
+                for (PushMapping mapping : mappings) {
+                    if (mapping instanceof PushMapping.PushBranchMapping) {
+                        remoteBranches.add(((PushMapping.PushBranchMapping) mapping).getRemoteRepositoryBranchName());
+                    }
                 }
                 updateBranchReferencesStep.setRemote(selectUriStep.getSelectedRemote());
                 updateBranchReferencesStep.fillRemoteBranches(remoteBranches);

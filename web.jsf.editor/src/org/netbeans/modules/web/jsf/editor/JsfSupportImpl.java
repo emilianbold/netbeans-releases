@@ -54,7 +54,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
@@ -166,9 +166,12 @@ public class JsfSupportImpl implements JsfSupport {
         return faceletsLibrarySupport.getLibraries().get(namespace);
     }
 
-    /** Library's uri to library map */
+    /** Library's uri to library map 
+     * Please note that a composite components library can be preset twice in the values. 
+     * Once under the declared namespace key and once under the default cc namespace key.
+     */
     @Override
-    public Map<String, FaceletsLibrary> getLibraries() {
+    public Map<String, AbstractFaceletsLibrary> getLibraries() {
         return faceletsLibrarySupport.getLibraries();
     }
 

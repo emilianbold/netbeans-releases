@@ -79,7 +79,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -236,7 +236,7 @@ public class InjectCompositeComponent {
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
-		    FaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
+		    AbstractFaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
 		    if (lib != null) {
 			if (!LibraryUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
 			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N

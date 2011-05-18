@@ -43,64 +43,51 @@ package org.netbeans.modules.git.ui.push;
 
 import java.text.MessageFormat;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class PushBranchMapping extends ItemSelector.Item {
+public abstract class PushMapping extends ItemSelector.Item {
 
     private final String label;
     private final String tooltip;
-    private final GitBranch localBranch;
-    private final GitBranch remoteBranch;
     private static final String BRANCH_MAPPING_LABEL = "{0} -> {1} [{2}]"; //NOI18N
-
-    public PushBranchMapping (GitBranch remoteBranch, GitBranch localBranch) {
+    private final String localName;
+    
+    protected PushMapping (String localName, String remoteName) {
         super(false);
-        this.localBranch = localBranch;
-        this.remoteBranch = remoteBranch;
-        if (remoteBranch == null) {
+        this.localName = localName;
+        if (remoteName == null) {
             // added
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localBranch.getName(), localBranch.getName(), "<font color=\"#00b400\">A</font>");
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, localName, "<font color=\"#00b400\">A</font>");
             tooltip = NbBundle.getMessage(
                     PushBranchesStep.class,
                     "LBL_PushBranchMapping.description", //NOI18N
                     new Object[]{
-                        localBranch.getName(),
+                        localName,
                         NbBundle.getMessage(PushBranchesStep.class, "LBL_PushBranchMapping.Mode.added.description") //NOI18N
                     }); //NOI18N
         } else {
             // modified
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localBranch.getName(), remoteBranch.getName(), "<font color=\"#0000FF\">U</font>"); //NOI18N                 
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"#0000FF\">U</font>"); //NOI18N                 
             tooltip = NbBundle.getMessage(
                     PushBranchesStep.class,
                     "LBL_PushBranchMapping.description", //NOI18N
                     new Object[]{
-                        remoteBranch.getName(),
+                        remoteName,
                         NbBundle.getMessage(PushBranchesStep.class, "LBL_PushBranchMapping.Mode.updated.description") //NOI18N
                     });
         }
     }
 
-    public String getRemoteRepositoryBranchName () {
-        return remoteBranch == null ? localBranch.getName() : remoteBranch.getName();
-    }
 
-    public String getRemoteRepositoryBranchHeadId () {
-        return remoteBranch == null ? null : remoteBranch.getId();
-    }
-
-    public String getLocalRepositoryBranchHeadId () {
-        return localBranch == null ? null : localBranch.getId();
-    }
-
-    public String getRefSpec () {
-        return org.netbeans.libs.git.utils.Utils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
-    }
+    public abstract String getRefSpec ();
 
     @Override
     public String getText () {
@@ -117,9 +104,51 @@ public class PushBranchMapping extends ItemSelector.Item {
         if (t == null) {
             return 1;
         }
-        if (t instanceof PushBranchMapping) {
-            return localBranch.getName().compareTo(((PushBranchMapping) t).localBranch.getName());
+        if (t instanceof PushMapping) {
+            return localName.compareTo(((PushMapping) t).localName);
         }
         return 0;
+    }
+    
+    public static final class PushBranchMapping extends PushMapping {
+        private final GitBranch localBranch;
+        private final GitBranch remoteBranch;
+        
+        public PushBranchMapping (GitBranch remoteBranch, GitBranch localBranch) {
+            super(localBranch.getName(), remoteBranch == null ? null : remoteBranch.getName());
+            this.localBranch = localBranch;
+            this.remoteBranch = remoteBranch;
+        }
+
+        public String getRemoteRepositoryBranchName () {
+            return remoteBranch == null ? localBranch.getName() : remoteBranch.getName();
+        }
+
+        public String getRemoteRepositoryBranchHeadId () {
+            return remoteBranch == null ? null : remoteBranch.getId();
+        }
+
+        public String getLocalRepositoryBranchHeadId () {
+            return localBranch == null ? null : localBranch.getId();
+        }
+
+        @Override
+        public String getRefSpec () {
+            return org.netbeans.libs.git.utils.Utils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
+        }
+    }
+    
+    public static final class PushTagMapping extends PushMapping {
+        private final GitTag tag;
+        
+        public PushTagMapping (GitTag tag) {
+            super("tags/" + tag.getTagName(), null); //NOI18N
+            this.tag = tag;
+        }
+
+        @Override
+        public String getRefSpec () {
+            return org.netbeans.libs.git.utils.Utils.getPushTagRefSpec(tag.getTagName());
+        }
     }
 }

@@ -82,7 +82,7 @@ public class TagTest extends AbstractGitTestCase {
         write(f, "init");
         GitRevisionInfo commit = client.commit(files, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         GitTag tag = client.createTag("tag-name", commit.getRevision(), "tag message\nfor tag-name", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertTag(tag, commit.getRevision(), "tag-name", "tag message\nfor tag-name", client.getUser(), GitObjectType.COMMIT);
+        assertTag(tag, commit.getRevision(), "tag-name", "tag message\nfor tag-name", client.getUser(), GitObjectType.COMMIT, false);
     }
 
     public void testOverwriteTag () throws Exception {
@@ -92,7 +92,7 @@ public class TagTest extends AbstractGitTestCase {
         write(f, "init");
         GitRevisionInfo commit = client.commit(files, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         GitTag tag = client.createTag("tag-name", commit.getRevision(), "tag message\nfor tag-name", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertTag(tag, commit.getRevision(), "tag-name", "tag message\nfor tag-name", client.getUser(), GitObjectType.COMMIT);
+        assertTag(tag, commit.getRevision(), "tag-name", "tag message\nfor tag-name", client.getUser(), GitObjectType.COMMIT, false);
         
         write(f, "modif");
         commit = client.commit(files, "change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -102,7 +102,7 @@ public class TagTest extends AbstractGitTestCase {
         } catch (GitException ex) {
         }
         tag = client.createTag("tag-name", commit.getRevision(), "second tag message\nfor tag-name", false, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertTag(tag, commit.getRevision(), "tag-name", "second tag message\nfor tag-name", client.getUser(), GitObjectType.COMMIT);
+        assertTag(tag, commit.getRevision(), "tag-name", "second tag message\nfor tag-name", client.getUser(), GitObjectType.COMMIT, false);
     }
 
     public void testListTags () throws Exception {
@@ -115,8 +115,8 @@ public class TagTest extends AbstractGitTestCase {
         client.createTag("tag-name-2", commit.getRevision(), "second tag message", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<String, GitTag> tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, false);
         assertEquals(2, tags.size());
-        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", "tag message", client.getUser(), GitObjectType.COMMIT);
-        assertTag(tags.get("tag-name-2"), commit.getRevision(), "tag-name-2", "second tag message", client.getUser(), GitObjectType.COMMIT);
+        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", "tag message", client.getUser(), GitObjectType.COMMIT, false);
+        assertTag(tags.get("tag-name-2"), commit.getRevision(), "tag-name-2", "second tag message", client.getUser(), GitObjectType.COMMIT, false);
     }
 
     public void testListTagsAll () throws Exception {
@@ -130,19 +130,36 @@ public class TagTest extends AbstractGitTestCase {
         client.createTag("tag-name-3", tag.getTagId(), "tag for tag", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<String, GitTag> tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, false);
         assertEquals(1, tags.size());
-        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", "tag message", client.getUser(), GitObjectType.COMMIT);
+        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", "tag message", client.getUser(), GitObjectType.COMMIT, false);
         tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
         assertEquals(3, tags.size());
-        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", "tag message", client.getUser(), GitObjectType.COMMIT);
-        assertTag(tags.get("tag-name-2"), Utils.findCommit(repository, commit.getRevision()).getTree().getId().getName(), "tag-name-2", "tag for tree", client.getUser(), GitObjectType.TREE);
-        assertTag(tags.get("tag-name-3"), tag.getTagId(), "tag-name-3", "tag for tag", client.getUser(), GitObjectType.TAG);
+        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", "tag message", client.getUser(), GitObjectType.COMMIT, false);
+        assertTag(tags.get("tag-name-2"), Utils.findCommit(repository, commit.getRevision()).getTree().getId().getName(), "tag-name-2", "tag for tree", client.getUser(), GitObjectType.TREE, false);
+        assertTag(tags.get("tag-name-3"), tag.getTagId(), "tag-name-3", "tag for tag", client.getUser(), GitObjectType.TAG, false);
     }
 
-    private void assertTag (GitTag tag, String taggedObjectId, String name, String message, GitUser user, GitObjectType taggedObjectType) {
+    public void testCreateLightweightTag () throws Exception {
+        File f = new File(workDir, "f");
+        File[] files = new File[] { f };
+        GitClient client = getClient(workDir);
+        write(f, "init");
+        GitRevisionInfo commit = client.commit(files, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitTag tag = client.createTag("tag-name", commit.getRevision(), null, false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTag(tag, commit.getRevision(), "tag-name", commit.getFullMessage(), commit.getCommitter(), GitObjectType.COMMIT, true);
+        Map<String, GitTag> tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(1, tags.size());
+        assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", commit.getFullMessage(), commit.getCommitter(), GitObjectType.COMMIT, true);
+    }
+
+    private void assertTag (GitTag tag, String taggedObjectId, String name, String message, GitUser user, GitObjectType taggedObjectType, boolean isLightWeight) {
+        assertEquals(isLightWeight, tag.isLightWeight());
         assertEquals(taggedObjectId, tag.getTaggedObjectId());
-        assertEquals(name, tag.getTagName());
+        if (isLightWeight) {
+            assertEquals(taggedObjectId, tag.getTagId());
+        }
         assertEquals(message, tag.getMessage());
         assertEquals(user.toString(), tag.getTagger().toString());
+        assertEquals(name, tag.getTagName());
         assertEquals(taggedObjectType, tag.getTaggedObjectType());
     }
 }
