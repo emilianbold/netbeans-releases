@@ -134,6 +134,10 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             assertFalse("May fail on not Unix", Utilities.isUnix());
             return;
         }
+        if (!dirLink.exists()) {
+            assertFalse("Link may not be created on not Unix", Utilities.isUnix());
+            return;
+        }
         
         FileObject linkDirFO = FileUtil.toFileObject(dirLink);
         String selfName = "../" + dirLink.getName() + "/" + file.getName();
