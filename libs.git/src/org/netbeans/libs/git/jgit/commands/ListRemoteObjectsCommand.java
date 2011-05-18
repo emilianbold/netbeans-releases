@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.libs.git.jgit.commands;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import org.eclipse.jgit.errors.NotSupportedException;
+import org.eclipse.jgit.errors.TransportException;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.jgit.Utils;
+import org.eclipse.jgit.transport.FetchConnection;
+import org.eclipse.jgit.transport.Transport;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
+ *
  * @author ondra
  */
-public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
-    private HashMap<String, GitBranch> remoteBranches;
-    private final String remoteUrl;
-
-    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
+abstract class ListRemoteObjectsCommand extends TransportCommand {
+    private Collection<Ref> refs;
+    
+    public ListRemoteObjectsCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
         super(repository, remoteRepositoryUrl, monitor);
-        this.remoteUrl = remoteRepositoryUrl;
     }
 
     @Override
-    protected void processRefs () {
-        remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS));
+    protected final void run () throws GitException {
+        Transport t = null;
+        FetchConnection conn = null;
+        try {
+            t = openTransport(false);
+            conn = t.openFetch();
+            refs = conn.getRefs();
+        } catch (URISyntaxException ex) {
+            throw new GitException(ex);
+        } catch (NotSupportedException ex) {
+            throw new GitException(ex);
+        } catch (TransportException e) {
+            handleException(e);
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+            if (t != null) {
+                t.close();
+            }
+        }
+        processRefs();
     }
 
-    @Override
-    protected String getCommandDescription () {
-        return "git ls-remote --heads " + remoteUrl.toString(); //NOI18N
+    protected abstract void processRefs ();
+    
+    protected final Collection<Ref> getRefs () {
+        return refs;
     }
-
-    public Map<String, GitBranch> getBranches () {
-        return remoteBranches;
-    }
-
 }

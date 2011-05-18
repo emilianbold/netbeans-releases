@@ -44,28 +44,26 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  * @author ondra
  */
-public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
-    private HashMap<String, GitBranch> remoteBranches;
+public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
+    private HashMap<String, String> remoteTags;
     private final String remoteUrl;
 
-    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
+    public ListRemoteTagsCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
         super(repository, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
 
     @Override
     protected void processRefs () {
-        remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS));
+        remoteTags = new HashMap<String, String>();
+        remoteTags.putAll(Utils.refsToTags(getRefs()));
     }
 
     @Override
@@ -73,8 +71,8 @@ public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
         return "git ls-remote --heads " + remoteUrl.toString(); //NOI18N
     }
 
-    public Map<String, GitBranch> getBranches () {
-        return remoteBranches;
+    public Map<String, String> getTags () {
+        return remoteTags;
     }
 
 }

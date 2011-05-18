@@ -92,6 +92,7 @@ import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
+import org.netbeans.libs.git.jgit.commands.ListRemoteTagsCommand;
 import org.netbeans.libs.git.jgit.commands.ListTagCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
@@ -380,6 +381,15 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    @Override
+    public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListRemoteTagsCommand cmd = new ListRemoteTagsCommand(repository, remoteRepositoryUrl, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getTags();
     }
 
     @Override

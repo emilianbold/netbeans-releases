@@ -101,12 +101,12 @@ public class PushAction extends SingleRepositoryAction {
         }
     }
     
-    public void push (File repository, final String remote, final Collection<PushBranchMapping> pushMappins, final List<String> fetchRefSpecs) {
+    public void push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
                 List<String> pushRefSpecs = new LinkedList<String>();
-                for (PushBranchMapping b : pushMappins) {
+                for (PushMapping b : pushMappins) {
                     pushRefSpecs.add(b.getRefSpec());
                 }
                 LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, remote }); //NOI18N
@@ -158,7 +158,7 @@ public class PushAction extends SingleRepositoryAction {
                 }
             }
 
-            private void beforePush (Collection<GitHook> hooks, Collection<PushBranchMapping> pushMapping) throws GitException {
+            private void beforePush (Collection<GitHook> hooks, Collection<PushMapping> pushMapping) throws GitException {
                 if (hooks.size() > 0) {
                     List<GitRevisionInfo> messages = getOutgoingRevisions(pushMapping);
                     if(!isCanceled() && !messages.isEmpty()) {
@@ -175,14 +175,17 @@ public class PushAction extends SingleRepositoryAction {
                 }
             }
 
-            private List<GitRevisionInfo> getOutgoingRevisions (Collection<PushBranchMapping> pushMappings) throws GitException {
+            private List<GitRevisionInfo> getOutgoingRevisions (Collection<PushMapping> pushMappings) throws GitException {
                 List<GitRevisionInfo> revisionList = new LinkedList<GitRevisionInfo>();
                 Set<String> visitedRevisions = new HashSet<String>();
                 GitClient client = Git.getInstance().getClient(getRepositoryRoot()); // do not use progresssupport's client, that one logs into output
-                for (PushBranchMapping mapping : pushMappings) {
-                    String remoteRevisionId = mapping.getRemoteRepositoryBranchHeadId();
-                    String localRevisionId = mapping.getLocalRepositoryBranchHeadId();
-                    revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                for (PushMapping mapping : pushMappings) {
+                    if (mapping instanceof PushMapping.PushBranchMapping) {
+                        PushMapping.PushBranchMapping branchMapping = (PushMapping.PushBranchMapping) mapping;
+                        String remoteRevisionId = branchMapping.getRemoteRepositoryBranchHeadId();
+                        String localRevisionId = branchMapping.getLocalRepositoryBranchHeadId();
+                        revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                    }
                     if (isCanceled()) {
                         break;
                     }
