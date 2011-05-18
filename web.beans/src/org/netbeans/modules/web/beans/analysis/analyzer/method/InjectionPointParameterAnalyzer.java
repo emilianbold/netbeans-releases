@@ -40,59 +40,88 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer.field;
+package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class InjectionPointAnalyzer implements FieldAnalyzer {
-    
+public class InjectionPointParameterAnalyzer implements MethodAnalyzer {
+
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
-    public void analyze( final VariableElement element, TypeMirror elementType,
+    public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, WebBeansModel model,
-            List<ErrorDescription> descriptions , 
-            CompilationInfo info , AtomicBoolean cancel )
+            List<ErrorDescription> descriptions, CompilationInfo info , 
+            AtomicBoolean cancel )
     {
-        try {
-            if (model.isInjectionPoint(element)
-                    && !model.isDynamicInjectionPoint(element))
-            {
-                DependencyInjectionResult result = model.lookupInjectables(element,
-                        null);
-                checkResult(result, element, model, descriptions, info );
+        for (VariableElement var : element.getParameters()) {
+            if (cancel.get()) {
+                return;
+            }
+            try {
+                if (model.isInjectionPoint(var)) {
+                    checkName(element, var, model,descriptions, info );
+                    if (!model.isDynamicInjectionPoint(var)) {
+                        DependencyInjectionResult result = model.lookupInjectables(
+                            var, (DeclaredType) parent.asType());
+                        checkResult(result, element, var, model,descriptions, info );
+                }
+            }
+            }
+            catch( InjectionPointDefinitionError e ){
+                informInjectionPointDefError(e, element, model, descriptions, info );
             }
         }
-        catch (InjectionPointDefinitionError e) {
-            informInjectionPointDefError(e, element, model, descriptions, info );
+
+    }
+    
+    private void checkName( ExecutableElement element, VariableElement var,
+            WebBeansModel model, List<ErrorDescription> descriptions , 
+            CompilationInfo info )
+    {
+        AnnotationMirror annotation = AnnotationUtil.getAnnotationMirror( 
+                var , AnnotationUtil.NAMED, model.getCompilationController());
+        if ( annotation!= null && annotation.getElementValues().size() == 0 ){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError(var, element,  model, info , 
+                        NbBundle.getMessage( InjectionPointParameterAnalyzer.class, 
+                                "ERR_ParameterNamedInjectionPoint"));        // NOI18N
+            if ( description != null ){
+                descriptions.add( description );
+            }
         }
     }
 
     private void checkResult( DependencyInjectionResult result ,
-            VariableElement var, WebBeansModel model,
-            List<ErrorDescription> descriptions, CompilationInfo info  )
+            ExecutableElement method , VariableElement element, WebBeansModel model,
+            List<ErrorDescription> descriptions, CompilationInfo info )
     {
         if ( result instanceof DependencyInjectionResult.Error ){
             ResultKind kind = result.getKind();
@@ -102,9 +131,11 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
             }
             String message = ((DependencyInjectionResult.Error)result).getMessage();
             ErrorDescription description = CdiEditorAnalysisFactory.
-                createNotification(severity, var , model, info , 
-                        message);
-            descriptions.add( description );
+                createNotification(severity, element , method , 
+                        model, info ,  message);
+            if ( description != null ){
+                descriptions.add( description );
+            }
         }
     }
 
@@ -113,9 +144,10 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
             List<ErrorDescription> descriptions, CompilationInfo info )
     {
         ErrorDescription description = CdiEditorAnalysisFactory.createError(
-                element, model, info ,  exception.getMessage());
+                element, model, info , exception.getMessage());
         if ( description != null ){
             descriptions.add(description);
         }
     }
+
 }

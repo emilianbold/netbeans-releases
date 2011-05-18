@@ -40,18 +40,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer;
+package org.netbeans.modules.web.beans.analysis;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.QualifierAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
@@ -59,38 +54,32 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author ads
  *
  */
-public class AnnotationElementAnalyzer implements ElementAnalyzer {
+abstract class AbstractAnalysisTask {
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
-     */
-    @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
-    {
-        TypeElement subject = (TypeElement) element;
-        for( AnnotationAnalyzer analyzer : ANALYZERS ){
-            if ( cancel.get() ){
-                return;
-            }
-            analyzer.analyze( subject, compInfo, descriptions, cancel );
-        }
+    AbstractAnalysisTask(){
+        cancel = new AtomicBoolean( false );
+        myProblems = new LinkedList<ErrorDescription>();
     }
-
-    public interface AnnotationAnalyzer {
-        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
-        
-        void analyze( TypeElement element , CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
-    }
-
-    private static final List<AnnotationAnalyzer> ANALYZERS = 
-        new LinkedList<AnnotationAnalyzer>(); 
     
-    static {
-        ANALYZERS.add( new ScopeAnalyzer() );
-        ANALYZERS.add( new QualifierAnalyzer() );
+    protected boolean isCancelled() {
+        return cancel.get();
+    }
+    
+    protected AtomicBoolean getCancel(){
+        return cancel;
+    }
+    
+    abstract void run( CompilationInfo compInfo );
+    
+    List<ErrorDescription> getProblems(){
+        return myProblems;
+    }
+    
+    void stop(){
+        cancel.set( true );
     }
 
+    private AtomicBoolean cancel;
+    private List<ErrorDescription> myProblems;
+    
 }

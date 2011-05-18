@@ -52,10 +52,6 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.AnnotationsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.CtorsAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.InterceptedBeanAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.ManagedBeansAnalizer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.ScopedBeanAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.SessionBeanAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.TypedClassAnalizer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -93,11 +89,7 @@ public class ClassElementAnalyzer implements ElementAnalyzer {
     
     static {
         ANALYZERS.add( new TypedClassAnalizer() );
-        ANALYZERS.add( new ManagedBeansAnalizer());
-        ANALYZERS.add( new ScopedBeanAnalyzer());
         ANALYZERS.add( new AnnotationsAnalyzer());
         ANALYZERS.add( new CtorsAnalyzer() );
-        ANALYZERS.add( new SessionBeanAnalyzer());
-        ANALYZERS.add( new InterceptedBeanAnalyzer() );
     }
 }
