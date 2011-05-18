@@ -40,57 +40,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer;
+package org.netbeans.modules.web.beans.analysis;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.QualifierAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
  * @author ads
  *
  */
-public class AnnotationElementAnalyzer implements ElementAnalyzer {
-    
+@ServiceProvider(service=JavaSourceTaskFactory.class)
+public class WebBeansModelAnalysisFactory extends
+        EditorAwareJavaSourceTaskFactory
+{
+
+    public WebBeansModelAnalysisFactory( ) {
+        super(Phase.RESOLVED, Priority.LOW, "text/x-java");    // NOI18N
+    }
+
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.api.java.source.JavaSourceTaskFactory#createTask(org.openide.filesystems.FileObject)
      */
     @Override
-    public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
-    {
-        TypeElement subject = (TypeElement) element;
-        for( AnnotationAnalyzer analyzer : ANALYZERS ){
-            if ( cancel.get() ){
-                return;
-            }
-            analyzer.analyze( subject, compInfo, descriptions, cancel );
-        }
-    }
-
-    public interface AnnotationAnalyzer {
-        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
-        
-        void analyze( TypeElement element , CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
-    }
-
-    private static final List<AnnotationAnalyzer> ANALYZERS = 
-        new LinkedList<AnnotationAnalyzer>(); 
-    
-    static {
-        ANALYZERS.add( new ScopeAnalyzer() );
-        ANALYZERS.add( new QualifierAnalyzer() );
+    protected CancellableTask<CompilationInfo> createTask( FileObject fileObject ) {
+        return new WebBeansEditorAnalysisTask( fileObject );
     }
 
 }

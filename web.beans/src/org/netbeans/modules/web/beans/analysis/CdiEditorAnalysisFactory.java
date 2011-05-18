@@ -47,10 +47,13 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
@@ -58,6 +61,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -80,7 +84,7 @@ import com.sun.source.util.SourcePositions;
 public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
 
     public CdiEditorAnalysisFactory( ){
-        super(Phase.RESOLVED, Priority.LOW, "text/x-java");    // NOI18N
+        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "text/x-java");    // NOI18N
     }
 
     /* (non-Javadoc)
@@ -97,10 +101,73 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
         return createNotification(Severity.ERROR, subject, info, description);
     }
     
+    public static ErrorDescription createError( Element subject , 
+            WebBeansModel model, CompilationInfo info ,String description)
+    {
+        return createNotification(Severity.ERROR, subject, model, info, description);
+    }
+    
+    public static ErrorDescription createError( VariableElement element, 
+            ExecutableElement method, WebBeansModel model, CompilationInfo info ,
+            String description)
+    {
+        return createNotification(Severity.ERROR, element, method, model, 
+                info, description);
+    }
+    
     public static ErrorDescription createNotification( Severity severity, 
             Element subject , CompilationInfo info ,String description)
     {
         Tree elementTree = info.getTrees().getTree(subject);
+        return createNotification(severity, elementTree, info, description);
+    }
+    
+    public static ErrorDescription createNotification( Severity severity, 
+            Element subject , WebBeansModel model, CompilationInfo info ,
+            String description)
+    {
+        ElementHandle<Element> handle = ElementHandle.create( subject );
+        Element element = handle.resolve(info);
+        if ( element == null){
+            return null;
+        }
+        Tree elementTree = info.getTrees().getTree(element);
+        return createNotification(severity, elementTree, info, description);
+    }
+    
+    public static ErrorDescription createNotification( Severity severity, 
+            VariableElement element, ExecutableElement parent , 
+            WebBeansModel model, CompilationInfo info ,String description)
+    {
+        List<? extends VariableElement> parameters = parent.getParameters();
+        int i=0;
+        for (VariableElement param : parameters) {
+            if ( param.equals( element )){
+                break;
+            }
+            i++;
+        }
+        if ( i == parameters.size() ){
+            return null;
+        }
+        ElementHandle<ExecutableElement> handle = ElementHandle.create( parent );
+        ExecutableElement method = handle.resolve(info);
+        if ( method == null){
+            return null;
+        }
+        parameters = method.getParameters();
+        int j=0;
+        VariableElement var = null;
+        for (VariableElement param : parameters) {
+            if ( i==j){
+                var = param;
+            }
+            j++;
+        }
+        if ( var == null ){
+            return null;
+        }
+        Tree elementTree = info.getTrees().getTree(var);
         return createNotification(severity, elementTree, info, description);
     }
 

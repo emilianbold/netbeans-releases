@@ -97,8 +97,6 @@ public class FieldElementAnalyzer implements ElementAnalyzer {
     
     static {
         ANALYZERS.add( new TypedFieldAnalyzer() );
-        ANALYZERS.add( new ScopedFieldAnalyzer() );
-        ANALYZERS.add( new InjectionPointAnalyzer());
         ANALYZERS.add( new DelegateFieldAnalizer());
         ANALYZERS.add( new ProducerFieldAnalyzer());
     }

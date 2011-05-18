@@ -55,7 +55,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -69,12 +70,13 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
 {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+            TypeElement parent, WebBeansModel model,
+            List<ErrorDescription> descriptions , 
+            CompilationInfo info , AtomicBoolean cancel )
     {
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.STATIC ) || 
@@ -90,22 +92,28 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
         if ( cancel.get() ){
             return;
         }
-        if ( hasInterceptorBindings(element, compInfo, descriptions)){
+        if ( hasInterceptorBindings(element, model, descriptions)){
             if ( finalMethod ){
                 ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+                    .createError(element, model, info ,  
+                            NbBundle.getMessage(
                             InterceptedMethodAnalyzer.class,
                         "ERR_FinalInterceptedMethod")); // NOI18N
-                descriptions.add(description);
+                if ( description != null ){
+                    descriptions.add(description);
+                }
             }
             if ( finalClass && !AnnotationUtil.hasAnnotation(parent, 
-                    AnnotationUtil.INTERCEPTOR, compInfo))
+                    AnnotationUtil.INTERCEPTOR, model.getCompilationController()))
             {
                 ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+                    .createError(element, model, info ,  
+                            NbBundle.getMessage(
                             InterceptedMethodAnalyzer.class,
                         "ERR_FinalInterceptedClass")); // NOI18N
-                descriptions.add(description);
+                if ( description != null ){
+                    descriptions.add(description);
+                }
             }
         }
     }

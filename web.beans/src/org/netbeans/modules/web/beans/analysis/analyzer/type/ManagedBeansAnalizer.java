@@ -42,14 +42,10 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -58,16 +54,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
@@ -82,107 +71,81 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
     
     private static final String EXTENSION = "javax.enterprise.inject.spi.Extension";  //NOI18N
     
-    private static final Logger LOG = Logger.getLogger( 
-            ManagedBeansAnalizer.class.getName() );  
-
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info , AtomicBoolean cancel )
     {
-        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
-        if ( project == null ){
-            return ;
-        }
-        MetaModelSupport support = new MetaModelSupport(project);
-        if ( cancel.get() ){
+            boolean cdiManaged = model.getQualifiers( element,  true ).size()>0;
+            if ( !cdiManaged ){
+                return;
+            }
+        if (cancel.get()) {
             return;
         }
-        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<TypeElement> handle = ElementHandle.create( element);
-        try {
-            boolean cdiManaged = metaModel.runReadAction( 
-                    new MetadataModelAction<WebBeansModel, Boolean>() 
-            {
-
-                @Override
-                public Boolean run( WebBeansModel model ) throws Exception {
-                    TypeElement clazz = handle.resolve( model.getCompilationController());
-                    if ( clazz == null ){
-                        return false;
-                    }
-                    List<AnnotationMirror> qualifiers = model.getQualifiers( clazz,  true );
-                    return qualifiers.size() > 0 ;
-                }
-            });
-            if ( cdiManaged ){
-                if ( cancel.get() ){
-                    return;
-                }
-                checkCtor( element , compInfo , descriptions );
-                if ( cancel.get() ){
-                    return;
-                }
-                checkInner( element, parent , compInfo ,descriptions );
-                if ( cancel.get() ){
-                    return;
-                }
-                checkAbstract( element , compInfo ,descriptions );
-                if ( cancel.get() ){
-                    return;
-                }
-                checkImplementsExtension( element , compInfo ,descriptions );
-            }
+        checkCtor(element, model, descriptions, info );
+        if (cancel.get()) {
+            return;
         }
-        catch (MetadataModelException e) {
-            LOG.log( Level.INFO , null , e);
+        checkInner(element, parent, model, descriptions, info);
+        if (cancel.get()) {
+            return;
         }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null , e);
+        checkAbstract(element, model, descriptions, info);
+        if (cancel.get()) {
+            return;
         }
+        checkImplementsExtension(element, model, descriptions, info);
     }
 
     private void checkImplementsExtension( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info)
     {
-        TypeElement extension = compInfo.getElements().getTypeElement(EXTENSION);
+        TypeElement extension = model.getCompilationController().getElements().
+            getTypeElement(EXTENSION);
         if ( extension == null ){
             return;
         }
         TypeMirror elementType = element.asType();
-        if ( compInfo.getTypes().isSubtype( elementType,  extension.asType())){
+        if ( model.getCompilationController().getTypes().isSubtype( 
+                elementType,  extension.asType())){
             ErrorDescription description = CdiEditorAnalysisFactory.
-                createNotification( Severity.WARNING, element, compInfo, 
-                        NbBundle.getMessage( ManagedBeansAnalizer.class, 
-                                "WARN_QualifiedElementExtension"));
-            descriptions.add( description );
+                createNotification( Severity.WARNING, element, 
+                        model, info ,  NbBundle.getMessage( ManagedBeansAnalizer.class, 
+                                "WARN_QualifiedElementExtension"));     // NOI18N
+            if ( description != null ){
+                descriptions.add( description );
+            }
         }
     }
 
     private void checkAbstract( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            WebBeansModel model, List<ErrorDescription> descriptions, 
+            CompilationInfo info )
     {
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.ABSTRACT )){
             if ( AnnotationUtil.hasAnnotation(element, 
-                    AnnotationUtil.DECORATOR, compInfo) ){
+                    AnnotationUtil.DECORATOR, model.getCompilationController()) ){
                 return;
             }
                 
             // element is abstract and has no Decorator annotation
             ErrorDescription description = CdiEditorAnalysisFactory.
-                createNotification( Severity.WARNING, element, compInfo, 
+                createNotification( Severity.WARNING, element, model, info,
                         NbBundle.getMessage(ManagedBeansAnalizer.class, 
-                                "WARN_QualifierAbstractClass"));
+                                "WARN_QualifierAbstractClass"));        // NOI18N
             descriptions.add( description );    
         }        
     }
 
     private void checkInner( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            WebBeansModel model, List<ErrorDescription> descriptions, 
+            CompilationInfo info )
     {
         if ( parent == null ){
             return;
@@ -190,14 +153,17 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
         Set<Modifier> modifiers = element.getModifiers();
         if ( !modifiers.contains( Modifier.STATIC )){
             ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
-                    ManagedBeansAnalizer.class, "ERR_NonStaticInnerType"));
-            descriptions.add( description );    
+                createError( element, model, info , 
+                        NbBundle.getMessage(ManagedBeansAnalizer.class, 
+                                "ERR_NonStaticInnerType")); // NOI18N
+            if ( description != null ){
+                descriptions.add( description );
+            }
         }
     }
 
-    private void checkCtor( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+    private void checkCtor( TypeElement element, WebBeansModel model,
+            List<ErrorDescription> descriptions, CompilationInfo info  )
     {
         List<ExecutableElement> ctors = ElementFilter.constructorsIn( 
                 element.getEnclosedElements());
@@ -210,15 +176,17 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             if ( parameters.size() ==0 ){
                 return;
             }
-            if ( AnnotationUtil.hasAnnotation(ctor, AnnotationUtil.INJECT_FQN, compInfo)){
+            if ( AnnotationUtil.hasAnnotation(ctor, AnnotationUtil.INJECT_FQN, 
+                    model.getCompilationController()))
+            {
                 return;
             }
         }
         // there is no non-private ctors without params or annotated with @Inject
         ErrorDescription description = CdiEditorAnalysisFactory.
-            createNotification( Severity.WARNING, element, compInfo, 
+            createNotification( Severity.WARNING, element, model, info , 
                     NbBundle.getMessage(ManagedBeansAnalizer.class, 
-                            "WARN_QualifierNoCtorClass"));
+                            "WARN_QualifierNoCtorClass"));              // NOI18N
         descriptions.add( description );
     }
 
