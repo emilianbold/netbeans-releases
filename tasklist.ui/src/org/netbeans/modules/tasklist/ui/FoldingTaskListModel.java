@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tasklist.ui;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -324,14 +325,18 @@ class FoldingTaskListModel extends TaskListModel {
             if( isEmpty() )
                 return;
             
-            int rowCount = getRowCount();
-            int startingRow = getFoldingGroupStartingRow( this );
+            final int rowCount = getRowCount();
+            final int startingRow = getFoldingGroupStartingRow( this );
             synchronized( TASK_LOCK ) {
                 sortedTasks.clear();
                 tasksList = null;
             }
-            
-            fireTableRowsDeleted( startingRow, startingRow+rowCount );
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    fireTableRowsDeleted( startingRow, startingRow+rowCount );
+                }
+            });
         }
         
         public boolean isEmpty() {
