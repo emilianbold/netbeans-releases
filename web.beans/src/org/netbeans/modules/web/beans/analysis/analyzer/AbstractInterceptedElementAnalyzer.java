@@ -42,25 +42,14 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -71,47 +60,18 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public abstract class AbstractInterceptedElementAnalyzer {
     
-    private final static Logger LOG = Logger.getLogger( 
-            AbstractInterceptedElementAnalyzer.class.getName());
 
     protected boolean hasInterceptorBindings(Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            WebBeansModel model, List<ErrorDescription> descriptions )
     {
-        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
-        if ( project == null ){
-            return false;
-        }
-        MetaModelSupport support = new MetaModelSupport(project);
-        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<Element> handle = ElementHandle.create( element);
-        try {
-            return metaModel.runReadAction( 
-                    new MetadataModelAction<WebBeansModel, Boolean>() 
-            {
-                @Override
-                public Boolean run( WebBeansModel model ) throws Exception {
-                    Element element = handle.resolve( model.getCompilationController());
-                    if ( element == null ){
-                        return false;
-                    }
-                    Collection<AnnotationMirror> interceptorBindings = 
-                        model.getInterceptorBindings( element );
-                    List<? extends AnnotationMirror> annotations = 
-                        model.getCompilationController().getElements().
-                        getAllAnnotationMirrors(element);
-                    Set<AnnotationMirror> set = new HashSet<AnnotationMirror>(
-                            interceptorBindings);
-                    set.retainAll( annotations );
-                    return !set.isEmpty();
-                }
-            });
-        }
-        catch (MetadataModelException e) {
-            LOG.log( Level.INFO , null , e);
-        }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null , e);
-        }
-        return false;
+        Collection<AnnotationMirror> interceptorBindings = model
+                .getInterceptorBindings(element);
+        List<? extends AnnotationMirror> annotations = model
+                .getCompilationController().getElements()
+                .getAllAnnotationMirrors(element);
+        Set<AnnotationMirror> set = new HashSet<AnnotationMirror>(
+                interceptorBindings);
+        set.retainAll(annotations);
+        return !set.isEmpty();
     }
 }

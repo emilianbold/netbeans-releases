@@ -54,8 +54,9 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer ;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -69,15 +70,15 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions,
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info , AtomicBoolean cancel )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.INTERCEPTOR, 
-                compInfo ))
+                model.getCompilationController() ))
         {
             // rule should not be applied to interceptor 
             return ;
@@ -109,21 +110,27 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
         if ( cancel.get() ){
             return;
         }
-        boolean hasIBindings = hasInterceptorBindings(element, compInfo, descriptions);
+        boolean hasIBindings = hasInterceptorBindings(element, model, descriptions);
         if (hasIBindings && isFinal) {
             ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+                    .createError(element, model, info , 
+                            NbBundle.getMessage(
                             InterceptedBeanAnalyzer.class,
                             "ERR_FinalInterceptedBean")); // NOI18N
-            descriptions.add(description);
+            if ( description != null ){
+                descriptions.add(description);
+            }
         }
         if (hasIBindings && badMethod != null) {
             ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+                    .createError(element, model, info ,  
+                            NbBundle.getMessage(
                             InterceptedBeanAnalyzer.class,
                             "ERR_InterceptedBeanHasFinalMethod", badMethod
                                     .getSimpleName().toString())); // NOI18N
-            descriptions.add(description);
+            if ( description != null ){
+                descriptions.add(description);
+            }
         }
     }
 

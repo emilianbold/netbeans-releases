@@ -42,11 +42,8 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -56,13 +53,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -75,62 +65,30 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public abstract class AbstractScopedAnalyzer  {
     
-    private static final Logger LOG = Logger.getLogger( 
-            AbstractScopedAnalyzer.class.getName() );  
-
-    public MetadataModel<WebBeansModel> analyzeScope( Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
-            AtomicBoolean cancel )
+    public void analyzeScope( Element element, 
+            WebBeansModel model, List<ErrorDescription> descriptions , 
+            CompilationInfo info , AtomicBoolean cancel )
     {
-        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
-        if ( project == null ){
-            return null;
-        }
-        if ( cancel.get() ){
-            return null;
-        }
-        MetaModelSupport support = new MetaModelSupport(project);
-        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<Element> handle = ElementHandle.create( element);
         try {
-            String scope = metaModel.runReadAction( 
-                    new MetadataModelAction<WebBeansModel, String>() 
-            {
-
-                @Override
-                public String run( WebBeansModel model ) throws Exception {
-                    Element element = handle.resolve( model.getCompilationController());
-                    if ( element == null ){
-                        return null;
-                    }
-                    return model.getScope( element );
-                }
-            });
+            String scope = model.getScope( element );
             if ( cancel.get() ){
-                return metaModel;
+                return;
             }
-            TypeElement scopeElement = compInfo.getElements().getTypeElement( scope );
+            TypeElement scopeElement = model.getCompilationController().
+                getElements().getTypeElement( scope );
             if ( scopeElement == null ){
-                return metaModel;
+                return;
             }
-            checkScope( scopeElement , element , compInfo, descriptions , cancel);
+            checkScope( scopeElement , element , model, descriptions , info , cancel);
         }
-        catch (MetadataModelException e) {
-            if ( !informCdiException(e, element, compInfo, descriptions) ){
-                LOG.log( Level.INFO , null , e);
-            }
+        catch (CdiException e) {
+            informCdiException(e, element, model, descriptions, info );
         }
-        catch (IOException e) {
-            if ( !informCdiException(e, element, compInfo, descriptions) ){
-                LOG.log( Level.INFO , null , e);
-            }
-        }
-        return metaModel;
     }
     
     protected abstract void checkScope( TypeElement scopeElement, Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
-            AtomicBoolean cancel );
+            WebBeansModel model, List<ErrorDescription> descriptions , 
+            CompilationInfo info , AtomicBoolean cancel );
     
     protected boolean hasTypeVarParameter(TypeMirror type ){
         if ( type.getKind() == TypeKind.TYPEVAR){
@@ -151,17 +109,14 @@ public abstract class AbstractScopedAnalyzer  {
         return false;
     }
 
-    private boolean informCdiException(Exception exception , Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions)
+    private void informCdiException(CdiException exception , Element element, 
+            WebBeansModel model, List<ErrorDescription> descriptions, CompilationInfo info )
     {
-        Throwable cause = exception.getCause();
-        if ( cause instanceof CdiException ){
             ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    cause.getMessage());
-            descriptions.add( description );
-            return true;
-        }
-        return false;
+                createError( element, model, info , 
+                    exception.getMessage());
+            if ( description != null ){
+                descriptions.add( description );
+            }
     }
 }

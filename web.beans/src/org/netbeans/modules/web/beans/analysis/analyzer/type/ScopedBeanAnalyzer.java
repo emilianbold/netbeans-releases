@@ -59,7 +59,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
@@ -74,41 +75,41 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info , AtomicBoolean cancel )
     {
-        analyzeScope(element, compInfo, descriptions, cancel );
+        analyzeScope(element, model, descriptions, info , cancel );
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions ,
+            CompilationInfo info , AtomicBoolean cancel )
     {
         if ( cancel.get() ){
             return;
         }
-        checkProxiability(scopeElement, element, compInfo, descriptions);
+        checkProxiability(scopeElement, element, model, descriptions, info );
         if ( cancel.get() ){
             return;
         }
-        checkPublicField(scopeElement , element , compInfo , descriptions );
+        checkPublicField(scopeElement , element , model , descriptions, info  );
         if ( cancel.get() ){
             return;
         }
-        checkParameterizedBean(scopeElement , element , compInfo , descriptions);
+        checkParameterizedBean(scopeElement , element , model , descriptions, info );
     }
 
     private void checkParameterizedBean( TypeElement scopeElement,
-            Element element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            Element element, WebBeansModel model,
+            List<ErrorDescription> descriptions , CompilationInfo info)
     {
         if ( AnnotationUtil.DEPENDENT.contentEquals( 
                 scopeElement.getQualifiedName()))
@@ -120,16 +121,19 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
             List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
             if ( typeArguments.size() != 0 ){
                 ErrorDescription description = CdiEditorAnalysisFactory
-                .createError(element, compInfo, 
+                    .createError(element, model, info ,  
                     NbBundle.getMessage(ScopedBeanAnalyzer.class,
                         "ERR_IncorrectScopeForParameterizedBean" ));
-                descriptions.add(description);
+                if ( description != null ){
+                    descriptions.add(description);
+                }
             }
         }
     }
 
     private void checkPublicField( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info )
     {
         if ( AnnotationUtil.DEPENDENT.contentEquals( 
                 scopeElement.getQualifiedName()))
@@ -142,28 +146,31 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
             Set<Modifier> modifiers = field.getModifiers();
             if ( modifiers.contains(Modifier.PUBLIC )){
                 ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, 
+                    .createError(element, model, info ,  
                         NbBundle.getMessage(ScopedBeanAnalyzer.class,
                             "ERR_IcorrectScopeWithPublicField", 
                             field.getSimpleName().toString()));
-                descriptions.add(description);
+                if ( description != null ){
+                    descriptions.add(description);
+                }
                 return;
             }
         }
     }
 
     private void checkProxiability( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            WebBeansModel model, List<ErrorDescription> descriptions, 
+            CompilationInfo info  )
     {
         boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
-                AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
+                AnnotationUtil.NORMAL_SCOPE_FQN, model.getCompilationController());
         if ( isNormal ){
-            checkFinal( element , compInfo , descriptions );
+            checkFinal( element , model, descriptions, info );
         }
     }
 
-    private void checkFinal( Element element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+    private void checkFinal( Element element, WebBeansModel model,
+            List<ErrorDescription> descriptions , CompilationInfo info )
     {
         if ( !( element instanceof TypeElement )){
             return;
@@ -171,10 +178,12 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.FINAL) ){
             ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
+                createError( element, model, info,  
                     NbBundle.getMessage(ScopedBeanAnalyzer.class, 
                             "ERR_FinalScopedClass"));
-            descriptions.add( description );
+            if ( description != null ){
+                descriptions.add( description );
+            }
             return;
         }
         List<ExecutableElement> methods = ElementFilter.methodsIn(
@@ -183,7 +192,8 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
             modifiers = method.getModifiers();
             if (modifiers.contains(Modifier.FINAL)) {
                 ErrorDescription description = CdiEditorAnalysisFactory
-                        .createNotification( Severity.WARNING, method, compInfo, 
+                        .createNotification( Severity.WARNING, method, model,
+                                info, 
                                 NbBundle.getMessage(
                                 ScopedBeanAnalyzer.class,
                                 "WARN_FinalScopedClassMethod"));

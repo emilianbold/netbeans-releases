@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,70 +39,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.spi.jpql;
+package org.netbeans.modules.web.beans.analysis;
 
-import org.eclipse.persistence.jpa.jpql.spi.IEntity;
-import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
-import org.eclipse.persistence.jpa.jpql.spi.IPlatform;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
+import org.netbeans.spi.editor.hints.HintsController;
+import org.openide.filesystems.FileObject;
+
 
 /**
+ * @author ads
  *
- * @author sp153251
  */
-public class ManagedTypeProvider implements IManagedTypeProvider {
-
-    private final Project project;
-
-    public ManagedTypeProvider(Project project){
-        this.project = project;
+abstract class CancellableAnalysysTask implements CancellableTask<CompilationInfo>{
+    
+    CancellableAnalysysTask(FileObject javaFile){
+        myFileObject = javaFile;
+        myTask = new AtomicReference<AbstractAnalysisTask>();
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.api.java.source.Task#run(java.lang.Object)
+     */
     @Override
-    public Iterable<IEntity> abstractSchemaTypes() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IManagedType getManagedType(IType itype) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IManagedType getManagedType(String name) {
-        return new ManagedType(null, this);//TODO
-    }
-
-    @Override
-    public IPlatform getPlatform() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ITypeRepository getTypeRepository() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IJPAVersion getVersion() {
-        String version = PersistenceUtils.getJPAVersion(project);
-        return IJPAVersion.value(version);
-    }
-
-    @Override
-    public Iterable<IManagedType> managedTypes() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void run( CompilationInfo compInfo ) throws Exception {
+        if ( !WebBeansActionHelper.isEnabled() ){
+            return;
+        }
+        AbstractAnalysisTask task = createTask();
+        myTask.set( task );
+        task.run( compInfo );
+        HintsController.setErrors(myFileObject, getLayerName(), task.getProblems()); 
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.api.java.source.CancellableTask#cancel()
+     */
+    @Override
+    public void cancel() {
+        AbstractAnalysisTask task = myTask.get();
+        if ( task != null ){
+            task.stop();
+        }
+    }
+    
+    protected abstract String getLayerName();
+    
+    protected abstract AbstractAnalysisTask createTask();
+    
+    protected FileObject getFileObject(){
+        return myFileObject;
+    }
+
+    private FileObject myFileObject;
+    private AtomicReference<AbstractAnalysisTask> myTask;
 }

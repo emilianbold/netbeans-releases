@@ -47,19 +47,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.AnnotationsAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.DelegateMethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.InterceptedMethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.ProducerMethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.ScopedMethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.TypedMethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
@@ -67,47 +60,36 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author ads
  *
  */
-public class MethodElementAnalyzer implements ElementAnalyzer {
+public class AnnotationModelAnalyzer implements ModelAnalyzer {
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
-     */
     @Override
     public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions, 
+            CompilationInfo info, AtomicBoolean cancel )
     {
-        ExecutableElement method = (ExecutableElement) element;
-        TypeMirror methodType = compInfo.getTypes().asMemberOf( 
-                (DeclaredType)parent.asType(),  method );
-        if ( methodType instanceof ExecutableType ){
-            if ( cancel.get()){
+        TypeElement subject = (TypeElement) element;
+        for( AnnotationAnalyzer analyzer : ANALYZERS ){
+            if ( cancel.get() ){
                 return;
             }
-            TypeMirror returnType = ((ExecutableType) methodType).getReturnType();
-            for (MethodAnalyzer analyzer : ANALYZERS) {
-                if ( cancel.get() ){
-                    return;
-                }
-                analyzer.analyze(method, returnType, parent, compInfo, 
-                        descriptions, cancel );
-            }
+            analyzer.analyze( subject, model, descriptions, info , cancel );
         }
     }
     
-    public interface MethodAnalyzer {
-        void analyze( ExecutableElement element , TypeMirror returnType,
-                TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
+    public interface AnnotationAnalyzer {
+        public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
+        
+        void analyze( TypeElement element , WebBeansModel model,
+                List<ErrorDescription> descriptions, 
+                CompilationInfo info, AtomicBoolean cancel );
     }
-    
-    private static final List<MethodAnalyzer> ANALYZERS= new LinkedList<MethodAnalyzer>(); 
+
+    private static final List<AnnotationAnalyzer> ANALYZERS = 
+        new LinkedList<AnnotationAnalyzer>(); 
     
     static {
-        ANALYZERS.add( new TypedMethodAnalyzer() );
-        ANALYZERS.add( new AnnotationsAnalyzer() );
-        ANALYZERS.add( new DelegateMethodAnalyzer() );
-        ANALYZERS.add( new ProducerMethodAnalyzer() );
+        ANALYZERS.add( new StereotypeAnalyzer());
+        ANALYZERS.add( new InterceptorBindingAnalyzer() );
     }
 
 }

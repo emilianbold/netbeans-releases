@@ -44,10 +44,14 @@
 
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
@@ -62,6 +66,7 @@ import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,24 +84,46 @@ public class JPQLValidation extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        AnnotationMirror first = Utilities.findAnnotation(subject, JPAAnnotations.NAMED_QUERY);
-        String value = Utilities.getAnnotationAttrValue(first, "query").toString();
+        List<AnnotationMirror> first = Utilities.findAnnotations(subject, JPAAnnotations.NAMED_QUERY);
+        ArrayList<String> values = new ArrayList<String>();
+        if(first == null || first.size()==0){
+            AnnotationMirror qs = Utilities.findAnnotation(subject, JPAAnnotations.NAMED_QUERIES);
+            if(qs != null){
+                Map<? extends ExecutableElement, ? extends AnnotationValue> maps = qs.getElementValues();
+                for(AnnotationValue vl:maps.values()){
+                    List  lst = (List) vl.getValue();
+                    for(Object val:lst){
+                        if(val instanceof AnnotationMirror){
+                            AnnotationMirror am = (AnnotationMirror) val;
+                            if(JPAAnnotations.NAMED_QUERY.equals(am.getAnnotationType().toString())){
+                                values.add(Utilities.getAnnotationAttrValue(am, "query").toString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            for(AnnotationMirror mr:first)values.add(Utilities.getAnnotationAttrValue(mr, "query").toString());
+        }
         JPQLQueryHelper helper = new JPQLQueryHelper();
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
-        helper.setQuery(new Query(value, new ManagedTypeProvider(project)));
-        List<JPQLQueryProblem> problems = helper.validate();
-        
-        if (problems != null && problems.size()>0){
-            return new ErrorDescription[]{createProblem(subject, ctx, "Test issue :" + problems)};
+        List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
+        for(String value:values){
+            helper.setQuery(new Query(value, new ManagedTypeProvider(project)));
+            List<JPQLQueryProblem> tmp = helper.validateGrammar();
+            if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
         }
-        
+        if (problems != null && problems.size()>0){
+            return new ErrorDescription[]{createProblem(subject, ctx, "JPQL :" + problems, Severity.WARNING)};
+        }
         return null;
     }
     
     @Override protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
         JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
         
-        return !(jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
+        return (jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
     }
     
     private AnnotationMirror getFirstAnnotationFromGivenSet(TypeElement subject,
