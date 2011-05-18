@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-package org.netbeans.modules.web.jsfapi.api;
+import java.util.Collection;
+import java.util.HashSet;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
  *
  * @author marekfukala
  */
-@Deprecated
-public enum LibraryType {
-    CLASS, COMPOSITE;
-}
+public  class ProxyTag implements Tag {
+
+        //s has priority
+        private Tag s,t;
+
+        public ProxyTag(Tag s, Tag t) {
+            assert s != null || t != null;
+
+            this.s = s;
+            this.t = t;
+        }
+
+        @Override
+        public String getName() {
+            return s != null ? s.getName() : t.getName();
+        }
+
+        @Override
+        public String getDescription() {
+            String sd = s != null ? s.getDescription() : null;
+            String td = t != null ? t.getDescription() : null;
+            return sd != null ? sd : td;
+        }
+
+        @Override
+        public boolean hasNonGenenericAttributes() {
+            return s != null ? s.hasNonGenenericAttributes() : t.hasNonGenenericAttributes();
+        }
+
+        @Override
+        public Collection<Attribute> getAttributes() {
+            if(s == null) {
+                return t.getAttributes();
+            } else if(t == null) {
+                return s.getAttributes();
+            } else {
+                //merge
+                Collection<Attribute> merged = new HashSet<Attribute>();
+                merged.addAll(s.getAttributes());
+                merged.addAll(t.getAttributes());
+                return merged;
+            }
+        }
+
+        @Override
+        public Attribute getAttribute(String name) {
+            for(Attribute a : getAttributes()) {
+                if(a.getName().equals(name)) {
+                    return a;
+                }
+            }
+            return null;
+        }
+
+    }

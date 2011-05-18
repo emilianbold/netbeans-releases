@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-package org.netbeans.modules.web.jsfapi.api;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
+ * Composite library descriptor. The first library has the precedence.
  *
  * @author marekfukala
  */
-@Deprecated
-public enum LibraryType {
-    CLASS, COMPOSITE;
+public class CompositeLibraryDescriptor implements LibraryDescriptor {
+
+    private LibraryDescriptor first, second;
+
+    public CompositeLibraryDescriptor(LibraryDescriptor first, LibraryDescriptor second) {
+        this.first = first;
+        this.second = second;
+        
+        if(first.getNamespace() != null 
+                && second.getNamespace() != null 
+                && !first.getNamespace().equals(second.getNamespace())) {
+            //both must have the same namespace if there's any
+            throw new IllegalArgumentException(String.format("Both libraries must declare the same namespace if there's any. "
+                    + "Currently the first one declares %s and the second %s!", first.getNamespace(), second.getNamespace())); //NOI18N
+        }
+        
+    }
+    
+    @Override
+    public String getNamespace() {
+        return first.getNamespace() != null ? first.getNamespace() : second.getNamespace();
+    }
+
+     @Override
+    public Map<String, Tag> getTags() {
+        //merge
+        Map<String, Tag> s = first.getTags();
+        Map<String, Tag> t = second.getTags();
+
+        Map<String, Tag> result = new HashMap<String, Tag>();
+
+        Collection<String> allTagNames = new HashSet<String>();
+        allTagNames.addAll(s.keySet());
+        allTagNames.addAll(t.keySet());
+        for(String tagName : allTagNames) {
+            result.put(tagName, new ProxyTag(s.get(tagName), t.get(tagName)));
+        }
+
+        return result;
+    }
+
+    
 }
