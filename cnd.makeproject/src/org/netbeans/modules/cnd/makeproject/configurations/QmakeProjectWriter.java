@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -158,7 +159,7 @@ public class QmakeProjectWriter {
             FileObject qmakeProjectFO = FileUtil.createData(confBaseFO, PROJECT_PREFIX + configuration.getName() + PROJECT_SUFFIX);
             BufferedWriter bw = null;
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(qmakeProjectFO.getOutputStream()));
+                bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(qmakeProjectFO)));
                 write(bw);
             } finally {
                 if (bw != null) {

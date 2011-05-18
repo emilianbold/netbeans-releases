@@ -395,7 +395,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                 final FileObject xml = FileUtil.createData(dir, path);
                 try {
                     _lock[0] = xml.lock(); // unlocked by {@link #save}
-                    OutputStream os = xml.getOutputStream(_lock[0]);
+                    OutputStream os = SmartOutputStream.getSmartOutputStream(xml, _lock[0]);
                     try {
                         os.write(data);
                     } finally {
