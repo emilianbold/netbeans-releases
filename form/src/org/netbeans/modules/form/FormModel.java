@@ -698,7 +698,7 @@ public class FormModel
         compoundEdit.addEdit(edit);
     }
 
-    UndoRedo.Manager getUndoRedoManager() {
+    public UndoRedo.Manager getUndoRedoManager() {
 //        if (undoRedoManager == null) {
 //            undoRedoManager = new UndoRedoManager();
 //            undoRedoManager.setLimit(50);
