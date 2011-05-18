@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -232,6 +233,9 @@ public final class DiscoveryWizardAction extends NodeAction {
             }
             MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
             if( make == null ) {
+                return null;
+            }
+            if (!CndFileUtils.isLocalFileSystem(make.getBaseDirFileSystem())) {
                 return null;
             }
             MakeConfiguration conf = make.getActiveConfiguration();
