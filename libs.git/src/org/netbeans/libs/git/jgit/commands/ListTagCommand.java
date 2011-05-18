@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -52,6 +53,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.JGitTag;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -76,7 +78,12 @@ public class ListTagCommand extends GitCommand {
         RevWalk walk = new RevWalk(repository);
         try {
             for (Map.Entry<String, Ref> e : tags.entrySet()) {
-                GitTag tag = new JGitTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
+                GitTag tag;
+                try {
+                    tag = new JGitTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
+                } catch (IncorrectObjectTypeException ex) {
+                    tag = new JGitTag(e.getKey(), new JGitRevisionInfo(walk.parseCommit(e.getValue().getLeaf().getObjectId()), repository));
+                }
                 if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
                     allTags.put(tag.getTagName(), tag);
                 }

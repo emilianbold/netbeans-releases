@@ -46,6 +46,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
 
@@ -58,8 +59,9 @@ public class JGitTag implements GitTag {
     private final String name;
     private final String message;
     private final String taggedObject;
-    private final JGitUserInfo tagger;
+    private final GitUser tagger;
     private final GitObjectType type;
+    private boolean lightWeight;
 
     public JGitTag (RevTag revTag) {
         this.id = ObjectId.toString(revTag.getId());
@@ -68,6 +70,27 @@ public class JGitTag implements GitTag {
         this.taggedObject = ObjectId.toString(revTag.getObject().getId());
         this.tagger = new JGitUserInfo(revTag.getTaggerIdent());
         this.type = getType(revTag.getObject());
+        this.lightWeight = false;
+    }
+
+    public JGitTag (String tagName, RevObject revObject) {
+        this.id = ObjectId.toString(revObject.getId());
+        this.name = tagName;
+        this.message = null;
+        this.taggedObject = id;
+        this.tagger = null;
+        this.type = getType(revObject);
+        this.lightWeight = true;
+    }
+
+    public JGitTag (String tagName, GitRevisionInfo revCommit) {
+        this.id = revCommit.getRevision();
+        this.name = tagName;
+        this.message = revCommit.getFullMessage();
+        this.taggedObject = id;
+        this.tagger = revCommit.getAuthor() == null ? revCommit.getCommitter() : revCommit.getAuthor();
+        this.type = GitObjectType.COMMIT;
+        this.lightWeight = true;
     }
     
     @Override
@@ -98,6 +121,11 @@ public class JGitTag implements GitTag {
     @Override
     public GitObjectType getTaggedObjectType () {
         return type;
+    }
+
+    @Override
+    public boolean isLightWeight () {
+        return lightWeight;
     }
 
     private GitObjectType getType (RevObject object) {

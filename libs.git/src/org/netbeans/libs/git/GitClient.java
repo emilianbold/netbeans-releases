@@ -167,7 +167,8 @@ public interface GitClient {
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
 
     /**
-     * Creates a tag for any object represented by a given taggedObjectId
+     * Creates a tag for any object represented by a given taggedObjectId. 
+     * If message is set to null or an empty value and signed set to false than this method creates a lightweight tag
      * @param tagName
      * @param taggedObject
      * @param message
