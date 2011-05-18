@@ -41,15 +41,22 @@
  */
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.RefUpdate;
+import org.eclipse.jgit.lib.RefUpdate.Result;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.JGitTag;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -79,18 +86,24 @@ public class CreateTagCommand extends GitCommand {
     protected void run () throws GitException {
         Repository repository = getRepository();
         try {
-            TagCommand cmd = new Git(repository).tag();
-            cmd.setName(tagName);
-            cmd.setMessage(message);
             RevObject obj = Utils.findObject(repository, taggedObject);
-            cmd.setObjectId(obj);
-            cmd.setForceUpdate(forceUpdate);
-            cmd.setSigned(signed);
-            RevTag revTag = cmd.call();
-            tag = new JGitTag(revTag);
+            if ((message == null || message.isEmpty()) && signed == false) {
+                tag = createLightWeight(obj, repository);
+            } else {
+                TagCommand cmd = new Git(repository).tag();
+                cmd.setName(tagName);
+                cmd.setMessage(message);
+                cmd.setObjectId(obj);
+                cmd.setForceUpdate(forceUpdate);
+                cmd.setSigned(signed);
+                RevTag revTag = cmd.call();
+                tag = new JGitTag(revTag);
+            }
         } catch (JGitInternalException ex) {
             throw new GitException(ex);
         } catch (GitAPIException ex) {
+            throw new GitException(ex);
+        } catch (IOException ex) {
             throw new GitException(ex);
         }
     }
@@ -116,5 +129,29 @@ public class CreateTagCommand extends GitCommand {
 
     public GitTag getTag () {
         return tag;
+    }
+
+    private JGitTag createLightWeight (RevObject revObject, Repository repository) throws GitException, IOException {
+        RevWalk revWalk = new RevWalk(repository);
+        try {
+            String refName = Constants.R_TAGS + tagName;
+            RefUpdate tagRef = repository.updateRef(refName);
+            tagRef.setNewObjectId(revObject);
+            tagRef.setForceUpdate(forceUpdate);
+            tagRef.setRefLogMessage("tagged " + tagName, false);
+            Result updateResult = tagRef.update(revWalk);
+            switch (updateResult) {
+                case NEW:
+                case FORCED:
+                    return revObject instanceof RevCommit ? new JGitTag(tagName, new JGitRevisionInfo((RevCommit) revObject, repository)) : new JGitTag(tagName, revObject);
+                case LOCK_FAILURE:
+                    throw new GitException("Cannot lock ref " + refName);
+                default:
+                    throw new GitException("Updating ref " + refName + " failed");
+            }
+
+        } finally {
+            revWalk.release();
+        }
     }
 }
