@@ -128,7 +128,7 @@ public class SvnUtils {
         }
         SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
         SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
-        metadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
+        metadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + File.separatorChar + ".*|$)");
     }
 
     private static Reference<Context>  contextCached = new WeakReference<Context>(null);
