@@ -3,10 +3,6 @@
 if test ! -e /space/hudsonserver/master 
 then
 
-#project_root=$WORKSPACE/../../../../ergonomics
-#netbeans_dest=$WORKSPACE/../../../../netbeans
-#performance=$project_root/performance
-
 # ergonomics root
 cd "$project_root"
 rm -rf nbbuild/nbproject/private
@@ -18,12 +14,12 @@ cd "$performance"
 rm -rf build/test/unit/results
 rm -rf build/test/qa-functional/results
 
-ant clean -Dnetbeans.dest.dir=./../../netbeans
-ant -Dnetbeans.dest.dir=./../../netbeans
+ant clean -Dnetbeans.dest.dir=$netbeans_dest
+ant -Dnetbeans.dest.dir=$netbeans_dest
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../netbeans
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../netbeans
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=./../../netbeans
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true
 
 buildnum=`cat "$reposdir"/build.number`
 str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
