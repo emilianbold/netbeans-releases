@@ -109,16 +109,24 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     }
 
     public synchronized Project getMainProject () {
-        Project lastSelectedProject = lastSelectedProjectRef.get();
-        if (isMainProject && lastSelectedProject != null &&
-            !isDependent(lastSelectedProject, currentProject.get())) {
+        final Project lastSelectedProject;
+        final Project current;
+        final boolean isMain;
+        synchronized (this) {
+            lastSelectedProject = lastSelectedProjectRef.get();
+            current = currentProject.get();
+            isMain = isMainProject;
+        }
+        if (isMain && lastSelectedProject != null &&
+            !isDependent(lastSelectedProject, current)) {
             // If there's a main project set, but the current project has no
             // dependency on it, return the current project.
             //System.err.println("getMainProject() = (LS) "+lastSelectedProject);
             return lastSelectedProject;
+        } else {
+            return current;
         }
         //System.err.println("getMainProject() = "+currentProject);
-        return currentProject.get();
     }
 
     public @Override void perform(Project p) {
