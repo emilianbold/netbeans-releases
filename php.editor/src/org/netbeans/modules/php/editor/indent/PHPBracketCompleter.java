@@ -795,7 +795,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         for (int i = pos; i < length; i++) {
             char c = txt.charAt(i);
             if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
-                if (quotation == 0 || i < length - 2) {
+                if (quotation == 0 && i < length - 2) {
                     return true;
                 }
                 // guess it is not just part of some text constant
