@@ -47,9 +47,9 @@ import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
-import org.netbeans.modules.profiler.NetBeansProfiler.SessionListener;
 import org.netbeans.modules.profiler.categorization.api.Categorization;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
+import org.netbeans.modules.profiler.spi.SessionListener;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 

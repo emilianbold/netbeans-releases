@@ -56,7 +56,8 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
-import org.netbeans.modules.profiler.LiveResultsWindow.Contributor;
+import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
+import org.netbeans.modules.profiler.spi.LiveResultsWindowContributor;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
@@ -67,10 +68,10 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service = Contributor.class)
-public class LiveResultsContributor extends Contributor.Adapter {
+@ServiceProvider(service = LiveResultsWindowContributor.class)
+public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
 
-    private static final Logger LOGGER = Logger.getLogger(LiveResultsContributor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DrilldownContributor.class.getName());
     private DrillDown dd;
     volatile private boolean drillDownGroupOpened;
 
@@ -83,7 +84,11 @@ public class LiveResultsContributor extends Contributor.Adapter {
             StatisticalModuleContainer container = Lookup.getDefault().lookup(StatisticalModuleContainer.class);
             additionalStats.addAll(container.getAllModules());
 
-
+            for(StatisticalModule sm : additionalStats) {
+                if (sm instanceof ProjectAwareStatisticalModule) {
+                    ((ProjectAwareStatisticalModule)sm).setProject(project);
+                }
+            }
             DrillDownWindow.getDefault().setDrillDown(dd, additionalStats);
             showDrillDown();
         } else {

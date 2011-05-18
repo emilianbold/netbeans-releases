@@ -71,9 +71,9 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.categorization.api.Categorization;
 import org.netbeans.modules.profiler.categorization.api.Category;
+import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
 
@@ -83,7 +83,7 @@ import org.netbeans.modules.profiler.utilities.Visitor;
  * @author Jaroslav Bachorik
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule.class)
-public class ForwardCategoryDistributionPanel extends StatisticalModule {
+public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class MarkTime {
@@ -257,11 +257,12 @@ public class ForwardCategoryDistributionPanel extends StatisticalModule {
         walker.add(0, model);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    private Project getProject() {
-        return NetBeansProfiler.getDefaultNB().getProfiledProject();
+    @Override
+    public boolean supportsProject(Project project) {
+        return Categorization.isAvailable(getProject());
     }
+    
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void setSelectedMethodId(int methodId) {
@@ -350,8 +351,6 @@ public class ForwardCategoryDistributionPanel extends StatisticalModule {
 
                 uiUpdater = new Runnable() {
                         public void run() {
-                            if (!Categorization.isAvailable(getProject())) return;
-
                             final Categorization categorization = new Categorization(getProject());
                             
                             removeAll();
