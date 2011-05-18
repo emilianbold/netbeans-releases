@@ -49,6 +49,8 @@ import org.eclipse.persistence.jpa.jpql.spi.IPlatform;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 
 /**
  *
@@ -89,7 +91,8 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
 
     @Override
     public IJPAVersion getVersion() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String version = PersistenceUtils.getJPAVersion(project);
+        return IJPAVersion.value(version);
     }
 
     @Override
