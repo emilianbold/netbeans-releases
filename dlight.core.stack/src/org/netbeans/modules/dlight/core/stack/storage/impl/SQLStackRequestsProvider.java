@@ -120,7 +120,7 @@ final class SQLStackRequestsProvider {
 
         @Override
         public void execute() throws SQLException {
-            PreparedStatement stmt = cache.getPreparedStatement("insert into sourceinfo (node_id, context_id, file_id, line, column, file_offset) values (?,?,?,?,?,?)"); // NOI18N
+            PreparedStatement stmt = cache.getPreparedStatement("insert into sourceinfo (node_id, context_id, file_id, fline, fcolumn, file_offset) values (?,?,?,?,?,?)"); // NOI18N
             stmt.setLong(1, nodeID);
             stmt.setLong(2, contextID);
             stmt.setLong(3, fileID);

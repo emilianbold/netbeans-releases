@@ -733,7 +733,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
         Function func = null;
         try {
             PreparedStatement ps = stmtCache.getPreparedStatement(
-                    "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.line, sourceinfo.column" // NOI18N
+                    "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.fline, sourceinfo.fcolumn" // NOI18N
                     + " from stacknode left join funcnames on funcnames.id = stacknode.func_id" // NOI18N
                     + " left join moduleinfo on moduleinfo.node_id = stacknode.id" // NOI18N
                     + " left join modules on modules.id = moduleinfo.module_id" // NOI18N
@@ -817,7 +817,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
             long nodeID = stackId;
             while (0 < nodeID) {
                 PreparedStatement ps = stmtCache.getPreparedStatement(
-                        "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.line, sourceinfo.column" // NOI18N
+                        "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.fline, sourceinfo.fcolumn" // NOI18N
                         + " from stacknode left join funcnames on funcnames.id = stacknode.func_id" // NOI18N
                         + " left join moduleinfo on moduleinfo.node_id = stacknode.id" // NOI18N
                         + " left join modules on modules.id = moduleinfo.module_id" // NOI18N
