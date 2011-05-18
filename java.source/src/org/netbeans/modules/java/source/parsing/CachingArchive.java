@@ -45,7 +45,6 @@
 package org.netbeans.modules.java.source.parsing;
 
 
-import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -285,7 +284,7 @@ public class CachingArchive implements Archive {
             final @NonNull String pkg,
             final @NonNull Folder f,
             final @NonNull int off,
-            final @NotNull Predicate<String> predicate) {
+            final @NonNull Predicate<String> predicate) {
         String baseName = getString(f.indices[off], f.indices[off+1]);
         if (predicate.apply(baseName)) {
             long mtime = join(f.indices[off+3], f.indices[off+2]);
