@@ -91,6 +91,9 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionCall> getCallStack(long stackId);
     
+    /**
+     * @since 1.9.3
+     */
     Function getLeafFunction(long stackId);
 
     List<FunctionMetric> getMetricsList();
