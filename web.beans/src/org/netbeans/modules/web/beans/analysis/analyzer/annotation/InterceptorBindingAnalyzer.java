@@ -42,30 +42,20 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
-import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationModelAnalyzer.AnnotationAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -78,42 +68,44 @@ import org.openide.util.NbBundle;
  */
 public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
     
-    private static final Logger LOG = Logger.getLogger( 
-            InterceptorBindingAnalyzer.class.getName());
-
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationModelAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
-    public void analyze( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+    public void analyze( TypeElement element, WebBeansModel model,
+            List<ErrorDescription> descriptions ,
+            CompilationInfo info , AtomicBoolean cancel )
     {
         if ( !AnnotationUtil.hasAnnotation(element, 
-                AnnotationUtil.INTERCEPTOR_BINDING_FQN , compInfo))
+                AnnotationUtil.INTERCEPTOR_BINDING_FQN , model.getCompilationController()))
         {
             return;
         }
         InterceptorTargetAnalyzer analyzer = new InterceptorTargetAnalyzer(
-                element, compInfo, descriptions);
+                element, model, descriptions, info );
         if ( cancel.get() ){
             return;
         }
         if (!analyzer.hasRuntimeRetention()) {
             ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle
-                            .getMessage(InterceptorBindingAnalyzer.class,
+                    .createError(element, model, info ,  
+                            NbBundle.getMessage(InterceptorBindingAnalyzer.class,
                                     INCORRECT_RUNTIME));
-            descriptions.add(description);
+            if ( description != null ){
+                descriptions.add(description);
+            }
         }
         if ( cancel.get() ){
             return;
         }
         if (!analyzer.hasTarget()) {
             ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
-                            InterceptorBindingAnalyzer.class,
+                    .createError(element, model, info ,  
+                            NbBundle.getMessage(InterceptorBindingAnalyzer.class,
                             "ERR_IncorrectInterceptorBindingTarget")); // NOI18N
-            descriptions.add(description);
+            if ( description != null ){
+                descriptions.add(description);
+            }
         }
         else {
             if ( cancel.get() ){
@@ -124,89 +116,51 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
                 return;
             }
             checkTransitiveInterceptorBindings( element, declaredTargetTypes, 
-                    compInfo , descriptions);
+                    model , descriptions, info );
         }
     }
     
     private void checkTransitiveInterceptorBindings( TypeElement element,
-            Set<ElementType> declaredTargetTypes, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+            Set<ElementType> declaredTargetTypes, WebBeansModel model,
+            List<ErrorDescription> descriptions , CompilationInfo info )
     {
-        if ( declaredTargetTypes== null || declaredTargetTypes.size()==1){
+        if (declaredTargetTypes == null || declaredTargetTypes.size() == 1) {
             return;
         }
-        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
-        if ( project == null ){
-            return ;
-        }
-        MetaModelSupport support = new MetaModelSupport(project);
-        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<TypeElement> handle = ElementHandle.create( element);
-        try {
-            Collection<ElementHandle<Element>> bindingHandles = 
-                metaModel.runReadAction( 
-                    new MetadataModelAction<WebBeansModel, 
-                    Collection<ElementHandle<Element>>>() 
+        Collection<AnnotationMirror> interceptorBindings = model
+                .getInterceptorBindings(element);
+        for (AnnotationMirror iBinding : interceptorBindings) {
+            Element binding = iBinding.getAnnotationType().asElement();
+            if (!(binding instanceof TypeElement)) {
+                continue;
+            }
+            Set<ElementType> bindingTargetTypes = TargetAnalyzer
+                    .getDeclaredTargetTypes(
+                            new AnnotationHelper(model
+                                    .getCompilationController()),
+                            (TypeElement) binding);
+            if (bindingTargetTypes.size() == 1
+                    && bindingTargetTypes.contains(ElementType.TYPE))
             {
-                @Override
-                public Collection<ElementHandle<Element>> run( 
-                        WebBeansModel model ) throws Exception 
-                {
-                    Set<ElementHandle<Element>> result = new 
-                        HashSet<ElementHandle<Element>>();
-                    TypeElement iBinding = handle.resolve( 
-                            model.getCompilationController());
-                    if ( iBinding == null ){
-                        return result;
-                    }
-                    Collection<AnnotationMirror> interceptorBindings = 
-                        model.getInterceptorBindings(iBinding);
-                    for (AnnotationMirror annotation : interceptorBindings) {
-                        Element interceptorBinding = annotation.
-                            getAnnotationType().asElement();
-                        ElementHandle<Element> iBindingHandle = 
-                            ElementHandle.create( interceptorBinding);
-                        result.add( iBindingHandle );
-                        
-                    }
-                    return result;
-                }
-            });
-            for (ElementHandle<Element> bindingHandle : bindingHandles) {
-                Element binding = bindingHandle.resolve(compInfo);
-                if ( !(binding instanceof  TypeElement) ){
-                    continue;
-                }
-                InterceptorTargetAnalyzer analyzer = new InterceptorTargetAnalyzer(
-                        (TypeElement)binding, compInfo, null );
-                Set<ElementType> bindingTargetTypes = analyzer.getDeclaredTargetTypes();
-                if ( bindingTargetTypes.size() == 1 && bindingTargetTypes.
-                        contains(ElementType.TYPE))
-                {
-                    ErrorDescription description = CdiEditorAnalysisFactory
-                        .createError(element, compInfo, NbBundle
-                            .getMessage(InterceptorBindingAnalyzer.class,
-                                    "ERR_IncorrectTransitiveInterceptorBinding",
-                                    ((TypeElement)binding).getQualifiedName().toString()));
+                ErrorDescription description = CdiEditorAnalysisFactory
+                        .createError(element, model , info ,  
+                                NbBundle.getMessage(InterceptorBindingAnalyzer.class,
+                                        "ERR_IncorrectTransitiveInterceptorBinding", // NOI18N
+                                        ((TypeElement) binding).getQualifiedName().toString()));
+                if ( description != null ){
                     descriptions.add(description);
                 }
-                
             }
-        }
-        catch (MetadataModelException e) {
-            LOG.log( Level.INFO , null , e);
-        }
-        catch (IOException e) {
-            LOG.log( Level.INFO , null , e);
+
         }
     }
 
     private static class InterceptorTargetAnalyzer extends CdiAnnotationAnalyzer {
         
-        InterceptorTargetAnalyzer( TypeElement element , CompilationInfo info ,
-                List<ErrorDescription> descriptions)
+        InterceptorTargetAnalyzer( TypeElement element , WebBeansModel model ,
+                List<ErrorDescription> descriptions, CompilationInfo info)
         {
-            super( element, info , descriptions );
+            super( element, model , descriptions , info );
         }
 
         /* (non-Javadoc)

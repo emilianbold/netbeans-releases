@@ -54,7 +54,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -67,28 +68,26 @@ public class ScopedFieldAnalyzer extends AbstractScopedAnalyzer implements
         FieldAnalyzer
 {
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
     @Override
     public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions, AtomicBoolean cancel )
+            TypeElement parent, WebBeansModel model,
+            List<ErrorDescription> descriptions, CompilationInfo info , 
+            AtomicBoolean cancel )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
-                compInfo))
+                model.getCompilationController()))
         {
-            analyzeScope(element, compInfo, descriptions, cancel );
+            analyzeScope(element, model, descriptions, info , cancel );
         }
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions ,
+            CompilationInfo info , AtomicBoolean cancel )
     {
         if ( scopeElement.getQualifiedName().contentEquals( AnnotationUtil.DEPENDENT)){
             return;
@@ -98,11 +97,14 @@ public class ScopedFieldAnalyzer extends AbstractScopedAnalyzer implements
         }
         if (hasTypeVarParameter(element.asType())) {
             ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+                    .createError(element, model, info, 
+                            NbBundle.getMessage(
                             ScopedFieldAnalyzer.class,
                             "ERR_WrongScopeParameterizedProducer", // NOI18N
                             scopeElement.getQualifiedName().toString()));
-            descriptions.add(description);
+            if ( description != null ){
+                descriptions.add(description);
+            }
         }
     }
 

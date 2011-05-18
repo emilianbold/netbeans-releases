@@ -42,50 +42,97 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.MetaModelSupport;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationModelAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
 
 /**
  * @author ads
  *
  */
-class CdiAnalysisTask extends AbstractAnalysisTask {
+class WebBeansAnalysisTask extends AbstractAnalysisTask {
     
+    private final static Logger LOG = Logger.getLogger( 
+            WebBeansAnalysisTask.class.getName());
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
+     */
     @Override
-    void run( CompilationInfo compInfo ) {
+    void run( final CompilationInfo compInfo ) {
         List<? extends TypeElement> types = compInfo.getTopLevelElements();
+        final List<ElementHandle<TypeElement>> handles = 
+            new ArrayList<ElementHandle<TypeElement>>(1);
         for (TypeElement typeElement : types) {
             if ( isCancelled() ){
                 break;
             }
-            analyzeType(typeElement, null,  compInfo);
+            handles.add(ElementHandle.create(typeElement));
+        }
+        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
+        if ( project == null ){
+            return ;
+        }
+        MetaModelSupport support = new MetaModelSupport(project);
+        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
+        try {
+            metaModel.runReadAction( 
+                    new MetadataModelAction<WebBeansModel, Void>() 
+            {
+                @Override
+                public Void run( WebBeansModel model ) throws Exception {
+                    CompilationController controller = model.getCompilationController();
+                    for (ElementHandle<TypeElement> handle : handles) {
+                        TypeElement type = handle.resolve( controller );
+                        analyzeType( type , null , model , compInfo );
+                    }
+                    return null;
+                }
+            });
+        }
+        catch (MetadataModelException e) {
+            LOG.log( Level.INFO , null , e);
+        }
+        catch (IOException e) {
+            LOG.log( Level.INFO , null , e);
         }
     }
     
     private void analyzeType(TypeElement typeElement , TypeElement parent ,
-            CompilationInfo compInfo)
+            WebBeansModel model , CompilationInfo info )
     {
         ElementKind kind = typeElement.getKind();
-        ElementAnalyzer analyzer = ANALIZERS.get( kind );
+        ModelAnalyzer analyzer = ANALIZERS.get( kind );
         if ( analyzer != null ){
-            analyzer.analyze(typeElement, parent, compInfo, getProblems(), 
+            analyzer.analyze(typeElement, parent, model, getProblems(), info ,
                     getCancel());
         }
         if ( isCancelled() ){
@@ -94,19 +141,19 @@ class CdiAnalysisTask extends AbstractAnalysisTask {
         List<? extends Element> enclosedElements = typeElement.getEnclosedElements();
         List<TypeElement> types = ElementFilter.typesIn(enclosedElements);
         for (TypeElement innerType : types) {
-            analyzeType(innerType, typeElement , compInfo);
+            analyzeType(innerType, typeElement , model , info );
         }
         Set<Element> enclosedSet = new HashSet<Element>( enclosedElements );
         enclosedSet.removeAll( types );
         for(Element element : enclosedSet ){
-            analyze(typeElement, compInfo, element);
+            analyze(typeElement, model, element, info );
         }
     }
 
-    private void analyze( TypeElement typeElement, CompilationInfo compInfo,
-            Element element )
+    private void analyze( TypeElement typeElement, WebBeansModel model,
+             Element element, CompilationInfo info  )
     {
-        ElementAnalyzer analyzer;
+        ModelAnalyzer analyzer;
         if ( isCancelled() ){
             return;
         }
@@ -114,19 +161,18 @@ class CdiAnalysisTask extends AbstractAnalysisTask {
         if ( analyzer == null ){
             return;
         }
-        analyzer.analyze(element, typeElement, compInfo, getProblems(),
+        analyzer.analyze(element, typeElement, model, getProblems(), info , 
                 getCancel());
     }
     
-    private static final Map<ElementKind,ElementAnalyzer> ANALIZERS = 
-        new HashMap<ElementKind, ElementAnalyzer>();
+    private static final Map<ElementKind,ModelAnalyzer> ANALIZERS = 
+        new HashMap<ElementKind, ModelAnalyzer>();
 
     static {
-        ANALIZERS.put(ElementKind.CLASS, new ClassElementAnalyzer());
-        ANALIZERS.put(ElementKind.FIELD, new FieldElementAnalyzer());
-        ANALIZERS.put(ElementKind.METHOD, new MethodElementAnalyzer());
-        ANALIZERS.put(ElementKind.CONSTRUCTOR, new CtorAnalyzer());
-        ANALIZERS.put(ElementKind.ANNOTATION_TYPE, new AnnotationElementAnalyzer());
+        ANALIZERS.put(ElementKind.CLASS, new ClassModelAnalyzer());
+        ANALIZERS.put(ElementKind.FIELD, new FieldModelAnalyzer());
+        ANALIZERS.put(ElementKind.METHOD, new MethodModelAnalyzer());
+        ANALIZERS.put(ElementKind.ANNOTATION_TYPE, new AnnotationModelAnalyzer());
     }
 
 }

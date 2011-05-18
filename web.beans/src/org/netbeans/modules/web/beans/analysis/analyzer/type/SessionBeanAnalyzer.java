@@ -42,26 +42,16 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -72,50 +62,25 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class SessionBeanAnalyzer implements ClassAnalyzer{
+public class SessionBeanAnalyzer implements ClassAnalyzer {
     
-    private static final Logger LOG = Logger.getLogger( 
-            SessionBeanAnalyzer.class.getName() );  
-
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
-            AtomicBoolean cancel )
+            WebBeansModel model, List<ErrorDescription> descriptions ,
+            CompilationInfo info , AtomicBoolean cancel )
     {
-        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
-        if ( project == null ){
-            return ;
-        }
-        boolean isSingleton = AnnotationUtil.hasAnnotation(element, AnnotationUtil.SINGLETON, 
-                compInfo);
-        boolean isStateless = AnnotationUtil.hasAnnotation(element, AnnotationUtil.STATELESS, 
-                compInfo);
+        boolean isSingleton = AnnotationUtil.hasAnnotation(element, 
+                AnnotationUtil.SINGLETON, model.getCompilationController());
+        boolean isStateless = AnnotationUtil.hasAnnotation(element, 
+                AnnotationUtil.STATELESS, model.getCompilationController());
         if ( cancel.get() ){
             return;
         }
-        MetaModelSupport support = new MetaModelSupport(project);
-        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        final ElementHandle<TypeElement> handle = ElementHandle.create( element);
         try {
-            String scope = metaModel.runReadAction( 
-                    new MetadataModelAction<WebBeansModel, String>() 
-            {
-
-                @Override
-                public String run( WebBeansModel model ) throws Exception {
-                    TypeElement clazz = handle.resolve( model.getCompilationController());
-                    if ( clazz == null ){
-                        return null;
-                    }
-                    return model.getScope( clazz );
-                }
-            });
-            if ( scope == null ){
-                return;
-            }
+            String scope = model.getScope( element );
             if ( isSingleton ) {
                 if ( AnnotationUtil.APPLICATION_SCOPED.equals( scope ) || 
                         AnnotationUtil.DEPENDENT.equals( scope ) )
@@ -123,46 +88,40 @@ public class SessionBeanAnalyzer implements ClassAnalyzer{
                     return;
                 }
                 ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
+                createError( element, model, info,  
                     NbBundle.getMessage(SessionBeanAnalyzer.class, 
                             "ERR_InvalidSingletonBeanScope"));              // NOI18N
-                descriptions.add( description );
+                if ( description != null ){
+                    descriptions.add( description );
+                }
             }
             else if ( isStateless ) {
                 if ( !AnnotationUtil.DEPENDENT.equals( scope ) )
                 {
                     ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
+                    createError( element, model, info ,  
                         NbBundle.getMessage(SessionBeanAnalyzer.class, 
                                 "ERR_InvalidStatelessBeanScope"));              // NOI18N
-                    descriptions.add( description );
+                    if ( description != null ){
+                        descriptions.add( description );
+                    }
                 }
             }
         }
-        catch (MetadataModelException e) {
-            if ( !informCdiException(e, element, compInfo, descriptions)){
-                LOG.log( Level.INFO , null , e);
-            }
-        }
-        catch (IOException e) {
-            if ( !informCdiException(e, element, compInfo, descriptions)){
-                LOG.log( Level.INFO , null , e);
-            }
+        catch (CdiException e) {
+            informCdiException(e, element, model, descriptions, info );
         }
     }
     
-    private boolean informCdiException(Exception exception , Element element, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions)
+    private void informCdiException(CdiException exception , Element element, 
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info )
     {
-        Throwable cause = exception.getCause();
-        if ( cause instanceof CdiException ){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    cause.getMessage());
-            descriptions.add( description );
-            return true;
+        ErrorDescription description = CdiEditorAnalysisFactory.createError(
+                element, model, info ,exception.getMessage());
+        if ( description != null ){
+            descriptions.add(description);
         }
-        return false;
     }
 
 }
