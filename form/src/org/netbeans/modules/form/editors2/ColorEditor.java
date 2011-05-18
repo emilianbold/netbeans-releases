@@ -45,7 +45,7 @@
 package org.netbeans.modules.form.editors2;
 
 import java.awt.Color;
-import java.beans.PropertyEditorManager;
+import org.netbeans.modules.form.FormPropertyEditorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.NamedPropertyEditor;
 import org.netbeans.modules.form.ResourceWrapperEditor;
@@ -59,7 +59,7 @@ import org.netbeans.modules.form.ResourceWrapperEditor;
 public class ColorEditor extends ResourceWrapperEditor implements NamedPropertyEditor {
     
     public ColorEditor() {
-        super(PropertyEditorManager.findEditor(Color.class));
+        super(FormPropertyEditorManager.findBasicEditor(Color.class));
     }
 
     @Override

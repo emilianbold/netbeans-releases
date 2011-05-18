@@ -772,7 +772,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             // cursor keys
             if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
                 // duplicating
-                DuplicateAction.performAction(formDesigner.getSelectedComponentNodes(), keyCode);
+                DuplicateAction.performAction(formDesigner.getSelectedNodes(), keyCode);
                 e.consume();
                 return;
             }
@@ -1076,21 +1076,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     } */
 
     private void selectOtherComponentsNode() {
-        FormEditor formEditor = formDesigner.getFormEditor();
-        ComponentInspector ci = ComponentInspector.getInstance();
-        Node[] selectedNode = new Node[] { formEditor.getOthersContainerNode() };
-        
-        try {
-            ci.setSelectedNodes(selectedNode, formEditor);
-            formDesigner.clearSelectionImpl();
-            formDesigner.repaintSelection();
-        }
-        catch (java.beans.PropertyVetoException ex) {
-            org.openide.ErrorManager.getDefault().notify(
-                org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
-
-        formDesigner.setActivatedNodes(selectedNode);
+        formDesigner.setSelectedNodes(formDesigner.getFormEditor().getOthersContainerNode());
     }
 
     private boolean processDoubleClick(MouseEvent e) {
@@ -1153,15 +1139,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private void showContextMenu(Point popupPos) {
-        ComponentInspector inspector = ComponentInspector.getInstance();
-        TopComponent activated = TopComponent.getRegistry().getActivated();
-        if (activated != formDesigner.multiViewObserver.getTopComponent()
-                && activated != inspector)
-            return;
-
         formDesigner.componentActivated(); // just for sure...
 
-        Node[] selectedNodes = inspector.getSelectedNodes();
+        Node[] selectedNodes = formDesigner.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
         if (popup != null) {
             popup.show(HandleLayer.this, popupPos.x, popupPos.y);

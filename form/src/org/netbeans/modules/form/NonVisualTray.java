@@ -60,32 +60,36 @@ import org.openide.explorer.view.*;
  * @author  Jan Stola
  */
 public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
-    /** The corresponding form model. */
-    private FormModel formModel;
     /** List view used to display beans. */
     private NonVisualView listView;
     /** Explorer manager for the list view. */
     private ExplorerManager manager;
-    
+    /** Explorer manager from FormDesigner to synchronize with. */
+    private ExplorerManager syncManager;
+    /** Listener doing the synchronization. */
+    private PropertyChangeListener selectionListener;
+
     /**
      * Creates new <code>NonVisualTray</code>.
-     *
-     * @param formModel the corresponding form model.
+     * @param syncManager ExplorerManager to synchronize with
+     * @param rootNode Node to be used as root (Other Components)
      */
-    public NonVisualTray(FormModel formModel) {        
-        this.formModel = formModel;
-        manager = new ExplorerManager();        
-        Node othersNode = FormEditor.getFormEditor(formModel).getOthersContainerNode();
-        manager.setRootContext(new NonVisualNode(othersNode, new NonVisualChildren(othersNode)));
-        Listener listener = new Listener();
-        manager.addPropertyChangeListener(listener);
-        ComponentInspector ci = ComponentInspector.getInstance();
-        ci.getExplorerManager().addPropertyChangeListener(listener);
+    public NonVisualTray(ExplorerManager syncManager, Node rootNode) {
+        this.manager = new ExplorerManager();
+        this.syncManager = syncManager;
+        manager.setRootContext(new NonVisualNode(rootNode, new NonVisualChildren(rootNode)));
+        selectionListener = new Listener();
+        manager.addPropertyChangeListener(selectionListener);
+        syncManager.addPropertyChangeListener(selectionListener);
         listView = new NonVisualView();
         setLayout(new BorderLayout());
         add(listView, BorderLayout.CENTER);
     }
-    
+
+    void close() {
+        syncManager.removePropertyChangeListener(selectionListener);
+    }
+
     /**
      * Returns explorer manager for the list view.
      *
@@ -180,39 +184,45 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
      * and the non-visual tray.
      */
     private class Listener implements PropertyChangeListener {
-        
+        private boolean updating;
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                if (evt.getSource() == manager) {
-                    Node[] newNodes = (Node[])evt.getNewValue();
-                    Node[] nodes = new Node[newNodes.length];
-                    for (int i=0; i<nodes.length; i++) {
-                        nodes[i] = ((NonVisualNode)newNodes[i]).getOriginal();
+            if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())
+                    || updating) {
+                return;
+            }
+            if (evt.getSource() == manager) { // sync in->out
+                Node[] newNodes = (Node[])evt.getNewValue();
+                Node[] nodes = new Node[newNodes.length];
+                for (int i=0; i<nodes.length; i++) {
+                    nodes[i] = ((NonVisualNode)newNodes[i]).getOriginal();
+                }
+                try {
+                    updating = true;
+                    syncManager.setSelectedNodes(nodes);
+                } catch (PropertyVetoException pvex) {
+                } finally {
+                    updating = false;
+                }
+            } else { // sync out->in
+                Node[] nodes = (Node[])evt.getNewValue();
+                java.util.List<Node> list = new ArrayList<Node>();
+                Node node = ((NonVisualNode)manager.getRootContext()).getOriginal();
+                for (int i=0; i<nodes.length; i++) {
+                    if (node == nodes[i].getParentNode()) {
+                        list.add(findFilterNode(nodes[i]));
                     }
-                    ComponentInspector ci = ComponentInspector.getInstance();
-                    Node[] ciNodes = ci.getSelectedNodes();
-                    if (!Arrays.asList(ciNodes).containsAll(Arrays.asList(nodes))) {
-                        try {
-                            ci.setSelectedNodes(nodes, FormEditor.getFormEditor(formModel));
-                        } catch (PropertyVetoException pvex) {}
-                    }
-                } else {
-                    Node[] nodes = (Node[])evt.getNewValue();
-                    java.util.List<Node> list = new ArrayList<Node>();
-                    Node node = ((NonVisualNode)manager.getRootContext()).getOriginal();
-                    for (int i=0; i<nodes.length; i++) {
-                        if (node == nodes[i].getParentNode()) {
-                            list.add(findFilterNode(nodes[i]));
-                        }
-                    }
-                    try {
-                        manager.setSelectedNodes(list.toArray(new Node[list.size()]));
-                    } catch (PropertyVetoException pvex) {}
+                }
+                try {
+                    updating = true;
+                    manager.setSelectedNodes(list.toArray(new Node[list.size()]));
+                } catch (PropertyVetoException pvex) {
+                } finally {
+                    updating = false;
                 }
             }
         }
-        
+
         /**
          * Finds a filter node (in the non-visual tray) that corresponds
          * to the passed node (RADComponentNode).
