@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,29 +40,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.analysis;
 
-package org.netbeans.modules.form.editors2;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import java.awt.Color;
-import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.form.NamedPropertyEditor;
-import org.netbeans.modules.form.ResourceWrapperEditor;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+
 
 /**
- * A wrapper of a default property editor for colors allowing to define the
- * colors as resources.
- * 
- * @author Tomas Pavek
+ * @author ads
+ *
  */
-public class ColorEditor extends ResourceWrapperEditor implements NamedPropertyEditor {
+abstract class AbstractAnalysisTask {
     
-    public ColorEditor() {
-        super(FormPropertyEditorManager.findBasicEditor(Color.class));
+    AbstractAnalysisTask(){
+        cancel = new AtomicBoolean( false );
+        myProblems = new LinkedList<ErrorDescription>();
+    }
+    
+    protected boolean isCancelled() {
+        return cancel.get();
+    }
+    
+    protected AtomicBoolean getCancel(){
+        return cancel;
+    }
+    
+    abstract void run( CompilationInfo compInfo );
+    
+    List<ErrorDescription> getProblems(){
+        return myProblems;
+    }
+    
+    void stop(){
+        cancel.set( true );
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(ColorEditor.class, "ColorEditor_DisplayName"); // NOI18N
-    }
+    private AtomicBoolean cancel;
+    private List<ErrorDescription> myProblems;
+    
 }

@@ -42,12 +42,6 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
-import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 
 
@@ -55,38 +49,24 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-class CdiEditorAnalysisTask implements CancellableTask<CompilationInfo> {
+class CdiEditorAnalysisTask extends CancellableAnalysysTask {
     
     CdiEditorAnalysisTask(FileObject javaFile){
-        myFileObject = javaFile;
-        myTask = new AtomicReference<CdiAnalysisTask>();
+        super( javaFile );
+    }
+    
+    @Override
+    protected String getLayerName() {
+        return "CDI Analyser"; //NOI18N
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.java.source.Task#run(java.lang.Object)
+     * @see org.netbeans.modules.web.beans.analysis.CancellableAnalysysTask#createTask()
      */
     @Override
-    public void run( CompilationInfo compInfo ) throws Exception {
-        if ( !WebBeansActionHelper.isEnabled() ){
-            return;
-        }
-        CdiAnalysisTask task = new CdiAnalysisTask( );
-        myTask.set( task );
-        task.run( compInfo );
-        HintsController.setErrors(myFileObject, "CDI Analyser", task.getProblems()); //NOI18N
-    }
+    protected AbstractAnalysisTask createTask() {
+        return new CdiAnalysisTask();
+    };
     
-    /* (non-Javadoc)
-     * @see org.netbeans.api.java.source.CancellableTask#cancel()
-     */
-    @Override
-    public void cancel() {
-        CdiAnalysisTask task = myTask.get();
-        if ( task != null ){
-            task.stop();
-        }
-    }
     
-    private FileObject myFileObject;
-    private AtomicReference<CdiAnalysisTask> myTask;
 }

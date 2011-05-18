@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,36 +40,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.analysis.analyzer;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
-package org.netbeans.modules.form.actions;
-
-
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.form.ComponentInspector;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-
-/** Opens Inspector (Component Inspector) TopComponent.
+/**
+ * @author ads
  *
- * @author   Peter Zavadsky
  */
-public class InspectorAction extends AbstractAction {
+public class FieldModelAnalyzer implements ModelAnalyzer {
 
-    public InspectorAction() {
-        putValue(NAME, NbBundle.getMessage(InspectorAction.class, "CTL_InspectorAction"));
-        putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/form/resources/inspector.png", false)); // NOI18N
-    }
-
-    /** Opens component inspector (Form structure) component. */
     @Override
-    public void actionPerformed(ActionEvent evt) {
-        // show ComponentInspector
-        ComponentInspector inspector = ComponentInspector.getInstance();
-        inspector.open();
-        inspector.requestActive();
+    public void analyze( Element element, TypeElement parent,
+            WebBeansModel model, List<ErrorDescription> descriptions, 
+            CompilationInfo info , AtomicBoolean cancel )
+    {
+        VariableElement var = (VariableElement) element;
+        TypeMirror varType = model.getCompilationController().getTypes().asMemberOf( 
+                (DeclaredType)parent.asType(),  var );
+        for (FieldAnalyzer analyzer : ANALYZERS) {
+            if ( cancel.get()){
+                return;
+            }
+            analyzer.analyze(var, varType, parent, model, descriptions, info ,
+                    cancel );
+        }
     }
     
-}
+    public interface FieldAnalyzer {
+        void analyze( VariableElement element , TypeMirror elementType,
+                TypeElement parent, WebBeansModel model,
+                List<ErrorDescription> descriptions, CompilationInfo info , 
+                AtomicBoolean cancel );
+    }
+    
+    private static final List<FieldAnalyzer> ANALYZERS= new LinkedList<FieldAnalyzer>(); 
+    
+    static {
+        ANALYZERS.add( new ScopedFieldAnalyzer() );
+        ANALYZERS.add( new InjectionPointAnalyzer());
+    }
 
+}

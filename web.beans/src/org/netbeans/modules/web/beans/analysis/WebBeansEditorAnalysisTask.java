@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,29 +40,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.analysis;
 
-package org.netbeans.modules.form.editors2;
+import org.openide.filesystems.FileObject;
 
-import java.awt.Color;
-import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.form.NamedPropertyEditor;
-import org.netbeans.modules.form.ResourceWrapperEditor;
 
 /**
- * A wrapper of a default property editor for colors allowing to define the
- * colors as resources.
- * 
- * @author Tomas Pavek
+ * @author ads
+ *
  */
-public class ColorEditor extends ResourceWrapperEditor implements NamedPropertyEditor {
+class WebBeansEditorAnalysisTask extends CancellableAnalysysTask {
     
-    public ColorEditor() {
-        super(FormPropertyEditorManager.findBasicEditor(Color.class));
+    
+    WebBeansEditorAnalysisTask(FileObject javaFile) {
+        super( javaFile );
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CancellableAnalysysTask#getLayerName()
+     */
     @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(ColorEditor.class, "ColorEditor_DisplayName"); // NOI18N
+    protected String getLayerName() {
+        return "Web Beans Model Analyzer";      // NOI18N
     }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CancellableAnalysysTask#createTask()
+     */
+    @Override
+    protected AbstractAnalysisTask createTask() {
+        return new WebBeansAnalysisTask();
+    }
+
+
 }

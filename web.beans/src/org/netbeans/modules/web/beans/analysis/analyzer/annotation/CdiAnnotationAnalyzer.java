@@ -44,10 +44,13 @@ package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -66,6 +69,15 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
         myCompInfo = compInfo;
     }
     
+    CdiAnnotationAnalyzer(TypeElement element, WebBeansModel model, 
+            List<ErrorDescription> descriptions, CompilationInfo compInfo) 
+    {
+        init( element , model.getCompilationController() );
+        myDescriptions = descriptions;
+        myCompInfo = compInfo;
+        myModel = model;
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#handleNoTarget()
      */
@@ -74,8 +86,16 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
         if ( getDescriptions()== null){
             return;
         }
+        Element subject = getElement();
+        if ( myModel != null ){
+            ElementHandle<Element> handle = ElementHandle.create( getElement());
+            subject = handle.resolve(getCompilationInfo());
+        }
+        if ( subject == null ){
+            return;
+        }
         ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( getElement(), getCompilationInfo(), 
+            createError( subject, getCompilationInfo(), 
                     NbBundle.getMessage(ScopeAnalyzer.class, "ERR_NoTarget" ,   // NOI18N
                             getCdiMetaAnnotation()));      
         getDescriptions().add( description );
@@ -89,8 +109,16 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
         if ( getDescriptions()== null){
             return;
         }
+        Element subject = getElement();
+        if ( myModel != null ){
+            ElementHandle<Element> handle = ElementHandle.create( getElement());
+            subject = handle.resolve(getCompilationInfo());
+        }
+        if ( subject == null ){
+            return;
+        }
         ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( getElement(), getCompilationInfo(), 
+            createError( subject, getCompilationInfo(), 
                     NbBundle.getMessage(ScopeAnalyzer.class, "ERR_NoRetention", // NOI18N
                             getCdiMetaAnnotation()));      
         getDescriptions().add( description );
@@ -108,5 +136,6 @@ abstract class CdiAnnotationAnalyzer extends TargetAnalyzer {
     
     private List<ErrorDescription> myDescriptions;
     private CompilationInfo myCompInfo;
+    private WebBeansModel myModel;
 
 }

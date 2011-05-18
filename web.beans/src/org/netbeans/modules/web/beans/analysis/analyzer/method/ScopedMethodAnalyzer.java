@@ -55,7 +55,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
-import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -69,27 +70,28 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+            TypeElement parent, WebBeansModel model,
+            List<ErrorDescription> descriptions , 
+            CompilationInfo info , AtomicBoolean cancel )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
-                compInfo))
+                model.getCompilationController()))
         {
-            analyzeScope(element, compInfo, descriptions, cancel );
+            analyzeScope(element, model, descriptions, info , cancel );
         }
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
-            AtomicBoolean cancel)
+            WebBeansModel model, List<ErrorDescription> descriptions , 
+            CompilationInfo info , AtomicBoolean cancel)
     {
         if ( scopeElement.getQualifiedName().contentEquals( AnnotationUtil.DEPENDENT)){
             return;
@@ -102,11 +104,13 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
             }
             if ( hasTypeVarParameter( returnType )){
                 ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
+                    createError( element, model, info ,  
                             NbBundle.getMessage(ScopedMethodAnalyzer.class, 
                                     "ERR_WrongScopeParameterizedProducerReturn",    // NOI18N
                                     scopeElement.getQualifiedName().toString()));
-                descriptions.add( description );
+                if ( description != null ){
+                    descriptions.add( description );
+                }
             }
         }
     }

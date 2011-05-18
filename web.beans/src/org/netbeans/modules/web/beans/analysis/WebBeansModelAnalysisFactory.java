@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,29 +40,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.analysis;
 
-package org.netbeans.modules.form.editors2;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
-import java.awt.Color;
-import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.form.NamedPropertyEditor;
-import org.netbeans.modules.form.ResourceWrapperEditor;
 
 /**
- * A wrapper of a default property editor for colors allowing to define the
- * colors as resources.
- * 
- * @author Tomas Pavek
+ * @author ads
+ *
  */
-public class ColorEditor extends ResourceWrapperEditor implements NamedPropertyEditor {
-    
-    public ColorEditor() {
-        super(FormPropertyEditorManager.findBasicEditor(Color.class));
+@ServiceProvider(service=JavaSourceTaskFactory.class)
+public class WebBeansModelAnalysisFactory extends
+        EditorAwareJavaSourceTaskFactory
+{
+
+    public WebBeansModelAnalysisFactory( ) {
+        super(Phase.RESOLVED, Priority.LOW, "text/x-java");    // NOI18N
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.api.java.source.JavaSourceTaskFactory#createTask(org.openide.filesystems.FileObject)
+     */
     @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(ColorEditor.class, "ColorEditor_DisplayName"); // NOI18N
+    protected CancellableTask<CompilationInfo> createTask( FileObject fileObject ) {
+        return new WebBeansEditorAnalysisTask( fileObject );
     }
+
 }

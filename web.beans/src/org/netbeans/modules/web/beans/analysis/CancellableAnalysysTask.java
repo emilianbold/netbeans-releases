@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,29 +40,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.analysis;
 
-package org.netbeans.modules.form.editors2;
+import java.util.concurrent.atomic.AtomicReference;
 
-import java.awt.Color;
-import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.form.NamedPropertyEditor;
-import org.netbeans.modules.form.ResourceWrapperEditor;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.navigation.actions.WebBeansActionHelper;
+import org.netbeans.spi.editor.hints.HintsController;
+import org.openide.filesystems.FileObject;
+
 
 /**
- * A wrapper of a default property editor for colors allowing to define the
- * colors as resources.
- * 
- * @author Tomas Pavek
+ * @author ads
+ *
  */
-public class ColorEditor extends ResourceWrapperEditor implements NamedPropertyEditor {
+abstract class CancellableAnalysysTask implements CancellableTask<CompilationInfo>{
     
-    public ColorEditor() {
-        super(FormPropertyEditorManager.findBasicEditor(Color.class));
+    CancellableAnalysysTask(FileObject javaFile){
+        myFileObject = javaFile;
+        myTask = new AtomicReference<AbstractAnalysisTask>();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.api.java.source.Task#run(java.lang.Object)
+     */
+    @Override
+    public void run( CompilationInfo compInfo ) throws Exception {
+        if ( !WebBeansActionHelper.isEnabled() ){
+            return;
+        }
+        AbstractAnalysisTask task = createTask();
+        myTask.set( task );
+        task.run( compInfo );
+        HintsController.setErrors(myFileObject, getLayerName(), task.getProblems()); 
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.api.java.source.CancellableTask#cancel()
+     */
+    @Override
+    public void cancel() {
+        AbstractAnalysisTask task = myTask.get();
+        if ( task != null ){
+            task.stop();
+        }
+    }
+    
+    protected abstract String getLayerName();
+    
+    protected abstract AbstractAnalysisTask createTask();
+    
+    protected FileObject getFileObject(){
+        return myFileObject;
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(ColorEditor.class, "ColorEditor_DisplayName"); // NOI18N
-    }
+    private FileObject myFileObject;
+    private AtomicReference<AbstractAnalysisTask> myTask;
 }

@@ -421,7 +421,9 @@ public class MenuEditLayer extends JPanel {
             selectionListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if(!isAlive) return;
+                    if(!isAlive || !"selectedNodes".equals(evt.getPropertyName())) { // NOI18N
+                        return;
+                    }
                     Node[] newNodes = (Node[])evt.getNewValue();
                     List<RADComponent> selectedNodes = new ArrayList<RADComponent>();
 
@@ -437,13 +439,13 @@ public class MenuEditLayer extends JPanel {
                 }
                 
             };
-            formDesigner.addPropertyChangeListener("activatedNodes", selectionListener); // NOI18N
+            formDesigner.addPropertyChangeListener(selectionListener);
         }
     }
     
     private void unconfigureSelectionListener() {
         if(selectionListener != null) {
-            formDesigner.removePropertyChangeListener("activatedNodes", selectionListener); // NOI18N
+            formDesigner.removePropertyChangeListener(selectionListener);
             selectionListener = null;
         }
     }
@@ -919,8 +921,9 @@ public class MenuEditLayer extends JPanel {
 
     
     private void showContextMenu(Point popupPos) {
-        ComponentInspector inspector = ComponentInspector.getInstance();
-        Node[] selectedNodes = inspector.getSelectedNodes();
+//        ComponentInspector inspector = ComponentInspector.getInstance();
+//        Node[] selectedNodes = inspector.getSelectedNodes();
+        Node[] selectedNodes = formDesigner.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
         if(!this.isVisible()) {
             this.setVisible(true);

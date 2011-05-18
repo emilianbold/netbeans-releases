@@ -50,10 +50,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.QualifierAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
@@ -92,8 +90,6 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
     
     static {
         ANALYZERS.add( new ScopeAnalyzer() );
-        ANALYZERS.add( new StereotypeAnalyzer());
-        ANALYZERS.add( new InterceptorBindingAnalyzer() );
         ANALYZERS.add( new QualifierAnalyzer() );
     }
 
