@@ -84,6 +84,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getUser",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
             "listRemoteBranches", //NOI18N
+            "listRemoteTags", //NOI18N
             "log", //NOI18N
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - i guess there's no need to mke this an exclusive command
@@ -124,6 +125,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "ignore",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
             "listRemoteBranches", //NOI18N
+            "listRemoteTags", //NOI18N
             "log", //NOI18N
             "unignore", //NOI18N
             "push", //NOI18N - does not manipulate with index

@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -68,13 +69,13 @@ import org.openide.util.NbBundle;
  */
 public class PushBranchesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private final File repository;
-    private final ItemSelector<PushBranchMapping> branches;
+    private final ItemSelector<PushMapping> localObjects;
     private boolean lastPanel;
 
     public PushBranchesStep (File repository) {
         this.repository = repository;
-        this.branches = new ItemSelector<PushBranchMapping>(NbBundle.getMessage(PushBranchesStep.class, "PushBranchesPanel.jLabel1.text")); //NOI18N
-        this.branches.addChangeListener(this);
+        this.localObjects = new ItemSelector<PushMapping>(NbBundle.getMessage(PushBranchesStep.class, "PushBranchesPanel.jLabel1.text")); //NOI18N
+        this.localObjects.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run () {
@@ -87,42 +88,49 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
     @Override
     protected final void validateBeforeNext () {
         setValid(true, null);
-        if (branches.getSelectedBranches().isEmpty()) {
+        if (localObjects.getSelectedBranches().isEmpty()) {
             setValid(false, new Message(NbBundle.getMessage(PushBranchesStep.class, "MSG_PushBranchesPanel.errorNoBranchSelected"), false)); //NOI18N
         }
     }
 
     @Override
     protected final JComponent getJComponent () {
-        return branches.getPanel();
+        return localObjects.getPanel();
     }
 
-    public void fillRemoteBranches (final Map<String, GitBranch> branches) {
+    public void fillRemoteBranches (final Map<String, GitBranch> branches, final Map<String, String> tags) {
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
                 final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
+                final Map<String, GitTag> localTags = new HashMap<String, GitTag>();
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
                 info.refresh();
                 localBranches.putAll(info.getBranches());
+                localTags.putAll(info.getTags());
                 EventQueue.invokeLater(new Runnable () {
                     @Override
                     public void run () {
-                        fillRemoteBranches(branches, localBranches);
+                        fillLocalObjects(branches, localBranches, tags, localTags);
                     }
                 });
             }
         }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PushBranchesStep.class, "MSG_PushBranchesPanel.loadingLocalBranches")); //NOI18N
     }
 
-    private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
-        List<PushBranchMapping> l = new ArrayList<PushBranchMapping>(branches.size());
+    private void fillLocalObjects (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches, Map<String, String> tags, Map<String, GitTag> localTags) {
+        List<PushMapping> l = new ArrayList<PushMapping>(branches.size());
         for (GitBranch branch : localBranches.values()) {
             if (!branch.isRemote()) {
-                l.add(new PushBranchMapping(branches.get(branch.getName()), branch));
+                l.add(new PushMapping.PushBranchMapping(branches.get(branch.getName()), branch));
             }
         }
-        this.branches.setBranches(l);
+        for (GitTag tag : localTags.values()) {
+            if (!tags.containsKey(tag.getTagName())) {
+                l.add(new PushMapping.PushTagMapping(tag));
+            }
+        }
+        this.localObjects.setBranches(l);
         validateBeforeNext();
     }
     
@@ -140,7 +148,7 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
         this.lastPanel = isLastPanel;
     }
 
-    Collection<PushBranchMapping> getSelectedMappings () {
-        return branches.getSelectedBranches();
+    Collection<PushMapping> getSelectedMappings () {
+        return localObjects.getSelectedBranches();
     }
 }

@@ -84,6 +84,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     private GitProgressSupport supp;
     private final File repositoryFile;
     private Map<String, GitBranch> remoteBranches;
+    private Map<String, String> remoteTags;
     private final RemoteRepository repository;
     private final Mode mode;
 
@@ -214,6 +215,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                             client = getClient();
                         }
                         remoteBranches = client.listRemoteBranches(uri, this);
+                        if (mode == Mode.PUSH) {
+                            remoteTags = client.listRemoteTags(uri, this);
+                        }
                     } catch (GitException ex) {
                         GitModuleConfig.getDefault().removeRecentGitURI(repository.getURI());
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
@@ -291,6 +295,10 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
     public Map<String, GitBranch> getRemoteBranches () {
         return remoteBranches;
+    }
+
+    public Map<String, String> getRemoteTags () {
+        return remoteTags;
     }
 
     @Override

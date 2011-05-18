@@ -72,6 +72,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitTag;
 import org.openide.util.NbBundle;
 
 /**
@@ -278,5 +279,24 @@ public final class Utils {
             }
         }
         return branches;
+    }
+
+    /**
+     * Transforms references into pairs of tag name/id
+     * @param allRefs all references found
+     * @return 
+     */
+    public static Map<String, String> refsToTags (Collection<Ref> allRefs) {
+        Map<String, String> tags = new HashMap<String, String>();
+        
+        // get all refs/tags
+        for (final Ref ref : RefComparator.sort(allRefs)) {
+            String refName = ref.getLeaf().getName();
+            if (refName.startsWith(Constants.R_TAGS)) {
+                String name = refName.substring(Constants.R_TAGS.length());
+                tags.put(name, ObjectId.toString(ref.getLeaf().getObjectId()));
+            }
+        }
+        return tags;
     }
 }

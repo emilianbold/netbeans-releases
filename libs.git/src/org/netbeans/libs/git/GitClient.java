@@ -317,6 +317,16 @@ public interface GitClient {
      * @throws GitException.AuthorizationException unauthorized access
      */
     public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    
+    /**
+     * Returns pairs tag name/id from a given remote repository
+     * @param remoteRepositoryUrl url of the remote repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
+     */
+    public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
