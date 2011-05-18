@@ -163,8 +163,8 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
-        assertTrue(lib instanceof ClassBasedFaceletsLibrary);
-        ClassBasedFaceletsLibrary cblib = (ClassBasedFaceletsLibrary)lib;
+        assertTrue(lib instanceof FaceletsLibrary);
+        FaceletsLibrary cblib = (FaceletsLibrary)lib;
 
         assertNotNull(cblib.getLibraryDescriptor());
         assertEquals("moc", lib.getDefaultPrefix());
@@ -202,8 +202,8 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
         Library lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
-        assertTrue(lib instanceof ClassBasedFaceletsLibrary);
-        ClassBasedFaceletsLibrary cblib = (ClassBasedFaceletsLibrary)lib;
+        assertTrue(lib instanceof FaceletsLibrary);
+        FaceletsLibrary cblib = (FaceletsLibrary)lib;
 
         assertNotNull(cblib.getLibraryDescriptor());
         assertEquals("moc", lib.getDefaultPrefix());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.jsfapi.api;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 /**
+ * Represents a composite components library w/o the facelets descriptor
  *
  * @author marekfukala
  */
-@Deprecated
-public enum LibraryType {
-    CLASS, COMPOSITE;
+public class PureCompositeComponentLibrary extends CompositeComponentLibrary {
+    
+    public PureCompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
+        super(support, libraryName, null, null);
+    }
+
+    @Override
+    protected LibraryDescriptor getFaceletsLibraryDescriptor() throws LibraryDescriptorException {
+        return new CCVirtualLibraryDescriptor();
+    }
+
+    @Override
+    public String getNamespace() {
+        return getDefaultNamespace();
+    }
+    
 }

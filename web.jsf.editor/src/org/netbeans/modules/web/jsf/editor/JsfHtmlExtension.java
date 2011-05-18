@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -91,7 +92,7 @@ import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
@@ -179,7 +180,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return;
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
+        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
 
         Map<String, String> nss = result.getNamespaces();
 
@@ -192,7 +193,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             AstNode root = result.root(namespace);
             if (root != null) {
-                final FaceletsLibrary tldl = libs.get(namespace);
+                final AbstractFaceletsLibrary tldl = libs.get(namespace);
                 AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
                     @Override
@@ -246,7 +247,8 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
+        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
+        Set<AbstractFaceletsLibrary> librariesSet = new HashSet<AbstractFaceletsLibrary>(libs.values());
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -256,7 +258,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (colonIndex == -1) {
             //editing namespace or tag w/o ns
             //offer all tags
-            for (FaceletsLibrary lib : libs.values()) {
+            for (AbstractFaceletsLibrary lib : librariesSet) {
                 String declaredPrefix = declaredNS.get(lib.getNamespace());
                 if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
@@ -274,7 +276,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (namespace == null) {
                 //undeclared prefix, check if a taglib contains it as
                 //default prefix. If so, offer it in the cc w/ tag autoimport function
-                for (FaceletsLibrary lib : libs.values()) {
+                for (AbstractFaceletsLibrary lib : librariesSet) {
                     if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().equals(tagNamePrefix)) {
                         //match
                         items.addAll(queryLibrary(context, lib, tagNamePrefix, true));
@@ -283,7 +285,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             } else {
                 //query only associated lib
-                FaceletsLibrary lib = libs.get(namespace);
+                AbstractFaceletsLibrary lib = libs.get(namespace);
                 if (lib == null) {
                     //no such lib, exit
                     return Collections.emptyList();
@@ -315,9 +317,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         return null;
     }
 
-    private Collection<CompletionItem> queryLibrary(CompletionContext context, FaceletsLibrary lib, String nsPrefix, boolean undeclared) {
+    private Collection<CompletionItem> queryLibrary(CompletionContext context, AbstractFaceletsLibrary lib, String nsPrefix, boolean undeclared) {
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        for (FaceletsLibrary.NamedComponent component : lib.getComponents()) {
+        for (AbstractFaceletsLibrary.NamedComponent component : lib.getComponents()) {
             items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared));
         }
 
@@ -332,7 +334,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
+        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -343,7 +345,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = queriedNode.getNameWithoutPrefix();
 
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
-        FaceletsLibrary flib = libs.get(namespace);
+        AbstractFaceletsLibrary flib = libs.get(namespace);
         if(flib == null) {
 	    //The facelets library not found. This happens if one declares
 	    //a namespace which is not matched to any existing library
@@ -461,17 +463,21 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (jsfs == null) {
                 return DeclarationLocation.NONE;
             }
-            FaceletsLibrary lib = jsfs.getLibraries().get(namespace);
+            AbstractFaceletsLibrary lib = jsfs.getLibraries().get(namespace);
             if (lib == null) {
                 return DeclarationLocation.NONE;
             }
             if (lib instanceof CompositeComponentLibrary) {
                 String tagName = leaf.getNameWithoutPrefix();
-                CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
+                LibraryComponent component = lib.getComponent(tagName);
                 if (component == null) {
                     return DeclarationLocation.NONE;
                 }
-                CompositeComponentModel model = component.getComponentModel();
+                if(!(component instanceof CompositeComponentLibrary.CompositeComponent)) {
+                    //TODO add hyperlinking to class components
+                    return DeclarationLocation.NONE;
+                }
+                CompositeComponentModel model = ((CompositeComponentLibrary.CompositeComponent)component).getComponentModel();
                 FileObject file = model.getSourceFile();
 
                 //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
@@ -532,8 +538,6 @@ public class JsfHtmlExtension extends HtmlExtension {
                     return new DeclarationLocation(file, jumpOffset);
                 }
 
-            } else {
-                //TODO - normal components hyperlinking - mostly nav. to java classes
             }
 
 
