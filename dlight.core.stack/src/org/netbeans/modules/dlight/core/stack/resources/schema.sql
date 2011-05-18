@@ -39,8 +39,8 @@ CREATE TABLE SourceInfo (
     node_id INT NOT NULL,
     context_id BIGINT NOT NULL DEFAULT -1,
     file_id INT NOT NULL DEFAULT -1,    
-    line INT NOT NULL DEFAULT -1,
-    column INT NOT NULL DEFAULT -1,
+    fline INT NOT NULL DEFAULT -1,
+    fcolumn INT NOT NULL DEFAULT -1,
     file_offset INT NOT NULL DEFAULT -1,
     PRIMARY KEY (node_id, context_id)
 );
