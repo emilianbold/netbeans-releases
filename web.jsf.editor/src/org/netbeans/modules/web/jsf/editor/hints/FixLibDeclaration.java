@@ -47,7 +47,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;
 
@@ -57,10 +57,10 @@ import org.openide.util.NbBundle;
  */
 public class FixLibDeclaration implements HintFix{
     private String nsPrefix;
-    private FaceletsLibrary lib;
+    private AbstractFaceletsLibrary lib;
     private Document doc;
 
-    public FixLibDeclaration(Document doc, String nsPrefix, FaceletsLibrary lib) {
+    public FixLibDeclaration(Document doc, String nsPrefix, AbstractFaceletsLibrary lib) {
         this.doc = doc;
         this.nsPrefix = nsPrefix;
         this.lib = lib;

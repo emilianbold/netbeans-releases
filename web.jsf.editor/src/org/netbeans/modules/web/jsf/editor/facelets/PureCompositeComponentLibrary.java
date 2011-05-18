@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.libs.git.jgit.commands;
-
-import java.util.HashMap;
-import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
 /**
- * @author ondra
+ * Represents a composite components library w/o the facelets descriptor
+ *
+ * @author marekfukala
  */
-public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
-    private HashMap<String, GitBranch> remoteBranches;
-    private final String remoteUrl;
-
-    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, remoteRepositoryUrl, monitor);
-        this.remoteUrl = remoteRepositoryUrl;
+public class PureCompositeComponentLibrary extends CompositeComponentLibrary {
+    
+    public PureCompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
+        super(support, libraryName, null, null);
     }
 
     @Override
-    protected void processRefs () {
-        remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS));
+    protected LibraryDescriptor getFaceletsLibraryDescriptor() throws LibraryDescriptorException {
+        return new CCVirtualLibraryDescriptor();
     }
 
     @Override
-    protected String getCommandDescription () {
-        return "git ls-remote --heads " + remoteUrl.toString(); //NOI18N
+    public String getNamespace() {
+        return getDefaultNamespace();
     }
-
-    public Map<String, GitBranch> getBranches () {
-        return remoteBranches;
-    }
-
+    
 }

@@ -156,10 +156,10 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
             if (env != null) {
                 SVN_ADMIN_DIR = "_svn";
             } else {
-                SVN_ADMIN_DIR = ".svn";
+                SVN_ADMIN_DIR = "\\.svn";
             }
         } else {
-            SVN_ADMIN_DIR = ".svn";
+            SVN_ADMIN_DIR = "\\.svn";
         }
         svnmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
     }

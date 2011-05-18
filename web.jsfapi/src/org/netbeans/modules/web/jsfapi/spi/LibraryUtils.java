@@ -81,6 +81,7 @@ public class LibraryUtils {
         return COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
     }
 
+    @Deprecated
     public static boolean isCompositeComponentLibrary(Library library) {
         return library.getType() == LibraryType.COMPOSITE;
     }
@@ -196,15 +197,12 @@ public class LibraryUtils {
                 String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
                 if (alreadyDeclaredPrefix == null) {
                     //try composite component library default prefix
-                    if (library.getType() == LibraryType.COMPOSITE) {
-                        String defaultNS = library.getDefaultNamespace();
-                        alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
-                    }
+                    String defaultNS = library.getDefaultNamespace();
+                    alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
                 }
                 if (alreadyDeclaredPrefix != null) {
                     //already declared, remove the library from the imports
                     librariesIterator.remove();
-
                 }
             }
 

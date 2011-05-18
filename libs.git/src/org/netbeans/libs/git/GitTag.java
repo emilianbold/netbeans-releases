@@ -59,4 +59,6 @@ public interface GitTag {
     
     public GitObjectType getTaggedObjectType ();
     
+    public boolean isLightWeight ();
+    
 }

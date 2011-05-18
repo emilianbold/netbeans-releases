@@ -56,6 +56,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -288,6 +289,34 @@ public class PushTest extends AbstractGitTestCase {
         assertEquals(1, updates.size());
         assertUpdate(updates.get("master"), "localbranch", "master", id, newid, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
     }
+
+    public void testPushTag () throws Exception {
+        String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        File f = new File(workDir, "f");
+        add(f);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        GitTag tag = getClient(workDir).createTag("my-tag", id, "tag message", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, String> remoteTags = getClient(workDir).listRemoteTags(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, remoteTags.size());
+        assertEquals(tag.getTagId(), remoteTags.get("my-tag"));
+        assertEquals(2, updates.size());
+        assertUpdate(updates.get("master"), "master", "master", id, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
+        assertUpdate(updates.get("my-tag"), "my-tag", "my-tag", tag.getTagId(), null, new URIish(remoteUri).toString(), Type.TAG, GitRefUpdateResult.OK);
+        
+        // modification, updating tag fails
+        write(f, "huhu");
+        add(f);
+        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        GitTag newTag = getClient(workDir).createTag("my-tag", newid, "tag message", false, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "+refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteTags = getClient(workDir).listRemoteTags(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(tag.getTagId(), remoteTags.get("my-tag"));
+        assertEquals(2, updates.size());
+        assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
+        assertUpdate(updates.get("my-tag"), "my-tag", "my-tag", newTag.getTagId(), null, new URIish(remoteUri).toString(), Type.TAG, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
+}
 
     private void assertUpdate(GitTransportUpdate update, String localName, String remoteName, String newObjectId, String oldObjectId, String remoteUri, Type type, GitRefUpdateResult result) {
         assertEquals(localName, update.getLocalName());
