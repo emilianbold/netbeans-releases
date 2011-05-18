@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -509,7 +510,7 @@ public class MakeSampleProjectGenerator {
         FileObject xml = FileUtil.createData(dir, path);
         FileLock lock = xml.lock();
         try {
-            OutputStream os = xml.getOutputStream(lock);
+            OutputStream os = SmartOutputStream.getSmartOutputStream(xml, lock);
             try {
                 XMLUtil.write(doc, os, "UTF-8"); // NOI18N
             } finally {

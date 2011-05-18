@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.MakeProjectHelperImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Document;
@@ -121,7 +122,7 @@ public final class MakeProjectGenerator {
                     doc.getDocumentElement().appendChild(el);
                     el = doc.createElementNS(MakeProjectHelper.PROJECT_NS, "configuration"); // NOI18N
                     doc.getDocumentElement().appendChild(el);
-                    OutputStream os = projectXml.getOutputStream();
+                    OutputStream os = SmartOutputStream.getSmartOutputStream(projectXml);
                     try {
                         XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                     } finally {

@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -278,7 +279,7 @@ public class ConfigurationMakefileWriter {
                 return;
             }
             FileObject masterMF = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_IMPL);
-            os = masterMF.getOutputStream();
+            os = SmartOutputStream.getSmartOutputStream(masterMF);
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
         }
@@ -366,7 +367,7 @@ public class ConfigurationMakefileWriter {
                 return;
             }
             FileObject makefileFO = FileUtil.createData(nbProjFO, getMakefileName(conf)); // NOI18N;
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(makefileFO.getOutputStream()));
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(makefileFO)));
             try {
                 makefileWriter.writePrelude(projectDescriptor, conf, bw);
                 writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
@@ -1426,7 +1427,7 @@ public class ConfigurationMakefileWriter {
         OutputStream os = null;
         try {
             FileObject vars = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
-            os = vars.getOutputStream();
+            os = SmartOutputStream.getSmartOutputStream(vars);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefileFixedVariablesBody(bw);
             writeMakefileVariablesRedirector(bw);
@@ -1449,7 +1450,7 @@ public class ConfigurationMakefileWriter {
         try {
             os = null;
             FileObject vars = FileUtil.createData(nbPrivateProjectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
-            os = vars.getOutputStream();
+            os = SmartOutputStream.getSmartOutputStream(vars);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefilePrivateVariablesBody(bw);
             bw.flush();
@@ -1578,7 +1579,7 @@ public class ConfigurationMakefileWriter {
             if (outputFO == null) {
                 outputFO = nbProjectFO.createData(scriptName);
             }
-            os = outputFO.getOutputStream();
+            os = SmartOutputStream.getSmartOutputStream(outputFO);
         } catch (Exception e) {
             // FIXUP
             System.err.println("Cannot open for writing " + nbProjectFO + '/' + scriptName); // NOI18N
