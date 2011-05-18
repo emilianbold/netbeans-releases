@@ -950,6 +950,26 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
         central.userDockedTopComponent(tc, mode);
     }
+    
+    /**
+     * 
+     * @param tc
+     * @param minimized 
+     * @since 2.30
+     */
+    public void setTopComponentMinimized( TopComponent tc, boolean minimized ) {
+        central.setTopComponentMinimized( tc, minimized );
+    }
+    
+    /**
+     * 
+     * @param tc
+     * @return 
+     * @since 2.30
+     */
+    public boolean isTopComponentMinimized( TopComponent tc ) {
+        return central.isTopComponentMinimized( tc );
+    }
 
     // PENDING>>
     public void setRecentViewList(TopComponent[] tcs) {

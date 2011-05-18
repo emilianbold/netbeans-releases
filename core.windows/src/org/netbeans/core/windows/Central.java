@@ -2587,5 +2587,26 @@ final class Central implements ControllerHandler {
     
     private static void debugLog(String message) {
         Debug.log(Central.class, message);
-    }    
+    }
+
+    void setTopComponentMinimized( TopComponent tc, boolean minimized ) {
+        if( !tc.isOpened() )
+            return;
+        if( isTopComponentMinimized( tc ) == minimized )
+            return; //nothing todo
+        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        if( null == mode )
+            return;
+        if( minimized )
+            slide( tc, mode, guessSlideSide( tc ) );
+        else
+            unSlide( tc, mode );
+    }
+
+    boolean isTopComponentMinimized( TopComponent tc ) {
+        if( !tc.isOpened() )
+            return false;
+        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        return null != mode && mode.getKind() == Constants.MODE_KIND_SLIDING;
+    }
 }
