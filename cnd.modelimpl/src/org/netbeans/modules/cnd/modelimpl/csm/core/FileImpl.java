@@ -957,8 +957,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             APTPreprocHandler restorePreprocHandlerFromIncludeStack = projectImpl.restorePreprocHandlerFromIncludeStack(reverseInclStack, getAbsolutePath(), preprocHandler, thisFileStartState);
             // using restored preprocessor handler, ask included file for parsing token stream filtered by language          
             TokenStream includedFileTS = file.createParsingTokenStreamForHandler(restorePreprocHandlerFromIncludeStack, true, null, null);
-            APTLanguageFilter languageFilter = file.getLanguageFilter(thisFileStartState);
-            return languageFilter.getFilteredStream(includedFileTS);
+            if(includedFileTS != null) {
+                APTLanguageFilter languageFilter = file.getLanguageFilter(thisFileStartState);
+                return languageFilter.getFilteredStream(includedFileTS);
+            }
         }
         return null;
     }
