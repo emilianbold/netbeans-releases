@@ -160,25 +160,10 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     }
 
     @Override
-    public Change insertUpdate(DocumentEvent evt) {
-        return null;
-    }
-
-    @Override
-    public Change removeUpdate(DocumentEvent evt) {
-        return null;
-    }
-
-    @Override
-    public Change changedUpdate(DocumentEvent evt) {
-        return null;
-    }
-
-    @Override
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
         // For fold state changes use a higher priority
         int priority = (evt.getFoldStateChangeCount() > 0) ? 1 : 0;
-        fireEvent(Collections.singletonList(new EditorViewFactory.Change(
+        fireEvent(Collections.singletonList(EditorViewFactory.createChange(
                 evt.getAffectedStartOffset(), evt.getAffectedEndOffset())), priority);
     }
 

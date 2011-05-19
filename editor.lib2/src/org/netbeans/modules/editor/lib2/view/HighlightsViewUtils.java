@@ -408,11 +408,10 @@ public class HighlightsViewUtils {
         TextHitInfo endHit;
         if (bias == Position.Bias.Forward) {
             startHit = TextHitInfo.leading(charIndex);
-            endHit = TextHitInfo.trailing(charIndex);
         } else { // backward bias
             startHit = TextHitInfo.trailing(charIndex - 1);
-            endHit = TextHitInfo.trailing(charIndex);
         }
+        endHit = (charIndex < maxIndex) ? TextHitInfo.trailing(charIndex) : startHit;
         if (textLayoutBounds == null) {
             textLayoutBounds = ViewUtils.shapeAsRect(alloc);
         }

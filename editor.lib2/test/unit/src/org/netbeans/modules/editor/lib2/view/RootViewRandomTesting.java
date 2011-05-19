@@ -44,14 +44,11 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import javax.swing.JEditorPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.text.DefaultEditorKit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
-import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.lib.editor.util.random.RandomTestContainer.Context;
 import org.netbeans.lib.editor.util.random.RandomText;
@@ -61,42 +58,41 @@ import org.netbeans.lib.editor.util.random.RandomText;
  *
  * @author Miloslav Metelka
  */
-public class ViewHierarchyRandomTesting {
+public class RootViewRandomTesting {
+    
+    public static final String CREATE_ROOT_VIEW = "create-root-view";
+    
+    public static final String DESTROY_ROOT_VIEW = "destroy-root-view";
 
-    public static RandomTestContainer createContainer(EditorKit kit) throws Exception {
-        // Ensure the new view hierarchy is turned on
-        System.setProperty("org.netbeans.editor.linewrap", "true");
-        // Set the property for synchronous highlights firing since otherwise
-        // the repeatability of problems with view hierarchy is none or limited.
-        System.setProperty("org.netbeans.editor.sync.highlights", "true");
-        System.setProperty("org.netbeans.editor.linewrap.edt", "true");
-
+    public static RandomTestContainer createContainer() throws Exception {
         RandomTestContainer container = new RandomTestContainer();
-        EditorPaneTesting.initContainer(container, kit);
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
-        JEditorPane pane = EditorPaneTesting.getEditorPane(container);
-        pane.putClientProperty("text-line-wrap", "words"); // SimpleValueNames.TEXT_LINE_WRAP
+        DocumentTesting.setSameThreadInvoke(container.context(), true);
+        container.putProperty(RootViewList.class, new RootViewList());
+        container.addOp(new RootViewOp(CREATE_ROOT_VIEW));
+        container.addOp(new RootViewOp(DESTROY_ROOT_VIEW));
+        container.addCheck(new RootViewCheck());
         return container;
+    }
+    
+    static List<TestRootView> rootViewList(Context context) {
+        return context.getInstance(RootViewList.class).rootViewList;
+    }
+    
+    static TestRootView addNewRootView(Context context) {
+        TestRootView rootView = new TestRootView(DocumentTesting.getDocument(context));
+        rootViewList(context).add(rootView);
+        return rootView;
     }
     
     public static void setDirectViewRebuild(boolean directViewRebuild) {
         ViewUpdates.setDirectViewRebuild(directViewRebuild);
     }
 
-    public static void disableHighlighting(RandomTestContainer container) throws Exception {
-        final JEditorPane pane = EditorPaneTesting.getEditorPane(container);
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                pane.putClientProperty("HighlightsLayerIncludes", "");
-            }
-        });
-    }
-
     public static void initRandomText(RandomTestContainer container) throws Exception {
 //        container.addOp(new Op());
-        container.addCheck(new ViewHierarchyCheck());
+        container.addCheck(new RootViewCheck());
         RandomText randomText = RandomText.join(
                 RandomText.lowerCaseAZ(3),
                 RandomText.spaceTabNewline(1),
@@ -116,53 +112,81 @@ public class ViewHierarchyRandomTesting {
         round.setRatio(DocumentTesting.REMOVE_TEXT, 1);
         round.setRatio(DocumentTesting.UNDO, 1);
         round.setRatio(DocumentTesting.REDO, 1);
-
-        round.setRatio(EditorPaneTesting.TYPE_CHAR, 10);
-        EditorPaneTesting.setActionRatio(round, DefaultEditorKit.insertBreakAction, 1);
-        EditorPaneTesting.setActionRatio(round, DefaultEditorKit.insertTabAction, 1);
-        EditorPaneTesting.setActionRatio(round, DefaultEditorKit.deleteNextCharAction, 1);
-        EditorPaneTesting.setActionRatio(round, DefaultEditorKit.deletePrevCharAction, 1);
-
-        round.setRatio(EditorPaneTesting.MOVE, 20);
-        round.setRatio(EditorPaneTesting.SELECT, 20);
-        round.setRatio(EditorPaneTesting.SET_CARET_OFFSET, 1);
+        round.setRatio(CREATE_ROOT_VIEW, 2);
+        round.setRatio(DESTROY_ROOT_VIEW, 1);
         return round;
     }
-
-    public static void testFixedScenarios(RandomTestContainer container) throws Exception {
-        // Fixed scenario - last undo throwed exc.
-        RandomTestContainer.Context gContext = container.context();
-        JEditorPane pane = EditorPaneTesting.getEditorPane(container);
-        // Insert initial text into doc
-//        DocumentTesting.insert(container.context(), 0, "abc\ndef\n\nghi");
-        DocumentTesting.insert(gContext, 0, "\n\n\n\n\n");
-        DocumentTesting.remove(gContext, 0, DocumentTesting.getDocument(gContext).getLength());
-
-        // Check for an error caused by delete a line-2-begining and insert at line-1-end and two undos
-        DocumentTesting.insert(gContext, 0, "a\nb\n\n");
-        EditorPaneTesting.setCaretOffset(gContext, 2);
-        EditorPaneTesting.performAction(gContext, pane, DefaultEditorKit.deleteNextCharAction);
-        EditorPaneTesting.moveOrSelect(gContext, SwingConstants.WEST, false); // Should go to end of first line
-        EditorPaneTesting.typeChar(gContext, 'c');
-        DocumentTesting.undo(gContext, 1);
-        DocumentTesting.undo(gContext, 1); // This throwed ISE for plain text mime type
+    
+    public static void checkIntegrity(Context context) {
+        List<TestRootView> rootViewList = rootViewList(context);
+        int rootViewListSize = rootViewList.size();
+        for (int i = 0; i < rootViewListSize; i++) {
+            TestRootView rootView = rootViewList.get(i);
+            String err = rootView.documentView().findTreeIntegrityError();
+            if (err != null) {
+                throw new IllegalStateException("VH(" + rootView.id() + ") integrity ERROR:\n" +
+                        err + rootView.documentView().toStringDetail());
+            }
+        }
     }
 
-    private static final class ViewHierarchyCheck extends RandomTestContainer.Check {
+    final static class RootViewOp extends RandomTestContainer.Op {
+
+        public RootViewOp(String name) {
+            super(name);
+        }
 
         @Override
-        protected void check(final Context context) throws Exception {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    JEditorPane pane = EditorPaneTesting.getEditorPane(context);
-                    DocumentView docView = DocumentView.get(pane);
-                    docView.checkIntegrityIfLoggable();
-                    // View hierarchy dump
-//                    System.err.println("\nView Hierarchy Dump:\n" + docView.toStringDetail() + "\n");
+        protected void run(Context context) throws Exception {
+            List<TestRootView> rootViewList = rootViewList(context);
+            Random random = context.container().random();
+            StringBuilder log = context.logOpBuilder();
+            if (log != null) {
+                log.append("CREATE_ROOT_VIEW");
+            }
+            if (CREATE_ROOT_VIEW == name()) { // Just use ==
+                boolean createBounded = !rootViewList.isEmpty();
+                TestRootView rootView = new TestRootView(DocumentTesting.getDocument(context));
+                rootViewList.add(rootView);
+                if (createBounded) {
+                    Document doc = rootView.getDocument();
+                    int startOffset = random.nextInt(doc.getLength());
+                    int endOffset = startOffset + random.nextInt(doc.getLength() - startOffset) + 1;
+                    rootView.setBounds(startOffset, endOffset);
+                    if (log != null) {
+                        log.append("(").append(startOffset).append(",").append(endOffset).append(")");
+                    }
                 }
-            });
+                if (log != null) {
+                    log.append("\n");
+                    context.logOp(log);
+                }
+                rootView.modelToView(0);
 
+            } else if (DESTROY_ROOT_VIEW == name()) { // Just use ==
+                if (!rootViewList.isEmpty()) {
+                    int index = random.nextInt(rootViewList.size());
+                    rootViewList.remove(index);
+                    if (log != null) {
+                        log.append("DESTROY_ROOT_VIEW[" + index + "]\n");
+                    }
+                }
+            }
+        }
+
+    }
+
+    private static final class RootViewList {
+        
+        List<TestRootView> rootViewList = new ArrayList<TestRootView>();
+
+    }
+
+    private static final class RootViewCheck extends RandomTestContainer.Check {
+
+        @Override
+        protected void check(Context context) throws Exception {
+            checkIntegrity(context);
         }
 
 
