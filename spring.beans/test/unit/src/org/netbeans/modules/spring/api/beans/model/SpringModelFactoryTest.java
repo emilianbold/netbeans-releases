@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.spring.api.beans.model;
 
-package org.netbeans.modules.spring.beans;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.spring.api.beans.ConfigFileManager;
-import org.netbeans.modules.spring.api.beans.SpringScope;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+//import org.netbeans.modules.spring.beans.AnnotationSupportTestCase;
 
 /**
  *
- * @author Andrei Badea
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-@ProjectServiceProvider(service=ProjectSpringScopeProvider.class, projectType={
-    "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-ejbjarproject",
-    "org-netbeans-modules-web-project",
-    "org-netbeans-modules-maven"
-})
-public class ProjectSpringScopeProvider {
+public class SpringModelFactoryTest extends CommonAnnotationTestCase {
 
-    private final Project project;
-    private SpringScope springScope;
-
-    public ProjectSpringScopeProvider(Project project) {
-        this.project = project;
+    public SpringModelFactoryTest(String name) {
+        super(name);
     }
 
-    public synchronized SpringScope getSpringScope() {
-        if (springScope == null) {
-            ConfigFileManager manager = ConfigFileManagerAccessor.getDefault().createConfigFileManager(new ProjectConfigFileManagerImpl(project));
-            springScope = SpringScopeAccessor.getDefault().createSpringScope(manager);
-        }
-        return springScope;
+    public void testSpringModelFactoryCaching() throws MalformedURLException, IOException, NoSuchFieldException, ClassNotFoundException {
+        ModelUnit originalUnit = createNewModelUnitForTestProject();
+        MetadataModel<SpringModel> originalMetaModel = SpringModelFactory.getMetaModel(originalUnit);
+        assert SpringModelFactory.MODELS.size() == 1 : "Caching mechanism in SpringModelFactory failed";
+        
+        // second getter should return already existing MetadataModel from cache
+        ModelUnit secondUnit = createNewModelUnitForTestProject();
+        MetadataModel<SpringModel> secondMetaModel = SpringModelFactory.getMetaModel(secondUnit);
+        assert SpringModelFactory.MODELS.size() == 1 : "Caching mechanism in SpringModelFactory failed";
+        
+        // both obtained meta models should be the same
+        assert originalMetaModel.equals(secondMetaModel);
+        
+        // created new model on demand should not be equivalent
+        assert !originalMetaModel.equals(SpringModelFactory.createMetaModel(secondUnit));
     }
-
-    public Project getProject() {
-        return project;
-    }
+    
 }
