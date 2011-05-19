@@ -360,11 +360,7 @@ public class StatusTest extends AbstractGitTestCase {
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(file1));
         FileInformation status = getCache().getStatus(file1);
-        if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        } else {
-            assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        }
+        assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(file1);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -375,11 +371,7 @@ public class StatusTest extends AbstractGitTestCase {
         file2 = new File(newFolder, file2.getName());
         handler.setFilesToRefresh(Collections.singleton(file2));
         status = getCache().getStatus(file2);
-        if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        } else {
-            assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        }
+        assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.waitForFilesToRefresh();
         status = getCache().getStatus(file2);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -390,11 +382,7 @@ public class StatusTest extends AbstractGitTestCase {
         file1.createNewFile();
         handler.setFilesToRefresh(Collections.singleton(folder));
         status = getCache().getStatus(folder);
-        if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        } else {
-            assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        }
+        assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.waitForFilesToRefresh();
         status = getCache().getStatus(folder);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -837,23 +825,6 @@ public class StatusTest extends AbstractGitTestCase {
         flags[0] = false;
         assertTrue(cache.containsFiles(Collections.singleton(f1), EnumSet.of(FileInformation.Status.NOTVERSIONED_EXCLUDED), true));
         assertFalse(flags[0]);
-    }
-    
-    /**
-     * When cache.listFiles is called and cache.refresh has not yet been called, listFiles returns also the root folder. That's wrong and causes bug #196176.
-     */
-    public void testExcludeFoldersFromListFiles () throws Exception {
-        final File f1 = new File(repositoryLocation, "1");
-        final File f2 = new File(f1, "2");
-        final File f3 = new File(f2, "3");
-        f3.mkdirs();
-        File f = new File(f3, "f");
-        f.createNewFile();
-        add(f);
-        commit(f);
-        FileStatusCache cache = getCache();
-        Collection<File> newFiles = Arrays.asList(cache.listFiles(new File[] { f1 }, EnumSet.of(FileInformation.Status.MODIFIED_INDEX_WORKING_TREE)));
-        assertEquals(0, newFiles.size());
     }
     
     private void assertSameStatus(Set<File> files, EnumSet<Status> status) {

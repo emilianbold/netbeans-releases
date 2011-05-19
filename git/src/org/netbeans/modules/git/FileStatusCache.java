@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.git;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -689,7 +688,7 @@ public class FileStatusCache {
      * @param files set of files to be ignore-tested.
      */
     private void handleIgnoredFiles(final Set<File> files) {
-        Runnable outOfAWT = new Runnable() {
+        Runnable async = new Runnable() {
             @Override
             public void run() {
                 for (File f : files) {
@@ -708,12 +707,7 @@ public class FileStatusCache {
                 }
             }
         };
-        // always run outside of AWT, SQ inside isIgnored can last a long time
-        if (EventQueue.isDispatchThread()) {
-            rp.post(outOfAWT);
-        } else {
-            outOfAWT.run();
-        }
+        rp.post(async);
     }
 
     private static File getSyncRepository (File repository) {
