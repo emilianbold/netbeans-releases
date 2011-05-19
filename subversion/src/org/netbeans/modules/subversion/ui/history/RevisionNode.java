@@ -275,7 +275,7 @@ class RevisionNode extends AbstractNode {
             if (val instanceof Date) {
                 val = DateFormat.getDateTimeInstance().format((Date) val);
             }
-            renderer.setText(val.toString());
+            renderer.setText(val == null ? "" : val.toString());
             renderer.setBounds(box);
             renderer.paint(gfx);
         }
