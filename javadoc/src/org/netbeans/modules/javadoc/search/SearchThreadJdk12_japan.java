@@ -305,7 +305,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             else if ( t == HTML.Tag.A && (where == IN_DESCRIPTION_SUFFIX || where == IN_DESCRIPTION) ) {
                 // Just ignore
             }
-            else if ( t == HTML.Tag.B && where == IN_AREF ) {
+            else if ( (t == HTML.Tag.B || t == HTML.Tag.SPAN) && where == IN_AREF ) {
                 where = IN_AREF;
             }
             else {

@@ -89,6 +89,7 @@ import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
+import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -849,6 +850,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             action.createBranch(currRepository, branchName);
                         }
                     }, 0);
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    CreateTagAction action = SystemAction.get(CreateTagAction.class);
+                    action.createTag(currRepository, branchName);
                 }
             });
             actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N

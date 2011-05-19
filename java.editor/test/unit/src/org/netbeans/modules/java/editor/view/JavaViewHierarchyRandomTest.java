@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.editor.view;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -87,7 +89,6 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -105,6 +106,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
         List<String> includes = new ArrayList<String>();
+//        includes.add("testToolTipView");
 //        includes.add("testSimpleBadListener");
 //        includes.add("testRemoveNewline");
 //        includes.add("testGap");
@@ -143,6 +145,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorBoxViewChildren").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseDocument.EDT").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseCaret.EDT").setLevel(Level.FINE);
+        ViewHierarchyRandomTesting.setDirectViewRebuild(true);
     }
 
     @Override
@@ -357,7 +360,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         RandomTestContainer.Context context = container.context();
 //        ViewHierarchyRandomTesting.disableHighlighting(container);
         DocumentTesting.setSameThreadInvoke(context, true); // Do not post to EDT
-        DocumentTesting.insert(context, 0, "abc\ndef\ng\thi\n\nj\tkl\nmno\n\np\tqr\n stuv \n\nwxyz");
+        DocumentTesting.insert(context, 0, "abc\ndef\nghi\n");
         final JEditorPane[] toolTipPaneRef = new JEditorPane[1];
         final BadLocationException[] excRef = new BadLocationException[1];
         final JFrame[] toolTipFrameRef = new JFrame[1];
@@ -368,17 +371,32 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
                 toolTipPaneRef[0] = toolTipPane;
                 toolTipPane.setEditorKit(pane.getEditorKit());
                 try {
-                    toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(4));
-                    toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(20));
+                    Position startPos = doc.createPosition(4); // Line begining
+                    Position endPos = doc.createPosition(8); // Line boundary too
+                    toolTipPane.putClientProperty("document-view-start-position", startPos);
+                    toolTipPane.putClientProperty("document-view-end-position", endPos);
+                    toolTipPane.setDocument(doc);
+                    JFrame toolTipFrame = new JFrame("ToolTip Frame");
+                    toolTipFrameRef[0] = toolTipFrame;
+                    toolTipFrame.getContentPane().add(new JScrollPane(toolTipPane));
+                    toolTipFrame.setSize(100, 100);
+                    toolTipFrame.setVisible(true);
+
+                    doc.insertString(4, "o", null);
+                    toolTipPane.setFont(new Font("Monospaced", Font.PLAIN, 22)); // Force VH rebuild
+                    toolTipPane.modelToView(6);
+                    doc.remove(3, 3);
+                    doc.insertString(4, "ab", null);
+                    
+                    assert (endPos.getOffset() == 8);
+                    doc.remove(7, 2);
+                    toolTipPane.setFont(new Font("Monospaced", Font.PLAIN, 23)); // Force VH rebuild
+                    toolTipPane.modelToView(6);
+
                 } catch (BadLocationException ex) {
                     excRef[0] = ex;
                 }
-                toolTipPane.setDocument(doc);
-                JFrame toolTipFrame = new JFrame("ToolTip Frame");
-                toolTipFrameRef[0] = toolTipFrame;
-                toolTipFrame.getContentPane().add(new JScrollPane(toolTipPane));
-                toolTipFrame.setSize(100, 100);
-                toolTipFrame.setVisible(true);
+
             }
         };
         SwingUtilities.invokeAndWait(tooltipRun);
@@ -386,14 +404,13 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
             throw new IllegalStateException(excRef[0]);
         }
 
-        DocumentTesting.insert(context, 10, "abc\ndef\ng");
-        DocumentTesting.remove(context, 15, 4);
-        DocumentTesting.insert(context, 4, "abc\ndef\ng");
-        DocumentTesting.insert(context, 20, "abc\ndef\ng");
         DocumentTesting.setSameThreadInvoke(context, false);
-        DocumentTesting.undo(context, 4);
+        DocumentTesting.undo(context, 2);
+        DocumentTesting.undo(context, 1);
+        DocumentTesting.undo(context, 1);
         DocumentTesting.redo(context, 4);
         
+        // Hide tooltip's frame
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -761,7 +778,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
                 toolTipPane.setEditorKit(pane.getEditorKit());
                 try {
                     toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(4));
-                    toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(20));
+                    toolTipPane.putClientProperty("document-view-end-position", doc.createPosition(20));
                 } catch (BadLocationException ex) {
                     excRef[0] = ex;
                 }
@@ -773,7 +790,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
                 toolTipFrame.setVisible(true);
             }
         };
-// Uncomment for #196814 fixing       SwingUtilities.invokeAndWait(tooltipRun);
+        SwingUtilities.invokeAndWait(tooltipRun);
         if (excRef[0] != null) {
             throw new IllegalStateException(excRef[0]);
         }
@@ -817,7 +834,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
                 toolTipPane.setEditorKit(pane.getEditorKit());
                 try {
                     toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(4));
-                    toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(20));
+                    toolTipPane.putClientProperty("document-view-end-position", doc.createPosition(20));
                 } catch (BadLocationException ex) {
                     excRef[0] = ex;
                 }
@@ -829,7 +846,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
                 toolTipFrame.setVisible(true);
             }
         };
-// Uncomment for #196814 fixing       SwingUtilities.invokeAndWait(tooltipRun);
+        SwingUtilities.invokeAndWait(tooltipRun);
         if (excRef[0] != null) {
             throw new IllegalStateException(excRef[0]);
         }
