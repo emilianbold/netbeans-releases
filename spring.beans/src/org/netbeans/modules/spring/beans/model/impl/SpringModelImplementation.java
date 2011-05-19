@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.spring.beans.model.impl;
 
-package org.netbeans.modules.spring.beans;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.spring.api.beans.ConfigFileManager;
-import org.netbeans.modules.spring.api.beans.SpringScope;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
+import org.netbeans.modules.spring.api.beans.model.AbstractModelImplementation;
+import org.netbeans.modules.spring.api.beans.model.ModelUnit;
+import org.netbeans.modules.spring.api.beans.model.SpringModel;
 
 /**
  *
- * @author Andrei Badea
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-@ProjectServiceProvider(service=ProjectSpringScopeProvider.class, projectType={
-    "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-j2ee-ejbjarproject",
-    "org-netbeans-modules-web-project",
-    "org-netbeans-modules-maven"
-})
-public class ProjectSpringScopeProvider {
+public class SpringModelImplementation extends AbstractModelImplementation implements MetadataModelImplementation<SpringModel> {
 
-    private final Project project;
-    private SpringScope springScope;
-
-    public ProjectSpringScopeProvider(Project project) {
-        this.project = project;
+    private SpringModelImplementation(ModelUnit modelUnit) {
+        super(modelUnit);
     }
 
-    public synchronized SpringScope getSpringScope() {
-        if (springScope == null) {
-            ConfigFileManager manager = ConfigFileManagerAccessor.getDefault().createConfigFileManager(new ProjectConfigFileManagerImpl(project));
-            springScope = SpringScopeAccessor.getDefault().createSpringScope(manager);
-        }
-        return springScope;
+    @Override
+    public <R> R runReadAction(final MetadataModelAction<SpringModel, R> action) throws MetadataModelException, IOException {
+        return getHelper().runJavaSourceTask(new Callable<R>() {
+
+            @Override
+            public R call() throws Exception {
+                return action.run(getModel());
+            }
+        });
     }
 
-    public Project getProject() {
-        return project;
+    @Override
+    public boolean isReady() {
+        return !getHelper().isJavaScanInProgress();
+    }
+
+    @Override
+    public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<SpringModel, R> action) throws MetadataModelException, IOException {
+        return getHelper().runJavaSourceTaskWhenScanFinished(new Callable<R>() {
+
+            @Override
+            public R call() throws Exception {
+                return action.run(getModel());
+            }
+        });
+    }
+    
+    public static MetadataModelImplementation<SpringModel> createMetaModel(ModelUnit unit) {
+        return new SpringModelImplementation(unit);
     }
 }

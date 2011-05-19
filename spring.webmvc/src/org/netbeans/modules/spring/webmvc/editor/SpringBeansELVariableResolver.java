@@ -44,13 +44,20 @@ package org.netbeans.modules.spring.webmvc.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.api.beans.model.SpringModel;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -59,6 +66,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.web.el.spi.ELVariableResolver.class)
 public final class SpringBeansELVariableResolver implements ELVariableResolver {
 
+    private static final Logger LOG = Logger.getLogger(SpringBeansELVariableResolver.class.getName());
+    
     @Override
     public String getBeanClass(String beanName, FileObject context) {
         for (SpringBean bean : getSpringBeans(context)) {
@@ -117,6 +126,7 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
         SpringScope scope = SpringScope.getSpringScope(context);
         final List<SpringBean> allSpringBeans = new ArrayList<SpringBean>();
         if (scope != null) {
+            // gets all Spring beans from config files
             for (SpringConfigModel model : scope.getAllConfigModels()) {
                 try {
                     model.runReadAction(new Action<SpringBeans>() {
@@ -130,6 +140,9 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            
+            // gets all Spring beans from annotation support
+            allSpringBeans.addAll(getAnnotatedBeans(scope.getSpringAnnotationModel(context)));
         }
         return allSpringBeans;
     }
@@ -146,5 +159,24 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
 
         return beanName;
     }
+    
+    private static List<SpringBean> getAnnotatedBeans(MetadataModel<SpringModel> model) {
+        try {
+            return model.runReadAction(new MetadataModelAction<SpringModel, List<SpringBean>>() {
 
+                @Override
+                public List<SpringBean> run(SpringModel model) throws Exception {
+                    List<SpringBean> beans = new LinkedList<SpringBean>();
+                    beans.addAll(model.getBeans());
+                    return beans;
+                }
+            });
+        } catch (MetadataModelException e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+        return Collections.<SpringBean>emptyList();
+    }
+    
 }

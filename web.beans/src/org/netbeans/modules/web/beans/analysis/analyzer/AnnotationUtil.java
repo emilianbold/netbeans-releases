@@ -127,6 +127,11 @@ public final class AnnotationUtil {
     
     public static final String SPECIALIZES = "javax.enterprise.inject.Specializes"; // NOI18N
     
+    public static final String INJECTION_POINT = 
+                            "javax.enterprise.inject.spi.InjectionPoint";           // NOI18N
+    
+    public static final String DEFAULT_FQN = "javax.enterprise.inject.Default";     // NOI18N
+    
     private AnnotationUtil(){
     }
     
