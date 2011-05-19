@@ -382,7 +382,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 }
                 makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
                 makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));
-                replaceElement(libraryItem, new LibraryItem.ProjectItem(makeArtifact));
+                replaceElement(libraryItem, new LibraryItem.ProjectItem(makeArtifact), row);
                 // FIXUP
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);
@@ -393,7 +393,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
                     MakeArtifact newMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().clone();
                     newMakeArtifact.setBuild(!newMakeArtifact.getBuild());
-                    replaceElement(libraryItem, new LibraryItem.ProjectItem(newMakeArtifact));
+                    replaceElement(libraryItem, new LibraryItem.ProjectItem(newMakeArtifact), row);
                 }
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);

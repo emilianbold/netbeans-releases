@@ -41,19 +41,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.compiler;
 
+import java.awt.Component;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinition;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -99,13 +107,17 @@ public class PredefinedPanel extends javax.swing.JPanel {
                             includes.remove(includesPanel);
                         }
                         includes.add(includesPanel = new IncludesPanel(includesList));
-                        Collections.sort(definesList, new Comparator<String>() {
-                            @Override
-                            public int compare(String s1, String s2) {
-                                return s1.compareToIgnoreCase(s2);
-                            }
-                        });
-
+                        
+                        if (definesList instanceof CompilerDefinition) {
+                            ((CompilerDefinition)definesList).sort();
+                        } else {
+                            Collections.sort(definesList, new Comparator<String>() {
+                                @Override
+                                public int compare(String s1, String s2) {
+                                    return s1.compareToIgnoreCase(s2);
+                                }
+                            });
+                        }
                         if (definitionsPanel != null) {
                             macros.remove(definitionsPanel);
                         }
@@ -129,6 +141,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         if (includesPanel != null && definitionsPanel != null) {
             List<String> tmpIncludes = includesPanel.getListData();
             wasChanges |= compiler.setSystemIncludeDirectories(tmpIncludes);
+            
             List<String> definitions = definitionsPanel.getListData();
             wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
         }
@@ -170,7 +183,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         macros.setOpaque(false);
         macros.setLayout(new java.awt.BorderLayout());
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/compiler/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(resetButton, bundle.getString("RESET_BUTTON_TXT")); // NOI18N
         resetButton.setOpaque(false);
         resetButton.addActionListener(new java.awt.event.ActionListener() {
@@ -186,10 +199,10 @@ public class PredefinedPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
-                .addComponent(macros, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+                .addComponent(macros, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(resetButton)))
         );
@@ -217,10 +230,53 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private javax.swing.JButton resetButton;
     // End of variables declaration//GEN-END:variables
 
+    private static String getString(String s) {
+        return NbBundle.getMessage(PredefinedPanel.class, s);
+    }
+
+    boolean isChanged() {
+        boolean isChanged = settingsReseted;
+        if (this.includesPanel != null) {
+            isChanged |= this.includesPanel.isChanged();
+        }
+        if (this.definitionsPanel != null) {
+            isChanged |= this.definitionsPanel.isChanged();
+        }
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("isChanged for PredefinedPanel " + compiler.getName() + " is " + isChanged); // NOI18N
+        }
+        return isChanged;
+    }
+
+    boolean isDataValid() {
+        boolean isDataValid = true;
+        if (this.includesPanel != null) {
+            isDataValid &= this.includesPanel.isDataValid();
+        }
+        if (this.definitionsPanel != null) {
+            isDataValid &= this.definitionsPanel.isDataValid();
+        }
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("isDataValid for PredefinedPanel " + compiler.getName() + " is " + isDataValid); // NOI18N
+        }
+        return isDataValid;
+    }
+
+    void cancel() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("cancel for PredefinedPanel " + compiler.getName()); // NOI18N
+        }
+    }
+    
     private static class IncludesPanel extends ListEditorPanel<String> {
+        private CCCCompiler.CompilerDefinition defs;
 
         public IncludesPanel(List<String> objects) {
             super(objects);
+            if (objects instanceof CCCCompiler.CompilerDefinition) {
+                defs = (CompilerDefinition) objects;
+                setCustomCellRenderer(new MyDefaultListCellRenderer(defs, "include")); // NOI18N
+            }
             getDefaultButton().setVisible(false);
 
             if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
@@ -237,57 +293,63 @@ public class PredefinedPanel extends javax.swing.JPanel {
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            FileChooser fileChooser = new FileChooser(getString("SelectDirectoryTxt"), getString("SelectTxt"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            FileChooser fileChooser = new FileChooser(getString("SelectDirectoryTxt"), getString("SelectTxt"), JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
+            if (defs != null) {
+                defs.setUserAdded(true, getListDataSize());
+            }
             return itemPath;
         }
 
         @Override
         public String getListLabelText() {
-            return getString("IncludeDirectoriesTxt");
+            return getString("IncludeDirectoriesTxt"); // NOI18N
         }
 
         @Override
         public char getListLabelMnemonic() {
-            return getString("IncludeDirectoriesMn").charAt(0);
+            return getString("IncludeDirectoriesMn").charAt(0); // NOI18N
         }
 
         @Override
         public String getAddButtonText() {
-            return getString("AddButtonTxt");
+            return getString("AddButtonTxt"); // NOI18N
         }
 
         @Override
         public char getAddButtonMnemonics() {
-            return getString("IAddButtonMn").charAt(0);
+            return getString("IAddButtonMn").charAt(0); // NOI18N
         }
 
         @Override
         public char getCopyButtonMnemonics() {
-            return getString("ICopyButtonMn").charAt(0);
+            return getString("ICopyButtonMn").charAt(0); // NOI18N
         }
 
         @Override
         public String copyAction(String o) {
+            if (defs != null) {
+                defs.setUserAdded(true, getListDataSize());
+            }
             return o;
         }
 
         @Override
         public String getRenameButtonText() {
-            return getString("EditButtonTxt");
+            return getString("EditButtonTxt"); // NOI18N
         }
 
         @Override
         public char getRenameButtonMnemonics() {
-            return getString("EditButtonMn").charAt(0);
+            return getString("EditButtonMn").charAt(0); // NOI18N
         }
 
         @Override
-        public void editAction(String o) {
+        public void editAction(String o, int i) {
             String s = o;
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDir"), getString("EditDialogTitle")); // NOI18N
@@ -297,29 +359,69 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            replaceElement(o, newS);
+            if (defs != null) {
+                defs.setUserAdded(true, i);
+            }
+            replaceElement(o, newS, i);
         }
 
         @Override
         public char getRemoveButtonMnemonics() {
-            return getString("IRemoveButtonMn").charAt(0);
+            return getString("IRemoveButtonMn").charAt(0); // NOI18N
+        }
+
+        @Override
+        public void removeAction(String o, int i) {
+            if (defs != null) {
+                defs.setUserAdded(false, i);
+                for(int j = i; j < getListDataSize()- 1; j++)  {
+                    boolean userAdded = defs.isUserAdded(j + 1);
+                    defs.setUserAdded(userAdded, j);
+                    defs.setUserAdded(false, j + 1);
+                }
+            }
         }
 
         @Override
         public char getUpButtonMnemonics() {
-            return getString("IUpButtonMn").charAt(0);
+            return getString("IUpButtonMn").charAt(0); // NOI18N
+        }
+
+        @Override
+        public void upAction(int from) {
+            if (defs != null) {
+                boolean fromValue = defs.isUserAdded(from);
+                boolean toValue = defs.isUserAdded(from - 1);
+                defs.setUserAdded(fromValue, from - 1);
+                defs.setUserAdded(toValue, from);
+            }
         }
 
         @Override
         public char getDownButtonMnemonics() {
-            return getString("IDownButtonMn").charAt(0);
+            return getString("IDownButtonMn").charAt(0); // NOI18N
         }
+
+        @Override
+        public void downAction(int from) {
+            if (defs != null) {
+                boolean fromValue = defs.isUserAdded(from);
+                boolean toValue = defs.isUserAdded(from + 1);
+                defs.setUserAdded(fromValue, from + 1);
+                defs.setUserAdded(toValue, from);
+            }
+        }        
     }
 
     private static class DefinitionsPanel extends ListEditorPanel<String> {
+        private CCCCompiler.CompilerDefinition defs;
 
         public DefinitionsPanel(List<String> objects) {
             super(objects);
+            if (objects instanceof CCCCompiler.CompilerDefinition) {
+                defs = (CompilerDefinition) objects;
+                setCustomCellRenderer(new MyDefaultListCellRenderer(defs, "macro")); // NOI18N
+            }
             getDefaultButton().setVisible(false);
             if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 getDataPanel().setOpaque(false);
@@ -328,13 +430,16 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         @Override
         public String addAction() {
-            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle"));
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle")); // NOI18N
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
             String def = notifyDescriptor.getInputText();
             if (def.length() != 0) {
+                if (defs != null) {
+                    defs.setUserAdded(true, getListDataSize());
+                }
                 return def;
             } else {
                 return null;
@@ -343,46 +448,49 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         @Override
         public String getListLabelText() {
-            return getString("MacroDefinitionsTxt");
+            return getString("MacroDefinitionsTxt"); // NOI18N
         }
 
         @Override
         public char getListLabelMnemonic() {
-            return getString("MacroDefinitionsMn").charAt(0);
+            return getString("MacroDefinitionsMn").charAt(0); // NOI18N
         }
 
         @Override
         public String getAddButtonText() {
-            return getString("AddButtonTxt");
+            return getString("AddButtonTxt"); // NOI18N
         }
 
         @Override
         public char getAddButtonMnemonics() {
-            return getString("MAddButtonMn").charAt(0);
+            return getString("MAddButtonMn").charAt(0); // NOI18N
         }
 
         @Override
         public char getCopyButtonMnemonics() {
-            return getString("MCopyButtonMn").charAt(0);
+            return getString("MCopyButtonMn").charAt(0); // NOI18N
         }
 
         @Override
         public String copyAction(String o) {
+            if (defs != null) {
+                defs.setUserAdded(true, getListDataSize());
+            }
             return o;
         }
 
         @Override
         public char getRenameButtonMnemonics() {
-            return getString("MditButtonMn").charAt(0);
+            return getString("MditButtonMn").charAt(0); // NOI18N
         }
 
         @Override
         public String getRenameButtonText() {
-            return getString("EditButtonTxt");
+            return getString("EditButtonTxt"); // NOI18N
         }
 
         @Override
-        public void editAction(String o) {
+        public void editAction(String o, int i) {
             String s = o;
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("EditDialogTitle")); // NOI18N
@@ -392,60 +500,93 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            replaceElement(o, newS);
+            if (defs != null) {
+                defs.setUserAdded(true, i);
+            }
+            replaceElement(o, newS, i);
         }
 
         @Override
         public char getRemoveButtonMnemonics() {
-            return getString("MRemoveButtonMn").charAt(0);
+            return getString("MRemoveButtonMn").charAt(0); // NOI18N
+        }
+
+        @Override
+        public void removeAction(String o, int i) {
+            if (defs != null) {
+                defs.setUserAdded(false, i);
+                for(int j = i; j < getListDataSize()- 1; j++)  {
+                    boolean userAdded = defs.isUserAdded(j + 1);
+                    defs.setUserAdded(userAdded, j);
+                    defs.setUserAdded(false, j + 1);
+                }
+            }
         }
 
         @Override
         public char getUpButtonMnemonics() {
-            return getString("MUpButtonMn").charAt(0);
+            return getString("MUpButtonMn").charAt(0); // NOI18N
+        }
+
+        @Override
+        public void upAction(int from) {
+            if (defs != null) {
+                boolean fromValue = defs.isUserAdded(from);
+                boolean toValue = defs.isUserAdded(from - 1);
+                defs.setUserAdded(fromValue, from - 1);
+                defs.setUserAdded(toValue, from);
+            }
         }
 
         @Override
         public char getDownButtonMnemonics() {
-            return getString("MDownButtonMn").charAt(0);
+            return getString("MDownButtonMn").charAt(0); // NOI18N
         }
+
+        @Override
+        public void downAction(int from) {
+            if (defs != null) {
+                boolean fromValue = defs.isUserAdded(from);
+                boolean toValue = defs.isUserAdded(from + 1);
+                defs.setUserAdded(fromValue, from + 1);
+                defs.setUserAdded(toValue, from);
+            }
+        }
+
     }
 
-    private static String getString(String s) {
-        return NbBundle.getMessage(PredefinedPanel.class, s);
-    }
+    private static final class MyDefaultListCellRenderer extends DefaultListCellRenderer {
+        private final CCCCompiler.CompilerDefinition defs;
+        private final String toolTipSuffix;
+        
+        MyDefaultListCellRenderer(CCCCompiler.CompilerDefinition defs, String toolTipSuffix) {
+            this.defs = defs;
+            this.toolTipSuffix=toolTipSuffix;
+        }
+        
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            boolean showToolTip = false;
+            if (defs != null) {
+                if (defs.isUserAdded(index)) {
+                    label.setIcon(getLibraryIcon());
+                    showToolTip = true;
+                }
+            }
+            label.setText(value.toString());
+            if (showToolTip) {
+                String message = NbBundle.getMessage(PredefinedPanel.class, "UserAdded.tooltip.text."+toolTipSuffix, //NOI18N
+                        value.toString());
+                label.setToolTipText(message);
+            } else {
+                label.setToolTipText(null);
+            }
+            return label;
+        }
+        private ImageIcon getLibraryIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/toolchain/ui/compiler/key.png", false); //NOI18N
+        }
 
-    boolean isChanged() {
-        boolean isChanged = settingsReseted;
-        if (this.includesPanel != null) {
-            isChanged |= this.includesPanel.isChanged();
-        }
-        if (this.definitionsPanel != null) {
-            isChanged |= this.definitionsPanel.isChanged();
-        }
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
-            System.err.println("isChanged for PredefinedPanel " + compiler.getName() + " is " + isChanged);
-        }
-        return isChanged;
-    }
-
-    boolean isDataValid() {
-        boolean isDataValid = true;
-        if (this.includesPanel != null) {
-            isDataValid &= this.includesPanel.isDataValid();
-        }
-        if (this.definitionsPanel != null) {
-            isDataValid &= this.definitionsPanel.isDataValid();
-        }
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
-            System.err.println("isDataValid for PredefinedPanel " + compiler.getName() + " is " + isDataValid);
-        }
-        return isDataValid;
-    }
-
-    void cancel() {
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
-            System.err.println("cancel for PredefinedPanel " + compiler.getName());
-        }
-    }
+    };
 }

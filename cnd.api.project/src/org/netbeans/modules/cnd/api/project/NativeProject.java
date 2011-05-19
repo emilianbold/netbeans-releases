@@ -174,4 +174,9 @@ public interface NativeProject {
      * @return development platform name
      */
     public String getPlatformName();
+    
+    /**
+     * All native file items were changed. For example because tool collection system include paths were changed.
+     */
+    public void fireFilesPropertiesChanged();
 }
