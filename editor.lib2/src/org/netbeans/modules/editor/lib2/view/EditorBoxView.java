@@ -509,11 +509,8 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
             return err;
         }
         if (children != null) {
-            if (children.size() == 0) {
-                return "children.size()==0";
-            }
             // Check children (visual offsets)
-            if (children.rawOffsetUpdate()) {
+            if (err == null && children.rawOffsetUpdate()) {
                 int viewCount = getViewCount();
                 double lastVisualOffset = 0d;
                 for (int i = 0; i < viewCount; i++) {
@@ -533,6 +530,9 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
                 }
             }
         } // Children == null permitted
+        if (err != null) {
+            err = getDumpName() + ":" + err; // NOI18N
+        }
         return err;
     }
 

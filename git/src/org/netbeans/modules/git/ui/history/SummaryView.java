@@ -66,6 +66,7 @@ import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
@@ -80,6 +81,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 
 class SummaryView implements MouseListener, ComponentListener, MouseMotionListener {
 
@@ -229,7 +231,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     
     private void onPopup(Point p) {
         int [] sel = resultsList.getSelectedIndices();
-        if (sel.length == 0) {
+        if (sel.length <= 1) {
             int idx = resultsList.locationToIndex(p);
             if (idx == -1) return;
             resultsList.setSelectedIndex(idx);
@@ -239,7 +241,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         JPopupMenu menu = new JPopupMenu();
         
-        RepositoryRevision container = null;
+        final RepositoryRevision container;
         final RepositoryRevision.Event[] drev;
 
         Object revCon = dispResults.get(selection[0]);
@@ -271,13 +273,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         boolean hasParents = container.getLog().getParents().length > 0;
 
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory();
-        final boolean diffToPrevEnabled = selection.length == 1;
+        final boolean singleSelection = selection.length == 1;
+        final boolean viewEnabled = singleSelection && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory();
         
         if (hasParents) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious")) { // NOI18N
                 {
-                    setEnabled(diffToPrevEnabled);
+                    setEnabled(singleSelection);
                 }
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -286,7 +288,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
         }
 
-        if (!revisionSelected) {
+        if (revisionSelected) {
+            if (singleSelection) {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName.revision", container.getLog().getRevision().substring(0, 7))) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        CreateTagAction action = SystemAction.get(CreateTagAction.class);
+                        action.createTag(master.getRepository(), container.getLog().getRevision());
+                    }
+                }));
+            }
+        } else {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
                     setEnabled(viewEnabled);

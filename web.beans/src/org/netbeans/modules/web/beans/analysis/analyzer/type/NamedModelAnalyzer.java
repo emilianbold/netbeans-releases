@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,48 +40,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
-package org.netbeans.modules.editor.lib2.view;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.ComponentView;
-import javax.swing.text.Element;
-import javax.swing.text.IconView;
-import javax.swing.text.LabelView;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.View;
-import javax.swing.text.ViewFactory;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
+
 
 /**
- * Implementation of Swing {@link ViewFactory}.
+ * @author ads
  *
- * @author Miloslav Metelka
  */
+public class NamedModelAnalyzer implements ClassAnalyzer {
 
-public final class ViewFactoryImpl implements ViewFactory {
-
-    public static final ViewFactory INSTANCE = new ViewFactoryImpl();
-
-    private ViewFactoryImpl() {
-        // Singleton only
-    }
-
-    public View create(Element elem) {
-        String kind = elem.getName();
-        if (kind != null) {
-            if (kind.equals(AbstractDocument.ContentElementName)) {
-                return new LabelView(elem);
-            } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
-                return null;
-            } else if (kind.equals(AbstractDocument.SectionElementName)) {
-                return new DocumentView(elem);
-            } else if (kind.equals(StyleConstants.ComponentElementName)) {
-                return new ComponentView(elem);
-            } else if (kind.equals(StyleConstants.IconElementName)) {
-                return new IconView(elem);
-            }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
+     */
+    @Override
+    public void analyze( TypeElement element, TypeElement parent,
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info, AtomicBoolean cancel )
+    {
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
+                model.getCompilationController()))
+        {
+            return;
         }
-        return null;
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.NAMED, 
+                model.getCompilationController()))
+        {
+            return;
+        }
+        TypeMirror superclass = element.getSuperclass();
+        Element superElement = model.getCompilationController().getTypes().
+            asElement( superclass );
+        String name = model.getName(superElement);
+        if ( name == null ){
+            return;
+        }
+        ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, model, info , NbBundle.getMessage(
+                NamedModelAnalyzer.class, "ERR_NamedSpecializes"));     // NOI18N
+        if ( description != null ){
+            descriptions.add( description );
+        }
     }
 
 }
