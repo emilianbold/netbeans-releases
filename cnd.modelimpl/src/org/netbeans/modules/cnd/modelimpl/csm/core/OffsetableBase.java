@@ -80,10 +80,10 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         // Parameters.notNull("file can not be null", file); // NOI18N
         this.fileUID = UIDCsmConverter.fileToUID(file);
         this.fileRef = null;// to prevent error with "final"
-        if(CndUtils.isDebugMode()) {            
-            CndUtils.assertTrueInConsole(start <= end, "end < start for " + ((file != null)?file.getAbsolutePath():"null file") + ":[" + start + "-" + end + "]"); // NOI18N
-        }
         if(end < start) {
+            if(CndUtils.isDebugMode()) {            
+                CndUtils.assertTrueInConsole(false, "end < start for " + ((file != null)?file.getAbsolutePath():"null file") + ":[" + start + "-" + end + "]"); // NOI18N
+            }
             end = start;
         }
         this.startPosition = PositionManager.createPositionID(fileUID, start, PositionManager.Position.Bias.FOWARD);
