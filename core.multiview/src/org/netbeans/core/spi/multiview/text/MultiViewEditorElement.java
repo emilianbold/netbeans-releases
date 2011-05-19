@@ -73,6 +73,7 @@ import org.openide.windows.CloneableTopComponent;
  * subclass.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 1.24
  */
 public class MultiViewEditorElement implements 
 MultiViewElement, CloneableEditorSupport.Pane, Serializable {
