@@ -81,7 +81,7 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     private String                  contentTitle;
     private String                  branchTitle;
     private long                    lastUpdateTimestamp;
-    public static final String PREFERRED_ID = "hgversioning"; // NOI18N
+    public static final String PREFERRED_ID = "hgversioningTC"; // NOI18N
     
     private static HgVersioningTopComponent instance;
 
