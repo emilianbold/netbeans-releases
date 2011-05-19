@@ -281,7 +281,7 @@ public abstract class Disassembly implements StateModel.Listener {
 //        return -1;
     }
     
-    int getAddressLine(long address) {
+    protected int getAddressLine(long address) {
         if (disText != null) {
             final List<DisLine> lines = disText.lines;
             //TODO : can use binary search
