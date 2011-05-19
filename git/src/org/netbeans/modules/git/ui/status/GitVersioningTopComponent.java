@@ -179,6 +179,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
                                 "CTL_Versioning_TopComponent_Title_ContentBranch", contentTitle, name.equals(contentTitle)? "": "[" + name + "] ", branchTitle)); // NOI18N
                     }
                 }                
+                setToolTipText(getName());
             }
         });
     }
@@ -238,7 +239,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         context = ctx;
         refreshBranchName();
         refreshContent();
-        setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            
+        setToolTipText(getName());
     }
 
     /**
@@ -250,18 +251,6 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     public void setContentTitle (String contentTitle) {
         this.contentTitle = contentTitle;
         updateTitle();
-    }
-    
-    private String getContextFilesList (VCSContext ctx, String def) {
-        if (ctx == null || ctx.getRootFiles().isEmpty()) return def;
-        StringBuilder sb = new StringBuilder(200);
-        sb.append("<html>"); // NOI18N
-        for (File file : ctx.getRootFiles()) {
-            sb.append(file.getAbsolutePath());
-            sb.append("<br>"); // NOI18N
-        }
-        sb.delete(sb.length() - 4, Integer.MAX_VALUE);
-        return sb.toString();
     }
 
     @Override
