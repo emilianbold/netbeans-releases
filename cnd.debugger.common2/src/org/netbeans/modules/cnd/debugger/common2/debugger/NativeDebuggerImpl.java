@@ -874,13 +874,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    } else {
 		    setCurrentLine(null, false, false, ShowMode.NONE);
 
-                    if (getVisitedLocation() != null) {
-                        disStateModel().updateStateModel(getVisitedLocation(), true);
+                    //if (getVisitedLocation() != null) {
+                        //disStateModel().updateStateModel(getVisitedLocation(), true);
                         // see IZ 198496: we do not want to show dis if it was not requested explicitly
 //			if (getVisitedLocation().pc() != 0) {
 //			    Disassembly.open();
 //                        }
-                    }
+                    //}
                 }
             }
         });
