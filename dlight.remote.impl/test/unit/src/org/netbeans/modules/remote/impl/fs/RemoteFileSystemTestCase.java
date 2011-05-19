@@ -301,6 +301,33 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         }
     }
 
+    @ForAllEnvironments
+    public void testDots() throws Exception {
+        FileObject usr = getFileObject("/usr");
+        FileObject usrInclude = getFileObject("/usr/include");
+        FileObject usrIncludeSys = getFileObject("/usr/include/sys");
+        FileObject fo;
+        
+        for (String relPath : new String[] { ".", "./." }) {
+            fo = getFileObject(usr, relPath);
+            assertSameInstance("getFileObject(\"" + relPath + "\")", usr, fo);
+        }
+        
+        for (String relPath : new String[] { "..", "./..", "./../" }) {
+            fo = getFileObject(usrInclude, relPath);
+            assertSameInstance("getFileObject(\"" + relPath + "\")", usr, fo);
+        }
+        
+        for (String relPath : new String[] { "../..", "./../..", "./../../" }) {
+            fo = getFileObject(usrIncludeSys, relPath);
+            assertSameInstance("getFileObject(\"" + relPath + "\")", usr, fo);
+        }
+    }
+    
+    private void assertSameInstance(String message, Object expected, Object actual) {
+        assertTrue(message + " expected " + expected + ", but was " + actual, expected == actual);
+    }
+    
     
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteFileSystemTestCase.class);

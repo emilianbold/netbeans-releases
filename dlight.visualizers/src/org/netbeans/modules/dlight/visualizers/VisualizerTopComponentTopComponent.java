@@ -77,10 +77,12 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     private VisualizerTopComponentTopComponent() {
         initComponents();
-        toolbarPanel.add(westToolbarContent);
-        toolbarPanel.add(timeFilterPanel);
-        toolbarPanel.add(eastToolbarContent);
-
+        JPanel tmpPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        tmpPanel.add(westToolbarContent);
+        tmpPanel.add(timeFilterPanel);
+        tmpPanel.add(eastToolbarContent);
+        toolbarPanel.add(tmpPanel);
+        
         updateToolbar(null);
 
         setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "CTL_VisualizerTopComponentTopComponent")); // NOI18N
@@ -322,7 +324,16 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
         @Override
         public int compare(VisualizerToolbarComponent o1, VisualizerToolbarComponent o2) {
-            return Integer.valueOf(vcompAccess.getPosition(o1)).compareTo(Integer.valueOf(vcompAccess.getPosition(o2)));
+            //return Integer.valueOf(vcompAccess.getPosition(o1)).compareTo(Integer.valueOf(vcompAccess.getPosition(o2)));
+            // Never equals - same position doesn't means that components are
+            // the same
+            int pos1 = vcompAccess.getPosition(o1);
+            int pos2 = vcompAccess.getPosition(o2);
+            if (pos1 < pos2) {
+                return -1;
+            } else {
+                return 1;
+            }             
         }
     }
 }

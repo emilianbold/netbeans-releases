@@ -87,6 +87,9 @@ public abstract class Disassembly implements StateModel.Listener {
     private int disLength = 0;
     private DisText disText;
     
+    protected static enum RequestMode {FILE_SRC, FILE_NO_SRC, ADDRESS_SRC, ADDRESS_NO_SRC, NONE};
+    protected RequestMode requestMode = RequestMode.FILE_SRC;
+    
     private final BreakpointModel.Listener breakpointListener =
 	new BreakpointModel.Listener() {
 	    public void bptUpdated() {
@@ -281,7 +284,7 @@ public abstract class Disassembly implements StateModel.Listener {
 //        return -1;
     }
     
-    int getAddressLine(long address) {
+    protected int getAddressLine(long address) {
         if (disText != null) {
             final List<DisLine> lines = disText.lines;
             //TODO : can use binary search

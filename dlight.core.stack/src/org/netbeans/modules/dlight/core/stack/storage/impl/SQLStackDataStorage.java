@@ -65,6 +65,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
@@ -724,6 +725,83 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
     }
 
     @Override
+    public Function getLeafFunction(long stackId) {
+        long funcID, offset, offsetInModule, srcLine, srcColumn;
+        String funcName, module, srcFile;
+        StringBuilder qname = new StringBuilder();
+        long nodeID = stackId;
+        Function func = null;
+        try {
+            PreparedStatement ps = stmtCache.getPreparedStatement(
+                    "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.fline, sourceinfo.fcolumn" // NOI18N
+                    + " from stacknode left join funcnames on funcnames.id = stacknode.func_id" // NOI18N
+                    + " left join moduleinfo on moduleinfo.node_id = stacknode.id" // NOI18N
+                    + " left join modules on modules.id = moduleinfo.module_id" // NOI18N
+                    + " left join sourceinfo on sourceinfo.node_id = stacknode.id" // NOI18N
+                    + " left join sourcefiles on sourcefiles.id = sourceinfo.file_id" // NOI18N
+                    + " where stacknode.id = ?"); // NOI18N
+
+            ps.setLong(1, nodeID);
+
+            ResultSet rs = ps.executeQuery();
+            try {
+                if (rs.next()) {
+                    nodeID = rs.getLong(1);
+                    funcID = rs.getLong(2);
+                    offset = rs.getLong(3);
+                    funcName = rs.getString(4);
+                    module = rs.getString(5);
+                    offsetInModule = rs.getLong(6);
+                    srcFile = rs.getString(7);
+                    srcLine = rs.getLong(8);
+                    srcColumn = rs.getLong(9);
+
+                    String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
+
+                    if (module != null) {
+                        qname.append(module);
+                        if (moduleOffset != null) {
+                            qname.append('+').append(moduleOffset);
+                        }
+                        qname.append('`');
+                    }
+
+                    qname.append(funcName);
+
+                    if (offset > 0) {
+                        qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
+                    }
+
+                    if (srcFile != null) {
+                        qname.append(':').append(srcFile);
+                        if (srcLine > 0) {
+                            qname.append(':').append(srcLine);
+                            if (srcColumn > 0) {
+                                qname.append(':').append(srcColumn);
+                            }
+                        }
+                    }
+
+                    func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
+
+                } else {//try to get from the cache
+                    func =  dbProxy.getLeafFunction(stackId);
+                }
+            } finally {
+                qname.setLength(0);
+                rs.close();
+            }
+
+        } catch (SQLException ex) {
+            SQLExceptions.printStackTrace(sqlStorage, ex);
+        }
+        if (func != null){
+            demangle(func);
+        }
+        return func;
+    }
+
+    @Override
     /**
      * Callstack itself is out of any context. So, returned list is not binded 
      * to any context (!) - context should be used in sequent calls to other 
@@ -739,7 +817,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
             long nodeID = stackId;
             while (0 < nodeID) {
                 PreparedStatement ps = stmtCache.getPreparedStatement(
-                        "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.line, sourceinfo.column" // NOI18N
+                        "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.fline, sourceinfo.fcolumn" // NOI18N
                         + " from stacknode left join funcnames on funcnames.id = stacknode.func_id" // NOI18N
                         + " left join moduleinfo on moduleinfo.node_id = stacknode.id" // NOI18N
                         + " left join modules on modules.id = moduleinfo.module_id" // NOI18N
@@ -815,6 +893,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
             for (int i = 0; i < calls.size(); ++i) {
                 ((FunctionImpl) calls.get(i).getFunction()).setName(demangled.get(i));
             }
+        }
+    }
+
+    private void demangle(Function f) {
+        if (demangler != null) {
+            String demangled = demangler.demangle(f.getName());
+            ((FunctionImpl) f).setName(demangled);
         }
     }
 }

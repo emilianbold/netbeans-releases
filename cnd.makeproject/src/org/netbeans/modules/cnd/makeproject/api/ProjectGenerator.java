@@ -341,6 +341,10 @@ public class ProjectGenerator {
         return MakeProjectGeneratorImpl.getDefaultProjectFolder();
     }
 
+    public static String getDefaultProjectFolder(ExecutionEnvironment env) {
+        return MakeProjectGeneratorImpl.getDefaultProjectFolder(env);
+    }
+
     public static String getValidProjectName(String projectFolder) {
         return MakeProjectGeneratorImpl.getValidProjectName(projectFolder);
     }

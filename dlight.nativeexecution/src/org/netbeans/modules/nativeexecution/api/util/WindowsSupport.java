@@ -41,15 +41,15 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
@@ -65,17 +65,35 @@ import org.openide.util.Utilities;
 public final class WindowsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private static final WindowsSupport instance = new WindowsSupport();
-    private final boolean isWindows;
+    private static final Object initLock = new Object();
+    private static final WindowsSupport instance;
     private Shell activeShell = null;
     private String REG_EXE;
     private PathConverter pathConverter = null;
     private Charset charset;
 
-    private WindowsSupport() {
-        isWindows = Utilities.isWindows();
+    static {
+        synchronized (initLock) {
+            instance = new WindowsSupport();
+            instance.init();
+        }
+    }
 
-        init();
+    private WindowsSupport() {
+    }
+
+    public static WindowsSupport getInstance() {
+        synchronized (initLock) {
+            return instance;
+        }
+    }
+
+    public String getShell() {
+        return activeShell == null ? null : activeShell.shell;
+    }
+
+    public void init() {
+        init(null);
 
         if (activeShell == null) {
             log.fine("WindowsSupport: no shell found"); // NOI18N
@@ -84,26 +102,16 @@ public final class WindowsSupport {
         }
     }
 
-    public static WindowsSupport getInstance() {
-        return instance;
-    }
-
-    public String getShell() {
-        return activeShell == null ? null : activeShell.shell;
-    }
-
-    public synchronized void init() {
-        init(null);
-    }
-
     public void init(String searchDir) {
-        if (!isWindows) {
-            return;
-        }
+        synchronized (initLock) {
+            if (!Utilities.isWindows()) {
+                return;
+            }
 
-        pathConverter = new SimpleConverter();
-        activeShell = findShell(searchDir);
-        initCharset();
+            pathConverter = new SimpleConverter();
+            activeShell = findShell(searchDir);
+            initCharset();
+        }
     }
 
     private Shell findShell(String searchDir) {
@@ -214,8 +222,8 @@ public final class WindowsSupport {
         if (activeShell == null) {
             return shellPID;
         }
-        
-        ProcessBuilder pb = null;        
+
+        ProcessBuilder pb = null;
         File psFile = new File(activeShell.bindir, "ps.exe"); // NOI18N
 
         if (!psFile.exists()) {
@@ -369,16 +377,13 @@ public final class WindowsSupport {
 
         // 1. is LANG defined?
         try {
-            ProcessBuilder shellBuilder = new ProcessBuilder(activeShell.shell, "--login", "-s"); // NOI18N
-            Process shellProcess = shellBuilder.start();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(shellProcess.getOutputStream()));
-            writer.write("echo $LANG\n"); // NOI18N
-            writer.close();
-            String shellOutput = ProcessUtils.readProcessOutputLine(shellProcess);
+            ExitStatus result = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), activeShell.shell, "--login", "-c", "echo $LANG"); // NOI18N
 
-            if (shellOutput.length() > 0) {
-                if (shellOutput.contains(".")) { // NOI18N
-                    shellOutput = shellOutput.substring(shellOutput.indexOf('.') + 1);
+            if (result.isOK()) {
+                String shellOutput = result.output;
+                int dotIndex = shellOutput.indexOf('.');
+                if (dotIndex >= 0) {
+                    shellOutput = shellOutput.substring(dotIndex + 1).trim();
                 }
                 try {
                     charset = Charset.forName(shellOutput);

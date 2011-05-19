@@ -137,8 +137,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
             public void windowGainedFocus(WindowEvent e) {
-                if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
-                    refreshManager.scheduleRefreshOnFocusGained(factory.getCachedFileObjects());
+                if (e.getOppositeWindow() == null) {
+                    if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
+                        refreshManager.scheduleRefreshOnFocusGained(factory.getCachedFileObjects());
+                    }
                 }
             }
 

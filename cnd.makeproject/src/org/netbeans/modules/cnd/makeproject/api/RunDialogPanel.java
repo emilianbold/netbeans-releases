@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -136,13 +137,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         fileSystem = executableFO.getFileSystem();
         this.isRun = isRun;
         initialize(executableFO);
-        errorLabel.setText(""); //NOI18N
         initAccessibility();
     }
     
     private void initialize(FileObject executableFO) {
         initComponents();
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
+        errorLabel.setText(""); //NOI18N
         modifiedValidateDocumentListener = new ModifiedValidateDocumentListener();
         //modifiedRunDirectoryListener = new ModifiedRunDirectoryListener();
         if (executableFO != null) {
@@ -465,7 +466,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private void projectComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboBoxActionPerformed
         int selectedIndex = projectComboBox.getSelectedIndex();
+        clearError();
+        validateExecutable();
         if (selectedIndex == 0) {
+            validateProjectLocation();
             FileObject executable =  fileSystem.findResource(getExecutablePath());
             if (executable != null && executable.isValid() && executable.getParent() != null) {
                 runDirectoryTextField.setText(executable.getParent().getPath());
@@ -481,7 +485,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectLocationField.setEnabled(true);
             projectLocationButton.setEnabled(true);
             projectFolderField.setEnabled(true);
-            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder());
+            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder(FileSystemProvider.getExecutionEnvironment(fileSystem)));
             if (executable != null && executable.isValid()) {
                 projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), executable.getNameExt()));
             } else {
@@ -517,13 +521,39 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             seed = System.getProperty("user.home");
         } // NOI18N
         
-        FileFilter[] filter;
-        if (Utilities.isWindows()){
-            filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
-        } else {
-            filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
+        FileFilter[] filter = null;
+        OSFamily oSFamily = null;
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        try {
+            oSFamily = HostInfoUtils.getHostInfo(executionEnvironment).getOSFamily();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (oSFamily != null) {
+            switch (oSFamily) {
+                case MACOSX:
+                    filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
+                    break;
+                case WINDOWS:
+                    filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
+                    break;
+                case SUNOS:
+                case LINUX:
+                case UNKNOWN:
+                    filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
+                    break;
+            }
+        }
+        if (filter == null) {
+            if (Utilities.isWindows()){
+                filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
+            } else {
+                filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
+            }
         }
         // Show the file chooser
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
@@ -583,8 +613,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private Project[] getOpenedProjects() {
         List<Project> res = new ArrayList<Project>();
         for(Project p :OpenProjects.getDefault().getOpenProjects()) {
-            if (p.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
-                res.add(p);
+            ConfigurationDescriptorProvider conf = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (conf != null && conf.gotDescriptor()) {
+                if (fileSystem.equals(conf.getConfigurationDescriptor().getBaseDirFileSystem())) {
+                    res.add(p);
+                }
             }
         }
         return res.toArray(new Project[res.size()]);
@@ -629,7 +662,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
             projectKind.setSelectedIndex(0);
         }
-
     }
     
     private boolean validateExecutable() {
@@ -746,8 +778,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private void validateFields(javax.swing.event.DocumentEvent documentEvent) {
         isValidating = true;
         try {
-            clearError();
             if (documentEvent.getDocument() == executableTextField.getDocument()) {
+                clearError();
                 projectComboBox.setSelectedIndex(0);
                 if (!validateExecutable()) {
                     return;
@@ -758,15 +790,18 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 }
             } else if (documentEvent.getDocument() == projectNameField.getDocument() ||
                        documentEvent.getDocument() == projectLocationField.getDocument()) {
-                String projectName = projectNameField.getText().trim();
-                String projectFolder = projectLocationField.getText().trim();
-                while (projectFolder.endsWith("/") || projectFolder.endsWith("\\")) { // NOI18N
-                    projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
-                }
-                
-                projectFolderField.setText(projectFolder + CndFileUtils.getFileSeparatorChar(fileSystem) + projectName);
-                if (!validateProjectLocation()) {
-                    return;
+                clearError();
+                if (projectComboBox.getSelectedIndex() == 0) {
+                    String projectName = projectNameField.getText().trim();
+                    String projectFolder = projectLocationField.getText().trim();
+                    while (projectFolder.endsWith("/") || projectFolder.endsWith("\\")) { // NOI18N
+                        projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
+                    }
+
+                    projectFolderField.setText(projectFolder + CndFileUtils.getFileSeparatorChar(fileSystem) + projectName);
+                    if (!validateProjectLocation()) {
+                        return;
+                    }
                 }
             }
         } finally {
@@ -793,11 +828,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     }
     
     public void getSelectedProject(final RunProjectAction action) {
-        Project project;
         lastSelectedExecutable = getExecutablePath();
         if (projectComboBox.getSelectedIndex() > 0) {
             lastSelectedProject = projectChoices[projectComboBox.getSelectedIndex()-1];
-            project = lastSelectedProject;
+            Project project = lastSelectedProject;
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
             MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
@@ -811,33 +845,42 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 });
             }
         } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    createNewProject(action);
+                }
+            });
+        }
+    }
+    
+    private void createNewProject(final RunProjectAction action) {
+        try {
+            ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
+            progress.start();
             try {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
-                progress.start();
-                try {
-                    ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
-                    FileUtil.createFolder(fileSystem.getRoot(), projectFolderField.getText().trim());
-                    projectAction = action;
-                    if (executionEnvironment.isLocal()) {
+                ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+                FileUtil.createFolder(fileSystem.getRoot(), projectFolderField.getText().trim());
+                projectAction = action;
+                Project project = null;
+                if (executionEnvironment.isLocal()) {
+                    project = createLocalProject();
+                } else {
+                    FileObject projectCreator = findProjectCreator();
+                    if (projectCreator == null) {
                         project = createLocalProject();
                     } else {
-                        FileObject projectCreator = findProjectCreator();
-                        if (projectCreator == null) {
+                        project = createRemoteProject(projectCreator);
+                        if (project == null) {
                             project = createLocalProject();
-                        } else {
-                            project = createRemoteProject(projectCreator);
-                            if (project == null) {
-                                project = createLocalProject();
-                            }
                         }
                     }
-                } finally {
-                    progress.finish();
                 }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                project = null;
+            } finally {
+                progress.finish();
             }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -1007,10 +1050,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         return NbBundle.getMessage(RunDialogPanel.class, s, args);
     }
     
-    public boolean asynchronous() {
-        return false;
-    }
-
     private final class ProjectKindItem {
         private final IteratorExtension.ProjectKind kind;
         ProjectKindItem(IteratorExtension.ProjectKind kind) {

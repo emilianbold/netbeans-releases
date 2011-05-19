@@ -143,7 +143,7 @@ public final class TimeSeriesIndicator
     private void initUI() {
         this.graph = createGraph(configuration, data);
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-        this.legend = new Legend(timeSeriesList, detailsList);
+        this.legend = new Legend(timeSeriesList, detailsList, configuration);
         
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
                 legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), getActions());

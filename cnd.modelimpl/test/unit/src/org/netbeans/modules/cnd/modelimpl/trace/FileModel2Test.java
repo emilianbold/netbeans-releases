@@ -387,5 +387,10 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 195338 - Unnamed bit sets issue
         performTest("bug195338.cpp");
     }
+
+    public void testBug198460() throws Exception {
+        // Bug 198460 - add support for gcc keyword __extension__
+        performTest("bug198460.cpp");
+    }
     
 }

@@ -46,7 +46,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.CallStackEntryParser;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
@@ -90,6 +90,11 @@ public interface StackDataStorage {//extends StackSupport {
     long putSample(long contextID, List<CharSequence> stack, long timestamp, long duration);
 
     List<FunctionCall> getCallStack(long stackId);
+    
+    /**
+     * @since 1.9.3
+     */
+    Function getLeafFunction(long stackId);
 
     List<FunctionMetric> getMetricsList();
 

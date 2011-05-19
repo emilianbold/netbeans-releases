@@ -98,7 +98,7 @@ public class WritingQueue {
 
     public void add(RemotePlainFile fo) {
         String dstFileName = fo.getPath();
-        LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}:{2}", new Object[]{execEnv, dstFileName}); //NOI18N
+        LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}", dstFileName); //NOI18N
         synchronized (lock) {
             Entry entry = entries.get(dstFileName);
             if (entry == null) {
@@ -226,6 +226,7 @@ public class WritingQueue {
                     // so the finishedTask is one of previous tasks - ignore
                     return;
                 }
+                currentTask = null;
                 if (reschedule) {
                     synchronized (lock) {
                         reschedule = false;
@@ -236,11 +237,11 @@ public class WritingQueue {
                 try {
                     UploadStatus uploadStatus = finishedTask.get();
                     if (uploadStatus.isOK()) {
-                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} succeeded", new Object[] {execEnv, fo});
+                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} succeeded", fo);
                         failed.remove(fo.getPath()); // paranoia                        
                         fo.getParent().updateStat(fo, uploadStatus.getStatInfo());
                     } else {
-                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} failed", new Object[] {execEnv, fo});
+                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} failed", fo);
                         failed.add(fo.getPath());
                         fo.setPendingRemoteDelivery(false);
                     }

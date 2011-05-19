@@ -150,10 +150,12 @@ public final class IncludeDirEntry {
     }
 
     /*package*/ boolean isExistingDirectory() {
-        if (exists == null) {
-            exists = CndFileUtils.isExistingDirectory(fileSystem, getPath());
+        Boolean val = exists;
+        if (val == null) {
+            val = CndFileUtils.isExistingDirectory(fileSystem, getPath());
+            exists = val;
         }
-        return exists;
+        return val;
     }
 
     public String getPath() {

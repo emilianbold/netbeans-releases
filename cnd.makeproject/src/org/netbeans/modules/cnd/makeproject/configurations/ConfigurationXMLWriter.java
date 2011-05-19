@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.api.xml.XMLDocWriter;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.filesystems.FileObject;
@@ -89,7 +90,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
         try {
             org.openide.filesystems.FileLock lock = xml.lock();
             try {
-                OutputStream os = xml.getOutputStream(lock);
+                OutputStream os = SmartOutputStream.getSmartOutputStream(xml, lock);
                 write(os);
             }
             finally {

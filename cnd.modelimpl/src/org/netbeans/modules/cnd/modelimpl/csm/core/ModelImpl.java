@@ -48,6 +48,7 @@ import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
@@ -319,10 +320,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public Collection<CsmProject> projects() {
-        Collection<CsmUID<CsmProject>> vals;
-        synchronized (lock) {
-            vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
-        }
+        Collection<CsmUID<CsmProject>> vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
         Collection<CsmProject> out = new ArrayList<CsmProject>(vals.size());
         for (CsmUID<CsmProject> uid : vals) {
             ProjectBase prj = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
@@ -744,7 +742,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             closeProject(platformProject, true);
         }
         for (LibProjectImpl lib : libs) {
-            closeProject(lib.getPlatformProject(), true);
+            Object platformProject = lib.getPlatformProject();
+            CndUtils.assertTrue(platformProject != null || lib.isDisposing(), "No Platform project for ", lib);
+            // lib can be already closed when last project was closed in the loop above
+            if (platformProject != null) {
+                closeProject(platformProject, true);
+            }
         }
         LibraryManager.getInstance().cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
@@ -759,7 +762,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private static final class Lock {}
     private final Object lock = new Lock();
     /** maps platform project to project */
-    private final Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
+    private final Map<Object, CsmUID<CsmProject>> platf2csm = new ConcurrentHashMap<Object, CsmUID<CsmProject>>();
     private CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;

@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadParameters;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -149,8 +150,10 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
         if (file.isFile()) {
             UploadParameters up = new CommonTasksSupport.UploadParameters(
                     file, getTestExecutionEnvironment(), remotePath, -1);
-            if (CommonTasksSupport.uploadFile(up).get().isOK()) {
-                throw new IOException("Error uploading " + file.getAbsolutePath() + " to " + up.dstExecEnv + ':' + up.dstFileName);
+            UploadStatus status = CommonTasksSupport.uploadFile(up).get();
+            if (!status.isOK()) {
+                throw new IOException("Error uploading " + file.getAbsolutePath() + " to " + up.dstExecEnv + 
+                        ':' + up.dstFileName + ' ' + status.getError());
             }
         } else {
             PrintWriter err = new PrintWriter(System.err);

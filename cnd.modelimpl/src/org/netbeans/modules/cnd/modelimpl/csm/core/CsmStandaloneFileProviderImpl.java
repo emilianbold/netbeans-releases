@@ -318,6 +318,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final FileObject projectRoot;
         private final FileSystem fileSystem;
         private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+
         private static final class Lock {}
         private final Object listenersLock = new Lock();
 
@@ -533,6 +534,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public String getPlatformName() {
             return null;
+        }
+        
+        @Override
+        public void fireFilesPropertiesChanged() {
         }
 
         @Override

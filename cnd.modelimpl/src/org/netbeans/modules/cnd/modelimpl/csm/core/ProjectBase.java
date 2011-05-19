@@ -332,6 +332,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** Gets an object, which represents correspondent IDE project */
     protected final void setPlatformProject(Object platformProject) {
         CndUtils.assertTrue(this.platformProject == null);
+        CndUtils.assertNotNull(platformProject, "Passing null project for ", this);
         this.platformProject = platformProject;
         CndUtils.assertTrue(this.uniqueName.equals(getUniqueName(fileSystem, platformProject)));
     }
@@ -1838,6 +1839,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private CsmFile findFileByPath(CharSequence absolutePath, boolean createIfPossible) {
+        absolutePath = CndFileUtils.normalizeAbsolutePath(fileSystem, absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(absolutePath) == null) {
             if (!createIfPossible) {
@@ -2733,7 +2735,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CharSequence name;
     private CsmUID<CsmNamespace> globalNamespaceUID;
     private NamespaceImpl FAKE_GLOBAL_NAMESPACE;
-    private Object platformProject;
+    private volatile Object platformProject;
     private final FileSystem fileSystem;
 
     /**

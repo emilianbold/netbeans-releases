@@ -42,10 +42,12 @@
 package org.netbeans.modules.dlight.core.stack.storage.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.modules.dlight.core.stack.api.CallStackEntry;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.support.SQLRequest;
 import org.netbeans.modules.dlight.spi.support.SQLRequestsProcessor;
@@ -58,6 +60,8 @@ class DBProxy {
 
     private final SQLRequestsProcessor requestsProcessor;
     private final SQLStackRequestsProvider requestsProvider;
+    private final HashMap<Long, StackNode> stackNodesCache = new HashMap<Long, StackNode>();
+    private final HashMap<Long, CallStackEntry> callStackEntriesCache = new HashMap<Long, CallStackEntry>();
     private final HashMap<CharSequence, StackNode> stackEntryToStackNode = new HashMap<CharSequence, StackNode>();
     private final HashMap<CharSequence, Long> funcNameToFuncID = new HashMap<CharSequence, Long>();
     private final HashMap<CharSequence, Long> fileNameToFileID = new HashMap<CharSequence, Long>();
@@ -100,8 +104,8 @@ class DBProxy {
 
         if (isNewNode != null) {
             isNewNode.set(isnew);
-        }
-
+        }   
+        
         return node;
     }
 
@@ -133,12 +137,16 @@ class DBProxy {
         long offset = entry.getOffsetInFunction();
         Long nodeID = lastNodeID.incrementAndGet();
         StackNode node = new StackNode(nodeID, callerID, funcID, offset);
+        stackNodesCache.put(node.nodeID, node);
+        callStackEntriesCache.put(nodeID, entry);
         stackEntryToStackNode.put(entry.getOriginalEntry(), node);
         SQLRequest request = requestsProvider.addNode(nodeID, callerID, funcID, offset);
         requestsProcessor.queueRequest(request);
 
         return node;
     }
+    
+    
 
     void addSourceInfo(StackNode node, long contextID, SourceFileInfo sourceFileInfo) {
         if (sourceFileInfo == null) {
@@ -184,6 +192,65 @@ class DBProxy {
 
         SQLRequest request = requestsProvider.addModuleInfo(node.nodeID, contextID, moduleID, offsetInModule);
         requestsProcessor.queueRequest(request);
+    }
+    
+    private String getFunctionNameByFuncID(long funcId){
+        Iterator<CharSequence> it =funcNameToFuncID.keySet().iterator();
+        while (it.hasNext()){
+            String name  = it.next().toString();
+            if (funcNameToFuncID.get(name).longValue() == funcId){
+                return name;
+            }
+        }
+        return null;
+    }
+       
+    
+    Function getLeafFunction(long stackId){
+        //find the StackNode
+        StackNode stackNode = stackNodesCache.get(stackId);
+                    long nodeID = stackNode.nodeID;
+                    long funcID = stackNode.funcID;
+                    long offset = stackNode.offset;
+                    String funcName = getFunctionNameByFuncID(funcID);
+                    CallStackEntry entry = callStackEntriesCache.get(stackId);
+                    StringBuilder qname = new StringBuilder();
+                    String module = entry.getModulePath().toString();
+                    long offsetInModule = entry.getOffsetInModule();
+                    SourceFileInfo sourceFileInfo = entry.getSourceFileInfo();
+                    String srcFile = sourceFileInfo.getFileName();
+                    long srcLine = sourceFileInfo.getLine();
+                    long srcColumn = sourceFileInfo.getColumn();
+                    String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
+
+                    if (module != null) {
+                        qname.append(module);
+                        if (moduleOffset != null) {
+                            qname.append('+').append(moduleOffset);
+                        }
+                        qname.append('`');
+                    }
+
+                    qname.append(funcName);
+
+                    if (offset > 0) {
+                        qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
+                    }
+
+                    if (srcFile != null) {
+                        qname.append(':').append(srcFile);
+                        if (srcLine > 0) {
+                            qname.append(':').append(srcLine);
+                            if (srcColumn > 0) {
+                                qname.append(':').append(srcColumn);
+                            }
+                        }
+                    }
+
+                    FunctionImpl func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
+
+                    return func;
+        
     }
 
     /**
