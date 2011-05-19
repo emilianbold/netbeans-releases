@@ -65,7 +65,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -73,7 +72,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -180,10 +178,12 @@ public class RepositoryPathNode extends AbstractNode {
         setSheet(sheet);
     }
 
+    @Override
     public String getDisplayName() {
         return getName();
     }
 
+    @Override
     public String getName() {
         if(entry.getRepositoryFile().isRepositoryRoot()) {
             return entry.getRepositoryFile().getRepositoryUrl().toString();
@@ -192,6 +192,7 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
+    @Override
     public void setName(String name) {
         String oldName = getName();
         if(!oldName.equals(name)) {
@@ -218,11 +219,12 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return client.getActions();
     }
 
-    public RepositoryPathEntry getEntry() {
+    RepositoryPathEntry getEntry() {
         return entry;
     }
 
@@ -230,6 +232,7 @@ public class RepositoryPathNode extends AbstractNode {
         return client;
     }
 
+    @Override
     public boolean canRename() {
         return !repositoryFolder;
     }
@@ -272,6 +275,7 @@ public class RepositoryPathNode extends AbstractNode {
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(Object key) {
             if (key instanceof Node) {
                 return new Node[] {(Node) key};
@@ -302,6 +306,7 @@ public class RepositoryPathNode extends AbstractNode {
 
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
                 public void perform() {
                     try {
                         Collection<RepositoryPathEntry> listedEntries = client.listRepositoryPath(pathEntry, this);
@@ -480,6 +485,7 @@ public class RepositoryPathNode extends AbstractNode {
             super(PROPERTY_NAME_AUTHOR, String.class, PROPERTY_NAME_AUTHOR, PROPERTY_NAME_AUTHOR);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return entry.getLastChangedAuthor();
         }
@@ -491,10 +497,12 @@ public class RepositoryPathNode extends AbstractNode {
             super(PROPERTY_NAME_HISTORY, String.class, HISTORY_DISPLAY_NAME, HISTORY_SHORT_DESC);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return "";
         }
 
+        @Override
         public String toString() {
             try {
                 Object obj = getValue();
@@ -505,6 +513,7 @@ public class RepositoryPathNode extends AbstractNode {
             }
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new HistoryPropertyEditor();
         }
@@ -515,6 +524,7 @@ public class RepositoryPathNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 Object obj = getValue();
@@ -528,10 +538,12 @@ public class RepositoryPathNode extends AbstractNode {
             }
         }
 
+        @Override
         public boolean canWrite() {
             return false;
         }
 
+        @Override
         public PropertyEditor getPropertyEditor () {
             try {
                 return new RevisionPropertyEditor(getValue());
@@ -547,10 +559,12 @@ public class RepositoryPathNode extends AbstractNode {
             setValue("");
         }
 
+        @Override
         public boolean supportsCustomEditor () {
             return true;
         }
 
+        @Override
         public Component getCustomEditor() {
             SVNRevision revision = entry.getLastChangedRevision();
             SVNUrl repositoryUrl = entry.getRepositoryFile().getRepositoryUrl();
@@ -633,7 +647,7 @@ public class RepositoryPathNode extends AbstractNode {
             if (val instanceof Date) {
                 val = DateFormat.getDateTimeInstance().format((Date) val);
             }
-            renderer.setText(val.toString());
+            renderer.setText(val == null ? "" : val.toString());
             renderer.setBounds(box);
             renderer.paint(gfx);
         }

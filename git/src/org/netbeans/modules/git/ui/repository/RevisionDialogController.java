@@ -86,6 +86,8 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     public RevisionDialogController (File repository, File[] roots, String initialRevision) {
         this(repository, roots);
         panel.revisionField.setText(initialRevision);
+        panel.revisionField.setCaretPosition(panel.revisionField.getText().length());
+        panel.revisionField.moveCaretPosition(0);
         hideFields(new JComponent[] { panel.lblBranch, panel.cmbBranches });
     }
 

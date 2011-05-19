@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.editor.lib2.view;
 
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.ComponentView;
-import javax.swing.text.Element;
-import javax.swing.text.IconView;
-import javax.swing.text.LabelView;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.View;
-import javax.swing.text.ViewFactory;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Position;
 
 /**
- * Implementation of Swing {@link ViewFactory}.
  *
  * @author Miloslav Metelka
  */
-
-public final class ViewFactoryImpl implements ViewFactory {
-
-    public static final ViewFactory INSTANCE = new ViewFactoryImpl();
-
-    private ViewFactoryImpl() {
-        // Singleton only
+final class TestHighlight {
+    
+    final Position startPos;
+    
+    final Position endPos;
+    
+    final AttributeSet attrs;
+    
+    public TestHighlight(Position startPos, Position endPos, AttributeSet attrs) {
+        this.startPos = startPos;
+        this.endPos = endPos;
+        this.attrs = attrs;
     }
 
-    public View create(Element elem) {
-        String kind = elem.getName();
-        if (kind != null) {
-            if (kind.equals(AbstractDocument.ContentElementName)) {
-                return new LabelView(elem);
-            } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
-                return null;
-            } else if (kind.equals(AbstractDocument.SectionElementName)) {
-                return new DocumentView(elem);
-            } else if (kind.equals(StyleConstants.ComponentElementName)) {
-                return new ComponentView(elem);
-            } else if (kind.equals(StyleConstants.IconElementName)) {
-                return new IconView(elem);
-            }
-        }
-        return null;
+    int startOffset() {
+        return startPos.getOffset();
     }
 
+    int endOffset() {
+        return endPos.getOffset();
+    }
+
+    @Override
+    public String toString() {
+        return "<" + startPos.getOffset() + "," + endPos.getOffset() + ">; " + attrs;
+    }
+    
 }
