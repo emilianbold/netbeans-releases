@@ -94,7 +94,7 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         Element el = info.getTypes().asElement(tm);
-        if (el == null || el.getKind() != ElementKind.CLASS) {
+        if (el == null || (!el.getKind().isClass() && !el.getKind().isInterface())) {
             return null;
         }
         
