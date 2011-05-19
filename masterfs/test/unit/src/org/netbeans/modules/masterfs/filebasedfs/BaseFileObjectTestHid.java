@@ -118,6 +118,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         };
     }
     public void testLinks() throws Exception {
+        if (Utilities.isWindows()) {
+            return;
+        }
         FileObject fo = root.getFileObject("testdir/mountdir9");
         
         File dir = FileUtil.toFile(fo);
