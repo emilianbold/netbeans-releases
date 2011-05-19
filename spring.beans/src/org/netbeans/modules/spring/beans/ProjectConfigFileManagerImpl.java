@@ -183,7 +183,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-
+    
     private void readConfiguration() {
         assert mutex().isReadAccess();
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
