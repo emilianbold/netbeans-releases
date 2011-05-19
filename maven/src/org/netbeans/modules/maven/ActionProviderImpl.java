@@ -61,12 +61,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -162,11 +165,28 @@ public class ActionProviderImpl implements ActionProvider {
                 supp.addAll( added);
             }
         }
-        if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
+        if (RunUtils.hasTestCompileOnSaveEnabled(project) || (usingSurefire28() && usingJUnit4())) {
             supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
             supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         }
         return supp.toArray(new String[0]);
+    }
+
+    private boolean usingSurefire28() {
+        String v = PluginPropertyUtils.getPluginVersion(project.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.8")) >= 0;
+    }
+
+    private boolean usingJUnit4() { // SUREFIRE-724
+        for (Artifact a : project.getOriginalMavenProject().getArtifacts()) {
+            if ("junit".equals(a.getGroupId()) && "junit".equals(a.getArtifactId())) {
+                String version = a.getVersion();
+                if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -597,7 +617,7 @@ public class ActionProviderImpl implements ActionProvider {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
-                return reporter != null && reporter.getReports().size() > 0 ? new ShowProblemsAction(reporter) : null;
+                return reporter != null && reporter.isBroken() ? new ShowProblemsAction(reporter) : null;
             }
         };
     }

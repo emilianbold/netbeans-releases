@@ -42,22 +42,36 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.libs.git.GitBranch;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class RevisionDialogController implements ActionListener, DocumentListener, PropertyChangeListener {
+public class RevisionDialogController implements ActionListener, DocumentListener, PropertyChangeListener, ItemListener {
     private final RevisionDialog panel;
     private final File repository;
     private final RevisionInfoPanelController infoPanelController;
@@ -69,13 +83,23 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private final File[] roots;
     private String revision;
 
-    public RevisionDialogController (File repository, File[] roots) {
-        this(repository, roots, GitUtils.HEAD);
-    }
-    
     public RevisionDialogController (File repository, File[] roots, String initialRevision) {
+        this(repository, roots);
+        panel.revisionField.setText(initialRevision);
+        panel.revisionField.setCaretPosition(panel.revisionField.getText().length());
+        panel.revisionField.moveCaretPosition(0);
+        hideFields(new JComponent[] { panel.lblBranch, panel.cmbBranches });
+    }
+
+    public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches) {
+        this(repository, roots);
+        hideFields(new JComponent[] { panel.lblRevision, panel.revisionField, panel.btnSelectRevision });
+        setModel(branches);
+    }
+
+    private RevisionDialogController (File repository, File[] roots) {
         infoPanelController = new RevisionInfoPanelController(repository);
-        panel = new RevisionDialog(infoPanelController.getPanel(), initialRevision);
+        this.panel = new RevisionDialog(infoPanelController.getPanel());
         this.repository = repository;
         this.roots = roots;
         this.support = new PropertyChangeSupport(this);
@@ -84,7 +108,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         infoPanelController.loadInfo(revision = panel.revisionField.getText());
         attachListeners();
     }
-
+    
     public RevisionDialog getPanel () {
         return panel;
     }
@@ -109,6 +133,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private void attachListeners () {
         panel.btnSelectRevision.addActionListener(this);
         panel.revisionField.getDocument().addDocumentListener(this);
+        panel.cmbBranches.addItemListener(this);
         infoPanelController.addPropertyChangeListener(this);
     }
 
@@ -119,6 +144,13 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         } else if (e.getSource() == t) {
             t.stop();
             infoPanelController.loadInfo(revision);
+        }
+    }
+
+    @Override
+    public void itemStateChanged (ItemEvent e) {
+        if (e.getSource() == panel.cmbBranches) {
+            selectedBranchChanged();
         }
     }
 
@@ -179,5 +211,53 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         if (evt.getPropertyName() == RevisionInfoPanelController.PROP_VALID) {
             setValid(Boolean.TRUE.equals(evt.getNewValue()));
         }
+    }
+
+    private void hideFields (JComponent[] fields) {
+        for (JComponent field : fields) {
+            field.setVisible(false);
+        }
+    }
+
+    private void setModel (Map<String, GitBranch> branches) {
+        final List<GitBranch> branchList = new ArrayList<GitBranch>(branches.size());
+        List<GitBranch> remoteBranchList = new ArrayList<GitBranch>(branches.size());
+        for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
+            GitBranch branch = e.getValue();
+            if (branch.isRemote()) {
+                remoteBranchList.add(branch);
+            } else if (branch.getName() != GitBranch.NO_BRANCH) {
+                branchList.add(branch);
+            }
+        }
+        Comparator<GitBranch> comp = new Comparator<GitBranch>() {
+            @Override
+            public int compare (GitBranch b1, GitBranch b2) {
+                return b1.getName().compareTo(b2.getName());
+            }
+        };
+        Collections.sort(branchList, comp);
+        Collections.sort(remoteBranchList, comp);
+        branchList.addAll(remoteBranchList);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                panel.cmbBranches.setModel(new DefaultComboBoxModel(branchList.isEmpty() ? new Object[] { NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch") } 
+                        : branchList.toArray(new GitBranch[branchList.size()])));//NOI18N
+                panel.cmbBranches.setRenderer(new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                        return super.getListCellRendererComponent(list, value instanceof GitBranch ? ((GitBranch) value).getName() : value, index, isSelected, cellHasFocus);
+                    }
+                });
+                selectedBranchChanged();
+            }
+        });
+    }
+
+    private void selectedBranchChanged () {
+        Object activeBranch = panel.cmbBranches.getSelectedItem();
+        revision = activeBranch instanceof GitBranch ? ((GitBranch) activeBranch).getName() : NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch"); //NOI18N
+        updateRevision();
     }
 }

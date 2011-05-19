@@ -45,6 +45,8 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -73,6 +75,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
 
     private Project project;
     // private String[] recommendedTypes;
+    private WizardDescriptor wizard;
 
     TemplateChooserPanel( Project p /*, String recommendedTypes[] */ ) {
         this.project = p;
@@ -83,6 +86,15 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
         if (gui == null) {
             gui = new TemplateChooserPanelGUI();
             gui.addChangeListener(this);
+            gui.setDefaultActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    if( null != wizard ) {
+                        wizard.doNextClick();
+                    }
+                }
+            });
         }
         return gui;
     }
@@ -105,6 +117,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     }
 
     public void readSettings(WizardDescriptor settings) {
+        this.wizard = settings;
         TemplateChooserPanelGUI panel = (TemplateChooserPanelGUI) this.getComponent();
         final FileObject currentTemplate = Templates.getTemplate(settings);
         FileObject templates = FileUtil.getConfigFile("Templates");    //NOI18N
@@ -169,5 +182,4 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
         changeSupport.fireChange();
         
     }
-
 }    

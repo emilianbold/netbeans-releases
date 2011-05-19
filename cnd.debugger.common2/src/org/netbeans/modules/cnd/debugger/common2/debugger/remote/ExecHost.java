@@ -77,7 +77,7 @@ class ExecHost extends Host {
     }
 
     public String getHostName() {
-        return hostName;
+        return exEnv.getHost();
     }
 
     public SecuritySettings getSecuritySettings() {

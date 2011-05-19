@@ -47,14 +47,16 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public boolean closing() {
         WelcomeComponent topComp = null;
+        boolean isEditorShowing = false;
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
         for (TopComponent tc: tcs) {
             if (tc instanceof WelcomeComponent) {                
                 topComp = (WelcomeComponent) tc;               
-                break;
             }
+            if( tc.isShowing() && WindowManager.getDefault().isEditorTopComponent( tc ) )
+                isEditorShowing = true;
         }
-        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
+        if( WelcomeOptions.getDefault().isShowOnStartup() && isEditorShowing ) {
             if(topComp == null){            
                 topComp = WelcomeComponent.findComp();
             }

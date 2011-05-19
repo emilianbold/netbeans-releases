@@ -116,7 +116,11 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         final AggregateProgressHandle handle =
                 AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
         final ProgressPanel progressPanel = new ProgressPanel();
-        final JComponent progressComponent = AggregateProgressFactory.createProgressComponent(handle);
+        final JComponent progressComponent = AggregateProgressFactory.
+            createProgressComponent(handle);
+        
+        final ProgressReporter reporter = new ProgressReporterDelegate( 
+                progressContributor, progressPanel ); 
 
         final Runnable r = new Runnable() {
 
@@ -126,7 +130,9 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
                     handle.start();
                     int progressStepCount = getProgressStepCount(entities.size());
                     progressContributor.start(progressStepCount);
-                    generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, null, true);
+                    generateJpaControllers(reporter, entities, project, 
+                            jpaControllerPackage, jpaControllerPackageFileObject, 
+                            null, true);
                     progressContributor.progress(progressStepCount);
                 } catch (IOException ioe) {
                     Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.INFO, null, ioe);
@@ -182,38 +188,54 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         return EXCEPTION_CLASS_NAMES.length + entityCount + 2;
     }
 
-    public static FileObject[] generateJpaControllers(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean evenIfExists) throws IOException {
+    public static FileObject[] generateJpaControllers(ProgressReporter reporter,
+            List<String> entities, Project project, String jpaControllerPackage, 
+            FileObject jpaControllerPackageFileObject, 
+            JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, 
+            boolean evenIfExists) throws IOException 
+    {
         int progressIndex = 0;
-        String progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Exception_Pre"); //NOI18N
-        progressContributor.progress(progressMsg, progressIndex++);
-        progressPanel.setText(progressMsg);
+        String progressMsg = NbBundle.getMessage(JpaControllerIterator.class, 
+                "MSG_Progress_Jpa_Exception_Pre"); //NOI18N
+        reporter.progress(progressMsg, progressIndex++);
 
-        FileObject exceptionFolder = jpaControllerPackageFileObject.getFileObject(EXCEPTION_FOLDER_NAME);
+        FileObject exceptionFolder = jpaControllerPackageFileObject.
+            getFileObject(EXCEPTION_FOLDER_NAME);
         if (exceptionFolder == null) {
-            exceptionFolder = FileUtil.createFolder(jpaControllerPackageFileObject, EXCEPTION_FOLDER_NAME);
+            exceptionFolder = FileUtil.createFolder(jpaControllerPackageFileObject, 
+                    EXCEPTION_FOLDER_NAME);
         }
 
-        String exceptionPackage = jpaControllerPackage == null || jpaControllerPackage.length() == 0 ? EXCEPTION_FOLDER_NAME : jpaControllerPackage + "." + EXCEPTION_FOLDER_NAME;
+        String exceptionPackage = jpaControllerPackage == null || 
+            jpaControllerPackage.length() == 0 ? EXCEPTION_FOLDER_NAME : 
+                jpaControllerPackage + "." + EXCEPTION_FOLDER_NAME;
 
-        int exceptionClassCount = Util.isContainerManaged(project) ? EXCEPTION_CLASS_NAMES.length : EXCEPTION_CLASS_NAMES.length - 1;
+        int exceptionClassCount = Util.isContainerManaged(project) ? 
+                EXCEPTION_CLASS_NAMES.length : EXCEPTION_CLASS_NAMES.length - 1;
         for (int i = 0; i < exceptionClassCount; i++) {
             if (exceptionFolder.getFileObject(EXCEPTION_CLASS_NAMES[i], "java") == null) {
-                progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Now_Generating", EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
-                progressContributor.progress(progressMsg, progressIndex++);
-                progressPanel.setText(progressMsg);
-                String content = JpaControllerUtil.readResource(JpaControllerUtil.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + EXCEPTION_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
+                progressMsg = NbBundle.getMessage(JpaControllerIterator.class, 
+                        "MSG_Progress_Jpa_Now_Generating", 
+                        EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
+                reporter.progress(progressMsg, progressIndex++);
+                String content = JpaControllerUtil.readResource(
+                        JpaControllerUtil.class.getClassLoader().
+                        getResourceAsStream(RESOURCE_FOLDER + 
+                                EXCEPTION_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
                 content = content.replaceAll("__PACKAGE__", exceptionPackage);
-                FileObject target = FileUtil.createData(exceptionFolder, EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
-                String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, target);
-                JpaControllerUtil.createFile(target, content, projectEncoding);  //NOI18N
+                FileObject target = FileUtil.createData(exceptionFolder, 
+                        EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
+                String projectEncoding = JpaControllerUtil.
+                    getProjectEncodingAsString(project, target);
+                JpaControllerUtil.createFile(target, content, projectEncoding);  
             } else {
-                progressContributor.progress(progressIndex++);
+                reporter.progress(null, progressIndex++);
             }
         }
 
-        progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Controller_Pre"); //NOI18N;
-        progressContributor.progress(progressMsg, progressIndex++);
-        progressPanel.setText(progressMsg);
+        progressMsg = NbBundle.getMessage(JpaControllerIterator.class, 
+                "MSG_Progress_Jpa_Controller_Pre"); //NOI18N;
+        reporter.progress(progressMsg, progressIndex++);
 
         int[] nameAttemptIndices = null;
         if (evenIfExists) {
@@ -226,12 +248,18 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
             String simpleControllerNameBase = simpleClassName + "JpaController"; //NOI18N
             String simpleControllerName = simpleControllerNameBase;
             if (evenIfExists) {
-                while (jpaControllerPackageFileObject.getFileObject(simpleControllerName, "java") != null && nameAttemptIndices[i] < 1000) {
+                while (jpaControllerPackageFileObject.getFileObject(
+                        simpleControllerName, "java") != null && // NOI18N 
+                        nameAttemptIndices[i] < 1000) 
+                {
                     simpleControllerName = simpleControllerNameBase + ++nameAttemptIndices[i];
                 }
             }
-            if (jpaControllerPackageFileObject.getFileObject(simpleControllerName, "java") == null) {
-                controllerFileObjects[i] = GenerationUtils.createClass(jpaControllerPackageFileObject, simpleControllerName, null);
+            if (jpaControllerPackageFileObject.getFileObject(simpleControllerName, 
+                    "java") == null)            // NOI18N 
+            {
+                controllerFileObjects[i] = GenerationUtils.createClass(
+                        jpaControllerPackageFileObject, simpleControllerName, null);
             }
         }
 
@@ -242,19 +270,26 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         for (int i = 0; i < controllerFileObjects.length; i++) {
 
             if (controllerFileObjects[i] == null) {
-                progressContributor.progress(progressIndex++);
+                reporter.progress(null, progressIndex++);
                 continue;
             }
             String entityClass = entities.get(i);
-            String controller = ((jpaControllerPackage == null || jpaControllerPackage.length() == 0) ? "" : jpaControllerPackage + ".") + controllerFileObjects[i].getName();
+            String controller = ((jpaControllerPackage == null || 
+                    jpaControllerPackage.length() == 0) ? "" : 
+                        jpaControllerPackage + ".") + controllerFileObjects[i].getName();
 
-            progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Now_Generating", controllerFileObjects[i].getName() + ".java");//NOI18N
-            progressContributor.progress(progressMsg, progressIndex++);
-            progressPanel.setText(progressMsg);
+            progressMsg = NbBundle.getMessage(JpaControllerIterator.class, 
+                    "MSG_Progress_Jpa_Now_Generating", 
+                    controllerFileObjects[i].getName() + ".java");//NOI18N
+            reporter.progress(progressMsg, progressIndex++);
 
-            JpaControllerGenerator.generateJpaController(project, entityClass, controller, exceptionPackage, jpaControllerPackageFileObject, controllerFileObjects[i], embeddedPkSupport);
+            JpaControllerGenerator.generateJpaController(project, entityClass, 
+                    controller, exceptionPackage, jpaControllerPackageFileObject, 
+                    controllerFileObjects[i], embeddedPkSupport);
         }
-        PersistenceUtils.logUsage(JpaControllerIterator.class, "USG_PERSISTENCE_CONTROLLER_CREATED", new Integer[]{controllerFileObjects.length});
+        PersistenceUtils.logUsage(JpaControllerIterator.class, 
+                "USG_PERSISTENCE_CONTROLLER_CREATED",           //NOI18N
+                new Integer[]{controllerFileObjects.length});
         return controllerFileObjects;
     }
 
@@ -363,18 +398,5 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         private ValidationPanel(WizardDescriptor.Panel delegate) {
             super(delegate);
         }
-//        public boolean isValid() {
-//            Project project = getProject();
-//            WizardDescriptor wizardDescriptor = getWizardDescriptor();
-//            
-////            // check that this project has a valid target server
-////            if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(project)) {
-////                wizardDescriptor.putProperty("WizardPanel_errorMessage",
-////                        NbBundle.getMessage(JpaControllerIterator.class, "ERR_MissingServer")); // NOI18N
-////                return false;
-////            }
-//
-//            return super.isValid();
-//        }
     }
 }

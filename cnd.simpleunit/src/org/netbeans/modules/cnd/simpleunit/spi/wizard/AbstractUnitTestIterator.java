@@ -237,7 +237,7 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
             }
             String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
-            Item item = new Item(itemPath);
+            Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
 
             folder.addItemAction(item);
         }

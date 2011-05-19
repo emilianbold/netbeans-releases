@@ -20,7 +20,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -28,6 +27,7 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.subversion.operators.SourcePackagesNode;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
@@ -116,7 +116,7 @@ public class AnnotationsTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             System.out.println("initialize MessageHandler");
             mh = new MessageHandler("Annotating");

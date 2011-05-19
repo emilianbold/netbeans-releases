@@ -93,6 +93,7 @@ public class ProgressTransferListener implements TransferListener {
      * in order to permit progress to be canceled.
      * If an event is received after a cancel request has been made, {@link ThreadDeath} will
      * be thrown (which you probably also want to catch and handle gracefully).
+     * Due to AETHER-95, {@link IllegalStateException} with a cause of {@link ThreadDeath} might also be thrown.
      * Must be called by the same thread as will call {@link #setAggregateHandle} and runs the process.
      * @return a cancellation token
      */

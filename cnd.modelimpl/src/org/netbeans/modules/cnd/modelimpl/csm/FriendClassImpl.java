@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -77,6 +78,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     private final CsmUID<CsmClassForwardDeclaration> classForwardUID;
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
+    private SpecializationDescriptor specializationDesctiptor;
     private int lastParseCount = -1;    
     private int lastFileID = -1;
     
@@ -97,6 +99,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
             String fullName = "<" + classSpecializationSuffix + ">"; // NOI18N
             setTemplateDescriptor(params, fullName, !classSpecializationSuffix.isEmpty(), register);
         }
+        specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), parent, register);
     }
 
     public static FriendClassImpl create(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
@@ -196,6 +199,17 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
                     friendUID = UIDCsmConverter.objectToUID(cls);
                 }
             }
+            if(CsmKindUtilities.isTemplate(cls) && specializationDesctiptor != null) {
+                CsmInstantiationProvider instProvider = CsmInstantiationProvider.getDefault();            
+                CsmObject o = instProvider.instantiate((CsmTemplate)cls, specializationDesctiptor.getSpecializationParameters(), getContainingFile(), getStartOffset());
+                while(CsmKindUtilities.isInstantiation(o) ) {
+                    o = ((CsmInstantiation)o).getTemplateDeclaration();
+                }
+                if(CsmKindUtilities.isClass(o)) {
+                    cls = (CsmClass) o;
+                    friendUID = UIDCsmConverter.objectToUID(cls);
+                }
+            }            
             updateCache(newParseCount, currentResolver);
         //} else {
         //    System.err.println("cache hit FriendClassImpl");
@@ -252,6 +266,11 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     public boolean isSpecialization() {
         return false;
     }
+
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
     
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
@@ -276,6 +295,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.classForwardUID, output);
+        PersistentUtils.writeSpecializationDescriptor(specializationDesctiptor, output);
     }
 
 
@@ -288,5 +308,6 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         this.friendUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.classForwardUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.specializationDesctiptor = PersistentUtils.readSpecializationDescriptor(input);
     }
 }

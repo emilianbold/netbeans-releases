@@ -44,7 +44,6 @@
 
 package org.netbeans.qa.form.refactoring;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
@@ -60,6 +59,9 @@ import org.netbeans.junit.NbModuleSuite;
  * and tests value and access rights of inherited properties
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 26 APRIL 2011 WORKS
  */
 public class RenameFormClassTest extends ExtJellyTestCase {
     private String CLASS_OLD_NAME = "FrameWithBundle"; // NOI18N
@@ -73,10 +75,7 @@ public class RenameFormClassTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-    }
-    
+        
     /**
      * Creates suite from particular test cases.
      * @return nb test suite

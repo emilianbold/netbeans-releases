@@ -143,31 +143,6 @@ public class ScriptingCodeCompletionInEditor extends org.netbeans.modules.perfor
         super.shutdown();
     }
     
-//    public void testCC_InRubyEditor() {
-//        testProject = Projects.RUBY_PROJECT;
-//        fileName = "ruby20kb.rb";
-//        nodePath = "Source Files";
-//        lineNumber = 5;
-//        ccText = "";
-//        completionChar = '.'; // Set point character after "Hello world" string. Expected code completion list appears
-//
-//        /*
-//         * org-netbeans-modules-ruby.jar
-//         * kitClass = org.netbeans.modules.css.editor.CssEditorKit.class;
-//         * optionsClass = org.netbeans.modules.ruby.options.RubyOptions.class;
-//        */
-//        doMeasurement();
-//    }
-//    public void testCC_InRHTMLEditor() {
-//        testProject = Projects.RAILS_PROJECT;
-//        fileName = "rhtml20kb.rhtml";
-//        nodePath = "Views";
-//        lineNumber = 39;
-//        ccText = "";
-//        completionChar = '.';
-//        // optionsClass = org.netbeans.modules.rhtml.editor.RhtmlOptions.class;
-//        doMeasurement();
-//    }
 //
 //    public void testCC_InJavaScriptEditor() {
 //        testProject = Projects.SCRIPTING_PROJECT;

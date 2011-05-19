@@ -55,8 +55,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -82,42 +80,20 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
     private FileObject scratch;
-    private FileObject projdir;
     private FileObject sources;
-    private FileObject tests;
-    private ProjectManager pm;
-    private Project pp;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        MockLookup.setLayersAndInstances(
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
-            new org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl(),
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-            new TestPlatformProvider ()
-        );
+    protected @Override void setUp() throws Exception {
+        MockLookup.setLayersAndInstances(new TestPlatformProvider());
         Properties p = System.getProperties();
         if (p.getProperty ("netbeans.user") == null) {
             p.put("netbeans.user", FileUtil.toFile(TestUtil.makeScratchDir(this)).getAbsolutePath());
         }
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        scratch = null;
-        projdir = null;
-        pm = null;
-        super.tearDown();
-    }
-
-
     private void prepareProject (String platformName) throws IOException {
         scratch = TestUtil.makeScratchDir(this);
-        projdir = scratch.createFolder("proj");
+        FileObject projdir = scratch.createFolder("proj");
         AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
-        pm = ProjectManager.getDefault();
-        pp = pm.findProject(projdir);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("javac.source", "${def}");
         props.setProperty ("platform.active",platformName);
@@ -127,7 +103,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         props.put("default.javac.source", "4.3");
         PropertyUtils.putGlobalProperties(props);
         sources = projdir.createFolder("src");
-        tests = projdir.createFolder("test");
+        projdir.createFolder("test");
     }
 
     public void testGetSourceLevelWithValidPlatform() throws Exception {

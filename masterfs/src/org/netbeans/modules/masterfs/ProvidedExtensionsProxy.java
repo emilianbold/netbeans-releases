@@ -218,10 +218,18 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
                     public void run() {
+                        ProvidedExtensions extension = (ProvidedExtensions)iListener;
+                        if(ProvidedExtensionsAccessor.IMPL != null && 
+                           ProvidedExtensionsAccessor.IMPL.providesCanWrite(extension)) 
+                        {
                         ret[0] = ((ProvidedExtensions)iListener).canWrite(f);
                     }
+                    }
                 });                                                                                
+                if(ret[0] != null && ret[0]) {
+                    break;
             }
+        }
         }
         return ret[0] != null ? ret[0] : super.canWrite(f);
     }

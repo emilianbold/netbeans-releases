@@ -288,6 +288,15 @@ made subject to such option by the copyright holder.
                 <condition property="is.server.weblogic" value="true">
                     <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
                 </condition>
+                <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
+                    <and>
+                        <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
+                        <not>
+                            <os family="unix"/>
+                        </not>
+                    </and>
+                </condition>
+                <property name="javac.fork" value="${{jdkBug6558476}}"/>
             </target>
             
             <target name="-post-init">
@@ -419,8 +428,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>                            
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:attribute name="fork">${javac.fork}</xsl:attribute> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                                 <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             </xsl:if>
@@ -732,7 +741,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
                 <macrodef>
                     <xsl:attribute name="name">nbjpdaappreloaded</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
                     <sequential>
                         <nbjpdaappreloaded />
                     </sequential>
@@ -1298,6 +1307,7 @@ exists or setup the property manually. For example like this:
                             </xsl:if>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="@{{serverparams}}"/>
+                            <jvmarg line="${{run.jvmargs.param}}"/>
                             <arg line="@{{args}}"/>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
@@ -1390,8 +1400,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
-                <nbjpdaappreloaded />
+                <xsl:attribute name="depends">init,compile,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy,-do-update-breakpoints</xsl:attribute>
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
@@ -1494,9 +1503,11 @@ exists or setup the property manually. For example like this:
                 <carproject:java classname="${{run.class}}"/>
             </target>
             
-            
-            
-            
+            <target name="-do-update-breakpoints">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <carproject:nbjpdaappreloaded/>
+            </target>
             <xsl:comment>
                 =================
                 DEBUGGING SECTION
@@ -1993,15 +2004,18 @@ exists or setup the property manually. For example like this:
             <xsl:attribute name="depends">init</xsl:attribute>
             
             <xsl:choose>
-                <xsl:when test="$ear">
-                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
+                <xsl:when test="$type">
+                    <xsl:choose>
+                        <xsl:when test="$ear">
+                            <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
-                </xsl:otherwise>
             </xsl:choose>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">

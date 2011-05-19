@@ -296,8 +296,7 @@ public final class GeneratedFilesHelper {
                             FileObject projectXml = dir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                             if (projectXml == null) {
                                 throw new IOException("Missing project metadata: " + h.resolveFile(AntProjectHelper.PROJECT_XML_PATH)); // NOI18N
-                            }
-                            final FileObject buildScriptXml = FileUtil.createData(dir, path);
+                            }                            
                             byte[] projectXmlData;
                             InputStream is = projectXml.getInputStream();
                             try {
@@ -374,6 +373,8 @@ public final class GeneratedFilesHelper {
                             final FileSystem.AtomicAction body = new FileSystem.AtomicAction() {
                                 public void run() throws IOException {
                                     // Try to acquire both locks together, since we need them both written.
+                                    final FileObject buildScriptXml = FileUtil.createData(dir, path);
+                                    assert buildScriptXml.isValid();
                                     FileLock lock1 = buildScriptXml.lock();
                                     try {
                                         FileLock lock2 = _genfiles.lock();

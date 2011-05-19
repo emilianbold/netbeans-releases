@@ -50,9 +50,11 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.logging.Level;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.form.actions.DuplicateAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -770,7 +772,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             // cursor keys
             if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
                 // duplicating
-                DuplicateAction.performAction(formDesigner.getSelectedComponentNodes(), keyCode);
+                DuplicateAction.performAction(formDesigner.getSelectedNodes(), keyCode);
                 e.consume();
                 return;
             }
@@ -1074,21 +1076,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     } */
 
     private void selectOtherComponentsNode() {
-        FormEditor formEditor = formDesigner.getFormEditor();
-        ComponentInspector ci = ComponentInspector.getInstance();
-        Node[] selectedNode = new Node[] { formEditor.getOthersContainerNode() };
-        
-        try {
-            ci.setSelectedNodes(selectedNode, formEditor);
-            formDesigner.clearSelectionImpl();
-            formDesigner.repaintSelection();
-        }
-        catch (java.beans.PropertyVetoException ex) {
-            org.openide.ErrorManager.getDefault().notify(
-                org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
-
-        formDesigner.setActivatedNodes(selectedNode);
+        formDesigner.setSelectedNodes(formDesigner.getFormEditor().getOthersContainerNode());
     }
 
     private boolean processDoubleClick(MouseEvent e) {
@@ -1151,15 +1139,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private void showContextMenu(Point popupPos) {
-        ComponentInspector inspector = ComponentInspector.getInstance();
-        TopComponent activated = TopComponent.getRegistry().getActivated();
-        if (activated != formDesigner.multiViewObserver.getTopComponent()
-                && activated != inspector)
-            return;
-
         formDesigner.componentActivated(); // just for sure...
 
-        Node[] selectedNodes = inspector.getSelectedNodes();
+        Node[] selectedNodes = formDesigner.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
         if (popup != null) {
             popup.show(HandleLayer.this, popupPos.x, popupPos.y);
@@ -2573,6 +2555,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private static void paintDraggedComponent(Component comp, Graphics g) {
+        issue71257Hack(comp);
+        Graphics2D g2 = (Graphics2D)g;
+        Composite originalComposite = g2.getComposite();
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
         try {
             if (comp instanceof JComponent)
                 comp.paint(g);
@@ -2582,6 +2568,42 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         catch (RuntimeException ex) { // inspired by bug #62041 (JProgressBar bug #5035852)
             org.openide.ErrorManager.getDefault().notify(
                 org.openide.ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            g2.setComposite(originalComposite);
+        }
+    }
+
+    private static Field componentValidField;
+    static {
+        try {
+            Field field = Component.class.getDeclaredField("valid"); // NOI18N
+            field.setAccessible(true);
+            componentValidField = field;
+        } catch (NoSuchFieldException ex) {
+            FormUtils.LOGGER.log(Level.INFO, null, ex);
+        } catch (SecurityException ex) {
+            FormUtils.LOGGER.log(Level.INFO, null, ex);
+        }
+    }
+    private static void issue71257Hack(Component comp) {
+        Container cont = comp.getParent();
+        if (cont != null) {
+            if (cont.getLayout() instanceof org.jdesktop.layout.GroupLayout) {
+                while (cont != null && !(cont instanceof ComponentLayer)) {
+                    if (cont instanceof JTabbedPane) {
+                        if (!cont.isValid() && (componentValidField != null)) {
+                            try {
+                                componentValidField.set(cont, true);
+                            } catch (IllegalArgumentException ex) {
+                                FormUtils.LOGGER.log(Level.INFO, null, ex);
+                            } catch (IllegalAccessException ex) {
+                                FormUtils.LOGGER.log(Level.INFO, null, ex);
+                            }
+                        }
+                    }
+                    cont = cont.getParent();
+                }
+            }
         }
     }
 

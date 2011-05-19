@@ -47,18 +47,18 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.undo.UndoManager;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.source.CndSourceTestUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.DataEditorSupport;
 
 /**
  *
@@ -134,4 +134,11 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         DataObject testDataObject = DataObject.find(testFileObject);
         return CndSourceTestUtilities.getUndoRedo(testDataObject);
     }
+    
+    protected CsmFile getCsmFile(File testSourceFile) throws Exception {
+        FileObject fo = FileUtil.toFileObject(testSourceFile);
+        CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(fo), true, false);
+        assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N
+        return csmFile;
+    }    
 }

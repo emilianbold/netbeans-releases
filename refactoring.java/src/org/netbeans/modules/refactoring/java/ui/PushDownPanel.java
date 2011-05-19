@@ -109,6 +109,9 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
     private ElementKind sourceKind;
     private ChangeListener parent;
     
+    private boolean initialized = false;
+    
+    
     /** Creates new form PushDownPanel
      * @param refactoring The refactoring this panel provides parameters for.
      * @param selectedMembers Members that should be pre-selected in the panel
@@ -125,6 +128,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public void initialize() {
+        if (initialized) return;
         final TreePathHandle handle = refactoring.getSourceType();
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {
@@ -214,6 +218,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
         parent.stateChanged(null);
+        initialized = true;
     }
     
     public MemberInfo[] getMembers() {

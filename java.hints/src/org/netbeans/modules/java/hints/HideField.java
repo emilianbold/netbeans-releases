@@ -42,15 +42,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
+import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -62,12 +66,17 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Jaroslav tulach
  */
 public class HideField extends AbstractHint {
+
+            static final String  KEY_WARN_HIDDEN_STATIC_FIELDS = "warn-hidden-static-fields";
+    private static final boolean DEFAULT_WARN_HIDDEN_STATIC_FIELDS = true;
+
     transient volatile boolean stop;
     
     public HideField() {
@@ -105,6 +114,11 @@ public class HideField extends AbstractHint {
             }
         }
         if (hidden == null) {
+            return null;
+        }
+
+        if (   !getPreferences(null).getBoolean(KEY_WARN_HIDDEN_STATIC_FIELDS, DEFAULT_WARN_HIDDEN_STATIC_FIELDS)
+            && hidden.getModifiers().contains(Modifier.STATIC)) {
             return null;
         }
         
@@ -160,13 +174,12 @@ public class HideField extends AbstractHint {
         stop = true;
     }
     
-    public Preferences getPreferences() {
-        return null;
-    }
-    
     @Override
     public JComponent getCustomizer(Preferences node) {
-        return null;
+        return new OneCheckboxCustomizerProvider(NbBundle.getMessage(HideField.class, "LBL_WarnHiddenStaticFields"),
+                                                 NbBundle.getMessage(HideField.class, "TP_WarnHiddenStaticFields"),
+                                                 KEY_WARN_HIDDEN_STATIC_FIELDS,
+                                                 DEFAULT_WARN_HIDDEN_STATIC_FIELDS).getCustomizer(node);
     }
 
     private static Reference<CompilationInfo> allMembersCacheFrom;
@@ -175,7 +188,7 @@ public class HideField extends AbstractHint {
     protected static synchronized Iterable<? extends Element> getAllMembers(CompilationInfo info, TypeElement clazz) {
         class CleaningWR extends WeakReference<CompilationInfo> implements Runnable {
             public CleaningWR(CompilationInfo info) {
-                super(info);
+                super(info, Utilities.activeReferenceQueue());
             }
             @Override public void run() {
                 synchronized (HideField.class) {
@@ -193,7 +206,13 @@ public class HideField extends AbstractHint {
         if (origInfo == info) {
             map = allMembersCacheTo;
         } else {
+            allMembersCacheFrom = new CleaningWR(info);
             map = allMembersCacheTo = new HashMap<TypeElement, Iterable<? extends Element>>();
+
+            if (info.getFileObject() != null) {
+                Logger.getLogger("TIMER").log(Level.FINE, "HideField.allMembersCacheTo",    //NOI18N
+                        new Object[] {info.getFileObject(), map});
+            }
         }
 
         Iterable<? extends Element> members = map.get(clazz);

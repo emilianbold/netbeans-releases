@@ -49,7 +49,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
  *
  * @author Petr Hejl
  */
-public class WLDatasource implements Datasource {
+public class WLDatasource implements Datasource, WLApplicationModule {
 
     private final String name;
 
@@ -113,6 +113,7 @@ public class WLDatasource implements Datasource {
         return user;
     }
 
+    @Override
     public File getOrigin() {
         return origin;
     }

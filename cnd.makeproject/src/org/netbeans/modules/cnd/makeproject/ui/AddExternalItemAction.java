@@ -48,7 +48,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -86,7 +88,11 @@ public class AddExternalItemAction extends AbstractAction {
 	if (seed == null) {
 	    seed = makeProjectDescriptor.getBaseDir();
 	}
-	FileChooser fileChooser = new FileChooser(NbBundle.getBundle(getClass()).getString("LBL_FileChooserTitle"), NbBundle.getBundle(getClass()).getString("LBL_SelectButton"), FileChooser.FILES_AND_DIRECTORIES, null, seed, true);
+	JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                makeProjectDescriptor.getBaseDirFileSystem(), 
+                NbBundle.getBundle(getClass()).getString("LBL_FileChooserTitle"), 
+                NbBundle.getBundle(getClass()).getString("LBL_SelectButton"), 
+                FileChooser.FILES_AND_DIRECTORIES, null, seed, true);
 	PathPanel pathPanel = new PathPanel();
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
@@ -110,7 +116,7 @@ public class AddExternalItemAction extends AbstractAction {
                 items.add(item);
 	    }
             else {
-                item = new Item(itemPath);
+                item = Item.createInFileSystem(makeProjectDescriptor.getBaseDirFileSystem(), itemPath);
                 makeProjectDescriptor.getExternalItemFolder().addItem(item);
                 items.add(item);
             }

@@ -58,7 +58,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
-import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
@@ -81,9 +81,9 @@ public class AnnotationScanner {
     
     private static final Logger LOGGER = Logger.getLogger(AnnotationScanner.class.getName());
 
-    private final AnnotationModelHelper helper;
+    private final AnnotationHelper helper;
 
-    AnnotationScanner(AnnotationModelHelper helper) {
+    AnnotationScanner(AnnotationHelper helper) {
         this.helper = helper;
     }
     
@@ -154,14 +154,15 @@ public class AnnotationScanner {
             LOGGER.log(Level.WARNING, "findAnnotations: no kinds given"); // NOI18N
             return;
         }
-        CompilationController controller = getHelper().getCompilationController();
+        CompilationInfo controller = getHelper().getCompilationInfo();
         TypeElement searchedType = controller.getElements().getTypeElement(searchedTypeName);
         if (searchedType == null) {
             LOGGER.log(Level.FINE, "findAnnotations: could not find type {0}", searchedTypeName); // NOI18N
             return;
         }
         ElementHandle<TypeElement> searchedTypeHandle = ElementHandle.create(searchedType);
-        final Set<ElementHandle<TypeElement>> elementHandles = getHelper().getClasspathInfo().getClassIndex().getElements(
+        final Set<ElementHandle<TypeElement>> elementHandles = getHelper().
+            getCompilationInfo().getClasspathInfo().getClassIndex().getElements(
                 searchedTypeHandle,
                 EnumSet.of(SearchKind.TYPE_REFERENCES),
                 EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
@@ -274,7 +275,7 @@ public class AnnotationScanner {
         ElementHandle<TypeElement> handle = ElementHandle.create(
                 typeElement);
         final Set<ElementHandle<TypeElement>> handles = getHelper().
-            getClasspathInfo().getClassIndex().getElements(
+            getCompilationInfo().getClasspathInfo().getClassIndex().getElements(
                 handle,
                 EnumSet.of(SearchKind.IMPLEMENTORS),
                 EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
@@ -285,7 +286,7 @@ public class AnnotationScanner {
             LOGGER.log(Level.FINE, "found derived element {0}", 
                     elementHandle.getQualifiedName()); // NOI18N
             TypeElement derivedElement = elementHandle.resolve(
-                    getHelper().getCompilationController());
+                    getHelper().getCompilationInfo());
             if (derivedElement == null) {
                 continue;
             }
@@ -299,7 +300,7 @@ public class AnnotationScanner {
                 Inherited.class.getCanonicalName());
     }
     
-    private AnnotationModelHelper getHelper(){
+    private AnnotationHelper getHelper(){
         return helper;
     }
 }

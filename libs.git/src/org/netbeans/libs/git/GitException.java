@@ -72,6 +72,12 @@ public class GitException extends Exception {
             this.objectType = objectType;
         }
 
+        public MissingObjectException (String objectName, GitObjectType objectType, Throwable ex) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_ObjectDoesNotExist", new Object[] { objectType.toString(), objectName }), ex); //NOI18N
+            this.objectName = objectName;
+            this.objectType = objectType;
+        }
+
         public String getObjectName () {
             return objectName;
         }
@@ -84,9 +90,13 @@ public class GitException extends Exception {
     public static class CheckoutConflictException extends GitException {
         private final String[] conflicts;
 
-        public CheckoutConflictException (String[] conflicts) {
-            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"));
+        public CheckoutConflictException (String[] conflicts, Throwable cause) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"), cause);
             this.conflicts = conflicts;
+        }
+
+        public CheckoutConflictException (String[] conflicts) {
+            this(conflicts, null);
         }
 
         public String[] getConflicts () {
@@ -94,4 +104,24 @@ public class GitException extends Exception {
         }
     }
 
+    public static class AuthorizationException extends GitException {
+        private final String repositoryUrl;
+
+        public AuthorizationException (String repositoryUrl, String message, Throwable t) {
+            super(message, t);
+            this.repositoryUrl = repositoryUrl;
+}
+
+        public AuthorizationException (String message, Throwable t) {
+            this(null, message, t);
+        }
+
+        /**
+         * May be null
+         * @return 
+         */
+        public String getRepositoryUrl () {
+            return repositoryUrl;
+        }
+    }
 }

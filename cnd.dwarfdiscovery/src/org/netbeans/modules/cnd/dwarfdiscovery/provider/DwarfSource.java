@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -183,7 +183,21 @@ public class DwarfSource implements SourceFileProperties{
     }
 
     void resetItemPath(String path) {
-        fullName = path;
+        String newCompilePath = Dwarf.fileFinder(path, compilePath);
+        if (newCompilePath != null) {
+            compilePath = PathCache.getString(newCompilePath);
+        }
+        HashSet<String> newIncludedFiles = new HashSet<String>();
+        for(String incl : includedFiles) {
+            String newInkl = Dwarf.fileFinder(path, incl);
+            if (newInkl != null) {
+                newIncludedFiles.add(PathCache.getString(newInkl));
+            } else {
+                newIncludedFiles.add(incl);
+            }
+        }
+        includedFiles = newIncludedFiles;
+        fullName = PathCache.getString(path);
     }
     
     @Override

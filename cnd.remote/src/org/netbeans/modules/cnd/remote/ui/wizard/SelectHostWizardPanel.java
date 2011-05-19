@@ -81,12 +81,14 @@ public class SelectHostWizardPanel implements
     private final AtomicBoolean setupNewHost;
     private WizardDescriptor wizardDescriptor;
     private volatile boolean needsValidation;
+    private final boolean allowToCreateNewHostDirectly;
 
-    public SelectHostWizardPanel(boolean allowLocal, ChangeListener changeListener) {
+    public SelectHostWizardPanel(boolean allowLocal, boolean allowToCreateNewHostDirectly, ChangeListener changeListener) {
         this.allowLocal = allowLocal;
         this.changeListener = changeListener;
         cacheManager = ToolsCacheManager.createInstance(true);
-        createHostData = new CreateHostData(cacheManager);
+        this.allowToCreateNewHostDirectly = allowToCreateNewHostDirectly;
+        createHostData = new CreateHostData(cacheManager, allowToCreateNewHostDirectly);
         delegate = new CreateHostWizardPanel1(createHostData);
         delegate.addChangeListener(this);
         setupNewHost = new AtomicBoolean();
@@ -102,7 +104,7 @@ public class SelectHostWizardPanel implements
     public SelectHostVisualPanel getComponent() {
         synchronized (this) {
             if (component == null) {                
-                component = new SelectHostVisualPanel(this, allowLocal, delegate.getComponent(), setupNewHost);
+                component = new SelectHostVisualPanel(this, allowLocal, delegate.getComponent(), setupNewHost, allowToCreateNewHostDirectly);
             }
         }
         return component;
@@ -191,7 +193,7 @@ public class SelectHostWizardPanel implements
     @Override
     public void storeSettings(WizardDescriptor settings) {
         delegate.storeSettings(settings);
-        ExecutionEnvironment env = getComponent().isExistent() ? getComponent().getSelectedHost() : null;
+        ExecutionEnvironment env = getComponent().getSelectedHost();
         settings.putProperty(WizardConstants.PROPERTY_HOST_UID, (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
         settings.putProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER, createHostData.getCacheManager()); // NOI18N
         getComponent().onStoreSettings();

@@ -217,6 +217,7 @@ public class CommonUtilities {
         closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
                 "Memory");
+        maximizeWholeNetbeansWindow();
     }
     
     public static void closeTaskWindow() {
@@ -680,8 +681,14 @@ public class CommonUtilities {
             path = runtimeTree.findPath("Servers|Tomcat"); // NOI18N
             runtimeTree.selectPath(path);
         } catch (Exception exc) {
-            exc.printStackTrace(System.err);
-            throw new Error("Cannot find Tomcat Server Node", exc);
+            try {
+                path = runtimeTree.findPath("Servers|Apache Tomcat"); // NOI18N
+                runtimeTree.selectPath(path);
+            } catch (Exception e) {
+                exc.printStackTrace(System.err);
+                e.printStackTrace(System.err);
+                throw new Error("Cannot find Tomcat Server Node", e);
+            }
         }
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
 
@@ -742,8 +749,7 @@ public class CommonUtilities {
     }
 
 
-        public static void addTomcatServer() {
-
+    public static void addTomcatServer() {
         String appServerPath = System.getProperty("tomcat.installRoot");
         
         if (appServerPath == null) {
@@ -753,6 +759,8 @@ public class CommonUtilities {
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
         String serverItem = "Tomcat 6.0";
+        String serverItem2 = "Tomcat";
+        String serverItem3 = "Apache Tomcat";
         String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
         String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
@@ -767,20 +775,40 @@ public class CommonUtilities {
         runtimeTree.selectPath(path);
         
         try {
-            runtimeTree.findPath("Servers|Tomcat 6.0");
+            runtimeTree.findPath("Servers|"+serverItem);
         } catch (TimeoutExpiredException tee) {
-            
-            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
-            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
-            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-       
-            JTextFieldOperator tfo=new JTextFieldOperator(addServerInstanceDialog,1);
-            tfo.getFocus();
-            tfo.enterText(appServerPath);
-            new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
-            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+            try {
+                runtimeTree.findPath("Servers|"+serverItem2);
+            } catch (TimeoutExpiredException tee2) {
+                try {
+                    runtimeTree.findPath("Servers|"+serverItem3);
+                } catch (TimeoutExpiredException tee3) {                    
+                }
+            }
         }
+        new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
+        NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+        try {
+            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
+        } catch (Exception e) {
+            try {
+                new JListOperator(addServerInstanceDialog,1).selectItem(serverItem2);
+            } catch (Exception e2) {
+                try {
+                    new JListOperator(addServerInstanceDialog,1).selectItem(serverItem3);
+                } catch (Exception e3) {
+                    System.err.println(e3.toString());
+                }
+            }            
+        }            
+        new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
+        JTextFieldOperator tfo=new JTextFieldOperator(addServerInstanceDialog,1);
+        tfo.getFocus();
+        tfo.enterText(appServerPath);
+        new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
+        new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+
+        
         
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
 
@@ -1033,5 +1061,9 @@ public class CommonUtilities {
         long[] result=new long[2];
         result[1]=pd.value;
         CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
+    }
+    
+    public static void maximizeWholeNetbeansWindow() {
+        MainWindowOperator.getDefault().maximize();
     }
 }

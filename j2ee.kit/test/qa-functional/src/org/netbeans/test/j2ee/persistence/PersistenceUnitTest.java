@@ -32,25 +32,32 @@ package org.netbeans.test.j2ee.persistence;
 
 import java.io.File;
 import java.io.IOException;
-import junit.framework.*;
-import junit.textui.TestRunner;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.test.j2ee.lib.TrimmingLineDiff;
+import org.netbeans.test.j2ee.lib.FilteringLineDiff;
+import org.netbeans.test.j2ee.lib.Utils;
 
 /**
  *
  * @author rroska
  */
 public class PersistenceUnitTest extends J2eeTestCase {
+
+    public static File PROJECT_FILE;
+    protected static final String PATH = "/persistence.xml";
+    protected static PUDataObject dataObject;
+    private static Project project;
+    private static WebProject webproj;
+    Utils utils;
 
     public PersistenceUnitTest(String test) {
         super(test);
@@ -67,29 +74,12 @@ public class PersistenceUnitTest extends J2eeTestCase {
         super.setUp();
         System.out.println("########  " + getName() + "  #######");
     }
-    public static File PROJECT_FILE;
-    protected static final String PATH = "/persistence.xml";
-
-    protected static PUDataObject dataObject;
-
-    private static Project project;
-    private static WebProject webproj;
-
-    org.netbeans.test.j2ee.lib.Utils utils;
-
-    private NbTestCase nbtestcase;
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(PersistenceUnitTest.class);
-        conf = addServerTests(Server.ANY, conf,"testOpenProject","testPUProviders","testPUDataSource");
+        conf = addServerTests(Server.ANY, conf, "testOpenProject", "testPUProviders", "testPUDataSource");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
-    }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
     }
 
     private void cleanPersistenceUnits() {
@@ -131,7 +121,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
                 persistenceUnit.setJtaDataSource(p.getDefaultJtaDatasource());
                 persistenceUnit.setProvider(p.getProviderClass());
                 ProviderUtil.setTableGeneration(persistenceUnit, s, p);
-                
+
                 dataObject.addPersistenceUnit(persistenceUnit);
             }
         }
@@ -174,18 +164,17 @@ public class PersistenceUnitTest extends J2eeTestCase {
 
         try {
             File goldenFile = getGoldenFile(goldenFilePrefix + "persistence.xml");
-            nbtestcase.assertFile("File " + targetFile.getAbsolutePath() + " is different than golden file " + goldenFile.getAbsolutePath() + ".", targetFile, goldenFile, new File(getWorkDir(), targetFile.getName() + ".diff"), new TrimmingLineDiff());
+            assertFile("File " + targetFile.getAbsolutePath() + " is different than golden file " + goldenFile.getAbsolutePath() + ".", targetFile, goldenFile, new File(getWorkDir(), targetFile.getName() + ".diff"), new FilteringLineDiff());
         } catch (AssertionFailedError e) {
             if (!getWorkDir().exists()) {
                 if (getWorkDir().mkdir()) {
-                    System.out.println("vytvoren uspesne");
+                    log("Workdir created.");
                 } else {
-                    System.out.println("nevyttvoren uspexne");
+                    log("Cannot create workdir.");
                 }
             }
             File copy = new File(getWorkDirPath(), goldenFilePrefix + "persistence.xml");
-            System.out.println(" >>> " + getWorkDirPath() + goldenFilePrefix + "persistence.xml");
-            utils.copyFile(targetFile, copy);
+            Utils.copyFile(targetFile, copy);
 
             throw e;
         }

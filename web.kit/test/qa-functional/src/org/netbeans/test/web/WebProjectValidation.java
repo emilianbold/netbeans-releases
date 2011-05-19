@@ -972,7 +972,7 @@ public class WebProjectValidation extends J2eeTestCase {
             host = "localhost";
             if (WebProjectValidation.isRegistered(Server.TOMCAT)){
                 serverPort = 8084;
-            }else if (WebProjectValidation.isRegistered(Server.GLASSFISH_V3) || WebProjectValidation.isRegistered(Server.GLASSFISH)){
+            }else if (WebProjectValidation.isRegistered(Server.GLASSFISH)){
                 serverPort = 8080;
             }
         }

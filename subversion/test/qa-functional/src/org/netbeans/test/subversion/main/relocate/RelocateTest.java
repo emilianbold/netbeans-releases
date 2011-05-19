@@ -143,7 +143,7 @@ public class RelocateTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
             RelocateOperator ro = RelocateOperator.invoke(node);

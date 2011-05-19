@@ -56,8 +56,7 @@ import org.openide.util.CharSequences;
  * File and offset -based key
  */
 
-/*package*/
-abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable<OffsetableKey> {
+/*package*/ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable<OffsetableKey> {
 
     private final int startOffset;
     private final int endOffset;

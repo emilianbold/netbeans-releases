@@ -47,7 +47,6 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -69,6 +68,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Arti
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.filesystems.*;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
@@ -269,8 +269,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
                 throw new IllegalStateException(msg);
             }
-            String username = (String) fo.getAttribute(ServerRegistry.USERNAME_ATTR);
-            String password = (String) fo.getAttribute(ServerRegistry.PASSWORD_ATTR);
+            String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
+            String password = ServerRegistry.readPassword(fo);
             managerTmp = server.getDeploymentManager(url, username, password);
             boolean fire = false;
             synchronized (this) {
@@ -1457,7 +1457,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (!completedSuccessfully) {
                 throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", getDisplayName());
             throw new ServerException(msg);
         }
@@ -1465,8 +1465,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
             managerStartedByIde = true;
             coTarget = null;
             targets = null;
-            initCoTarget();
         }
+        initCoTarget();
     }
     
     // startDebugging
@@ -1477,7 +1477,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (!completedSuccessfully) {
                 throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", getDisplayName());
             throw new ServerException(msg);
         }
@@ -1485,8 +1485,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
             managerStartedByIde = true;
             coTarget = null;
             targets = null;
-            initCoTarget();
         }
+        initCoTarget();
     }
     
     /** start server in the profile mode */
@@ -1526,7 +1526,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (!completedSuccessfully) {
                 throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", getDisplayName());
             throw new ServerException(msg);
         }
@@ -1551,7 +1551,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 if (!completedSuccessfully) {
                     throw new ServerException(po.getDeploymentStatus().getMessage());
                 }
-            } catch (TimedOutException e) {
+            } catch (TimeoutException e) {
                 String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerShutdownTimeout");
                 throw new ServerException(msg);
             }
@@ -1599,7 +1599,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (!completedSuccessfully) {
                 throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", getDisplayName());
             throw new ServerException(msg);
         }
@@ -1620,7 +1620,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (!completedSuccessfully) {
                 throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", target.getName());
             throw new ServerException(msg);
         }
@@ -1638,7 +1638,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (!completedSuccessfully) {
                 throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", target.getName());
             throw new ServerException(msg);
         }

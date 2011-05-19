@@ -83,11 +83,16 @@ public final class ClusterUtils {
      */
     public static File getClusterDirectory(Project prj) {
         NbModuleProvider nbmp = prj.getLookup().lookup(NbModuleProvider.class);
-        if (nbmp != null)
-            return nbmp.getModuleJarLocation().getParentFile().getParentFile();
+        if (nbmp != null) {
+            File jar = nbmp.getModuleJarLocation();
+            if (jar != null) {
+                return jar.getParentFile().getParentFile();
+            }
+        }
         SuiteProvider sprv = prj.getLookup().lookup(SuiteProvider.class);
-        if (sprv != null)
+        if (sprv != null) {
             return sprv.getClusterDirectory();
+        }
         return null;
     }
 

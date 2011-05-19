@@ -79,7 +79,7 @@ public class Signature {
         
         public int integer(int index) {
             String item = string(index);
-            if(item != null) {
+            if(item != null && item.length() > 0) {
                 return Integer.parseInt(item);
             } else {
                 return -1;

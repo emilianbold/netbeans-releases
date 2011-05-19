@@ -91,6 +91,7 @@ public class IntegrationTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
+        clearWorkDir();
         File jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
 

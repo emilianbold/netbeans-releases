@@ -49,8 +49,6 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -191,12 +189,6 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     
     protected CsmProject getProject() {
         return projectHelper.getProject();
-    }
-    
-    protected CsmFile getCsmFile(File testSourceFile) throws Exception {
-        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testSourceFile.getAbsolutePath(), false);
-        assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N     
-        return csmFile;
     }
 
     protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {

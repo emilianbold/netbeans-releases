@@ -55,6 +55,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,6 +68,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
@@ -114,13 +118,15 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         //AbstractFileSystem.Transfer,
         FileChangeListener,
         PropertyChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(WritableXMLFileSystem.class.getName());
     
     private final TreeEditorCookie cookie;
     private TreeDocumentRoot doc; // may be null if malformed
     private URL location;
     private String suffix; // for branding/localization like "_f4j_ce_ja"; never null, at worst ""
     private final FileChangeListener fileChangeListener;
-    private ClassPath classpath; // OK to be null
+    private @NullAllowed ClassPath classpath;
     
     public WritableXMLFileSystem(URL location, TreeEditorCookie cookie, ClassPath classpath) {
         this.attr = this;
@@ -359,6 +365,10 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             public void close() throws IOException {
                 super.close();
                 final byte[] contents = toByteArray();
+                if (contents.length == 0) {
+                    // Empty files, such as *.instance, need no explicit content.
+                    return;
+                }
                 /* If desired to kill any existing inline content:
                 Iterator it = el.getChildNodes().iterator();
                 ArrayList/ *<TreeCDATASection>* / allCdata = new ArrayList();
@@ -604,7 +614,12 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             attrName = attrName.substring("literal:".length()); // NOI18N
             literal = true;
         }
-        Iterator it = el.getChildNodes(TreeElement.class).iterator();
+        boolean raw = false;
+        if (attrName.startsWith("raw:")) {
+            attrName = attrName.substring("raw:".length());
+            raw = true;
+        }
+        Iterator<?> it = el.getChildNodes(TreeElement.class).iterator();
         while (it.hasNext()) {
             TreeElement sub = (TreeElement) it.next();
             if (!sub.getLocalName().equals("attr")) { // NOI18N
@@ -622,7 +637,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                 if ((nameAttr = sub.getAttribute("stringvalue")) != null) { // NOI18N
                     // Stolen from XMLMapAttr, with tweaks:
                     String inStr = nameAttr.getValue();
-                    StringBuffer outStr = new StringBuffer(inStr.length());
+                    StringBuilder outStr = new StringBuilder(inStr.length());
                     for (int j = 0; j < inStr.length(); j++) {
                         char ch = inStr.charAt(j);
                         if (ch == '\\' && inStr.charAt(j + 1) == 'u' && j + 5 < inStr.length()) {
@@ -644,7 +659,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                 } else if ((nameAttr = sub.getAttribute("urlvalue")) != null) { // NOI18N
                     return new URL(nameAttr.getValue());
                 } else if ((nameAttr = sub.getAttribute("charvalue")) != null) { // NOI18N
-                    return new Character(nameAttr.getValue().charAt(0));
+                    return nameAttr.getValue().charAt(0);
                 } else if ((nameAttr = sub.getAttribute("bytevalue")) != null) { // NOI18N
                     return Byte.valueOf(nameAttr.getValue());
                 } else if ((nameAttr = sub.getAttribute("shortvalue")) != null) { // NOI18N
@@ -661,12 +676,29 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                     String clazz = nameAttr.getValue();
                     if (literal) {
                         return "new:" + clazz; // NOI18N
-                    } // else XXX
+                    } else if (raw && classpath != null) {
+                        return Class.forName(clazz, false, classpath.getClassLoader(true));
+                    } else {
+                        throw new UnsupportedOperationException("instantiation not currently supported"); // though see commented-out code below
+                    }
                 } else if ((nameAttr = sub.getAttribute("methodvalue")) != null) { // NOI18N
-                    String clazz = nameAttr.getValue();
+                    String clazzMeth = nameAttr.getValue();
                     if (literal) {
-                        return "method:" + clazz; // NOI18N
-                    } // else XXX
+                        return "method:" + clazzMeth; // NOI18N
+                    } else if (raw && classpath != null) {
+                        int dot = clazzMeth.lastIndexOf('.');
+                        String clazz = clazzMeth.substring(0, dot);
+                        String meth = clazzMeth.substring(dot + 1);
+                        Class<?> c = Class.forName(clazz, false, classpath.getClassLoader(true));
+                        for (Method m : c.getDeclaredMethods()) {
+                            if (m.getName().equals(meth)) {
+                                return m;
+                            }
+                        }
+                        throw new NoSuchMethodException("no method named " + meth + " in " + clazz);
+                    } else {
+                        throw new UnsupportedOperationException("instantiation not currently supported"); // though see commented-out code below
+                    }
                 } else if ((nameAttr = sub.getAttribute("bundlevalue")) != null) { // NOI18N
                     String bundle = nameAttr.getValue();
                     if (literal) {
@@ -674,32 +706,23 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                     } else {
                         // XXX localized attributes supported only in merged layer FS, see BadgingSupport
                     }
+                } else if ((nameAttr = sub.getAttribute("serialvalue")) != null) { // NOI18N
+                    String clazz = nameAttr.getValue();
+                    if (literal) {
+                        return "serial:" + clazz; // NOI18N
+                    } else {
+                        throw new UnsupportedOperationException("instantiation not currently supported"); // though see commented-out code below
+                    }
+                } else {
+                    LOG.log(Level.FINE, "no recognized value for {0} on {1}", new Object[] {attrName, name});
                 }
             } catch (Exception e) {
-                // MalformedURLException, etc.
-                // XXX notify?
+                LOG.log(Level.FINE, "could not read " + attrName + " on " + name, e);
                 return null;
             }
-            // XXX warn that this attr had no recognized *value?
         }
         return null;
         /*
-                        if ((v = sub.getAttributeNode("bytevalue")) != null) { // NOI18N
-                            return new Byte(v.getValue());
-                        } else if ((v = sub.getAttributeNode("shortvalue")) != null) { // NOI18N
-                            return new Short(v.getValue());
-                        } else if ((v = sub.getAttributeNode("intvalue")) != null) { // NOI18N
-                            return new Integer(v.getValue());
-                        } else if ((v = sub.getAttributeNode("longvalue")) != null) { // NOI18N
-                            return new Long(v.getValue());
-                        } else if ((v = sub.getAttributeNode("floatvalue")) != null) { // NOI18N
-                            return new Float(v.getValue());
-                        } else if ((v = sub.getAttributeNode("doublevalue")) != null) { // NOI18N
-                            // When was the last time you set a file attribute to a double?!
-                            // Useless list of primitives...
-                            return new Double(v.getValue());
-                        } else if ((v = sub.getAttributeNode("charvalue")) != null) { // NOI18N
-                            return new Character(v.getValue().charAt(0));
                         } else if ((v = sub.getAttributeNode("methodvalue")) != null) { // NOI18N
                             String value = v.getValue();
                             Object[] params = new Object[] { findResource(name), attrName };
@@ -821,10 +844,6 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             throw new IOException("illegal attribute name for leaf layer: " + attrName);
         }
         //System.err.println("wA: " + name + " " + attrName + " " + v);
-        if (v != null && v.getClass().getName().equals("org.openide.filesystems.MultiFileObject$VoidValue")) { // NOI18N
-            // XXX is this legitimate? Definitely not pretty. But needed for testOpenideFolderOrder to pass.
-            v = null;
-        }
         TreeElement el = findElement(name);
         if (el == null) {
             throw new FileNotFoundException(name);
@@ -846,24 +865,37 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                 }
             }
         }
-        TreeElement attr;
+        if (v == null) {
+            if (existingAttr != null) {
+                try {
+                    deleteWithIndent(existingAttr);
+                } catch (ReadOnlyException x) {
+                    throw new IOException(x);
+                }
+            }
+            return;
+        }
+        TreeElement attrEl;
         try {
-            attr = new TreeElement("attr", true); // NOI18N
-            attr.addAttribute("name", attrName); // NOI18N
+            attrEl = new TreeElement("attr", true); // NOI18N
+            final String newValueMagic = "newvalue:"; // NOI18N
+            final String methodValueMagic = "methodvalue:"; // NOI18N
+            String type, val;
             if (v instanceof String) {
                 String inStr = (String) v;
-                final String newValueMagic = "newvalue:"; // NOI18N
-                final String methodValueMagic = "methodvalue:"; // NOI18N
                 final String bundleValueMagic = "bundlevalue:"; // NOI18N
                 if (inStr.startsWith(newValueMagic)) {
                     // Impossible to set this (reliably) as a real value, so use this magic technique instead:
-                    attr.addAttribute("newvalue", inStr.substring(newValueMagic.length())); // NOI18N
+                    type = "newvalue";
+                    val = inStr.substring(newValueMagic.length());
                 } else if (inStr.startsWith(methodValueMagic)) {
                     // Same here:
-                    attr.addAttribute("methodvalue", inStr.substring(methodValueMagic.length())); // NOI18N
+                    type = "methodvalue";
+                    val = inStr.substring(methodValueMagic.length());
                 } else if (inStr.startsWith(bundleValueMagic)) {
                     // Same here:
-                    attr.addAttribute("bundlevalue", inStr.substring(bundleValueMagic.length())); // NOI18N
+                    type = "bundlevalue";
+                    val = inStr.substring(bundleValueMagic.length());
                     TreeObjectList nodes = doc.getChildNodes();
                     for (int i = 0; i < nodes.size(); i++) {
                         Object object = nodes.get(i);
@@ -877,7 +909,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                 } else {
                     // Regular string value.
                     // Stolen from XMLMapAttr w/ mods:
-                    StringBuffer outStr = new StringBuffer();
+                    StringBuilder outStr = new StringBuilder();
                     for (int i = 0; i < inStr.length(); i++) {
                         char c = inStr.charAt(i);
                         if (Character.isISOControl(c) || c == '&' || c == '<' || c == '>' || c == '"' || c == '\'') {
@@ -886,47 +918,46 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                             outStr.append(c);
                         }
                     }
-                    attr.addAttribute("stringvalue", outStr.toString()); // NOI18N
+                    type = "stringvalue";
+                    val = outStr.toString();
                 }
             } else if (v instanceof URL) {
-                attr.addAttribute("urlvalue", ((URL) v).toExternalForm()); // NOI18N
+                type = "urlvalue";
+                val = ((URL) v).toExternalForm();
             } else if (v instanceof Boolean) {
-                attr.addAttribute("boolvalue", v.toString()); // NOI18N
+                type = "boolvalue";
+                val = v.toString();
             } else if (v instanceof Character) {
-                attr.addAttribute("charvalue", v.toString()); // NOI18N
+                type = "charvalue";
+                val = v.toString();
             } else if (v instanceof Integer) {
-                attr.addAttribute("intvalue", v.toString()); // NOI18N
-            } else if (v != null) {
-                throw new UnsupportedOperationException("XXX: " + v); // NOI18N
+                type = "intvalue";
+                val = v.toString();
+            } else if (v instanceof Class && attrName.startsWith(newValueMagic)) {
+                attrName = attrName.substring(newValueMagic.length());
+                type = "newvalue";
+                val = ((Class<?>) v).getName();
+            } else if (v instanceof Method && attrName.startsWith(methodValueMagic)) {
+                attrName = attrName.substring(methodValueMagic.length());
+                Method m = (Method) v;
+                type = "methodvalue";
+                val = m.getDeclaringClass().getName() + '.' + m.getName();
+            } else {
+                throw new IOException("cannot write arbitrary object " + v + " to " + attrName + " attr of " + name); // though see commented-out code below
             }
-            if (v != null && existingAttr == null) {
-                appendWithIndent(el, attr);
-            } else if (v != null) {
-                ((TreeParentNode) el).replaceChild(existingAttr, attr);
-            } else if (existingAttr != null) {
-                deleteWithIndent(existingAttr);
+            attrEl.addAttribute("name", attrName); // NOI18N
+            attrEl.addAttribute(type, val);
+            if (existingAttr == null) {
+                appendWithIndent(el, attrEl);
+            } else {
+                ((TreeParentNode) el).replaceChild(existingAttr, attrEl);
             }
         } catch (InvalidArgumentException e) {
             throw new AssertionError(e);
         } catch (ReadOnlyException e) {
-            throw (IOException) new IOException(e.toString()).initCause(e);
+            throw new IOException(e);
         }
         /*
-        if (v instanceof Byte) {
-            attr.setAttribute("bytevalue", v.toString()); // NOI18N
-        } else if (v instanceof Short) {
-            attr.setAttribute("shortvalue", v.toString()); // NOI18N
-        } else if (v instanceof Integer) {
-            attr.setAttribute("intvalue", v.toString()); // NOI18N
-        } else if (v instanceof Long) {
-            attr.setAttribute("longvalue", v.toString()); // NOI18N
-        } else if (v instanceof Float) {
-            attr.setAttribute("floatvalue", v.toString()); // NOI18N
-        } else if (v instanceof Double) {
-            attr.setAttribute("doublevalue", v.toString()); // NOI18N
-        } else if (v instanceof Character) {
-            attr.setAttribute("charvalue", v.toString()); // NOI18N
-        } else {
             // Stolen from XMLMapAttr, mostly.
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -1309,16 +1340,13 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
      */
     private static void deleteWithIndent(TreeChild child) throws ReadOnlyException {
         TreeChild next = child.getNextSibling();
-        // XXX better might be to delete any maximal [ \t]+ previous plus \n next (means splitting up TreeText's)
-        if (next instanceof TreeText && ((TreeText) next).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
+        TreeChild previous = child.getPreviousSibling();
+        if (previous instanceof TreeText && ((TreeText) previous).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
+            previous.removeFromContext();
+        } else if (next instanceof TreeText && ((TreeText) next).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
             next.removeFromContext();
         } else {
-            TreeChild previous = child.getPreviousSibling();
-            if (previous instanceof TreeText && ((TreeText) previous).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
-                previous.removeFromContext();
-            } else {
-                // Well, not sure what is here, so skip it.
-            }
+            // Well, not sure what is here, so skip it.
         }
         TreeElement parent = (TreeElement) child.getParentNode();
         TreeObjectList list = parent.getChildNodes();

@@ -46,6 +46,9 @@ import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -55,6 +58,9 @@ import org.openide.util.RequestProcessor;
  *
  * @author Vladimir Kvashin
  */
+@ActionID(id = "org.netbeans.modules.remote.ui.ConnectAction", category = "NativeRemote")
+@ActionRegistration(displayName = "ConnectMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "ConnectAction", position = 100)
 public class ConnectAction extends SingleHostAction {
 
     @Override

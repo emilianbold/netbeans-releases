@@ -47,7 +47,6 @@ package org.netbeans.core;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -68,7 +67,7 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
     private int cnt;
     private static final Logger LOG = Logger.getLogger(CLIOptions2.class.getName());
     /** Time (in milliseconds) to wait for the event queue to become active. */
-    private static final int EQ_TIMEOUT = 10 * 1000;
+    private static final int EQ_TIMEOUT = 15 * 1000;
     private final RequestProcessor.Task task;
     static CLIOptions2 INSTANCE;
 
@@ -130,19 +129,25 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             LOG.warning("event queue thread not determined");
             return;
         }
-        LOG.log(Level.FINE, "EQ stuck in {0}", eq);
-        LOG.log(Level.INFO, null, new EQStuck(eq));
+        StackTraceElement[] stack = Thread.getAllStackTraces().get(eq);
+        if (stack == null) {
+            LOG.log(Level.WARNING, "no stack trace available for {0}", eq);
+            return;
+        }
+        LOG.log(Level.INFO, "EQ stuck in " + eq, new EQStuck(stack));
+        for (StackTraceElement line : stack) {
+            if (line.getMethodName().equals("<clinit>")) {
+                LOG.log(Level.WARNING, "Will not hard restart EQ when inside a static initializer: {0}", line);
+                eq.interrupt(); // maybe this will be enough
+                return;
+            }
+        }
         eq.stop();
     }
     private static class EQStuck extends Throwable {
-        EQStuck(Thread eq) {
+        EQStuck(StackTraceElement[] stack) {
             super("GUI is not responsive"); // NOI18N
-            StackTraceElement[] stack = Thread.getAllStackTraces().get(eq);
-            if (stack != null) {
-                setStackTrace(stack);
-            } else {
-                LOG.log(Level.WARNING, "no stack trace available for {0}", eq);
-            }
+            setStackTrace(stack);
         }
         public @Override synchronized Throwable fillInStackTrace() {
             return this;

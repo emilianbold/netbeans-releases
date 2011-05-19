@@ -47,6 +47,7 @@ import java.util.Iterator;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 
@@ -73,14 +74,18 @@ public class PHPVarCommentParser {
                 //counting types
                 String types[] = parts[2].split("[|]"); //NOI18N
                 int typePosition = startOffset + comment.indexOf(parts[2]);
-                ArrayList<PHPDocNode> typeNodes = new ArrayList<PHPDocNode>();
+                ArrayList<PHPDocTypeNode> typeNodes = new ArrayList<PHPDocTypeNode>();
                 for(String type: types) {
                     startDocNode = typePosition + parts[2].indexOf(type);
                     index = type.indexOf("::"); //NOI18N
-                    PHPDocNode docType;
+                    boolean isArray = (type.indexOf('[') > 0  && type.indexOf(']') > 0);
+                    if (isArray) {
+                        type = type.substring(0, type.indexOf('[')).trim();
+                    }
+                    PHPDocTypeNode docType;
                     endPosition = startDocNode + type.length();
                     if (index == -1) {
-                        docType = new PHPDocNode(startDocNode, endPosition, type);
+                        docType = new PHPDocTypeNode(startDocNode, endPosition, type, isArray);
                     }
                     else {
                         String className = type.substring(0, index);

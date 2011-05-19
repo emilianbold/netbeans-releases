@@ -46,16 +46,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 
 /**
  *
@@ -66,9 +62,6 @@ public class RemoteFileTestCase extends RemoteTestBase {
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     public RemoteFileTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
-        if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
-            Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
-        }
     }
 
     @Override
@@ -100,7 +93,7 @@ public class RemoteFileTestCase extends RemoteTestBase {
         assert ! remoteFile.exists();
     }
 
-    private final String getTempName() {
+    private String getTempName() {
         return getRemoteTmpDir() + "/RemoteFileTest" + Math.random() + ".bak";
     }
 

@@ -444,15 +444,16 @@ public class SelectModePanel extends javax.swing.JPanel {
         updateControls();
         String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false,
+        boolean isDefaultCompilerSet = Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet, false,
                 (ToolsCacheManager) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) { // NOI18N
             @Override
-            public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+            public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {
                 boolean enableHost = enabled;
                 if (controller.isFullRemote()) {
                     enableHost = false;
                 }
-                enableHostSensitiveComponents(records, srToSelect, csToSelect, enableHost, enabled);
+                enableHostSensitiveComponents(records, srToSelect, csToSelect, isDefaultCompilerSet, enableHost, enabled);
             }
         });
     }
@@ -630,9 +631,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
 
     private void enableHostSensitiveComponents(Collection<ServerRecord> records, 
-            ServerRecord srToSelect, CompilerSet csToSelect, boolean enableHost, boolean enableToolchain) {
+            ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enableHost, boolean enableToolchain) {
         PanelProjectLocationVisual.updateToolchainsComponents(SelectModePanel.this.hostComboBox, SelectModePanel.this.toolchainComboBox, 
-                records, srToSelect, csToSelect, enableHost, enableToolchain);
+                records, srToSelect, csToSelect, isDefaultCompilerSet, enableHost, enableToolchain);
         this.advancedMode.setEnabled(true);
         this.simpleMode.setEnabled(true);
         updateInstruction();

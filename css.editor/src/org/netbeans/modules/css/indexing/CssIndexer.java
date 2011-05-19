@@ -43,7 +43,12 @@ package org.netbeans.modules.css.indexing;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.gsf.CssLanguage;
@@ -77,6 +82,12 @@ public class CssIndexer extends EmbeddingIndexer {
     public static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
     public static final String COLORS_KEY = "colors"; //NOI18N
 
+    //used during the indexing (content is mutable)
+    private static final Map<FileObject, AtomicLong> importsHashCodes = new HashMap<FileObject, AtomicLong>();
+    
+    //final version used after the indexing finishes (immutable)
+    private static Map<FileObject, AtomicLong> computedImportsHashCodes = new HashMap<FileObject, AtomicLong>();
+    
 //    static {
 //	LOG.setLevel(Level.ALL);
 //    }
@@ -95,9 +106,18 @@ public class CssIndexer extends EmbeddingIndexer {
             storeEntries(model.getIds(), document, IDS_KEY);
             storeEntries(model.getClasses(), document, CLASSES_KEY);
             storeEntries(model.getHtmlElements(), document, HTML_ELEMENTS_KEY);
-            storeEntries(model.getImports(), document, IMPORTS_KEY);
             storeEntries(model.getColors(), document, COLORS_KEY);
-
+            
+            //support for caching the file dependencies
+            int entriesHashCode = storeEntries(model.getImports(), document, IMPORTS_KEY);
+            FileObject root = context.getRoot();
+            AtomicLong aggregatedHash = importsHashCodes.get(root);
+            if(aggregatedHash == null) {
+                aggregatedHash = new AtomicLong(0);
+                importsHashCodes.put(root, aggregatedHash);
+            } 
+            aggregatedHash.set(aggregatedHash.get() * 79 + entriesHashCode);
+            
             //this is a marker key so it's possible to find
             //all stylesheets easily
             document.addPair(CSS_CONTENT_KEY, Boolean.TRUE.toString(), true, true);
@@ -108,8 +128,23 @@ public class CssIndexer extends EmbeddingIndexer {
             Exceptions.printStackTrace(ex);
         }
     }
+    
+    //1. no synchronization on the computedImportsHashCodes!
+    //2. the callers of this method will get old results if an indexing is in progress and 
+    //   if the cached hashcode changes - possibly add some kind of synchronization 
+    //   to that call (but it seems too much error prone to me)
+    public static long getImportsHashCodeForRoots(Collection<FileObject> roots) {
+        long hash = 5;
+        for(FileObject root : roots) {
+            AtomicLong rootHash = computedImportsHashCodes.get(root);
+            if(rootHash != null) {
+                hash = hash * 51 + rootHash.longValue();
+            }
+        }
+        return hash;
+    }
 
-    private void storeEntries(Collection<Entry> entries, IndexDocument doc, String key) {
+    private int storeEntries(Collection<Entry> entries, IndexDocument doc, String key) {
         if (!entries.isEmpty()) {
             StringBuffer sb = new StringBuffer();
             Iterator<Entry> i = entries.iterator();
@@ -121,8 +156,11 @@ public class CssIndexer extends EmbeddingIndexer {
             }
             sb.append(';'); //end of string
             doc.addPair(key, sb.toString(), true, true);
+            return sb.toString().hashCode();
         }
+        return 0;
     }
+    
 
     public static class Factory extends EmbeddingIndexerFactory {
 
@@ -136,6 +174,19 @@ public class CssIndexer extends EmbeddingIndexer {
             } else {
                 return null;
             }
+        }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            importsHashCodes.remove(context.getRoot()); //remove the computed hashcode for the given indexing root
+            return super.scanStarted(context);
+        }
+
+        
+        @Override
+        public void scanFinished(Context context) {
+            computedImportsHashCodes = new HashMap<FileObject, AtomicLong>(importsHashCodes); //shallow copy
+            super.scanFinished(context);
         }
 
         @Override

@@ -94,10 +94,11 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.git</friend>
                 <package>org.netbeans.libs.git</package>
                 <package>org.netbeans.libs.git.progress</package>
+                <package>org.netbeans.libs.git.utils</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.jgit-0.10.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.jgit-0.10.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.jgit-0.12.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.jgit-0.12.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

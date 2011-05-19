@@ -306,7 +306,7 @@ public final class ParameterElementImpl implements ParameterElement {
             if (!isMandatory()) {
                 sb.append(" = ");//NOI18N
                 if (defVal != null) {
-                    sb.append(defVal.length() > 10 ?
+                    sb.append(defVal.length() > 20 ?
                                 "..." : defVal); //NOI18N
                 }
             }

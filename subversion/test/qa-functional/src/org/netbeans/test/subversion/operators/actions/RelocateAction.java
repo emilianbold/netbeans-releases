@@ -50,11 +50,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  */
 public class RelocateAction extends ActionNoBlock {
 
-//    public static final String VERSIONING_ITEM = "Versioning";
-
-    /** "Subversion" menu item. */
-    public static final String SVN_ITEM = "Subversion";
-
     /** "Team" menu item. */
     public static final String TEAM_ITEM = "Team";
 
@@ -63,6 +58,6 @@ public class RelocateAction extends ActionNoBlock {
 
     /** Creates a new instance of RelocateAction */
     public RelocateAction() {
-        super(TEAM_ITEM + "|" + SVN_ITEM + "|" + RELOCATE_ITEM, null);
+        super(TEAM_ITEM + "|" + RELOCATE_ITEM, null);
     }
 }

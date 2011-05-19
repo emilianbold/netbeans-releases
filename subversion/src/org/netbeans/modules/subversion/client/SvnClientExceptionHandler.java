@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,6 +54,8 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -83,14 +85,15 @@ import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NetworkSettings;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -167,7 +170,7 @@ public class SvnClientExceptionHandler {
         this.commandLine = commandLine;
     }      
 
-    public boolean handleException() throws Exception {
+    public boolean handleException() throws SVNClientException {
         if(exceptionMask != EX_UNKNOWN) {
             if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
                 return handleRepositoryConnectError();
@@ -248,7 +251,7 @@ public class SvnClientExceptionHandler {
         }
     }
 
-    private boolean handleNoCertificateError() throws Exception {
+    private boolean handleNoCertificateError() throws SVNClientException {
         
         SVNUrl url = getSVNUrl(); // get the remote host url
         String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(); // NOI18N
@@ -258,17 +261,20 @@ public class SvnClientExceptionHandler {
         File certFile = CertificateFile.getSystemCertFile(realmString);
         File nbCertFile = CertificateFile.getNBCertFile(realmString);
         if( !nbCertFile.exists() &&  certFile.exists() ) {            
-            FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));            
+            try {
+                FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
+            } catch (IOException ex) {
+                throw new SVNClientException(ex);
+            }
             return true;
         }
 
         // otherwise try to retrieve the certificate from the server ...                                             
         SSLSocket socket;
         try {
-            socket = getSSLSocket(hostString, url.getPort(), null);
+            socket = getSSLSocket(hostString, url.getPort(), null, url);
         } catch (Exception e) {
-            Subversion.LOG.log(Level.SEVERE, null, e);
-            return false;
+            throw new SVNClientException(e);
         }
         if(socket == null) {
             return false;
@@ -279,8 +285,7 @@ public class SvnClientExceptionHandler {
         try {
             serverCerts = socket.getSession().getPeerCertificates();
         } catch (SSLPeerUnverifiedException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex);
-            return false;
+            throw new SVNClientException(ex);
         }
         for (int i = 0; i < serverCerts.length; i++) {                        
             if(serverCerts[i] instanceof X509Certificate) {                                
@@ -318,11 +323,9 @@ public class SvnClientExceptionHandler {
             cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex);
-            return false;
+            throw new SVNClientException(ex);
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex);
-            return false;
+            throw new SVNClientException(ex);
         }
             
         return true;                
@@ -369,7 +372,7 @@ public class SvnClientExceptionHandler {
         return null;
     }  
     
-    private SSLSocket getSSLSocket(String host, int port, String[] protocols) throws Exception {
+    private SSLSocket getSSLSocket(String host, int port, String[] protocols, SVNUrl url) throws Exception {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
             @Override
@@ -380,18 +383,20 @@ public class SvnClientExceptionHandler {
                 public void checkServerTrusted(X509Certificate[] certs, String authType) { }
             }
         };
-       
-        ProxySettings proxySettings = new ProxySettings();
-        String proxyHost = proxySettings.getHttpsHost();
-        int proxyPort = proxySettings.getHttpsPort();
-        if(proxyHost.equals("")) {                                              // NOI18N
-            proxyHost = proxySettings.getHttpHost();
-            proxyPort = proxySettings.getHttpPort();
-        }
         
+        URI uri = null;
+        try {
+            uri = new URI(url.toString());
+        } catch (URISyntaxException ex) {
+            Subversion.LOG.log(Level.INFO, null, ex);
+        }
+       
+        String proxyHost = uri == null ? null : NetworkSettings.getProxyHost(uri);
+        String proxyPort = uri == null ? null : NetworkSettings.getProxyPort(uri);
+
         // now this is the messy part ...
         Socket proxySocket = new Socket(java.net.Proxy.NO_PROXY);
-        if(proxySettings.isDirect()) {                                           
+        if(proxyHost == null || proxyHost.length() == 0) {                                           
             proxySocket.connect(new InetSocketAddress(host, port));
         } else {
             boolean directWorks = false;
@@ -404,8 +409,14 @@ public class SvnClientExceptionHandler {
             }
             if(!directWorks) {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
-                proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
-                connectProxy(proxySocket, host, port, proxyHost, proxyPort, proxySettings.getUsername(), proxySettings.getPassword());
+                proxySocket.connect(new InetSocketAddress(proxyHost, Integer.valueOf(proxyPort)));
+                String username = NetworkSettings.getAuthenticationUsername(uri);
+                String password = null;
+                if (username != null) {
+                    char[] pwd = KeyringSupport.read(NetworkSettings.getKeyForAuthenticationPassword(uri), null);
+                    password = pwd == null ? "" : new String(pwd); //NOI18N
+                }
+                connectProxy(proxySocket, host, port, proxyHost, proxyPort, username, password);
             } 
         }
                         
@@ -420,7 +431,7 @@ public class SvnClientExceptionHandler {
             socket.startHandshake();
         } catch (SSLException ex) {
             if (protocols == null && isBadRecordMac(ex.getMessage())) {
-                return getSSLSocket(host, port, new String[] {"SSLv3", "SSLv2Hello"}); //NOI18N
+                return getSSLSocket(host, port, new String[] {"SSLv3", "SSLv2Hello"}, url); //NOI18N
             } else {
                 throw ex;
             }
@@ -463,7 +474,7 @@ public class SvnClientExceptionHandler {
         return url;
     }
 
-    private void connectProxy(Socket proxy, String host, int port, String proxyHost, int proxyPort, String userName, String password) throws IOException {
+    private void connectProxy(Socket proxy, String host, int port, String proxyHost, String proxyPort, String userName, String password) throws IOException {
       StringBuilder sb = new StringBuilder("CONNECT ").append(host).append(":").append(port).append(" HTTP/1.0\r\n") //NOI18N
               .append("Connection: Keep-Alive\r\n");                    //NOI18N
       if (userName != null && password != null && userName.length() > 0) {
@@ -641,6 +652,8 @@ public class SvnClientExceptionHandler {
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
                msg.contains("user canceled dialog") ||                                      // NOI18N
+               msg.contains("mkactivity request failed on") ||                              // NOI18N
+               msg.contains("could not authenticate to server") ||                          // NOI18N
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 

@@ -314,7 +314,7 @@ public class LuceneIndex implements Index {
             final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
             final boolean optimize) throws IOException {
         assert IndexManager.holdsWriteLock();
-        boolean create = !exists();
+        final boolean create = !dirCache.exists();
         final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
@@ -370,8 +370,8 @@ public class LuceneIndex implements Index {
     }
         
     @Override
-    public boolean isValid (boolean force) throws IOException {
-        return dirCache.isValid(force);
+    public Status getStatus (boolean force) throws IOException {
+        return dirCache.getStatus(force);
     }
 
     @Override
@@ -389,11 +389,6 @@ public class LuceneIndex implements Index {
         }
     }
     
-    @Override
-    public boolean exists () {
-        return this.dirCache.exists();
-    }
-
     @Override
     public void close () throws IOException {
         if (LOGGER.isLoggable(Level.FINEST)) {
@@ -536,7 +531,7 @@ public class LuceneIndex implements Index {
         private CleanReference ref;
         private IndexReader reader;
         private volatile boolean closed;
-        private volatile Boolean validCache;
+        private volatile Status validCache;
         
         private DirCache(
                 final @NonNull File folder,
@@ -646,12 +641,12 @@ public class LuceneIndex implements Index {
             }
         }
         
-        boolean isValid(boolean force) throws IOException {
+        Status getStatus (boolean force) throws IOException {
             checkPreconditions();
-            Boolean valid = validCache;
+            Status valid = validCache;
             if (force ||  valid == null) {
                 final Collection<? extends String> locks = getOrphanLock();
-                boolean res = false;
+                Status res = Status.INVALID;
                 if (!locks.isEmpty()) {
                     LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
                     for (String lockName : locks) {
@@ -661,17 +656,19 @@ public class LuceneIndex implements Index {
                         clear();
                     }
                 } else {
-                    res = exists();
-                    if (res && force) {
+                    if (!exists()) {
+                        res = Status.EMPTY;
+                    } else if (force) {
                         try {
                             getReader();
+                            res = Status.VALID;
                         } catch (java.io.IOException e) {
-                            res = false;
                             clear();
                         } catch (RuntimeException e) {
-                            res = false;
                             clear();
                         }
+                    } else {
+                        res = Status.VALID;
                     }
                 }
                 valid = res;
@@ -695,7 +692,7 @@ public class LuceneIndex implements Index {
             checkPreconditions();
             hit();
             if (this.reader == null) {
-                if (validCache == Boolean.FALSE) {
+                if (validCache != Status.VALID) {
                     return null;
                 }
                 //Issue #149757 - logging
@@ -736,7 +733,7 @@ public class LuceneIndex implements Index {
                     }
                 }
             } finally {
-                 validCache = true;
+                 validCache = Status.VALID;
             }
         }
         

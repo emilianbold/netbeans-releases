@@ -99,7 +99,7 @@ public final class MethodCustomizer {
                 DialogDescriptor.OK_OPTION,
                 null
                 );
-        panel.addPropertyChangeListener(new ValidatingPropertyChangeListener(panel, notifyDescriptor, existingMethods));
+        panel.addPropertyChangeListener(new ValidatingPropertyChangeListener(panel, notifyDescriptor, existingMethods, prefix));
         return DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION;
     }
     

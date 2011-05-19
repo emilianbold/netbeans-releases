@@ -91,17 +91,18 @@ public class NbModuleSuiteTest extends TestCase {
             File.separator + "x" + File.separator + "org-openide-nodes.jar" + File.pathSeparator +
             File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar" + File.pathSeparator +
             File.separator + "x" + File.separator + "org-openide-filesystems.jar";
-
-        NbModuleSuite.S.preparePatches(prop, p);
-
-
+        Class<?>[] classes = {
+            this.getClass(),
+            this.getClass()
+        };
+        NbModuleSuite.S.preparePatches(prop, p, classes);
         assertNull(
             p.getProperty("netbeans.patches.org.openide.util")
         );
         assertEquals(
-            File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar",
-            p.getProperty("netbeans.systemclassloader.patches")
-        );
+                File.separator + "x" + File.separator + "org-openide-util" + File.separator + "tests.jar"
+                + File.pathSeparator + new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getPath(),
+                p.getProperty("netbeans.systemclassloader.patches"));
     }
 
     public void testAccessToInsaneAndFS() {
@@ -388,5 +389,19 @@ public class NbModuleSuiteTest extends TestCase {
         junit.textui.TestRunner.run(instance);
 
         assertProperty("t.one", "OK");
+    }
+    
+    public void testAddStartupArgument()throws Exception{
+        System.setProperty("t.arg", "No");
+
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(NbModuleSuiteT.class)
+                .gui(false)
+                .addStartupArgument("--branding", "sample")
+        );
+
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("t.arg", "OK");
     }
 }

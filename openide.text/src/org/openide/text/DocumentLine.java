@@ -326,10 +326,10 @@ public abstract class DocumentLine extends Line {
     /** Add annotation to this Annotatable class
      * @param anno annotation which will be attached to this class */
     @Override
-    protected void addAnnotation(Annotation anno) {
+    protected void addAnnotation(final Annotation anno) {
         super.addAnnotation(anno);
 
-        StyledDocument doc = pos.getCloneableEditorSupport().getDocument();
+        final StyledDocument doc = pos.getCloneableEditorSupport().getDocument();
 
         // document is not opened and so the annotation will be added to document later
         if (doc == null) {
@@ -338,27 +338,33 @@ public abstract class DocumentLine extends Line {
 
         pos.getCloneableEditorSupport().prepareDocument().waitFinished();
 
-        try {
-            if (!anno.isInDocument()) {
-                anno.setInDocument(true);
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    synchronized (getAnnotations()) {
+                        if (!anno.isInDocument()) {
+                            anno.setInDocument(true);
 
-                // #33165 - find position that is surely at begining of line
-                FindAnnotationPosition fap = new FindAnnotationPosition(doc, pos.getPosition());
-                doc.render(fap);
-                NbDocument.addAnnotation(doc, fap.getAnnotationPosition(), -1, anno);
+                            // #33165 - find position that is surely at begining of line
+                            FindAnnotationPosition fap = new FindAnnotationPosition(doc, pos.getPosition());
+                            doc.render(fap);
+                            NbDocument.addAnnotation(doc, fap.getAnnotationPosition(), -1, anno);
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
+                }
             }
-        } catch (IOException ex) {
-            Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
-        }
+        });
     }
 
     /** Remove annotation to this Annotatable class
      * @param anno annotation which will be detached from this class  */
     @Override
-    protected void removeAnnotation(Annotation anno) {
+    protected void removeAnnotation(final Annotation anno) {
         super.removeAnnotation(anno);
 
-        StyledDocument doc = pos.getCloneableEditorSupport().getDocument();
+        final StyledDocument doc = pos.getCloneableEditorSupport().getDocument();
 
         // document is not opened and so no annotation is attached to it
         if (doc == null) {
@@ -367,10 +373,16 @@ public abstract class DocumentLine extends Line {
 
         pos.getCloneableEditorSupport().prepareDocument().waitFinished();
 
-        if (anno.isInDocument()) {
-            anno.setInDocument(false);
-            NbDocument.removeAnnotation(doc, anno);
-        }
+        doc.render(new Runnable() {
+            public void run() {
+                synchronized (getAnnotations()) {
+                    if (anno.isInDocument()) {
+                        anno.setInDocument(false);
+                        NbDocument.removeAnnotation(doc, anno);
+                    }
+                }
+            }
+        });
     }
 
     /** When document is opened or closed the annotations must be added or
@@ -710,10 +722,10 @@ public abstract class DocumentLine extends Line {
         /** Add annotation to this Annotatable class
          * @param anno annotation which will be attached to this class */
         @Override
-        protected void addAnnotation(Annotation anno) {
+        protected void addAnnotation(final Annotation anno) {
             super.addAnnotation(anno);
 
-            StyledDocument doc = position.getCloneableEditorSupport().getDocument();
+            final StyledDocument doc = position.getCloneableEditorSupport().getDocument();
 
             // document is not opened and so the annotation will be added to document later
             if (doc == null) {
@@ -722,23 +734,29 @@ public abstract class DocumentLine extends Line {
 
             position.getCloneableEditorSupport().prepareDocument().waitFinished();
 
-            try {
-                if (!anno.isInDocument()) {
-                    anno.setInDocument(true);
-                    NbDocument.addAnnotation(doc, position.getPosition(), length, anno);
+            doc.render(new Runnable() {
+                public void run() {
+                    try {
+                        synchronized (getAnnotations()) {
+                            if (!anno.isInDocument()) {
+                                anno.setInDocument(true);
+                                NbDocument.addAnnotation(doc, position.getPosition(), length, anno);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
+                    }
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
-            }
+            });
         }
 
         /** Remove annotation to this Annotatable class
          * @param anno annotation which will be detached from this class  */
         @Override
-        protected void removeAnnotation(Annotation anno) {
+        protected void removeAnnotation(final Annotation anno) {
             super.removeAnnotation(anno);
 
-            StyledDocument doc = position.getCloneableEditorSupport().getDocument();
+            final StyledDocument doc = position.getCloneableEditorSupport().getDocument();
 
             // document is not opened and so no annotation is attached to it
             if (doc == null) {
@@ -747,10 +765,16 @@ public abstract class DocumentLine extends Line {
 
             position.getCloneableEditorSupport().prepareDocument().waitFinished();
 
-            if (anno.isInDocument()) {
-                anno.setInDocument(false);
-                NbDocument.removeAnnotation(doc, anno);
-            }
+            doc.render(new Runnable() {
+                public void run() {
+                    synchronized (getAnnotations()) {
+                        if (anno.isInDocument()) {
+                            anno.setInDocument(false);
+                            NbDocument.removeAnnotation(doc, anno);
+                        }
+                    }
+                }
+            });
         }
 
         public String getText() {

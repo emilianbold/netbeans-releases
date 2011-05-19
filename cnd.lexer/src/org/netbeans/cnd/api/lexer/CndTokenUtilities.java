@@ -74,7 +74,7 @@ public class CndTokenUtilities {
         AbstractDocument aDoc = (AbstractDocument)doc;
         aDoc.readLock();
         try {
-            TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
+            TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequenceWithoutEmbeddings(doc, offset);
             if (cppTokenSequence != null) {
                 return cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE;
             }
@@ -84,6 +84,26 @@ public class CndTokenUtilities {
         return false;
     }
 
+    /**
+     * method should be called under document read lock
+     * @param doc
+     * @param offset
+     * @return
+     */
+    public static boolean isInProCDirective(Document doc, int offset) {
+        AbstractDocument aDoc = (AbstractDocument)doc;
+        aDoc.readLock();
+        try {
+            TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequenceWithoutEmbeddings(doc, offset);
+            if (cppTokenSequence != null) {
+                return cppTokenSequence.token().id() == CppTokenId.PROC_DIRECTIVE;
+            }
+        } finally {
+            aDoc.readUnlock();
+        }
+        return false;
+    }
+    
     /**
      * method should be called under document read lock and token processor must be
      * very fast to prevent document blocking. If startOffset is less than lastOffset,

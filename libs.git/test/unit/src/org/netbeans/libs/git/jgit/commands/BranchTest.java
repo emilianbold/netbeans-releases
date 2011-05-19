@@ -220,7 +220,7 @@ public class BranchTest extends AbstractGitTestCase {
         client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         GitRevisionInfo master = client.commit(new File[] { f }, "change on master", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(otherWT.toURI().toURL(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(otherWT.getAbsolutePath(), ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, remoteBranches.size());
         assertEquals(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         assertEquals(master.getRevision(), remoteBranches.get("master").getId());

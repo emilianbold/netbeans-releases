@@ -121,6 +121,6 @@ public class NbModuleSuite2Test extends TestCase {
         Test test  = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
         assertEquals(0, test.countTestCases());
         test.run(new TestResult());
-        assertEquals(2, test.countTestCases());
+        assertEquals("one+fullhack+startuparg", 3, test.countTestCases());
     }
 }

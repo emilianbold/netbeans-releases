@@ -71,13 +71,11 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -90,6 +88,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
@@ -106,11 +105,17 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
         }
-//        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
+        //System.setProperty("cnd.modelimpl.timing","true"); // NOI18N
+        System.setProperty(" parser.report.include.failures","true"); // NOI18N
+        //System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
+        //System.setProperty("cnd.dump.native.file.item.paths","true"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
-//        MockServices.setServices(MakeProjectType.class);
+        //System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
+        //Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
+        //MockServices.setServices(MakeProjectType.class);
     }
 
     protected boolean optimizeNativeExecutions() {
@@ -118,7 +123,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     protected boolean optimizeSimpleProjects() {
-        return true;
+        return false;
     }
 
     @Override
@@ -132,7 +137,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     @Override
     protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(MakeProjectType.class);
+        list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;
     }
@@ -157,22 +162,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-        waitModelTasks(model);
         model.shutdown();
-        waitModelTasks(model);
         RepositoryUtils.cleanCashes();
         RepositoryUtils.debugClear();
-    }
-
-    private void waitModelTasks(ModelImpl model) {
-        Cancellable task = model.enqueueModelTask(new Runnable() {
-            @Override
-            public void run() {
-            }
-        }, "wait finished other tasks"); //NOI18N
-        if (task instanceof Task) {
-            ((Task) task).waitFinished();
-        }
     }
 
     private File detectConfigure(String path){
@@ -581,38 +573,57 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     private void waitExecution(NativeProcessBuilder ne){
         try {
             NativeProcess process = ne.call();
-            int rc = process.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            try {
-                while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
-                    } else {
-                        System.out.println(line);
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            RequestProcessor RP = new RequestProcessor("command", 2);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (true) {
+                            String line = reader.readLine();
+                            if (line == null) {
+                                break;
+                            } else {
+                                System.out.println(line);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        try {
+                            reader.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                reader.close();
-            }
-            reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            try {
-                while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
-                    } else {
-                        System.out.println(line);
+            });
+            final BufferedReader reader2 = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (true) {
+                            String line = reader2.readLine();
+                            if (line == null) {
+                                break;
+                            } else {
+                                System.out.println(line);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        try {
+                            reader2.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                reader.close();
-            }
 
+            });
+            int rc = process.waitFor();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {

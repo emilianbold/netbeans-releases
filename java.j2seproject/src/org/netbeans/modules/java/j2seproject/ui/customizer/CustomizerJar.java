@@ -62,6 +62,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
         uiProperties.DO_JAR_MODEL.setMnemonic(doJarCheckBox.getMnemonic());
         doJarCheckBox.setModel(uiProperties.DO_JAR_MODEL);
+
+        uiProperties.COPY_LIBS_MODEL.setMnemonic(copyLibs.getMnemonic());
+        copyLibs.setModel(uiProperties.COPY_LIBS_MODEL);
     }
 
     public HelpCtx getHelpCtx() {
@@ -78,6 +81,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         excludeMessage = new javax.swing.JLabel();
         compressCheckBox = new javax.swing.JCheckBox();
         doJarCheckBox = new javax.swing.JCheckBox();
+        copyLibs = new javax.swing.JCheckBox();
 
         distDirLabel.setLabelFor(distDirField);
         org.openide.awt.Mnemonics.setLocalizedText(distDirLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField")); // NOI18N
@@ -94,6 +98,8 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(compressCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Commpres_JCheckBox")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(doJarCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "CustomizerJar.doJarCheckBox")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(copyLibs, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_CopyLibraries")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -112,11 +118,12 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(excludeMessage)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 180, Short.MAX_VALUE))
-                            .addComponent(excludeField, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 209, Short.MAX_VALUE))
+                            .addComponent(excludeField, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(doJarCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 337, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(copyLibs))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -135,7 +142,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 .addComponent(compressCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(doJarCheckBox)
-                .addContainerGap(186, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(copyLibs)
+                .addContainerGap(163, Short.MAX_VALUE))
         );
 
         distDirField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldDistDir")); // NOI18N
@@ -146,6 +155,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox compressCheckBox;
+    private javax.swing.JCheckBox copyLibs;
     private javax.swing.JTextField distDirField;
     private javax.swing.JLabel distDirLabel;
     private javax.swing.JCheckBox doJarCheckBox;

@@ -43,29 +43,44 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Callable;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.plain.PlainKit;
-import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -90,7 +105,13 @@ public class TaskProcessorTest extends NbTestCase {
     
     public TaskProcessorTest(String testName) {
         super(testName);
-    }            
+    }
+
+    @Override
+    protected void setUp() throws Exception {        
+        super.setUp();
+        clearWorkDir();
+    }
     
     public void testWarningWhenRunUserTaskCalledFromAWT() throws Exception {
         this.clearWorkDir();
@@ -203,6 +224,422 @@ public class TaskProcessorTest extends NbTestCase {
         end.countDown();
     }
 
+    public void testCancelCall () {                
+        final FooTask task = new FooTask();
+        final FooParser parser = new FooParser();
+        boolean success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.cancelTask(task, Parser.CancelReason.USER_TASK);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling cancelTask under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.cancelTask(task, Parser.CancelReason.USER_TASK);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling cancelTask without INTERNAL_LOCK", success); //NOI18N
+        assertEquals(1, task.cancelCount);
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.cancelParser(parser, true, Parser.CancelReason.USER_TASK, null);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling cancelParser under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.cancelParser(parser, true, Parser.CancelReason.USER_TASK, null);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling cancelParser without INTERNAL_LOCK", success); //NOI18N
+        assertEquals(1, parser.cancelCount);
+    }
+
+    public void testTaskCall () throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final File workingDir = getWorkDir();
+        final FileObject file = FileUtil.createData(new File(workingDir,"test.foo"));
+        final Source src = Source.create(file);
+
+        final FooTask task = new FooTask();
+        final FooUserTask userTask = new FooUserTask();
+        final FooEmbeddingProvider embProv = new FooEmbeddingProvider();
+        final Parser.Result result = new FooParserResult(src.createSnapshot());
+        final ResultIterator[] it = new ResultIterator[1];
+        ParserManager.parse(Collections.singleton(src), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                it[0] = resultIterator;
+            }
+        });
+
+        boolean success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callParserResultTask(task, result, null);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParserResultTask under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callParserResultTask(task, result, null);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParserResultTask without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callParserResultTask(task, result, null);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callParserResultTask with parser lock", success); //NOI18N
+        assertEquals(1, task.runCount);
+
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callEmbeddingProvider(embProv, src.createSnapshot());
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callEmbeddingProvider under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callEmbeddingProvider(embProv, src.createSnapshot());
+            success = true;
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callEmbeddingProvider without INTERNAL_LOCK", success); //NOI18N
+        assertEquals(1, embProv.runCount);
+
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callUserTask(userTask, it[0]);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callUserTask under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callUserTask(userTask, it[0]);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callUserTask without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callUserTask(userTask, it[0]);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callUserTask with parser lock", success); //NOI18N
+        assertEquals(1, userTask.runCount);
+        
+    }
+
+    public void testParserCall () throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final File workingDir = getWorkDir();
+        final FileObject file = FileUtil.createData(new File(workingDir,"test.foo"));
+        final Source src = Source.create(file);
+        final FooParser parser = new FooParser();
+        final FooTask task = new FooTask();
+
+        boolean success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callParse(parser, src.createSnapshot(), task, null);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParse under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callParse(parser, src.createSnapshot(), task, null);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callParse without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callParse(parser, src.createSnapshot(), task, null);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callParse with parser lock", success); //NOI18N
+        assertEquals(1, parser.parseCount);
+
+        success = false;
+        try {
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                TaskProcessor.callGetResult(parser, task);
+            }
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callGetResult under INTERNAL_LOCK", success);       //NOI18N
+
+        success = false;
+        try {
+            TaskProcessor.callGetResult(parser, task);
+            success = true;
+        } catch (AssertionError ae) {}
+        assertFalse("AssertionError expected when calling callGetResult without parser lock", success); //NOI18N
+
+        success = false;
+        try {
+            Utilities.acquireParserLock();
+            try {
+                TaskProcessor.callGetResult(parser, task);
+                success = true;
+            } finally {
+                Utilities.releaseParserLock();
+            }
+        } catch (AssertionError ae) {}
+        assertTrue("AssertionError not expected when calling callGetResult with parser lock", success); //NOI18N
+        assertEquals(1, parser.resultCount);
+        
+    }
+
+    public void testRunWhenScanFinishGetCalledUnderCCLock() throws Exception {
+        final File wd = getWorkDir();
+        final File srcDir = new File (wd,"src");
+        srcDir.mkdirs();
+        final File file = new File (srcDir,"test.foo");
+        file.createNewFile();
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final FileObject fo = FileUtil.toFileObject(file);
+        final DataObject dobj = DataObject.find(fo);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = ec.openDocument();
+        final Source src = Source.create(doc);
+        final CountDownLatch ruRunning = new CountDownLatch(1);
+        final CountDownLatch rwsfCalled = new CountDownLatch(1);
+        final AtomicReference<Set<RepositoryUpdater.IndexingState>> indexing = new AtomicReference<Set<RepositoryUpdater.IndexingState>>();
+        final Utilities.IndexingStatus is = new Utilities.IndexingStatus() {
+            @Override
+            public Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
+                return indexing.get();
+            }
+        };
+        Utilities.setIndexingStatus(is);
+        Utilities.scheduleSpecialTask(new ParserResultTask() {
+            @Override
+            public int getPriority() {
+                return 0;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return null;
+            }
+
+            @Override
+            public void cancel() {
+            }
+
+            @Override
+            public void run(Result result, SchedulerEvent event) {
+                indexing.set(EnumSet.of(RepositoryUpdater.IndexingState.WORKING));
+                try {
+                    ruRunning.countDown();
+                    rwsfCalled.await();
+                } catch (InterruptedException ie) {
+                } finally {
+                    indexing.set(EnumSet.noneOf(RepositoryUpdater.IndexingState.class));
+                }
+            }
+        });
+        ruRunning.await();
+        doc.putProperty("completion-active", Boolean.TRUE);
+        try {
+            final Future<Void> done = ParserManager.parseWhenScanFinished(Collections.<Source>singleton(src),new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {                    
+                }
+        });
+        assertFalse(done.isDone());
+        assertFalse(done.isCancelled());
+        rwsfCalled.countDown();
+        try {
+            done.get(5, TimeUnit.SECONDS);
+        } catch (TimeoutException te) {
+            assertTrue("Deadlock",false);
+        }
+        } finally {
+            doc.putProperty("completion-active", null);
+        }
+    }
+
+    public void testRunLoopSuspend() throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");    //NOI18N
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());    //NOI18N
+        final File wd = getWorkDir();
+        final File srcFolder = new File (wd,"src");
+        final FileObject srcRoot = FileUtil.createFolder(srcFolder);
+        final FileObject srcFile = srcRoot.createData("test.foo");  //NOI18N        
+        final Source source = Source.create(srcFile);
+        final SourceCache cache = SourceAccessor.getINSTANCE().getCache(source);
+        final CountDownLatch taskStarted = new CountDownLatch(1);
+        final CountDownLatch cancelCalled = new CountDownLatch(1);
+        final CountDownLatch taskDone = new CountDownLatch(1);
+        final CountDownLatch secondTaskCalled = new CountDownLatch(1);
+        final AtomicBoolean result = new AtomicBoolean();        
+        final SchedulerTask task1 = new ParserResultTask() {
+
+            @Override
+            public void run(Result pr, SchedulerEvent event) {
+                taskStarted.countDown();
+                try {
+                    result.set(cancelCalled.await(5000, TimeUnit.MILLISECONDS));
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    taskDone.countDown();
+                }
+            }
+
+            @Override
+            public int getPriority() {
+                return 0;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+            }
+
+            @Override
+            public void cancel() {
+                cancelCalled.countDown();
+            }
+        };
+        final SchedulerTask task2 = new ParserResultTask() {
+            @Override
+            public void run(Result result, SchedulerEvent event) {
+                secondTaskCalled.countDown();
+            }
+
+            @Override
+            public int getPriority() {
+                return 10;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+            }
+
+            @Override
+            public void cancel() {
+            }
+        };
+        TaskProcessor.addPhaseCompletionTasks(
+                Arrays.asList(task1, task2),
+                cache,
+                false,
+                task1.getSchedulerClass());
+        assertTrue(taskStarted.await(5000, TimeUnit.MILLISECONDS));
+        runLoop(source, true);
+        try {
+            assertTrue(taskDone.await(5000, TimeUnit.MILLISECONDS));
+            assertTrue(result.get());
+            assertFalse(secondTaskCalled.await(2000, TimeUnit.MILLISECONDS));
+        } finally {
+            runLoop(source, false);
+        }
+        assertTrue(secondTaskCalled.await(5000, TimeUnit.MILLISECONDS));
+    }
+
+    public void testRunLoopSuspend2() throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");    //NOI18N
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());    //NOI18N
+        final File wd = getWorkDir();
+        final File srcFolder = new File (wd,"src");
+        final FileObject srcRoot = FileUtil.createFolder(srcFolder);
+        final FileObject srcFile = srcRoot.createData("test.foo");  //NOI18N
+        final Source source = Source.create(srcFile);
+        final SourceCache cache = SourceAccessor.getINSTANCE().getCache(source);
+        final CountDownLatch taskCalled = new CountDownLatch(1);
+        final SchedulerTask task = new ParserResultTask() {
+            @Override
+            public void run(Result result, SchedulerEvent event) {
+                taskCalled.countDown();
+            }
+
+            @Override
+            public int getPriority() {
+                return 10;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+            }
+
+            @Override
+            public void cancel() {
+            }
+        };
+
+        runLoop(source, true);
+        try {
+            TaskProcessor.addPhaseCompletionTasks(
+                Arrays.asList(task),
+                cache,
+                false,
+                task.getSchedulerClass());
+            assertFalse(taskCalled.await(2000, TimeUnit.MILLISECONDS));
+        } finally {
+            runLoop(source, false);
+        }
+        assertTrue(taskCalled.await(5000, TimeUnit.MILLISECONDS));
+    }
+
+    private void runLoop(
+            final @NonNull Source source,
+            final boolean suspend) throws NoSuchFieldException, IllegalArgumentException,
+            IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        final Field editorRegistryListenerField = EventSupport.class.getDeclaredField("editorRegistryListener");    //NOI18N
+        assertNotNull(editorRegistryListenerField);
+        editorRegistryListenerField.setAccessible(true);
+        final Object erl = editorRegistryListenerField.get(null);
+        assertNotNull(erl);
+        final Method handleCompletionActive = erl.getClass().getDeclaredMethod("handleCompletionActive", Source.class, Object.class); //NOI18N
+        assertNotNull(handleCompletionActive);
+        handleCompletionActive.setAccessible(true);
+        handleCompletionActive.invoke(erl, source, suspend);
+    }
+
     private static final class FooParserFactory extends ParserFactory {
         @Override
         public Parser createParser(Collection<Snapshot> snapshots) {
@@ -212,16 +649,22 @@ public class TaskProcessorTest extends NbTestCase {
 
     private static final class FooParser extends Parser {
         private FooParserResult result;
+        private int cancelCount;
+        private int parseCount;
+        private int resultCount;
 
         public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+            parseCount++;
             result = new FooParserResult((snapshot));
         }
 
         public @Override Result getResult(Task task) throws ParseException {
+            resultCount++;
             return result;
         }
 
         public @Override void cancel() {
+            cancelCount++;
         }
 
         public @Override void addChangeListener(ChangeListener changeListener) {
@@ -258,6 +701,63 @@ public class TaskProcessorTest extends NbTestCase {
                 filteredStackTrace.add(e);
             }
             caller = Util.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
+        }
+    }
+
+    private static class FooTask extends  ParserResultTask  {
+        
+        private int cancelCount;
+        private int runCount;
+
+        @Override
+        public void run(Result result, SchedulerEvent event) {
+            runCount++;
+        }
+
+        @Override
+        public int getPriority() {
+            return 10;
+        }
+
+        @Override
+        public Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+        }
+
+        @Override
+        public void cancel() {
+            cancelCount++;
+        }
+    }
+
+    private static class FooEmbeddingProvider extends EmbeddingProvider {
+
+        private int runCount;
+
+        @Override
+        public List<Embedding> getEmbeddings(Snapshot snapshot) {
+            runCount++;
+            return Collections.<Embedding>emptyList();
+        }
+
+        @Override
+        public int getPriority() {
+            return 10;
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+    }
+
+    private static class FooUserTask extends UserTask {
+
+        int runCount;
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            runCount++;
         }
     }
 }

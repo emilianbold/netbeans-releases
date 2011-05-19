@@ -70,9 +70,4 @@ made subject to such option by the copyright holder.
 			    text="application/x-exe"/>
         <resolver mime="application/x-exe"/>
     </file>
-    <file>
-        <fattr name="org.netbeans.modules.cnd.loader.ExeLoader.KNOWN_EXEFILE_TYPE"
-			    text="application/x-exe+dll"/>
-        <resolver mime="application/x-exe+dll"/>
-    </file>
 </MIME-resolver>

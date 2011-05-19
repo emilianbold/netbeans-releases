@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,108 +43,27 @@
 package org.netbeans.modules.web.beans.api.model;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 
 
 /**
- * Represent eligible for injection element search result. 
+ * Common interface for results that contains elements with stereotypes.  
  * 
  * @author ads
  *
  */
 public interface Result {
     
-    enum ResultKind {
-        /**
-         * This kind correspond to Error result only
-         */
-        DEFINITION_ERROR,
-        /**
-         * This kind represents at least InjectableResult and ResolutionResult.
-         * Also there could be additional hints with set of eligible for injection
-         * elements ( which are disabled , turned off alternatives, .... )
-         * represented by ApplicableResult.
-         */
-        INJECTABLE_RESOLVED,
-        /**
-         * No eligible for injection element found at all or only disabled
-         * beans are found. It could be represented by Error only ( nothing found
-         * at all ) or Error, ResolutionResult and ApplicableResult with 
-         * information about probable eligible for injection elements. 
-         */
-        RESOLUTION_ERROR,
-    }
-    
     /**
-     * @return element injection point which is used for injectable search
+     * Return list of all element's stereotypes ( including recursively
+     * inherited ).    
+     * @param element element with stereotypes  
+     * @return list of element's stereotypes  
      */
-    VariableElement getVariable();
+    List<AnnotationMirror> getAllStereotypes( Element element );
     
-    TypeMirror getVariableType();
-    
-    ResultKind getKind();
-    
-    interface Error extends Result {
-        
-        String getMessage();
-    }
-    
-    interface ResolutionResult extends Result {
-        
-        /**
-         * Check whether <code>element</code> is alternative.
-         * <code>element</code> could be eligible for injection element
-         * ( which is found as result here ) or stereotype. 
-         * @param element checked element 
-         * @return true if <code>element</code> is alternative
-         */
-        boolean isAlternative( Element element );
-        
-        /**
-         * Return list of all element's stereotypes ( including recursively
-         * inherited ).    
-         * @param element element with stereotypes  
-         * @return list of element's stereotypes  
-         */
-        List<AnnotationMirror> getAllStereotypes( Element element );
-        
-        List<AnnotationMirror> getStereotypes( Element element );
-        
-        boolean hasAlternative( Element element );
-    }
-    
-    interface InjectableResult extends Result {
-        /**
-         * <code>null</code> is returned if there is no eligible element for injection
-         * ( no element which could be a pretender).
-         * 
-         * it could be a result of unsatisfied or ambiguous dependency.
-         * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
-         * resolution but something incorrect ( parameterized type is not valid , etc. ). 
-         * Ambiguous dependency : there are a number of appropriate elements.
-         *
-         * 
-         * @return element ( type definition, production field/method) 
-         * that is used in injected point identified by {@link #getVariable()}
-         */
-        Element getElement();
-    }
-    
-    interface ApplicableResult {
-        public Set<TypeElement> getTypeElements();
-        
-        public Set<Element> getProductions();
+    List<AnnotationMirror> getStereotypes( Element element );
 
-        public Map<Element, List<DeclaredType>>  getAllProductions();
-        
-        boolean isDisabled( Element element );
-    }
 }

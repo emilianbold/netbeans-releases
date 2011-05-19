@@ -153,25 +153,26 @@ public class TaskCache {
         if (errors.iterator().hasNext()) {
             boolean existed = interestedInReturnValue && output.exists();
             output.getParentFile().mkdirs();
-            PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8")); //NOI18N
-            
-            for (T err : errors) {
-                pw.print(convertor.getKind(err).name());
-                pw.print(':'); //NOI18N
-                pw.print(convertor.getLineNumber(err));
-                pw.print(':'); //NOI18N
-                
-                String description = convertor.getMessage(err);
-                if (description != null && description.length() > 0) {
-                    description = description.replaceAll("\\\\", "\\\\\\\\"); //NOI18N
-                    description = description.replaceAll("\n", "\\\\n"); //NOI18N
-                    description = description.replaceAll(":", "\\\\d"); //NOI18N
+            final PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8")); //NOI18N
+            try {
+                for (T err : errors) {
+                    pw.print(convertor.getKind(err).name());
+                    pw.print(':'); //NOI18N
+                    pw.print(convertor.getLineNumber(err));
+                    pw.print(':'); //NOI18N
 
-                    pw.println(description);
+                    String description = convertor.getMessage(err);
+                    if (description != null && description.length() > 0) {
+                        description = description.replaceAll("\\\\", "\\\\\\\\"); //NOI18N
+                        description = description.replaceAll("\n", "\\\\n"); //NOI18N
+                        description = description.replaceAll(":", "\\\\d"); //NOI18N
+
+                        pw.println(description);
+                    }
                 }
+            } finally {
+                pw.close();
             }
-            
-            pw.close();
             
             return !existed;
         } else {

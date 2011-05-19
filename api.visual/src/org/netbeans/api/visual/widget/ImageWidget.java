@@ -106,6 +106,9 @@ public class ImageWidget extends Widget {
     }
 
     private void setImageCore (Image image) {
+        if (image == this.image) {
+            return;
+        }
         int oldWidth = width;
         int oldHeight = height;
 

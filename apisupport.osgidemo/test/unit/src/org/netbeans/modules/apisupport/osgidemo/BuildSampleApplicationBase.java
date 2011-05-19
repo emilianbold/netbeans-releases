@@ -46,6 +46,7 @@ package org.netbeans.modules.apisupport.osgidemo;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +63,7 @@ import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 /**
  * Invokes various Ant targets over osgidemo sample.
@@ -117,6 +119,17 @@ public abstract class BuildSampleApplicationBase extends TestBase {
             privateFolder.mkdir();
             FileObject platfPrivateProps = FileUtil.copyFile(FileUtil.toFileObject(buildProps), FileUtil.toFileObject(privateFolder), "platform-private");
             assertNotNull(platfPrivateProps);
+            { // In the target platform, libs.junit4 may be in the extra cluster rather than platform:
+                FileObject platfProps = fo.getFileObject("nbproject/platform.properties");
+                EditableProperties props = new EditableProperties(false);
+                is = platfProps.getInputStream();
+                props.load(is);
+                is.close();
+                props.setProperty("cluster.path", (props.getProperty("cluster.path") + ":${nbplatform.active.dir}/extra").split("(?<=:)"));
+                OutputStream os = platfProps.getOutputStream();
+                props.store(os);
+                os.close();
+            }
             System.setProperty("sample.project", sampleFolder.getPath());
         } else {
             sampleFolder = new File(p);

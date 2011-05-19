@@ -161,6 +161,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug185045.cpp", 12, 9, "bug185045.cpp", 7, 1);
     }
 
+    public void testBug196157() throws Exception {
+        // Bug 196157 - Template friend functions highlighting problems 
+        performTest("bug196157.cpp", 15, 23, "bug196157.cpp", 10, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

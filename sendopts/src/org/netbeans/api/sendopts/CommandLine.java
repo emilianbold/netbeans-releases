@@ -153,7 +153,9 @@ public final class CommandLine {
                     }
                     OptionImpl opt = findByLongName (text, arr);
                     if (opt == null) {
-                        throw new CommandException(args[i], ERROR_BASE + 1);
+                        throw new CommandException(args[i], ERROR_BASE + 1,
+                            NbBundle.getMessage(CommandLine.class, "MSG_Unknown", args[i])
+                        );
                     }
                     if (opt.getArgumentType() == 1 && value == null) {
                         // read next value from the argument

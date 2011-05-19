@@ -378,7 +378,7 @@ ${cursor}]]></code></codetemplate>
         ${cursor}
      }
      ]]></code></codetemplate>
-     <codetemplate abbreviation="Psfm"><code><![CDATA[    public final ${ret default="void"} ${mname default="method"}(${args default=""}) {
+     <codetemplate abbreviation="Psfm"><code><![CDATA[    public static final ${ret default="void"} ${mname default="method"}(${args default=""}) {
         ${cursor}
      }
      ]]></code></codetemplate>

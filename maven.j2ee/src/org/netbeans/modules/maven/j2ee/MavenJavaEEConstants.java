@@ -87,5 +87,7 @@ public class MavenJavaEEConstants {
      * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
      */
     public static final String ACTION_PROPERTY_DEPLOY_REDEPLOY = "netbeans.deploy.forceRedeploy"; //NOI18N
+    
+    public static final String ACTION_PROPERTY_DEPLOY_OPEN = "netbeans.deploy.open.in.browser"; //NOI18N
 
 }

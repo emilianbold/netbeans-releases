@@ -74,6 +74,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
+import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
@@ -322,6 +323,10 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                             }
                         });
                     }
+                } catch (GitException.MissingObjectException ex) {
+                    if (ex.getObjectType() != GitObjectType.HEAD) {
+                        GitClientExceptionHandler.notifyException(ex, true);
+                    }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 } finally {
@@ -421,6 +426,11 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         @Override
         public String toString () {
             return getRevision();
+        }
+
+        @Override
+        public String[] getParents () {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

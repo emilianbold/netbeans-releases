@@ -31,21 +31,27 @@
 package org.netbeans.qa.form.jda;
 
 import java.util.ArrayList;
+import junit.framework.Test;
+import org.netbeans.jellytools.DocumentsDialogOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
 /**
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class SimpleJDAProjectTest extends ExtJellyTestCase {
     
@@ -55,40 +61,52 @@ public class SimpleJDAProjectTest extends ExtJellyTestCase {
         
         setTestProjectName("JDABasic" + this.getTimeStamp()); // NOI18N
         setTestPackageName(getTestProjectName().toLowerCase());
+        
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    @Override
+    public void setUp(){
+        
     }
     
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SimpleJDAProjectTest("testCreation")); // NOI18N
-        suite.addTest(new SimpleJDAProjectTest("testBuild")); // NOI18N
-        suite.addTest(new SimpleJDAProjectTest("testFilesAndPackages")); // NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(SimpleJDAProjectTest.class).addTest(
+                "testCreation",
+                "testFilesAndPackages",
+                "testBuild"
+                ).gui(true).clusters(".*").enableModules(".*"));
     }
 
     /** Creating JDA Basic project */
-    public void testCreation() {
+    public void testCreation() throws InterruptedException {
         new ActionNoBlock("File|New Project",null).perform(); // NOI18N
 
         NewProjectWizardOperator op = new NewProjectWizardOperator();
         op.selectProject("Java Desktop Application"); // NOI18N
         op.next();
+        op.next();
         
         NbDialogOperator newJDAOp = new NbDialogOperator("New Desktop Application"); // NOI18N
-        new JTextFieldOperator(newJDAOp, 3).typeText(getTestProjectName());
+        new JTextFieldOperator(newJDAOp,2).setText(getTestProjectName());
         new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
+        Thread.sleep(15000);
+        
+        FormDesignerOperator fdo= new FormDesignerOperator(getTestPackageName()+"View.java");
+        fdo.editor();
+        Thread.sleep(500);
+        DocumentsDialogOperator ddo= DocumentsDialogOperator.invoke();
+        int[] array={0,1,2};
+        ddo.selectDocuments(array);
+        Thread.sleep(500);
+        ddo.btCloseDocuments().doClick();
+        
     }
     
     //** Is project buildable? */
     public void testBuild() {
         new ActionNoBlock("Window|Output|Output",null).perform(); // NOI18N       
         
-        new ActionNoBlock("Build|Build Main Project",null).perform(); // NOI18N
+        new ActionNoBlock("Run|Build Main Project",null).perform(); // NOI18N
         
         OutputTabOperator outputOp = new OutputTabOperator(getTestProjectName() +" (jar)"); // NOI18N
         outputOp.waitText("BUILD SUCCESSFUL"); // NOI18N

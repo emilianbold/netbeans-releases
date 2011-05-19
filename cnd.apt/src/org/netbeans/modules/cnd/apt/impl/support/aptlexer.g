@@ -49,7 +49,7 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 
 }
 
@@ -268,6 +268,7 @@ tokens {
     LITERAL__asm="_asm"; // NOI18N
     LITERAL___asm__="__asm__"; // NOI18N
     LITERAL___asm="__asm"; // NOI18N
+    LITERAL__endasm="_endasm"; // NOI18N
     LITERAL_sizeof="sizeof"; // NOI18N
     LITERAL_dynamic_cast="dynamic_cast"; // NOI18N
     LITERAL_static_cast="static_cast"; // NOI18N
@@ -299,7 +300,12 @@ tokens {
     LITERAL___thread="__thread"; // NOI18N
     LITERAL___attribute="__attribute"; // NOI18N
     LITERAL__Imaginary="_Imaginary"; // NOI18N
+    LITERAL_bit="bit"; // NOI18N
 
+    // Extension points
+    LITERAL__BUILT_IN_TYPE__; // extra built-in type name
+    LITERAL__TYPE_QUALIFIER__; // extra type qualifier 
+    LITERAL__STORAGE_CLASS_SPECIFIER__; // extra storage qualifier
 
     // Fortran tokens
 
@@ -875,7 +881,7 @@ FIRST_MOD options { constText=true; } :
             | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
             | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
             | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
-            | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); } DirectiveBody
+            | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); }
             | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
             | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
             | DirectiveBody)
@@ -1042,7 +1048,7 @@ PREPROC_DIRECTIVE :
                     | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
                     | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
                     | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
-                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); } DirectiveBody
+                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); }
                     | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
                     | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
                     | DirectiveBody)

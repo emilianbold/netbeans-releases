@@ -44,6 +44,7 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,6 +53,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.projects.RestApplicationsPanel;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
@@ -79,7 +83,7 @@ public class RestConfigurationAction extends NodeAction  {
         if (activatedNodes[0].getLookup().lookup(Project.class) == null) return false;
         return true;
     }
-
+    
     protected void performAction(Node[] activatedNodes) {
         Project project = activatedNodes[0].getLookup().lookup(Project.class);
         WebRestSupport restSupport = project.getLookup().lookup(WebRestSupport.class);
@@ -96,7 +100,8 @@ public class RestConfigurationAction extends NodeAction  {
                         oldApplicationPath = oldPathFromDD;
                     }
                 } else if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_IDE)) {
-                    String resourcesPath = restSupport.getProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH);
+                    String resourcesPath = WebProjectRestSupport.
+                        getApplicationPathFromDialog(restSupport.getRestApplications());//restSupport.getProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH);
                     if (resourcesPath != null && resourcesPath.length()>0) {
                         oldApplicationPath = resourcesPath;
                     }
@@ -116,7 +121,7 @@ public class RestConfigurationAction extends NodeAction  {
                         isJerseyLib,
                         restSupport.getAntProjectHelper() != null 
                             && RestUtils.isAnnotationConfigAvailable(project),
-                        restSupport.getServerJerseyLibrary()!=null);
+                        restSupport.hasJerseyLibrary());
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
                     NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
@@ -176,7 +181,7 @@ public class RestConfigurationAction extends NodeAction  {
                         // add jersey library
                         boolean added = false;
                         if ( configPanel.isServerJerseyLibSelected() ){
-                            added = restSupport.addDeployableServerJerseyLibrary();
+                            added = restSupport.addDeployableServerJerseyLibraries();
                         }
                         if (!added || addJersey) {
                             Library swdpLibrary = LibraryManager.getDefault()

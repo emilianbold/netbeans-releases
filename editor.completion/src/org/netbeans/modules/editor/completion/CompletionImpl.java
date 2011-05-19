@@ -216,6 +216,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     
     private Lookup.Result<KeyBindingSettings> kbs;
     private RequestProcessor.Task asyncWarmUpTask = null;
+    private String asyncWarmUpMimeType = null;
     private static CompletionImplProfile profile;
     
     private final LookupListener shortcutsTracker = new LookupListener() {
@@ -241,6 +242,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 if (localCompletionResult != null && !localCompletionResult.isQueryInvoked()) {
                     pleaseWaitTimer.restart();
                     CompletionImpl.this.refreshedQuery = false;
+                    getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);  //NOI18N
                     queryResultSets(localCompletionResult.getResultSets());
                     localCompletionResult.queryInvoked();
                 }
@@ -580,12 +582,18 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             return providersCache.get(mimeType);
 
         if (asyncWarmUpTask != null) {
-            asyncWarmUpTask.cancel();
+            if (asyncWarmUp && mimeType != null && mimeType.equals(asyncWarmUpMimeType))
+                return null;
+            if (!asyncWarmUpTask.cancel()) {
+                asyncWarmUpTask.waitFinished();
+            }
             asyncWarmUpTask = null;
+            asyncWarmUpMimeType = null;
         }
         final Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
         if (asyncWarmUp) {
-             asyncWarmUpTask = RequestProcessor.getDefault().post(new Runnable() {
+            asyncWarmUpMimeType = mimeType;
+            asyncWarmUpTask = RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
                     lookup.lookupAll(CompletionProvider.class);
@@ -705,6 +713,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             } else {
                 pleaseWaitTimer.restart();
                 this.refreshedQuery = refreshedQuery;
+                getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);  //NOI18N
                 queryResultSets(completionResultSets);
                 newCompletionResult.queryInvoked();
             }
@@ -868,8 +877,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION, explicitQuery, delayQuery, queryType));
             return;
         }
-
-        getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);
+        
         LogRecord r = new LogRecord(Level.FINE, "COMPL_INVOCATION"); // NOI18N
         r.setParameters(new Object[] {explicitQuery});
         uilog(r);

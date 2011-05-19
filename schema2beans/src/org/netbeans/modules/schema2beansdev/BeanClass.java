@@ -295,6 +295,13 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
 	    end();
 	}
 	
+        if (this.beanElement.isExtended()) {
+            gen(PROTECTED, this.className+"(Vector comparators, Version runtimeVersion)");
+            begin();
+            cr();
+            jw.writeEol("super(comparators, runtimeVersion)");
+            end();
+        }
 	gen(PUBLIC, this.className+"(int options)");
     /*
     if (this.beanElement.isRoot && shouldThrowException()) {

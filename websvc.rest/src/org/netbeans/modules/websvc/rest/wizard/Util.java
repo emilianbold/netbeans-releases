@@ -46,7 +46,11 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.JLabel;
 import java.awt.Container;
 import javax.swing.JComponent;
@@ -71,13 +75,17 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -91,8 +99,8 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.JavaEE6EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
@@ -107,6 +115,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ModifiersTree;
+
 /**
  * Copy of j2ee/utilities Util class
  *  
@@ -115,6 +126,10 @@ import org.openide.util.Utilities;
  * 
  */
 public class Util {
+    
+    public static final String XMLROOT_ANNOTATION = 
+        "javax.xml.bind.annotation.XmlRootElement";         // NOI18N
+    
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     
     /*
@@ -520,15 +535,19 @@ public class Util {
             EntityResourceBeanModel model, FileObject targetFolder, 
             String resourcePackage ) throws IOException
     {
-        Collection<EntityResourceBean> beans = model.getResourceBeans();
+        generateRESTFacades(project, entities, model, targetFolder, 
+                resourcePackage, FACADE_GENERATOR.createGenerator());
+    }
+    
+    public static void generateRESTFacades(Project project, Set<Entity> entities,
+            EntityResourceBeanModel model, FileObject targetFolder, 
+            String resourcePackage, FacadeGenerator generator ) throws IOException
+    {
         Map<String,String> beanMap = new HashMap<String,String>();
-        for (EntityResourceBean bean : beans) {
-            if (bean.isItem()) {
-                EntityClassInfo classInfo = bean.getEntityClassInfo();
-                EntityClassInfo.FieldInfo fieldInfo = classInfo.getIdFieldInfo();
-                if (fieldInfo != null) {
-                    beanMap.put(classInfo.getType(), fieldInfo.getType());
-                }
+        for (EntityClassInfo classInfo : model.getEntityInfos()) {
+            EntityClassInfo.FieldInfo fieldInfo = classInfo.getIdFieldInfo();
+            if (fieldInfo != null) {
+                beanMap.put(classInfo.getType(), fieldInfo.getType());
             }
         }
 
@@ -543,10 +562,9 @@ public class Util {
         }
         
         Map<String, String> entityNames = initEntityNames(project);
-        FacadeGenerator facadeGenerator = FACADE_GENERATOR.createGenerator();
 
         for (Entry<String, String> entry : selectedEntityNames.entrySet()) {
-            facadeGenerator.generate(project, entityNames, targetFolder, 
+            generator.generate(project, entityNames, targetFolder, 
                     entry.getKey(), entry.getValue(), resourcePackage, false, 
                     false, true);
         }
@@ -591,7 +609,7 @@ public class Util {
     }
 
     
-    private static Map<String, String> initEntityNames(Project project) throws IOException {
+    public static Map<String, String> initEntityNames(Project project) throws IOException {
         final Map<String, String> entityNames = new HashMap<String, String>();
         
         //XXX should probably be using MetadataModelReadHelper. needs a progress indicator as well (#113874).
@@ -618,6 +636,75 @@ public class Util {
             Exceptions.printStackTrace(ex);
         }
         return entityNames;
+    }
+    
+    public static void modifyEntity( final Entity entity , Project project) {
+        try {
+            FileObject entityFileObject = SourceGroupSupport.
+                getFileObjectFromClassName(entity.getClass2(), project);
+
+            if (entityFileObject == null) {
+                return;
+            }
+            JavaSource javaSource = JavaSource.forFileObject(entityFileObject);
+            if (javaSource == null) {
+                return;
+            }
+            ModificationResult result = javaSource
+                    .runModificationTask(new Task<WorkingCopy>() {
+
+                        public void run( final WorkingCopy working )
+                                throws IOException
+                        {
+                            working.toPhase(Phase.RESOLVED);
+
+                            TreeMaker make = working.getTreeMaker();
+                            
+                            if (working.getElements().getTypeElement(
+                                    XMLROOT_ANNOTATION) == null )
+                            {
+                                return;
+                            }
+                            
+                            TypeElement entityElement = 
+                                working.getTopLevelElements().get(0);
+                            List<? extends AnnotationMirror> annotationMirrors = 
+                                working.getElements().getAllAnnotationMirrors(
+                                        entityElement);
+                            boolean hasXmlRootAnnotation = false;
+                            for (AnnotationMirror annotationMirror : annotationMirrors)
+                            {
+                                DeclaredType type = annotationMirror.getAnnotationType();
+                                Element annotationElement = type.asElement();
+                                if ( annotationElement instanceof TypeElement ){
+                                    Name annotationName = ((TypeElement)annotationElement).
+                                        getQualifiedName();
+                                    if ( annotationName.contentEquals(XMLROOT_ANNOTATION))
+                                    {
+                                        hasXmlRootAnnotation = true;
+                                    }
+                                }
+                            }
+                            if ( !hasXmlRootAnnotation ){
+                                ClassTree classTree = working.getTrees().getTree(
+                                        entityElement);
+                                GenerationUtils genUtils = GenerationUtils.
+                                    newInstance(working);
+                                ModifiersTree modifiersTree = make.addModifiersAnnotation(
+                                        classTree.getModifiers(),
+                                        genUtils.createAnnotation(XMLROOT_ANNOTATION));
+
+                                working.rewrite( classTree.getModifiers(), 
+                                        modifiersTree);
+                            }
+                        }
+                    });
+            result.commit();
+        }
+        catch (IOException e) {
+            Logger.getLogger(Util.class.getName()).
+                log( Level.SEVERE, null, e);
+        }
     }
     
     private static final FacadeGeneratorProvider FACADE_GENERATOR =

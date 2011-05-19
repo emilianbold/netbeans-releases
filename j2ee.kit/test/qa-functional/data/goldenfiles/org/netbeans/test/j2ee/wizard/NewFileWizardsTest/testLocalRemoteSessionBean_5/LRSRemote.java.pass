@@ -2,14 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ejbs;
 
 import javax.ejb.Remote;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 @Remote
 public interface LRSRemote {

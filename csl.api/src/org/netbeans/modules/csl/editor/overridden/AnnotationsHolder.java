@@ -57,6 +57,7 @@ import javax.swing.SwingUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -65,6 +66,7 @@ import org.openide.loaders.DataObject;
 public class AnnotationsHolder implements PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(AnnotationsHolder.class.getName());
+    private static final RequestProcessor WORKER = new RequestProcessor(AnnotationsHolder.class.getName(), 1, false, false);
     private static final Map<DataObject, AnnotationsHolder> file2Annotations = new HashMap<DataObject, AnnotationsHolder>();
     
     public static synchronized AnnotationsHolder get(FileObject file) {
@@ -133,30 +135,33 @@ public class AnnotationsHolder implements PropertyChangeListener {
 
     private final List<IsOverriddenAnnotation> annotations;
     
-    public synchronized void setNewAnnotations(List<IsOverriddenAnnotation> as) {
-        final List<IsOverriddenAnnotation> toRemove = new ArrayList<IsOverriddenAnnotation>(annotations);
-        final List<IsOverriddenAnnotation> toAdd    = new ArrayList<IsOverriddenAnnotation>(as);
-        
-        annotations.clear();
-        annotations.addAll(as);
-        
+    public void setNewAnnotations(final List<IsOverriddenAnnotation> as) {
         Runnable doAttachDetach = new Runnable() {
-            public void run() {
+            @Override public void run() {
+                List<IsOverriddenAnnotation> toRemove;
+                List<IsOverriddenAnnotation> toAdd;
+
+                synchronized (AnnotationsHolder.this) {
+                    toRemove = new ArrayList<IsOverriddenAnnotation>(annotations);
+                    toAdd = new ArrayList<IsOverriddenAnnotation>(as);
+
+                    annotations.clear();
+                    annotations.addAll(as);
+                }
+
                 for (IsOverriddenAnnotation a : toRemove) {
                     a.detachImpl();
                 }
-                
+
                 for (IsOverriddenAnnotation a : toAdd) {
                     a.attach();
                 }
             }
         };
         
-        if (SwingUtilities.isEventDispatchThread()) {
-            doAttachDetach.run();
-        } else {
-            SwingUtilities.invokeLater(doAttachDetach);
-        }
+        //to serialize the requests, as these can come not only from ComputeAnnotations, but also from checkForReset():
+        //(might be possible to cancel all pending, but not currently running, requests, but that would require keeping the Task)
+        WORKER.submit(doAttachDetach);
     }
     
     public synchronized List<IsOverriddenAnnotation> getAnnotations() {

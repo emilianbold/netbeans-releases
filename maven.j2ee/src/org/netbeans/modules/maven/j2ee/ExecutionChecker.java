@@ -119,12 +119,18 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
             boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
             boolean profilemode = Boolean.parseBoolean(config.getProperties().getProperty("netbeans.deploy.profilemode")); //NOI18N
+            String openInBrowser = config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_OPEN);
+            boolean showInBrowser = openInBrowser == null ? true : Boolean.parseBoolean( openInBrowser );
 
-            performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, redeploy);
+            performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, 
+                    redeploy, showInBrowser );
         }
     }
 
-    private void performDeploy(ExecutionContext res, boolean debugmode, boolean profilemode, String clientModuleUri, String clientUrlPart, boolean forceRedeploy) {
+    private void performDeploy(ExecutionContext res, boolean debugmode, 
+            boolean profilemode, String clientModuleUri, String clientUrlPart, 
+            boolean forceRedeploy, boolean showInBrowser ) 
+    {
         FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
         OutputWriter err = res.getInputOutput().getErr();
         OutputWriter out = res.getInputOutput().getOut();
@@ -167,8 +173,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             String clientUrl = Deployment.getDefault().deploy(jmp, mode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
             if (clientUrl != null) {
                 FileObject fo = project.getProjectDirectory();
-                boolean show = true;
-                if (fo != null) {
+                boolean show = showInBrowser;
+                if (fo != null && show ) {
                     String browser = (String) fo.getAttribute(WebRunCustomizerPanel.PROP_SHOW_IN_BROWSER);
                     show = browser != null ? Boolean.parseBoolean(browser) : true;
                 }

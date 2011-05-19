@@ -43,13 +43,20 @@
 package org.netbeans.modules.git;
 
 import java.awt.Color;
+import java.awt.EventQueue;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
+import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.FileInformation.Mode;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
 
@@ -66,6 +73,7 @@ public final class GitModuleConfig {
     private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
     private static final String RECENT_COMMIT_AUTHORS   = "recentCommitAuhtors";// NOI18N
     private static final String RECENT_COMMITERS        = "recentCommiters";    // NOI18N
+    private static final String RECENT_GURI             = "recent_guri";    
     private static final String SIGN_OFF                = "signOff";            // NOI18N
     private static final String REVERT_ALL              = "revertAll";          // NOI18N
     private static final String REMOVE_ALL_NEW          = "removeAllNew";       // NOI18N
@@ -73,7 +81,13 @@ public final class GitModuleConfig {
     private static final String REVERT_WT               = "revertWT";           // NOI18N
     private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
     private static final String PROP_LAST_USED_COMMIT_VIEW_MODE = "lastUsedCommitViewMode"; //NOI18N
-    private static final String AUTO_IGNORE_FILES        = "autoIgnoreFiles"; //NOI18N
+    private static final String AUTO_IGNORE_FILES       = "autoIgnoreFiles"; //NOI18N
+    private static final String SHOW_CLONE_COMPLETED    = "cloneCompleted.showCloneCompleted";        // NOI18N  
+    private static final String GURI_PASSWORD           = "guri_password";
+    
+    private static final String DELIMITER               = "<=~=>";              // NOI18N
+    private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
+    private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -261,4 +275,217 @@ public final class GitModuleConfig {
     public void setAutoIgnoreFiles (boolean flag) {
         getPreferences().putBoolean(AUTO_IGNORE_FILES, flag);
     }
+
+    public boolean getShowCloneCompleted() {
+        return getPreferences().getBoolean(SHOW_CLONE_COMPLETED, true);
+    }
+    
+    public void setShowCloneCompleted(boolean bl) {
+        getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
+    }
+
+    public boolean getShowHistoryMerges() {
+        return getPreferences().getBoolean(KEY_SHOW_HISTORY_MERGES, true);
+    }
+
+    public void setShowHistoryMerges(boolean bShowMerges) {
+        getPreferences().putBoolean(KEY_SHOW_HISTORY_MERGES, bShowMerges);
+    }
+    public boolean getShowFileInfo() {
+        return getPreferences().getBoolean(KEY_SHOW_FILE_INFO, false);
+    }
+    public void setShowFileInfo(boolean info) {
+        getPreferences().putBoolean(KEY_SHOW_FILE_INFO, info);
+    }
+    
+    private final HashMap<String, GitURI> cachedUris = new HashMap<String, GitURI>(5);
+    public void insertRecentGitURI(GitURI guri, boolean saveCredentials) {
+        assert !EventQueue.isDispatchThread();
+        String guriString = getUriStringWithoutCredentials(guri);
+        if(guriString == null) {
+            return;
+        }        
+        Preferences prefs = getPreferences();
+        removeStaleEntries(prefs, guriString);
+        
+        if(saveCredentials && guri.getPass() != null) {
+            // keep permanently and remove from cache
+            storeCredentials(guri);
+            cachedUris.remove(guriString);
+        } else {
+            // remove from perm storage, we should not keep it forever
+            deleteCredentials(guri);
+            // but keep until end of session
+            cachedUris.put(guriString, guri);
+        }
+        
+        if (!"".equals(guriString)) {                                           //NOI18N
+            Utils.insert(prefs, RECENT_GURI, new GitURIEntry(guriString, guri.getUser(), saveCredentials).toString() , -1);
+        }
+    }
+
+    public void removeRecentGitURI (GitURI guri) {
+        assert !EventQueue.isDispatchThread();
+        String guriString = getUriStringWithoutCredentials(guri);
+        if(guriString == null) {
+            return;
+        }        
+        Preferences prefs = getPreferences();
+        removeStaleEntries(prefs, guriString);
+        
+        cachedUris.remove(guriString);
+        deleteCredentials(guri);
+    }
+
+    private void removeStaleEntries (Preferences prefs, String guriString) {
+        List<String> urlValues = Utils.getStringList(prefs, RECENT_GURI);
+        for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
+            String rcOldString = it.next();
+            GitURI guriOld = null;
+            try {
+                GitURIEntry entry = GitURIEntry.create(rcOldString);
+                if(entry != null) {
+                    guriOld = new GitURI(entry.guriString);
+                }
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.WARNING, rcOldString, ex);
+            }
+            if(guriString.equals(guriOld.toString())) {
+                Utils.removeFromArray(prefs, RECENT_GURI, rcOldString);
+            }
+        }
+    }    
+    
+    public List<GitURI> getRecentUrls() {
+        assert !EventQueue.isDispatchThread();
+        
+        Preferences prefs = getPreferences();
+        List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
+        List<GitURI> ret = new ArrayList<GitURI>(urls.size());
+        for (String guriString : urls) {
+            GitURIEntry entry = GitURIEntry.create(guriString);
+            // before we contact keyring, check the cache:
+            GitURI guri = cachedUris.get(entry.guriString);
+            if (guri == null) {
+                try {
+                    guri = new GitURI(entry.guriString);
+                    if (!entry.username.isEmpty()) {
+                        guri = guri.setUser(entry.username);
+                    }
+                } catch (URISyntaxException ex) {
+                    Git.LOG.log(Level.WARNING, guriString, ex);
+                    continue;
+                }
+                char[] password = KeyringSupport.read(GURI_PASSWORD, guri.toString());
+                if(password != null) {
+                    guri = guri.setPass(new String(password));
+                }
+            }
+            ret.add(guri);
+        }
+        return ret;
+    }
+    
+    public GitURI getRecentUri (String uriString) {
+        assert !EventQueue.isDispatchThread();
+        GitURI retval = null;
+        String username = null;
+        try {
+            GitURI uri = new GitURI(uriString);
+            username = uri.getUser();
+            uriString = uri.setUser(null).setPass(null).toString();
+        } catch (URISyntaxException ex) {
+            //
+        }
+        
+        // before we contact keyring, check the cache:
+        GitURI cachedUri = cachedUris.get(uriString);
+        if (cachedUri != null && (username == null || cachedUri.getUser() == null || username.equals(cachedUri.getUser()))) {
+            return cachedUri;
+        }
+        
+        Preferences prefs = getPreferences();
+        List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
+        for (String guriString : urls) {
+            GitURIEntry entry = GitURIEntry.create(guriString);
+            GitURI storedUri;
+            try {
+                storedUri = new GitURI(entry.guriString);
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.WARNING, guriString, ex);
+                continue;
+            }
+            if (uriString.equals(storedUri.toString()) && (username == null || entry.username == null || username.equals(entry.username))) {
+                if (!entry.username.isEmpty()) {
+                    storedUri = storedUri.setUser(entry.username);
+                }
+                char[] password = KeyringSupport.read(GURI_PASSWORD, storedUri.toString());
+                if(password != null) {
+                    storedUri = storedUri.setPass(new String(password));
+                }
+                retval = storedUri;
+                break;
+            }
+        }
+        return retval;
+    }
+
+    private void storeCredentials (final GitURI guri) {
+        assert guri.getPass() != null;
+        assert !EventQueue.isDispatchThread();
+        String passwd = guri.getPass();
+        KeyringSupport.save(GURI_PASSWORD, guri.toString(), passwd.toCharArray(), null);
+    }
+    
+    private void deleteCredentials (final GitURI guri) {
+        assert !EventQueue.isDispatchThread();
+        KeyringSupport.save(GURI_PASSWORD, guri.toString(), null, null);
+    }
+
+    private String getUriStringWithoutCredentials (GitURI guri) {
+        String guriString = null;
+        if(guri != null) {
+            try {
+                // we need to compare all uris with the one without username or password
+                guriString = new GitURI(guri.toString()).setUser(null).setPass(null).toString();
+            } catch (URISyntaxException ex) {
+                Git.LOG.log(Level.WARNING, guri.toPrivateString(), ex);
+            }
+        }
+        return guriString;
+    }
+    
+    private static class GitURIEntry {
+        final String guriString;
+        private final boolean saveCredentials;
+        private String stringValue;
+        private final String username;
+        static GitURIEntry create(String entryString) {
+            String[] s = entryString.split(DELIMITER);
+            assert s.length == 2 || s.length == 3;
+            if(s.length < 2) {
+                return null;
+            }
+            return s.length == 2 ? new GitURIEntry(s[0], null, Boolean.parseBoolean(s[1])) : new GitURIEntry(s[0], s[1], Boolean.parseBoolean(s[2]));
+        }
+        GitURIEntry(String guriString, String username, boolean saveCredentials) {
+            this.guriString = guriString;
+            this.username = username == null ? "" : username; //NOI18N
+            this.saveCredentials = saveCredentials;
+        }
+        @Override
+        public String toString() {
+            if(stringValue == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(guriString);
+                sb.append(DELIMITER);
+                sb.append(saveCredentials ? username : ""); //NOI18N
+                sb.append(DELIMITER);
+                sb.append(saveCredentials);
+                stringValue = sb.toString();
+            }
+            return stringValue;
+        }
+    }
+    
 }

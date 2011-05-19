@@ -320,9 +320,8 @@ public abstract class NodeTransfer extends Object {
     * @param e the exception
     */
     private static void maybeReportException(Exception e) {
-        Logger.getLogger(NodeTransfer.class.getName()).log(Level.WARNING, null, e);
-
-        // else do nothing
+        Logger.getLogger(NodeTransfer.class.getName()).log(Level.WARNING, "Node transfer error: {0}", e.getMessage());
+        Logger.getLogger(NodeTransfer.class.getName()).log(Level.INFO, null, e);
     }
 
     /** An intelligent source of paste types (ways how to paste)

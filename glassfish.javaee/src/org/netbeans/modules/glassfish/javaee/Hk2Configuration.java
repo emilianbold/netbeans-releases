@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,7 +57,6 @@ import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
-import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -105,8 +104,7 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
             // Unable to create JDBC data source for resource ref.
 //            postResourceError(NbBundle.getMessage(ModuleConfigurationImpl.class,
 //                    "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                    "Resource Folder " + resourceDir + " does not exist.");
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Null Resource Folder");
             throw new ConfigurationException(NbBundle.getMessage(
                     ModuleConfigurationImpl.class, "ERR_NoRefJdbcDataSource", jndiName)); // NOI18N
         }
@@ -124,15 +122,14 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
 
     @Override
     public boolean supportsCreateMessageDestination() {
-        return ResourcesHelper.isEE6(module);
+        return true;
     }
 
     @Override
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
         File resourceDir = module.getResourceDirectory();
         if (resourceDir == null) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                    "Resource Folder " + resourceDir + " does not exist.");
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Null Resource Folder."); // NOI18N
             throw new ConfigurationException(NbBundle.getMessage(
                     ModuleConfigurationImpl.class, "ERR_NoJMSResource", name, type)); // NOI18N
         }

@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.repository.register;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -136,7 +137,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         lblRepoType.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type", new Object[] {})); // NOI18N
 
         buttonGroup1.add(jraLocal);
-        jraLocal.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jraLocal, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Local", new Object[] {})); // NOI18N
         jraLocal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -145,6 +145,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(jraRemote);
+        jraRemote.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jraRemote, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Remote", new Object[] {})); // NOI18N
         jraRemote.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -155,6 +156,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         lblRepoPath.setLabelFor(txtRepoPath);
         org.openide.awt.Mnemonics.setLocalizedText(lblRepoPath, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Path", new Object[] {})); // NOI18N
 
+        txtRepoPath.setEnabled(false);
         txtRepoPath.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txtRepoPathKeyTyped(evt);
@@ -162,6 +164,7 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(btnBrowse, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "CMD_Repo_Path_Browse", new Object[] {})); // NOI18N
+        btnBrowse.setEnabled(false);
         btnBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBrowseActionPerformed(evt);
@@ -171,7 +174,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         lblRepoUrl.setLabelFor(txtRepoUrl);
         org.openide.awt.Mnemonics.setLocalizedText(lblRepoUrl, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_URL", new Object[] {})); // NOI18N
 
-        txtRepoUrl.setEnabled(false);
         txtRepoUrl.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtRepoUrlKeyReleased(evt);
@@ -347,14 +349,12 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
         }
     }
     
-    public RepositoryInfo getRepositoryInfo(){
-      RepositoryInfo info=new RepositoryInfo(txtRepoId.getText().trim(),
+    public RepositoryInfo getRepositoryInfo() throws URISyntaxException {
+      return new RepositoryInfo(txtRepoId.getText().trim(),
               (String)comType.getSelectedItem(),
               txtRepoName.getText().trim(),
               jraLocal.isSelected()  ? txtRepoPath.getText().trim() : null,
               jraRemote.isSelected() ? txtRepoUrl.getText().trim() : null);
-    
-     return info;
     }
 
     private void validateInfo() {

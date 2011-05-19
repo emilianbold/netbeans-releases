@@ -361,14 +361,15 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         }
         else if ( source == addLibrary ) {
             //TODO this piece needs to go somewhere else?
+            URL librariesFolder = null;
             LibraryManager manager = null;
             boolean empty = false;
             try {
                 String path = libraryPath.getText(0, libraryPath.getLength());
                 if (path != null && path.length() > 0) {
                     File fil = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), path);
-                    URL url = FileUtil.normalizeFile(fil).toURI().toURL();
-                    manager = LibraryManager.forLocation(url);
+                    librariesFolder = FileUtil.normalizeFile(fil).toURI().toURL();
+                    manager = LibraryManager.forLocation(librariesFolder);
                 } else {
                     empty = true;
                 }
@@ -387,7 +388,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             }
 
             Set<Library> added = LibraryChooser.showDialog(manager,
-                    createLibraryFilter(), refHelper.getLibraryChooserImportHandler());
+                    createLibraryFilter(), empty ? refHelper.getLibraryChooserImportHandler() : refHelper.getLibraryChooserImportHandler(librariesFolder));
             if (added != null) {
                 Set<Library> includedLibraries = new HashSet<Library>();
                int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 

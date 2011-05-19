@@ -51,9 +51,11 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 
 /**
@@ -91,7 +93,13 @@ public class Context {
     private void findContext(int offset) {
         contextFound = true;
         CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
-        findContext(CsmSelect.getDeclarations(file, filter), filter, offset);
+        Iterator<CsmOffsetableDeclaration> declarations;
+        if (file instanceof FileImpl) {
+            declarations = ((FileImpl)file).getDeclarations(offset);
+        } else {
+            declarations = CsmSelect.getDeclarations(file, filter);
+        }
+        findContext(declarations, filter, offset);
     }
 
     private void findContext(Iterator<?> it, CsmFilter filter, int offset) {

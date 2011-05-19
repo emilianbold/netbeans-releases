@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.FileUtil;
 
@@ -61,7 +62,6 @@ import javax.enterprise.deploy.shared.ModuleType;
 
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
@@ -74,6 +74,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -81,7 +82,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
@@ -255,11 +256,19 @@ public class TargetServer {
         return acd;
     }
 
-    private File initialDistribute(Target target, ProgressUI ui) {
+    private File initialDistribute(Target target, ProgressUI ui) throws ServerException {
         InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, target);
         try {
             ui.setProgressObject(sfd);
-            return sfd.distribute();
+            File ret = sfd.distribute();
+
+            if (sfd.getDeploymentStatus().isFailed()) {
+                String msg = NbBundle.getMessage(TargetServer.class, "MSG_DeployFailed",
+                        sfd.getDeploymentStatus().getMessage());
+                throw new ServerException(msg);
+            }
+
+            return ret;
         } finally {
             ui.setProgressObject(null);
         }
@@ -614,7 +623,7 @@ public class TargetServer {
             ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
             try {
                 ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
-            } catch (TimedOutException e) {
+            } catch (TimeoutException e) {
                 // undeployment failed, try to continue anyway
             }
         }
@@ -629,7 +638,7 @@ public class TargetServer {
                 File dir = initialDistribute(targetz[0], ui);
                 if (lincremental instanceof IncrementalDeployment2) {
                     DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                            deployable, dir, null, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                            deployable, dir, null, dtarget.getModuleProvider().getRequiredLibraries(), null);
                     po = ((IncrementalDeployment2) lincremental).initialDeploy(targetz[0], deployment);
                 } else {
                     po = lincremental.initialDeploy(targetz[0], deployable, cfg, dir);
@@ -645,7 +654,7 @@ public class TargetServer {
                 DeploymentManager dm = instance.getDeploymentManager();
                 if (dm instanceof DeploymentManager2) {
                     DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                            dtarget.getModule(), getApplication(), plan, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                            dtarget.getModule(), getApplication(), plan, dtarget.getModuleProvider().getRequiredLibraries(), null);
                     po = ((DeploymentManager2)dm).distribute(targetz, deployment);
                 } else {
                     po = dm.distribute(targetz, getApplication(), plan);
@@ -665,7 +674,7 @@ public class TargetServer {
                     ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
                     if (lincremental instanceof IncrementalDeployment2) {
                         DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                                deployable, null, null, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), acd);
+                                deployable, null, null, dtarget.getModuleProvider().getRequiredLibraries(), acd);
                         po = ((IncrementalDeployment2) lincremental).incrementalDeploy(redeployTargetModules[0].delegate(), deployment);
                     } else {
                         po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
@@ -685,7 +694,7 @@ public class TargetServer {
                 DeploymentManager dm = instance.getDeploymentManager();
                 if (dm instanceof DeploymentManager2) {
                     DeploymentContext deployment = DeploymentContextAccessor.getDefault().createDeploymentContext(
-                            dtarget.getModule(), getApplication(), plan, ((DeploymentTargetImpl) dtarget).getModuleProvider().getRequiredLibraries(), null);
+                            dtarget.getModule(), getApplication(), plan, dtarget.getModuleProvider().getRequiredLibraries(), null);
                     po = ((DeploymentManager2)dm).redeploy(tmids, deployment);
                 } else {
                     po = dm.redeploy(tmids, getApplication(), plan);
@@ -726,7 +735,7 @@ public class TargetServer {
         ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
         try {
             ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             // undeployment failed, try to continue anyway
             LOGGER.log(Level.INFO, "Undeploy timeouted");
         }
@@ -935,7 +944,7 @@ public class TargetServer {
                 }
             }
             return completed;
-        } catch (TimedOutException e) {
+        } catch (TimeoutException e) {
             throw new ServerException(NbBundle.getMessage(TargetServer.class, "MSG_DeploymentTimeoutExceeded"));
         }
     }

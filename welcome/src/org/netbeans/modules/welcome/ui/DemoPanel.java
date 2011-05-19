@@ -125,7 +125,7 @@ class DemoPanel extends RSSFeedReaderPanel {
                 if( item.enclosureUrl != null ) {
                     panel.add( new ImageLabel( item.link, getImage( item.enclosureUrl ), item.description ),
                             new GridBagConstraints(0,row++,1,1,0.0,0.0,
-                            GridBagConstraints.CENTER,GridBagConstraints.NONE,
+                            GridBagConstraints.WEST,GridBagConstraints.NONE,
                             new Insets(0,0,5,5),0,0 ) );
                 } else {
                     JLabel label = new JLabel( BundleSupport.getLabel("NoScreenShot") ); //NOI18N

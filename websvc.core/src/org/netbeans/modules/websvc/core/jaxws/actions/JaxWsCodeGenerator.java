@@ -687,6 +687,7 @@ public class JaxWsCodeGenerator {
             CompilerTask task = new CompilerTask(serviceJavaName, 
                     serviceFName,
                     argumentDeclPart, 
+                    paramNames, 
                     argumentInitPart);
             targetSource.runUserActionTask(task, true);
             
@@ -789,13 +790,26 @@ public class JaxWsCodeGenerator {
         private final String serviceJavaName;
         private final String[] serviceFName;
         private final String[] argumentDeclPart;
+        private final String[] paramNames;
         private final String[] argumentInitPart;
 
-        public CompilerTask(String serviceJavaName, String[] serviceFName, String[] argumentDeclPart, String[] argumentInitPart) {
+        public CompilerTask(String serviceJavaName, String[] serviceFName, 
+                String[] argumentDeclPart, String[] paramNames, 
+                String[] argumentInitPart) 
+        {
             this.serviceJavaName = serviceJavaName;
             this.argumentInitPart = argumentInitPart;
             this.argumentDeclPart = argumentDeclPart;
+            this.paramNames = paramNames;
             this.serviceFName = serviceFName;
+        }
+        
+        public CompilerTask(String serviceJavaName, String[] serviceFName, 
+                String[] argumentDeclPart, 
+                String[] argumentInitPart) 
+        {
+            this(serviceJavaName, serviceFName, argumentDeclPart, new String[0], 
+                    argumentInitPart);
         }
 
         public void run(CompilationController controller) throws IOException {
@@ -819,6 +833,7 @@ public class JaxWsCodeGenerator {
                     printerName[0] = "out"; //NOI18N
                     argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
                     argumentDeclPart[0] = fixNamesInDeclarationPart(argumentDeclPart[0]);
+                    fixNamesMethodParams( paramNames );
                 }
                 // compute the service field name
                 if (generateWsRefInjection[0]) {
@@ -947,6 +962,18 @@ public class JaxWsCodeGenerator {
             return argumentInitializationPart.replaceFirst(" request ", //NOI18N
                     " request_1 ").replaceFirst(" response ", //NOI18N
                     " response_1 ").replaceFirst(" out ", " out_1 "); //NOI18N
+        }
+        
+        private static void fixNamesMethodParams( String[] params ){
+            for (int i=0; i<params.length ; i++) {
+                if ("request".equals(params[i])) { //NOI18N
+                    params[i] = "request_1"; //NOI18N
+                } else if ("response".equals(params[i])) { //NOI18N
+                    params[i] = "response_1"; //NOI18N
+                } else if ("out".equals(params[i])) { //NOI18N
+                    params[i] = "out_1"; //NOI18N
+                }
+            }
         }
 
         private static String fixNamesInDeclarationPart(String argumentDeclarationPart) {
@@ -1138,7 +1165,7 @@ public class JaxWsCodeGenerator {
         return MessageFormat.format(JSP_DISPATCH, args);
     }
     
-     public static String getWSInvocationCode(FileObject target, boolean inJsp,
+/*     public static String getWSInvocationCode(FileObject target, boolean inJsp,
             WsdlService service, WsdlPort port, WsdlOperation operation) {
 
         // First, collect name of method, port, and service:
@@ -1259,7 +1286,7 @@ public class JaxWsCodeGenerator {
             return javaInvocationBody;
 
         //}
-    }
+    }*/
 
 
     public static void insertDispatchMethod(final Document document, final int pos,

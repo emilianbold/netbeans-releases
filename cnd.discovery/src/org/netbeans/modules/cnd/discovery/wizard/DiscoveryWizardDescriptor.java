@@ -66,6 +66,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
     public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
     public static final String LOG_FILE = "DW:logFile"; // NOI18N
+    public static final String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
     public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
     public static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
     public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
@@ -75,6 +76,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
     public static final String SEARCH_PATHS = "DW:searchPaths"; // NOI18N
     public static final String ERRORS = "DW:errors"; // NOI18N
+    public static final String INCREMENTAL = "DW:incremental"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -157,6 +159,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setBuildLog(String logFile) {
         putProperty(LOG_FILE, logFile);
+    }
+    
+    @Override
+    public String getExecLog() {
+        return (String) getProperty(EXEC_LOG_FILE);
+    }
+
+    @Override
+    public void setExecLog(String logFile) {
+        putProperty(EXEC_LOG_FILE, logFile);
     }
     
     @Override
@@ -278,6 +290,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setSearchPaths(List<String> searchPaths) {
         putProperty(SEARCH_PATHS, searchPaths);
     }
+
+    @Override
+    public boolean isIncrementalMode() {
+        return Boolean.TRUE.equals(getProperty(INCREMENTAL));
+    }
+
+    @Override
+    public void setIncrementalMode(boolean incremental) {
+        putProperty(INCREMENTAL, incremental);
+    }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private WizardDescriptor wizard;
@@ -354,6 +376,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildLog(String logFile) {
             wizard.putProperty(LOG_FILE, logFile);
+        }
+        
+        @Override
+        public String getExecLog() {
+            return (String) wizard.getProperty(EXEC_LOG_FILE);
+        }
+
+        @Override
+        public void setExecLog(String logFile) {
+            wizard.putProperty(EXEC_LOG_FILE, logFile);
         }
         
         @Override
@@ -482,6 +514,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         public void setSearchPaths(List<String> searchPaths) {
             wizard.putProperty(SEARCH_PATHS, searchPaths);
         }
+
+        @Override
+        public boolean isIncrementalMode() {
+            return Boolean.TRUE.equals(wizard.getProperty(INCREMENTAL));
+        }
+
+        @Override
+        public void setIncrementalMode(boolean incremental) {
+            wizard.putProperty(INCREMENTAL, incremental);
+        }
     }
 
     private static class DiscoveryWizardClone implements DiscoveryDescriptor{
@@ -560,6 +602,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildLog(String logFile) {
             map.put(LOG_FILE, logFile);
+        }
+        
+        @Override
+        public String getExecLog() {
+            return (String) map.get(EXEC_LOG_FILE);
+        }
+
+        @Override
+        public void setExecLog(String logFile) {
+            map.put(EXEC_LOG_FILE, logFile);
         }
         
         @Override
@@ -687,6 +739,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setSearchPaths(List<String> searchPaths) {
             map.put(SEARCH_PATHS, searchPaths);
+        }
+
+        @Override
+        public boolean isIncrementalMode() {
+            return Boolean.TRUE.equals(map.get(INCREMENTAL));
+        }
+
+        @Override
+        public void setIncrementalMode(boolean incremental) {
+            map.put(INCREMENTAL, incremental);
         }
     }
 }

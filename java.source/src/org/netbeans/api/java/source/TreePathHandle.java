@@ -44,6 +44,8 @@
                                                                                                                                                                                                                                
 package org.netbeans.api.java.source;                                                                                                                                                                                          
                                                                                                                                                                                                                                
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
@@ -62,6 +64,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.Element;                                                                                                                                                                                       
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
 import javax.tools.JavaFileObject;
@@ -319,6 +324,20 @@ public final class TreePathHandle {
         }
         throw new IllegalStateException("Cannot create PositionRef for file " + file.getPath() + ". CloneableEditorSupport not found");
     }
+
+    /**Constructs a <code>TreePathHandle</code> that corresponds to the given <code>ElementHandle</code>.
+     *
+     * @param handle an <code>ElementHandle</code> for which the <code>TreePathHandle</code> should be constructed
+     * @param cpInfo a classpath which is supposed to contain the element described by given the <code>ElementHandle</code>
+     * @return a newly constructed <code>TreePathHandle</code>
+     * @since 0.79
+     */
+    public static @NonNull TreePathHandle from(@NonNull ElementHandle<?> handle, @NonNull ClasspathInfo cpInfo) {
+        Parameters.notNull("handle", handle);
+        Parameters.notNull("cpInfo", cpInfo);
+
+        return new TreePathHandle(new ElementDelegate(handle, null, null, cpInfo));
+    }
     
     @Override
     public String toString() {
@@ -517,6 +536,10 @@ public final class TreePathHandle {
             Element el = info.getTrees().getElement(tp);
             if (el == null) {
                 Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
+                Element staticallyImported = getStaticallyImportedElement(tp, info);
+                if (staticallyImported!=null) {
+                    return staticallyImported;
+                }
                 if (enclElIsCorrespondingEl) {
                     Element e = enclosingElement.resolve(info);
                     if (e == null) {
@@ -530,6 +553,54 @@ public final class TreePathHandle {
                 return el;
             }
         }
+        
+        /**
+         * special handling of static imports
+         * see #196685
+         * 
+         */
+        private Element getStaticallyImportedElement(TreePath treePath, CompilationInfo info) {
+            if (treePath.getLeaf().getKind() != Tree.Kind.MEMBER_SELECT) 
+                return null;
+                
+            MemberSelectTree memberSelectTree = (MemberSelectTree) treePath.getLeaf();
+            TreePath tp = treePath; 
+            while (tp!=null) {
+                Kind treeKind = tp.getLeaf().getKind();
+                if (treeKind == Tree.Kind.IMPORT) {
+                    if (!((ImportTree) tp.getLeaf()).isStatic()) {
+                        return null;
+                    }
+                    break;    
+                } else if (treeKind == Tree.Kind.MEMBER_SELECT || treeKind == Tree.Kind.IDENTIFIER) {
+                    tp = tp.getParentPath();
+                    continue;
+                }
+                return null;
+            }
+            
+            Name simpleName = memberSelectTree.getIdentifier();
+            if (simpleName == null) {
+                return null;
+            }
+            TreePath declPath  = new TreePath(new TreePath(treePath, memberSelectTree), memberSelectTree.getExpression());
+            TypeElement decl = (TypeElement) info.getTrees().getElement(declPath);
+            if (decl==null) {
+                return null;
+            }
+            
+            for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
+                if (!e.getModifiers().contains(Modifier.STATIC)) {
+                    continue;
+                }
+                if (!e.getSimpleName().equals(simpleName)) {
+                    continue;
+                }
+                return e;
+            }
+            return null;
+        }
+
 
         /**                                                                                                                                                                                                                        
          * Returns the {@link Tree.Kind} of this TreePathHandle,                                                                                                                                                                   

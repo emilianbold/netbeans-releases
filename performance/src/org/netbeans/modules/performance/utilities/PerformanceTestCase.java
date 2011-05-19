@@ -65,6 +65,7 @@ import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;

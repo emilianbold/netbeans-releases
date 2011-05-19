@@ -80,6 +80,7 @@ public class FileChangedManager extends SecurityManager {
     private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
     
     public FileChangedManager() {
+        LOG.fine("Initializing FileChangedManager");
     }
     
     public static synchronized FileChangedManager getInstance() {

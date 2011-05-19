@@ -51,6 +51,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.netbeans.modules.web.common.spi.WebPageMetadataProvider;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
+import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -64,8 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class JsfPageMetadataProvider implements WebPageMetadataProvider {
 
     static final String JSF_LIBRARIES_KEY = "jsfLibraries"; //NOI18N
-    static final String JSF_PAGE_MIMETYPE = "text/facelets+xhtml"; //NOI18N
-
+    
     @Override
     public Map<String, ? extends Object> getMetadataMap(Lookup lookup) {
         SyntaxAnalyzerResult result = lookup.lookup(SyntaxAnalyzerResult.class);
@@ -102,7 +102,7 @@ public class JsfPageMetadataProvider implements WebPageMetadataProvider {
 
         Map<String, Object> resultMap = new TreeMap<String, Object>();
         resultMap.put(JSF_LIBRARIES_KEY, jsfNamespaces);
-        resultMap.put(WebPageMetadata.MIMETYPE, JSF_PAGE_MIMETYPE);
+        resultMap.put(WebPageMetadata.MIMETYPE, JsfUtils.JSF_XHTML_FILE_MIMETYPE);
         
         return resultMap;
     }
