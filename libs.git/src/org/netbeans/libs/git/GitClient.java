@@ -120,8 +120,9 @@ public interface GitClient {
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
-     * Checks out the the state of a given revision.
-     * @param revision cannot be null
+     * Checks out a given revision.
+     * @param revision cannot be null. If the value equals to anything other than an existing branch name, the revision will be checked out
+     * and the working tree will be in the detached HEAD state.
      * @param failOnConflict if set to false, the command tries to merge local changes into the new branch
      * @throws GitException other error
      */

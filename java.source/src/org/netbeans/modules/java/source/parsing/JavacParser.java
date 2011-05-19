@@ -745,6 +745,7 @@ public class JavacParser extends Parser {
                 JavadocMemberEnter.preRegister(context);
                 JavadocEnv.preRegister(context, cpInfo);
             }
+            TIME_LOGGER.log(Level.FINE, "JavaC", context);
             return task;
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
