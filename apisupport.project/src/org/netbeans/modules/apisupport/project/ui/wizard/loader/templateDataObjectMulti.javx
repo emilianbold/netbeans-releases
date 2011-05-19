@@ -24,8 +24,7 @@ import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-public class ${PREFIX}DataObject extends MultiDataObject 
-implements Callable<CloneableEditorSupport.Pane> {
+public class ${PREFIX}DataObject extends MultiDataObject implements Callable<Pane> {
 
     public ${PREFIX}DataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

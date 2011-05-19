@@ -284,6 +284,14 @@ final class NewLoaderIterator extends BasicWizardIterator {
             template = CreatedModifiedFiles.getTemplate("templateDataObject.java");//NOI18N
         }
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
+        if (model.isUseMultiview()) {
+            String formName = model.getDefaultPackagePath(namePrefix + "VisualElement.form", false); // NOI18N
+            String javaName = model.getDefaultPackagePath(namePrefix + "VisualElement.java", false); // NOI18N
+            FileObject java = CreatedModifiedFiles.getTemplate("templateDataObjectMultiForm.java");
+            FileObject form = CreatedModifiedFiles.getTemplate("templateDataObjectMultiForm.form");
+            fileChanges.add(fileChanges.createFile(formName, form));
+            fileChanges.add(fileChanges.createFileWithSubstitutions(javaName, java, replaceTokens));
+        }
         
         if (!loaderlessObject) {
             // 3. node file
