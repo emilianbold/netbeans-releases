@@ -46,6 +46,7 @@ package org.netbeans.modules.form;
 
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -114,12 +115,15 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -158,7 +162,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     /** The embracing multiview TopComponent (holds the form designer and
      * java editor) - we remeber the last active TopComponent (not all clones) */
     private CloneableTopComponent multiviewTC;
-    
+
+    /**
+     * Listener for node delegate's icon changes. It is responsible
+     * for synchronization of node's and multiviewTC's icons.
+     */
+    private NodeListener nodeListener;
+
     // listeners
     private static PropertyChangeListener topcompsListener;
     
@@ -204,6 +214,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             multiviewTC = openCloneableTopComponent();
             multiviewTC.requestActive();
 
+            registerNodeListener();
+
             if (switchToForm) {
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
                 handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
@@ -212,6 +224,32 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             hideOpeningStatus();
         }
         Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 1: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
+    }
+
+    private void registerNodeListener() {
+        if (formDataObject.isValid()) {
+            Node node = formDataObject.getNodeDelegate();
+            multiviewTC.setIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
+            if (nodeListener == null) {
+                NodeListener listener = new NodeAdapter() {
+                    @Override
+                    public void propertyChange(final PropertyChangeEvent ev) {
+                        Mutex.EVENT.writeAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (Node.PROP_ICON.equals(ev.getPropertyName())) {
+                                    if (formDataObject.isValid() && (multiviewTC != null)) {
+                                        multiviewTC.setIcon(formDataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+                                    }
+                                }
+                            }
+                        });
+                    }
+                };
+                node.addNodeListener(org.openide.nodes.NodeOp.weakNodeListener(listener, node));
+                nodeListener = listener;
+            }
+        }
     }
 
     void showOpeningStatus(String fmtMessage) {
@@ -641,6 +679,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             formEditor.closeForm();
             formEditor = null;
         }
+        nodeListener = null;
         multiviewTC = null;
         guardedProvider = null;
         guardedEditor = null;
@@ -965,6 +1004,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         multiviewTC.setHtmlDisplayName(titles[1]);
         multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
         opened.add(this);
+        registerNodeListener();
         attachTopComponentsListener();
         try {
             addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
@@ -1156,7 +1196,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         @Override
         public java.awt.Image getIcon() {
-            return ImageUtilities.loadImage(iconURL);
+            if (dataObject.isValid()) {
+                return dataObject.getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+            } else {
+                return ImageUtilities.loadImage(iconURL);
+            }
         }
         
         @Override
@@ -1230,7 +1274,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         @Override
         public java.awt.Image getIcon() {
-            return ImageUtilities.loadImage(iconURL);
+            if (dataObject.isValid()) {
+                return dataObject.getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+            } else {
+                return ImageUtilities.loadImage(iconURL);
+            }
         }
         
         @Override
