@@ -114,10 +114,12 @@ class RevisionNode extends AbstractNode {
         return event;
     }
 
+    @Override
     public String getShortDescription() {
         return path;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
         // TODO: reuse action code from SummaryView
@@ -151,6 +153,7 @@ class RevisionNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();
@@ -160,6 +163,7 @@ class RevisionNode extends AbstractNode {
             }
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             try {
                 return new RevisionPropertyEditor(getValue());
@@ -175,6 +179,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_USERNAME, String.class, COLUMN_NAME_USERNAME, COLUMN_NAME_USERNAME);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getAuthor();
@@ -206,6 +211,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_MESSAGE, String.class, COLUMN_NAME_MESSAGE, COLUMN_NAME_MESSAGE);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getMessage();
@@ -222,6 +228,7 @@ class RevisionNode extends AbstractNode {
                     event.getLogInfoHeader().getLog().getRevision().getNumber()));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             SummaryView.rollback(event);
         }
@@ -229,6 +236,7 @@ class RevisionNode extends AbstractNode {
 
     private static class RevertModificationsAction extends NodeAction {
 
+        @Override
         protected void performAction(Node[] activatedNodes) {
             Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
             Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
@@ -244,14 +252,17 @@ class RevisionNode extends AbstractNode {
             SummaryView.revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             return true;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(RevertModificationsAction.class);
         }
@@ -269,6 +280,7 @@ class RevisionNode extends AbstractNode {
             setValue(value);
         }
 
+        @Override
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
             Object val = getValue();
@@ -280,6 +292,7 @@ class RevisionNode extends AbstractNode {
             renderer.paint(gfx);
         }
 
+        @Override
         public boolean isPaintable() {
             return true;
         }
