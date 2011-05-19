@@ -1921,9 +1921,9 @@ init_declarator[int kind]
 
 initializer
     : 
-        (cast_array_initializer_head) => cast_array_initializer
+        ((LITERAL___extension__)? cast_array_initializer_head) => (LITERAL___extension__)? cast_array_initializer
     |   
-       array_initializer
+        array_initializer
     | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
@@ -1945,7 +1945,7 @@ initializer
 
 cast_array_initializer:
     // it's better to have LPAREN type RPAREN, but we use simple balanceParensInExpression
-    (AMPERSAND)? balanceParensInExpression array_initializer
+    (AMPERSAND)? (balanceParensInExpression)+ array_initializer
     ;
 
 array_initializer:
@@ -1965,7 +1965,7 @@ array_initializer:
 // only for predicates
 cast_array_initializer_head
 :
-    (AMPERSAND)? balanceParensInExpression LCURLY
+    (AMPERSAND)? (balanceParensInExpression)+ LCURLY
     ;
 
 // so far this one is used in predicates only
@@ -3185,7 +3185,7 @@ jump_statement
 			//		LT(1).getLine());}
 		|	expression 
 */
-                (   (cast_array_initializer_head) => initializer
+                (   ((LITERAL___extension__)? cast_array_initializer_head) => initializer
                 |   expression
                 )
 	)?	
