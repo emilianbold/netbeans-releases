@@ -159,14 +159,14 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
      * to be displayed by the view.
      * Value of the property is only examined at time of view.setParent().
      */
-    private static final String START_POSITION_PROPERTY = "document-view-start-position";
+    static final String START_POSITION_PROPERTY = "document-view-start-position";
 
     /**
      * Component's client property that contains swing position - end of document's area
      * to be displayed by the view.
      * Value of the property is only examined at time of view.setParent().
      */
-    private static final String END_POSITION_PROPERTY = "document-view-end-position";
+    static final String END_POSITION_PROPERTY = "document-view-end-position";
 
     /**
      * Component's client property that defines whether accurate width and height should be computed
@@ -220,6 +220,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return (DocumentView) view;
     }
 
+    static {
+        EditorViewFactory.registerFactory(new HighlightsViewFactory.HighlightsFactory());
+    }
+
     private PriorityMutex pMutex;
 
     private JTextComponent textComponent;
@@ -243,10 +247,23 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
      */
     private boolean childrenValid;
 
+    /**
+     * Non-null position in case the document view does not cover the whole document
+     * but starts at certain position instead.
+     * It can be influenced by textComponent.putClientProperty(START_POSITION_PROPERTY).
+     * The position may be corrected (moved back) explicitly when inserting upon it.
+     */
     private Position startPos;
 
+    /**
+     * Non-null end bound in case the document view does not cover the whole document
+     * but ends at certain position instead.
+     * It can be influenced by textComponent.putClientProperty(END_POSITION_PROPERTY).
+     * The view factories can however refuse to end the last created view right at this boundary
+     * so the real ending offset of the currently present views (docView.getEndOffset()) may be higher.
+     */
     private Position endPos;
-
+    
     private float width;
 
     private float height;
@@ -359,23 +376,28 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
     }
     
+    public void runReadLockTransaction(final Runnable r) {
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                runTransaction(r);
+            }
+        });
+    }
+    
     /**
      * Rebuild views if there are any pending highlight factory changes reported.
-     * The document must be read-locked prior calling this method.
+     * Method ensures proper locking of document and view hierarchy.
      */
     public void syncViewsRebuild() {
-        checkDocumentLockedIfLogging();
-        PriorityMutex mutex = getMutex();
-        if (mutex != null) {
-            mutex.lock();
-            try {
+        runReadLockTransaction(new Runnable() {
+            @Override
+            public void run() {
                 if (viewUpdates != null) {
-                    viewUpdates.syncViewsRebuild();
+                    viewUpdates.syncedViewsRebuild();
                 }
-            } finally {
-                mutex.unlock();
             }
-        }
+        });
     }
     
     @Override
@@ -431,16 +453,44 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public int getStartOffset() {
-        return (startPos != null) ? startPos.getOffset() : super.getStartOffset();
+        return (startPos == null) ? super.getStartOffset() : startPos.getOffset();
     }
     
     @Override
     public int getEndOffset() {
-        return (endPos != null) ? endPos.getOffset() : super.getEndOffset();
+        if (endPos == null) {
+            return super.getEndOffset();
+        } else { // Custom ending position
+            // Get end offset of the last view since that may differ from endPos
+            int viewCount = getViewCount();
+            return (viewCount > 0)
+                    ? getView(viewCount - 1).getEndOffset()
+                    : getStartOffset();
+        }
+    }
+
+    boolean hasExtraStartBound() {
+        return (startPos != null);
+    }
+    
+    Position getStartPosition() {
+        return startPos;
+    }
+    
+    void setStartPosition(Position startPosition) {
+        this.startPos = startPosition;
+    }
+
+    boolean hasExtraEndBound() {
+        return (endPos != null);
+    }
+    
+    public int getEndBoundOffset() {
+        return (endPos != null) ? endPos.getOffset() : getDocument().getLength() + 1;
     }
 
     boolean hasExtraBounds() {
-        return (endPos != null); // btw in such case also (startPos != null)
+        return hasExtraStartBound() || hasExtraEndBound();
     }
 
     @Override
@@ -508,21 +558,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     textLayoutCache = new TextLayoutCache();
                     textComponent = tc;
                     viewHierarchy = ViewHierarchy.get(textComponent);
-                    startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
-                    endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
-                    // If one position is non-null then make the other one non-null too
-                    if (startPos != null) { 
-                        if (endPos == null) {
-                            endPos = getDocument().getEndPosition();
-                            assert (endPos != null) : "Null position from doc.getEndPosition()"; // NOI18N
-                        }
-                    } else {
-                        if (endPos != null) {
-                            startPos = getDocument().getStartPosition();
-                            assert (startPos != null) : "Null position from doc.getStartPosition()"; // NOI18N
-                        }
-                    }
-
+                    updateStartEndPos();
                     accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
                     viewUpdates = new ViewUpdates(this);
                     textComponent.addPropertyChangeListener(this);
@@ -537,29 +573,35 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         } else { // Setting null parent
             // Set the textComponent to null under mutex
             // so that children suddenly don't see a null textComponent
-            getDocument().render(new Runnable() {
+            runReadLockTransaction(new Runnable() {
                 @Override
                 public void run() {
-                    PriorityMutex mutex = getMutex();
-                    if (mutex != null) {
-                        mutex.lock();
-                        try {
-                            if (textComponent != null) {
-                                if (listeningOnViewport != null) {
-                                    listeningOnViewport.removeChangeListener(DocumentView.this);
-                                }
-                                textComponent.removePropertyChangeListener(DocumentView.this);
-                                textLayoutCache = null;
-                                viewUpdates = null;
-                                textComponent = null; // View services stop working and propagating to children
-                            }
-                            DocumentView.super.setParent(null);
-                        } finally {
-                            mutex.unlock();
+                    if (textComponent != null) {
+                        if (listeningOnViewport != null) {
+                            listeningOnViewport.removeChangeListener(DocumentView.this);
                         }
+                        textComponent.removePropertyChangeListener(DocumentView.this);
+                        textLayoutCache = null;
+                        viewUpdates = null;
+                        textComponent = null; // View services stop working and propagating to children
                     }
+                    DocumentView.super.setParent(null);
                 }
             });
+        }
+    }
+    
+    void updateStartEndPos() {
+        startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
+        endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
+        int startOffset = 0;
+        if (startPos != null && (startOffset = startPos.getOffset()) == 0) {
+            startPos = null;
+        }
+        if (endPos != null && (endPos.getOffset() == getDocument().getEndPosition().getOffset() ||
+                endPos.getOffset() < startOffset)) // For invalid endPos value make endPos=null
+        {
+            endPos = null;
         }
     }
 
@@ -584,7 +626,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (!childrenValid && textComponent != null) {
             updateVisibleDimension();
             checkSettingsInfo();
-            checkFontRenderContext();
+            if (checkFontRenderContext()) {
+                updateCharMetrics();
+            }
             ((EditorTabExpander) tabExpander).updateTabSize();
             if (isBuildable()) {
                 LOG.fine("viewUpdates.reinitViews()\n");
@@ -592,17 +636,17 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 // that calls getPreferredSpan() would attempt to reinit the views again
                 // (failing in HighlightsViewFactory on usageCount).
                 childrenValid = true;
-                viewUpdates.reinitViews();
+                viewUpdates.reinitAllViews();
                 // Re-check since addFont(font) caused by views creation might make childrenValid = false.
                 if (!childrenValid) {
                     childrenValid = true;
-                    viewUpdates.reinitViews();
+                    viewUpdates.reinitAllViews();
                 }
             }
         }
     }
     
-    private void checkFontRenderContext() { // check various things related to rendering
+    private boolean checkFontRenderContext() { // check various things related to rendering
         if (fontRenderContext == null) {
             Graphics graphics = textComponent.getGraphics();
             if (graphics != null) {
@@ -613,10 +657,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 }
                 fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 if (fontRenderContext != null) {
-                    updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
+                    return true; // Updated
                 }
             }
         }
+        return false;
     }
     
     @Override
@@ -627,22 +672,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
     
     public void releaseChildrenLocked(final boolean updateFonts) { // It acquires document readlock and VH mutex first
-        getDocument().render(new Runnable() {
+        runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                PriorityMutex mutex = getMutex();
-                if (mutex != null) {
-                    mutex.lock();
-                    // checkDocumentLocked() - unnecessary - doc.render() called
-                    try {
-                        if (updateFonts) {
-                            updateDefaultFontAndColors(null); // Includes releaseChildren()
-                        } else {
-                            releaseChildren();
-                        }
-                    } finally {
-                        mutex.unlock();
-                    }
+                if (updateFonts) {
+                    updateDefaultFontAndColors(null); // Includes releaseChildren()
+                } else {
+                    releaseChildren();
                 }
             }
         });
@@ -689,7 +725,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     /**
      * Whether the view should compute accurate spans (no lazy children views computation).
-     * This is handy e.g. for fold preview computation.
+     * This is handy e.g. for fold preview computation since the fold preview
+     * pane must be properly measured.
      *
      * @return whether accurate span measurements should be performed.
      */
@@ -732,21 +769,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     @Override
     public void stateChanged(ChangeEvent e) {
         // First lock document and then monitor
-        Document doc = getDocument();
-        doc.render(new Runnable() {
+        runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                PriorityMutex mutex = getMutex();
-                if (mutex != null) {
-                    mutex.lock();
-                    // checkDocumentLocked() - unnecessary - doc.render() called
-                    try {
-                        if (textComponent != null) {
-                            updateVisibleDimension();
-                        }
-                    } finally {
-                        mutex.unlock();
-                    }
+                if (textComponent != null) {
+                    updateVisibleDimension();
                 }
             }
         });
@@ -766,20 +793,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     SwingUtilities.invokeLater(new Runnable() { // Must run in AWT to apply fonts/colors to comp.
                         @Override
                         public void run() {
-                            getDocument().render(new Runnable() {
+                            runReadLockTransaction(new Runnable() {
                                 @Override
                                 public void run() {
-                                    PriorityMutex mutex = getMutex();
-                                    if (mutex != null) {
-                                        mutex.lock();
-                                        // checkDocumentLocked() - unnecessary - doc.render() called
-                                        try {
-                                            if (textComponent != null) {
-                                                updateDefaultFontAndColors(result);
-                                            }
-                                        } finally {
-                                            mutex.unlock();
-                                        }
+                                    if (textComponent != null) {
+                                        updateDefaultFontAndColors(result);
                                     }
                                 }
                             });
@@ -888,13 +906,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (!customBackground && textComponent != null) {
             textComponent.setBackground(defaultBackground);
         }
-
         if (textComponent != null) {
             updateCharMetrics(); // Update metrics with just updated font
-
             releaseChildren();
         }
-            
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
@@ -903,6 +918,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     private void updateCharMetrics() { // Update default line height and other params
+        checkFontRenderContext(); // Possibly get FRC created; ignore ret value since now actually updating the metrics
         FontRenderContext frc = getFontRenderContext();
         assert (defaultFont != null) : "Null defaultFont"; // NOI18N
         if (frc != null) {
@@ -1503,6 +1519,14 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 updateLineWrapType(); // can run without mutex
                 releaseChildren = true;
+            } else if (START_POSITION_PROPERTY.equals(propName) || END_POSITION_PROPERTY.equals(propName)) {
+                runReadLockTransaction(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateStartEndPos();
+                        releaseChildren(); // Rebuild view hierarchy
+                    }
+                });
             }
         }
         if (releaseChildren) {
@@ -1542,6 +1566,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             if (lastView.getEndOffset() != endOffset) {
                 return "lastView.endOffset=" + lastView.getEndOffset() + " != endOffset=" + endOffset; // NOI18N
             }
+            if (endOffset < getEndBoundOffset()) {
+                return "endOffset=" + endOffset + " < endBoundOffset=" + getEndBoundOffset(); // NOI18N
+            }
         }
         return null;
     }
@@ -1549,19 +1576,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     @Override
     public String findTreeIntegrityError() {
         final String[] ret = new String[1];
-        getDocument().render(new Runnable() {
+        runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                PriorityMutex mutex = getMutex();
-                if (mutex != null) {
-                    mutex.lock();
-                    // checkDocumentLocked() - unnecessary - doc.render() called
-                    try {
-                        ret[0] = DocumentView.super.findTreeIntegrityError();
-                    } finally {
-                        mutex.unlock();
-                    }
-                }
+                ret[0] = DocumentView.super.findTreeIntegrityError();
             }
         });
         return ret[0];
@@ -1572,14 +1590,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification); // NOI18N
         sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit); // NOI18N
-        sb.append("; extraBounds:<");
-        if (hasExtraBounds()) {
-            assert (endPos != null) : "endPos is null"; // NOI18N
-            sb.append(startPos.getOffset());
-            sb.append(",").append(endPos.getOffset()); // NOI18N
-        } else {
-            sb.append("NONE"); // NOI18N
-        }
+        sb.append("; Bounds:<");
+        sb.append(hasExtraStartBound() ? startPos.getOffset() : "DOC-START");
+        sb.append(","); // NOI18N
+        sb.append(hasExtraEndBound() ? endPos.getOffset() : "DOC-END");
         sb.append('>');
         
         if (LOG_SOURCE_TEXT) {
@@ -1591,19 +1605,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     protected StringBuilder appendViewInfo(final StringBuilder sb, final int indent, final int importantChildIndex) {
-        getDocument().render(new Runnable() {
+        runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                PriorityMutex mutex = getMutex();
-                if (mutex != null) {
-                    mutex.lock();
-                    // checkDocumentLocked() - unnecessary - doc.render() called
-                    try {
-                        DocumentView.super.appendViewInfo(sb, indent, importantChildIndex);
-                    } finally {
-                        mutex.unlock();
-                    }
-                }
+                DocumentView.super.appendViewInfo(sb, indent, importantChildIndex);
             }
         });
         return sb;

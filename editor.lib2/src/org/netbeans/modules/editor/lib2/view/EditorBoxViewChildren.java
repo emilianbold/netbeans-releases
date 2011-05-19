@@ -869,7 +869,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
             double startVisualOffset, double endVisualOffset)
     {
         int index = Math.max(getViewIndexFirst(startVisualOffset), 0); // Cover no-children case
-        int endIndex = getViewIndexFirst(endVisualOffset) + 1;
+        int endIndex = Math.min(getViewIndexFirst(endVisualOffset) + 1, size());
         paintChildren(boxView, g, alloc, clipBounds, index, endIndex);
     }
     

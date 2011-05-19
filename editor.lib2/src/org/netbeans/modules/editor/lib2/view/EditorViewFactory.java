@@ -195,42 +195,6 @@ public abstract class EditorViewFactory {
      */
     public abstract void finish();
 
-    /**
-     * Inform the view factory that the document insert occurred.
-     *
-     * @param evt non-null document event describing the modification.
-     * @return change in case there is a potentially new view(s) to be created
-     *  or destroyed as an effect of the modification. If there is no change
-     *  (including the case when existing views' boundaries are updated according
-     *   to positions movement) then <code>null</code> should be returned.
-     */
-    public abstract Change insertUpdate(DocumentEvent evt);
-
-    /**
-     * Inform the view factory that the document remove occurred.
-     *
-     * @param evt non-null document event describing the modification.
-     * @return change in case there is a potentially new view(s) to be created
-     *  or destroyed as an effect of the modification. If there is no change
-     *  (including the case when existing views' boundaries are updated according
-     *   to positions movement) then <code>null</code> should be returned.
-     *  The change's end offset should be in the new coordinate space (reflecting the removed length).
-     */
-    public abstract Change removeUpdate(DocumentEvent evt);
-
-    /**
-     * Inform the view factory that the document change occurred.
-     *
-     * @param evt non-null document event describing the modification.
-     * @return change in case there is a potentially new view(s) to be created
-     *  or destroyed as an effect of the modification. If there is no change
-     *  (including the case when existing views' boundaries are updated according
-     *   to positions movement) then <code>null</code> should be returned.
-     */
-    public Change changedUpdate(DocumentEvent evt) {
-        return null; // Suppose there are no updates from changedUpdate() by default
-    }
-
     public void addEditorViewFactoryListener(EditorViewFactoryListener listener) {
         listenerList.add(listener);
     }
@@ -250,8 +214,12 @@ public abstract class EditorViewFactory {
         }
     }
 
-    public Change createChange(int startOffset, int endOffset) {
+    public static Change createChange(int startOffset, int endOffset) {
         return new Change(startOffset, endOffset);
+    }
+
+    public static List<Change> createSingleChange(int startOffset, int endOffset) {
+        return Collections.singletonList(createChange(startOffset, endOffset));
     }
 
     /**
@@ -265,7 +233,7 @@ public abstract class EditorViewFactory {
 
         private int endOffset;
 
-        public Change(int startOffset, int endOffset) {
+        Change(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
@@ -276,6 +244,11 @@ public abstract class EditorViewFactory {
 
         public int getEndOffset() {
             return endOffset;
+        }
+
+        @Override
+        public String toString() {
+            return "<" + getStartOffset() + "," + getEndOffset() + ">";
         }
 
     }
