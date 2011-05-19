@@ -223,6 +223,7 @@
                 <friend>com.sun.tools.sendto</friend>
                 <friend>com.sun.tools.swdev.analytics.server.windistsetup</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server.common</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
