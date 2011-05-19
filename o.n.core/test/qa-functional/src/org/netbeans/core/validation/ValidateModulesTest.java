@@ -82,15 +82,15 @@ public class ValidateModulesTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
-                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
-                clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
+                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
+                clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableModules(".*").
-                honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
-                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+                honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
+                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
         return suite;
     }
 

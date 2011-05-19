@@ -73,14 +73,14 @@ public class IntegrationTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.emptyConfiguration().addTest(
                 IntegrationTest.class
             ).honorAutoloadEager(true).clusters(
                 ".*"
             ).failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
             .gui(false)
-        );
+        .suite();
     }
 
     @Override

@@ -71,7 +71,7 @@ public class OptionsTest extends JellyTestCase {
 
         conf.addTest(
                 "testOptionsCategories");
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     @Override
