@@ -85,6 +85,9 @@ public class NamedModelAnalyzer implements ClassAnalyzer {
         TypeMirror superclass = element.getSuperclass();
         Element superElement = model.getCompilationController().getTypes().
             asElement( superclass );
+        if ( cancel.get() ){
+            return;
+        }
         String name = model.getName(superElement);
         if ( name == null ){
             return;

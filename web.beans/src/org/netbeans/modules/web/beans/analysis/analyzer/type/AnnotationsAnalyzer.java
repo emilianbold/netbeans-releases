@@ -75,19 +75,6 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             AtomicBoolean cancel )
     {
         checkDecoratorInterceptor( element , compInfo , descriptions , cancel);
-        checkSpecializes( element , compInfo, descriptions , cancel );
-    }
-
-    private void checkSpecializes( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions,
-            AtomicBoolean cancel )
-    {
-        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
-                compInfo))
-        {
-            return;
-        }
-        // TODO
     }
 
     private void checkDecoratorInterceptor( TypeElement element,
