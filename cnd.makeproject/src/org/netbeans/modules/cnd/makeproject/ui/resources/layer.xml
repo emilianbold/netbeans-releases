@@ -354,7 +354,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="CreateProjectAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.CreateProjectAction"/>
-                        <attr name="position" intvalue="120"/>
+                        <attr name="position" intvalue="130"/>
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="Separator0.instance">
