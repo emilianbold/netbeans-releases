@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.Keymap;
 
 /**
@@ -762,9 +763,16 @@ public class Term extends JComponent implements Accessible {
     }
     
     private Keymap keymap;
+    private Set<Action> allowedActions;
             
-    public void setKeymap(Keymap keymap) {
+    /**
+     * Set keymap and allowed actions
+     * @param keymap - use this to check if a keystroke is used outside the terminal
+     * @param allowedActions - if not null we only allow specified actions in the terminal
+     */
+    public void setKeymap(Keymap keymap, Set<Action> allowedActions) {
         this.keymap = keymap;
+        this.allowedActions = allowedActions;
     }
 
     /**
@@ -837,8 +845,14 @@ public class Term extends JComponent implements Accessible {
 	    System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
 	}
         
-        if (keymap != null && keymap.getAction(ks) != null) {
-            return false;
+        // Check the keymap
+        if (keymap != null) {
+            Action action = keymap.getAction(ks);
+            if (action != null) {
+                if (allowedActions == null || allowedActions.contains(action)) {
+                    return false;
+                }
+            }
         }
 
         if (keystroke_set == null || !keystroke_set.contains(ks)) {

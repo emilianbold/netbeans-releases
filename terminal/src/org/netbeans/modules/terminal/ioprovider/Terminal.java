@@ -108,6 +108,11 @@ import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -448,9 +453,22 @@ public final class Terminal extends JComponent {
             term.setHorizontallyScrollable(!termOptions.getLineWrap());
 	
 	if (!termOptions.getIgnoreKeymap()) {
-	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class));
+	    Set<Action> actions = new HashSet<Action>();
+	    FileObject dir = FileUtil.getConfigFile("Terminal/Shortcuts"); //NOI18N
+	    for (FileObject def : dir.getChildren()) {
+		try {
+		    DataObject dobj = DataObject.find(def);
+		    InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
+		    if (ic != null) {
+			actions.add((Action)ic.instanceCreate());
+		    }
+		} catch (Exception e) {
+		    Exceptions.printStackTrace(e);
+		}
+	    }
+	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class), actions);
 	} else {
-	    term.setKeymap(null);
+	    term.setKeymap(null, null);
 	}
 
         // If we change the font from smaller to bigger, the size
