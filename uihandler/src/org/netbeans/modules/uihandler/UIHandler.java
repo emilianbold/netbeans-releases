@@ -114,7 +114,7 @@ implements ActionListener, Runnable, Callable<JButton> {
                 String slownessType = params.length > 2 ? params[2].toString() : null;
                 assert nps != null: "nps param should be not null";
                 assert nps.length > 0 : "nps param should not be empty";
-                reporter.notifySlowness(nps, time, slownessType);
+                reporter.notifySlowness(nps, time, record.getMillis(), slownessType);
                 return;
             }
         }
