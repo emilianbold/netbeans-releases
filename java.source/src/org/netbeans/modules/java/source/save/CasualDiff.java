@@ -2682,13 +2682,7 @@ public class CasualDiff {
                 case INSERT: {
                     int pos = estimator.getInsertPos(i);
                     if (pos > localPointer) {
-                        tokenSequence.move(pos);
-                        moveToDifferentThan(tokenSequence, Direction.BACKWARD, EnumSet.of(JavaTokenId.WHITESPACE));
-                        tokenSequence.moveNext();
-                        pos = tokenSequence.offset();
-                        if (pos > localPointer) {
-                            copyTo(localPointer, localPointer = pos);
-                        }
+                        copyTo(localPointer, localPointer = pos);
                     }
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;

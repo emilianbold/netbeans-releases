@@ -120,6 +120,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public EditorView createView(int startOffset, int limitOffset) {
+        assert (startOffset < limitOffset) : "startOffset=" + startOffset + " >= limitOffset=" + limitOffset; // NOI18N
         updateHighlight(startOffset);
         updateLineEndOffset(startOffset);
         if (startOffset == lineEndOffset - 1) {
@@ -221,21 +222,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         highlightEndOffset = Integer.MAX_VALUE;
         highlightAttributes = null;
         usageCount--;
-    }
-
-    @Override
-    public Change insertUpdate(DocumentEvent evt) {
-        return null;
-    }
-
-    @Override
-    public Change removeUpdate(DocumentEvent evt) {
-        return null;
-    }
-
-    @Override
-    public Change changedUpdate(DocumentEvent evt) {
-        return null;
     }
 
     @Override

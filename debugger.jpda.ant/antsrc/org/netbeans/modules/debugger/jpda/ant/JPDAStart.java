@@ -127,6 +127,7 @@ public class JPDAStart extends Task implements Runnable {
     private static final Pattern[] BOOT_CLASSPATH_WARNING_FILTER = new Pattern[] {
         Pattern.compile(".*jre.lib.sunrsasign\\.jar$"),
         Pattern.compile(".*jre.classes$"),
+        Pattern.compile(".*jdk\\.boot\\.jar$"),
     };
 
     /** Name of the property to which the JPDA address will be set.

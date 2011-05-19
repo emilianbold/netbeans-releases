@@ -119,9 +119,9 @@ public class PriorityMutex {
      */
     public synchronized void unlock() {
         if (Thread.currentThread() != lockThread) {
-            throw new IllegalStateException("Not locker"); // NOI18N
+            throw new IllegalStateException("Not locker. lockThread=" + lockThread); // NOI18N
         }
-
+        
         if (--lockDepth == 0) {
             lockThread = null;
 
@@ -173,6 +173,11 @@ public class PriorityMutex {
      */
     protected boolean isPriorityThread() {
         return javax.swing.SwingUtilities.isEventDispatchThread();
+    }
+
+    @Override
+    public String toString() {
+        return "lockThread=" + lockThread + ", lockDepth=" + lockDepth; // NOI18N
     }
 
 }

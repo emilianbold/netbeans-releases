@@ -87,8 +87,8 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                 AnnotationUtil.INTERCEPTOR, compInfo);
         if ( isDecorator && isInterceptor ){
             ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
-                AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));
+                createError( element, compInfo, NbBundle.getMessage(
+                        AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));
             descriptions.add( description );
         }
         if ( isDecorator || isInterceptor ){

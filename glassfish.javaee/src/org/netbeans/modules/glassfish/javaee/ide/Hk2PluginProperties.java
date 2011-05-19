@@ -175,9 +175,18 @@ public class Hk2PluginProperties {
         Set<URI> urlSet = new HashSet<URI>();
 
         try {
+            // some builds of v3 had this.
+            //
             File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 
                     "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
             Logger.getLogger("glassfish-javaee").log(Level.FINER, "JavaEE jar is {0}", (javaEEJar != null ? javaEEJar.getAbsolutePath() : "null"));
+            
+            // the final build of v3, 3.0.1 and 3.1 have javaee.jar in the lib directory for
+            // backward compatability
+            if (null == javaEEJar || !javaEEJar.exists()) {
+                javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
+                    "javaee" + ServerUtilities.GFV3_VERSION_MATCHER, ServerUtilities.GFV3_LIB_DIR_NAME);
+            }
             if(javaEEJar != null && javaEEJar.exists()) {
                 jars.add("web/jsf-connector-10.0"); // NOI18N -- watchout for builds older than b25
                 JarFile jarFile = new JarFile(javaEEJar);
@@ -382,7 +391,8 @@ public class Hk2PluginProperties {
      * @throws java.net.MalformedURLException
      */
     public static URL fileToUrl(File file) throws MalformedURLException {
-        URL url = file.toURI().toURL();
+        File nfile = FileUtil.normalizeFile(file);
+        URL url = nfile.toURI().toURL();
         if (FileUtil.isArchiveFile(url)) {
             url = FileUtil.getArchiveRoot(url);
         }

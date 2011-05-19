@@ -407,21 +407,24 @@ public abstract class EditorView extends View {
         return getDumpName() + "@" + ViewUtils.toStringId(this) + "#" + getViewCount(); // NOI18N
     }
 
-    public void checkIntegrity() {
+    public void checkIntegrityIfLoggable() {
         if (LOG.isLoggable(Level.FINE)) {
-            String err = findTreeIntegrityError(); // Check integrity of the document view
-            if (err != null) {
-                String msg = "View hierarchy INTEGRITY ERROR! - " + err;
-                LOG.fine(msg + "\nErrorneous view hierarchy:\n");
-                StringBuilder sb = new StringBuilder(200);
-                appendViewInfo(sb, 0, -2); // -2 means detailed info
-                LOG.fine(sb.toString());
-                // For finest level stop throw real ISE otherwise just log the stack
-                if (LOG.isLoggable(Level.FINEST)) {
-                    throw new IllegalStateException(msg);
-                } else {
-                    LOG.log(Level.INFO, msg, new Exception());
-                }
+            checkIntegrity(); // NOI18N
+        }
+    }
+
+    public void checkIntegrity() {
+        String err = findTreeIntegrityError(); // Check integrity of the document view
+        if (err != null) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("View hierarchy INTEGRITY ERROR! - ").append(err);
+            sb.append("\nErrorneous view hierarchy:\n");
+            appendViewInfo(sb, 0, -2); // -2 means detailed info
+            // For finest level stop throw real ISE otherwise just log the stack
+            if (LOG.isLoggable(Level.FINEST)) {
+                throw new IllegalStateException(sb.toString());
+            } else {
+                LOG.log(Level.INFO, sb.toString(), new Exception());
             }
         }
     }

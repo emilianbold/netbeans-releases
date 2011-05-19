@@ -309,6 +309,9 @@ public class HighlightsViewUtils {
                 ? hViewFirst.getLength()
                 : pView.getEditorView(groupEndIndex - 1).getEndOffset() - startOffset;
         String text = docText.subSequence(startOffset, startOffset + textLength).toString();        
+        if (docView.isShowNonprintingCharacters()) {
+            text = text.replace(' ', DocumentView.PRINTING_SPACE);
+        }
         TextLayout textLayout = docView.createTextLayout(text, fontFirst);
 
         if (groupLength == 1) { // Construct TextLayout
@@ -408,11 +411,10 @@ public class HighlightsViewUtils {
         TextHitInfo endHit;
         if (bias == Position.Bias.Forward) {
             startHit = TextHitInfo.leading(charIndex);
-            endHit = TextHitInfo.trailing(charIndex);
         } else { // backward bias
             startHit = TextHitInfo.trailing(charIndex - 1);
-            endHit = TextHitInfo.trailing(charIndex);
         }
+        endHit = (charIndex < maxIndex) ? TextHitInfo.trailing(charIndex) : startHit;
         if (textLayoutBounds == null) {
             textLayoutBounds = ViewUtils.shapeAsRect(alloc);
         }
