@@ -57,12 +57,12 @@ public class ModelUnitTest extends CommonAnnotationTestCase {
     public void testHashCodesForNewIndeticModelUnits() throws MalformedURLException, IOException {
         ModelUnit mu1 = createNewModelUnitForTestProject();
         ModelUnit mu2 = createNewModelUnitForTestProject();
-        assert mu1.hashCode() == mu2.hashCode() : "hashCodes of identic classPaths doesn't equal for new instances";
+        assertEquals("hashCodes of identic classPaths doesn't equal for new instances", mu1.hashCode(), mu2.hashCode());
     }
     
     public void testEquivalentNewModelUnits() throws MalformedURLException, IOException {
         ModelUnit mu1 = createNewModelUnitForTestProject();
         ModelUnit mu2 = createNewModelUnitForTestProject();
-        assert mu1.equals(mu2) : "two new identic ModelUnits doesn't equal";
+        assertEquals("two new identic ModelUnits doesn't equal", mu1, mu2);
     }
 }

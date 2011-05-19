@@ -59,18 +59,18 @@ public class SpringModelFactoryTest extends CommonAnnotationTestCase {
     public void testSpringModelFactoryCaching() throws MalformedURLException, IOException, NoSuchFieldException, ClassNotFoundException {
         ModelUnit originalUnit = createNewModelUnitForTestProject();
         MetadataModel<SpringModel> originalMetaModel = SpringModelFactory.getMetaModel(originalUnit);
-        assert SpringModelFactory.MODELS.size() == 1 : "Caching mechanism in SpringModelFactory failed";
+        assertEquals("Caching mechanism in SpringModelFactory failed", 1, SpringModelFactory.MODELS.size());
         
         // second getter should return already existing MetadataModel from cache
         ModelUnit secondUnit = createNewModelUnitForTestProject();
         MetadataModel<SpringModel> secondMetaModel = SpringModelFactory.getMetaModel(secondUnit);
-        assert SpringModelFactory.MODELS.size() == 1 : "Caching mechanism in SpringModelFactory failed";
+        assertEquals("Caching mechanism in SpringModelFactory failed", 1, SpringModelFactory.MODELS.size());
         
         // both obtained meta models should be the same
-        assert originalMetaModel.equals(secondMetaModel);
+        assertEquals(originalMetaModel, secondMetaModel);
         
         // created new model on demand should not be equivalent
-        assert !originalMetaModel.equals(SpringModelFactory.createMetaModel(secondUnit));
+        assertFalse(originalMetaModel.equals(SpringModelFactory.createMetaModel(secondUnit)));
     }
     
 }
