@@ -473,6 +473,17 @@ public class NbModuleSuite {
                 latestTestCaseClass, reuse, gui, enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
         }
+
+        /**
+         * Creates a test suite from this configuration.
+         * Same as {@link #create(org.netbeans.junit.NbModuleSuite.Configuration)} but more fluid.
+         * @return a suite ready for returning from a {@code public static Test suite()} method
+         * @since org.netbeans.modules.junit/1 1.70
+         */
+        public Test suite() {
+            return new S(this);
+        }
+
     }
 
     /** Factory method to create wrapper test that knows how to setup proper
@@ -496,7 +507,7 @@ public class NbModuleSuite {
      * @return runtime container ready test
      */
     public static Test create(Class<? extends TestCase> clazz, String clustersRegExp, String moduleRegExp) {
-        return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp));
+        return Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp).suite();
     }
     
     /** Factory method to create wrapper test that knows how to setup proper
@@ -527,7 +538,7 @@ public class NbModuleSuite {
         if (tests.length > 0) {
             conf = conf.addTest(tests);
         } 
-        return new S(conf);
+        return conf.suite();
     }
     
     /** Factory method to create wrapper test that knows how to setup proper
@@ -582,9 +593,10 @@ public class NbModuleSuite {
      * @param config the configuration for the test
      * @return runtime container ready test
      * @since 1.48
+     * @see Configuration#suite
      */
     public static Test create(Configuration config) {
-        return new S(config);
+        return config.suite();
     }
 
     private static final class Item {

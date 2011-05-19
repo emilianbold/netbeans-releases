@@ -67,17 +67,17 @@ public class NbModuleSuiteTest extends TestCase {
     }
 
     public void testUserDir() {
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).suite();
         junit.textui.TestRunner.run(instance);
 
         assertEquals("Doesn't exist", System.getProperty("t.userdir"));
 
-        instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).reuseUserDir(true));
+        instance = NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).reuseUserDir(true).suite();
         junit.textui.TestRunner.run(instance);
 
         assertEquals("Exists", System.getProperty("t.userdir"));
 
-        instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).reuseUserDir(false));
+        instance = NbModuleSuite.createConfiguration(NbModuleSuiteTUserDir.class).gui(false).reuseUserDir(false).suite();
         junit.textui.TestRunner.run(instance);
 
         assertEquals("Doesn't exist", System.getProperty("t.userdir"));
@@ -109,7 +109,7 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("ins.one", "no");
         System.setProperty("ins.fs", "no");
 
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).enableModules(".*"));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).enableModules(".*").suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "OK");
@@ -120,8 +120,8 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("ins.one", "no");
         System.setProperty("ins.fs", "no");
 
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).
-                gui(false).clusters(".*").enableModules(".*"));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).
+                gui(false).clusters(".*").enableModules(".*").suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "OK");
@@ -132,8 +132,8 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("ins.one", "no");
         System.setProperty("ins.fs", "no");
 
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).
-                gui(false).clusters(".*").enableModules(".*").addTest("testFS"));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).
+                gui(false).clusters(".*").enableModules(".*").addTest("testFS").suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "no");
@@ -148,11 +148,10 @@ public class NbModuleSuiteTest extends TestCase {
 
 
 
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).addTest("testOne").
             addTest("testThree").gui(false)
-
-        );
+            .suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "OK");
@@ -168,7 +167,7 @@ public class NbModuleSuiteTest extends TestCase {
 
 
 
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).addTest("testOne", "testThree"));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).addTest("testOne", "testThree").suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "OK");
@@ -206,7 +205,7 @@ public class NbModuleSuiteTest extends TestCase {
             AskForOrgOpenideUtilEnumClass.class
         ).enableModules("org.openide.util.enumerations").gui(false)
         .addTest(NbModuleSuiteIns.class, "testSecond");
-        Test instance = NbModuleSuite.create(config);
+        Test instance = config.suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("en.one", "OK");
@@ -229,7 +228,7 @@ public class NbModuleSuiteTest extends TestCase {
         .enableModules("ide", "org.openide.loaders.*")
         .gui(false)
         .addTest(NbModuleSuiteIns.class);
-        Test instance = NbModuleSuite.create(config);
+        Test instance = config.suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("en.one", "OK");
@@ -242,7 +241,7 @@ public class NbModuleSuiteTest extends TestCase {
 
         NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
         NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
-        Test instance = NbModuleSuite.create(addEnum.gui(false));
+        Test instance = addEnum.gui(false).suite();
         junit.textui.TestRunner.run(instance);
 
         assertEquals("OK", System.getProperty("en.one"));
@@ -253,7 +252,7 @@ public class NbModuleSuiteTest extends TestCase {
 
         NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
         NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
-        Test instance = NbModuleSuite.create(addEnum.gui(false).honorAutoloadEager(true));
+        Test instance = addEnum.gui(false).honorAutoloadEager(true).suite();
         junit.textui.TestRunner.run(instance);
 
         assertEquals("No", System.getProperty("en.one"));
@@ -262,13 +261,13 @@ public class NbModuleSuiteTest extends TestCase {
     public void testClustersCanBeCumulated() {
         System.setProperty("clusters", "No");
 
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.emptyConfiguration().
             gui(false).
             clusters("ide").
             clusters("java").
             addTest(NbModuleSuiteClusters.class)
-        );
+        .suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("clusters", "ide:java");
@@ -277,13 +276,13 @@ public class NbModuleSuiteTest extends TestCase {
     public void testClustersCanBeCumulatedInReverseOrder() {
         System.setProperty("clusters", "No");
 
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.emptyConfiguration().
             gui(false).
             clusters("java").
             clusters("ide").
             addTest(NbModuleSuiteClusters.class)
-        );
+        .suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("clusters", "java:ide");
@@ -355,7 +354,7 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("t.one", "No");
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
         conf = conf.addTest(TS.class).gui(false);
-        junit.textui.TestRunner.run(NbModuleSuite.create(conf));
+        junit.textui.TestRunner.run(conf.suite());
         assertProperty("t.one", "OK");
     }
 
@@ -371,21 +370,21 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("s.two", "No");
         System.setProperty("nosuit", "OK");
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().gui(false);
-        junit.textui.TestRunner.run(NbModuleSuite.create(conf.addTest(NbModuleSuiteS.class)));
+        junit.textui.TestRunner.run(conf.addTest(NbModuleSuiteS.class).suite());
         assertProperty("s.one", "OK");
         assertProperty("s.two", "OK");
         assertProperty("nosuit", "OK");
     }
 
     public void testRunEmptyConfiguration() throws Exception{
-        junit.textui.TestRunner.run(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().gui(false)));
+        junit.textui.TestRunner.run(NbModuleSuite.emptyConfiguration().gui(false).suite());
     }
 
     public void testAddTestCase()throws Exception{
         System.setProperty("t.one", "No");
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.emptyConfiguration().addTest(NbModuleSuiteT.class).gui(false)
-        );
+                .suite();
         junit.textui.TestRunner.run(instance);
 
         assertProperty("t.one", "OK");
@@ -394,11 +393,11 @@ public class NbModuleSuiteTest extends TestCase {
     public void testAddStartupArgument()throws Exception{
         System.setProperty("t.arg", "No");
 
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.createConfiguration(NbModuleSuiteT.class)
                 .gui(false)
                 .addStartupArgument("--branding", "sample")
-        );
+                .suite();
 
         junit.textui.TestRunner.run(instance);
 

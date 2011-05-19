@@ -64,7 +64,7 @@ public class NbModuleLogHandlerTest extends NbTestCase {
         // (perhaps these properties should be set automatically by NbModuleSuite and/or NbTestCase?)
         System.setProperty("netbeans.exception.alert.min.level", "999999");
         System.setProperty("netbeans.exception.report.min.level", "999999");
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleLogHandlerTest.class).gui(false).failOnException(Level.WARNING));
+        return NbModuleSuite.createConfiguration(NbModuleLogHandlerTest.class).gui(false).failOnException(Level.WARNING).suite();
     }
 
     public void testIgnoreOutOfMemoryErrorFromAssertGC() throws Exception {
