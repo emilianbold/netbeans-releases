@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
@@ -53,7 +54,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
  * @author Egor Ushakov
  */
 public class DbxDisassembly extends Disassembly {
-    private String functionName = "";
+    private long address;
     
 //    private final Map<Integer,String> regNames = new HashMap<Integer,String>();
 //    private final Map<Integer,String> regValues = new HashMap<Integer,String>();
@@ -74,6 +75,10 @@ public class DbxDisassembly extends Disassembly {
 
         text.save();
         setText(text);
+        if (text.isEmpty()) {
+            reloadDis();
+            return;
+        }
     }
 
     public void stateUpdated() {
@@ -97,10 +102,29 @@ public class DbxDisassembly extends Disassembly {
         if (curAddress == 0) {
             return;
         }
-
-        if (getAddressLine(curAddress) == -1) {
-            getDebugger().disController().requestDis(true);
+        
+        if (curAddress != address) {
+            requestMode = RequestMode.FILE_SRC;
+        } else if (requestMode == RequestMode.NONE) {
+            return;
         }
+
+        // update if needed
+        if (getAddressLine(curAddress) == -1) {
+            switch (requestMode) {
+                case FILE_SRC:
+                    getDebugger().disController().requestDis(true);
+                    requestMode = RequestMode.ADDRESS_SRC;
+                    break;
+                case ADDRESS_SRC:
+                    String addr = Address.toHexString0x(curAddress, true);
+                    getDebugger().disController().requestDis(addr, 100, true);
+                    requestMode = RequestMode.NONE;
+                    break;
+            }
+        }
+        
+        address = curAddress;
     }
     
     /*public String getNextAddress(String address) {
