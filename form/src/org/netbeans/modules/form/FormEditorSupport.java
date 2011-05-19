@@ -1101,7 +1101,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             }
             return (doc == null) ? null : GuardedSectionManager.getInstance(doc);
         } catch (IOException ex) {
-            throw (IllegalStateException) new IllegalStateException("cannot open document").initCause(ex); // NOI18N
+            throw new IllegalStateException("cannot open document", ex); // NOI18N
         }
     }
 
