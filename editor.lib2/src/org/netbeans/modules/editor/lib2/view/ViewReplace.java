@@ -71,12 +71,11 @@ final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
 
     List<CV> added;
 
-    ViewReplace(V view, int index) {
+    ViewReplace(V view) {
         assert (view != null);
         this.view = view;
-        this.index = index;
     }
-
+    
     void add(CV view) {
         if (added == null) {
             added = new ArrayList<CV>();
@@ -86,6 +85,11 @@ final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
 
     int removeEndIndex() {
         return index + removeCount;
+    }
+    
+    int removeNext() {
+        removeCount++;
+        return removeEndIndex();
     }
 
     void removeTillEnd() {
