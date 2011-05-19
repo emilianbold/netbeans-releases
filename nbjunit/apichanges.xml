@@ -58,6 +58,21 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.Configuration.suite">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.suite()</summary>
+        <version major="1" minor="70"/>
+        <date day="19" month="5" year="2011"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                You may now call <code>suite()</code> directly on a <code>Configuration</code> object.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+        <issue number="197720"/>
+    </change>
     <change id="NbModuleSuite.Configuration.addStartupArgument">
         <api name="nbjunit"/>
         <summary>NbModuleSuite.Configuration.addStartupArgument</summary>
@@ -69,8 +84,8 @@ made subject to such option by the copyright holder.
             <p>NbModuleSuite.Configuration now has a
                 <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addStartupArgument(java.lang.String...)">
                 addStartupArgument</a>
-                method which allows one to append one or more command line 
-                arguments which will be used to start the application.  
+                method which allows one to append one or more command line
+                arguments which will be used to start the application.
                 Arguments which must be passed directly to the JVM should
                 still be specified in the <code>test.run.args</code> property.
             </p>

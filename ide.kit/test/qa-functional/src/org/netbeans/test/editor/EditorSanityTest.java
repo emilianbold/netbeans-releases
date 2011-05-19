@@ -74,11 +74,11 @@ public class EditorSanityTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.emptyConfiguration().addTest(Init.class).
                 addTest(EditorSanityTest.class).
                 clusters(".*").enableModules(".*").gui(false)
-        );
+        .suite();
     }
     
     public static final class Init extends NbTestCase {

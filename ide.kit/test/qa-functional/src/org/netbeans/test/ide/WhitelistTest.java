@@ -119,7 +119,7 @@ public class WhitelistTest extends JellyTestCase {
         
         conf = conf.addTest("testWhitelist" + stage);
         
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     public void testWhitelist1() throws Exception {
