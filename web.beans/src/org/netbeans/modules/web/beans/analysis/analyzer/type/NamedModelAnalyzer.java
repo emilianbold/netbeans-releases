@@ -40,62 +40,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.analysis.analyzer;
+package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.InterceptedBeanAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.ManagedBeansAnalizer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.NamedModelAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.ScopedBeanAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.type.SessionBeanAnalyzer;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-public class ClassModelAnalyzer implements ModelAnalyzer {
+public class NamedModelAnalyzer implements ClassAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer#analyze(javax.lang.model.element.TypeElement, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
      */
     @Override
-    public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info,  AtomicBoolean cancel )
+    public void analyze( TypeElement element, TypeElement parent,
+            WebBeansModel model, List<ErrorDescription> descriptions,
+            CompilationInfo info, AtomicBoolean cancel )
     {
-        TypeElement subject = (TypeElement) element;
-        for( ClassAnalyzer analyzer : ANALYZERS ){
-            if ( cancel.get() ){
-                return;
-            }
-            analyzer.analyze( subject, parent, model, descriptions, info , cancel);
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
+                model.getCompilationController()))
+        {
+            return;
         }
-    }
-    
-    public interface ClassAnalyzer {
-        void analyze( TypeElement element , TypeElement parent, 
-                WebBeansModel model,List<ErrorDescription> descriptions, 
-                CompilationInfo info , AtomicBoolean cancel );
-    }
-
-    private static final List<ClassAnalyzer> ANALYZERS= new LinkedList<ClassAnalyzer>(); 
-    
-    static {
-        ANALYZERS.add( new ManagedBeansAnalizer());
-        ANALYZERS.add( new ScopedBeanAnalyzer());
-        ANALYZERS.add( new SessionBeanAnalyzer());
-        ANALYZERS.add( new InterceptedBeanAnalyzer() );
-        ANALYZERS.add( new NamedModelAnalyzer() );
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.NAMED, 
+                model.getCompilationController()))
+        {
+            return;
+        }
+        TypeMirror superclass = element.getSuperclass();
+        Element superElement = model.getCompilationController().getTypes().
+            asElement( superclass );
+        String name = model.getName(superElement);
+        if ( name == null ){
+            return;
+        }
+        ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element, model, info , NbBundle.getMessage(
+                NamedModelAnalyzer.class, "ERR_NamedSpecializes"));     // NOI18N
+        if ( description != null ){
+            descriptions.add( description );
+        }
     }
 
 }

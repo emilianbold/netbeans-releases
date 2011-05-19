@@ -75,6 +75,19 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             AtomicBoolean cancel )
     {
         checkDecoratorInterceptor( element , compInfo , descriptions , cancel);
+        checkSpecializes( element , compInfo, descriptions , cancel );
+    }
+
+    private void checkSpecializes( TypeElement element,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions,
+            AtomicBoolean cancel )
+    {
+        if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
+                compInfo))
+        {
+            return;
+        }
+        // TODO
     }
 
     private void checkDecoratorInterceptor( TypeElement element,
@@ -87,8 +100,8 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                 AnnotationUtil.INTERCEPTOR, compInfo);
         if ( isDecorator && isInterceptor ){
             ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
-                AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));
+                createError( element, compInfo, NbBundle.getMessage(
+                        AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));
             descriptions.add( description );
         }
         if ( isDecorator || isInterceptor ){
