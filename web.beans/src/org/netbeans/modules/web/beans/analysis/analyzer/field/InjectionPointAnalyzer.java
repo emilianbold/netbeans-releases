@@ -43,16 +43,21 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer.FieldAnalyzer;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
@@ -77,16 +82,67 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
             CompilationInfo info , AtomicBoolean cancel )
     {
         try {
-            if (model.isInjectionPoint(element)
-                    && !model.isDynamicInjectionPoint(element))
-            {
-                DependencyInjectionResult result = model.lookupInjectables(element,
-                        null);
-                checkResult(result, element, model, descriptions, info );
+            if (model.isInjectionPoint(element) ){
+                checkInjectionPointMetadata( element, elementType , parent, model , 
+                        descriptions, info , cancel );
+                if ( cancel.get() ){
+                    return;
+                }
+                if ( !model.isDynamicInjectionPoint(element)) {
+                    DependencyInjectionResult result = 
+                        model.lookupInjectables(element,null);
+                    checkResult(result, element, model, descriptions, info );
+                }
             }
         }
         catch (InjectionPointDefinitionError e) {
             informInjectionPointDefError(e, element, model, descriptions, info );
+        }
+    }
+
+    private void checkInjectionPointMetadata( VariableElement element,
+            TypeMirror elementType , TypeElement parent, WebBeansModel model,
+            List<ErrorDescription> descriptions, CompilationInfo info,
+            AtomicBoolean cancel )
+    {
+        TypeElement injectionPointType = model.getCompilationController().
+            getElements().getTypeElement(AnnotationUtil.INJECTION_POINT);
+        if ( injectionPointType == null ){
+            return;
+        }
+        Element varElement = model.getCompilationController().getTypes().asElement( 
+                elementType );
+        if ( !injectionPointType.equals(varElement)){
+            return;
+        }
+        if ( cancel.get()){
+            return;
+        }
+        List<AnnotationMirror> qualifiers = model.getQualifiers(varElement, true);
+        AnnotationHelper helper = new AnnotationHelper(model.getCompilationController());
+        Map<String, ? extends AnnotationMirror> qualifiersFqns = helper.
+            getAnnotationsByType(qualifiers);
+        boolean hasDefault = model.hasImplicitDefaultQualifier( varElement );
+        if ( !hasDefault && qualifiersFqns.keySet().contains(AnnotationUtil.DEFAULT_FQN)){
+            hasDefault = true;
+        }
+        if ( !hasDefault || cancel.get() ){
+            return;
+        }
+        try {
+            String scope = model.getScope( parent );
+            if ( scope != null && !AnnotationUtil.DEPENDENT.equals( scope )){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError(element , model, info , 
+                        "ERR_WrongQualifierInjectionPointMeta");            // NOI18N
+                if ( description != null ){
+                    descriptions.add( description );
+                }
+            }
+        }
+        catch (CdiException e) {
+            // this exception will be handled in the appropriate scope analyzer
+            return;
         }
     }
 
