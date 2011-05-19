@@ -1197,7 +1197,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         @Override
         public java.awt.Image getIcon() {
             if (dataObject.isValid()) {
-                return dataObject.getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
             } else {
                 return ImageUtilities.loadImage(iconURL);
             }
@@ -1275,7 +1275,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         @Override
         public java.awt.Image getIcon() {
             if (dataObject.isValid()) {
-                return dataObject.getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
             } else {
                 return ImageUtilities.loadImage(iconURL);
             }
