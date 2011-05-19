@@ -3792,7 +3792,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 cmd = "listi"; // NOI18N
 
             } else {
-		String function = disStateModel().getFunction();
+		String function = visitedLocation.func();
 		if (function != null) {
 		    start = "-a " + function; // NOI18N
 		    cmd = "dis "; // NOI18N
@@ -3824,8 +3824,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     // CR 6733766 stepi into PLT
                     // replace "dis -a (unknown)" with "dis <address>/100" dbx command
                     {
-                        start = Address.toHexString0x(disStateModel().getPC(),
-						      true);
+                        start = Address.toHexString0x(visitedLocation.pc(), true);
 			start += "/100";	// NOI18N
                     }
                 } else {

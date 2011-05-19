@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
@@ -76,66 +77,31 @@ public class DbxDisassembly extends Disassembly {
     }
 
     public void stateUpdated() {
-        getDebugger().disController().requestDis(true);
+        reloadDis();
     }
     
     @Override
     protected void reload() {
-        getDebugger().disController().requestDis(true);
+        reloadDis();
     }
     
-//    private void reloadDis(boolean withSource, boolean force) {
-//        this.withSource = withSource;
-//        if (!opened) {
-//            return;
-//        }
-//        Frame frame = getDebugger().getCurrentFrame();
-//        if (frame == null) {
-//            return;
-//        }
-//        String curAddress = frame.getCurrentPC();
-//        if (curAddress == null || curAddress.length() == 0) {
-//            return;
-//        }
-//
-//        if (!curAddress.equals(address)) {
-//            requestMode = withSource ? RequestMode.FILE_SRC : RequestMode.FILE_NO_SRC;
-//        } else if (requestMode == RequestMode.NONE) {
-//            return;
-//        }
-//
-//        if (force || getAddressLine(curAddress) == -1) {
-//            intFileName = ((GdbFrame)frame).getEngineFullName();
-//            resolvedFileName = frame.getFullPath();
-//            if ((intFileName == null || intFileName.length() == 0) &&
-//                    (requestMode == RequestMode.FILE_SRC || requestMode == RequestMode.FILE_NO_SRC)) {
-//                requestMode = withSource ? RequestMode.ADDRESS_SRC : RequestMode.ADDRESS_NO_SRC;
-//            }
-//            switch (requestMode) {
-//                case FILE_SRC:
-//                    getDebugger().disController().requestDis(withSource);
-//                    requestMode = RequestMode.FILE_NO_SRC;
-//                    break;
-//                case FILE_NO_SRC:
-//                    //debugger.getGdbProxy().data_disassemble(intFileName, frame.getLineNo(), withSource);
-//                    getDebugger().disController().requestDis(withSource);
-//                    requestMode = RequestMode.ADDRESS_SRC;
-//                    break;
-//                case ADDRESS_SRC:
-//                    getDebugger().disController().requestDis("$pc", 100, withSource); //NOI18N
-//                    //debugger.getGdbProxy().data_disassemble(1000, withSource);
-//                    requestMode = RequestMode.ADDRESS_NO_SRC;
-//                    break;
-//                case ADDRESS_NO_SRC:
-//                    getDebugger().disController().requestDis("$pc", 100, withSource); //NOI18N
-//                    //debugger.getGdbProxy().data_disassemble(1000, withSource);
-//                    requestMode = RequestMode.NONE;
-//                    break;
-//            }
-//        }
-//
-//        address = curAddress;
-//    }
+    private void reloadDis() {
+        if (!opened) {
+            return;
+        }
+        Location visitedLocation = getDebugger().getVisitedLocation();
+        if (visitedLocation == null) {
+            return;
+        }
+        long curAddress = visitedLocation.pc();
+        if (curAddress == 0) {
+            return;
+        }
+
+        if (getAddressLine(curAddress) == -1) {
+            getDebugger().disController().requestDis(true);
+        }
+    }
     
     /*public String getNextAddress(String address) {
         //TODO : can use binary search
