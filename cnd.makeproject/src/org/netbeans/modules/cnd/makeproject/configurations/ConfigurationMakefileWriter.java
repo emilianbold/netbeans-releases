@@ -629,7 +629,7 @@ public class ConfigurationMakefileWriter {
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
         bw.write(MakeConfiguration.CND_BUILDDIR_MACRO+"/" + conf.getName() + "/%.o: nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t$(MAKE) -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
+        bw.write("\t${MAKE} -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -1330,7 +1330,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + CndPathUtilitities.escapeOddCharacters(CndPathUtilitities.normalizeSlashes(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t$(MAKE) -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
+            bw.write("\t${MAKE} -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(projectDescriptor, conf, bw);
