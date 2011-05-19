@@ -343,6 +343,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @Override
     public void fireFilesPropertiesChanged() {
         if (TRACE) {
             new Exception().printStackTrace(System.err);

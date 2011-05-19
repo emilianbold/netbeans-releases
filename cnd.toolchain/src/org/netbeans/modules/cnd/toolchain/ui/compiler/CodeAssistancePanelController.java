@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.compiler;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;

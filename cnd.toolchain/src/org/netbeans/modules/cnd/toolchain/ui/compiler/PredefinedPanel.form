@@ -20,10 +20,10 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="includes" alignment="0" pref="522" max="32767" attributes="0"/>
-              <Component id="macros" alignment="1" pref="522" max="32767" attributes="0"/>
+              <Component id="includes" alignment="0" pref="573" max="32767" attributes="0"/>
+              <Component id="macros" alignment="1" pref="573" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="jLabel1" pref="384" max="32767" attributes="0"/>
+                  <Component id="jLabel1" pref="444" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="resetButton" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -69,7 +69,7 @@
     <Component class="javax.swing.JButton" name="resetButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="RESET_BUTTON_TXT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/toolchain/ui/compiler/Bundle.properties" key="RESET_BUTTON_TXT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
@@ -83,7 +83,7 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="CODE_ASSISTANCE_COMMENT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/toolchain/ui/compiler/Bundle.properties" key="CODE_ASSISTANCE_COMMENT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

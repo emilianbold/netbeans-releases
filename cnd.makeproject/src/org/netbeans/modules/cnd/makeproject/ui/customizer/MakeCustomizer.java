@@ -704,7 +704,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         }
 
         @Override
-        public void removeAction(Configuration o) {
+        public void removeAction(Configuration o, int i) {
             Configuration c = o;
             if (c.isDefault()) {
                 if (getListData().get(0) == o) {
@@ -725,7 +725,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         }
 
         @Override
-        public void editAction(Configuration o) {
+        public void editAction(Configuration o, int i) {
             editActionImpl(o);
         }
 

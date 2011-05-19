@@ -361,6 +361,10 @@ public final class NativeProjectProvider {
         public String getPlatformName() {
             return null;
         }
+
+        @Override
+        public void fireFilesPropertiesChanged() {
+        }
     }    
         
     /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {

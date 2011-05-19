@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.compiler;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -63,12 +63,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.IsChangedListener;
@@ -260,7 +260,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openProjects.length; i++) {
-            NativeProjectProvider npv = openProjects[i].getLookup().lookup(NativeProjectProvider.class);
+            NativeProject npv = openProjects[i].getLookup().lookup(NativeProject.class);
             if (npv != null) {
                 npv.fireFilesPropertiesChanged();
             }
@@ -295,7 +295,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         collectionPanel.setOpaque(false);
 
         compilerCollectionLabel.setLabelFor(compilerCollectionComboBox);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/compiler/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(compilerCollectionLabel, bundle.getString("COMPILER_COLLECTION_LBL")); // NOI18N
 
         javax.swing.GroupLayout collectionPanelLayout = new javax.swing.GroupLayout(collectionPanel);
@@ -305,7 +305,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             .addGroup(collectionPanelLayout.createSequentialGroup()
                 .addComponent(compilerCollectionLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compilerCollectionComboBox, 0, 327, Short.MAX_VALUE)
+                .addComponent(compilerCollectionComboBox, 0, 433, Short.MAX_VALUE)
                 .addContainerGap())
         );
         collectionPanelLayout.setVerticalGroup(
@@ -323,7 +323,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         tabPanel.setLayout(tabPanelLayout);
         tabPanelLayout.setHorizontalGroup(
             tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
         );
         tabPanelLayout.setVerticalGroup(
             tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -343,7 +343,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, 0)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
                     .addGap(0, 0, 0)))
         );
         layout.setVerticalGroup(
