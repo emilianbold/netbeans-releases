@@ -97,10 +97,6 @@ public class GdbDisassembly extends Disassembly {
     
     private boolean cancelled = false;
 
-    private static enum RequestMode {FILE_SRC, FILE_NO_SRC, ADDRESS_SRC, ADDRESS_NO_SRC, NONE};
-
-    private RequestMode requestMode = RequestMode.FILE_SRC;
-
     public GdbDisassembly(NativeDebuggerImpl debugger, BreakpointModel breakpointModel) {
         super(debugger, breakpointModel);
     }
