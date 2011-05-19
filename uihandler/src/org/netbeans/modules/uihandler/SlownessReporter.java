@@ -93,15 +93,14 @@ class SlownessReporter {
         return null;
     }
 
-    String getLatestAction(final long time) {
-        final long now = System.currentTimeMillis();
+    String getLatestAction(final long time, final long slownessEndTime) {
         final String[] latestActionHolder = new String[1];
-
+        
         Installer.readLogs(new Handler() {
 
             @Override
             public void publish(LogRecord rec) {
-                if (now - rec.getMillis() - time > LATEST_ACTION_LIMIT) {
+                if (slownessEndTime - rec.getMillis() - time > LATEST_ACTION_LIMIT) {
                     return;
                 }
                 String latestActionClassName = null;
@@ -137,8 +136,8 @@ class SlownessReporter {
         return latestActionHolder[0];
     }
 
-    void notifySlowness(byte[] nps, long time, String slownessType) {
-        String latestActionName = getLatestAction(time);
+    void notifySlowness(byte[] nps, long time, long slownessEndTime, String slownessType) {
+        String latestActionName = getLatestAction(time, slownessEndTime);
         pending.add(new NotifySnapshot(new SlownessData(time, nps, slownessType, latestActionName)));
         if (pending.size() > 5) {
             pending.remove().clear();
