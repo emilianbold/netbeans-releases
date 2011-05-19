@@ -48,7 +48,11 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -188,21 +192,18 @@ public class CndPathUtilitities {
     }
 
     public static String toAbsolutePath(FileObject base, String path) {
-        String newPath = path;
-        if (newPath == null || newPath.length() == 0) {
-            newPath = "."; // NOI18N
-        } // NOI18N
-        if (isPathAbsolute(newPath)) {
-            return newPath;
-        } else {
-            FileObject fo = base.getFileObject(newPath);
-            if (fo != null && fo.isValid()) {
-                return fo.getPath();
-            } else {
-                // getPath always return "/" => use / as delim as well
-                return base.getPath() + '/' + path;
-            }
-        }
+        path = (path == null || path.length() == 0) ? "." : path; // NOI18N
+        if (!isPathAbsolute(path)) {
+            path = base.getPath() + '/' + path; //NOI18N
+        }       
+        try {
+            FileSystem fileSystem = base.getFileSystem();
+            path = CndFileUtils.normalizeAbsolutePath(fileSystem, path);
+            path = naturalizeSlashes(fileSystem, path);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+        return path;
     }
 
     /*
@@ -512,6 +513,12 @@ public class CndPathUtilitities {
         } else {
             return path;
         }
+    }
+
+    public static String naturalizeSlashes(FileSystem fileSystem, String path) {
+        char rightSlash = CndFileUtils.getFileSeparatorChar(fileSystem);
+        char wrongSlash = (rightSlash == '/') ? '\\' : '/';
+        return path.replace(wrongSlash, rightSlash);
     }
 
     /** Add quotes around the string if necessary.
