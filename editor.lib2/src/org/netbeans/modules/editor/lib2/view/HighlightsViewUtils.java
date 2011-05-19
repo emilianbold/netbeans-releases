@@ -309,6 +309,9 @@ public class HighlightsViewUtils {
                 ? hViewFirst.getLength()
                 : pView.getEditorView(groupEndIndex - 1).getEndOffset() - startOffset;
         String text = docText.subSequence(startOffset, startOffset + textLength).toString();        
+        if (docView.isShowNonprintingCharacters()) {
+            text = text.replace(' ', DocumentView.PRINTING_SPACE);
+        }
         TextLayout textLayout = docView.createTextLayout(text, fontFirst);
 
         if (groupLength == 1) { // Construct TextLayout
