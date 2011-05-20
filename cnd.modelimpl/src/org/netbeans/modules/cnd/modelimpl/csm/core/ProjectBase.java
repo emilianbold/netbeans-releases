@@ -1679,6 +1679,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     statesToKeep.add(pair);
                     result = ComparisonResult.SAME;
                 } else {
+                    CndUtils.assertTrueInConsole(statesToKeep.isEmpty() || !newState.isCompileContext(), "states to keep must be empty for new compile context entry"); // NOI18N
                     result = statesToKeep.isEmpty() ? ComparisonResult.BETTER : ComparisonResult.SAME;
                 }
             }
