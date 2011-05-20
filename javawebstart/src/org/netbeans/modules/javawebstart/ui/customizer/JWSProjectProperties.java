@@ -283,7 +283,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     }
     
     boolean isJWSEnabled() {
-        return enabledModel.isSelected();
+        return !jnlpImplOldOrModified && enabledModel.isSelected();
     }
     
     public DescType getDescTypeProp() {
