@@ -128,13 +128,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (ConnectException ex) {
             throw ex;
         } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null; // don't report
         } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null; // don't report
         } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null; // don't report
         } catch (CancellationException ex) {
             return null; // don't report
@@ -289,23 +289,23 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             return createFileObject(entry);
         } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null;
         } catch (InterruptedIOException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null;
         } catch (CancellationException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null;
         } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null;
         } catch (FileNotFoundException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             return null;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -372,9 +372,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             // nothing
                         } catch (FileNotFoundException e) {
                             // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
-                            RemoteLogger.finest(e);
+                            RemoteLogger.finest(e, this);
                         } catch (IOException e) {
-                            RemoteLogger.finest(e);
+                            RemoteLogger.finest(e, this);
                         }
                     }
                 } finally {
@@ -412,23 +412,23 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (InterruptedException ex) {
             // don't report, this just means that we aren't connected
             // or just interrupted (for example by FileChooser UI)
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (InterruptedIOException ex) {
             // don't report, for example FileChooser UI can interrupt us
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
             // should we report it?
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (FileNotFoundException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             // never report CancellationException
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         }
         return new RemoteFileObjectBase[0];
     }
@@ -850,7 +850,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         throw e;
                     } catch (FileNotFoundException e) {
                         // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
-                        RemoteLogger.finest(e);
+                        RemoteLogger.finest(e, this);
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
                     }
@@ -1243,15 +1243,15 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
         } catch (ConnectException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (CancellationException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         }
         return null;
     }
