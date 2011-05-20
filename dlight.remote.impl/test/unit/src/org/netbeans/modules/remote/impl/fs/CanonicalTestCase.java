@@ -152,7 +152,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
             final IOException[] exceptions = new IOException[3];
             final FileObject[] canonical = new FileObject[3];
             final CountDownLatch latch = new CountDownLatch(1);
-            final String[] operations = new String[3];
+            final String[] operations = new String[4];
             final AtomicReference<Integer> idx = new AtomicReference(1);
             
             Runnable r = new Runnable() {
@@ -181,6 +181,11 @@ public class CanonicalTestCase extends RemoteFileTestBase {
                     } catch (IOException ex) {
                         exceptions[2] = ex;
                     }
+                    
+                    idx.set(3);
+                    operations[idx.get()] = "Refreshing cyclic link " + links[0].getPath();
+                    links[0].refresh();
+                    
                     latch.countDown();
                 }
             };
