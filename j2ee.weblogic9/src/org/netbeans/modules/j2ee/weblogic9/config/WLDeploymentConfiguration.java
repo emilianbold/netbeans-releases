@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
@@ -63,9 +64,9 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration, Messa
     
     private final WLMessageDestinationSupport messageSupport;
 
-    public WLDeploymentConfiguration(J2eeModule module) {
+    public WLDeploymentConfiguration(J2eeModule module, Version version) {
         this.datasourceSupport = new WLDatasourceSupport(module.getResourceDirectory());
-        this.messageSupport = new WLMessageDestinationSupport(module.getResourceDirectory());
+        this.messageSupport = new WLMessageDestinationSupport(module.getResourceDirectory(), version);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration, Messa
 
     @Override
     public boolean supportsCreateMessageDestination() {
-        return false;
+        return true;
     }
 
     @Override

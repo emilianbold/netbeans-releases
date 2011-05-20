@@ -53,11 +53,11 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -157,11 +157,11 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     abstract protected int/*CPPTokenTypes*/ getFirstTokenID();    
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    public LazyStatementImpl(DataInput input) throws IOException {
+    public LazyStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.statements = null;
     }

@@ -107,8 +107,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
      */
     @Override
     public APTToken nextToken() {
+        APTToken token;
+        boolean switchMacroExpanding;
         for (;;) {
-            APTToken token;
             try {
                 token = (APTToken) selector.nextToken();
             } catch (TokenStreamException ex) {
@@ -122,7 +123,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             } else {
                 // get token from selector and check for ID tokens
                 // only ID tokens are candidates for macro expanding               
-                boolean switchMacroExpanding = false;
+                switchMacroExpanding = false;
                 if (APTUtils.isID(token)) {
                     // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
                     if (!callback.popPPDefined()) {
@@ -130,13 +131,8 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                         // but prevent recursive re expanding
                         APTMacro macro = callback.getMacro(token);
                         if ((macro != null) && !callback.isExpanding(token)) {
-                            try {
-                                // start macro expanding
-                                switchMacroExpanding = pushMacroExpanding(token, macro);
-                            } catch (TokenStreamException ex) {
-                                APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
-                                switchMacroExpanding = false;
-                            }
+                            // start macro expanding
+                            switchMacroExpanding = pushMacroExpanding(token, macro);
                         } else if ((macro == null) && isExpandingPPExpression() && "defined".contentEquals(token.getTextID())) { // NOI18N
                             if (callback.pushPPDefined()) {
                                 token = new APTBaseLanguageFilter.FilterToken(token, APTTokenTypes.DEFINED);
@@ -164,7 +160,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         return expandPPExpression;
     }
     
-    private boolean pushMacroExpanding(APTToken token, APTMacro macro) throws TokenStreamException {
+    private boolean pushMacroExpanding(APTToken token, APTMacro macro) {
         boolean res = true;
         try {
             APTTokenStream expanded = createMacroBodyWrapper(token, macro);
@@ -177,7 +173,10 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         } catch (RecognitionException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on expanding {0}\n{1}", new Object[] {token, ex.getMessage()}); // NOI18N
             res = false;
-        }    
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
+            res = false;
+        }
         return res;
     }
     

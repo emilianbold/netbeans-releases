@@ -51,6 +51,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 
@@ -178,7 +179,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
-    public FileBufferFile(DataInput input) throws IOException {
+    public FileBufferFile(RepositoryDataInput input) throws IOException {
         super(input);
     }
 

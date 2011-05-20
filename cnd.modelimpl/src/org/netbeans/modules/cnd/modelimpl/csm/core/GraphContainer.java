@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -68,6 +66,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -95,7 +95,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         put();
     }
 
-    public GraphContainer(final DataInput input) throws IOException {
+    public GraphContainer(final RepositoryDataInput input) throws IOException {
         super(input);
         assert input != null;
         CsmListeners.getDefault().addProgressListener(this);
@@ -466,7 +466,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         // need a write lock
         graphLock.writeLock().lock();
@@ -478,7 +478,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     private static void writeUIDToNodeLinkMap (
-            final DataOutput output, final Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
+            final RepositoryDataOutput output, final Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
         
         assert output != null;
         assert aMap != null;
@@ -501,7 +501,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }    
     
     private static void readUIDToNodeLinkMap (
-            final DataInput input, Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
+            final RepositoryDataInput input, Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
         
         assert input != null;
         assert aMap != null;
@@ -580,7 +580,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             out = new HashSet<CsmUID<CsmFile>>();
         }
         
-        private NodeLink(final DataInput input) throws IOException {
+        private NodeLink(final RepositoryDataInput input) throws IOException {
             assert input != null;
 
             final UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -621,7 +621,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
 
         @Override
-        public void write(final DataOutput output) throws IOException {
+        public void write(final RepositoryDataOutput output) throws IOException {
             assert output != null;
             assert in != null;
             assert out != null;

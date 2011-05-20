@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.repository.sfs.index;
 
-import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
@@ -54,6 +53,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -68,7 +69,7 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
     public SimpleFileIndex (){
     }
    
-    public SimpleFileIndex (DataInput input) throws IOException {
+    public SimpleFileIndex (RepositoryDataInput input) throws IOException {
         int size = input.readInt();
         
         for (int i = 0; i < size; i++) {
@@ -77,28 +78,34 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
         }
     }
         
+    @Override
     public int size() {
 	return map.size();
     }
 
+    @Override
     public int remove(Key key) {
 	ChunkInfo oldInfo = map.remove(key);
 	return (oldInfo == null) ? 0 : oldInfo.getSize();
     }
     
+    @Override
     public Collection<Key> keySet() {
 	return map.keySet();
     }
     
+    @Override
     public Iterator<Key> getKeySetIterator() {
 	return map.keySet().iterator();
     }
 
+    @Override
     public int put(final Key key, final long offset, final int size) {
 	final ChunkInfo oldInfo = map.put(key, new ChunkInfoBase(offset, size));
 	return (oldInfo == null) ? 0 : oldInfo.getSize();
     }
 
+    @Override
     public ChunkInfo get(final Key key) {
 	final ChunkInfo info = map.get(key);
 //	if( info == null ) {
@@ -106,7 +113,8 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
 	return info;
     }    
 
-    public void write(final DataOutput output) throws IOException {
+    @Override
+    public void write(final RepositoryDataOutput output) throws IOException {
         output.writeInt(size());
         Set<Entry<Key, ChunkInfoBase>> aSet = map.entrySet();
         Iterator<Entry<Key, ChunkInfoBase>> setIterator = aSet.iterator();
@@ -134,7 +142,7 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
 	    this.size = size;
 	}
         
-        public ChunkInfoBase (DataInput input) throws IOException {
+        public ChunkInfoBase (RepositoryDataInput input) throws IOException {
             this.offset = input.readLong();
             this.size   = input.readInt();                    
         }
@@ -150,6 +158,7 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
 	    return sb.toString();
 	}
 
+        @Override
 	public int compareTo(Object o) {
 	    if (o instanceof ChunkInfo) {
 		return (this.getOffset()  < ((ChunkInfo) o).getOffset()) ? -1 : 1;
@@ -157,19 +166,23 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
 	    return 1;
 	}
 
+        @Override
 	public long getOffset() {
 	    return offset;
 	}
 	
+        @Override
 	public int getSize() {
 	    return size;
 	}
 	
+        @Override
 	public void setOffset(long offset) {
 	    this.offset = offset;
 	}
 
-        public void write(DataOutput output) throws IOException {
+        @Override
+        public void write(RepositoryDataOutput output) throws IOException {
             output.writeLong(this.offset);
             output.writeInt(this.size);
         }

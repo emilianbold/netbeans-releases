@@ -45,28 +45,48 @@
 package org.netbeans.modules.j2ee.weblogic9.config;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.weblogic9.dd.model.BaseDescriptorModel;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.MessageModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -92,11 +112,14 @@ public class WLMessageDestinationSupport {
 
     private static final Logger LOGGER = Logger.getLogger(WLMessageDestinationSupport.class.getName());
 
-    private File resourceDir;
+    private final File resourceDir;
+    
+    private final Version version;
 
-    public WLMessageDestinationSupport(File resourceDir) {
+    public WLMessageDestinationSupport(File resourceDir, Version version) {
         assert resourceDir != null : "Resource directory can't be null"; // NOI18N
         this.resourceDir = FileUtil.normalizeFile(resourceDir);
+        this.version = version;
     }
 
     static Set<WLMessageDestination> getMessageDestinations(File domain,
@@ -185,11 +208,11 @@ public class WLMessageDestinationSupport {
                     continue;
                 }
 
-                for (String name : messageModel.getQueues()) {
+                for (String name : messageModel.getMessageDestinations(Type.QUEUE)) {
                     messageDestinations.add(new WLMessageDestination(
                             name, Type.QUEUE, jmsFile, entry.getValue()));
                 }
-                for (String name : messageModel.getTopics()) {
+                for (String name : messageModel.getMessageDestinations(Type.TOPIC)) {
                     messageDestinations.add(new WLMessageDestination(
                             name, Type.TOPIC, jmsFile, entry.getValue()));
                 }
@@ -213,8 +236,253 @@ public class WLMessageDestinationSupport {
         return getMessageDestinations(null, resource, false);
     }
 
-    public org.netbeans.modules.j2ee.deployment.common.api.MessageDestination createMessageDestination(String name, Type type) {
+    public org.netbeans.modules.j2ee.deployment.common.api.MessageDestination createMessageDestination(final String name, final Type type) throws ConfigurationException {
+
+        WLMessageDestination destination = modifyMessageDestination(new MessageDestinationModifier() {
+
+            @Override
+            public ModifiedMessageDestination modify(Set<WLMessageDestination> destinations) throws ConfigurationException {
+                for (WLMessageDestination destination : destinations) {
+                    if (name.equals(destination.getName())) {
+                        throw new ConfigurationException(NbBundle.getMessage(WLMessageDestinationSupport.class, "MSG_MessageDestinationAlreadyExists"));
+                    }
+                }
+
+                // create the datasource
+                ensureResourceDirExists();
+
+                // TODO use single file
+                File candidate;
+                int counter = 1;
+                do {
+                    candidate = new File(resourceDir, NAME_PATTERN
+                            + counter + JMS_FILE);
+                    counter++;
+                } while (candidate.exists());
+
+                MessageModel model = MessageModel.generate(version);
+                model.addMessageDestination(name, type);
+
+                try {
+                    writeFile(candidate, model);
+                } catch (ConfigurationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return new ModifiedMessageDestination(
+                        candidate, model, new WLMessageDestination(name, type, candidate, false));
+            }
+        });
+
+        return destination;
+    }
+
+    private WLMessageDestination modifyMessageDestination(MessageDestinationModifier modifier)
+            throws ConfigurationException {
+
+        try {
+            ensureResourceDirExists();
+
+            FileObject resourceDirObject = FileUtil.toFileObject(resourceDir);
+            assert resourceDirObject != null;
+
+            Map<WLMessageDestination, DataObject> destinations = new LinkedHashMap<WLMessageDestination, DataObject>();
+            for (FileObject dsFileObject : resourceDirObject.getChildren()) {
+                if (dsFileObject.isData() && dsFileObject.getNameExt().endsWith(JMS_FILE)) {
+
+                    DataObject datasourceDO = DataObject.find(dsFileObject);
+
+                    EditorCookie editor = (EditorCookie) datasourceDO.getCookie(EditorCookie.class);
+                    StyledDocument doc = editor.getDocument();
+                    if (doc == null) {
+                        doc = editor.openDocument();
+                    }
+
+                    MessageModel source = null;
+                    try {  // get the up-to-date model
+                        // try to create a graph from the editor content
+                        byte[] docString = doc.getText(0, doc.getLength()).getBytes();
+                        source = MessageModel.forInputStream(new ByteArrayInputStream(docString));
+                    } catch (RuntimeException e) {
+                        InputStream is = new BufferedInputStream(dsFileObject.getInputStream());
+                        try {
+                            source = MessageModel.forInputStream(is);
+                        } finally {
+                            is.close();
+                        }
+                        if (source == null) {
+                            // neither the old graph is parseable, there is not much we can do here
+                            // we could skip it but we can't be sure whether there are duplicate
+                            // entries
+                            // TODO: should we notify the user?
+                            throw new ConfigurationException(
+                                    NbBundle.getMessage(WLDatasourceSupport.class, "MSG_datasourcesXmlCannotParse", dsFileObject.getNameExt()));
+                        }
+                        // current editor content is not parseable, ask whether to override or not
+                        NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(WLDatasourceSupport.class, "MSG_datasourcesXmlNotValid", dsFileObject.getNameExt()),
+                                NotifyDescriptor.YES_NO_OPTION);
+                        Object result = DialogDisplayer.getDefault().notify(notDesc);
+                        if (result == NotifyDescriptor.NO_OPTION) {
+                            // keep the old content
+                            return null;
+                        }
+                        File origin = FileUtil.toFile(dsFileObject);
+                        for (String name : source.getMessageDestinations(Type.QUEUE)) {
+                            destinations.put(new WLMessageDestination(name, Type.QUEUE, origin, false), datasourceDO);
+                        }
+                        for (String name : source.getMessageDestinations(Type.TOPIC)) {
+                            destinations.put(new WLMessageDestination(name, Type.TOPIC, origin, false), datasourceDO);
+                        }
+                    }
+                }
+            }
+
+            ModifiedMessageDestination modifiedDestination = modifier.modify(destinations.keySet());
+
+            // TODO for now this code won't be called probably as there is no
+            // real modify in our code just create
+            DataObject datasourceDO = destinations.get(modifiedDestination.getMessageDestination());
+            if (datasourceDO != null) {
+                boolean modified = datasourceDO.isModified();
+                EditorCookie editor = (EditorCookie) datasourceDO.getCookie(EditorCookie.class);
+                StyledDocument doc = editor.getDocument();
+                if (doc == null) {
+                    doc = editor.openDocument();
+                }
+                replaceDocument(doc, modifiedDestination.getModel());
+
+                if (!modified) {
+                    SaveCookie cookie = (SaveCookie) datasourceDO.getCookie(SaveCookie.class);
+                    cookie.save();
+                }
+            }
+
+            return modifiedDestination.getMessageDestination();
+        } catch(DataObjectNotFoundException donfe) {
+            Exceptions.printStackTrace(donfe);
+        } catch (BadLocationException ble) {
+            // this should not occur, just log it if it happens
+            Exceptions.printStackTrace(ble);
+        } catch (IOException ioe) {
+            String msg = NbBundle.getMessage(WLDatasourceSupport.class, "MSG_CannotUpdateFile");
+            throw new ConfigurationException(msg, ioe);
+        }
+
         return null;
+    }
+
+    private void writeFile(final File file, final BaseDescriptorModel bean) throws ConfigurationException {
+        assert file != null : "File to write can't be null"; // NOI18N
+        assert file.getParentFile() != null : "File parent folder can't be null"; // NOI18N
+
+        try {
+            FileObject cfolder = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
+            if (cfolder == null) {
+                try {
+                    cfolder = FileUtil.createFolder(FileUtil.normalizeFile(file.getParentFile()));
+                } catch (IOException ex) {
+                    throw new ConfigurationException(NbBundle.getMessage(WLDatasourceSupport.class,
+                            "MSG_FailedToCreateConfigFolder", file.getParentFile().getAbsolutePath()));
+                }
+            }
+
+            final FileObject folder = cfolder;
+            FileSystem fs = folder.getFileSystem();
+            fs.runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        String name = file.getName();
+                        FileObject configFO = folder.getFileObject(name);
+                        if (configFO == null) {
+                            configFO = folder.createData(name);
+                        }
+                        lock = configFO.lock();
+                        os = new BufferedOutputStream (configFO.getOutputStream(lock), 4086);
+                        // TODO notification needed
+                        if (bean != null) {
+                            bean.write(os);
+                        }
+                    } finally {
+                        if (os != null) {
+                            try {
+                                os.close();
+                            } catch(IOException ioe) {
+                                LOGGER.log(Level.FINE, null, ioe);
+                            }
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                }
+            });
+            
+            FileUtil.refreshFor(file);
+        } catch (IOException e) {
+            throw new ConfigurationException (e.getLocalizedMessage ());
+        }
+    }
+
+    private void replaceDocument(final StyledDocument doc, BaseDescriptorModel graph) {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            graph.write(out);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        NbDocument.runAtomic(doc, new Runnable() {
+            public void run() {
+                try {
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, out.toString(), null);
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                }
+            }
+        });
+    }
+
+    private void ensureResourceDirExists() {
+        if (!resourceDir.exists()) {
+            resourceDir.mkdir();
+            FileUtil.refreshFor(resourceDir);
+        }
+    }
+
+    private interface MessageDestinationModifier {
+
+        @NonNull
+        ModifiedMessageDestination modify(Set<WLMessageDestination> destinations) throws ConfigurationException;
+
+    }
+
+    private static class ModifiedMessageDestination {
+
+        private final File file;
+
+        private final MessageModel model;
+
+        private final WLMessageDestination destination;
+
+        public ModifiedMessageDestination(File file, MessageModel model, WLMessageDestination destination) {
+            this.file = file;
+            this.model = model;
+            this.destination = destination;
+        }
+
+        public WLMessageDestination getMessageDestination() {
+            return destination;
+        }
+
+        public MessageModel getModel() {
+            return model;
+        }
+
+        public File getFile() {
+            return file;
+        }
     }
 
     private static class JmsSystemResourceHandler extends DefaultHandler {

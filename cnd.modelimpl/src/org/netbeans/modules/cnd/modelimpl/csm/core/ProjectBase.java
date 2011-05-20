@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -124,6 +122,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -2801,7 +2801,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
         PersistentUtils.writeFileSystem(fileSystem, aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
@@ -2820,7 +2820,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         PersistentUtils.writeUTF(this.uniqueName, aStream);
     }
 
-    protected ProjectBase(DataInput aStream) throws IOException {
+    protected ProjectBase(RepositoryDataInput aStream) throws IOException {
 
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();

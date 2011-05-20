@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * Key for GraphContainer data
@@ -59,7 +59,7 @@ public final class GraphContainerKey extends ProjectNameBasedKey {
         super(project);
     }
 
-    public GraphContainerKey(DataInput in) throws IOException {
+    public GraphContainerKey(RepositoryDataInput in) throws IOException {
         super(in);
     }
 
