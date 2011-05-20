@@ -151,6 +151,41 @@ public class TagTest extends AbstractGitTestCase {
         assertTag(tags.get("tag-name"), commit.getRevision(), "tag-name", commit.getFullMessage(), commit.getCommitter(), GitObjectType.COMMIT, true);
     }
 
+    public void testDeleteTag () throws Exception {
+        File f = new File(workDir, "f");
+        File[] files = new File[] { f };
+        GitClient client = getClient(workDir);
+        write(f, "init");
+        GitRevisionInfo commit = client.commit(files, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitTag tag = client.createTag("tag-name", commit.getRevision(), null, false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitTag> tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(1, tags.size());
+
+        client.deleteTag("tag-name", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(0, tags.size());
+        
+        // and what about real tag object? not a lightweight one?
+        tag = client.createTag("tag-name", commit.getRevision(), "tag message", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String tagId = tag.getTagId();
+        tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(1, tags.size());
+
+        client.deleteTag("tag-name", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(0, tags.size());
+        
+        // can the same tag be created again?
+        tag = client.createTag("tag-name", commit.getRevision(), "tag message", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(tagId, tag.getTagId());
+        tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(1, tags.size());
+
+        client.deleteTag("tag-name", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+        assertEquals(0, tags.size());
+    }
+
     private void assertTag (GitTag tag, String taggedObjectId, String name, String message, GitUser user, GitObjectType taggedObjectType, boolean isLightWeight) {
         assertEquals(isLightWeight, tag.isLightWeight());
         assertEquals(taggedObjectId, tag.getTaggedObjectId());

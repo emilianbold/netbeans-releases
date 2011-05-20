@@ -59,6 +59,7 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.plaf.TextUI;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitTag;
@@ -67,6 +68,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
+import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
@@ -501,24 +503,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     sd.remove(0, sd.getLength());
                     sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
 
+                    addAliases(linkerSupport, sd, index, container);
+
                     // add revision
                     String rev = container.getLog().getRevision();
-                    StringBuilder labels = new StringBuilder();
-                    boolean isHead = false;
-                    for (GitBranch b : container.getBranches()) {
-                        if (b.getName() != GitBranch.NO_BRANCH) {
-                            labels.append(b.getName()).append(" ");
-                        }
-                    }
-                    if (isHead) {
-                        labels.insert(0, " ").insert(0, GitUtils.HEAD);
-                    }
-                    for (GitTag b : container.getTags()) {
-                        labels.append(b.getTagName()).append(" ");
-                    }
-                    if (labels.length() > 0) {
-                        sd.insertString(0, labels.toString(), null);
-                    }
                     sd.insertString(sd.getLength(), rev.length() > 7 ? rev.substring(0, 7) : rev, null);
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
 
@@ -618,6 +606,27 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 resultsList.putClientProperty(SUMMARY_DIFF_PROPERTY + index, bounds); // NOI18N
                 linkerSupport.computeBounds(textPane, index);
             }
+
+            private void addAliases (VCSHyperlinkSupport linkerSupport, StyledDocument sd, int index, RepositoryRevision container) throws BadLocationException {
+                StyledDocumentHyperlink l = linkerSupport.getLinker(RefAliasLinker.class, index);
+                if(l == null) {
+                    l = new RefAliasLinker(sd, container);
+                    linkerSupport.add(l, index);
+                }
+                l.insertString(sd, null);
+                l = linkerSupport.getLinker(BranchAliasLinker.class, index);
+                if(l == null) {
+                    l = new BranchAliasLinker(sd, container);
+                    linkerSupport.add(l, index);
+                }
+                l.insertString(sd, null);
+                l = linkerSupport.getLinker(TagAliasLinker.class, index);
+                if(l == null) {
+                    l = new TagAliasLinker(master.getRepository(), sd, container);
+                    linkerSupport.add(l, index);
+                }
+                l.insertString(sd, null);
+            }
         }
 
         private class ChangepathRenderer extends DefaultListCellRenderer {
@@ -665,6 +674,159 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             setText(sb.toString());
             setBackground(background);
+        }
+    }
+
+    private static abstract class AliasLinker extends StyledDocumentHyperlink {
+
+        private Rectangle bounds[];
+        private final String[] labels;
+        private final int docLen;
+        private final boolean supportsClick;
+
+        private AliasLinker (StyledDocument sd, List<String> labels, boolean supportsClick) {
+            this.bounds = new Rectangle[0];
+            this.labels = labels.toArray(new String[labels.size()]);
+            this.supportsClick = supportsClick;
+            this.docLen = sd.getLength();
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            Rectangle tpBounds = textPane.getBounds();
+            TextUI tui = textPane.getUI();
+            this.bounds = new Rectangle[labels.length];
+            int i = 0;
+            int labelStartPos = docLen;
+            for (String label : labels) {
+                try {
+                    Rectangle startr = tui.modelToView(textPane, labelStartPos, Position.Bias.Forward).getBounds();
+                    Rectangle endr = tui.modelToView(textPane, labelStartPos = labelStartPos + label.length(), Position.Bias.Backward).getBounds();
+                    this.bounds[i] = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+                } catch (BadLocationException ex) { }
+                ++i;
+                ++labelStartPos; // plus one for a space between labels
+            }
+        }
+
+        @Override
+        public boolean mouseMoved (Point p, JComponent component) {
+            if (bounds != null) {
+                for (int i = 0; i < bounds.length; ++i) {
+                    if (bounds[i].contains(p)) {
+                        if (supportsClick) {
+                            component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                        }
+                        String toolTip = getToolTip(labels[i]);
+                        if (toolTip != null && !toolTip.isEmpty()) {
+                            component.setToolTipText(toolTip);
+                        }
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked (Point p) {
+            if (supportsClick && bounds != null) {
+                for (int i = 0; i < bounds.length; ++i) {
+                    if (bounds[i].contains(p)) {
+                        return mouseClicked(labels[i]);
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void insertString(StyledDocument sd, Style style) throws BadLocationException {
+            for (String label : labels) {
+                sd.insertString(sd.getLength(), label + " ", style); //NOI18N
+            }
+        }
+
+        protected boolean mouseClicked (String label) {
+            return false;
+        }
+
+        protected String getToolTip (String label) {
+            return null;
+        }
+    }
+    
+    private static final class RefAliasLinker extends AliasLinker {
+        
+        private RefAliasLinker (StyledDocument sd, RepositoryRevision container) {
+            super(sd, computeLabels(container), false);
+        }
+
+        private static List<String> computeLabels(RepositoryRevision container) {
+            List<String> refs = new LinkedList<String>();
+            for (GitBranch b : container.getBranches()) {
+                if (b.isActive()) {
+                    refs.add(GitUtils.HEAD);
+                }
+            }
+            return refs;
+        }
+    }
+    
+    private static final class BranchAliasLinker extends AliasLinker {
+        
+        private BranchAliasLinker (StyledDocument sd, RepositoryRevision container) {
+            super(sd, computeLabels(container), false);
+        }
+
+        private static List<String> computeLabels(RepositoryRevision container) {
+            List<String> labels = new LinkedList<String>();
+            for (boolean remote : new boolean[] { false, true }) {
+                List<String> toSort = new ArrayList<String>(container.getBranches().length);
+                for (GitBranch b : container.getBranches()) {
+                    if (remote == b.isRemote() && b.getName() != GitBranch.NO_BRANCH) {
+                        toSort.add(b.getName());
+                    }
+                }
+                Collections.sort(toSort);
+                labels.addAll(toSort);
+            }
+            return labels;
+        }
+
+        @Override
+        protected String getToolTip (String label) {
+            return NbBundle.getMessage(SummaryView.class, "CTL_SummaryView.branchAlias.TT", label); //NOI18N
+        }
+    }
+
+    private static final class TagAliasLinker extends AliasLinker {
+        private final File repository;
+        
+        private TagAliasLinker (File repository, StyledDocument sd, RepositoryRevision container) {
+            super(sd, computeLabels(container), true);
+            this.repository = repository;
+        }
+
+        private static List<String> computeLabels(RepositoryRevision container) {
+            List<String> labels = new ArrayList<String>(container.getTags().length);
+            for (GitTag b : container.getTags()) {
+                labels.add(b.getTagName());
+            }
+            Collections.sort(labels);
+            return labels;
+        }
+
+        @Override
+        protected String getToolTip (String label) {
+            return NbBundle.getMessage(SummaryView.class, "CTL_SummaryView.tagAlias.TT", label); //NOI18N
+        }
+
+        @Override
+        protected boolean mouseClicked (String label) {
+            ManageTagsAction action = SystemAction.get(ManageTagsAction.class);
+            action.showTagManager(repository, label);
+            return true;
         }
     }
 }
