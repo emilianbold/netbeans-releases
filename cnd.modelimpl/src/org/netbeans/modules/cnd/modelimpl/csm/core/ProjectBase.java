@@ -1677,8 +1677,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         pair = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(pair.state), pair.pcState);
                     }
                     statesToKeep.add(pair);
+                    result = ComparisonResult.SAME;
                 } else {
-                    result = ComparisonResult.BETTER;
+                    result = statesToKeep.isEmpty() ? ComparisonResult.BETTER : ComparisonResult.SAME;
                 }
             }
         }
