@@ -91,6 +91,13 @@ public class HudsonProviderImplTest extends NbTestCase {
         assertEquals("GeoAPI", a.getJobName());
     }
 
+    public void testFindAssociation4() throws Exception {
+        Association a = new HudsonProviderImpl().findAssociation(project(BASIC_PROJECT_START + "<ciManagement><system>Jenkins</system><url>https://builds.apache.org/hudson/job/maven-plugins/</url></ciManagement>" + BASIC_PROJECT_END));
+        assertNotNull(a);
+        assertEquals("https://builds.apache.org/hudson/", a.getServerUrl());
+        assertEquals("maven-plugins", a.getJobName());
+    }
+
     public void testRecordAssociation() throws Exception {
         Project p = project(BASIC_PROJECT_START + BASIC_PROJECT_END);
         assertTrue(new HudsonProviderImpl().recordAssociation(p, new Association("http://nowhere.net/", "foo bar")));

@@ -59,6 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class HudsonProviderImpl extends ProjectHudsonProvider {
 
     private static final String HUDSON_SYSTEM = "hudson"; // NOI18N
+    private static final String JENKINS_SYSTEM = "jenkins"; // NOI18N
 
     private FileObject pom(Project p) {
         if (p.getLookup().lookup(NbMavenProject.class) == null) {
@@ -72,8 +73,11 @@ public class HudsonProviderImpl extends ProjectHudsonProvider {
         NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
             org.apache.maven.model.CiManagement cim = prj.getMavenProject().getCiManagement();
-            if (cim != null && HUDSON_SYSTEM.equalsIgnoreCase(cim.getSystem())) {
-                return Association.fromString(cim.getUrl());
+            if (cim != null) {
+                String system = cim.getSystem();
+                if (HUDSON_SYSTEM.equalsIgnoreCase(system) || JENKINS_SYSTEM.equalsIgnoreCase(system)) {
+                    return Association.fromString(cim.getUrl());
+                }
             }
             // could listen to NbMavenProject.PROP_PROJECT if change firing is supported
         }
