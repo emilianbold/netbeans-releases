@@ -408,6 +408,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         //System.out.println("STATE CHANGED @@@@@@@@@ " + state);
         if (isCurrent()) {
             updateActions();
+	    invalidateSessionData(); // CR 6993279
         } else {
             // When user switches sessions by hand then we'll adjust
             // the actions.
