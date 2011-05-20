@@ -49,6 +49,8 @@ import java.nio.*;
 import java.nio.channels.*;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
@@ -68,6 +70,7 @@ public class BufferedRWAccess implements FileRWAccess {
 	    oldPosition = buffer.position();
 	}
 	
+        @Override
 	public void write(int b) throws IOException {
 	    if( buffer.remaining() <= 0 ) {
 		flushed += buffer.position();
@@ -99,12 +102,13 @@ public class BufferedRWAccess implements FileRWAccess {
 	ByteBuffer.allocateDirect(bufSize);
     }
         
+    @Override
     public Persistent read(PersistentFactory factory, long offset, int size) throws IOException {
 	try {
 	    ByteBuffer buffer = getReadBuffer(size);
 	    channel.read(buffer, offset);
 	    buffer.flip();
-	    DataInput in = new BufferDataInput(buffer);
+	    RepositoryDataInput in = new BufferDataInput(buffer);
 	    return factory.read(in);
 	}
 	catch( BufferOverflowException e ) {
@@ -117,10 +121,11 @@ public class BufferedRWAccess implements FileRWAccess {
 	}
     }
     
+    @Override
     public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
 	channel.position(offset);
 	ByteBufferOutputStream bos = new ByteBufferOutputStream(getWriteBuffer());
-	DataOutput out = new DataOutputStream(bos);
+	RepositoryDataOutput out = new RepositoryDataOutputStream(bos);
 	factory.write(out, object);
 	int count = bos.count();
 	writeBuffer();
@@ -148,15 +153,18 @@ public class BufferedRWAccess implements FileRWAccess {
 	writeBuffer.clear();
     }
     
+    @Override
     public long size() throws IOException {
 	return channel.size();
     }
     
+    @Override
     public void truncate(long size) throws IOException {
 	channel.truncate(size);
 	channel.position(size);
     }
     
+    @Override
     public void move(long offset, int size, long newOffset) throws IOException {
 	ByteBuffer buffer = getReadBuffer(size);
 	channel.read(buffer, offset);
@@ -164,6 +172,7 @@ public class BufferedRWAccess implements FileRWAccess {
 	channel.write(buffer, newOffset);
     }
     
+    @Override
     public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException {
 	if( ! (from instanceof  BufferedRWAccess) ) {
 	    throw new IllegalArgumentException("Illegal class to move from: " + from.getClass().getName()); // NOI18N
@@ -176,10 +185,12 @@ public class BufferedRWAccess implements FileRWAccess {
     }
     
     
+    @Override
     public void close() throws IOException {
 	channel.close();
     }
 
+    @Override
     public FileDescriptor getFD() throws IOException {
 	return randomAccessFile.getFD();
     }

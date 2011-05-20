@@ -47,8 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -64,6 +62,8 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmClass
@@ -377,7 +377,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.kind != null;
         writeKind(this.kind, output);
@@ -389,7 +389,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         factory.writeUIDCollection(this.inheritances, output, true);
     }
 
-    public ClassImpl(DataInput input) throws IOException {
+    public ClassImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.kind = readKind(input);
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
@@ -422,7 +422,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     private static final int UNION_KIND = 2;
     private static final int STRUCT_KIND = 3;
 
-    private static void writeKind(CsmDeclaration.Kind kind, DataOutput output) throws IOException {
+    private static void writeKind(CsmDeclaration.Kind kind, RepositoryDataOutput output) throws IOException {
         int kindHandler;
         if (kind == CsmDeclaration.Kind.CLASS) {
             kindHandler = CLASS_KIND;
@@ -435,7 +435,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         output.writeByte(kindHandler);
     }
 
-    private static CsmDeclaration.Kind readKind(DataInput input) throws IOException {
+    private static CsmDeclaration.Kind readKind(RepositoryDataInput input) throws IOException {
         int kindHandler = input.readByte();
         CsmDeclaration.Kind kind;
         switch (kindHandler) {
@@ -976,13 +976,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             assert this.visibility != null;
             PersistentUtils.writeVisibility(this.visibility, output);
         }
 
-        public MemberTypedef(DataInput input) throws IOException {
+        public MemberTypedef(RepositoryDataInput input) throws IOException {
             super(input);
             this.visibility = PersistentUtils.readVisibility(input);
             assert this.visibility != null;
@@ -1106,7 +1106,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             assert visibility != null;
             PersistentUtils.writeVisibility(visibility, output);
@@ -1115,7 +1115,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
         }
 
-        public ClassMemberForwardDeclaration(DataInput input) throws IOException {
+        public ClassMemberForwardDeclaration(RepositoryDataInput input) throws IOException {
             super(input);
             visibility = PersistentUtils.readVisibility(input);
             assert visibility != null;

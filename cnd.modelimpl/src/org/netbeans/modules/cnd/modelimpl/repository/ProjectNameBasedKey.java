@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * A common ancestor for nearly all keys 
@@ -95,11 +95,11 @@ import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         aStream.writeShort(this.unitIndex);
     }
 
-    protected ProjectNameBasedKey(DataInput aStream) throws IOException {
+    protected ProjectNameBasedKey(RepositoryDataInput aStream) throws IOException {
         this.unitIndex = aStream.readShort();
     }
 

@@ -51,8 +51,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -65,6 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -87,7 +87,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
     private CsmUID<CsmScope> scopeUID;
 
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
 
     private final TemplateDescriptor templateDescriptor;
 
@@ -294,7 +294,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return classTemplateSuffix != null ? classTemplateSuffix : CharSequences.empty();
     }
 
-    protected final CharSequence[] initRawName(AST node) {
+    protected final CharSequence initRawName(AST node) {
         return findFunctionRawName(node);
     }
 
@@ -345,7 +345,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return hasFlags(FLAGS_VOID_PARMLIST);
     }
 
-    private static CharSequence[] findFunctionRawName(AST ast) {
+    private static CharSequence findFunctionRawName(AST ast) {
         if( CastUtils.isCast(ast) ) {
             return CastUtils.getFunctionRawName(ast);
         }
@@ -401,7 +401,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
 
     @Override
@@ -907,14 +907,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     // iml of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
 
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
@@ -926,14 +926,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
-    public FunctionImpl(DataInput input) throws IOException {
+    public FunctionImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
 
         this.scopeUID = factory.readUID(input);
         // not null UID

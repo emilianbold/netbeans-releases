@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
@@ -60,6 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
@@ -433,7 +433,7 @@ public final class ProjectImpl extends ProjectBase {
     // impl of persistent
     public 
     @Override
-    void write(DataOutput aStream) throws IOException {
+    void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
@@ -441,7 +441,7 @@ public final class ProjectImpl extends ProjectBase {
         LibraryManager.getInstance().writeProjectLibraries(getUID(), aStream);
     }
 
-    public ProjectImpl(DataInput input) throws IOException {
+    public ProjectImpl(RepositoryDataInput input) throws IOException {
         super(input);
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();

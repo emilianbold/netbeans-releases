@@ -44,12 +44,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -67,13 +67,13 @@ public class KeyObjectFactory extends KeyFactory {
     
     
     @Override
-    public void writeKey(Key aKey, DataOutput aStream) throws IOException {
+    public void writeKey(Key aKey, RepositoryDataOutput aStream) throws IOException {
         assert aKey instanceof SelfPersistent;
         super.writeSelfPersistent((SelfPersistent)aKey, aStream);
     }
     
     @Override
-    public Key readKey(DataInput aStream) throws IOException {
+    public Key readKey(RepositoryDataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
         assert out instanceof Key;
@@ -89,7 +89,7 @@ public class KeyObjectFactory extends KeyFactory {
     }
     
     @Override
-    public void writeKeyCollection(Collection<Key> aCollection, DataOutput aStream ) throws IOException {
+    public void writeKeyCollection(Collection<Key> aCollection, RepositoryDataOutput aStream ) throws IOException {
         assert aCollection != null;
         assert aStream != null;
         
@@ -106,7 +106,7 @@ public class KeyObjectFactory extends KeyFactory {
     }
     
     @Override
-    public void readKeyCollection(Collection<Key> aCollection, DataInput aStream) throws IOException {
+    public void readKeyCollection(Collection<Key> aCollection, RepositoryDataInput aStream) throws IOException {
         assert aCollection != null;
         assert aStream != null;
         
@@ -171,7 +171,7 @@ public class KeyObjectFactory extends KeyFactory {
     }
     
     @Override
-    protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
+    protected SelfPersistent createObject(int handler, RepositoryDataInput aStream) throws IOException {
         SelfPersistent aKey;
         boolean share = true;
         switch (handler) {

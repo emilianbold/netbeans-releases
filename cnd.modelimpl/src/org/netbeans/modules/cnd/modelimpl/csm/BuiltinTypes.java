@@ -45,11 +45,8 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
-import java.io.DataOutput;
-import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -61,6 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -172,7 +171,7 @@ public class BuiltinTypes {
         return builtIn;
     }
 
-    public static ObjectBasedUID<CsmBuiltIn> readUID(DataInput aStream) throws IOException {
+    public static ObjectBasedUID<CsmBuiltIn> readUID(RepositoryDataInput aStream) throws IOException {
         CharSequence name = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager()); // no need for text manager
         CsmBuiltIn builtIn = BuiltinTypes.getBuiltIn(name);
         CsmUID<CsmBuiltIn> anUID = UIDs.<CsmBuiltIn>get(builtIn);
@@ -195,7 +194,7 @@ public class BuiltinTypes {
         } 
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             BuiltinImpl ref = (BuiltinImpl) getObject();
             assert ref != null;
             assert ref.getName() != null;

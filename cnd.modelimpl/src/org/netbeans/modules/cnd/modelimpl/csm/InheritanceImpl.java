@@ -46,8 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -59,6 +57,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmInheritance implementation
@@ -193,7 +193,7 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
     // impl of persistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
         output.writeBoolean(this.virtual);
@@ -209,7 +209,7 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
         factory.writeUID(toSave, output);
     }
 
-    public InheritanceImpl(DataInput input) throws IOException {
+    public InheritanceImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();

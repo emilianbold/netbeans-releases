@@ -50,9 +50,9 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Common ancestor for all ... statements
@@ -121,11 +121,11 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    public CompoundStatementImpl(DataInput input) throws IOException {
+    public CompoundStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.statements = null;
     }
