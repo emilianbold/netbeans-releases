@@ -474,7 +474,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     if (t.getStackDepth () < 2) return;
                     CallStackFrame frame;
                     try {
-                        frame = t.getCallStack(0, 1)[0]; // Retrieve the new, possibly obsoleted frame and check it.
+                        CallStackFrame[] frames = t.getCallStack(0, 1);
+                        if (frames.length == 0) return ;
+                        frame = frames[0]; // Retrieve the new, possibly obsoleted frame and check it.
                     } catch (AbsentInformationException ex) {
                         return;
                     }
