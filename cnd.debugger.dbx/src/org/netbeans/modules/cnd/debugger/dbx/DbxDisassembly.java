@@ -76,21 +76,21 @@ public class DbxDisassembly extends Disassembly {
         text.save();
         setText(text);
         if (text.isEmpty()) {
-            reloadDis();
+            reloadDis(true);
             return;
         }
     }
 
     public void stateUpdated() {
-        reloadDis();
+        reloadDis(false);
     }
     
     @Override
     protected void reload() {
-        reloadDis();
+        reloadDis(false);
     }
     
-    private void reloadDis() {
+    private void reloadDis(boolean force) {
         if (!opened) {
             return;
         }
@@ -105,7 +105,7 @@ public class DbxDisassembly extends Disassembly {
         
         if (curAddress != address) {
             requestMode = RequestMode.FILE_SRC;
-        } else if (requestMode == RequestMode.NONE) {
+        } else if (!force || requestMode == RequestMode.NONE) {
             return;
         }
 
