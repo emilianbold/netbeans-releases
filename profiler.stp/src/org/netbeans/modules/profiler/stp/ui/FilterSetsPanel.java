@@ -41,9 +41,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui;
+package org.netbeans.modules.profiler.stp.ui;
 
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.filters.DefinedFilterSets;
 import org.netbeans.lib.profiler.common.filters.FilterSet;
 import org.netbeans.lib.profiler.ui.UIConstants;
@@ -52,7 +51,6 @@ import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.components.JExtendedTable;
 import org.netbeans.lib.profiler.ui.components.table.BooleanTableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -66,6 +64,8 @@ import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import org.netbeans.modules.profiler.api.DefinedFilters;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -122,7 +122,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         }
 
         public int getRowCount() {
-            return nbProfiler.getGlobalFilters().getFilterNames().length;
+            return DefinedFilters.getGlobalFilters().getFilterNames().length;
         }
 
         public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
@@ -132,9 +132,9 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                 final boolean selected = ((Boolean) aValue).booleanValue();
 
                 if (selected) {
-                    selectedFilterSet.addActiveGlobalFilter(nbProfiler.getGlobalFilters().getFilterNames()[rowIndex]);
+                    selectedFilterSet.addActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[rowIndex]);
                 } else {
-                    selectedFilterSet.removeActiveGlobalFilter(nbProfiler.getGlobalFilters().getFilterNames()[rowIndex]);
+                    selectedFilterSet.removeActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[rowIndex]);
                 }
             }
         }
@@ -144,9 +144,9 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                 case 0:
                     return selectedFilterSetChecks[rowIndex];
                 case 1:
-                    return nbProfiler.getGlobalFilters().getFilterNames()[rowIndex];
+                    return DefinedFilters.getGlobalFilters().getFilterNames()[rowIndex];
                 case 2:
-                    return nbProfiler.getGlobalFilters().getFilterValues()[rowIndex];
+                    return DefinedFilters.getGlobalFilters().getFilterValues()[rowIndex];
             }
 
             return null;
@@ -185,7 +185,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                                                                  DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION
                                                              }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
                                                              null);
-            final Dialog d = ProfilerDialogs.createDialog(dd);
+            final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
             globalFiltersPanel.init();
             d.pack(); // allows correct resizing of textarea in GlobalFiltersPanel
             globalFiltersPanel.editFilterValueAtRow(row);
@@ -515,7 +515,6 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
     private JScrollPane activeFiltersScrollPane;
     private JScrollPane definedFilterSetsListScrollPane;
     private JTextField filterNameTextField;
-    private final NetBeansProfiler nbProfiler;
     private final Class[] columnClasses;
     private final String[] columnNames;
     private String filterSetNameBeforeEditing;
@@ -526,7 +525,6 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
     /** Creates new form FilterSetsPanel */
     private FilterSetsPanel() {
-        nbProfiler = (NetBeansProfiler) Profiler.getDefault();
         filterSets = new DefinedFilterSets();
 
         columnNames = new String[] { COLUMN_NAME_ACTIVE, COLUMN_NAME_NAME, COLUMN_NAME_VALUE };
@@ -588,12 +586,12 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
     }
 
     public void applyChanges() {
-        nbProfiler.getDefinedFilterSets().setValuesFrom(filterSets);
-        nbProfiler.saveGlobalFilters();
+        DefinedFilters.getDefinedFilterSets().setValuesFrom(filterSets);
+        DefinedFilters.saveGlobalFilters();
     }
 
     public void init(final int initialSelectedIndex) {
-        filterSets.setValuesFrom(nbProfiler.getDefinedFilterSets());
+        filterSets.setValuesFrom(DefinedFilters.getDefinedFilterSets());
 
         if (initialSelectedIndex < filterSets.getFilterSetsCount()) {
             definedFilterSetsList.setSelectedIndex(initialSelectedIndex);
@@ -994,9 +992,9 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         selectedFilterSetChecks[selectedIndex] = Boolean.valueOf(selected);
 
         if (selected) {
-            selectedFilterSet.addActiveGlobalFilter(nbProfiler.getGlobalFilters().getFilterNames()[selectedIndex]);
+            selectedFilterSet.addActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[selectedIndex]);
         } else {
-            selectedFilterSet.removeActiveGlobalFilter(nbProfiler.getGlobalFilters().getFilterNames()[selectedIndex]);
+            selectedFilterSet.removeActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[selectedIndex]);
         }
 
         ((AbstractTableModel) (activeFiltersTable.getModel())).fireTableDataChanged();
@@ -1021,10 +1019,10 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                 filterTypeInclusiveRadio.setSelected(true);
             }
 
-            selectedFilterSetChecks = new Boolean[nbProfiler.getGlobalFilters().getFilterNames().length];
+            selectedFilterSetChecks = new Boolean[DefinedFilters.getGlobalFilters().getFilterNames().length];
 
             for (int i = 0; i < selectedFilterSetChecks.length; i++) {
-                if (selectedFilterSet.containsActiveGlobalFilter(nbProfiler.getGlobalFilters().getFilterNames()[i])) {
+                if (selectedFilterSet.containsActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[i])) {
                     selectedFilterSetChecks[i] = Boolean.TRUE;
                 } else {
                     selectedFilterSetChecks[i] = Boolean.FALSE;

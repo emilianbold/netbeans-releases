@@ -41,9 +41,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ui;
+package org.netbeans.modules.profiler.stp.ui;
 
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.filters.FilterUtils;
 import org.netbeans.lib.profiler.common.filters.GlobalFilters;
 import org.netbeans.lib.profiler.ui.UIConstants;
@@ -52,7 +51,6 @@ import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.components.JExtendedTable;
 import org.netbeans.lib.profiler.ui.components.table.BooleanTableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.*;
@@ -61,6 +59,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
+import org.netbeans.modules.profiler.api.DefinedFilters;
 
 
 /**
@@ -448,7 +447,6 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     private JButton newButton;
     private JExtendedTable filterTable;
     private JLabel definedFiltersLabel;
-    private final NetBeansProfiler nbProfiler;
     private SelectionListener selectionListener;
     private final Class[] columnClasses;
     private final String[] columnNames;
@@ -462,8 +460,6 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     public GlobalFiltersPanel(final String[] filterNames, final String[] filterValues) {
         super(new BorderLayout());
 
-        nbProfiler = (NetBeansProfiler) Profiler.getDefault();
-
         columnNames = new String[] { COLUMN_NAME_NAME, COLUMN_NAME_VALUE };
         columnClasses = new Class[] { String.class, String.class };
 
@@ -476,8 +472,6 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     /** Creates a new instance of FilterListPanel */
     private GlobalFiltersPanel() {
         super(new BorderLayout());
-
-        nbProfiler = (NetBeansProfiler) Profiler.getDefault();
 
         columnNames = new String[] { COLUMN_NAME_NAME, COLUMN_NAME_VALUE };
         columnClasses = new Class[] { String.class, String.class };
@@ -548,10 +542,10 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     public void applyChanges() {
         stopFilterTableEditing();
 
-        final GlobalFilters globalFilters = nbProfiler.getGlobalFilters();
+        final GlobalFilters globalFilters = DefinedFilters.getGlobalFilters();
         globalFilters.setFilterNames(getFilterNamesCopy());
         globalFilters.setFilterValues(getFilterValuesCopy());
-        nbProfiler.saveGlobalFilters();
+        DefinedFilters.saveGlobalFilters();
     }
 
     public void editFilterValueAtRow(int row) {
@@ -567,7 +561,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
         stopFilterTableEditing();
         filterTable.clearSelection();
 
-        final GlobalFilters globalFilters = nbProfiler.getGlobalFilters();
+        final GlobalFilters globalFilters = DefinedFilters.getGlobalFilters();
         setFilterNamesFrom(globalFilters.getFilterNames());
         setFilterValuesFrom(globalFilters.getFilterValues());
     }
