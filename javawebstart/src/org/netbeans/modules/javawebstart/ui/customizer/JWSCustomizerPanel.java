@@ -115,14 +115,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
         if (jwsProps.jnlpImplOldOrModified) {
             warningArea.setVisible(true);
-            extResButton.setEnabled(false);
-            appletDescRadioButton.setEnabled(false);
-            appletClassLabel.setEnabled(false);
-            appletClassComboBox.setEnabled(false);
-            appletParamsButton.setEnabled(false);
-            compDescRadioButton.setEnabled(false);
+            setEnabledAllComponents(false);
         } else {
-            warningArea.setVisible(false);
+            resolvePanel.setVisible(false);
         }
 
         extResColumnNames = new String[] {
@@ -182,7 +177,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         appletClassComboBox = new javax.swing.JComboBox();
         appletParamsButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
+        resolvePanel = new javax.swing.JPanel();
         warningArea = new javax.swing.JTextArea();
+        resolve = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         extResButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
@@ -430,6 +427,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
+        resolvePanel.setLayout(new java.awt.GridBagLayout());
+
         warningArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         warningArea.setColumns(20);
         warningArea.setEditable(false);
@@ -440,12 +439,29 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         warningArea.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        resolvePanel.add(warningArea, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(resolve, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ResolveModifiedBuildScript")); // NOI18N
+        resolve.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resolveOldBuildScript(evt);
+            }
+        });
+        resolvePanel.add(resolve, new java.awt.GridBagConstraints());
+        resolve.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "AD_Resolve")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
-        add(warningArea, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        add(resolvePanel, gridBagConstraints);
 
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -582,6 +598,12 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     
 }//GEN-LAST:event_manageResources
 
+private void resolveOldBuildScript(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveOldBuildScript
+    jwsProps.jnlpImplOldOrModified = false;
+    resolvePanel.setVisible(false);
+    setEnabledAllComponents(true);
+}//GEN-LAST:event_resolveOldBuildScript
+
     private void setEnabledAppletControls(boolean b) {
         appletClassLabel.setEnabled(b);
         appletClassComboBox.setEnabled(b);
@@ -646,10 +668,14 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         codebaseValueLabel.setEnabled(b);
         codebaseTextField.setEnabled(b);
         offlineCheckBox.setEnabled(b);
+        jLabel1.setEnabled(b);
+        signingInfolabel.setEnabled(b);
         signingCustomizeButton.setEnabled(b);
         extResButton.setEnabled(b);
         applicationDescRadioButton.setEnabled(b);
         appletDescRadioButton.setEnabled(b);
+        jButton1.setEnabled(b);
+
         compDescRadioButton.setEnabled(b);
         if (!b || (b && appletDescRadioButton.isSelected())) {
             setEnabledAppletControls(b);
@@ -693,6 +719,8 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox offlineCheckBox;
     private javax.swing.JLabel panelDescLabel;
+    private javax.swing.JButton resolve;
+    private javax.swing.JPanel resolvePanel;
     private javax.swing.JButton signingCustomizeButton;
     private javax.swing.JLabel signingInfolabel;
     private javax.swing.JTextArea warningArea;
