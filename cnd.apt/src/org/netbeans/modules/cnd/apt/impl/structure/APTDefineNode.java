@@ -219,16 +219,9 @@ public final class APTDefineNode extends APTMacroBaseNode
                             stateAndHashCode = IN_PARAMS_AFTER_ELLIPSIS;
                             break;
                         default:
-                            // eat comma and comments and leave IN_PARAMS state
+                            // eat comma and comments and leave state
                             if (!APTUtils.isCommentToken(token.getType())) {
-                                // error check
-                                if (DebugUtils.STANDALONE) {
-                                    System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
-                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
-                                } else {
-                                    APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
-                                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()} ); // NOI18N
-                                }                                
+                                logError(curFile, token);
                                 stateAndHashCode = ERROR;
                             }
                             break;
@@ -244,14 +237,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                         default:
                             // eat comments and leave state
                             if (!APTUtils.isCommentToken(token.getType())) {
-                                // error check
-                                if (DebugUtils.STANDALONE) {
-                                    System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
-                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
-                                } else {
-                                    APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
-                                            new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()}); // NOI18N
-                                }
+                                logError(curFile, token);
                                 stateAndHashCode = ERROR;
                             }
                             break;
@@ -268,14 +254,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                             //previous parameter is variadic named token
                             // #195560 - more support for variadic variables in macro 
                             if (params.isEmpty()) {
-                                // error check
-                                if (DebugUtils.STANDALONE) {
-                                    System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list without preceding name\n", // NOI18N
-                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
-                                } else {
-                                    APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list without preceding name", // NOI18N
-                                            new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()}); // NOI18N
-                                }
+                                logError(curFile, token);
                                 stateAndHashCode = ERROR;
                             } else {
                                 int index = params.size() - 1;
@@ -289,16 +268,9 @@ public final class APTDefineNode extends APTMacroBaseNode
                             stateAndHashCode = IN_PARAMS;
                             break;
                         default:
-                            // eat comma and comments and leave IN_PARAMS state
+                            // eat comma and comments and leave state
                             if (!APTUtils.isCommentToken(token.getType())) {
-                                // error check
-                                if (DebugUtils.STANDALONE) {
-                                    System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
-                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
-                                } else {
-                                    APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
-                                            new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()}); // NOI18N
-                                }
+                                logError(curFile, token);
                                 stateAndHashCode = ERROR;
                             }
                             break;
@@ -361,6 +333,17 @@ public final class APTDefineNode extends APTMacroBaseNode
                     assert(false) : "unexpected state"; // NOI18N
             }
             return true;
+        }
+    }
+
+    private void logError(APTFile curFile, APTToken token) {
+        // error report
+        if (DebugUtils.STANDALONE) {
+            System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
+                    APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
+        } else {
+            APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
+                    new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()}); // NOI18N
         }
     }
     
