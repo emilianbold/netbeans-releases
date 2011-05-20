@@ -240,12 +240,6 @@ final class ResultWindow extends TopComponent {
         StatisticsPanel newSP = (StatisticsPanel)newView.getLeftComponent();
         newSP.copyFilterMask(oldSP);
     }
-    
-    /**
-     */
-    private boolean isActivated() {
-        return TopComponent.getRegistry().getActivated() == this;
-    }
 
     /**
      */
