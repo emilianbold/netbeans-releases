@@ -449,6 +449,8 @@ public abstract class FromEntityBase {
                 return "Short.valueOf("+param+")";
             } else if ("BigDecimal".equals(idType.toString()) || "java.math.BigDecimal".equals(idType.toString())) {
                 return "new java.math.BigDecimal("+param+")";
+            } else if ("Date".equals(idType.toString()) || "java.util.Date".equals(idType.toString())) {
+                return "java.sql.Date.valueOf("+param+")";
             }
         }
         return param;
