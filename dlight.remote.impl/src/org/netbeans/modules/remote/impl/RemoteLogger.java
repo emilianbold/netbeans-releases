@@ -131,15 +131,31 @@ public class RemoteLogger {
         instance.log(Level.FINEST, "FYI:", exception);
     }
     
+    public static void finest(Exception exception, Object source) {
+        if (instance.isLoggable(Level.FINEST)) {
+            instance.log(Level.FINEST, "FYI " + source, exception);
+        }
+    }
+    
     public static void fine(Exception exception) {
         instance.log(Level.FINE, "FYI:", exception);
     }
     
     public static void info(Exception exception) {
-        instance.log(Level.WARNING, "Exception occurred:", exception);
+        if (instance.isLoggable(Level.WARNING)) {
+            instance.log(Level.WARNING, "Exception occurred:", exception);
+        }
+    }
+
+    public static void info(Exception exception, Object source) {
+        if (instance.isLoggable(Level.WARNING)) {
+            instance.log(Level.WARNING, "Exception from " + source, exception);
+        }
     }
 
     public static void warning(Exception exception) {
-        instance.log(Level.WARNING, "Exception occurred:", exception);
+        if (instance.isLoggable(Level.WARNING)) {
+            instance.log(Level.WARNING, "Exception occurred:", exception);
+        }
     }
 }

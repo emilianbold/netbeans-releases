@@ -341,15 +341,15 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         try {
             refreshImpl(true);
         } catch (ConnectException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
-            RemoteLogger.info(ex);
+            RemoteLogger.info(ex, this);
         } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (CancellationException ex) {
-            RemoteLogger.finest(ex);
+            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
-            RemoteLogger.info(ex);
+            RemoteLogger.info(ex, this);
         }
     }
 
