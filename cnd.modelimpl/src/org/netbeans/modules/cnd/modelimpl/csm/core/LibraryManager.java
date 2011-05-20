@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -63,6 +61,8 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -392,7 +392,7 @@ public final class LibraryManager {
     /**
      * Write artificial libraries for project
      */
-    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, DataOutput aStream) throws IOException {
+    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
         Set<LibraryKey> keys = new HashSet<LibraryKey>();
         for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
@@ -409,7 +409,7 @@ public final class LibraryManager {
     /**
      * Read artificial libraries for project
      */
-    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput input) throws IOException {
+    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, RepositoryDataInput input) throws IOException {
         assert input != null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
@@ -431,12 +431,12 @@ public final class LibraryManager {
             this.folder = folder;
         }
 
-        private LibraryKey(DataInput input) throws IOException {
+        private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
             this.folder = input.readUTF();
         }
         
-        private void write(DataOutput out) throws IOException {
+        private void write(RepositoryDataOutput out) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, out);
             out.writeUTF(folder);
         }

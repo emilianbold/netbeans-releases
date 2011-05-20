@@ -102,6 +102,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
@@ -1695,7 +1697,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
@@ -1737,7 +1739,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     //private static boolean firstDump = false;
 
-    public FileImpl(DataInput input) throws IOException {
+    public FileImpl(RepositoryDataInput input) throws IOException {
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
@@ -1921,21 +1923,21 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             alreadyFixed = true;
         }
         
-        private void write(DataOutput output) throws IOException {
+        private void write(RepositoryDataOutput output) throws IOException {
             UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
             factory.writeUID(includeUid, output);
             factory.writeUID(containerUid, output);
             output.writeBoolean(alreadyFixed);            
         }
         
-        private FakeIncludePair(DataInput input) throws IOException {
+        private FakeIncludePair(RepositoryDataInput input) throws IOException {
             UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
             includeUid = factory.readUID(input);
             containerUid = factory.readUID(input);
             alreadyFixed = input.readBoolean();
         }
         
-        private static void write(List<FakeIncludePair> coll, DataOutput output) throws IOException {
+        private static void write(List<FakeIncludePair> coll, RepositoryDataOutput output) throws IOException {
             assert output != null;
             Collection<FakeIncludePair> copy = new ArrayList<FakeIncludePair>(coll);
             int collSize = copy.size();
@@ -1947,7 +1949,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 
-        private static void read(List<FakeIncludePair> coll, DataInput input) throws IOException {
+        private static void read(List<FakeIncludePair> coll, RepositoryDataInput input) throws IOException {
             int collSize = input.readInt();
             for (int i = 0; i < collSize; i++) {
                 FakeIncludePair pair = new FakeIncludePair(input);

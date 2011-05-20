@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 /**
@@ -60,7 +58,7 @@ public interface PersistentFactory
      * @param obj object to write
      * @throws java.io.IOException 
      */
-    void write(DataOutput out, Persistent obj) throws IOException; 
+    void write(RepositoryDataOutput out, Persistent obj) throws IOException; 
 
     /**
      * Repository Deserialization 
@@ -68,5 +66,5 @@ public interface PersistentFactory
      * @return read object
      * @throws java.io.IOException 
      */
-    Persistent read(DataInput in) throws IOException;     
+    Persistent read(RepositoryDataInput in) throws IOException;     
 }

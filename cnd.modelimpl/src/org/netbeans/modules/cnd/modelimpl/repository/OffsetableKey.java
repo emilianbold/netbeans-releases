@@ -43,13 +43,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -122,7 +122,7 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         aStream.writeInt(this.startOffset);
         aStream.writeInt(this.endOffset);
@@ -131,7 +131,7 @@ import org.openide.util.CharSequences;
         PersistentUtils.writeUTF(name, aStream);
     }
 
-    protected OffsetableKey(DataInput aStream) throws IOException {
+    protected OffsetableKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
         this.startOffset = aStream.readInt();
         this.endOffset = aStream.readInt();

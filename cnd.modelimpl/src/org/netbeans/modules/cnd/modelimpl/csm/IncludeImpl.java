@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
@@ -56,6 +54,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -185,7 +185,7 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
     }
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
@@ -194,7 +194,7 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         UIDObjectFactory.getDefaultFactory().writeUID(this.includeFileUID, output);
     }
 
-    public IncludeImpl(DataInput input) throws IOException {
+    public IncludeImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, FileNameCache.getManager());
         assert this.name != null;

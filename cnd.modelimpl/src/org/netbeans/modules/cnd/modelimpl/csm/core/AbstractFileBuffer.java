@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -54,6 +52,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -147,14 +147,14 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     // impl of SelfPersistent
 
     // final is important here - see PersistentUtils.writeBuffer/readBuffer
-    public final void write(DataOutput output) throws IOException {
+    public final void write(RepositoryDataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
         PersistentUtils.writeFileSystem(fileSystem, output);        
         output.writeByte((byte) bufType.ordinal());
     }  
     
-    protected AbstractFileBuffer(DataInput input) throws IOException {
+    protected AbstractFileBuffer(RepositoryDataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
