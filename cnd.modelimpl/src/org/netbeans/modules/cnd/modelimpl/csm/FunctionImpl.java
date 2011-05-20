@@ -87,7 +87,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
     private CsmUID<CsmScope> scopeUID;
 
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
 
     private final TemplateDescriptor templateDescriptor;
 
@@ -294,7 +294,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return classTemplateSuffix != null ? classTemplateSuffix : CharSequences.empty();
     }
 
-    protected final CharSequence[] initRawName(AST node) {
+    protected final CharSequence initRawName(AST node) {
         return findFunctionRawName(node);
     }
 
@@ -345,7 +345,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return hasFlags(FLAGS_VOID_PARMLIST);
     }
 
-    private static CharSequence[] findFunctionRawName(AST ast) {
+    private static CharSequence findFunctionRawName(AST ast) {
         if( CastUtils.isCast(ast) ) {
             return CastUtils.getFunctionRawName(ast);
         }
@@ -401,7 +401,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
 
     @Override
@@ -914,7 +914,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
 
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
@@ -933,7 +933,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
 
         this.scopeUID = factory.readUID(input);
         // not null UID
