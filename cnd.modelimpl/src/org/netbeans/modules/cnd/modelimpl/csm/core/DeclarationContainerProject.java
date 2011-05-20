@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,6 +75,8 @@ import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.MapBasedTable;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyPresentationFactorySupport;
 import org.openide.util.CharSequences;
 
@@ -105,7 +105,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
         put();
     }
 
-    public DeclarationContainerProject(DataInput input) throws IOException {
+    public DeclarationContainerProject(RepositoryDataInput input) throws IOException {
         super(input);
         int colSize = input.readInt();
         friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>(colSize);
@@ -354,7 +354,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         try {
             getLock().readLock().lock();

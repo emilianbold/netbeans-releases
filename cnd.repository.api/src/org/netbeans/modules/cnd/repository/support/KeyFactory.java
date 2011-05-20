@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.repository.support;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.repository.spi.*;
@@ -88,23 +86,23 @@ public abstract class  KeyFactory extends AbstractObjectFactory {
      * @param aKey  A key
      * @param aStream A DataOutput Stream
      */
-    abstract public void writeKey(Key aKey, DataOutput aStream) throws IOException;
+    abstract public void writeKey(Key aKey, RepositoryDataOutput aStream) throws IOException;
     
     /** Method to deserialize a key
      * @param aStream A DataOutput Stream
      * @return A key
      */
-    abstract public Key readKey(DataInput aStream) throws IOException;
+    abstract public Key readKey(RepositoryDataInput aStream) throws IOException;
     
     /** Method to serialize a colleaction of keys
      * @param aColliection   A collection of keys
      * @param aStream A DataOutput Stream
      */
-    abstract public void writeKeyCollection(Collection<Key> aCollection, DataOutput aStream ) throws IOException;
+    abstract public void writeKeyCollection(Collection<Key> aCollection, RepositoryDataOutput aStream ) throws IOException;
     
     /** Method to deserialize a colleaction of keys
      * @param aColliection   A collection of keys
      * @param aStream A DataOutput Stream
      */
-    abstract public void readKeyCollection(Collection<Key> aCollection, DataInput aStream) throws IOException;
+    abstract public void readKeyCollection(Collection<Key> aCollection, RepositoryDataInput aStream) throws IOException;
 }

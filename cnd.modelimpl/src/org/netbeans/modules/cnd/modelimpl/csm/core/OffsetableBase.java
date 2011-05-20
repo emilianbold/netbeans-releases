@@ -44,14 +44,14 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -170,7 +170,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return file;
     }
 
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         output.writeInt(startPosition);
         output.writeInt(endPosition);
         // not null UID
@@ -178,7 +178,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         UIDObjectFactory.getDefaultFactory().writeUID(this.fileUID, output);
     }
     
-    protected OffsetableBase(DataInput input) throws IOException {
+    protected OffsetableBase(RepositoryDataInput input) throws IOException {
         startPosition = input.readInt();
         endPosition = input.readInt();
 

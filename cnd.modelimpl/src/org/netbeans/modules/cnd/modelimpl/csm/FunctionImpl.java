@@ -51,8 +51,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -65,6 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -907,7 +907,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     // iml of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
@@ -926,7 +926,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
-    public FunctionImpl(DataInput input) throws IOException {
+    public FunctionImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;

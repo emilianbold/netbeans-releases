@@ -47,6 +47,8 @@ package org.netbeans.modules.cnd.repository.test;
 import java.io.*;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Test object to store in a SingleFileStorage
@@ -59,7 +61,7 @@ public class TestObject implements Persistent {
     public int iData;
     public long lData;
 
-    public TestObject(DataInput in) throws IOException {
+    public TestObject(RepositoryDataInput in) throws IOException {
 	read(in);
     }
     
@@ -72,7 +74,7 @@ public class TestObject implements Persistent {
 	return key;
     }
     
-    public void write(DataOutput out) throws IOException {
+    public void write(RepositoryDataOutput out) throws IOException {
         key.write(out);
 	if( sData == null ) {
 	    out.writeInt(-1);
@@ -87,7 +89,7 @@ public class TestObject implements Persistent {
 	out.writeLong(lData);
     }
     
-    private Persistent read(DataInput in) throws IOException {
+    private Persistent read(RepositoryDataInput in) throws IOException {
 	key = new TestKey(in);
 	int cnt = in.readInt();
 	if( cnt == -1 ) {

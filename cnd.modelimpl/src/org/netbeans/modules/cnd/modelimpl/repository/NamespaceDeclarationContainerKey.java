@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
@@ -80,11 +80,11 @@ public final class NamespaceDeclarationContainerKey extends NamespaceKey {
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
     }
 
-    /*package*/ NamespaceDeclarationContainerKey(DataInput aStream) throws IOException {
+    /*package*/ NamespaceDeclarationContainerKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 

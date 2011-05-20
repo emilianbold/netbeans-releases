@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -60,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
@@ -146,7 +146,7 @@ public final class Unresolved implements Disposable {
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             throw new IllegalCallException();
         }
     }
@@ -169,7 +169,7 @@ public final class Unresolved implements Disposable {
 
 
 	@Override
-	public void write(DataOutput output) throws IOException {
+	public void write(RepositoryDataOutput output) throws IOException {
 	    throw new IllegalCallException();
 	}
     }

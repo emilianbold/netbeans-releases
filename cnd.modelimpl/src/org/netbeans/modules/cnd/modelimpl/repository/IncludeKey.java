@@ -43,13 +43,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * A key for CsmInclude objects (file and offset -based)
@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
         super(obj, Utils.getCsmIncludeKindKey(), obj.getIncludeName()); // NOI18N
     }
 
-    /*package*/ IncludeKey(DataInput aStream) throws IOException {
+    /*package*/ IncludeKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 

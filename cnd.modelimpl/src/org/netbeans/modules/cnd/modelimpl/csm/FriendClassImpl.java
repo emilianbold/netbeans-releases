@@ -46,12 +46,10 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -65,6 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -286,7 +286,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     // iml of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
@@ -299,7 +299,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     }
 
 
-    public FriendClassImpl(DataInput input) throws IOException {
+    public FriendClassImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
