@@ -302,6 +302,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
+            setFlag(CONNECTION_ISSUES, true);
             RemoteLogger.finest(ex, this);
             return null;
         } catch (FileNotFoundException ex) {
@@ -421,6 +422,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // should we report it?
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
+            setFlag(CONNECTION_ISSUES, true);
             RemoteLogger.finest(ex, this);
         } catch (FileNotFoundException ex) {
             RemoteLogger.finest(ex, this);
@@ -948,7 +950,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     if (oldEntry == null || !oldEntry.isValid()) {
                         changed = true;
                         cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
-                        if (fromMemOrDiskCache || newEntry.getName().equals(expectedName)) {
+                        if (fromMemOrDiskCache || newEntry.getName().equals(expectedName) || getFlag(CONNECTION_ISSUES)) {
                             entriesToFireCreated.add(newEntry);
                         }
                     } else {
@@ -1051,6 +1053,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             } else {
                 storage.touch();
             }
+            setFlag(CONNECTION_ISSUES, false);
             // always put new content in cache 
             // do it before firing events, to give liseners real content
             synchronized (refLock) {
