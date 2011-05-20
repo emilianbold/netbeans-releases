@@ -97,10 +97,10 @@ public class RefreshManager {
                     clear();
                     break;
                 } catch (InterruptedException ex) {
-                    RemoteLogger.finest(ex);
+                    RemoteLogger.finest(ex, fo);
                     break;
                 } catch (CancellationException ex) {
-                    RemoteLogger.finest(ex);
+                    RemoteLogger.finest(ex, fo);
                     break;
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -109,7 +109,7 @@ public class RefreshManager {
                 }
             }
             time = System.currentTimeMillis() - time;
-            RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {1}", new Object[] {cnt, time, env});
+            RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
         }
     }
 
