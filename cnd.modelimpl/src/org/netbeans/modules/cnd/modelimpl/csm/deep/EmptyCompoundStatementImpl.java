@@ -45,8 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +54,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * empty compound statement. Used for incorrect/uncompleted code 
@@ -89,11 +89,11 @@ public final class EmptyCompoundStatementImpl extends StatementBase implements C
     }
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
     
-    public EmptyCompoundStatementImpl(DataInput input) throws IOException {
+    public EmptyCompoundStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
     }     
 }

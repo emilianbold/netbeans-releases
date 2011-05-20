@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -56,6 +53,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -87,7 +86,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         put();
     }
 
-    public FileComponentInstantiations(DataInput input) throws IOException {
+    public FileComponentInstantiations(RepositoryDataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readUIDCollection(this.instantiations, input);
@@ -130,7 +129,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         try {

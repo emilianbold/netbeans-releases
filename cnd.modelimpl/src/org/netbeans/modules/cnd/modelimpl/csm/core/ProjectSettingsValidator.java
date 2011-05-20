@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +64,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -244,7 +244,7 @@ public class ProjectSettingsValidator {
 	    map.put(FilePathCache.getManager().getString(name), crc);
 	}
 	
-	public Data(DataInput stream) throws IOException {
+	public Data(RepositoryDataInput stream) throws IOException {
 	    map = new HashMap<CharSequence, Long>();
 	    int cnt = stream.readInt();
 	    for (int i = 0; i < cnt; i++) {
@@ -255,7 +255,7 @@ public class ProjectSettingsValidator {
 	}
 	
         @Override
-	public void write(DataOutput stream ) throws IOException {
+	public void write(RepositoryDataOutput stream ) throws IOException {
 	    stream.writeInt(map.size());
 	    for( Map.Entry<CharSequence, Long> entry : map.entrySet()) {
 		PersistentUtils.writeUTF(entry.getKey(), stream);
@@ -267,13 +267,13 @@ public class ProjectSettingsValidator {
     private static class ValidatorPersistentFactory implements PersistentFactory {
 
         @Override
-	public void write(DataOutput out, Persistent obj) throws IOException {
+	public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
 	    assert obj instanceof Data;
 	    ((Data) obj).write(out);
 	}
 
         @Override
-	public Persistent read(DataInput in) throws IOException {
+	public Persistent read(RepositoryDataInput in) throws IOException {
 	    return new Data(in);
 	}
     }

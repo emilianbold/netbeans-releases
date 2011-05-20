@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.openide.util.CharSequences;
 
 /**
@@ -60,7 +60,7 @@ import org.openide.util.CharSequences;
         super(obj, Utils.getCsmParamListKindKey(), CharSequences.empty()); // NOI18N
     }
 
-    /*package*/ ParamListKey(DataInput aStream) throws IOException {
+    /*package*/ ParamListKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 
