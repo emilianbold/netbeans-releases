@@ -110,6 +110,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catIndexEntry",  //NOI18N
             "createBranch", //NOI18N - does not update index or files in WT
             "createTag", //NOI18N - does not update index or files in WT
+            "deleteTag", //NOI18N - does not update index or files in WT
             "fetch", //NOI18N - updates only metadata
             "exportCommit", //NOI18N
             "exportDiff", //NOI18N
@@ -142,6 +143,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "commit", //NOI18N
             "createBranch", //NOI18N // should refresh set of known branches
             "createTag", //NOI18N - should refresh set of available tags
+            "deleteTag", //NOI18N - should refresh set of available tags
             "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
             "pull", //NOI18N // creates a new head

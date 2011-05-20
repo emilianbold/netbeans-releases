@@ -90,6 +90,7 @@ import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
+import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -1065,6 +1066,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
+            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowser.tagNode.showDetails")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            ManageTagsAction action = SystemAction.get(ManageTagsAction.class);
+                            action.showTagManager(currRepository, tagName);
+                        }
+                    }, 0);
+                }
+            });
             actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {

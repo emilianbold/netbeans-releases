@@ -85,6 +85,7 @@ import org.netbeans.libs.git.jgit.commands.GetCommonAncestorCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
 import org.netbeans.libs.git.jgit.commands.CreateTagCommand;
+import org.netbeans.libs.git.jgit.commands.DeleteTagCommand;
 import org.netbeans.libs.git.jgit.commands.ExportCommitCommand;
 import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
 import org.netbeans.libs.git.jgit.commands.FetchCommand;
@@ -227,10 +228,16 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public GitTag createTag (String tagName, String taggedObjectId, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException {
+    public GitTag createTag (String tagName, String taggedObjectId, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException.RefUpdateException, GitException {
         CreateTagCommand cmd = new CreateTagCommand(gitRepository.getRepository(), tagName, taggedObjectId, message, signed, forceUpdate, monitor);
         cmd.execute();
         return cmd.getTag();
+    }
+
+    @Override
+    public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException.RefUpdateException, GitException {
+        DeleteTagCommand cmd = new DeleteTagCommand(gitRepository.getRepository(), tagName, monitor);
+        cmd.execute();
     }
 
     @Override
