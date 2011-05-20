@@ -60,16 +60,14 @@ public class HudsonProviderImpl extends ProjectHudsonProvider {
 
     private static final String HUDSON_SYSTEM = "hudson"; // NOI18N
 
-    static boolean TEST;
-
     private FileObject pom(Project p) {
-        if (!TEST && p.getLookup().lookup(NbMavenProject.class) == null) {
+        if (p.getLookup().lookup(NbMavenProject.class) == null) {
             return null;
         }
         return p.getProjectDirectory().getFileObject("pom.xml"); // NOI18N
     }
 
-    public Association findAssociation(Project p) {
+    public @Override Association findAssociation(Project p) {
         //reading needs to be done from resolved model..
         NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
@@ -82,13 +80,13 @@ public class HudsonProviderImpl extends ProjectHudsonProvider {
         return null;
     }
 
-    public boolean recordAssociation(Project p, final Association a) {
+    public @Override boolean recordAssociation(Project p, final Association a) {
         FileObject pom = pom(p);
         if (pom == null) {
             return false;
         }
         Utilities.performPOMModelOperations(pom, Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
+            public @Override void performOperation(POMModel model) {
                 CiManagement cim;
                 if (a != null) {
                     cim = model.getFactory().createCiManagement();
