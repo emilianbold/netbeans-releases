@@ -1397,7 +1397,7 @@ public class OutlineView extends JScrollPane {
 
                             if (a != null) {
                                 if (a.isEnabled ()) {
-                                    a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                    a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "", ((MouseEvent) e).getModifiers())); // NOI18N
                                     return false;
                                 } else {
                                     Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
