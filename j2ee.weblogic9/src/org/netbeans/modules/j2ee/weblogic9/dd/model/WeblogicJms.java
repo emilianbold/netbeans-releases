@@ -53,4 +53,7 @@ public interface WeblogicJms extends CommonDDBean {
     
     TopicType[] getTopic();
 
+    QueueType addQueue();
+    
+    TopicType addTopic();
 }

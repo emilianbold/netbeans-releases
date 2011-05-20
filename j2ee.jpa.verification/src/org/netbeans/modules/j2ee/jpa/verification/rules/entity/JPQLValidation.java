@@ -67,12 +67,9 @@ import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.util.NbBundle;
 
 /**
- * Named queries can be defined only on Entity or MappedSuperclass class
- * 
- * @author Tomasz.Slota@Sun.COM
+ * Verify content of @NamedQuery query
  */
 public class JPQLValidation extends JPAClassRule {
     

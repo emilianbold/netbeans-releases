@@ -208,7 +208,9 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             for (String each : names) {
                 addBeanName(each, bean);
             }
-            beans.add(bean);
+            if (clazz != null) {
+                beans.add(bean);
+            }
         }
         
         private Set<SpringBeanProperty> parseBeanProperties(Node node, Map<String, String> prefixesMap) {

@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git;
 
+import org.eclipse.jgit.lib.RefUpdate.Result;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,7 +111,7 @@ public class GitException extends Exception {
         public AuthorizationException (String repositoryUrl, String message, Throwable t) {
             super(message, t);
             this.repositoryUrl = repositoryUrl;
-}
+        }
 
         public AuthorizationException (String message, Throwable t) {
             this(null, message, t);
@@ -122,6 +123,23 @@ public class GitException extends Exception {
          */
         public String getRepositoryUrl () {
             return repositoryUrl;
+        }
+    }
+
+    public static class RefUpdateException extends GitException {
+        private final GitRefUpdateResult result;
+
+        public RefUpdateException (String message, Result result) {
+            super(message);
+            this.result = remapResult(result);
+        }
+
+        public GitRefUpdateResult getResult () {
+            return result;
+        }
+
+        private GitRefUpdateResult remapResult (Result result) {
+            return GitRefUpdateResult.valueOf(result.name());
         }
     }
 }

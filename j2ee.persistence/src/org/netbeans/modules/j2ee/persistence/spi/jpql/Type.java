@@ -74,7 +74,7 @@ public class Type implements IType{
     public Iterable<IConstructor> constructors() {
         ArrayList<IConstructor> ret = new ArrayList<IConstructor>();
         collectConstructors(ret, element);
-        return null;
+        return ret;
     }
 
     @Override
