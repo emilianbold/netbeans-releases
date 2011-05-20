@@ -64,9 +64,7 @@ public final class DbgGuiModule extends ModuleInstall {
 
     @Override
     public void close() {
-	DebuggerManager.get().shutDown();
-
-	DebuggerManager.get().saveGlobalState();
+	DebuggerManager.close();
 
 	ExternalStartManager.stopAll();
     }
