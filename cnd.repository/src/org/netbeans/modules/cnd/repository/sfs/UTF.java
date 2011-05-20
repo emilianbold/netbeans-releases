@@ -92,10 +92,9 @@ public class UTF {
 	    }
 	}
 
-	if (utflen > 65535)
-	    throw new UTFDataFormatException(
-                "encoded string too long: " + utflen + " bytes"); // NOI18N
-
+        if (utflen > 65535) {
+            throw new UTFDataFormatException("encoded string too long: " + utflen + " bytes"); // NOI18N
+        }
         byte[] bytearr = null;
         if ((out instanceof SharedStringBuffer) && ((SharedStringBuffer)out).getSharedArrayLehgth() >= utflen+2) {
             SharedStringBuffer dis = (SharedStringBuffer)out;
@@ -194,35 +193,34 @@ public class UTF {
                 case 12: case 13:
                     /* 110x xxxx   10xx xxxx*/
                     count += 2;
-                    if (count > utflen)
-                        throw new UTFDataFormatException(
-                            "malformed input: partial character at end");
+                    if (count > utflen) {
+                        throw new UTFDataFormatException("malformed input: partial character at end");// NOI18N
+                    }
                     char2 = (int) bytearr[count-1];
-                    if ((char2 & 0xC0) != 0x80)
-                        throw new UTFDataFormatException(
-                            "malformed input around byte " + count); 
+                    if ((char2 & 0xC0) != 0x80) {
+                        throw new UTFDataFormatException("malformed input around byte " + count);// NOI18N
+                    }
                     chararr[chararr_count++]=(char)(((c & 0x1F) << 6) | 
                                                     (char2 & 0x3F));  
                     break;
                 case 14:
                     /* 1110 xxxx  10xx xxxx  10xx xxxx */
                     count += 3;
-                    if (count > utflen)
-                        throw new UTFDataFormatException(
-                            "malformed input: partial character at end");
+                    if (count > utflen) {
+                        throw new UTFDataFormatException("malformed input: partial character at end");// NOI18N
+                    }
                     char2 = (int) bytearr[count-2];
                     char3 = (int) bytearr[count-1];
-                    if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80))
-                        throw new UTFDataFormatException(
-                            "malformed input around byte " + (count-1));
+                    if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
+                        throw new UTFDataFormatException("malformed input around byte " + (count-1));// NOI18N
+                    }
                     chararr[chararr_count++]=(char)(((c     & 0x0F) << 12) |
                                                     ((char2 & 0x3F) << 6)  |
                                                     ((char3 & 0x3F) << 0));
                     break;
                 default:
                     /* 10xx xxxx,  1111 xxxx */
-                    throw new UTFDataFormatException(
-                        "malformed input around byte " + count);
+                    throw new UTFDataFormatException("malformed input around byte " + count);// NOI18N
             }
         }
         return CharSequences.create(chararr, 0, chararr_count);
