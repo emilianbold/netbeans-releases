@@ -615,6 +615,7 @@ public class Actions {
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
+     *   &lt;!-- since 7.31: &lt;attr name="context" newvalue="org.my.own.LookupImpl"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * Now the constructor of <code>YourClass</code> needs to have following
@@ -662,7 +663,12 @@ public class Actions {
         return context(map);
     }
     static ContextAwareAction context(Map fo) {
-        return GeneralAction.context(fo);
+        ContextAwareAction caa = GeneralAction.context(fo);
+        Object context = fo.get("context");
+        if (context instanceof Lookup) {
+            return (ContextAwareAction)caa.createContextAwareInstance((Lookup)context);
+        }
+        return caa;
     }
     static ContextAction.Performer<?> inject(final Map fo) {
         Object t = fo.get("selectionType"); // NOI18N
