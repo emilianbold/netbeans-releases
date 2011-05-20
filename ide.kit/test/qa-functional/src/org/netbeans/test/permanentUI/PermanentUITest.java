@@ -51,7 +51,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class PermanentUITest {
     public static Test suite() {
-    return NbModuleSuite.create(
+    return
       NbModuleSuite.emptyConfiguration()
         .clusters(".*").enableModules(".*")
         .addTest(MainMenuTest.class, 
@@ -95,7 +95,7 @@ public class PermanentUITest {
                   "testWindow_VersioningSubMenu")
         .addTest(NewProjectTest.class)
         .addTest(OptionsTest.class)
-    );
+    .suite();
   }
 
 }

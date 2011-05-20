@@ -48,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -198,7 +200,20 @@ public class ProjectGenerator {
                                         " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
                             }
                         }
-                        throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N
+                        for (AntBasedProjectType abpt : Lookups.forPath("Services").lookupAll(AntBasedProjectType.class)) {
+                            if (abpt.getType().equals(type)) {
+                                throw new IllegalArgumentException("Factory type " + type + " is in Services lookup but not global");
+                            }
+                        }
+                        if (FileUtil.getConfigFile("Services/AntBasedProjectTypes/" + type.replace('.', '-') + ".instance") != null) {
+                            throw new IllegalArgumentException("Factory type " + type + " is registered but does not appear in lookup");
+                        }
+                        FileObject services = FileUtil.getConfigFile("Services");
+                        if (services == null) {
+                            FileObject r = FileUtil.getConfigRoot();
+                            throw new IllegalArgumentException("No Services folder; SFS " + r.getFileSystem() + " contains: " + Collections.list(r.getChildren(true)));
+                        }
+                        throw new IllegalArgumentException("No Ant-based project factory for type " + type + "; Services folder contains: " + Collections.list(services.getChildren(true))); // NOI18N
                     }
                     AntProjectHelper helper = AntBasedProjectFactorySingleton.getHelperFor(p);
                     if (helper == null) {

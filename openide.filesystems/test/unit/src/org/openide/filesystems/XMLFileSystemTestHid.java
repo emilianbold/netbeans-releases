@@ -333,6 +333,32 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertNotNull("Returned", instance);
         assertEquals("Right class", Count.class, instance.getClass());
     }
+    public void testMultiFileSystemWithOverridenAttributes() throws Exception {
+        File f = writeFile("layer.xml",
+                "<filesystem>\n"
+                + "    <folder name =\"org-sepix\">\n"
+                + "       <folder name =\"Panes\">\n"
+                + "            <file name=\"Demo.txt\">\n"
+                + "                <attr name=\"position\" intvalue=\"100\"/>\n"
+                + "            </file>\n"
+                + "      </folder>\n"
+                + "    </folder>\n"
+                + "</filesystem>");
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
+        final LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { lfs, xfs });
+        FileObject folder = mfs.findResource("org-sepix/Panes/");
+
+        for (FileObject fileObject : folder.getChildren()) {
+            assertEquals("should be 100", 100, fileObject.getAttribute("position"));
+
+            fileObject.setAttribute("position", 200);
+            assertEquals("should be 200", 200, fileObject.getAttribute("position"));
+            assertEquals("should be 200 still", 200, fileObject.getAttribute("position"));
+        }
+    }
 
     public void testGetAttributeDoesNotAccessAllAttributes() throws Exception {
         File f = writeFile("layer.xml",
@@ -1070,6 +1096,40 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         if (!layersB.contains(f2.toURI().toString())) {
             fail("Missing " + f2 + "\ninside: " + layersB);
         }
+    }
+
+    public void testWeights() throws Exception { // #195827
+        File c1 = writeFile("c1.txt", "first");
+        File c2 = writeFile("c2.txt", "second");
+        File f1 = writeFile("layer1.xml",
+                "<filesystem>\n" +
+                "<folder name='d'>\n" +
+                "<file name='f' url='" + c1.toURI() + "'/>" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+        File f2 = writeFile("layer2.xml",
+                "<filesystem>\n" +
+                "<folder name='d'>\n" +
+                "<file name='f' url='" + c2.toURI() + "'>" +
+                "  <attr name='weight' intvalue='100'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f2.toURI().toURL(), f1.toURI().toURL());
+        FileObject fo = xfs.findResource("d/f");
+        assertNotNull(fo);
+        assertEquals(6, fo.getSize());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f1.toURI().toURL(), f2.toURI().toURL());
+        fo = xfs.findResource("d/f");
+        assertNotNull(fo);
+        assertEquals(6, fo.getSize());
+        // XXX overriding of inline CDATA
+        // XXX overriding of attributes (not sure if this is even supported by MFS?)
+        // XXX nonintegral weights (not currently implemented)
+        // XXX competition between two nonzero weights, or unspecified and a negative weight
     }
 
     private static String layers(FileObject fo) {

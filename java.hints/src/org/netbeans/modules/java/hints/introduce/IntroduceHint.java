@@ -49,13 +49,11 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -71,7 +69,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.awt.Color;
@@ -83,12 +80,16 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -127,6 +128,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
+import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -448,7 +450,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     prepareTypeVars(method, info, typeVar2Def, typeVars);
 
-                    ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), typeVar2Def, cancel);
+                    ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), typeVar2Def, Collections.<Tree, Iterable<? extends TreePath>>emptyMap(), cancel);
 
                     if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
                         ExecutableElement ee = (ExecutableElement) methodEl;
@@ -461,7 +463,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     List<TreePathHandle> params = new LinkedList<TreePathHandle>();
 
                     boolean error186980 = false;
-                    for (VariableElement ve : scanner.usedLocalVariables) {
+                    for (VariableElement ve : scanner.usedLocalVariables.keySet()) {
                         TreePath path = info.getTrees().getPath(ve);
                         if (path == null) {
                             error186980 = true;
@@ -480,7 +482,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             exceptionHandles.add(TypeMirrorHandle.create(tm));
                         }
 
-                        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
+                        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables.keySet(), cancel).size();
 
                         typeVars.retainAll(scanner.usedTypeVariables);
 
@@ -564,7 +566,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Element methodEl = info.getTrees().getElement(method);
         List<? extends StatementTree> parentStatements = CopyFinder.getStatements(block);
         List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);
-        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), typeVar2Def, cancel);
+        FlowResult flow = Flow.assignmentsForUse(info, method, cancel);
+
+        if (flow == null || cancel.get()) {
+            return null;
+        }
+
+        Map<Tree, Iterable<? extends TreePath>> assignmentsForUse = flow.getAssignmentsForUse();
+        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), typeVar2Def, assignmentsForUse, cancel);
         Set<TypeMirror> exceptions = new HashSet<TypeMirror>();
         int index = 0;
         TypeMirror methodReturnType = info.getTypes().getNoType(TypeKind.VOID);
@@ -599,16 +608,42 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             errorMessage.put(IntroduceKind.CREATE_METHOD, exitsError);
             return null;
         }
+        
+        Map<VariableElement, Boolean> mergedVariableUse = new LinkedHashMap<VariableElement, Boolean>(scanner.usedLocalVariables);
+
+        for (Entry<VariableElement, Boolean> e : scanner.usedAfterSelection.entrySet()) {
+            if (cancel.get()) return null;
+
+            Boolean usedLocal = mergedVariableUse.get(e.getKey());
+
+            if (usedLocal == null && Flow.definitellyAssigned(info, e.getKey(), pathsOfStatementsToWrap, cancel)) {
+                mergedVariableUse.put(e.getKey(), true);
+            } else {
+                mergedVariableUse.put(e.getKey(), !(usedLocal == Boolean.FALSE) && e.getValue());
+            }
+        }
+
+        if (cancel.get()) return null;
+
+        Set<VariableElement> additionalLocalVariables = new LinkedHashSet<VariableElement>();
+        Set<VariableElement> paramsVariables = new LinkedHashSet<VariableElement>();
+
+        for (Entry<VariableElement, Boolean> e : mergedVariableUse.entrySet()) {
+            if (e.getValue()) {
+                additionalLocalVariables.add(e.getKey());
+            } else {
+                paramsVariables.add(e.getKey());
+                additionalLocalVariables.remove(e.getKey());
+            }
+        }
 
         List<TreePathHandle> params = new LinkedList<TreePathHandle>();
 
-        for (VariableElement ve : scanner.usedLocalVariables) {
+        for (VariableElement ve : paramsVariables) {
             params.add(TreePathHandle.create(info.getTrees().getPath(ve), info));
         }
 
-        List<VariableElement> additionalLocalVariables = new LinkedList<VariableElement>(scanner.selectionWrittenLocalVariables);
-
-        additionalLocalVariables.removeAll(scanner.usedLocalVariables);
+        additionalLocalVariables.removeAll(paramsVariables);//needed?
         additionalLocalVariables.removeAll(scanner.selectionLocalVariables);
 
         List<TypeMirrorHandle> additionaLocalTypes = new LinkedList<TypeMirrorHandle>();
@@ -630,10 +665,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         TreePathHandle returnAssignTo;
         boolean declareVariableForReturnValue;
 
-        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, pathsOfStatementsToWrap, new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
+        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, pathsOfStatementsToWrap, new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables.keySet(), cancel).size();
 
-        if (!scanner.usedSelectionLocalVariables.isEmpty()) {
-            VariableElement result = scanner.usedSelectionLocalVariables.iterator().next();
+        if (!scanner.usedAfterSelection.isEmpty()) {
+            VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
 
             returnType = result.asType();
             returnAssignTo = TreePathHandle.create(info.getTrees().getPath(result), info);
@@ -1046,13 +1081,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private Tree firstInSelection;
         private Tree lastInSelection;
         private Set<VariableElement> localVariables = new HashSet<VariableElement>();
-        private Set<VariableElement> usedLocalVariables = new LinkedHashSet<VariableElement>();
+        private Map<VariableElement, Boolean> usedLocalVariables = new LinkedHashMap<VariableElement, Boolean>(); /*true if all uses have been definitelly assigned inside selection*/
         private Set<VariableElement> selectionLocalVariables = new HashSet<VariableElement>();
-        private Set<VariableElement> selectionWrittenLocalVariables = new HashSet<VariableElement>();
-        private Set<VariableElement> usedSelectionLocalVariables = new HashSet<VariableElement>();
+        private Map<VariableElement, Boolean> usedAfterSelection = new LinkedHashMap<VariableElement, Boolean>(); /*true if all uses have been definitelly assigned inside selection*/
         private Set<TreePath> selectionExits = new HashSet<TreePath>();
         private Set<Tree> treesSeensInSelection = new HashSet<Tree>();
         private final Map<TypeMirror, TreePathHandle> typeVar2Def;
+        private final Map<Tree, Iterable<? extends TreePath>> assignmentsForUse;
         private Set<TreePathHandle> usedTypeVariables = new HashSet<TreePathHandle>();
         private boolean hasReturns = false;
         private boolean hasBreaks = false;
@@ -1061,11 +1096,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private boolean stopSecondPass = false;
         private final AtomicBoolean cancel;
 
-        public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, Map<TypeMirror, TreePathHandle> typeVar2Def, AtomicBoolean cancel) {
+        public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, Map<TypeMirror, TreePathHandle> typeVar2Def, Map<Tree, Iterable<? extends TreePath>> assignmentsForUse, AtomicBoolean cancel) {
             this.info = info;
             this.firstInSelection = firstInSelection;
             this.lastInSelection = lastInSelection;
             this.typeVar2Def = typeVar2Def;
+            this.assignmentsForUse = assignmentsForUse;
             this.cancel = cancel;
         }
 
@@ -1118,14 +1154,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitAssignment(AssignmentTree node, Void p) {
-            if (phase == PHASE_INSIDE_SELECTION) {
-                Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
-
-                if (e != null && LOCAL_VARIABLES.contains(e.getKind()) && localVariables.contains(e)) {
-                    selectionWrittenLocalVariables.add((VariableElement) e);
-                }
-            }
-
             //make sure the variable on the left side is not considered to be read
             //#162163: but dereferencing array is a read
             if (node.getVariable() != null && node.getVariable().getKind() != Kind.IDENTIFIER) {
@@ -1136,36 +1164,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         @Override
-        public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-            if (phase == PHASE_INSIDE_SELECTION) {
-                Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
-
-                if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
-                    selectionWrittenLocalVariables.add((VariableElement) e);
-                }
-            }
-
-            return super.visitCompoundAssignment(node, p);
-        }
-
-        @Override
-        public Void visitUnary(UnaryTree node, Void p) {
-            Kind k = node.getKind();
-
-            if (k == Kind.POSTFIX_DECREMENT || k == Kind.POSTFIX_INCREMENT || k == Kind.PREFIX_DECREMENT || k == Kind.PREFIX_INCREMENT) {
-                //#109663:
-                if (phase == PHASE_INSIDE_SELECTION) {
-                    Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
-
-                    if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
-                        selectionWrittenLocalVariables.add((VariableElement) e);
-                    }
-                }
-            }
-            return super.visitUnary(node, p);
-        }
-
-        @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
 
@@ -1173,13 +1171,42 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 if (LOCAL_VARIABLES.contains(e.getKind())) {
                     switch (phase) {
                         case PHASE_INSIDE_SELECTION:
-                            if (localVariables.contains(e)) {
-                                usedLocalVariables.add((VariableElement) e);
+                            if (localVariables.contains(e) && !usedLocalVariables.containsKey(e)) {
+                                Iterable<? extends TreePath> writes = assignmentsForUse.get(getCurrentPath().getLeaf());
+                                boolean definitellyAssignedInSelection = true;
+
+                                if (writes != null) {
+                                    for (TreePath w : writes) {
+                                        if (w == null || !treesSeensInSelection.contains(w.getLeaf())) {
+                                            definitellyAssignedInSelection = false;
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    definitellyAssignedInSelection = false;
+                                }
+
+                                usedLocalVariables.put((VariableElement) e, definitellyAssignedInSelection);
                             }
                             break;
                         case PHASE_AFTER_SELECTION:
-                            if (selectionLocalVariables.contains(e) || selectionWrittenLocalVariables.contains(e)) {
-                                usedSelectionLocalVariables.add((VariableElement) e);
+                            Iterable<? extends TreePath> writes = assignmentsForUse.get(getCurrentPath().getLeaf());
+                            boolean assignedInSelection = false;
+                            boolean definitellyAssignedInSelection = true;
+
+                            if (writes != null) {
+                                for (TreePath w : writes) {
+                                    if (w != null && treesSeensInSelection.contains(w.getLeaf())) {
+                                        assignedInSelection = true;
+                                    }
+                                    if (w == null || !treesSeensInSelection.contains(w.getLeaf())) {
+                                        definitellyAssignedInSelection = false;
+                                    }
+                                }
+                            }
+
+                            if (assignedInSelection) {
+                                usedAfterSelection.put((VariableElement) e, definitellyAssignedInSelection);
                             }
                             break;
                     }
@@ -1297,7 +1324,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 return "ERR_Too_Many_Different_Exits"; // NOI18N
             }
 
-            if ((exitsFromAllBranches ? 0 : i) + usedSelectionLocalVariables.size() > 1) {
+            if ((exitsFromAllBranches ? 0 : i) + usedAfterSelection.size() > 1) {
                 return "ERR_Too_Many_Return_Values"; // NOI18N
             }
 
@@ -1862,8 +1889,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
 
-                    ReturnTree ret = null;
-                    VariableElement returnAssignTo = null;
+                    Callable<ReturnTree> ret = null;
+                    final VariableElement returnAssignTo;
 
                     if (IntroduceMethodFix.this.returnAssignTo != null) {
                         returnAssignTo = (VariableElement) IntroduceMethodFix.this.returnAssignTo.resolveElement(copy);
@@ -1871,10 +1898,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         if (returnAssignTo == null) {
                             return; //TODO...
                         }
+                    } else {
+                        returnAssignTo = null;
                     }
 
                     if (returnAssignTo != null) {
-                        ret = make.Return(make.Identifier(returnAssignTo.getSimpleName()));
+                        ret = new Callable<ReturnTree>() {
+                            @Override public ReturnTree call() throws Exception {
+                                return make.Return(make.Identifier(returnAssignTo.getSimpleName()));
+                            }
+                        };
                         if (declareVariableForReturnValue) {
                             nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
                             invocation = null;
@@ -1894,15 +1927,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         assert handle != null;
 
-                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN) {
+                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN && returnAssignTo == null && returnType.getKind() != TypeKind.VOID) {
                             nueStatements.add(make.Return(invocation));
                         } else {
                             if (ret == null) {
-                                if (exitsFromAllBranches) {
-                                    ret = make.Return(null);
-                                } else {
-                                    ret = make.Return(make.Literal(true));
-                                }
+                                ret = new Callable<ReturnTree>() {
+                                    @Override public ReturnTree call() throws Exception {
+                                        if (exitsFromAllBranches) {
+                                            return make.Return(null);
+                                        } else {
+                                            return make.Return(make.Literal(true));
+                                        }
+                                    }
+                                };
                             }
 
                             for (TreePathHandle h : exists) {
@@ -1912,7 +1949,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                     return ; //TODO...
                                 }
 
-                                copy.rewrite(resolved.getLeaf(), ret);
+                                ReturnTree r = ret.call();
+
+                                GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, false);
+                                GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, true);
+                                
+                                copy.rewrite(resolved.getLeaf(), r);
                             }
 
                             StatementTree branch = null;
@@ -1941,7 +1983,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         invocation = null;
                     } else {
                         if (ret != null) {
-                            methodStatements.add(ret);
+                            methodStatements.add(ret.call());
                         }
                     }
 
@@ -1949,7 +1991,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         nueStatements.add(make.ExpressionStatement(invocation));
 
                     nueStatements.addAll(statements.subList(to + 1, statements.size()));
+                    
+                    Map<Tree, Tree> rewritten = new IdentityHashMap<Tree, Tree>();
 
+                    doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
+                    
                     if (replaceOther) {
                         //handle duplicates
                         Document doc = copy.getDocument();
@@ -1960,7 +2006,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
-                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
+                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(new TreePath(new TreePath(mdd.firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, mdd.firstLeaf.getParentPath().getLeaf())), mdd.firstLeaf.getLeaf()));
                             int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
                             int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
 
@@ -2016,7 +2062,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             newStatements.addAll(parentStatements.subList(mdd.dupeEnd + 1, parentStatements.size()));
 
-                            doReplaceInBlockCatchSingleStatement(copy, mdd.firstLeaf, newStatements);
+                            doReplaceInBlockCatchSingleStatement(copy, rewritten, mdd.firstLeaf, newStatements);
                         }
 
                         introduceBag(doc).clear();
@@ -2065,7 +2111,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
-                    doReplaceInBlockCatchSingleStatement(copy, firstStatement, nueStatements);
                 }
             }).commit();
 
@@ -2074,9 +2119,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     }
 
-    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
+    private static Tree resolveRewritten(Map<Tree, Tree> rewritten, Tree t) {
+        while (rewritten.containsKey(t)) {
+            t = rewritten.get(t);
+        }
+        
+        return t;
+    }
+    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, Map<Tree, Tree> rewritten, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
         TreeMaker make = copy.getTreeMaker();
-        Tree toReplace = firstLeaf.getParentPath().getLeaf();
+        Tree toReplace = resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf());
         Tree nueTree;
 
         switch (toReplace.getKind()) {
@@ -2095,6 +2147,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         copy.rewrite(toReplace, nueTree);
+        rewritten.put(toReplace, nueTree);
     }
 
     private static final class IntroduceExpressionBasedMethodFix implements Fix {

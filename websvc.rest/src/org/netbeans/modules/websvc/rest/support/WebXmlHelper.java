@@ -56,6 +56,8 @@ import org.w3c.dom.Element;
  * @author PeterLiu
  */
 public class WebXmlHelper {
+    
+    public static final String PERSISTENCE_FACTORY  = "persistence-factory";    //NOI81N
 
     private static final String PERSISTENCE_UNIT_REF_PREFIX = "persistence/";       //NOI81N
 
@@ -99,7 +101,7 @@ public class WebXmlHelper {
         
         helper = new DOMHelper(fobj);
      
-        addPersistenceContextRef();
+        addPersistenceUnitRef();
         
         /*
          * Fix for BZ#190237 -  RESTful WS from entity classes do not deploy on WebLogic
@@ -113,15 +115,16 @@ public class WebXmlHelper {
     }
 
     private void addPersistenceUnitRef() {
-        String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
-        Element refElement = helper.findElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName);
+        Element refElement = helper.findElement(PERSISTENCE_UNIT_REF_NAME_TAG, 
+                PERSISTENCE_FACTORY);
 
         if (refElement != null) {
             return;
         }
         
         refElement = helper.createElement(PERSISTENCE_UNIT_REF_TAG);
-        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName));
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_REF_NAME_TAG, 
+                PERSISTENCE_FACTORY));
         refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName));
 
         helper.appendChild(refElement);

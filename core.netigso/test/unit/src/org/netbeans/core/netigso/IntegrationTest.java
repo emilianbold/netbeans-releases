@@ -73,14 +73,14 @@ public class IntegrationTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.emptyConfiguration().addTest(
                 IntegrationTest.class
             ).honorAutoloadEager(true).clusters(
                 ".*"
             ).failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
             .gui(false)
-        );
+        .suite();
     }
 
     @Override
@@ -91,6 +91,7 @@ public class IntegrationTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
+        clearWorkDir();
         File jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
 

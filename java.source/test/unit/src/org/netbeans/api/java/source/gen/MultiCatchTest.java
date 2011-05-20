@@ -64,7 +64,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Jan Lahoda and Pavel Flaska
  */
-public class MultiCatchTest extends GeneratorTest {
+public class MultiCatchTest extends GeneratorTestBase {
     
     /** Creates a new instance of TryTest */
     public MultiCatchTest(String name) {
@@ -111,7 +111,7 @@ public class MultiCatchTest extends GeneratorTest {
                 TryTree tt = make.Try(make.Block(Collections.<StatementTree>emptyList(), false),
                                       Collections.singletonList(make.Catch(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)),
                                                                                          "ex",
-                                                                                         make.DisjunctiveType(Arrays.asList(make.Identifier("java.net.MalformedURLException"),
+                                                                                         make.UnionType(Arrays.asList(make.Identifier("java.net.MalformedURLException"),
                                                                                                                             make.Identifier("java.io.IOException"))
                                                                                                           ),
                                                                                          null),

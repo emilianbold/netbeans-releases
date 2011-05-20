@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test197997() throws Exception {
+        // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
+        performTest("iz197997.cc");
+    }
+    
     public void test191446() throws Exception {
         // #191446 - no code assistance for elementes #include'ed in namespace body
         performTest("iz191446.cc");
@@ -376,6 +381,16 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testExplicitSpecialization() throws Exception {
         //  improving specialisations - skip explicit template function specialisation
         performTest("explicit_specialization.cc");
+    }
+
+    public void testBug195338() throws Exception {
+        // Bug 195338 - Unnamed bit sets issue
+        performTest("bug195338.cpp");
+    }
+
+    public void testBug198460() throws Exception {
+        // Bug 198460 - add support for gcc keyword __extension__
+        performTest("bug198460.cpp");
     }
     
 }

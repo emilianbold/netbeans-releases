@@ -82,6 +82,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileSystem;
 
 
 /**
@@ -353,22 +355,24 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                 target = null;
                 CharSequence macroContainerFile = macro.getFile();
                 if (current != null && macroContainerFile.length() > 0) {
-                    ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(macroContainerFile);
+                    FileSystem fs = null;
+                    ProjectBase currentPrj = (ProjectBase) current.getProject();
+                    ProjectBase targetPrj = currentPrj.findFileProject(macroContainerFile, true);
                     if (targetPrj != null) {
-                        target = targetPrj.findFile(macroContainerFile, false);
+                        target = targetPrj.findFile(macroContainerFile, true, false);
+                        fs = targetPrj.getFileSystem();
+                    } else {
+                        fs = currentPrj.getFileSystem();
                     }
                     // try full model?
                     if (target == null) {
-                        target = CsmModelAccessor.getModel().findFile(macroContainerFile, false);
+                        target = CsmModelAccessor.getModel().findFile(new FSPath(fs, macroContainerFile.toString()), true, false);
                     }
                     if (target == null && targetPrj != null) {
                         target = targetPrj.getUnresolvedFile();
                     }
                     if (target == null) {
-                        ProjectBase currentPrj = (ProjectBase) current.getProject();
-                        if (currentPrj != null) {
-                            target = currentPrj.getUnresolvedFile();
-                        }
+                        target = currentPrj.getUnresolvedFile();
                     }
                 }
             }

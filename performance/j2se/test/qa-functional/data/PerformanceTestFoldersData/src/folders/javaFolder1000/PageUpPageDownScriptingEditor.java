@@ -105,21 +105,7 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();        
     }
-
-    public void testPgUp_In_RBEditor() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        pgup = true;
-        doMeasurement();
-    }
-    public void testPgDn_In_RBEditor() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        pgup = false;        
-        doMeasurement();
-    }
+    
     public void testPgUp_In_PHPEditor() {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
@@ -132,20 +118,6 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
         fileName = "php20kb.php";
         nodePath = "Source Files";
         pgup = false;
-        doMeasurement();
-    }
-    public void testPgUp_In_RHTMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";        
-        pgup = true;
-        doMeasurement();
-    }    
-    public void testPgDn_In_RHTMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";        
-        pgup = false;        
         doMeasurement();
     }
     

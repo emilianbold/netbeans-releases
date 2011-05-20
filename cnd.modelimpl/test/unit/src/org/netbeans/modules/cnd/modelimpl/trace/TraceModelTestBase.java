@@ -200,7 +200,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         }
     }
     
-    protected void postTest(String[] args, Object... params) {
+    protected void postTest(String[] args, Object... params) throws Exception {
         
     }
 

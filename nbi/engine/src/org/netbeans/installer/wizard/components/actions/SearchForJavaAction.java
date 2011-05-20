@@ -194,9 +194,10 @@ public class SearchForJavaAction extends WizardAction {
     }
     public static void sortJavaLocations(){
         // sort the found java installations:
-        //   1) by version descending
-        //   2) by path acending
-        //   3) by vendor descending (so Sun comes first, hehe)
+        //   1) by final/non-final
+        //   2) by version descending
+        //   3) by path acending
+        //   4) by vendor descending (so Sun comes first, hehe)
         for (int i = 0; i < javaLocations.size(); i++) {
             for (int j = javaLocations.size() - 1; j > i ; j--) {
                 File file1 = javaLocations.get(j);
@@ -208,33 +209,33 @@ public class SearchForJavaAction extends WizardAction {
                 JavaInfo info1 = JavaUtils.getInfo(javaLocations.get(j));
                 JavaInfo info2 = JavaUtils.getInfo(javaLocations.get(j - 1));
                 
-                if (info1.getVersion().equals(info2.getVersion())) {
-                    if (file1.getPath().compareTo(file2.getPath()) == 0) {
-                        if (info1.getVendor().compareTo(info2.getVendor()) == 0) {
-                            continue;
-                        } else if (info1.getVendor().compareTo(info2.getVendor()) < 0) {
-                            javaLocations.set(j, file2);
-                            javaLocations.set(j - 1, file1);
-                            
-                            javaLabels.set(j, label2);
-                            javaLabels.set(j - 1, label1);
+                if (info1.isNonFinal() == info2.isNonFinal()) {
+                    if (info1.getVersion().equals(info2.getVersion())) {
+                        if (file1.getPath().compareTo(file2.getPath()) == 0) {
+                            if (info1.getVendor().compareTo(info2.getVendor()) == 0) {
+                                continue;
+                            } else if (info1.getVendor().compareTo(info2.getVendor()) < 0) {
+                                switchNeighbours(j, file2, file1, label2, label1);
+                            }
+                        } else if (file1.getPath().length() < file2.getPath().length()) {
+                            switchNeighbours(j, file2, file1, label2, label1);
                         }
-                    } else if (file1.getPath().length() < file2.getPath().length()) {
-                        javaLocations.set(j, file2);
-                        javaLocations.set(j - 1, file1);
-                        
-                        javaLabels.set(j, label2);
-                        javaLabels.set(j - 1, label1);
+                    } else if (info1.getVersion().newerThan(info2.getVersion())) {
+                        switchNeighbours(j, file2, file1, label2, label1);
                     }
-                } else if (info1.getVersion().newerThan(info2.getVersion())) {
-                    javaLocations.set(j, file2);
-                    javaLocations.set(j - 1, file1);
-                    
-                    javaLabels.set(j, label2);
-                    javaLabels.set(j - 1, label1);
+                } else if (!info1.isNonFinal() && info2.isNonFinal()) {
+                    switchNeighbours(j, file2, file1, label2, label1);
                 }
             }
         }        
+    }
+
+    private static void switchNeighbours (int j, File file2, File file1, String label2, String label1) {
+        javaLocations.set(j, file2);
+        javaLocations.set(j - 1, file1);
+
+        javaLabels.set(j, label2);
+        javaLabels.set(j - 1, label1);
     }
     
     public static void addJavaLocation(File location, Version version, String vendor) {

@@ -96,7 +96,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public boolean canFileDeploy(Target target, J2eeModule deployable) {
-        if (FORBID_DIRECTORY_DEPLOYMENT) {
+        if (FORBID_DIRECTORY_DEPLOYMENT || dm.isRemote()) {
             return false;
         }
         return deployable != null && !J2eeModule.Type.CAR.equals(deployable.getType())
@@ -177,6 +177,10 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public boolean isDeployOnSaveSupported() {
+        if (dm.isWebProfile()) {
+            // at least for now, reevaluate later
+            return false;
+        }
         return true;
     }
 

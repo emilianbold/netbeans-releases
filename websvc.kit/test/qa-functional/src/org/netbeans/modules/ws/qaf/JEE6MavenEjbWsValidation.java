@@ -62,7 +62,7 @@ public class JEE6MavenEjbWsValidation extends MavenEjbWsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3,
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
                 NbModuleSuite.createConfiguration(JEE6MavenEjbWsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",

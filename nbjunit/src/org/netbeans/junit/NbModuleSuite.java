@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -58,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,12 +67,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
+import junit.framework.Protectable;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -119,6 +126,7 @@ public class NbModuleSuite {
         final List<String> clusterRegExp;
         /** each odd is cluster reg exp, each even is module reg exp */
         final List<String> moduleRegExp;
+        final List<String> startupArgs;
         final ClassLoader parentClassLoader;
         final boolean reuseUserDir;
         final boolean gui;
@@ -130,6 +138,7 @@ public class NbModuleSuite {
         private Configuration(
             List<String> clusterRegExp,
             List<String> moduleRegExp,
+            List<String> startupArgs,
             ClassLoader parent,
             List<Item> testItems,
             Class<? extends TestCase> latestTestCase,
@@ -142,6 +151,7 @@ public class NbModuleSuite {
         ) {
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
+            this.startupArgs = startupArgs;
             this.parentClassLoader = parent;
             this.tests = testItems;
             this.reuseUserDir = reuseUserDir;
@@ -155,7 +165,7 @@ public class NbModuleSuite {
 
         static Configuration create(Class<? extends TestCase> clazz) {            
             return new Configuration(
-                null, null, ClassLoader.getSystemClassLoader().getParent(),
+                null, null, null, ClassLoader.getSystemClassLoader().getParent(),
                 Collections.<Item>emptyList(), clazz, false, true, true, false
                 , null, null);
         }
@@ -183,7 +193,7 @@ public class NbModuleSuite {
                 list = null;
             }
             return new Configuration(
-                list, moduleRegExp, parentClassLoader, tests,
+                list, moduleRegExp, startupArgs, parentClassLoader, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
             , failOnMessage, failOnException);
@@ -224,14 +234,48 @@ public class NbModuleSuite {
             arr.add(clusterRegExp);
             arr.add(moduleRegExp);
             return new Configuration(
-                this.clusterRegExp, arr, parentClassLoader,
+                this.clusterRegExp, arr, startupArgs, parentClassLoader,
+                tests, latestTestCaseClass, reuseUserDir, gui,
+                enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
+        }
+        
+        /**
+         * Appends one or more command line arguments which will be used to 
+         * start the application.  Arguments which take a parameter should
+         * usually be specified as two separate strings.  Also note that this
+         * method cannot handle arguments which must be passed directly to the 
+         * JVM (such as memory settings or system properties), those should be 
+         * instead specified in the <code>test.run.args</code> property (e.g.
+         * in the module's <code>project.properties</code> file).
+         * 
+         * @param arguments command line arguments to append; each value
+         * specified here will be passed a separate argument when starting
+         * the application under test.
+         * @return clone of this configuration object with the specified
+         * command line arguments appended to any which may have already 
+         * been present
+         * @since 1.67
+         */
+        public Configuration addStartupArgument(String... arguments) {
+            if (arguments == null || arguments.length < 1){
+                throw new IllegalStateException("Must specify at least one startup argument");
+            }
+
+            List<String> newArgs = new ArrayList<String>();
+            if (startupArgs != null) {
+                newArgs.addAll(startupArgs);
+            }
+            newArgs.addAll(Arrays.asList(arguments));
+
+            return new Configuration(
+                clusterRegExp, moduleRegExp, newArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
         }
 
         Configuration classLoader(ClassLoader parent) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parent, tests,
+                clusterRegExp, moduleRegExp, startupArgs, parent, tests,
                 latestTestCaseClass, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
             , failOnMessage, failOnException);
@@ -255,7 +299,7 @@ public class NbModuleSuite {
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(true, latestTestCaseClass, testNames));
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules, honorAutoEager, failOnMessage, failOnException);
         }
@@ -281,7 +325,7 @@ public class NbModuleSuite {
                 newTests.add(new Item(true, test, testNames));
             }
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, test, reuseUserDir, gui, enableClasspathModules,
                 honorAutoEager
             , failOnMessage, failOnException);
@@ -289,7 +333,7 @@ public class NbModuleSuite {
         
         /**
          * Add new {@link  junit.framework.Test} to run. The implementation must
-         * have no parametter constructor. TastCase can be also passed as an argument
+         * have no parameter constructor. TastCase can be also passed as an argument
          * of this method than it's delegated to
          * {@link Configuration#addTest(java.lang.Class, java.lang.String[]) }
          *  
@@ -306,7 +350,7 @@ public class NbModuleSuite {
             List<Item> newTests = new ArrayList<Item>(tests);
             newTests.add(new Item(false, test, null));
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
             , failOnMessage, failOnException);
@@ -323,7 +367,7 @@ public class NbModuleSuite {
          */
         public Configuration enableClasspathModules(boolean enable) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enable, honorAutoEager, failOnMessage, failOnException);
         }
@@ -341,7 +385,7 @@ public class NbModuleSuite {
          */
         public Configuration honorAutoloadEager(boolean honor) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honor
             , failOnMessage, failOnException);
@@ -356,7 +400,7 @@ public class NbModuleSuite {
          */
         public Configuration failOnMessage(Level level) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
                 , level, failOnException);
@@ -371,7 +415,7 @@ public class NbModuleSuite {
          */
         public Configuration failOnException(Level level) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir,
                 gui, enableClasspathModules, honorAutoEager
                 , failOnMessage, level);
@@ -392,8 +436,9 @@ public class NbModuleSuite {
         private Configuration getReady() {
             List<Item> newTests = new ArrayList<Item>(tests);
             addLatest(newTests);
+
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 newTests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
@@ -410,7 +455,7 @@ public class NbModuleSuite {
          */
         public Configuration gui(boolean gui) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader,
                 tests, latestTestCaseClass, reuseUserDir, gui,
                 enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
@@ -424,10 +469,21 @@ public class NbModuleSuite {
          */
         public Configuration reuseUserDir(boolean reuse) {
             return new Configuration(
-                clusterRegExp, moduleRegExp, parentClassLoader, tests,
+                clusterRegExp, moduleRegExp, startupArgs, parentClassLoader, tests,
                 latestTestCaseClass, reuse, gui, enableClasspathModules
             ,honorAutoEager, failOnMessage, failOnException);
         }
+
+        /**
+         * Creates a test suite from this configuration.
+         * Same as {@link #create(org.netbeans.junit.NbModuleSuite.Configuration)} but more fluid.
+         * @return a suite ready for returning from a {@code public static Test suite()} method
+         * @since org.netbeans.modules.junit/1 1.70
+         */
+        public Test suite() {
+            return new S(this);
+        }
+
     }
 
     /** Factory method to create wrapper test that knows how to setup proper
@@ -451,7 +507,7 @@ public class NbModuleSuite {
      * @return runtime container ready test
      */
     public static Test create(Class<? extends TestCase> clazz, String clustersRegExp, String moduleRegExp) {
-        return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp));
+        return Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp).suite();
     }
     
     /** Factory method to create wrapper test that knows how to setup proper
@@ -482,7 +538,7 @@ public class NbModuleSuite {
         if (tests.length > 0) {
             conf = conf.addTest(tests);
         } 
-        return new S(conf);
+        return conf.suite();
     }
     
     /** Factory method to create wrapper test that knows how to setup proper
@@ -537,9 +593,10 @@ public class NbModuleSuite {
      * @param config the configuration for the test
      * @return runtime container ready test
      * @since 1.48
+     * @see Configuration#suite
      */
     public static Test create(Configuration config) {
-        return new S(config);
+        return config.suite();
     }
 
     private static final class Item {
@@ -570,12 +627,12 @@ public class NbModuleSuite {
         }
 
         @Override
-        public void run(TestResult result) {
-            try {
-                runInRuntimeContainer(result);
-            } catch (Exception ex) {
-                result.addError(this, ex);
-            }
+        public void run(final TestResult result) {
+            result.runProtected(this, new Protectable() {
+                public @Override void protect() throws Throwable {
+                    runInRuntimeContainer(result);
+                }
+            });
         }
         
         private static String[] tokenizePath(String path) {
@@ -757,6 +814,10 @@ public class NbModuleSuite {
                 args.add("--nogui");
             }
 
+            if (config.startupArgs != null) {
+                args.addAll(config.startupArgs);
+            }
+
             Test handler = NbModuleLogHandler.registerBuffer(config.failOnMessage, config.failOnException);
             m.invoke(null, (Object)args.toArray(new String[0]));
 
@@ -873,7 +934,8 @@ public class NbModuleSuite {
         }
         
         private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
-        private static Pattern VERSION = Pattern.compile("OpenIDE-Module-Specification-Version: *([0-9\\.]*)", Pattern.MULTILINE);
+        private static final Pattern JAR_URL = Pattern.compile("(jar:)?(file:.+[.]jar)(!/)?");
+        private static final Pattern MAVEN_CP = Pattern.compile("Maven-Class-Path: (.+)$", Pattern.MULTILINE);
         /** Looks for all modules on classpath of given loader and builds 
          * their list from them.
          */
@@ -892,7 +954,14 @@ public class NbModuleSuite {
 
             return cnbs;
         }
-        private static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
+        private static final Set<String> pseudoModules = new HashSet<String>(Arrays.asList(
+                "org.openide.util",
+                "org.openide.util.lookup",
+                "org.openide.modules",
+                "org.netbeans.bootstrap",
+                "org.openide.filesystems",
+                "org.netbeans.core.startup"));
+        static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
@@ -900,17 +969,18 @@ public class NbModuleSuite {
                 Matcher m = CODENAME.matcher(manifest);
                 if (m.find()) {
                     String cnb = m.group(1);
-                    Matcher v = VERSION.matcher(manifest);
-                    if (!v.find()) {
-                        throw new IllegalStateException("Cannot find version:\n" + manifest);
-                    }
                     File jar = jarFromURL(url);
                     if (jar == null) {
                         continue;
                     }
-                    if (jar.getParentFile().getName().matches("lib|core") || /* from Maven */ jar.getParentFile().getParentFile().getName().matches("org-openide-util|org-openide-util-lookup|org-openide-modules|org-netbeans-bootstrap|org-openide-filesystems|org-netbeans-core-startup")) {
+                    if (pseudoModules.contains(cnb)) {
                         // Otherwise will get DuplicateException.
                         continue;
+                    }
+                    Matcher m2 = MAVEN_CP.matcher(manifest);
+                    if (m2.find()) {
+                        // Do not use ((URLClassLoader) loader).getURLs() as this does not work for Surefire Booter.
+                        jar = rewrite(jar, m2.group(1).split(" "), System.getProperty("java.class.path"));
                     }
                     String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -930,6 +1000,65 @@ public class NbModuleSuite {
                     writeModule(f, xml);
                 }
             }
+        }
+        private static File rewrite(File jar, String[] mavenCP, String classpath) throws IOException { // #190992
+            String[] classpathEntries = tokenizePath(classpath);
+            StringBuilder classPathHeader = new StringBuilder();
+            for (String artifact : mavenCP) {
+                String[] grpArtVers = artifact.split(":");
+                String suffix = File.separatorChar + grpArtVers[0].replace('.', File.separatorChar) + File.separatorChar + grpArtVers[1] + File.separatorChar + grpArtVers[2] + File.separatorChar + grpArtVers[1] + '-' + grpArtVers[2] + ".jar";
+                File dep = null;
+                for (String classpathEntry : classpathEntries) {
+                    if (classpathEntry.endsWith(suffix)) {
+                        dep = new File(classpathEntry);
+                        break;
+                    }
+                }
+                if (dep == null) {
+                    throw new IOException("no match for " + artifact + " found in " + classpath);
+                }
+                File depCopy = File.createTempFile(artifact.replace(':', '-') + '-', ".jar");
+                depCopy.deleteOnExit();
+                NbTestCase.copytree(dep, depCopy);
+                if (classPathHeader.length() > 0) {
+                    classPathHeader.append(' ');
+                }
+                classPathHeader.append(depCopy.getName());
+            }
+            String n = jar.getName();
+            int dot = n.lastIndexOf('.');
+            File jarCopy = File.createTempFile(n.substring(0, dot) + '-', n.substring(dot));
+            jarCopy.deleteOnExit();
+            InputStream is = new FileInputStream(jar);
+            try {
+                OutputStream os = new FileOutputStream(jarCopy);
+                try {
+                    JarInputStream jis = new JarInputStream(is);
+                    Manifest mani = new Manifest(jis.getManifest());
+                    mani.getMainAttributes().putValue("Class-Path", classPathHeader.toString());
+                    JarOutputStream jos = new JarOutputStream(os, mani);
+                    JarEntry entry;
+                    while ((entry = jis.getNextJarEntry()) != null) {
+                        if (entry.getName().matches("META-INF/.+[.]SF")) {
+                            throw new IOException("cannot handle signed JARs");
+                        }
+                        jos.putNextEntry(entry);
+                        byte[] buf = new byte[(int) entry.getSize()];
+                        int read = jis.read(buf, 0, buf.length);
+                        if (read != buf.length) {
+                            throw new IOException("read wrong amount");
+                        }
+                        jos.write(buf);
+                    }
+                    jis.close();
+                    jos.close();
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
+            return jarCopy;
         }
         
         private static Pattern MANIFEST = Pattern.compile("jar:(file:.*)!/META-INF/MANIFEST.MF", Pattern.MULTILINE);
@@ -961,11 +1090,14 @@ public class NbModuleSuite {
                     sep = File.pathSeparator;
                 }
             }
+            Set<URL> uniqueURLs = new HashSet<URL>();
             for (Class<?> c : classes) {
                 URL test = c.getProtectionDomain().getCodeSource().getLocation();
                 Assert.assertNotNull("URL found for " + c, test);
-                sb.append(sep).append(new File(test.toURI()).getPath());
-                sep = File.pathSeparator;
+                if (uniqueURLs.add(test)) {
+                    sb.append(sep).append(new File(test.toURI()).getPath());
+                    sep = File.pathSeparator;
+                }
             }
             prop.setProperty("netbeans.systemclassloader.patches", sb.toString());
         }
@@ -1153,11 +1285,13 @@ public class NbModuleSuite {
                 if (previous.equals(xml)) {
                     return;
                 }
-                LOG.log(Level.FINE, "rewrite module file: {0}", file);
-                charDump(previous);
-                LOG.fine("new----");
-                charDump(xml);
-                LOG.fine("end----");
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "rewrite module file: {0}", file);
+                    charDump(previous);
+                    LOG.fine("new----");
+                    charDump(xml);
+                    LOG.fine("end----");
+                }
             }
             FileOutputStream os = new FileOutputStream(file);
             os.write(xml.getBytes("UTF-8"));

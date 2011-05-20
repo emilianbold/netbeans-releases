@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.project.connections.sftp;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 
@@ -52,7 +54,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
  * @see org.netbeans.modules.php.project.connections.RemoteConnections
  */
 public final class SftpConfiguration extends RemoteConfiguration {
-
+    private static final Logger LOGGER = Logger.getLogger(SftpConfiguration.class.getName());
     private static final String PATH_SEPARATOR = "/"; // NOI18N
 
     private final String host;
@@ -74,7 +76,13 @@ public final class SftpConfiguration extends RemoteConfiguration {
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
-        timeout = Integer.parseInt(cfg.getValue(SftpConnectionProvider.TIMEOUT));
+        int time = SftpConnectionProvider.DEFAULT_TIMEOUT;
+        try {
+            time = Integer.parseInt(cfg.getValue(SftpConnectionProvider.TIMEOUT));
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.FINE, "Exception while parsing timeout", nfe); //NOI18N
+        }
+        timeout = time;
     }
 
     public String getHost() {

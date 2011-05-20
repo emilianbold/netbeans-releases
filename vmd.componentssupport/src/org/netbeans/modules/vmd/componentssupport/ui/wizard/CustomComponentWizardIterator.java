@@ -62,7 +62,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ui.wizard.spi.ModuleTypePanel;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
@@ -117,8 +116,6 @@ public class CustomComponentWizardIterator implements
     public static final String CUSTOM_COMPONENTS  
                                             = "customComponents";                // NOI18N
     
-    private static final String TEMPLATE_PROJECT_NETBEANSORG 
-                                = "CustomComponentProject_netbeansorg.zip";     //NOI18N
     private static final String TEMPLATE_PROJECT_STANDALONE 
                                 = "CustomComponentProject_standalone.zip";      //NOI18N
     private static final String TEMPLATE_PROJECT_SUITECOMPONENT 
@@ -198,7 +195,7 @@ public class CustomComponentWizardIterator implements
     
     private FileObject getProjectTemplate(WizardDescriptor wizard){
         if (BaseHelper.isNetBeansOrg(wizard)){
-            return BaseHelper.getTemplate(TEMPLATE_PROJECT_NETBEANSORG);
+            assert false : "should not have been allowed to continue";
         } else if (BaseHelper.isSuiteComponent(wizard)){
             return BaseHelper.getTemplate(TEMPLATE_PROJECT_SUITECOMPONENT);
         } else if (BaseHelper.isStandalone(wizard)){

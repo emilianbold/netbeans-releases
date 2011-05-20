@@ -67,11 +67,13 @@ class GoToSourceAction extends AbstractAction {
     private boolean gotTheInfo = false;
     private final GoToSourceActionReadnessListener listener;
     private SourceFileInfo sourceInfo;
+    private final GoToSourceCallbackAction callbackAction;
 
-    GoToSourceAction(final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall, GoToSourceActionReadnessListener listener) {
+    GoToSourceAction(final GoToSourceCallbackAction callbackAction, final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall, GoToSourceActionReadnessListener listener) {
         super(NbBundle.getMessage(GoToSourceAction.class, "GoToSourceActionName"));//NOI18N
         this.functionCall = funcCall;
         this.listener = listener;
+        this.callbackAction = callbackAction;
         sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
 
             public SourceFileInfo call() {
@@ -121,12 +123,17 @@ class GoToSourceAction extends AbstractAction {
         return isEnabled;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         DLightExecutorService.submit(new Runnable() {
 
+            @Override
             public void run() {
                 SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
                 if (sourceSupportProvider == null) {
+                    if (callbackAction != null) {
+                        callbackAction.goToSource(false);
+                    }
                     return;
                 }
                 SourceFileInfo sourceFileInfo = null;
@@ -138,14 +145,18 @@ class GoToSourceAction extends AbstractAction {
                     Exceptions.printStackTrace(ex);
                 }
                 if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                    if (callbackAction != null) {
+                        callbackAction.goToSource(false);
+                    }
                     return;
                 }
-                sourceSupportProvider.showSource(sourceFileInfo);
+                boolean succesed = sourceSupportProvider.showSource(sourceFileInfo);
+                if (callbackAction != null){
+                    callbackAction.goToSource(succesed);
+                 }
             }
         }, "GoToSource from Call Stack UI"); // NOI18N
     }
-
-
 
     interface GoToSourceActionReadnessListener {
 

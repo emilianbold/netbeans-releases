@@ -44,7 +44,7 @@
     id="Editor",
     position=200,
     categoryName="#CTL_Editor",
-    iconBase="org/netbeans/modules/options/resources/editor.png",
+    iconBase="org/netbeans/modules/options/editor/editor.png",
     keywords="#KW_EditorOptions",
     keywordsCategory="Editor"
 //    title="#CTL_Editor_Title",

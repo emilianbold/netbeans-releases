@@ -616,11 +616,9 @@ public final class ProjectEar extends J2eeApplicationProvider
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (this) {
-            if (propertyChangeSupport == null) {
-                return;
-            }
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (propertyChangeSupport == null) {
+            return;
         }
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
@@ -725,6 +723,11 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
 
         private void handleResource(FileEvent fe) {
+            // this may happen in broken project - see issue #191516
+            // in any case it can't be resource event when resources is null
+            if (resources != null) {
+                return;
+            }            
             FileObject resourceFo = FileUtil.toFileObject(resources);
             if (resourceFo != null
                     && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {

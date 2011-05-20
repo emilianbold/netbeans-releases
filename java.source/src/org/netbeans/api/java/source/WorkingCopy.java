@@ -457,6 +457,7 @@ public class WorkingCopy extends CompilationController {
                 for (Tree t : path.getParentPath()) {
                     if (t.getKind() == Kind.COMPILATION_UNIT && !importsFilled) {
                         CompilationUnitTree cutt = (CompilationUnitTree) t;
+                        ia.setCompilationUnit(cutt);
                         ia.setPackage(cutt.getPackageName());
                         ia.setImports(cutt.getImports());
                         importsFilled = true;

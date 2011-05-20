@@ -46,7 +46,12 @@ import java.io.FileFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -62,8 +67,6 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
 
-    private static final String[] JAXRS_LIBRARIES =
-        new String[] {"jackson", "jersey-gf-bundle", "jettison", "jsr311-api"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
 
     private String gfRootStr;
@@ -87,7 +90,7 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
     @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxRs.Tool.JAXRS) {
-            return WSStackFactory.createWSTool(new JaxRsTool(JaxRs.Tool.JAXRS, JAXRS_LIBRARIES));
+            return WSStackFactory.createWSTool(new JaxRsTool());
         }
         return null;
     }
@@ -99,8 +102,14 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
             WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
             if (wsTool != null) {
                 URL[] libs = wsTool.getLibraries();
-                if(libs != null && libs.length == JAXRS_LIBRARIES.length) {
-                    isFeatureSupported = true;
+                if ( libs == null ){
+                    return false;
+                }
+                for( Set<String> set: LIB_SET ){
+                    if ( libs.length == set.size() ){
+                        isFeatureSupported = true;
+                        break;
+                    }
                 }
             }
         }
@@ -136,33 +145,71 @@ public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
 
     protected class JaxRsTool implements WSToolImplementation {
 
-        JaxRs.Tool tool;
-        String[] libraries;
-
-        JaxRsTool(JaxRs.Tool tool, String[] libraries) {
-            this.tool = tool;
-            this.libraries = libraries;
+        JaxRsTool() {
         }
         
         @Override
         public String getName() {
-            return tool.getName();
+            return JaxRs.Tool.JAXRS.getName();
         }
 
         @Override
         public URL[] getLibraries() {
-            List<URL> cPath = new ArrayList<URL>();
-            for (String entry : libraries) {
-                File f = getJarName(gfRootStr, entry);
-                if ((f != null) && (f.exists())) {
-                    try {
-                        cPath.add(f.toURI().toURL());
-                    } catch (MalformedURLException ex) {
+            List<URL> result = Collections.emptyList();
+            int patternSize = 0;
+            for( Set<String> set : LIB_SET ){
+                List<URL> cPath = new ArrayList<URL>();
+                for (String entry : set) {
+                    File f = getJarName(gfRootStr, entry);
+                    if ((f != null) && (f.exists())) {
+                        try {
+                            cPath.add(f.toURI().toURL());
+                        }
+                        catch (MalformedURLException ex) {
 
+                        }
                     }
                 }
+                if ( patternSize< set.size() && cPath.size() >=set.size() ){
+                    result = cPath;
+                    patternSize = set.size();
+                }
             }
-            return cPath.toArray(new URL[cPath.size()]);
+            return result.toArray(new URL[result.size()]);
         }
+    }
+    
+    private static final Set<String> JAXRS_LIBRARIES_0 = new HashSet<String>();
+    private static final Set<String> JAXRS_LIBRARIES_01 = new HashSet<String>();
+    private static final Set<String> JAXRS_LIBRARIES_1 = new HashSet<String>();
+    private static final Collection<Set<String>> LIB_SET = new ArrayList<Set<String>>(3);
+    
+    static {
+        JAXRS_LIBRARIES_0.add("jackson");                           //NOI18N
+        JAXRS_LIBRARIES_0.add("jersey-gf-bundle");                  //NOI18N
+        JAXRS_LIBRARIES_0.add("jettison");                          //NOI18N
+        JAXRS_LIBRARIES_0.add("jsr311-api");                        //NOI18N
+        
+        JAXRS_LIBRARIES_01.add("jackson-core-asl");                  //NOI18N
+        JAXRS_LIBRARIES_01.add("jersey-gf-bundle");                  //NOI18N
+        JAXRS_LIBRARIES_01.add("jersey-multipart");                  //NOI18N
+        JAXRS_LIBRARIES_01.add("jettison");                          //NOI18N
+        JAXRS_LIBRARIES_01.add("mimepull");                          //NOI18N
+        JAXRS_LIBRARIES_01.add("jsr311-api");                        //NOI18N
+        
+        JAXRS_LIBRARIES_1.add("jackson-core-asl");                  //NOI18N
+        JAXRS_LIBRARIES_1.add("jackson-jaxrs");                     //NOI18N
+        JAXRS_LIBRARIES_1.add("jackson-mapper-asl");                //NOI18N
+        JAXRS_LIBRARIES_1.add("jersey-client");                     //NOI18N
+        JAXRS_LIBRARIES_1.add("jersey-core");                       //NOI18N
+        JAXRS_LIBRARIES_1.add("jersey-gf-server");                 //NOI18N
+        JAXRS_LIBRARIES_1.add("jersey-json");                      //NOI18N
+        JAXRS_LIBRARIES_1.add("jersey-multipart");                 //NOI18N
+        JAXRS_LIBRARIES_1.add("jettison");                          //NOI18N
+        JAXRS_LIBRARIES_1.add("mimepull");                          //NOI18N
+        
+        LIB_SET.add( JAXRS_LIBRARIES_0 );
+        LIB_SET.add( JAXRS_LIBRARIES_01 );
+        LIB_SET.add( JAXRS_LIBRARIES_1 );
     }
 }

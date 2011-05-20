@@ -12,6 +12,7 @@
         <tocitem text="Placing Projects Under Version Control" target="org.netbeans.modules.mercurial.import" />                
         <tocitem text="Comparing File Revisions" target="org.netbeans.modules.mercurial.diffviewer" />
         <tocitem text="Status Window" target="org.netbeans.modules.mercurial.statuswindow" />
+		<tocitem text="Committing Changes to the Repository" target="org.netbeans.modules.mercurial.commit" />
         <tocitem text="Mercurial Project Properties" target="org.netbeans.modules.mercurial.ui.properties.PropertiesAction" />
         <tocitem text="Mercurial Global Options" target="org.netbeans.modules.mercurial.options.MercurialOptionsPanelController" />
       </tocitem>

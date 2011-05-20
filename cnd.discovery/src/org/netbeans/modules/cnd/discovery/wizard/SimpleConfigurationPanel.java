@@ -51,13 +51,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -76,15 +76,16 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     public SimpleConfigurationPanel(SimpleConfigurationWizard wizard) {
         this.wizard = wizard;
         initComponents();
-        configurationComboBox.addItem(new ConfigutationItem("project",getString("CONFIGURATION_LEVEL_project"))); // NOI18N
-        configurationComboBox.addItem(new ConfigutationItem("folder",getString("CONFIGURATION_LEVEL_folder"))); // NOI18N
-        configurationComboBox.addItem(new ConfigutationItem("file",getString("CONFIGURATION_LEVEL_file"))); // NOI18N
+        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.PROJECT_LEVEL ,getString("CONFIGURATION_LEVEL_project"))); // NOI18N
+        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.FOLDER_LEVEL, getString("CONFIGURATION_LEVEL_folder"))); // NOI18N
+        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.FILE_LEVEL, getString("CONFIGURATION_LEVEL_file"))); // NOI18N
         configurationComboBox.setSelectedIndex(2);
         addListeners();
     }
     
     private void addListeners(){
         librariesTextField.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
@@ -93,12 +94,15 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         Component component = editor.getEditorComponent();
         if (component instanceof JTextField) {
             ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     update();
                 }
@@ -256,6 +260,10 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
             additionalLibrariesButton.setVisible(true);
             librariesLabel.setVisible(true);
             librariesTextField.setVisible(true);
+        } else if ("exec-log".equals(providerID)){ // NOI18N
+            additionalLibrariesButton.setVisible(false);
+            librariesLabel.setVisible(false);
+            librariesTextField.setVisible(false);
         } else if ("make-log".equals(providerID)){ // NOI18N
             additionalLibrariesButton.setVisible(false);
             librariesLabel.setVisible(false);

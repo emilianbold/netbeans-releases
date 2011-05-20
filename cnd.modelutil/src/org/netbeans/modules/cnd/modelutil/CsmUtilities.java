@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
@@ -86,19 +88,21 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
@@ -387,13 +391,7 @@ public class CsmUtilities {
     }
 
     public static boolean isAnyNativeProjectOpened() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i].getLookup().lookup(NativeProject.class) != null) {
-                return true;
-            }
-        }
-        return false;
+        return !NativeProjectRegistry.getDefault().getOpenProjects().isEmpty();
     }
     
     public static boolean isCsmSuitable(FileObject fo) {
@@ -402,7 +400,7 @@ public class CsmUtilities {
         return CndPathUtilitities.isPathAbsolute(fo.getPath());
     }
 
-    public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
+    public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
@@ -413,7 +411,7 @@ public class CsmUtilities {
                     for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
                         if (csmProject != null) {
-                            CsmFile file = csmProject.findFile(item, snapShot);
+                            CsmFile file = csmProject.findFile(item, waitParsing, snapShot);
                             if (file != null) {
                                 if (item.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                     saFiles.add(file);
@@ -429,8 +427,7 @@ public class CsmUtilities {
                 if (files.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
-                        String normPath = fo.getPath();
-                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(fo), waitParsing, snapShot);
                         if (csmFile != null) {
                             files.add(csmFile);
                         }
@@ -445,10 +442,14 @@ public class CsmUtilities {
                             if (platformProject == null) {
                                 CndUtils.assertTrueInConsole(false, "null platform project for FILE " + csmFile + " from PROJECT " + csmProject); // NOI18N
                             } else if (!csmProject.isValid()) {
-                                CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                                if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
+                                    CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                                }
                             } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                 if (i == 0 && files.size() > 1) {
-                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                    if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
+                                        CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                    }
                                 } else {
 //                                    System.err.printf("STANDALONE FILE TO BE USED %s\n", csmFile); // NOI18N
                                 }
@@ -469,17 +470,9 @@ public class CsmUtilities {
         }
         return new CsmFile[0];
     }
-
-    public static CsmFile[] getCsmFiles(FileObject fo, boolean snapShot) {
-        try {
-            return getCsmFiles(DataObject.find(fo), snapShot);
-        } catch (DataObjectNotFoundException ex) {
-            return new CsmFile[0];
-        }
-    }
-
+    
     public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing, boolean snapShot) {
-        CsmFile[] files = getCsmFiles(dobj, snapShot);
+        CsmFile[] files = getCsmFiles(dobj, waitParsing, snapShot);
         if (files == null || files.length == 0) {
             return null;
         } else {
@@ -790,31 +783,42 @@ public class CsmUtilities {
                         if (pane != null) {
                             //editor already opened, so just select
                             opened = true;
+                            selectElementInPane(pane, element, !opened);
                         } else {
-                            // editor not yet opened
-                            // XXX: vv159170 commented out the ollowing code, because on the time
-                            // of firing even no chance to get opened panes yet...
-//                            ec.addPropertyChangeListener(new PropertyChangeListener() {
-//                                public void propertyChange(PropertyChangeEvent evt) {
-//                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-//                                        final JEditorPane[] panes = ec.getOpenedPanes();
-//                                        if (panes != null && panes.length > 0) {
-//                                            selectElementInPane(panes[0], element, true);
-//                                        }
-//                                        ec.removePropertyChangeListener(this);
-//                                    }
-//                                }
-//                            });
+                            // editor not yet opened, attach listener and open from there
+                            ec.addPropertyChangeListener(new PropertyChangeListenerImpl(ec, element));
                             opened = false;
                             ec.open();
-                            // we have to get panes here instead of in listener using getOpenedPanes which is synchronious
-                            JEditorPane[] panes = ec.getOpenedPanes();
-                            if (panes != null && panes.length > 0) {
-                                pane = panes[0];
+                        }
+                    }
+
+                    class PropertyChangeListenerImpl implements PropertyChangeListener, Runnable {
+
+                        private final Observable ec;
+                        private final PointOrOffsetable element;
+
+                        public PropertyChangeListenerImpl(Observable ec, PointOrOffsetable element) {
+                            this.ec = ec;
+                            this.element = element;
+                        }
+
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                ec.removePropertyChangeListener(this);
+                                // it's strange, but ec.getOpenedPanes() still returns null at this time
+                                // evt.getNewValue is null as well
+                                // so redirect once more when pane is really opened
+                                SwingUtilities.invokeLater(this);
                             }
                         }
-                        if (pane != null) {
-                            selectElementInPane(pane, element, !opened);
+
+                        @Override
+                        public void run() {
+                            final JEditorPane[] panes = ec.getOpenedPanes();
+                            if (panes != null && panes.length > 0) {
+                                selectElementInPane(panes[0], element, false);
+                            }
                         }
                     }
                 });

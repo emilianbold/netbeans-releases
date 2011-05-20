@@ -23,7 +23,6 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
-import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.SwitchOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
@@ -109,7 +108,7 @@ public class SwitchUiTest extends JellyTestCase{
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             Thread.sleep(2000);

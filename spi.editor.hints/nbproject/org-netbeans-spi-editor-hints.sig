@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.14.0
+#Version 1.17.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -82,17 +82,72 @@ hfds description,file,fixes,severity,span
 
 CLSS public org.netbeans.spi.editor.hints.ErrorDescriptionFactory
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,java.util.List<org.netbeans.spi.editor.hints.Fix>,javax.swing.text.Document,int)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,java.util.List<org.netbeans.spi.editor.hints.Fix>,javax.swing.text.Document,javax.swing.text.Position,javax.swing.text.Position)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
+ anno 6 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,java.util.List<org.netbeans.spi.editor.hints.Fix>,org.openide.filesystems.FileObject,int,int)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,javax.swing.text.Document,int)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,javax.swing.text.Document,javax.swing.text.Position,javax.swing.text.Position)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,org.netbeans.spi.editor.hints.LazyFixList,javax.swing.text.Document,int)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,org.netbeans.spi.editor.hints.LazyFixList,javax.swing.text.Document,javax.swing.text.Position,javax.swing.text.Position)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
+ anno 6 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,org.netbeans.spi.editor.hints.LazyFixList,org.openide.filesystems.FileObject,int,int)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.ErrorDescription createErrorDescription(org.netbeans.spi.editor.hints.Severity,java.lang.String,org.openide.filesystems.FileObject,int,int)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.Fix attachSubfixes(org.netbeans.spi.editor.hints.Fix,java.lang.Iterable<? extends org.netbeans.spi.editor.hints.Fix>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.LazyFixList lazyListForDelegates(java.util.List<org.netbeans.spi.editor.hints.LazyFixList>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.editor.hints.LazyFixList lazyListForFixes(java.util.List<org.netbeans.spi.editor.hints.Fix>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 
 CLSS public abstract interface org.netbeans.spi.editor.hints.Fix
@@ -101,7 +156,13 @@ meth public abstract org.netbeans.spi.editor.hints.ChangeInfo implement() throws
 
 CLSS public final org.netbeans.spi.editor.hints.HintsController
 meth public static void setErrors(javax.swing.text.Document,java.lang.String,java.util.Collection<? extends org.netbeans.spi.editor.hints.ErrorDescription>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public static void setErrors(org.openide.filesystems.FileObject,java.lang.String,java.util.Collection<? extends org.netbeans.spi.editor.hints.ErrorDescription>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds WORKER
 

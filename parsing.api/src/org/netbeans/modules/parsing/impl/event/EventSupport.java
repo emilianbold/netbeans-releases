@@ -59,6 +59,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -70,6 +72,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -176,8 +179,10 @@ public final class EventSupport {
      * AWT deadlock. Never call this method in other cases.
      */
     public static void releaseCompletionCondition() {
-        assert SwingUtilities.isEventDispatchThread();
-        assert validRCCCaller();
+        if (!IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock() ||
+            !IndexingManagerAccessor.getInstance().isCalledFromRefreshIndexAndWait()) {
+            throw new IllegalStateException();
+        }
         final boolean wask24 = EditorRegistryListener.k24.getAndSet(false);
         if (wask24) {
             TaskProcessor.resetStateImpl(null);
@@ -185,19 +190,6 @@ public final class EventSupport {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
-
-
-    private static boolean validRCCCaller() {
-        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        for (int i = 0; i<stackTrace.length; i++) {
-            if (EventSupport.class.getName().equals(stackTrace[i].getClassName()) &&
-                "releaseCompletionCondition".equals(stackTrace[i].getMethodName())) {   //NOI18N
-                return IndexingManager.class.getName().equals(stackTrace[i+1].getClassName()) &&
-                       "refreshIndexAndWait".equals(stackTrace[i+1].getMethodName());  //NOI18N
-            }
-        }
-        return false;
-    }
 
     /**
      * Not synchronized, only sets the atomic state and clears the listeners
@@ -430,21 +422,26 @@ public final class EventSupport {
                     }
                 }
                 if (source != null) {
-                    Object rawValue = evt.getNewValue();
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
-                    }
-                    if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
-                        TaskProcessor.resetState(source, false, true);
-                        k24.set(true);
-                    } else {
-                        final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                        k24.set(false);
-                        support.resetTask.schedule(0);
-                    }
+                    handleCompletionActive(source, evt.getNewValue());
                 }
             }
-        }        
+        }
+
+        private void handleCompletionActive(
+                final @NonNull Source source,
+                final @NullAllowed Object rawValue) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
+            }
+            if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
+                TaskProcessor.resetState(source, false, true);
+                k24.set(true);
+            } else {
+                final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
+                k24.set(false);
+                support.resetTask.schedule(0);
+            }
+        }
     }
 
     // </editor-fold>

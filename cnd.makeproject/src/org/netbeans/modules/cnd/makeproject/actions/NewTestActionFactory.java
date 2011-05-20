@@ -47,7 +47,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -129,8 +128,11 @@ public final class NewTestActionFactory {
             this.generateCode = generateCode;
             
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
-            if(mcd != null && mcd.getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                this.setEnabled(false);
+            if(mcd != null) {
+                MakeConfiguration activeConfiguration = mcd.getActiveConfiguration();
+                if(activeConfiguration != null && activeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                    this.setEnabled(false);
+                }
             }
         }
 
@@ -320,12 +322,16 @@ public final class NewTestActionFactory {
         private Collection<Action> createActions(Project project, FileObject fo) {
             ArrayList<Action> actions = new ArrayList<Action>();
             FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
-            if (testFiles.isFolder()) {
-                for (FileObject test : testFiles.getChildren()) {
-                    if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
-                        String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
-                        if (checkMimeType(mimeTypes, fo.getMIMEType())) {
-                            actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+            // Bug 195897
+            // Templates/testFiles could be deleted
+            if (testFiles != null) {
+                if (testFiles.isFolder()) {
+                    for (FileObject test : testFiles.getChildren()) {
+                        if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
+                            String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
+                            if (checkMimeType(mimeTypes, fo.getMIMEType())) {
+                                actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+                            }
                         }
                     }
                 }

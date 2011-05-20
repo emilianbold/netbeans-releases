@@ -99,6 +99,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     private DataObject currentDo;
     private FileChangeListener foListener;
     private PropertyChangeListener doListener;
+    private long lc = 0;
     
     /** Creates a new instance of MainClassUpdater */
     public MainClassUpdater(final Project project, final PropertyEvaluator eval,
@@ -208,6 +209,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     }
     
     private void addFileChangeListener () {
+        final long clc;
         synchronized (MainClassUpdater.this) {
             if (currentFo != null && foListener != null) {
                 currentFo.removeFileChangeListener(foListener);
@@ -218,7 +220,8 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                 currentDo.removePropertyChangeListener(doListener);
                 doListener = null;
                 currentDo = null;
-            }            
+            }
+            clc = ++lc;
         }
         final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
         if (mainClassName != null) {
@@ -242,9 +245,10 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                         public void run(CompilationController c) throws Exception {
                             TypeElement te = c.getElements().getTypeElement(mainClassName);
                              if (te != null) {
+                                final FileObject fo = SourceUtils.getFile(te, cpInfo);
                                 synchronized (MainClassUpdater.this) {
-                                    currentFo = SourceUtils.getFile(te, cpInfo);
-                                    if (currentFo != null && sourcePath.contains(currentFo)) {
+                                    if (lc == clc && fo != null && sourcePath.contains(fo)) {
+                                        currentFo = fo;
                                         foListener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, currentFo);
                                         currentFo.addFileChangeListener(foListener);                                        
                                         currentDo = DataObject.find(currentFo);

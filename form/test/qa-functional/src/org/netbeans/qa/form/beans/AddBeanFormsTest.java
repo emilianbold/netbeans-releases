@@ -56,6 +56,9 @@ import org.netbeans.junit.NbModuleSuite;
  * and tests value and access rights of inherited properties
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class AddBeanFormsTest extends AddAndRemoveBeansTest {
     

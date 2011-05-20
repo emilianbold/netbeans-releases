@@ -100,24 +100,24 @@ public final class DisassemblerWindow extends TopComponent {
 
     // interface TopComponent
     public void componentHidden () {
-	if (debugger != null)
-	    debugger.registerDisassemblerWindow(null);
+//	if (debugger != null)
+//	    debugger.registerDisassemblerWindow(null);
         super.componentHidden();
     }
     
     // interface TopComponent
     public void componentShowing () {
 	if (debugger == null) return;
-	debugger.registerDisassemblerWindow(this);
+//	debugger.registerDisassemblerWindow(this);
         super.componentShowing ();
-	view.getController().requestDis();
+	view.getController().requestDis(true);
     }
 
     // interface TopComponent
     protected void componentClosed () {
-	if (debugger != null) {
-	    debugger.registerDisassemblerWindow(null);
-	}
+//	if (debugger != null) {
+//	    debugger.registerDisassemblerWindow(null);
+//	}
         super.componentClosed();
     }
 

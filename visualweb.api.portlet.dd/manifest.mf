@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.visualweb.api.portlet.dd/1
-X-Comment: Portlet Deployment Descriptor API
-OpenIDE-Module-Specification-Version: 2.7
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/api/portlet/dd/resources/Bundle.properties
-AutoUpdate-Show-In-Client: false

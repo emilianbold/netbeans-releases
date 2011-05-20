@@ -47,8 +47,6 @@ package org.netbeans.test.j2ee.multiview;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.junit.NbTestCase;
@@ -83,6 +81,7 @@ public class Utils {
     public static void waitForAWTDispatchThread() {
         final boolean[] finished = new boolean[]{false};
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 finished[0] = true;
             }
@@ -98,7 +97,7 @@ public class Utils {
     
     void save(DataObject dObj) throws IOException{
         SaveCookie saveCookie = (SaveCookie)dObj.getCookie(SaveCookie.class);
-        nbTestCase.assertNotNull("Save cookie is null, Data object isn't changed!", saveCookie);
+        NbTestCase.assertNotNull("Save cookie is null, Data object isn't changed!", saveCookie);
         if(saveCookie != null)
             saveCookie.save();
     }
@@ -113,7 +112,7 @@ public class Utils {
         try {
             String text = document.getText(0,document.getLength());
             int index = text.indexOf(findText);
-            nbTestCase.assertEquals("Cannot find correct element in XML view (editor document)",true,index>0);
+            NbTestCase.assertEquals("Cannot find correct element in XML view (editor document)",true,index>0);
         } catch (javax.swing.text.BadLocationException ex) {
             throw new AssertionFailedErrorException("Failed to read the document: ",ex);
         }

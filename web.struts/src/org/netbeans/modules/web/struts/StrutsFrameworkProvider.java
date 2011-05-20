@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -85,6 +86,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -94,6 +96,8 @@ import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -138,7 +142,12 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
 
             try {
-                FileSystem fs = wm.getWebInf().getFileSystem();
+                FileObject webInf = wm.getWebInf();
+                if (webInf == null) {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                }
+                assert webInf != null;
+                FileSystem fs = webInf.getFileSystem();
                 fs.runAtomicAction(new CreateStrutsConfig(wm));
                 result.add(wm.getDocumentBase().getFileObject("welcomeStruts", "jsp"));
             } catch (FileNotFoundException exc) {
@@ -275,8 +284,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
             
             //MessageResource.properties
-            Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());
-            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());            
             String sresource = panel.getAppResource();
             if (sresource != null && sresource.trim().length()>0) {
                 int index = sresource.lastIndexOf('.');
@@ -287,7 +295,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     name = sresource.substring(sresource.lastIndexOf(".")+1);    //NOI18N
                 }
                 name = name + ".properties";   //NOI18N
-                FileObject targetFolder = sourceGroups[0].getRootFolder();
+                SourceGroup[] resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                if (resourceGroups.length == 0) {
+                    resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                }
+                FileObject targetFolder = resourceGroups[0].getRootFolder();
                 String folders[] = path.split("\\.");
                 for (int i = 0; i < folders.length; i++){
                     if (targetFolder.getFileObject(folders[i])== null)
@@ -337,8 +349,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             
             // Enter servlet into the deployment descriptor
             FileObject dd = wm.getDeploymentDescriptor();
+            if(dd == null) {
+                dd = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+            }
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            if (ddRoot != null){
+            if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {
                 try{
                     Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
                     servlet.setServletName("action"); //NOI18N
@@ -396,6 +411,18 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 catch (ClassNotFoundException cnfe){
                     Exceptions.printStackTrace(cnfe);
                 }
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        NotifyDescriptor warningDialog = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(StrutsFrameworkProvider.class, "WARN_UnknownDeploymentDescriptorText"), //NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(warningDialog);
+                    }
+                });
+
             }
             
             //copy Welcome.jsp
@@ -467,6 +494,4 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
         }
     }
-    
-    
 }

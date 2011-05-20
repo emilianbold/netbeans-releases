@@ -74,11 +74,11 @@ implements InstanceContent.Convertor<FileSystem,FileSystem> {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.emptyConfiguration().
             addTest(DynamicSFSFallbackTest.class).
             clusters("org-netbeans-core-ui.*")
-        );
+        .suite();
     }
     
     @Override

@@ -474,7 +474,7 @@ public class JarClassLoader extends ProxyClassLoader {
                                         return ret;
                                     } catch (ZipException zip) {
                                         if (file.exists() && retry++ < 3) {
-                                            LOGGER.log(Level.WARNING, "Error opening " + file + " retry: " + retry, zip); // NOI18N
+                                            LOGGER.log(Level.WARNING, "Error opening " + file + " (exists=" + file.exists() + ") retry: " + retry, zip); // NOI18N
                                             opened(JarClassLoader.JarSource.this, "ziperror");
                                             continue;
                                         }
@@ -564,6 +564,14 @@ public class JarClassLoader extends ProxyClassLoader {
                     if (! je.isDirectory()) {
                         String itm = je.getName();
                         int slash = itm.lastIndexOf('/');
+                        if (slash == -1) {
+                            // resource in default package
+                            String res = "default/" + je.getName();
+                            if (known.add(res)) {
+                                save.append(res).append(',');
+                            }
+                            continue;
+                        }
                         String pkg = slash > 0 ? itm.substring(0, slash).replace('/','.') : "";
                         if (known.add(pkg)) save.append(pkg).append(',');
                         if (itm.startsWith("META-INF/")) {
@@ -789,6 +797,14 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (f.isDirectory()) {
                     appendAllChildren(known, save, f, prefix + f.getName() + '.');
                 } else {
+                    if (prefix.length() == 0) {
+                        // resource in default package
+                        String res = "default/" + f.getName();
+                        if (known.add(res)) {
+                            save.append(res).append(',');
+                        }
+                        continue;
+                    }
                     populated = true;
                     if (prefix.startsWith("META-INF.")) {
                        String res = prefix.substring(8).replace('.', '/').concat(f.getName());
@@ -842,25 +858,33 @@ public class JarClassLoader extends ProxyClassLoader {
          * @return URLConnection
          * @throws IOException
          */
+        @Override
         protected JarURLConnection openConnection(URL u) throws IOException {
             String url = u.getFile();//toExternalForm();
             int bang = url.indexOf("!/");
             if (bang == -1) {
                 throw new IOException("Malformed JAR-protocol URL: " + u);
             }
-            int from;
-            if (url.startsWith("file:")) {
-                from = Utilities.isWindows() ? 6 : 5;
-            } else {
-                from = 0;
+            String jar;
+            try {
+                final URI uri = new URI(url.substring(0, bang));
+                if (uri.getScheme().equals("file")) {
+                    jar = new File(uri).getPath();
+                } else {
+                    jar = null;
+                }
+            } catch (URISyntaxException x) {
+                throw new IOException(x);
             }
-            String jar = url.substring(from, bang).replace('/', File.separatorChar);
             Source _src = Source.sources.get(jar);
+            LOGGER.log(Level.FINER, "openConnection for {0} jar: {1} src: {2}", new Object[]{u, jar, _src});
             if (_src == null) {
                 try {
                     Method m = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class);
                     m.setAccessible(true);
-                    return (JarURLConnection) m.invoke(originalJarHandler, u);
+                    JarURLConnection ret = (JarURLConnection) m.invoke(originalJarHandler, u);
+                    LOGGER.log(Level.FINER, "Calling original {0} yields {1}", new Object[]{originalJarHandler, ret});
+                    return ret;
                 } catch (Exception e) {
                     throw (IOException) new IOException(e.toString()).initCause(e);
                 }
@@ -871,13 +895,14 @@ public class JarClassLoader extends ProxyClassLoader {
             } catch (URISyntaxException x) {
                 throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
+            LOGGER.log(Level.FINER, "creating NbJarURLConnection({0},{1},{2})", new Object[]{u, _src, _name});
             return new NbJarURLConnection (u, _src, _name);
         }
 
         @Override
         protected void parseURL(URL u, String spec, int start, int limit) {
             if (spec.startsWith("/")) {
-                setURL(u, "jar", null, 0, null, null, u.getFile().replaceFirst("!/.+$", "!" + spec), u.getQuery(), u.getRef()); // NOI18N
+                setURL(u, "jar", u.getHost(), u.getPort(), u.getAuthority(), u.getUserInfo(), u.getFile().replaceFirst("!/.+$", "!" + spec), u.getQuery(), u.getRef()); // NOI18N
             } else {
                 super.parseURL(u, spec, start, limit);
             }

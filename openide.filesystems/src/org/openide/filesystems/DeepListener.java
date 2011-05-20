@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
@@ -58,6 +60,7 @@ import org.openide.util.WeakSet;
  */
 final class DeepListener extends WeakReference<FileChangeListener>
 implements FileChangeListener, Runnable, Callable<Boolean> {
+    private static final Logger LOG = Logger.getLogger(DeepListener.class.getName());
     private final File path;
     private FileObject watching;
     private boolean removed;
@@ -72,6 +75,9 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
     }
     
     final void init() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, null, new Throwable("listening to " + path));
+        }
         relisten();
     }
 

@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.openide.util.NbBundle;
 
 /**
@@ -244,13 +245,16 @@ import org.openide.util.NbBundle;
             {
                 long uploaStart = System.currentTimeMillis();
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s ...\n", zipFile, executionEnvironment, remoteFile); } // NOI18N
-                Future<Integer> upload = CommonTasksSupport.uploadFile(zipFile.getAbsolutePath(), executionEnvironment, remoteFile, 0777, err);
-                int rc = upload.get();
+                Future<UploadStatus> upload = CommonTasksSupport.uploadFile(zipFile.getAbsolutePath(), executionEnvironment, remoteFile, 0777);
+                UploadStatus uploadStatus = upload.get();
                 float uploadTime = ((float) (System.currentTimeMillis() - uploaStart))/1000f;
-                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s finished in %f s with rc=%d\n", zipFile, executionEnvironment, remoteFile, uploadTime, rc); } // NOI18N
-                if (rc != 0) {
+                if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.out.printf("\tZSCP: uploading %s to %s:%s finished in %f s with rc=%d\n", zipFile, executionEnvironment, remoteFile, uploadTime, uploadStatus.getExitCode()); } // NOI18N
+                if (!uploadStatus.isOK()) {
+                    if (err != null) {
+                        err.println(uploadStatus.getError());
+                    }
                     throw new IOException("uploading " + zipFile + " to " + executionEnvironment + ':' + remoteFile + // NOI18N
-                            " finished with error code " + rc); // NOI18N
+                            " finished with error code " + uploadStatus.getExitCode()); // NOI18N
                 }
             }
 

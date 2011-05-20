@@ -44,14 +44,11 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
-import java.io.File;
-import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class ElfDynamicLibraryFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class ElfDynamicLibraryFileFilter extends FileAndFileObjectFilter {
 
+    private static String suffixes[] = {"so"}; // NOI18N
     private static ElfDynamicLibraryFileFilter instance = null;
 
     public ElfDynamicLibraryFileFilter() {
@@ -67,37 +64,11 @@ public class ElfDynamicLibraryFileFilter extends FileFilterFactory.FileAndFileOb
 
     @Override
     public String getDescription() {
-	return getString("ELF_DYNAMIC_LIB_FILTER"); // NOI18N
+        return NbBundle.getMessage(ElfDynamicLibraryFileFilter.class, "ELF_DYNAMIC_LIB_FILTER"); // NOI18N
     }
     
     @Override
-    public boolean accept(File f) {
-	if (f != null) {
-	    if (f.isDirectory()) {
-		return true;
-	    }
-	    return f.getName().endsWith(".so"); // NOI18N
-	}
-	return false;
-    }
-
-    @Override
-    public boolean accept(FileObject f) {
-	if (f != null) {
-	    if (f.isFolder()) {
-		return true;
-	    }
-	    return f.getExt().equals(".so"); // NOI18N
-	}
-	return false;
-    }
-
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ElfDynamicLibraryFileFilter.class);
-	}
-	return bundle.getString(s);
+    protected String[] getSuffixes() {
+        return suffixes;
     }
 }

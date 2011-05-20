@@ -42,7 +42,10 @@
 
 package org.netbeans.cnd.spi.lexer;
 
-import java.util.Map;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
@@ -52,12 +55,21 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CndLexerLanguageEmbeddingProvider {
+    // constant to be used for registration of provider
+    // i.e. @ServiceProvider(path=CndLexerLanguageEmbeddingProvider.REGISTRATION_PATH, service=CndLexerLanguageEmbeddingProvider.class, position=100)
+    public static final String REGISTRATION_PATH = "CND/CndLexerLanguageEmbeddingProvider"; // NOI18N
 
     /**
-     * Returns embedding for tokens.
+     * Returns embedding for token if possible, null otherwise.
      *
-     * @return embedding map
+     * @return language embedding or null if token is not recognized by provider
      */
-    public Map<CppTokenId, LanguageEmbedding<?>> getEmbeddings();
+    public LanguageEmbedding<?> createEmbedding(Token<CppTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes);
 
+    /**
+     * check if language is known by provider
+     * @param lang
+     * @return 
+     */
+    public boolean isKnownLanguage(Language<?> lang);
 }

@@ -101,7 +101,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
         
-        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
+        projectTextField.setText(getProjectDisplayName(project));
         
         Sources sources = ProjectUtils.getSources( project );
                         
@@ -204,7 +204,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     private String createdFileName(JTextField field){
         FileObject root = getTargetGroup().getRootFolder();
         String folderName = field.getText().trim();
-        String createdFileName = FileUtil.getFileDisplayName( root ) +
+        String createdFileName = root.getPath() +
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             folderName +
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" );  // NOI18N

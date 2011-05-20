@@ -454,7 +454,14 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     private double getComponentHeight() {
-        return pane.getUI().getRootView(pane).getPreferredSpan(View.Y_AXIS);
+        final double[] ret = new double[1];
+        pane.getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                ret[0] = pane.getUI().getRootView(pane).getPreferredSpan(View.Y_AXIS);
+            }
+        });
+        return ret[0];
     }
     
     double getUsableHeight() {

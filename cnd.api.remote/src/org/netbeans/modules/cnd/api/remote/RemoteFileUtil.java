@@ -51,10 +51,10 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -102,7 +102,19 @@ public class RemoteFileUtil {
         FileObject result = FileSystemProvider.getFileObject(baseFileObject, relativeOrAbsolutePath);
         if (result == null) {
             String absRootPath = CndPathUtilitities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
-            result = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+            try {
+                // XXX:fullRemote we use old logic for local and new for remote
+                // but remote approach for local gives #197093 -  Exception: null file
+                final FileSystem fs = baseFileObject.getFileSystem();
+                if (CndFileUtils.isLocalFileSystem(fs)) {
+                    result = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+                } else {
+                    result = InvalidFileObjectSupport.getInvalidFileObject(fs, absRootPath);
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                result = InvalidFileObjectSupport.getInvalidFileObject(InvalidFileObjectSupport.getDummyFileSystem(), absRootPath);
+            }
         }
         return result;
     }
@@ -136,28 +148,57 @@ public class RemoteFileUtil {
         }
     }
 
-    private static ExecutionEnvironment getFileSystemExecutionEnvironment(Project project) {
+    public static FileSystem getProjectSourceFileSystem(Project project) {
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                    return remoteProject.getSourceFileSystemHost();
+                    return FileSystemProvider.getFileSystem(remoteProject.getSourceFileSystemHost());
                 }
+            }            
+            try {
+                return project.getProjectDirectory().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+        return CndFileUtils.getLocalFileSystem();
+    }
+    
+    public static FileObject getProjectSourceBaseFileObject(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                return remoteProject.getSourceBaseDirFileObject();
+            }
+            return project.getProjectDirectory();
+        }
+        return null;
+    }
+
+    public static ExecutionEnvironment getProjectSourceExecutionEnvironment(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                return remoteProject.getSourceFileSystemHost();
             }
         }
         return ExecutionEnvironmentFactory.getLocal();
     }
 
+    // it should take not-normalized path ok, since the caller can not normalize
+    // because it does not know execution environment
     public static FileObject getFileObject(String absolutePath, Project project) {
-        ExecutionEnvironment execEnv = getFileSystemExecutionEnvironment(project);
+        ExecutionEnvironment execEnv = getProjectSourceExecutionEnvironment(project);
+        absolutePath = FileSystemProvider.normalizeAbsolutePath(absolutePath, execEnv);
         if (execEnv != null && execEnv.isRemote()) {
             return getFileObject(absolutePath, execEnv);
         }
         FileObject projectDir = project.getProjectDirectory();
-        CndUtils.assertNotNull(projectDir, "Null project dir for " + project); //NOI18N
+        CndUtils.assertNotNull(projectDir, "Null project dir for ", project); //NOI18N
         final FileSystem fs;
         try {
-            fs = projectDir.getFileSystem();
+            fs = projectDir.getFileSystem();            
             return fs.findResource(absolutePath);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
@@ -166,7 +207,7 @@ public class RemoteFileUtil {
     }
 
     public static String normalizeAbsolutePath(String absPath, Project project) {
-        ExecutionEnvironment execEnv = getFileSystemExecutionEnvironment(project);
+        ExecutionEnvironment execEnv = getProjectSourceExecutionEnvironment(project);
         if (execEnv != null && execEnv.isRemote()) {
             return normalizeAbsolutePath(absPath, execEnv);
         } else {
@@ -200,6 +241,13 @@ public class RemoteFileUtil {
         return createFileChooser(
                 (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? execEnv : ExecutionEnvironmentFactory.getLocal(),
                 titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
+    public static JFileChooser createFileChooser(FileSystem fs,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+        return createFileChooser(env, titleText, buttonText, mode, filters, initialPath, useParent);
     }
 
     public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,

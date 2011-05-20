@@ -48,6 +48,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
@@ -139,6 +140,7 @@ public class ServerInstanceLookupTest extends ServerRegistryTestBase {
         assertResultContainsInstance(DeploymentManager.class, manager, resultManager);
     }
 
+    @RandomlyFails
     public void testListener() throws DeploymentManagerCreationException {
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(URL);
 

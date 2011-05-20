@@ -49,6 +49,11 @@ package org.netbeans.modules.cnd.api.model;
  * @author Vladimir Kvashin
  */
 public interface CsmInclude extends CsmOffsetable {
+    public enum IncludeState {
+        Success,
+        Fail,
+        Recursive
+    }
 
     /**
      * Returns the name that of the included file,
@@ -59,8 +64,11 @@ public interface CsmInclude extends CsmOffsetable {
     /** Gets include file */
     CsmFile getIncludeFile();
 
+    /** Gets include state */
+    IncludeState getIncludeState();
+
     /**
-     * Distingwishes whether this is a "system" include (for example #include <stdio.h>)
+     * Distinguishes whether this is a "system" include (for example #include <stdio.h>)
      * or user include (#include "MyLib.h")
      */
     boolean isSystem();    

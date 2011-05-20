@@ -44,14 +44,13 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.api.xml.XMLDocWriter;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -68,7 +67,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
         this.projectDescriptor = projectDescriptor;
     }
 
-    public void write() {
+    public void write() throws IOException {
         if (projectDescriptor == null) {
             return;
         }
@@ -86,36 +85,20 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
     /*
      * was: ConfigurationDescriptorHelper.storeDescriptor()
      */
-    private void write(String relPath) {
-    	File projectDirectoryFile = FileUtil.toFile(projectDirectory);
-        File projectDescriptorFile = CndFileUtils.createLocalFile(projectDirectoryFile.getPath(), relPath); // UNIX path
-
-        if (!projectDescriptorFile.exists()) {
-            try {
-                // make sure folder is created first...
-                //projectDescriptorFile.getParentFile().mkdir();
-                //projectDescriptorFile.createNewFile();
-                //projectDirectory.getFileSystem().refresh(false);
-                FileObject folder = FileUtil.createFolder(projectDescriptorFile.getParentFile());
-                folder.createData(projectDescriptorFile.getName());
-            }
-            catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-        }
-
-        FileObject xml = projectDirectory.getFileObject(relPath);
+    private void write(String relPath) throws IOException {
+        FileObject xml = FileUtil.createData(projectDirectory, relPath);
         try {
             org.openide.filesystems.FileLock lock = xml.lock();
             try {
-                OutputStream os = xml.getOutputStream(lock);
+                OutputStream os = SmartOutputStream.getSmartOutputStream(xml, lock);
                 write(os);
             }
             finally {
                 lock.releaseLock();
             }
-        }
-        catch (Exception e) {
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

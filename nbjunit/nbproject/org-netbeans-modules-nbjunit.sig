@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.63
+#Version 1.66.1
 
 CLSS public java.io.IOException
 cons public init()
@@ -216,9 +216,9 @@ hfds fName
 CLSS public junit.framework.TestSuite
 cons public !varargs init(java.lang.Class<?>[])
 cons public init()
-cons public init(java.lang.Class<? extends junit.framework.TestCase>)
 cons public init(java.lang.Class<? extends junit.framework.TestCase>,java.lang.String)
 cons public init(java.lang.Class<? extends junit.framework.TestCase>[],java.lang.String)
+cons public init(java.lang.Class<?>)
 cons public init(java.lang.String)
 intf junit.framework.Test
 meth public int countTestCases()
@@ -227,8 +227,8 @@ meth public java.lang.String getName()
 meth public java.lang.String toString()
 meth public java.util.Enumeration<junit.framework.Test> tests()
 meth public junit.framework.Test testAt(int)
-meth public static java.lang.reflect.Constructor<? extends junit.framework.TestCase> getTestConstructor(java.lang.Class<? extends junit.framework.TestCase>) throws java.lang.NoSuchMethodException
-meth public static junit.framework.Test createTest(java.lang.Class<? extends junit.framework.TestCase>,java.lang.String)
+meth public static java.lang.reflect.Constructor<?> getTestConstructor(java.lang.Class<?>) throws java.lang.NoSuchMethodException
+meth public static junit.framework.Test createTest(java.lang.Class<?>,java.lang.String)
 meth public static junit.framework.Test warning(java.lang.String)
 meth public void addTest(junit.framework.Test)
 meth public void addTestSuite(java.lang.Class<? extends junit.framework.TestCase>)

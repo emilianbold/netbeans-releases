@@ -54,7 +54,7 @@ class PHPDocParamTagData {
     PHPDocParamTagData(String text) {
         String paramName, paramType, descriptionTmp;
         paramName = paramType = descriptionTmp = ""; //NOI18N
-        String parts[] = text.split("\\s+", 3); //NOI18N
+        String parts[] = text.trim().split("\\s+", 3); //NOI18N
 
         if (parts.length > 0) {
             paramType = parts[0];

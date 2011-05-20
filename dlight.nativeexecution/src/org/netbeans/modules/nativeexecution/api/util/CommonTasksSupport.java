@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.SignalSupport;
 import org.openide.util.Exceptions;
@@ -99,7 +100,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final Writer error) {
 
-        return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFileName, error);
+        return SftpSupport.getInstance(srcExecEnv).downloadFile(srcFileName, dstFileName, error);
     }
 
     /**
@@ -125,7 +126,7 @@ public final class CommonTasksSupport {
             final File dstFile,
             final Writer error) {
 
-        return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFile.getAbsolutePath(), error);
+        return SftpSupport.getInstance(srcExecEnv).downloadFile(srcFileName, dstFile.getAbsolutePath(), error);
     }
 
     /**
@@ -225,8 +226,9 @@ public final class CommonTasksSupport {
         return result;
     }
 
-    public static Future<Integer> uploadFile(UploadParameters parameters) {
-        return SftpSupport.uploadFile(parameters.copy());
+    public static Future<UploadStatus> uploadFile(UploadParameters parameters) {
+        parameters = parameters.copy();
+        return SftpSupport.getInstance(parameters.dstExecEnv).uploadFile(parameters);
     }
 
     /**
@@ -244,19 +246,16 @@ public final class CommonTasksSupport {
      * if it is less than zero, the default mask is used (for existent files, it stays the same it was, for new files as specified by umask command))
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
-     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
-     *         of the upload task. The result of this Future is the exit
-     *         code of the copying routine. 0 indicates that the file was
-     *         successfully uplodaded. Result other than 0 indicates an error.
+     * @return a <tt>Future&lt;UploadStatus&gt;</tt> representing pending completion
+     *         of the upload task.
      */
-    public static Future<Integer> uploadFile(
+    public static Future<UploadStatus> uploadFile(
             final String srcFileName,
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
-            final int mask, final Writer error) {
-
-        return SftpSupport.uploadFile(new UploadParameters(
-                new File(srcFileName), dstExecEnv, dstFileName, mask, error, false, null));
+            final int mask) {
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
+                new File(srcFileName), dstExecEnv, dstFileName, mask, false, null));
     }
 
     /**
@@ -276,19 +275,17 @@ public final class CommonTasksSupport {
      *        an error message will be written to this <tt>Writer</tt>.
      * @param checkMd5 if true, then the source file will be copied to destination only if
      *        destination does not exist or exists but its md5 sum differs from local one
-     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
-     *         of the upload task. The result of this Future is the exit
-     *         code of the copying routine. 0 indicates that the file was
-     *         successfully uplodaded. Result other than 0 indicates an error.
+     * @return a <tt>Future&lt;UploadStatus&gt;</tt> representing pending completion
+     *         of the upload task. 
      */
-    public static Future<Integer> uploadFile(
+    public static Future<UploadStatus> uploadFile(
             final String srcFileName,
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
-            final int mask, final Writer error, boolean checkMd5) {
+            final int mask, boolean checkMd5) {
 
-        return SftpSupport.uploadFile(new UploadParameters(
-                new File(srcFileName), dstExecEnv, dstFileName, mask, error, checkMd5, null));
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
+                new File(srcFileName), dstExecEnv, dstFileName, mask, checkMd5, null));
     }
 
     /**
@@ -306,18 +303,16 @@ public final class CommonTasksSupport {
      * if it is less than zero, the default mask is used (for existent files, it stays the same it was, for new files as specified by umask command))
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
-     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
-     *         of the upload task. The result of this Future is the exit
-     *         code of the copying routine. 0 indicates that the file was
-     *         successfully uplodaded. Result other than 0 indicates an error.
+     * @return a <tt>Future&lt;UploadStatus&gt;</tt> representing pending completion
+     *         of the upload task.
      */
-    public static Future<Integer> uploadFile(
+    public static Future<UploadStatus> uploadFile(
             final File srcFile,
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
-            final int mask, final Writer error) {
+            final int mask) {
 
-        return SftpSupport.uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, error, false, null));
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, false, null));
     }
 
     /**
@@ -337,19 +332,17 @@ public final class CommonTasksSupport {
      *        an error message will be written to this <tt>Writer</tt>.
      * @param checkMd5 if true, then the source file will be copied to destination only if
      *        destination does not exist or exists but its md5 sum differs from local one
-     * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
-     *         of the upload task. The result of this Future is the exit
-     *         code of the copying routine. 0 indicates that the file was
-     *         successfully uplodaded. Result other than 0 indicates an error.
+     * @return a <tt>Future&lt;UploadStatus&gt;</tt> representing pending completion
+     *         of the upload task.
      */
-    public static Future<Integer> uploadFile(
+    public static Future<UploadStatus> uploadFile(
             final File srcFile,
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
-            final int mask, final Writer error, boolean checkMd5) {
+            final int mask, boolean checkMd5) {
 
-        return SftpSupport.uploadFile(new UploadParameters(
-                srcFile, dstExecEnv, dstFileName, mask, error, checkMd5, null));
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
+                srcFile, dstExecEnv, dstFileName, mask, checkMd5, null));
     }
 
     /**
@@ -515,6 +508,34 @@ public final class CommonTasksSupport {
         }, descr);
     }
 
+    public static class UploadStatus {
+        private final int exitCode;
+        private final String error;
+        private final FileInfoProvider.StatInfo statInfo;
+
+        /*packge*/ UploadStatus(int exitCode, String error, StatInfo statInfo) {
+            this.exitCode = exitCode;
+            this.error = error;
+            this.statInfo = statInfo;
+        }
+
+        public boolean isOK() {
+            return exitCode == 0;
+        }
+        
+        public int getExitCode() {
+            return exitCode;
+        }
+       
+        public String getError() {
+            return error;
+        }
+
+        public StatInfo getStatInfo() {
+            return statInfo;
+        }
+    }
+    
     /**
      * A class (an analog of C struct) that contains upload parameters.
      */
@@ -541,12 +562,6 @@ public final class CommonTasksSupport {
          */
         public int mask;
 
-        /**
-         * If not <tt>NULL</tt> and some error occurs during upload,
-         * an error message will be written to this <tt>Writer</tt>.
-         */
-        public Writer error;
-
         /** */
         public ChangeListener callback;
 
@@ -561,25 +576,23 @@ public final class CommonTasksSupport {
             this.dstExecEnv = dstExecEnv;
             this.dstFileName = dstFileName;
             mask = -1;
-            error = null;
             callback = null;
             checkMd5 = false;
         }
 
-        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask, Writer error) {
-            this(srcFile, dstExecEnv, dstFileName, mask, error, false, null);
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask) {
+            this(srcFile, dstExecEnv, dstFileName, mask, false, null);
         }
 
-        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask, Writer error, boolean checkMd5, ChangeListener callback) {
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask, boolean checkMd5, ChangeListener callback) {
             this(srcFile, dstExecEnv, dstFileName);
             this.mask = mask;
-            this.error = error;
             this.checkMd5 = checkMd5;
             this.callback = callback;
         }
 
         /*package*/ UploadParameters copy() {
-            return new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, error, checkMd5, callback);
+            return new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, checkMd5, callback);
         }
     }
 

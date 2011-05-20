@@ -130,7 +130,7 @@ public class TomcatWebModuleChildrenFactory extends ChildFactory<TomcatWebModule
                 if (e.getCause() instanceof AuthorizationException) {
                     // connection to tomcat manager has not been allowed
                     String errMsg = NbBundle.getMessage(TomcatWebModuleChildrenFactory.class,
-                            "MSG_AuthorizationFailed");
+                            "MSG_AuthorizationFailed", tm.isTomcat70() ? "manager-script" : "manager");
                     NotifyDescriptor notDesc = new NotifyDescriptor.Message(
                             errMsg, NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(notDesc);

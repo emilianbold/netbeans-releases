@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -148,19 +149,19 @@ public class BeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getDecoratorClasses()
      */
-    public Set<String> getDecoratorClasses() {
+    public LinkedHashSet<String> getDecoratorClasses() {
         return getBeanClasses( Decorators.class ); 
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getIntercetorClasses()
      */
-    public Set<String> getIntercetorClasses() {
+    public LinkedHashSet<String> getInterceptorClasses() {
         return getBeanClasses( Interceptors.class );
     }
     
-    public Set<String> getBeanClasses( Class<? extends BeanClassContainer> clazz) {
-        Set<String> result = new HashSet<String>();
+    public LinkedHashSet<String> getBeanClasses( Class<? extends BeanClassContainer> clazz) {
+        LinkedHashSet<String> result = new LinkedHashSet<String>();
         for (WebBeansModel model : getModels()) {
             Beans beans = model.getBeans();
             if ( beans == null ){

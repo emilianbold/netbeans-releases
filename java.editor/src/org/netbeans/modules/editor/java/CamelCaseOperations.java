@@ -44,14 +44,16 @@
 
 package org.netbeans.modules.editor.java;
 
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,25 +63,25 @@ import org.openide.util.Exceptions;
 /* package */ class CamelCaseOperations {
 
     static int nextCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
-        SyntaxSupport syntaxSupport =  Utilities.getSyntaxSupport(textComponent);
-        if (syntaxSupport == null) {
-            // no syntax support available :(
-            return -1;
-        }
-
         // get current caret position
         int offset = textComponent.getCaretPosition();
-        // get token chain at the offset + 1 ( + 1 so that the following uppercase char is skipped
-        TokenItem tokenItem = ((ExtSyntaxSupport) syntaxSupport).getTokenChain(offset, offset + 1);
+        Document doc = textComponent.getDocument();
+        TokenHierarchy<Document> th = doc != null ? TokenHierarchy.get(doc) : null;
+        List<TokenSequence<?>> embeddedSequences = th != null ? th.embeddedTokenSequences(offset, false) : null;
+        TokenSequence<?> seq = embeddedSequences != null ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
+
+        if (seq  != null) seq.move(offset);
+
+        Token t = seq != null && seq.moveNext() ? seq.offsetToken() : null;
 
         // is this an identifier
-        if (tokenItem != null && ("identifier".equals(tokenItem.getTokenID().getName()))) { // NOI18N
-            String image = tokenItem.getImage();
+        if (t != null && t.id() == JavaTokenId.IDENTIFIER) { // NOI18N
+            String image = t.text().toString();
             if (image != null && image.length() > 0) {
                 int length = image.length();
                 // is caret at the end of the identifier
-                if (offset != (tokenItem.getOffset() + length)) {
-                    int offsetInImage = offset - tokenItem.getOffset();
+                if (offset != (t.offset(th) + length)) {
+                    int offsetInImage = offset - t.offset(th);
                     int start = offsetInImage + 1;
                     if (Character.isUpperCase(image.charAt(offsetInImage))) {
                         // if starting from a Uppercase char, first skip over follwing upper case chars
@@ -95,11 +97,11 @@ import org.openide.util.Exceptions;
                         char charAtI = image.charAt(i);
                         if (Character.isUpperCase(charAtI)) {
                             // return offset of next uppercase char in the identifier
-                            return tokenItem.getOffset() + i;
+                            return t.offset(th) + i;
                         }
                     }
                 }
-                return tokenItem.getOffset() + image.length();
+                return t.offset(th) + image.length();
             }
         }
 
@@ -108,39 +110,36 @@ import org.openide.util.Exceptions;
     }
 
     static int previousCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
-        SyntaxSupport syntaxSupport = Utilities.getSyntaxSupport(textComponent);
-        if (syntaxSupport == null) {
-            // no syntax support available :(
-            return -1;
-        }
-
         // get current caret position
         int offset = textComponent.getCaretPosition();
+        Document doc = textComponent.getDocument();
+        TokenHierarchy<Document> th = doc != null ? TokenHierarchy.get(doc) : null;
+        List<TokenSequence<?>> embeddedSequences = th != null ? th.embeddedTokenSequences(offset, false) : null;
+        TokenSequence<?> seq = embeddedSequences != null ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
 
-        // Are we at the beginning of the document
-        if (offset == 0) {
-            return -1;
-        }
+        if (seq  != null) seq.move(offset);
 
-        // get token chain at the offset
-        TokenItem tokenItem = ((ExtSyntaxSupport) syntaxSupport).getTokenChain(offset - 1, offset);
+        Token t = seq != null && seq.moveNext() ? seq.offsetToken() : null;
 
         // is this an identifier
-        if (tokenItem != null) {
-            if ("identifier".equals(tokenItem.getTokenID().getName())) { // NOI18N
-                String image = tokenItem.getImage();
+        if (t != null) {
+            if (t.offset(th) == offset) {
+                t = seq.movePrevious() ? seq.offsetToken() : null;
+            }
+            if (t != null && t.id() == JavaTokenId.IDENTIFIER) { // NOI18N
+                String image = t.text().toString();
                 if (image != null && image.length() > 0) {
                     int length = image.length();
-                    int offsetInImage = offset - 1 - tokenItem.getOffset();
+                    int offsetInImage = offset - 1 - t.offset(th);
                     if (Character.isUpperCase(image.charAt(offsetInImage))) {
                         for (int i = offsetInImage - 1; i >= 0; i--) {
                             char charAtI = image.charAt(i);
                             if (!Character.isUpperCase(charAtI)) {
                                 // return offset of previous uppercase char in the identifier
-                                return tokenItem.getOffset() + i + 1;
+                                return t.offset(th) + i + 1;
                             }
                         }
-                        return tokenItem.getOffset();
+                        return t.offset(th);
                     } else {
                         for (int i = offsetInImage - 1; i >= 0; i--) {
                             char charAtI = image.charAt(i);
@@ -150,27 +149,27 @@ import org.openide.util.Exceptions;
                                     char charAtJ = image.charAt(j);
                                     if (!Character.isUpperCase(charAtJ)) {
                                         // return offset of previous uppercase char in the identifier
-                                        return tokenItem.getOffset() + j + 1;
+                                        return t.offset(th) + j + 1;
                                     }
                                 }
-                                return tokenItem.getOffset();
+                                return t.offset(th);
                             }
                         }
                     }
-                    return tokenItem.getOffset();
+                    return t.offset(th);
                 }
-            } else if ("whitespace".equals(tokenItem.getTokenID().getName())) { // NOI18N
-                TokenItem whitespaceTokenItem = tokenItem;
-                while (whitespaceTokenItem != null && "whitespace".equals(whitespaceTokenItem.getTokenID().getName())) {
-                    int wsOffset = whitespaceTokenItem.getOffset();
+            } else if (t != null && t.id() == JavaTokenId.WHITESPACE) { // NOI18N
+                Token whitespaceToken = t;
+                while (whitespaceToken != null && whitespaceToken.id() == JavaTokenId.WHITESPACE) {
+                    int wsOffset = whitespaceToken.offset(th);
                     if (wsOffset == 0) {
                         //#145250: at the very beginning of a file
                         return 0;
                     }
-                    whitespaceTokenItem =((ExtSyntaxSupport) syntaxSupport).getTokenChain(wsOffset - 1, wsOffset);
+                    whitespaceToken = seq.movePrevious() ? seq.offsetToken() : null;
                 }
-                if (whitespaceTokenItem != null) {
-                    return whitespaceTokenItem.getOffset() + whitespaceTokenItem.getImage().length();
+                if (whitespaceToken != null) {
+                    return whitespaceToken.offset(th) + whitespaceToken.length();
                 }
             }
         }

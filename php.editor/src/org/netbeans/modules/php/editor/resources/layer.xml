@@ -142,7 +142,6 @@
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-php-editor-nav-hierarchy-ShowPhpClassHierarchyAction.instance"/>
                             <attr name="position" intvalue="1200"/>
                         </file>
-
                     </folder>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
@@ -154,6 +153,9 @@
                     <file name="select-connection">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="1182"/>
+                    </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
                     </file>
 
                 </folder>

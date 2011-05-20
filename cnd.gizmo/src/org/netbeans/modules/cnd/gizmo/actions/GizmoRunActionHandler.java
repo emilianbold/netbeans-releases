@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -83,6 +84,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
@@ -110,7 +112,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     @Override
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
     }
 
@@ -160,7 +162,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
         targetConf.putInfo(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN(), "gizmo.run"); // NOI18N
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, pae.getProject().getProjectDirectory().getPath());
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_HOST, ExecutionEnvironmentFactory.toUniqueID(RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject())));
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N

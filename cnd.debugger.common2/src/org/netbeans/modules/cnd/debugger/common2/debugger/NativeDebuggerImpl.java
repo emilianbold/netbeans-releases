@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.Iterator;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
 import org.openide.text.Line;
 
@@ -63,7 +65,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -96,7 +97,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.StateModel;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
@@ -104,7 +104,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
@@ -135,9 +136,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     protected Location visitedLocation = null;
 
-    protected DebuggerAnnotation visitMarker = null;
-    protected DebuggerAnnotation currentPCMarker = null;
-    protected DebuggerAnnotation currentDisPCMarker = null;
+    protected final DebuggerAnnotation visitMarker;
+    protected final DebuggerAnnotation currentPCMarker;
+    protected final DebuggerAnnotation currentDisPCMarker;
 
     private boolean srcOOD;
     private String srcOODMessage = null;
@@ -158,15 +159,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     // assembly level stuff
     private boolean srcRequested = true;
-    private DisassemblerWindow disassemblerWindow;
     private StateModelAdaptor disStateModel = new StateModelAdaptor();
     private InstBreakpointModel breakpointModel = new InstBreakpointModel();
-
-    //memory view
-    protected MemoryWindow memoryWindow = null;
-    
-    //registers view
-    protected RegistersWindow registersWindow = null;
 
     protected Executor executor;
 
@@ -268,7 +262,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private PathMap cachedPathMap;
     private boolean lookedPathMap;
 
-    public final PathMap getPathMap() {
+    private PathMap getPathMap() {
 	if (!lookedPathMap) {
 	    lookedPathMap = true;
 	    Configuration conf = getNDI().getConfiguration();
@@ -276,8 +270,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 		cachedPathMap = null;
 	    } else {
 		MakeConfiguration mc = (MakeConfiguration) conf;
-		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();
-		cachedPathMap = HostInfoProvider.getMapper(ee);
+		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
+                RemoteSyncFactory syncFactory = mc.getRemoteSyncFactory();                
+		cachedPathMap = (syncFactory == null) ? null : syncFactory.getPathMap(ee);
 	    }
 	}
 	return cachedPathMap;
@@ -783,17 +778,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
     
     public void annotateDis(boolean andShow) {
-        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-        if (disProvider != null && visitedLocation != null) {
-            disProvider.movePC(visitedLocation.pc(), currentDisPCMarker, andShow);
+        if (visitedLocation != null) {
+            DisassemblyUtils.annotatePC(visitedLocation, currentDisPCMarker, andShow);
         }
     }
    
-    private boolean isInDis() {
-        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-        return disProvider != null && disProvider.isInDis();
-    }
-    
     protected static enum ShowMode {
         SOURCE, // show source
         DIS,    // show disassembly
@@ -805,7 +794,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, ShowMode showMode) {
 
         if (l != null) {
-	    if (showMode == ShowMode.SOURCE || (showMode == ShowMode.AUTO && !isInDis())) {
+	    if (showMode == ShowMode.SOURCE || (showMode == ShowMode.AUTO && !Disassembly.isInDisasm())) {
 		EditorBridge.showInEditor(l);
             }
 
@@ -827,7 +816,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         
         if (!visited) {
             // Annotate dis
-            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && isInDis()));
+            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && Disassembly.isInDisasm()));
         }
 
         // Arrange for DebuggerManager.error_sourceModified()
@@ -859,25 +848,18 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Else, if user has requested disassembly or no source information is
      * available, bring up the disassembler.
      */
-    private void updateLocation(final boolean andShow) {
+    private void updateLocation(final boolean andShow, final ShowMode showModeOverride) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (isSrcRequested() && haveSource()) {
-                    // this will cause registerDisassemblerWindow(null) to get called
-                    try {
-                        viaShowLocation = true;
-                        disassemblerWindow().componentHidden();
-                    } finally {
-                        viaShowLocation = false;
-                    }
-
                     // Locations should already be in local path form.
 		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
-		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
+		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
+                            NativeDebuggerImpl.this);
 		    if (l != null) {
                         ShowMode showMode = ShowMode.NONE;
                         if (andShow) {
-                            showMode = ShowMode.AUTO;
+                            showMode = showModeOverride;
                             NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
                             if (breakpoint != null) {
                                 if (breakpoint instanceof InstructionBreakpoint) {
@@ -892,28 +874,18 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    } else {
 		    setCurrentLine(null, false, false, ShowMode.NONE);
 
-                    if (getVisitedLocation() != null) {
-                        disStateModel().updateStateModel(getVisitedLocation(), true);
-			if (getVisitedLocation().pc() != 0)
-			    openDis();
-                    }
+                    //if (getVisitedLocation() != null) {
+                        //disStateModel().updateStateModel(getVisitedLocation(), true);
+                        // see IZ 198496: we do not want to show dis if it was not requested explicitly
+//			if (getVisitedLocation().pc() != 0) {
+//			    Disassembly.open();
+//                        }
+                    //}
                 }
             }
         });
     }
     
-    protected void openDis() {
-        // this will cause registerDisassemblerWindow(...) to get called
-        try {
-            viaShowLocation = true;
-            disassemblerWindow().open();
-            // CR 6986846	    disassemblerWindow().requestActive();
-            disassemblerWindow().componentShowing();
-        } finally {
-            viaShowLocation = false;
-        }
-    }
-
     private void setSrcRequested(boolean srcRequested) {
 	this.srcRequested = srcRequested;
     }
@@ -928,25 +900,32 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     public void requestDisassembly() {
-	setSrcRequested(false);
-	updateLocation(true);
-	// CR 6986846
-	disassemblerWindow().requestActive();
+        Disassembly.open();
+//	setSrcRequested(false);
+//	updateLocation(true);
+//	// CR 6986846
+//	disassemblerWindow().requestActive();
     }
 
-    public void requestSource(boolean andShow) {
+    public void showCurrentSource() {
 	if (!haveSource()) {
 	    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 	    return;
 	}
 	setSrcRequested(true);
-	updateLocation(andShow);
+	updateLocation(true, ShowMode.SOURCE);
+    }
+    
+    public void showCurrentDis() {
+        Disassembly.open();
+        updateLocation(true, ShowMode.DIS);
     }
 
     public final void setVisitedLocation(Location loc) {
 	this.visitedLocation = loc;
 	requestAutos();
-	updateLocation(true);
+        getDisassembly().stateUpdated();
+	updateLocation(true, ShowMode.AUTO);
     }
 
     public FileMapper fmap() {
@@ -1020,11 +999,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 //							  disController(),
 //							  disStateModel(),
 //							  breakpointModel());
-	updateLocation(true);
+	updateLocation(true, ShowMode.AUTO);
 	// CR 6986846
 	//if (!(isSrcRequested() || haveSource())) {
 	if ((getVisitedLocation() != null) && !haveSource()) {
-	   disassemblerWindow().requestActive();
+	   Disassembly.open();
 	}
 
         visitMarker.attach(true);
@@ -1042,6 +1021,22 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
 	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
 	    bpt.showAnnotationsFor(true, this);
+        
+        registerRegistersWindow(RegistersWindow.getDefault().isShowing() ? RegistersWindow.getDefault() : null);
+        
+        if (MemoryWindow.getDefault().isShowing()) {
+            registerMemoryWindow(MemoryWindow.getDefault());
+            MemoryWindow.getDefault().setDebugger(this);
+        } else {
+            registerMemoryWindow(null);
+        }
+        
+        if (Disassembly.isOpened()) {
+            registerDisassembly(getDisassembly());
+            getDisassembly().stateUpdated();
+        } else {
+            registerDisassembly(null);
+        }
     }
 
     /**
@@ -1105,7 +1100,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             getIOPack().console().getTerm().putChars(warnArray,
                     0, warnArray.length);
         }
-
+        // Close if no more sessions
+        NativeSession[] sessions = DebuggerManager.get().getSessions();
+        if (sessions.length <= 1) {
+            Disassembly.close();
+        }
 
         // Go through the array conversion otherwise we'll get
         // ConcurrentModificatonExpcetions.
@@ -1207,7 +1206,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     protected abstract DisFragModel disModel();
 
-    protected abstract Controller disController();
+    public abstract Controller disController();
 
     protected InstBreakpointModel breakpointModel() {
 	return breakpointModel;
@@ -1217,16 +1216,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	return disStateModel;
     }
 
-    protected final DisassemblerWindow disassemblerWindow() {
-	if (disassemblerWindow == null)
-	    disassemblerWindow = DisassemblerWindow.getDefault();
-	return disassemblerWindow;
-    }
-
-
     protected class DisModelSupport implements DisFragModel {
 
-        private ArrayList<String> current_addrs = new ArrayList<String>();
+        private ArrayList<Line> current_addrs = new ArrayList<Line>();
         private ArrayList<Listener> listeners = new ArrayList<Listener>();
 
         // implement DisFragModel
@@ -1235,7 +1227,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
 
         // implement DisFragModel
-        public String getItem(int i) {
+        public Line getItem(int i) {
             return current_addrs.get(i);
         }
 
@@ -1257,7 +1249,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         protected final void add(String memaddr, String memvalue) {
 	    // careful!
 	    // DisView.addrFromLine is sensitive to this number of spaces
-            current_addrs.add("   " + memaddr + "  " + memvalue + "\n"); // NOI18N
+            current_addrs.add(new Line(memaddr, memvalue));
         }
 	
 	protected final void update() {
@@ -1265,6 +1257,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 listener.fragUpdated();
             }
 	}
+
+        public Iterator<Line> iterator() {
+            return current_addrs.iterator();
+        }
     }
 
     protected abstract class ControllerSupport implements Controller {
@@ -1272,10 +1268,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         private StateListener runToCursorListener = null;
 
         // interface Controller
-        abstract public void requestDis();
+        abstract public void requestDis(boolean withSource);
 
         // interface Controller
-        abstract public void requestDis(String start, int count);
+        abstract public void requestDis(String start, int count, boolean withSource);
 
 
 	protected abstract void setBreakpointHelp(String address);
@@ -1348,11 +1344,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         // interface Controller
         public final void runToCursor(String addr) {
             runToCursorInst(addr);
-        }
-
-        // interface Controller
-        public final void goToSource() {
-	    requestSource(true);
         }
 
         // interface Controller
@@ -1548,7 +1539,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    this.location = location;
 
             if (retrieve && !inRange(location.pc())) {
-		disController().requestDis();
+		disController().requestDis(true);
             } else {
                 for (Listener l : listeners) {
                     l.stateUpdated();
@@ -1634,15 +1625,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
         return null;
     }
-
-    public void registerMemoryWindow(MemoryWindow w) {
-        memoryWindow = w;
-    }
-
-    public void registerRegistersWindow(RegistersWindow w) {
-        registersWindow = w;
-    }
     
+    public void registerMemoryWindow(MemoryWindow w) {
+    }
+
     public Set<String> requestAutos() {
 	autos.clear();
 
@@ -1656,7 +1642,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    return Collections.emptySet();
 	}
 
-	return Autos.get(EditorBridge.documentFor(location.src()), location.line()-1);
+	return Autos.get(EditorBridge.documentFor(location.src(), this), location.line()-1);
     }
     
     public int getAutosCount() {

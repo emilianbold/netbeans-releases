@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,6 +63,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -1554,9 +1556,9 @@ public final class ReferenceHelper {
             return lib;
         }
         File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
-        return ProjectLibraryProvider.copyLibrary(lib, mainPropertiesFile.toURI().toURL(), true);
+        return copyLibrary(lib, mainPropertiesFile.toURI().toURL());
     }
-    
+        
     /**
      * Returns library import handler which imports global library to sharable
      * one. See {@link LibraryChooser#showDialog} for usage of this handler.
@@ -1570,6 +1572,23 @@ public final class ReferenceHelper {
             }
         };        
     }
+
+    /**
+     * Returns library import handler which imports global library to sharable
+     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
+     * @param the URL of the libraries definition file to import the library into
+     * @return copy handler
+     * @since org.netbeans.modules.project.ant/1 1.41
+     */
+    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(final @NonNull URL librariesLocation) {
+        return new LibraryChooser.LibraryImportHandler() {
+            @Override
+            public Library importLibrary(final @NonNull Library library) throws IOException {
+                return copyLibrary(library, librariesLocation);
+            }
+        };
+    }
+
     /**
      * Tries to find a library by name in library manager associated with the project.
      * It is <em>not</em> guaranteed that any returned library is an identical object to one which passed in to {@link #createLibraryReference}.
@@ -1940,5 +1959,10 @@ public final class ReferenceHelper {
         }
         
     }
-    
+
+    private static Library copyLibrary(final @NonNull Library lib, final @NonNull URL librariesLocation) throws IOException {
+        Parameters.notNull("lib", lib); //NOI18N
+        Parameters.notNull("librariesLocation", librariesLocation); //NOI18N
+        return ProjectLibraryProvider.copyLibrary(lib, librariesLocation, true);
+    }
 }

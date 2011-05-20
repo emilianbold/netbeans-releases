@@ -453,45 +453,47 @@ public class BaseTextUI extends BasicTextUI implements
 
     /** Insert to document notification. */
     public void insertUpdate(DocumentEvent evt) {
-        try {
-            checkLengthyAtomicEdit();
-            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
-            EditorUI eui = getEditorUI();
-            int y = getYFromPos(evt.getOffset());
-            int lineHeight = eui.getLineHeight();
-            int syntaxY = getYFromPos(bevt.getSyntaxUpdateOffset());
-            // !!! patch for case when DocMarksOp.eolMark is at the end of document
-            if (bevt.getSyntaxUpdateOffset() == evt.getDocument().getLength()) {
-                syntaxY += lineHeight;
-            }
-            if (getComponent().isShowing()) {
-                eui.repaint(y, Math.max(lineHeight, syntaxY - y));
-            }
-        } catch (BadLocationException ex) {
-            Utilities.annotateLoggable(ex);
-        }
+        checkLengthyAtomicEdit();
+        // No longer trigger syntax update related repaint
+//        try {
+//            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
+//            EditorUI eui = getEditorUI();
+//            int y = getYFromPos(evt.getOffset());
+//            int lineHeight = eui.getLineHeight();
+//            int syntaxY = getYFromPos(bevt.getSyntaxUpdateOffset());
+//            // !!! patch for case when DocMarksOp.eolMark is at the end of document
+//            if (bevt.getSyntaxUpdateOffset() == evt.getDocument().getLength()) {
+//                syntaxY += lineHeight;
+//            }
+//            if (getComponent().isShowing()) {
+//                eui.repaint(y, Math.max(lineHeight, syntaxY - y));
+//            }
+//        } catch (BadLocationException ex) {
+//            Utilities.annotateLoggable(ex);
+//        }
     }
     
     /** Remove from document notification. */
     public void removeUpdate(DocumentEvent evt) {
-        try {
-            checkLengthyAtomicEdit();
-            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
-            EditorUI eui = getEditorUI();
-            int y = getYFromPos(evt.getOffset());
-            int lineHeight = eui.getLineHeight();
-            int syntaxY = getYFromPos(bevt.getSyntaxUpdateOffset());
-            // !!! patch for case when DocMarksOp.eolMark is at the end of document
-            if (bevt.getSyntaxUpdateOffset() == evt.getDocument().getLength()) {
-                syntaxY += lineHeight;
-            }
-            if (getComponent().isShowing()) {
-                eui.repaint(y, Math.max(lineHeight, syntaxY - y));
-            }
-
-        } catch (BadLocationException ex) {
-            Utilities.annotateLoggable(ex);
-        }
+        checkLengthyAtomicEdit();
+        // No longer trigger syntax update related repaint
+//        try {
+//            BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
+//            EditorUI eui = getEditorUI();
+//            int y = getYFromPos(evt.getOffset());
+//            int lineHeight = eui.getLineHeight();
+//            int syntaxY = getYFromPos(bevt.getSyntaxUpdateOffset());
+//            // !!! patch for case when DocMarksOp.eolMark is at the end of document
+//            if (bevt.getSyntaxUpdateOffset() == evt.getDocument().getLength()) {
+//                syntaxY += lineHeight;
+//            }
+//            if (getComponent().isShowing()) {
+//                eui.repaint(y, Math.max(lineHeight, syntaxY - y));
+//            }
+//
+//        } catch (BadLocationException ex) {
+//            Utilities.annotateLoggable(ex);
+//        }
     }
 
     /** The change in document notification.

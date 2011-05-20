@@ -172,7 +172,7 @@ public class LLDataCollector
             // TODO: eliminate mkDir in the case we don't need it
             CommonTasksSupport.mkDir(execEnv, remoteDir, null).get();
             CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv,
-                    remoteDir + "/" + localFile.getName(), mode, null, true).get(); // NOI18N
+                    remoteDir + "/" + localFile.getName(), mode, true).get(); // NOI18N
         } catch (InterruptedException ex) {
             DLightLogger.instance.log(Level.WARNING, null, ex);
         } catch (ExecutionException ex) {

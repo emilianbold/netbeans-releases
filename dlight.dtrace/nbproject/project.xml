@@ -42,7 +42,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.10.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -125,11 +125,20 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.apache</friend>
                 <friend>com.sun.tools.dlight.mysql</friend>
                 <friend>com.sun.tools.dlight.php</friend>
-                <friend>com.sun.tools.dlight.tools.customizer</friend>
+                <friend>com.sun.tools.dlight.sysmon</friend>
+                <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>com.sun.tools.dlight.txtrace</friend>
+                <friend>com.sun.tools.dlight.util</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>

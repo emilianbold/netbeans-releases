@@ -61,10 +61,6 @@ import javax.swing.text.ViewFactory;
 
 public final class ViewFactoryImpl implements ViewFactory {
 
-    static {
-        EditorViewFactory.registerFactory(new HighlightsViewFactory.HighlightsFactory());
-    }
-
     public static final ViewFactory INSTANCE = new ViewFactoryImpl();
 
     private ViewFactoryImpl() {

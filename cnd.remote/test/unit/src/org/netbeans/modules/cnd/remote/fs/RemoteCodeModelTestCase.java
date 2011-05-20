@@ -42,21 +42,13 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -68,15 +60,11 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Vladimir Kvashintrace
  */
 public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
 
     private boolean testReconnect = false;
-    private boolean trace = Boolean.getBoolean("cnd.test.remote.code.model.trace");
-    static {
-        System.setProperty("apt.trace.resolver", "true");
-    }
 
     public RemoteCodeModelTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -98,33 +86,6 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         RepositoryUtils.cleanCashes();
     }
 
-    private void trace(String pattern, Object... args) {
-        if (trace) {
-            System.err.printf(pattern, args);
-        }
-    }
-
-    protected void checkIncludes(CsmFile csmFile, boolean recursive, Set<CsmFile> antiLoop) throws Exception {
-        if (!antiLoop.contains(csmFile)) {
-            antiLoop.add(csmFile);
-            trace("Checking %s\n", csmFile.getAbsolutePath());
-            for (CsmInclude incl : csmFile.getIncludes()) {
-                CsmFile includedFile = incl.getIncludeFile();
-                trace("\t%s -> %s\n", incl.getIncludeName(), includedFile);
-                assertNotNull("Unresolved include: " + incl.getIncludeName() + " in " + csmFile.getAbsolutePath(), includedFile);
-                if (recursive) {
-                    checkIncludes(includedFile, true, antiLoop);
-                }
-            }
-        }
-    }
-
-    protected void checkIncludes(CsmProject csmProject, boolean recursive) throws Exception {
-        for (CsmFile csmFile : csmProject.getAllFiles()) {
-            checkIncludes(csmFile, recursive, new HashSet<CsmFile>());
-        }
-    }
-
     @Override
     protected void clearRemoteSyncRoot() {
         super.clearRemoteSyncRoot();
@@ -143,14 +104,7 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         }
         OpenProjects.getDefault().open(new Project[]{ makeProject }, false);
         changeProjectHost(makeProject, execEnv);
-        CsmModel model = CsmModelAccessor.getModel();
-        NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-        assertNotNull("Null NativeProject", np);
-        ((ModelImpl) model).enableProject(np);
-        CsmProject csmProject = model.getProject(makeProject);
-        assertNotNull("Null CsmProject", csmProject);
-        csmProject.waitParse();
-        checkIncludes(csmProject, true);
+        checkCodeModel(makeProject);
         if (testReconnect) {
             ConnectionManager.getInstance().connectTo(execEnv);
             assertTrue("Can not reconnect to host", ConnectionManager.getInstance().isConnectedTo(execEnv));

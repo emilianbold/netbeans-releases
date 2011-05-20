@@ -1,5 +1,0 @@
-Aaa:CLASS:[]:ESCAPED{Aaa}:
-  aaa:METHOD:[PUBLIC]:ESCAPED{aaa}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-  bee:METHOD:[PUBLIC]:ESCAPED{bee}<font color='#777777'> : ESCAPED{String}</font>:
-  cee:METHOD:[PUBLIC]:ESCAPED{cee}<font color='#777777'> : ESCAPED{Fixnum, String}</font>:
-  gee:FIELD:[PRIVATE]:ESCAPED{gee}<font color='#777777'> : ESCAPED{Fixnum, String}</font>:

@@ -48,6 +48,7 @@ import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.el.spi.ELPlugin;
 
 /**
  * Expression Language indexer.
@@ -105,7 +107,7 @@ public final class ELIndexer extends EmbeddingIndexer {
                 if (each.isValid()) {
                     IndexDocument doc = support.createDocument(parserResult.getFileObject());
                     documents.add(doc);
-                    doc.addPair(Fields.EXPRESSION, each.getExpression(), true, true);
+                    doc.addPair(Fields.EXPRESSION, each.getExpression().getPreprocessedExpression(), true, true);
                     each.getNode().accept(this);
                     support.addDocument(doc);
                 }
@@ -169,6 +171,17 @@ public final class ELIndexer extends EmbeddingIndexer {
 
         static final String NAME = "EL"; //NOI18N
         static final int VERSION = 1;
+        private static Collection<String> INDEXABLE_MIMETYPES;
+
+        private static synchronized Collection<String> getIndexableMimeTypes() {
+            if(INDEXABLE_MIMETYPES == null) {
+                INDEXABLE_MIMETYPES = new ArrayList<String>();
+                for(ELPlugin plugin : ELPlugin.Query.getELPlugins()) {
+                    INDEXABLE_MIMETYPES.addAll(plugin.getMimeTypes());
+                }
+            }
+            return INDEXABLE_MIMETYPES;
+        }
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
@@ -179,8 +192,7 @@ public final class ELIndexer extends EmbeddingIndexer {
         }
 
         private static boolean isIndexable(Indexable indexable, Snapshot snapshot) {
-            // index xhtml files only (for now)
-            return "text/xhtml".equals(indexable.getMimeType());
+            return getIndexableMimeTypes().contains(indexable.getMimeType());
         }
 
         @Override

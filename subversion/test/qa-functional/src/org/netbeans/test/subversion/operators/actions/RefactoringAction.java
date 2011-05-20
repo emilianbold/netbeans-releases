@@ -43,21 +43,19 @@
  */
 package org.netbeans.test.subversion.operators.actions;
 
-import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "Window|Refactoring" main menu item,
- * "org.netbeans.core.output.OutputWindowAction" or Ctrl+4 shortcut.
- * @see Action
+/**
+ * 
+ *  @author tester
  */
-public class RefactoringAction extends Action {
-    private static final String menu = "Window|Refactoring Preview";
-    //private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_4, KeyEvent.CTRL_MASK);
+public class RefactoringAction extends ActionNoBlock {
+    
+    /** "Window|Output|Refactoring Preview" menu item. */
+    private static final String MENU_ITEM = "Window|Output|Refactoring Preview";
 
-    /** Creates new instance. */    
+    /** Creates new instance of RefactoringAction */
     public RefactoringAction() {
-        super(menu, null, "org.netbeans.refactoring.ui.RefactoringPanelContainer");
+        super(MENU_ITEM, null);
     }
 }

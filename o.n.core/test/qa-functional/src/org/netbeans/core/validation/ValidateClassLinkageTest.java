@@ -69,7 +69,7 @@ import org.openide.util.NbCollections;
 public class ValidateClassLinkageTest extends NbTestCase {
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateClassLinkageTest.class).clusters("(?!extra$).*").enableModules(".*").gui(false).enableClasspathModules(false));
+        return NbModuleSuite.createConfiguration(ValidateClassLinkageTest.class).clusters("(?!extra$).*").enableModules(".*").gui(false).enableClasspathModules(false).suite();
     }
     
     public ValidateClassLinkageTest(String name) {

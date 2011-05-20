@@ -44,15 +44,13 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
-import org.openide.util.actions.*;
-import org.openide.actions.*;
-import org.openide.nodes.*;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
+import org.openide.util.actions.CookieAction;
 
 /**
  * Remove instance action displays a confirmation dialog whether the server should

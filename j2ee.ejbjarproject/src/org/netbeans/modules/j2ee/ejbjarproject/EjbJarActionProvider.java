@@ -53,10 +53,12 @@ import java.util.Set;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -126,6 +128,8 @@ class EjbJarActionProvider extends BaseActionProvider {
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
     };
 
+    private final EjbJarProject project;
+
     /**Set of commands which are affected by background scanning*/
     private Set<String> bkgScanSensitiveActions;
 
@@ -142,7 +146,8 @@ class EjbJarActionProvider extends BaseActionProvider {
     
     public EjbJarActionProvider(EjbJarProject project, UpdateHelper updateHelper) {
         super(project, updateHelper, project.evaluator(), project.getSourceRoots(), project.getTestSourceRoots(), 
-                project.getAntProjectHelper(), new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
+                project.getAntProjectHelper(), new CallbackImpl(new BaseActionProvider.CallbackImpl(project.getClassPathProvider()), project.getEjbModule()));
+        this.project = project;
         commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
@@ -313,9 +318,10 @@ class EjbJarActionProvider extends BaseActionProvider {
         // previously do not ask and use it
         String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
-            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-            if (servInstIDs.length > 0) {
-                setServerInstance(servInstIDs[0]);
+            String instanceID = J2EEProjectProperties.getMatchingInstance(
+                    serverType, J2eeModule.Type.EJB, project.getAPIEjbJar().getJ2eeProfile());
+            if (instanceID != null) {
+                setServerInstance(instanceID);
                 return true;
             }
         }
@@ -330,4 +336,41 @@ class EjbJarActionProvider extends BaseActionProvider {
         EjbJarProjectProperties.setServerInstance((EjbJarProject)getProject(), getAntProjectHelper(), serverInstanceId);
     }
     
+    private static class CallbackImpl implements Callback2 {
+
+        private final BaseActionProvider.CallbackImpl impl;
+
+        private final J2eeModuleProvider provider;
+
+        public CallbackImpl(BaseActionProvider.CallbackImpl impl, J2eeModuleProvider provider) {
+            this.impl = impl;
+            this.provider = provider;
+        }
+
+        @Override
+        public ClassPath getProjectSourcesClassPath(String type) {
+            return impl.getProjectSourcesClassPath(type);
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            return impl.findClassPath(file, type);
+        }
+
+        @Override
+        public void antTargetInvocationFailed(String command, Lookup context) {
+            Deployment.getDefault().resumeDeployOnSave(provider);
+        }
+
+        @Override
+        public void antTargetInvocationFinished(String command, Lookup context, int result) {
+            Deployment.getDefault().resumeDeployOnSave(provider);
+        }
+
+        @Override
+        public void antTargetInvocationStarted(String command, Lookup context) {
+            Deployment.getDefault().suspendDeployOnSave(provider);
+        }
+    }
+
 }

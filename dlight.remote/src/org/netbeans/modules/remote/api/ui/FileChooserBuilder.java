@@ -185,7 +185,7 @@ public final class FileChooserBuilder {
                         if (fo != null) {
                             result.add(fo);
                         } else {
-                            RemoteLogger.getInstance().log(Level.INFO, "Null file object for {0}", files[i].getAbsolutePath());
+                            RemoteLogger.getInstance().log(Level.FINEST, "Null file object for {0}", files[i].getAbsolutePath());
                         }
                     }
                 }

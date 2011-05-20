@@ -50,7 +50,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
@@ -74,7 +73,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         this.project = project;
         makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
-        projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
+        projectTextField.setText(project.getProjectDirectory().getPath());
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(
                 configurationDescriptor.getBaseDir(),

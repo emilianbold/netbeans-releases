@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 public abstract class JsErrorRule implements ErrorRule, UserConfigurableRule {
 
@@ -57,7 +58,7 @@ public abstract class JsErrorRule implements ErrorRule, UserConfigurableRule {
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public abstract void run(JsRuleContext context, Error error, List<Hint> result);
+    public abstract void run(RuleContext context, Error error, List<Hint> result);
 
 
 //    public void run(org.netbeans.modules.gsf.spi.hints.JsRuleContext context, List<Hint> result) {

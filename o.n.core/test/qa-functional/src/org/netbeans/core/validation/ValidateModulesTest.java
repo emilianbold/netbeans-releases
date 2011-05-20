@@ -41,6 +41,7 @@
  */
 package org.netbeans.core.validation;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -81,15 +82,15 @@ public class ValidateModulesTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
-                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
-                clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).addTest("deprecatedModulesAreDisabled").
+                clusters("(?!extra$).*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
+                clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableModules(".*").
-                honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
-                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+                honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
+                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
         return suite;
     }
 
@@ -212,6 +213,7 @@ public class ValidateModulesTest extends NbTestCase {
     private static Set<Manifest> loadManifests() throws Exception {
         ModuleManager mgr = Main.getModuleSystem().getManager();
         Set<Manifest> manifests = new HashSet<Manifest>();
+        boolean foundJUnit = false;
         for (Module m : mgr.getModules()) {
             Manifest manifest = m.getManifest();
             if (m.isAutoload()) {
@@ -220,6 +222,12 @@ public class ValidateModulesTest extends NbTestCase {
                 manifest.getMainAttributes().putValue("eager", "true");
             }
             manifests.add(manifest);
+            if ("org.netbeans.libs.junit4".equals(manifest.getMainAttributes().getValue("OpenIDE-Module"))) {
+                foundJUnit = true;
+            }
+        }
+        if (!foundJUnit) { // hack - pretend that this module is still in the platform cluster
+            manifests.add(new Manifest(new ByteArrayInputStream("OpenIDE-Module: org.netbeans.libs.junit4\nOpenIDE-Module-Specification-Version: 1.13\n\n".getBytes())));
         }
         return manifests;
     }

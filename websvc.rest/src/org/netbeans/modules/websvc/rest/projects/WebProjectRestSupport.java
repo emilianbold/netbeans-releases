@@ -43,8 +43,15 @@
  */
 package org.netbeans.modules.websvc.rest.projects;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +75,8 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
@@ -78,7 +87,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -209,7 +220,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         boolean added = false;
         if (restConfig != null) {
             if (restConfig.isServerJerseyLibSelected()) {
-                added = addDeployableServerJerseyLibrary();
+                added = addDeployableServerJerseyLibraries();
             }
             if ( !added && restConfig.isJerseyLibSelected()) {
                 if (hasServerJerseeyLibrary) {
@@ -262,20 +273,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         if (platform != null && platformHasRestLib(platform)){
             return true;
         }
-//        boolean hasRestBeansApi = false;
-//        boolean hasRestBeansImpl = false;
-//        for (File file : platform.getClasspathEntries()) {
-//            String jarName = file.getName();
-//            if (jarName.equals(REST_API_JAR)) {
-//                hasRestBeansApi = true;
-//            }
-//            if (jarName.startsWith(REST_RI_JAR) && jarName.endsWith(".jar")) { //NOI18N
-//                hasRestBeansImpl = true;
-//            }
-//            if (hasRestBeansApi && hasRestBeansImpl) {
-//                return true;
-//            }
-//        }
         return false;
     }
 
@@ -297,14 +294,33 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     private void addServerJerseyLibrary() throws IOException {
-        // get or create REST library, from selected J2EE server, and add it to project's classpath
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider != null) {
-            String libName = getServerRestLibraryName(j2eeModuleProvider);
-            Library swdpLibrary = LibraryManager.getDefault().getLibrary(libName);
-            if (swdpLibrary != null) {
-                addSwdpLibrary(classPathTypes, swdpLibrary);
+        J2eePlatform platform = getPlatform();
+        if (platform != null) {
+            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(platform);
+            if (wsStack  == null) {
+                return;
             }
+            URL[] libraryUrls = wsStack.getWSTool(JaxRs.Tool.JAXRS).getLibraries();
+            if ( libraryUrls == null ){
+                return;
+            }
+            for( int i = 0; i< libraryUrls.length ; i++ ){
+                if ( FileUtil.isArchiveFile( libraryUrls[i])){
+                    libraryUrls[i] = FileUtil.getArchiveRoot(libraryUrls[i]);
+                }
+            }
+            Library[] libraries = LibraryManager.getDefault().getLibraries();
+            for (Library library : libraries) {
+                List<URL> urls = library.getContent("classpath");       // NOI18N
+                if ( urls.size() >= libraryUrls.length ){
+                    Set<URL> set = new HashSet<URL>( urls );
+                    if ( set.containsAll( Arrays.asList( libraryUrls ) ) ){
+                        addSwdpLibrary(classPathTypes, library);
+                        return;
+                    }
+                }
+            }
+            addSwdpLibrary(classPathTypes, libraryUrls );
         }
     }
 
@@ -314,17 +330,6 @@ public class WebProjectRestSupport extends WebRestSupport {
             addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/ApplicationPath.class"); //NOI18N
         } else {
             addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/Path.class"); //NOI18N
-        }
-    }
-
-    private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
-        String libName = "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
-        if (libName.equals(GFV3_RESTLIB)) {
-            return GFV3_RESTLIB;
-        } else if (libName.startsWith(GFV3_RESTLIB)) {
-            return GFV31_RESTLIB;
-        } else {
-            return libName;
         }
     }
 
@@ -346,22 +351,6 @@ public class WebProjectRestSupport extends WebRestSupport {
         if (ps != null) {
             return ps.getPersistenceXml();
         }
-        return null;
-    }
-
-    public FileObject getApplicationContextXml() {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        FileObject[] fobjs = provider.getSourceRoots();
-
-        if (fobjs.length > 0) {
-            FileObject configRoot = fobjs[0];
-            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
-
-            if (webInf != null) {
-                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
-            }
-        }
-
         return null;
     }
 
@@ -388,6 +377,52 @@ public class WebProjectRestSupport extends WebRestSupport {
                 p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, String.valueOf(cFD)); // NOI18N
 
             }
+        }
+    }
+    
+    @Override
+    public File getLocalTargetTestRest(){
+        String path = RESTBEANS_TEST_DIR;
+        AntProjectHelper helper = getAntProjectHelper();
+        EditableProperties projectProps = helper
+                .getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String path1 = projectProps
+                .getProperty(PROP_RESTBEANS_TEST_DIR);
+        if (path1 != null) {
+            path = path1;
+        }
+        return helper.resolveFile(path);
+    }
+    
+    public FileObject generateTestClient(File testdir, String url) 
+        throws IOException 
+   {
+        FileObject fileObject = generateTestClient(testdir);
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(BASE_URL_TOKEN, url );
+        modifyFile( fileObject , map );
+        return fileObject;
+    }
+    
+    @Override
+    public String getBaseURL() throws IOException {
+        String applicationPath = getApplicationPath();
+        if (applicationPath != null) {
+            if (!applicationPath.startsWith("/")) {
+                applicationPath = "/"+applicationPath;
+            }
+        }
+        return getContextRootURL()+"||"+applicationPath;            //NOI18N
+    }
+    
+    @Override
+    public void deploy() throws IOException{
+        FileObject buildFo = Utils.findBuildXml(getProject());
+        if (buildFo != null) {
+            ExecutorTask task = ActionUtils.runTarget(buildFo,
+                    new String[] { COMMAND_DEPLOY },
+                    new Properties());
+            task.waitFinished();
         }
     }
 
@@ -442,7 +477,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private String getApplicationPathFromDialog(List<RestApplication> restApplications) {
+    public static String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
         } else {

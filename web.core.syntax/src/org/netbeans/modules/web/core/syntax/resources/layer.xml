@@ -51,6 +51,20 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="text">
             <folder name="x-jsp">
+                <file name="EditorKit.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JspKit.createKitForJsp"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
+
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-JspELEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+
                 <file name="org-netbeans-modules-web-core-syntax-JspSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
@@ -150,18 +164,11 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
                 </folder>
-                <file name="EditorKit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JspKit.createKitForJsp"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JspKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
-                </file>
                 <folder name="Popup">
                     <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
@@ -212,6 +219,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
+                    <file name="ELHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.ELHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
@@ -219,9 +230,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                </file>
+                
                 <folder name="RefactoringActions">
 		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
 			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
@@ -235,10 +244,19 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="x-tag">
+                <file name="EditorKit.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JspKit.createKitForTag"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JspKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
+
                 <file name="org-netbeans-modules-web-core-syntax-JspSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
-
+                <file name="org-netbeans-modules-web-core-syntax-JspELEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
                 <file name="TagImportProcesor.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.completion.JspTagLibImportProcessor$TagImportProcessor"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor"/>
@@ -318,15 +336,8 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
-                <file name="EditorKit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JspKit.createKitForTag"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JspKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
-                </file>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
@@ -343,6 +354,10 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="GsfHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
+                    <file name="ELHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>

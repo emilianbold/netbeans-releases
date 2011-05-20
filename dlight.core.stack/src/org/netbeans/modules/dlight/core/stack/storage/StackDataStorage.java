@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
@@ -67,24 +68,33 @@ public interface StackDataStorage {//extends StackSupport {
     /**
      * Submits new stack to the storage.
      *
+     * @paramt contextID contextID is the link to the context the function is created in
      * @param stack  call stack represented as a list of function names,
-     *      leaf function of the stack goes last in the list
+     *      leaf function of the stack goes first in the list
      * @return stack id
      */
-    long putStack(List<CharSequence> stack);
+    long putStack(long contextID, List<CharSequence> stack);
 
     /**
      * Submits new sample to the storage.
-     *
-     * @param stack  call stack represented as a list of function names,
-     *      leaf function of the stack goes last in the list
+     * 
+     * @paramt contextID contextID is the link to the context the function is created in
+     *  it can be used later to get the information about the function using
+     * #org.netbeans.modules.dlight.core.stack.api.FunctionCall#getContextID anf FunctionContextStorage
+     * @param stack call stack represented as a list of function names,
+     *      leaf function of the stack goes first in the list
      * @param timestamp  sample timestamp
      * @param duration  sample duration
      * @return stack id
      */
-    long putSample(List<CharSequence> stack, long timestamp, long duration);
+    long putSample(long contextID, List<CharSequence> stack, long timestamp, long duration);
 
     List<FunctionCall> getCallStack(long stackId);
+    
+    /**
+     * @since 1.9.3
+     */
+    Function getLeafFunction(long stackId);
 
     List<FunctionMetric> getMetricsList();
 

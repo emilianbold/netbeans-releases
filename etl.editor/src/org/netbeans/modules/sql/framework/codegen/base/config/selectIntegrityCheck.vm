@@ -1,9 +1,0 @@
-#set( $totalTargetColumns = $targetColumnIdentifiers.size() )
-#set( $columnCounter = 1 )
-#if ( $totalTargetColumns != 0 )
-(#foreach( $tColumn in $targetColumnIdentifiers )$tColumn.getSql() IS NULL#if($columnCounter < $totalTargetColumns) AND #end
-#set( $columnCounter = $columnCounter+ 1)
-#end
-)
-#end
-

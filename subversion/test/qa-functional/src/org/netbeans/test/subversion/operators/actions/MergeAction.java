@@ -15,11 +15,10 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  *
  * @author peter
  */
-public class MergeAction extends ActionNoBlock{
+public class MergeAction extends ActionNoBlock {
 
-    /** "Versioning" menu item. */
-    public static final String VERSIONING_MENU_ITEM = "Versioning";
-
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
 
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
@@ -32,6 +31,6 @@ public class MergeAction extends ActionNoBlock{
     
     /** Creates a new instance of MergeAction */
     public MergeAction() {
-        super(VERSIONING_MENU_ITEM + "|" + SVN_ITEM + "|" + MERGE_MENU_ITEM, SVN_ITEM + "|" + MERGE_POPUP_ITEM);
+        super(TEAM_ITEM + "|" + MERGE_MENU_ITEM, SVN_ITEM + "|" + MERGE_POPUP_ITEM);
     }
 }

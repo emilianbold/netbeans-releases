@@ -220,6 +220,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     // -------------------------------------------- Methods from ConfigProcessor
 
+    @Override
     public void process(javax.servlet.ServletContext context, DocumentInfo[] documents) {
         for (int i = 0, length = documents.length; i < length; i++) {
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -273,28 +274,29 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 }
             }
 
-            if (compositeLibraryName != null) {
-                //nothing to process inside the library definition AFAIR...
-                compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, info.getSourceURL()));
-            } else {
-                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(info.getSourceURL(), support, taglibNamespace);
-                //process the library content
-                NodeList tags =
-                        documentElement.getElementsByTagNameNS(namespace, TAG);
-                processTags(documentElement, tags, taglibrary);
-
-                //do not process functions
-//                NodeList functions =
-//                        documentElement.getElementsByTagNameNS(namespace, FUNCTION);
-//                processFunctions(functions, taglibrary);
-                compiler.addTagLibrary(taglibrary);
+            URL sourceUrl;
+            try {
+                sourceUrl = info.getSourceURI().toURL();
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                return;
             }
+
+            NodeList tags =
+                    documentElement.getElementsByTagNameNS(namespace, TAG);
+            
+            FaceletsLibrary taglibrary = compositeLibraryName != null 
+                    ? new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, sourceUrl)
+                    : new FaceletsLibrary(support, taglibNamespace, sourceUrl);
+            
+            processTags(documentElement, tags, taglibrary);
+            compiler.addTagLibrary(taglibrary);
         }
     }
 
     private void processTags(Element documentElement,
             NodeList tags,
-            ClassBasedFaceletsLibrary taglibrary) {
+            FaceletsLibrary taglibrary) {
 
         if (tags != null && tags.getLength() > 0) {
             for (int i = 0, ilen = tags.getLength(); i < ilen; i++) {
@@ -345,7 +347,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processBehavior(NodeList behavior, ClassBasedFaceletsLibrary taglibrary,
+    private void processBehavior(NodeList behavior, FaceletsLibrary taglibrary,
             String tagName) {
         if (behavior != null && behavior.getLength() > 0) {
             String behaviorId = null;
@@ -371,10 +373,14 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     }
 
     private void processHandlerClass(Node handlerClass,
-            ClassBasedFaceletsLibrary taglibrary,
+            FaceletsLibrary taglibrary,
             String name) {
 
         String className = getNodeText(handlerClass);
+        //mfukala: (issue #184097) fix possible NPE from the code below if <handler-class> element is empty and the getNodeText() returns null
+        if(className == null) {
+            return ; //just ignre that entry
+        }
         Class<?> clazz = loadClass(className, this, null);
         taglibrary.putTagHandler(name, clazz);
 
@@ -382,11 +388,15 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     private void processSource(Element documentElement,
             Node source,
-            ClassBasedFaceletsLibrary taglibrary,
+            FaceletsLibrary taglibrary,
             String name) {
 
         String docURI = documentElement.getOwnerDocument().getDocumentURI();
         String s = getNodeText(source);
+        //mfukala: fix possible NPE from the code below if <source> element is empty and the getNodeText() returns null
+        if(s == null) {
+            return ; //just ignre that entry
+        }
         try {
             URL url = new URL(new URL(docURI), s);
             taglibrary.putUserTag(name, url);
@@ -397,7 +407,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     }
 
     private void processValidator(NodeList validator,
-            ClassBasedFaceletsLibrary taglibrary,
+            FaceletsLibrary taglibrary,
             String name) {
 
         if (validator != null && validator.getLength() > 0) {
@@ -424,7 +434,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     }
 
     private void processConverter(NodeList converter,
-            ClassBasedFaceletsLibrary taglibrary,
+            FaceletsLibrary taglibrary,
             String name) {
 
         if (converter != null && converter.getLength() > 0) {
@@ -452,7 +462,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     }
 
     private void processComponent(NodeList component,
-            ClassBasedFaceletsLibrary taglibrary,
+            FaceletsLibrary taglibrary,
             String name) {
 
         if (component != null && component.getLength() > 0) {
@@ -482,7 +492,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processFunctions(NodeList functions, ClassBasedFaceletsLibrary taglibrary) {
+    private void processFunctions(NodeList functions, FaceletsLibrary taglibrary) {
 
         if (functions != null && functions.getLength() > 0) {
             for (int i = 0, ilen = functions.getLength(); i < ilen; i++) {
