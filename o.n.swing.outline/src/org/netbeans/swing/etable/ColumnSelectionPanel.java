@@ -250,6 +250,14 @@ class ColumnSelectionPanel extends JPanel {
         }
     }
     
+    static void showColumnSelectionPopupOrDialog(Component c, final ETable table) {
+        if (table.isPopupUsedFromTheCorner()) {
+            showColumnSelectionPopup(c, table);
+        } else {
+            showColumnSelectionDialog(table);
+        }
+    }
+    
     /**
      * Shows the popup allowing to show/hide columns.
      */
@@ -258,10 +266,6 @@ class ColumnSelectionPanel extends JPanel {
         if( !table.isColumnHidingAllowed() )
             return;
         
-        if (! table.isPopupUsedFromTheCorner()) {
-            showColumnSelectionDialog(table);
-            return;
-        }
         JPopupMenu popup = new JPopupMenu();
         TableColumnModel columnModel = table.getColumnModel();
         if (! (columnModel instanceof ETableColumnModel)) {

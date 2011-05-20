@@ -1038,7 +1038,7 @@ public class ETable extends JTable {
                     b.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent evt) {
-                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                            ColumnSelectionPanel.showColumnSelectionPopupOrDialog(b, ETable.this);
                         }
                     });
                     b.addMouseListener(new MouseAdapter() {
@@ -2240,7 +2240,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
             }
         }
     }
