@@ -1698,7 +1698,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         // correctly.
         int rt = template.getRoutingToken();
         noteRestoredWatch(template, rt);
-        dbx.sendCommand(rt, 0, watchCommand(template));
+        dbx.sendCommandInt(rt, 0, watchCommand(template));
 
 	// We'll come back either via newWatch() or watchError().
     }
@@ -1716,7 +1716,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	} else { // new dbx78 that support watch -replace
 	    int rt = original.getRoutingToken();
 	    original.replacedWith(replacedwith);
-	    dbx.sendCommand(rt, 0, watchCommand(original));
+	    dbx.sendCommandInt(rt, 0, watchCommand(original));
 	}
     }
 
