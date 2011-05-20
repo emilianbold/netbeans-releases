@@ -64,7 +64,7 @@ import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
-import org.netbeans.modules.profiler.api.DefinedFilters;
+import org.netbeans.lib.profiler.common.Profiler;
 import org.openide.DialogDisplayer;
 
 
@@ -122,7 +122,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         }
 
         public int getRowCount() {
-            return DefinedFilters.getGlobalFilters().getFilterNames().length;
+            return Profiler.getDefault().getGlobalFilters().getFilterNames().length;
         }
 
         public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
@@ -132,9 +132,9 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                 final boolean selected = ((Boolean) aValue).booleanValue();
 
                 if (selected) {
-                    selectedFilterSet.addActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[rowIndex]);
+                    selectedFilterSet.addActiveGlobalFilter(Profiler.getDefault().getGlobalFilters().getFilterNames()[rowIndex]);
                 } else {
-                    selectedFilterSet.removeActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[rowIndex]);
+                    selectedFilterSet.removeActiveGlobalFilter(Profiler.getDefault().getGlobalFilters().getFilterNames()[rowIndex]);
                 }
             }
         }
@@ -144,9 +144,9 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                 case 0:
                     return selectedFilterSetChecks[rowIndex];
                 case 1:
-                    return DefinedFilters.getGlobalFilters().getFilterNames()[rowIndex];
+                    return Profiler.getDefault().getGlobalFilters().getFilterNames()[rowIndex];
                 case 2:
-                    return DefinedFilters.getGlobalFilters().getFilterValues()[rowIndex];
+                    return Profiler.getDefault().getGlobalFilters().getFilterValues()[rowIndex];
             }
 
             return null;
@@ -586,12 +586,12 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
     }
 
     public void applyChanges() {
-        DefinedFilters.getDefinedFilterSets().setValuesFrom(filterSets);
-        DefinedFilters.saveGlobalFilters();
+        Profiler.getDefault().getDefinedFilterSets().setValuesFrom(filterSets);
+        Profiler.getDefault().saveFilters();
     }
 
     public void init(final int initialSelectedIndex) {
-        filterSets.setValuesFrom(DefinedFilters.getDefinedFilterSets());
+        filterSets.setValuesFrom(Profiler.getDefault().getDefinedFilterSets());
 
         if (initialSelectedIndex < filterSets.getFilterSetsCount()) {
             definedFilterSetsList.setSelectedIndex(initialSelectedIndex);
@@ -992,9 +992,9 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         selectedFilterSetChecks[selectedIndex] = Boolean.valueOf(selected);
 
         if (selected) {
-            selectedFilterSet.addActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[selectedIndex]);
+            selectedFilterSet.addActiveGlobalFilter(Profiler.getDefault().getGlobalFilters().getFilterNames()[selectedIndex]);
         } else {
-            selectedFilterSet.removeActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[selectedIndex]);
+            selectedFilterSet.removeActiveGlobalFilter(Profiler.getDefault().getGlobalFilters().getFilterNames()[selectedIndex]);
         }
 
         ((AbstractTableModel) (activeFiltersTable.getModel())).fireTableDataChanged();
@@ -1019,10 +1019,10 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
                 filterTypeInclusiveRadio.setSelected(true);
             }
 
-            selectedFilterSetChecks = new Boolean[DefinedFilters.getGlobalFilters().getFilterNames().length];
+            selectedFilterSetChecks = new Boolean[Profiler.getDefault().getGlobalFilters().getFilterNames().length];
 
             for (int i = 0; i < selectedFilterSetChecks.length; i++) {
-                if (selectedFilterSet.containsActiveGlobalFilter(DefinedFilters.getGlobalFilters().getFilterNames()[i])) {
+                if (selectedFilterSet.containsActiveGlobalFilter(Profiler.getDefault().getGlobalFilters().getFilterNames()[i])) {
                     selectedFilterSetChecks[i] = Boolean.TRUE;
                 } else {
                     selectedFilterSetChecks[i] = Boolean.FALSE;

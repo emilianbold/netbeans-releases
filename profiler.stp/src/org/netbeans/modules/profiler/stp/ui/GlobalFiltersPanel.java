@@ -59,7 +59,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
-import org.netbeans.modules.profiler.api.DefinedFilters;
+import org.netbeans.lib.profiler.common.Profiler;
 
 
 /**
@@ -542,10 +542,10 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     public void applyChanges() {
         stopFilterTableEditing();
 
-        final GlobalFilters globalFilters = DefinedFilters.getGlobalFilters();
+        final GlobalFilters globalFilters = Profiler.getDefault().getGlobalFilters();
         globalFilters.setFilterNames(getFilterNamesCopy());
         globalFilters.setFilterValues(getFilterValuesCopy());
-        DefinedFilters.saveGlobalFilters();
+        Profiler.getDefault().saveFilters();
     }
 
     public void editFilterValueAtRow(int row) {
@@ -561,7 +561,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
         stopFilterTableEditing();
         filterTable.clearSelection();
 
-        final GlobalFilters globalFilters = DefinedFilters.getGlobalFilters();
+        final GlobalFilters globalFilters = Profiler.getDefault().getGlobalFilters();
         setFilterNamesFrom(globalFilters.getFilterNames());
         setFilterValuesFrom(globalFilters.getFilterValues());
     }
