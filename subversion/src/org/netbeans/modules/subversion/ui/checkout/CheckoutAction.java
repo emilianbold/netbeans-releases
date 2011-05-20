@@ -71,7 +71,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 @ActionID(id = "org.netbeans.modules.subversion.ui.checkout.CheckoutAction", category = "Subversion")
 @ActionRegistration(displayName = "#LBL_CheckoutAction_Name")
 @ActionReferences({
-   @ActionReference(path="Versioning/Subversion/Global", position=300 /*, separatorAfter=350*/)
+   @ActionReference(path="Versioning/Subversion/Actions/Global", position=300 /*, separatorAfter=350*/)
 })
 public final class CheckoutAction implements ActionListener {
            
