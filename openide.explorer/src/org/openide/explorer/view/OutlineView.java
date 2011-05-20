@@ -1213,18 +1213,7 @@ public class OutlineView extends JScrollPane {
             }
 
             Node[] nodes = manager.getSelectedNodes ();
-
-            if (nodes.length == 1) {
-                Action a = nodes[0].getPreferredAction ();
-
-                if (a != null) {
-                    if (a.isEnabled ()) {
-                        a.actionPerformed (new ActionEvent (nodes[0], ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                    } else {
-                        Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + nodes [0] + " is disabled");
-                    }
-                }
-            }
+            TreeView.performPreferredActionOnNodes(nodes);
         }
     }
 

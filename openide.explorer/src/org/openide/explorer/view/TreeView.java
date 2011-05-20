@@ -1641,28 +1641,31 @@ public abstract class TreeView extends JScrollPane {
         /* VK_ENTER key processor */
         public void actionPerformed(ActionEvent evt) {
             Node[] nodes = manager.getSelectedNodes();
-            
-            if (nodes.length > 0) {
-                Action a = nodes[0].getPreferredAction();
-                if (a == null) {
+            performPreferredActionOnNodes(nodes);
+        }
+    }
+    
+    static void performPreferredActionOnNodes(Node[] nodes) {
+        if (nodes.length > 0) {
+            Action a = nodes[0].getPreferredAction();
+            if (a == null) {
+                return;
+            }
+            for (int i=1; i<nodes.length; i++) {
+                Action ai = nodes[i].getPreferredAction();
+                if (ai == null || !ai.equals(a)) {
                     return;
                 }
-                for (int i=1; i<nodes.length; i++) {
-                    Action ai = nodes[i].getPreferredAction();
-                    if (ai == null || !ai.equals(a)) {
-                        return;
-                    }
-                }
-                
-                // switch to replacement action if there is some
-                a = takeAction(a, nodes);
-                if (a != null && a.isEnabled()) {
-                    a.actionPerformed(new ActionEvent(
-                            nodes.length == 1 ? nodes[0] : nodes,
-                            ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                }
+            }
+
+            // switch to replacement action if there is some
+            a = takeAction(a, nodes);
+            if (a != null && a.isEnabled()) {
+                a.actionPerformed(new ActionEvent(
+                        nodes.length == 1 ? nodes[0] : nodes,
+                        ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            } else {
+                Toolkit.getDefaultToolkit().beep();
             }
         }
     }
