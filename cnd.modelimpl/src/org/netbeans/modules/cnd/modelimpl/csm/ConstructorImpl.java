@@ -47,9 +47,9 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * CsmConstructor implementation
@@ -82,7 +82,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
-    public ConstructorImpl(DataInput input) throws IOException {
+    public ConstructorImpl(RepositoryDataInput input) throws IOException {
         super(input);
     }    
 }

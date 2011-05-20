@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Trivial CsmOffsetable implementation
@@ -76,36 +76,42 @@ public class SimpleOffsetableImpl implements CsmOffsetable {
             endPos = new LineColOffsPositionImpl(line, col, offset);
         }
     
+    @Override
         public CsmFile getContainingFile() {
             return null;
         }
 
+    @Override
         public int getStartOffset() {
             return stPos.getOffset();
         }
 
+    @Override
         public int getEndOffset() {
             return endPos.getOffset();
         }
 
+    @Override
         public CsmOffsetable.Position getStartPosition() {
             return stPos;
         }
 
+    @Override
         public CsmOffsetable.Position getEndPosition() {
             return endPos;
         }    
 
+    @Override
         public CharSequence getText() {
             return null;
         }
 
-        protected SimpleOffsetableImpl(DataInput input) throws IOException {
+        protected SimpleOffsetableImpl(RepositoryDataInput input) throws IOException {
             stPos = new LineColOffsPositionImpl(input.readInt(), input.readInt(), input.readInt());
             endPos = new LineColOffsPositionImpl(input.readInt(), input.readInt(), input.readInt());
         }
 
-        protected void write(DataOutput output) throws IOException {
+        protected void write(RepositoryDataOutput output) throws IOException {
             output.writeInt(stPos.getLine());
             output.writeInt(stPos.getColumn());
             output.writeInt(stPos.getOffset());

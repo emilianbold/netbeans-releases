@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +60,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
@@ -134,7 +134,7 @@ public final class TemplateDescriptor {
         return getTemplateSuffix().toString();
     }
 
-    public TemplateDescriptor(DataInput input) throws IOException {
+    public TemplateDescriptor(RepositoryDataInput input) throws IOException {
         int collSize = input.readInt();
         if (collSize < 0) {
             this.templateParams = null;
@@ -146,7 +146,7 @@ public final class TemplateDescriptor {
         this.specialization = input.readBoolean();
     }
 
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(templateParams, output, false);
         PersistentUtils.writeUTF(templateSuffix, output);
         output.writeInt(this.inheritedTemplateParametersNumber);

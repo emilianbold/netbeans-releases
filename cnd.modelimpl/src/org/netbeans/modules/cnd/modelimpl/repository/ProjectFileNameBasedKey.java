@@ -43,12 +43,12 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -84,12 +84,12 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         aStream.writeInt(fileNameIndex);
     }
 
-    protected ProjectFileNameBasedKey(DataInput aStream) throws IOException {
+    protected ProjectFileNameBasedKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
         this.fileNameIndex = aStream.readInt();
     }

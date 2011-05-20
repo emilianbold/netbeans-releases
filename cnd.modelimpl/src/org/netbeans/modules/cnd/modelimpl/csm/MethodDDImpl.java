@@ -49,10 +49,10 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Method, which contains it's body right at throws POD (point of declaration)
@@ -113,12 +113,12 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     // iml of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);
     }
     
-    public MethodDDImpl(DataInput input) throws IOException {
+    public MethodDDImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
     }     

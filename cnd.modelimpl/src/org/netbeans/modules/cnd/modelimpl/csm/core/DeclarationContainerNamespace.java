@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.modelimpl.repository.NamespaceDeclarationContainerKey;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  *
@@ -70,7 +70,7 @@ public class DeclarationContainerNamespace extends DeclarationContainer {
         put();
     }
 
-    public DeclarationContainerNamespace(DataInput input) throws IOException {
+    public DeclarationContainerNamespace(RepositoryDataInput input) throws IOException {
         super(input);
     }
 
