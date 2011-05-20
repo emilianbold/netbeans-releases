@@ -134,11 +134,11 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
             }
             return false;
         }
-        if (roundEnv.processingOver() && !roundEnv.errorRaised()) {
+        if (roundEnv.processingOver()) {
             Document doc = generatedLayerByProcessor.remove(processingEnv);
-            if (doc != null) {
+            List<Element> originatingElementsL = originatingElementsByProcessor.remove(processingEnv);
+            if (doc != null && !roundEnv.errorRaised()) {
                 Element[] originatingElementsA = new Element[0];
-                List<Element> originatingElementsL = originatingElementsByProcessor.remove(processingEnv);
                 if (originatingElementsL != null) {
                     originatingElementsA = originatingElementsL.toArray(originatingElementsA);
                 }
