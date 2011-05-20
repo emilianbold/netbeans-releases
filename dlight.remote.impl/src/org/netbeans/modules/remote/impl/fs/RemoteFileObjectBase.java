@@ -87,6 +87,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private static final byte MASK_VALID = 1;
     private static final byte CHECK_CAN_WRITE = 2;
     private static final byte BEING_UPLOADED = 4;
+    protected static final byte CONNECTION_ISSUES = 8;
     
     private static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
 
@@ -101,11 +102,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         setFlag(MASK_VALID, true);
     }
     
-    private boolean getFlag(byte mask) {
+    protected boolean getFlag(byte mask) {
         return (flags & mask) == mask;
     }
     
-    private void setFlag(byte mask, boolean value) {
+    protected void setFlag(byte mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
