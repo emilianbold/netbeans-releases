@@ -109,9 +109,7 @@
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
-                <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
-                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
