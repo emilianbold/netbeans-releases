@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
     private final CharSequence name;
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
@@ -145,7 +145,7 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
     
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
     
     @Override
@@ -162,7 +162,7 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
         
         // save cached namespace
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedNamespaceUID, output);
@@ -172,7 +172,7 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         
         // read cached namespace
         this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);        

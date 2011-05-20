@@ -142,7 +142,8 @@ public final class LibraryManager {
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
         String absPath = resolvedPath.getPath().toString();
-        ProjectBase res = searchInProjectFiles(baseProject, resolvedPath);
+        Set<ProjectBase> antiLoop = new HashSet<ProjectBase>();
+        ProjectBase res = searchInProjectFiles(baseProject, resolvedPath, antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -150,14 +151,15 @@ public final class LibraryManager {
             return res;
         }
         final String folder = resolvedPath.getFolder().toString(); // always normalized
-        res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath));
+        antiLoop.clear();
+        res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
             return res;
         }
-        res = searchInProjectFilesArtificial(baseProject, resolvedPath);
+        res = searchInProjectFilesArtificial(baseProject, resolvedPath, antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -165,7 +167,8 @@ public final class LibraryManager {
             return res;
         }
         synchronized (lock) {
-            res = searchInProjectRootsArtificial(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath));
+            antiLoop.clear();
+            res = searchInProjectRootsArtificial(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
             if (res == null) {
                 if (resolvedPath.isDefaultSearchPath()) {
                     res = curFile.getProjectImpl(true);
@@ -217,10 +220,6 @@ public final class LibraryManager {
         return res;
     }
 
-    private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath resolvedPath) {
-        return searchInProjectFiles(baseProject, resolvedPath, new HashSet<ProjectBase>());
-    }
-
     private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
@@ -246,11 +245,12 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, ResolvedPath searchFor) {
+    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> antiLoop) {
         List<CsmProject> libraries = baseProject.getLibraries();
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
-                ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor);
+                antiLoop.clear();
+                ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor, antiLoop);
                 if (res != null) {
                     return res;
                 }
@@ -259,11 +259,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders) {
-        return searchInProjectRoots(baseProject, fs, folders, new HashSet<ProjectBase>());
-    }
-
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders, HashSet<ProjectBase> set) {
+    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
@@ -288,12 +284,13 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, FileSystem fs, List<String> folders) {
+    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
         List<CsmProject> libraries = baseProject.getLibraries();
         ProjectBase candidate = null;
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
-                ProjectBase res = searchInProjectRoots((ProjectBase) prj, fs, folders);
+                set.clear();
+                ProjectBase res = searchInProjectRoots((ProjectBase) prj, fs, folders, set);
                 if (res != null) {
                     if (candidate == null) {
                         candidate = res;
