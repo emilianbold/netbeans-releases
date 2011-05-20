@@ -13,6 +13,18 @@
                     public void setId(String id) {
                        // noop
                     }
+
+                    public QueueType addQueue() {
+                        QueueType bean = new QueueType();
+                        addQueue(bean);
+                        return bean;
+                    }
+
+                    public TopicType addTopic() {
+                        TopicType bean = new TopicType();
+                        addTopic(bean);
+                        return bean;
+                    }
                 </user-code>
 		<meta-property>
 			<bean-name>Version</bean-name>

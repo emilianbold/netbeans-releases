@@ -48,5 +48,9 @@ package org.netbeans.modules.j2ee.weblogic9.dd.model;
 public interface TopicType {
     
     String getName();
+    
+    void setName(String name);
+    
+    void setJndiName(String name);
 
 }
