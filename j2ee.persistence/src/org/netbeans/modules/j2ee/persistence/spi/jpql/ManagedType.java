@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.Element;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
@@ -52,23 +55,21 @@ import org.eclipse.persistence.jpa.jpql.spi.IType;
  *
  * @author sp153251
  */
-public class ManagedType implements IManagedType {
+abstract public class ManagedType implements IManagedType {
     private final Element element;
     private final IManagedTypeProvider provider;
+    private Map<String, IMapping> mappings;
 
     public ManagedType(Element element, IManagedTypeProvider provider){
         this.element = element;
         this.provider = provider;
     }
     
-    @Override
-    public void accept(IManagedTypeVisitor imtv) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     @Override
-    public IMapping getMappingNamed(String string) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public IMapping getMappingNamed(String val) {
+        initMappings();
+        return mappings.get(val);
     }
 
     @Override
@@ -83,12 +84,20 @@ public class ManagedType implements IManagedType {
 
     @Override
     public Iterable<IMapping> mappings() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        initMappings();
+        return Collections.unmodifiableCollection(mappings.values());
     }
 
     @Override
     public int compareTo(IManagedType o) {
         return getType().getName().compareTo(o.getType().getName());
+    }
+    
+    private void initMappings(){
+        if(mappings == null){
+            mappings = new HashMap<String, IMapping>();
+            //TODO fill
+        }
     }
     
 }
