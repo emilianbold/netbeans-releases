@@ -124,12 +124,7 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public int getEndOffset() {
-        if(getTextID() != null) {
-            return getOffset() + getTextID().length();
-        } else {
-            // NIL token
-            return getOffset();
-        }
+        return getOffset() + getTextID().length();
     }
 
     @Override

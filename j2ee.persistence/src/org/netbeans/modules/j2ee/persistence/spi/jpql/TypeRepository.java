@@ -41,12 +41,30 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.eclipse.persistence.jpa.jpql.TypeHelper;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,10 +73,13 @@ import org.netbeans.api.project.Project;
 public class TypeRepository implements ITypeRepository {
     private final Project project;
     private final Map<String, IType> types;
+    private PUDataObject dObj;
+    private MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper;
 
     TypeRepository(Project project){
         this.project = project;
         types = new HashMap<String, IType>();
+        initTypes();
     }
     
     @Override
@@ -72,17 +93,53 @@ public class TypeRepository implements ITypeRepository {
 
     @Override
     public IType getType(Class<?> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return types.get(type.getCanonicalName());
     }
 
     @Override
-    public IType getType(String string) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public IType getType(String val) {
+        return types.get(val);
     }
 
     @Override
     public TypeHelper getTypeHelper() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TypeHelper(this);
+    }
+
+    private void initTypes() {
+        //add only managed types (entities, mapped superclasses etc)
+        if(types == null && readHelper==null){
+            try {
+                dObj = ProviderUtil.getPUDataObject(project);
+            } catch (InvalidPersistenceXmlException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            EntityClassScope eScope = EntityClassScope.getEntityClassScope(dObj.getPrimaryFile());
+            MetadataModel<EntityMappingsMetadata> model = eScope.getEntityMappingsModel(true);
+            readHelper = MetadataModelReadHelper.create(
+                    model, 
+                    new MetadataModelAction<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>>() {
+                        @Override
+                        public List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> run(EntityMappingsMetadata metadata) {
+                            List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> result = new ArrayList<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>();
+                            result.addAll(Arrays.asList(metadata.getRoot().getEntity()));
+                            return result;
+                    }
+            });
+            readHelper.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (readHelper.getState() == State.FINISHED) {
+                        try {
+                            readHelper.getResult();
+                        } catch (ExecutionException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            });
+            readHelper.start();
+        }
     }
     
 }

@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -134,22 +136,6 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public void refresh() {
-        RemoteFileObjectBase delegate = getDelegate();
-        if (delegate != null) {
-            delegate.refresh();
-        }
-    }
-
-    @Override
-    public void refresh(boolean expected) {
-        RemoteFileObjectBase delegate = getDelegate();
-        if (delegate != null) {
-            delegate.refresh(expected);
-        }
-    }
-
-    @Override
     public boolean isFolder() {
         RemoteFileObjectBase delegate = getDelegate();
         return (delegate == null) ? false : delegate.isFolder();
@@ -209,12 +195,26 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
     }
 
-    @Override
-    protected void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    private void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (antiLoop.contains(getPath())) {
+            return;
+        } else {
+            antiLoop.add(getPath());
+        }
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            delegate.refreshImpl(recursive);
+            if (delegate instanceof RemoteLinkBase) {
+                ((RemoteLinkBase) delegate).refreshImpl(recursive, antiLoop);
+            } else {
+                delegate.refresh(recursive);
+            }
+                    
         }
+    }
+    
+    @Override
+    protected final void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        refreshImpl(recursive, new HashSet<String>());
     }
 
     @Override

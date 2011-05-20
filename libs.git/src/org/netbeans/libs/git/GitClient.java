@@ -178,9 +178,19 @@ public interface GitClient {
      * @param monitor
      * @return
      * @throws GitException 
+     * @throws GitException.RefUpdateException failed to create a reference in refs/tags/
      */
-    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException;
-    
+    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException.RefUpdateException, GitException;
+
+    /**
+     * Deletes a given tag from the repository
+     * @param tagName
+     * @param monitor
+     * @throws GitException 
+     * @throws GitException.RefUpdateException failed to delete a reference from refs/tags/
+     */
+    public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException;
+
     /**
      * Exports a given commit in the format accepted by git am
      * @param commit 

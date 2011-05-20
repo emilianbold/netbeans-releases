@@ -73,6 +73,7 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.spi.HudsonLogger;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -127,7 +128,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
     @Messages({
         "# {0} - job #build", "ShowFailures.title={0} Test Failures",
         "# {0} - class & method name of failed test", "# {1} - suite name of failed test", "ShowFailures.from_suite={0} (from {1})",
-        "LBL_GotoSource=Go to Source"
+        "LBL_GotoSource=Go to Source",
+        "no_test_result=No test result found for this build."
     })
     public void run() {
         try {
@@ -357,6 +359,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
             parser.parse(source);
         } catch (FileNotFoundException x) {
             Toolkit.getDefaultToolkit().beep();
+            StatusDisplayer.getDefault().setStatusText(no_test_result());
         } catch (Exception x) {
             Toolkit.getDefaultToolkit().beep();
             LOG.log(Level.INFO, null, x);
