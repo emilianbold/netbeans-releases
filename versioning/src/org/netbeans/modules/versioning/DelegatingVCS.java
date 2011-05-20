@@ -194,13 +194,13 @@ public class DelegatingVCS extends VersioningSystem {
     Action[] getGlobalActions(ActionDestination actionDestination) {
         assert !isAlive();
         String category = (String) map.get("actionsCategory");              // NOI18N
-        List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Global"); // NOI18N
+        List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Global"); // NOI18N
         return l != null ? l.toArray(new Action[l.size()]) : new Action[0];
     }
     
     Action[] getInitActions(VCSContext ctx, ActionDestination actionDestination) {
         String category = (String) map.get("actionsCategory");              // NOI18N
-        List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Unversioned"); // NOI18N
+        List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Unversioned"); // NOI18N
         List<Action> ret = new ArrayList<Action>(l.size());
         for (Action action : l) {
             if(action instanceof ContextAwareAction) {
@@ -251,32 +251,6 @@ public class DelegatingVCS extends VersioningSystem {
      */
     void reset() {
         delegate = null;
-    }
-    
-    /**
-     * Parses system property value and returns a priority for the given versioning system.
-     * The property should be defined as {@code versioning.versioningSystem.priority}.
-     * @param versioningSystem name of the vcs
-     * @return priority or {@link Integer#MAX_VALUE} as default
-     */
-    private static Integer getPriority (String versioningSystem) {
-        Integer value = null;
-        String propName = "versioning." + versioningSystem + ".priority"; //NOI18N
-        String sValue = System.getProperty(propName, null);
-        if (sValue != null && !sValue.isEmpty()) {
-            try {
-                value = Integer.parseInt(sValue);
-                if (value <= 0) {
-                    value = null;
-                }
-            } catch (NumberFormatException ex) {
-                VersioningManager.LOG.log(Level.INFO, "Wrong priority ({0}) value {1}, using default value", new Object[] {propName, sValue}); //NOI18N
-            }
-        }
-        if (value == null) {
-            value = Integer.MAX_VALUE;
-        }
-        return value;
     }
     
 }

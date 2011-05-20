@@ -237,9 +237,7 @@ public abstract class VersioningSystem {
      * @param files set of files whose annotations changed or null if the change affects all files 
      */ 
     protected final void fireAnnotationsChanged(Set<File> files) {
-        synchronized(support) {
-            support.firePropertyChange(VersioningManager.EVENT_ANNOTATIONS_CHANGED, null, files);
-        }
+        support.firePropertyChange(VersioningManager.EVENT_ANNOTATIONS_CHANGED, null, files);
     }
     
     /**
@@ -248,9 +246,7 @@ public abstract class VersioningSystem {
      * @param files set of files whose status changed or null if all files changed status 
      */ 
     protected final void fireStatusChanged(Set<File> files) {
-        synchronized(support) {
-            support.firePropertyChange(VersioningManager.EVENT_STATUS_CHANGED, null, files);
-        }
+        support.firePropertyChange(VersioningManager.EVENT_STATUS_CHANGED, null, files);
     }
 
     /**
@@ -258,9 +254,7 @@ public abstract class VersioningSystem {
      * (those files were imported into repository).
      */ 
     protected final void fireVersionedFilesChanged() {
-        synchronized(support) {
-            support.firePropertyChange(VersioningManager.EVENT_VERSIONED_ROOTS, null, null);
-        }
+        support.firePropertyChange(VersioningManager.EVENT_VERSIONED_ROOTS, null, null);
     }
     
     /**
@@ -367,11 +361,11 @@ public abstract class VersioningSystem {
          * The two following subpaths are then derived from it:
          * 
          * <ul>
-         * <li>Global - contains all global (contextless) actions for the Versioning System - e.g. Subversion Checkout</li> 
-         * <li>Unversioned - contains actions which should be available for an unversioned project - e.g. Subversion Import</li>
+         * <li>Actions/Global - contains all global (contextless) actions for the Versioning System - e.g. Subversion Checkout</li> 
+         * <li>Actions/Unversioned - contains actions which should be available for an unversioned project - e.g. Subversion Import</li>
          * </ul>
          * returning "Subversion" would make the VCS infrastructure to look for actions under the {@link ActionReference} 
-         * paths <code>"Versioning/Subversion/Unversioned"</code> and <code>"Versioning/Subversion/Global"</code>.
+         * paths <code>"Versioning/Subversion/Actions/Unversioned"</code> and <code>"Versioning/Subversion/Actions/Global"</code>.
          * </p>
          * <p>
          * You can also make use of the {@link ActionRegistration#menuText} and {@link ActionRegistration#popupText} 
@@ -393,7 +387,7 @@ public abstract class VersioningSystem {
          * 
          * <p>
          * Register the <code>ImportAction</code> under the <code>ActionReference</code> path 
-         * <code>"Versioning/Subversion/Unversioned"</code> and set <br> 
+         * <code>"Versioning/Subversion/Actions/Unversioned"</code> and set <br> 
          * <code>ActionRegistration.popupText</code> to <code>"Import into &Subversion Repository..."</code> and<br> 
          * <code>ActionRegistration.menuText</code> to <code>"I&mport into Repository..."</code>.
          * <br></p>
@@ -401,7 +395,7 @@ public abstract class VersioningSystem {
          * <p><code> <pre>
          * <samp>@</samp>ActionID(id = "org.netbeans.modules.subversion.ui.project.ImportAction", category = "Subversion")
          * <samp>@</samp>ActionRegistration(displayName = "Import into Repository...", popupText="Import into &Subversion Repository...", menuText="I&mport into Repository...")
-         * <samp>@</samp>ActionReferences({ <samp>@</samp>ActionReference(path="<b>Versioning/Subversion/Unversioned</b>", position=1) })
+         * <samp>@</samp>ActionReferences({ <samp>@</samp>ActionReference(path="<b>Versioning/Subversion/Actions/Unversioned</b>", position=1) })
          * public final class ImportAction implements ActionListener {
          *   ...
          * }
