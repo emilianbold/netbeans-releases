@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
@@ -50,7 +54,6 @@ import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.wizard.Util;
 
 /**
  *
@@ -59,6 +62,8 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 public class ManagedTypeProvider implements IManagedTypeProvider {
 
     private final Project project;
+    private Map<String, IManagedType> managedTypes;
+    private ITypeRepository typeRepository;
 
     public ManagedTypeProvider(Project project){
         this.project = project;
@@ -66,27 +71,42 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     
     @Override
     public Iterable<IEntity> abstractSchemaTypes() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        initializeManagedTypes();
+	Collection<IEntity> abstractSchemaTypes = null;
+        ManagedTypeVisitor visitor = new ManagedTypeVisitor();
+        for (IManagedType managedType : managedTypes.values()) {
+                managedType.accept(visitor);
+        }
+        abstractSchemaTypes = visitor.getEntities();
+        return Collections.unmodifiableCollection(abstractSchemaTypes);    
     }
 
     @Override
     public IManagedType getManagedType(IType itype) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        initializeManagedTypes();
+        for(IManagedType mt:managedTypes.values()){
+            if(mt.getType().equals(itype))return mt;
+        }
+        return null;
     }
 
     @Override
     public IManagedType getManagedType(String name) {
-        return new ManagedType(null, this);//TODO
+        initializeManagedTypes();
+        return managedTypes.get(name);
     }
 
     @Override
     public IPlatform getPlatform() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return IPlatform.JAVA;//TODO, at first step always java?
     }
 
     @Override
     public ITypeRepository getTypeRepository() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (typeRepository == null) {
+                typeRepository = new TypeRepository(project);
+        }
+        return typeRepository;
     }
 
     @Override
@@ -97,7 +117,14 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
 
     @Override
     public Iterable<IManagedType> managedTypes() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        initializeManagedTypes();
+        return Collections.unmodifiableCollection(managedTypes.values());
     }
     
+    private void initializeManagedTypes(){
+        if(managedTypes==null){
+            managedTypes = new HashMap<String, IManagedType>();
+            //TODO fill
+        }
+    }
 }

@@ -145,9 +145,9 @@ public class CreateTagCommand extends GitCommand {
                 case FORCED:
                     return revObject instanceof RevCommit ? new JGitTag(tagName, new JGitRevisionInfo((RevCommit) revObject, repository)) : new JGitTag(tagName, revObject);
                 case LOCK_FAILURE:
-                    throw new GitException("Cannot lock ref " + refName);
+                    throw new GitException.RefUpdateException("Cannot lock ref " + refName, updateResult);
                 default:
-                    throw new GitException("Updating ref " + refName + " failed");
+                    throw new GitException.RefUpdateException("Updating ref " + refName + " failed", updateResult);
             }
 
         } finally {

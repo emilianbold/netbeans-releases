@@ -61,7 +61,12 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 public class CsmAST extends BaseAST implements Serializable {
 
     private static final long serialVersionUID = -1975495157952833337L;
-    private static final Token NIL = new APTBaseToken();
+    private static final Token NIL;
+    static {
+        NIL = new APTBaseToken();
+        NIL.setText("");
+    }
+    
     transient protected Token token = NIL;
 
     /** Creates a new instance of CsmAST */

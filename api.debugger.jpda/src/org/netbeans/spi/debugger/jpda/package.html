@@ -84,10 +84,11 @@ always in some methods, which name is prefixed with "xxx" like:<br>
 JPDA debugger to not stop in generated methods. <br>
 In this case we should implement {@link
 org.netbeans.spi.debugger.jpda.SmartSteppingCallback}:<br>
-<pre style="background-color: rgb(255, 255, 102);">public class SmartSteppingCallbackImpl extends SmartSteppingCallback {<br>    <br>    public void initFilter (SmartSteppingFilter f) {}<br>    <br>    public boolean stopHere (JPDAThread thread, SmartSteppingFilter f) {<br>        String methodName = thread.getMethodName ();<br>        return !methodName.startsWith ("xxx");  // if method starts with "xxx" DO NOT stop there!<br>    }<br>}<br></pre>
-And register full class name of our implementation
-(packagename.SmartSteppingCallback) in the file named:<br>
-<pre style="background-color: rgb(255, 255, 102);">META-INF\debugger\netbeans-JPDADebuggerEngine\org.netbeans.spi.debugger.jpda.SmartSteppingCallback</pre>
+<pre style="background-color: rgb(255, 255, 102);">public class SmartSteppingCallbackImpl extends SmartSteppingCallback {<br>    <br>    public void initFilter (SmartSteppingFilter f) {}<br>    <br>    public boolean stopHere (ContextProvider lookupProvider, JPDAThread thread, SmartSteppingFilter f) {<br>        String methodName = thread.getMethodName ();<br>        return !methodName.startsWith ("xxx");  // if method starts with "xxx" DO NOT stop there!<br>    }<br>}<br></pre>
+To register this implementation, add following annotation before the class declaration:
+<pre style="background-color: rgb(255, 255, 102);">@SmartSteppingCallback.Registration(path="netbeans-JPDASession")</pre>
+Or register the full implementation class name (packagename.SmartSteppingCallbackImpl) into the file named:<br>
+<pre style="background-color: rgb(255, 255, 102);">META-INF\debugger\netbeans-JPDASession\org.netbeans.spi.debugger.jpda.SmartSteppingCallback</pre>
 </div>
 <h3><a name="Variables_Filtering_Support"></a>Variables Filtering
 Support</h3>
@@ -107,7 +108,7 @@ org.netbeans.spi.viewmodel.TreeModelFilter} first:<br>
 <pre style="background-color: rgb(255, 255, 102);">public class CallStackFilter implements TreeModelFilter {<br>    <br>    public Object[] getChildren (TreeModel original, Object parent, int from, int to) {<br>        Object[] originalCh = original.getChildren (parent, from, to);<br>        int i, k = originalCh.length;<br>        ArrayList newCh = new ArrayList ();<br>        boolean in = false;<br>        for (i = 0; i &lt; k; i++) {<br>            if (! (originalCh [i] instanceof CallStackFrame)) {<br>                newCh.add (originalCh [i]);<br>
                 continue;<br>            }<br>            CallStackFrame f = (CallStackFrame) originalCh [i];<br>            String className = f.getClassName ();<br>            if (className.startsWith ("java")) {<br>                if (!in) {<br>                    newCh.add (new JavaxSwing ());<br>                    in = true;<br>                }<br>            } else {<br>                in = false;<br>                newCh.add (f);<br>            }<br>        }<br>        return newCh.toArray ();<br>    }<br>    <br>    public Object getRoot (TreeModel original) {<br>        return original.getRoot ();<br>    }<br>    <br>    public boolean isLeaf (TreeModel original, Object node) <br>    throws UnknownTypeException {<br>        if (node instanceof JavaxSwing) return true;<br>        return original.isLeaf (node);<br>    }<br>    <br>    private static class JavaFrames {}<br>}<br></pre>
 And register it in file:<br>
-<pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDADebuggerEngine\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
+<pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDASession\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
 As you can see on the picture this Filter replaces some original frames
 by some dummy node.<br>
 <img
@@ -122,7 +123,7 @@ for our new node type (JavaFrames) now.<br>
 <pre style="background-color: rgb(255, 255, 102);">public class CallStackFilter implements NodeModel {
 <br><br>  &nbsp; public String getDisplayName (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Java Callstack Frames";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getIconBase (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "org/netbeans/examples/debugger/jpda/callstackviewfilterring/NonCurrentFrame";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getShortDescription (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Unimportant hidden callstack frames";<br>        throw new UnknownTypeException (node);<br>    }<br>}<br></pre>
 And registration:<br>
-<pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDADebuggerEngine\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
+<pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDASession\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
 <img
  src="doc-files/CallStackViewFilterring3.JPG" title=""
  alt="Callstack View Filtering 3" style="width: 322px; height: 285px;">
