@@ -82,10 +82,16 @@ public final class TerminalSupport {
      */
     public static void openTerminal(String termTitle, ExecutionEnvironment env, String dir) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
-        instance.open();
-        instance.requestActive();
-        IOContainer ioContainer = instance.getIOContainer();
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+        Object prev = instance.getClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY);
+        instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, Boolean.FALSE);
+        try {
+            instance.open();
+            instance.requestActive();
+            IOContainer ioContainer = instance.getIOContainer();
+            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+        } finally {
+            instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, prev);
+        }
     }
     
     public static Component getToolbarPresenter(Action action) {
