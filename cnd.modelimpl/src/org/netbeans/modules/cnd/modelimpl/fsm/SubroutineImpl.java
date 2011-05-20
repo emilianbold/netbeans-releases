@@ -68,7 +68,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         implements CsmFunctionDefinition, Disposable, RawNamable {
 
     private final CharSequence name;
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
     private CsmUID<CsmScope> scopeUID;
 
     private final DummyParametersListImpl parameterList;
@@ -78,8 +78,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         super(file, startOffset, endOffset);
 
         this.name = QualifiedNameCache.getManager().getString(name);
-        rawName = new CharSequence[1];
-        rawName[0] = this.name;
+        rawName = this.name;
         this.parameterList = parameterList;
 
         try {
@@ -178,7 +177,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
 
     private void _setScope(CsmScope scope) throws AstRendererException {
@@ -211,7 +210,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
 
         PersistentUtils.writeParameterList(this.parameterList, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
 
 //        // not null UID
 //        assert !CHECK_SCOPE || this.scopeUID != null;
@@ -230,7 +229,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         this.parameterList = (DummyParametersListImpl)PersistentUtils.readParameterList(input);
 
 
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
 
         this.scopeUID = factory.readUID(input);
 //        // not null UID

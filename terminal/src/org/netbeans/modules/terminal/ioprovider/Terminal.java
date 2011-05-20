@@ -78,6 +78,9 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Keymap;
 import org.openide.NotifyDescriptor.InputLine;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
@@ -109,6 +112,7 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -160,6 +164,9 @@ public final class Terminal extends JComponent {
         NbPreferences.forModule(TermAdvancedOption.class);
     private final TermOptions termOptions;
     private final TermOptionsPCL termOptionsPCL = new TermOptionsPCL();
+    
+    private final FileObject shortcutsDir = FileUtil.getConfigFile("Terminal/Shortcuts"); //NOI18N
+    private final ShortcutsListener shortcutsListener = new ShortcutsListener();
 
     private String title;
 
@@ -289,6 +296,7 @@ public final class Terminal extends JComponent {
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
 	
+	shortcutsDir.addFileChangeListener(shortcutsListener);
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 
@@ -370,6 +378,7 @@ public final class Terminal extends JComponent {
 	term.removeListener(termListener);
 	term.setActionListener(null);
 	findState = null;
+	shortcutsDir.removeFileChangeListener(shortcutsListener);
         termOptions.removePropertyChangeListener(termOptionsPCL);
 	tio.dispose();
 	TerminalIOProvider.dispose(tio);
@@ -449,27 +458,11 @@ public final class Terminal extends JComponent {
         term.setClickToType(termOptions.getClickToType());
         term.setScrollOnInput(termOptions.getScrollOnInput());
         term.setScrollOnOutput(termOptions.getScrollOnOutput());
-        if (initial)
+        if (initial) {
             term.setHorizontallyScrollable(!termOptions.getLineWrap());
-	
-	if (!termOptions.getIgnoreKeymap()) {
-	    Set<Action> actions = new HashSet<Action>();
-	    FileObject dir = FileUtil.getConfigFile("Terminal/Shortcuts"); //NOI18N
-	    for (FileObject def : dir.getChildren()) {
-		try {
-		    DataObject dobj = DataObject.find(def);
-		    InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
-		    if (ic != null) {
-			actions.add((Action)ic.instanceCreate());
-		    }
-		} catch (Exception e) {
-		    Exceptions.printStackTrace(e);
-		}
-	    }
-	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class), actions);
-	} else {
-	    term.setKeymap(null, null);
 	}
+	
+	applyShortcuts();
 
         // If we change the font from smaller to bigger, the size
         // calculations go awry and the last few lines are forever hidden.
@@ -925,5 +918,57 @@ public final class Terminal extends JComponent {
 
     void scrollTo(Coord coord) {
         term.possiblyNormalize(coord);
+    }
+    
+    private void applyShortcuts() {
+	if (!termOptions.getIgnoreKeymap()) {
+	    Set<Action> actions = new HashSet<Action>();
+	    for (FileObject def : shortcutsDir.getChildren()) {
+		try {
+		    DataObject dobj = DataObject.find(def);
+		    InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
+		    if (ic != null) {
+			actions.add((Action)ic.instanceCreate());
+		    }
+		} catch (Exception e) {
+		    Exceptions.printStackTrace(e);
+		}
+	    }
+	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class), actions);
+	} else {
+	    term.setKeymap(null, null);
+	}
+    }
+    
+    private class ShortcutsListener extends FileChangeAdapter {
+	@Override
+	public void fileAttributeChanged(FileAttributeEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileChanged(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileDataCreated(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileDeleted(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileFolderCreated(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileRenamed(FileRenameEvent fe) {
+	    applyShortcuts();
+	}
     }
 }

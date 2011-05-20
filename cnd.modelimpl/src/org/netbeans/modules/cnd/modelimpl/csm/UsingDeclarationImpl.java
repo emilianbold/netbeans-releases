@@ -79,7 +79,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         implements CsmUsingDeclaration, CsmMember, RawNamable, Disposable {
 
     private final CharSequence name;
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
     private WeakReference<CsmDeclaration> refDeclaration;
@@ -116,14 +116,15 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
     
     private CsmDeclaration renderReferencedDeclaration() {
         CsmDeclaration referencedDeclaration = null;
-        if (rawName != null) {
+        CharSequence[] aRawName = getRawName();
+        if (aRawName != null) {
             ProjectBase prjBase = (ProjectBase)getProject();
             CsmNamespace namespace = null;
-            if (rawName.length == 1) {
+            if (aRawName.length == 1) {
                 namespace = prjBase.getGlobalNamespace();
-            } else if (rawName.length > 1) {
-                CharSequence[] partial = new CharSequence[rawName.length - 1];
-                System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
+            } else if (aRawName.length > 1) {
+                CharSequence[] partial = new CharSequence[aRawName.length - 1];
+                System.arraycopy(aRawName, 0, partial, 0, aRawName.length - 1);
                 CsmObject result = null;
                 Resolver aResolver = ResolverFactory.createResolver(this);
                 try {
@@ -136,7 +137,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 }
             }
             if (namespace != null) {
-                CharSequence lastName = rawName[rawName.length - 1];
+                CharSequence lastName = aRawName[aRawName.length - 1];
                 CsmDeclaration bestChoice = null;
                 CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
 
@@ -195,9 +196,9 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
             }
             CsmClass cls = null;
-            if(namespace == null && rawName.length > 1) {
-                CharSequence[] partial = new CharSequence[rawName.length - 1];
-                System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
+            if(namespace == null && aRawName.length > 1) {
+                CharSequence[] partial = new CharSequence[aRawName.length - 1];
+                System.arraycopy(aRawName, 0, partial, 0, aRawName.length - 1);
                 CsmObject result = null;
                 Resolver aResolver = ResolverFactory.createResolver(this);
                 try {
@@ -209,8 +210,8 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                     cls = (CsmClass)result;
                 }
             }
-            if(cls != null && rawName.length > 0) {
-                CharSequence lastName = rawName[rawName.length - 1];
+            if(cls != null && aRawName.length > 0) {
+                CharSequence lastName = aRawName[aRawName.length - 1];
                 CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
                 Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);
                 if (it.hasNext()) {
@@ -310,7 +311,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
     
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
     
     @Override
@@ -335,7 +336,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
         
         // save cached declaration
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedDeclarationUID, output);
@@ -348,7 +349,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         
         // read cached declaration
         this.referencedDeclarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);        
