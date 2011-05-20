@@ -107,7 +107,7 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
     public EjbDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion,
             boolean isWebProfile) {
 
-        super(j2eeModule);
+        super(j2eeModule, serverVersion);
         this.j2eeModule = j2eeModule;
         this.serverVersion = serverVersion;
         this.isWebProfile = isWebProfile;

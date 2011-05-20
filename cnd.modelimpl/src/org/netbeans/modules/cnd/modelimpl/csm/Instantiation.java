@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.util.Set;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,6 +77,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -377,7 +377,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     // impl of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert (declaration instanceof ClassImpl);
         
@@ -394,7 +394,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         PersistentUtils.writeSpecializationParameters(vals, output);
     }
 
-    public Instantiation(DataInput input) throws IOException {
+    public Instantiation(RepositoryDataInput input) throws IOException {
         super(input);
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -570,11 +570,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         // impl of SelfPersistent
         
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
         }
 
-        public Class(DataInput input) throws IOException {
+        public Class(RepositoryDataInput input) throws IOException {
             super(input);
         }        
         
@@ -1610,11 +1610,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         // impl for Persistent
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             // write nothing
         }
 
-        public InstantiationSelfUID(DataInput input) throws IOException {
+        public InstantiationSelfUID(RepositoryDataInput input) throws IOException {
             this.ref = null;
         }
     }

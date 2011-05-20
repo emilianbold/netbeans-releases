@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.cnd.repository.sfs.index;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -71,18 +71,19 @@ public class FileIndexFactory extends AbstractObjectFactory {
         return theFactory;
     }
     
-   public void writeIndex(final FileIndex anIndex, final DataOutput aStream) throws IOException {
+   public void writeIndex(final FileIndex anIndex, final RepositoryDataOutput aStream) throws IOException {
         assert anIndex instanceof SelfPersistent;
         super.writeSelfPersistent((SelfPersistent)anIndex, aStream);
     }
     
-    public FileIndex readIndex(final DataInput aStream) throws IOException {
+    public FileIndex readIndex(final RepositoryDataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
         assert out instanceof FileIndex;
         return (FileIndex)out;
     }    
 
+    @Override
     protected int getHandler(final Object object) {
         final int aHandle;
         
@@ -96,7 +97,8 @@ public class FileIndexFactory extends AbstractObjectFactory {
         return aHandle;
     }
 
-    protected SelfPersistent createObject(final int handler, final DataInput stream) throws IOException {
+    @Override
+    protected SelfPersistent createObject(final int handler, final RepositoryDataInput stream) throws IOException {
         final SelfPersistent anIndex;
         
         switch (handler) {

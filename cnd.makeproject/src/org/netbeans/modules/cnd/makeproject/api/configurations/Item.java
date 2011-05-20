@@ -287,7 +287,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 return normalizedPath;
             }
         }
-        return getNormalizedFile().getAbsolutePath();
+        String absPath = getAbsPath();
+        return FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
     }
     
     public File getNormalizedFile() {
@@ -477,7 +478,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         String mimeType = "";
         if (fo == null || ! fo.isValid()) {
-            mimeType = MIMESupport.getSourceFileMIMEType(getNormalizedFile());
+            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(getName());
         } else {
             mimeType = MIMESupport.getSourceFileMIMEType(fo);
         }

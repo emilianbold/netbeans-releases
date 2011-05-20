@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -62,6 +60,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 
 /**
@@ -353,14 +353,14 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     // impl of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         // can be null
         PersistentUtils.writeUTF(this.qualifiedName, output);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
     }
     
-    public FunctionImplEx(DataInput input) throws IOException {
+    public FunctionImplEx(RepositoryDataInput input) throws IOException {
 	super(input);
         // can be null
         this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());

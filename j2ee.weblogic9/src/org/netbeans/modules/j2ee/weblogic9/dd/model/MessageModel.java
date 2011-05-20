@@ -52,6 +52,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.schema2beans.NullEntityResolver;
 import org.openide.util.NbBundle;
@@ -62,15 +63,15 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Hejl
  */
-public class MessageModel extends BaseDescriptorModel {
+public final class MessageModel extends BaseDescriptorModel {
 
     private final WeblogicJms bean;
-    
-    public MessageModel(WeblogicJms bean) {
+
+    private MessageModel(WeblogicJms bean) {
         super(bean);
         this.bean = bean;
     }
-    
+
     public static MessageModel forFile(File file) throws IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(file));
         try {
@@ -79,12 +80,12 @@ public class MessageModel extends BaseDescriptorModel {
             is.close();
         }
     }
-    
+
     public static MessageModel forInputStream(InputStream is) throws IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setValidating(false);
-        
+
         Document doc;
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -94,38 +95,55 @@ public class MessageModel extends BaseDescriptorModel {
             throw new RuntimeException(NbBundle.getMessage(EarApplicationModel.class, "MSG_CantCreateXMLDOMDocument"), ex);
         } catch (ParserConfigurationException ex) {
             throw new RuntimeException(NbBundle.getMessage(EarApplicationModel.class, "MSG_CantCreateXMLDOMDocument"), ex);
-        }        
+        }
 
         //String ns = doc.getDocumentElement().getNamespaceURI();
-        return new MessageModel(org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms.createGraph(doc));  
+        return new MessageModel(org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms.createGraph(doc));
     }
-    
+
     public static MessageModel generate(@NullAllowed Version serverVersion) {
         return generate1031();
     }
 
-    public List<String> getQueues() {
+    public List<String> getMessageDestinations(MessageDestination.Type type) {
         List<String> ret = new ArrayList<String>();
-        for (QueueType type : bean.getQueue()) {
-            ret.add(type.getName());
+        switch (type) {
+            case QUEUE:
+                for (QueueType qType : bean.getQueue()) {
+                    ret.add(qType.getName());
+                }
+                break;
+            case TOPIC:
+                for (TopicType tType : bean.getTopic()) {
+                    ret.add(tType.getName());
+                }
+                break;
+            default:
         }
-        
+
         return ret;
     }
-    
-    public List<String> getTopics() {
-        List<String> ret = new ArrayList<String>();
-        for (TopicType type : bean.getTopic()) {
-            ret.add(type.getName());
+
+    public void addMessageDestination(String name, MessageDestination.Type type) {
+        switch (type) {
+            case QUEUE:
+                QueueType qType = bean.addQueue();
+                qType.setName(name);
+                qType.setJndiName(name);
+                break;
+            case TOPIC:
+                TopicType tType = bean.addTopic();
+                tType.setName(name);
+                tType.setJndiName(name);
+                break;
+            default:
         }
-        
-        return ret;
-    }    
-    
+    }
+
     private static MessageModel generate1031() {
         org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms webLogicJms = new org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms();
         webLogicJms.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicJms.setAttributeValue("xsi:schemaLocation", "http://xmlns.oracle.com/weblogic/weblogic-jms http://xmlns.oracle.com/weblogic/weblogic-jms/1.0/weblogic-jms.xsd"); // NOI18N
         return new MessageModel(webLogicJms);
-    } 
+    }
 }

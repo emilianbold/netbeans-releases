@@ -75,6 +75,13 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
         warningLabel.setForeground(java.awt.Color.red);
         warningLabel.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.warningLabel.text")); // NOI18N
 
+        noLabelCleanupCheckBox.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
+        noLabelCleanupCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                noLabelCleanupCheckBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -87,8 +94,9 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
                         .add(daysTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(10, 10, 10)
                         .add(jLabel3))
-                    .add(warningLabel))
-                .addContainerGap(49, Short.MAX_VALUE))
+                    .add(warningLabel)
+                    .add(noLabelCleanupCheckBox))
+                .addContainerGap(76, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -97,7 +105,9 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(daysTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(noLabelCleanupCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 36, Short.MAX_VALUE)
                 .add(warningLabel))
         );
 
@@ -105,11 +115,16 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
         daysTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSD_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
+private void noLabelCleanupCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noLabelCleanupCheckBoxActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_noLabelCleanupCheckBoxActionPerformed
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JTextField daysTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
+    final javax.swing.JCheckBox noLabelCleanupCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
     

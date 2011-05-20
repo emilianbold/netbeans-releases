@@ -101,7 +101,7 @@ public class APTIncludeUtils {
                 FileSystem fs = dirPrefix.getFileSystem();
                 char fileSeparatorChar = CndFileUtils.getFileSeparatorChar(fs);
                 String includedFile = anIncludedFile.replace('/', fileSeparatorChar);
-                String prefix = dirPrefix.getPath();
+                CharSequence prefix = dirPrefix.getAsSharedCharSequence();
                 int len = prefix.length();
                 String absolutePath;
                 if (len > 0 && prefix.charAt(len - 1) == fileSeparatorChar) {
@@ -110,7 +110,7 @@ public class APTIncludeUtils {
                     absolutePath = CharSequenceUtils.toString(prefix, fileSeparatorChar, includedFile);
                 }
                 if (isExistingFile(fs, absolutePath)) {
-                    return new ResolvedPath(fs, dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), false, dirOffset);
+                    return new ResolvedPath(fs, prefix, normalize(fs, absolutePath), false, dirOffset);
                 } else {
                     if (dirPrefix.isFramework()) {
                         int i = includedFile.indexOf('/'); // NOI18N
