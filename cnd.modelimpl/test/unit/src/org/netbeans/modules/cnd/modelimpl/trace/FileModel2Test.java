@@ -158,6 +158,11 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz149505.cc");
     }
 
+    public void testIZ195560() throws Exception {
+        // IZ#195560: more support for variadic variables in macro
+        performTest("iz195560.cc");
+    }
+    
     public void testIZ145280() throws Exception {
         // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
         performTest("iz145280.cc");
