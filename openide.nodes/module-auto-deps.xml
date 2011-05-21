@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 
 <transformations version="1.0">
     <transformationgroup>
-        <description>No need for separate templates API. Merged into org.openide.loaders</description>
+        <description>SaveCookie extends Savable. To compile you need to include openide.awt on classpath.</description>
         <transformation>
             <trigger-dependency type="older">
                 <module-dependency codenamebase="org.openide.nodes" spec="7.21"/>
