@@ -44,11 +44,16 @@
 
 package org.openide.loaders;
 
+import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
 import org.openide.filesystems.*;
-import java.beans.*;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 
 public class DataGetModifiedTest extends NbTestCase {
 
@@ -69,6 +74,11 @@ public class DataGetModifiedTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         TestUtilHid.destroyLocalFileSystem (getName());
+        for (Savable s : Savable.REGISTRY.lookupAll(Savable.class)) {
+            s.save();
+        }
+        Collection<? extends Savable> empty = Savable.REGISTRY.lookupAll(Savable.class);
+        assertTrue("registry is emptied: " + empty, empty.isEmpty());
     }
 
     
@@ -99,6 +109,65 @@ public class DataGetModifiedTest extends NbTestCase {
         assertFalse("No third object added when iterating", it.hasNext());
         
         assertEquals("But now visible", 3, DataObject.getRegistry().getModifiedSet().size());
+    }
+    
+    public void testSavableRegistry() throws Exception {
+        class L implements ChangeListener {
+            int cnt;
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                assertTrue(e.getSource() instanceof Collection);
+                for (Object o : (Collection)e.getSource()) {
+                    assertTrue("DataObject is the value: " + o, o instanceof DataObject);
+                }
+                cnt++;
+            }
+            
+        }
+        L listener = new L();
+        
+        DataObject.getRegistry().addChangeListener(listener);
+        do1.getLookup().lookup(EditorCookie.class).openDocument().insertString(0, "Ahoj", null);
+        String name = do1.getNodeDelegate().getDisplayName();
+        assertTrue("DataObject is modified", do1.isModified());
+        assertEquals("One change in registry", 1, listener.cnt);
+
+        Savable savable = findSavable(name);
+        assertNotNull("Savable for the do1 lookup found", savable);
+        savable.save();
+        assertFalse("DataObject no longer modified", do1.isModified());
+        assertEquals("2nd change in registry", 2, listener.cnt);
+        
+        do1.getLookup().lookup(EditorCookie.class).openDocument().insertString(0, "Ahoj", null);
+        assertTrue("DataObject is modified again", do1.isModified());
+        assertEquals("3rd change in registry", 3, listener.cnt);
+        
+        Savable another = findSavable(name);
+        assertNotSame("It is different instance", savable, another);
+        assertEquals("But it remains equals", savable, another);
+        assertTrue("DataObject savables provide Icons", another instanceof Icon);
+        
+        savable.save();
+        assertTrue("Calling save on old savable has no impact", do1.isModified());
+        
+        SaveCookie sc = do1.getLookup().lookup(SaveCookie.class);
+        sc.save();
+        assertFalse("Unmodified", do1.isModified());
+        
+        Savable none = findSavable(name);
+        assertNull("No savable for our dataobject found", none);
+    }
+
+    private Savable findSavable(String name) {
+        Savable savable = null;
+        for (Savable s : Savable.REGISTRY.lookupAll(Savable.class)) {
+            if (s.toString().equals(name)) {
+                savable = s;
+                break;
+            }
+        }
+        return savable;
     }
     
     

@@ -874,6 +874,7 @@ public class ActionTracker {
         /** this tuple we measure - help to distinguish which action/paint has been measured */
         private boolean measured;
         
+        private String measurementThreadName;        
         /**
          * Create a tuple to track actions.
          *
@@ -908,6 +909,7 @@ public class ActionTracker {
             this.millies = millies;
             this.diffies = millies - start;
             this.measured = measured;
+            this.measurementThreadName = Thread.currentThread().getName();
             //System.err.println("new ActionTracker.Tuple " + toString()+" ,start="+start);
         }
         
@@ -956,6 +958,12 @@ public class ActionTracker {
          * @return true - if this one is going to be measured, false else
          */
         public boolean getMeasured() { return this.measured; };
+        
+        /**
+         * Get name of the action
+         * @return name of the thread
+         */
+        public String getMeasurementThreadName() { return measurementThreadName; }
         
         /**
          * Convert tuple to the string
