@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -278,7 +279,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 
         @Override
         public String toString() {
-            return "FilterToken: " + type + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
+            return "FilterToken: " + APTUtils.getAPTTokenName(type) + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
         }
     }
 
