@@ -81,6 +81,7 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
@@ -327,7 +328,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             AttachSettings attachSettings = null;
 
             try {
-                attachSettings = NetBeansProfiler.getDefaultNB().loadAttachSettings(mainProject);
+                attachSettings = ProjectStorage.loadAttachSettings(mainProject);
             } catch (IOException e) {
                 Profiler.getDefault()
                         .displayWarning(MessageFormat.format(FAILED_LOAD_SETTINGS_MSG, new Object[] { e.getMessage() }));
@@ -338,7 +339,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
                 attachSettings = new AttachSettings();
                 attachSettings.setRemote(false);
                 attachSettings.setDirect(true);
-                NetBeansProfiler.saveAttachSettings(mainProject, attachSettings);
+                ProjectStorage.saveAttachSettings(mainProject, attachSettings);
             }
         }
 

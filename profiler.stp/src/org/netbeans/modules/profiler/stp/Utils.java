@@ -49,14 +49,13 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-// FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
 // FIXXX import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTextField;
+import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.attach.AttachWizard;
 
 
@@ -73,12 +72,11 @@ public class Utils {
 
     public static AttachSettings getAttachSettings(Project project) {
         AttachSettings attachSettings = null;
-
-// FIXXX         
-//        try {
-//            attachSettings = NetBeansProfiler.loadAttachSettings(project);
-//        } catch (IOException ex) {
-//        }
+    
+        try {
+            attachSettings = ProjectStorage.loadAttachSettings(project);
+        } catch (IOException ex) {
+        }
 
         return attachSettings;
     }

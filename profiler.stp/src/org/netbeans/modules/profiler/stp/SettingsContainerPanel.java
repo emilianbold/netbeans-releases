@@ -379,6 +379,7 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         SelectProfilingTask.getDefault().updateHelpCtx();
 
         if (showingPreset && showingAdvancedSettings) {
+// FIXXX
 //            ProfilerDialogs.DNSAMessage dnsa = new ProfilerDialogs.DNSAMessage("SettingsContainerPanel.switchToAdvancedSettings.presetNotification", //NOI18N
 //                                                                               READONLY_SETTINGS_MSG,
 //                                                                               ProfilerDialogs.DNSAMessage.INFORMATION_MESSAGE);
