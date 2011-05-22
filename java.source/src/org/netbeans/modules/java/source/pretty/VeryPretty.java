@@ -298,6 +298,9 @@ public final class VeryPretty extends JCTree.Visitor {
     public boolean handlePossibleOldTrees(java.util.List<? extends JCTree> toPrint, boolean includeStartingComments) {
         for (JCTree t : toPrint) {
             if (!oldTrees.contains(t)) return false;
+            if (t.getKind() == Kind.ARRAY_TYPE) {
+                return false;//XXX #197584: C-like array are cannot be copied as old trees.
+            }
         }
 
         JCTree firstTree = toPrint.get(0);
