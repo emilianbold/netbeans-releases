@@ -114,5 +114,7 @@ abstract public class NativeBreakpointType extends BreakpointType {
     public boolean isDefault() {
 	return false;
     } 
-
+    
+    // used in xml
+    public abstract String id();
 }
