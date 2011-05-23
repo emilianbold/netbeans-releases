@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.Token;
@@ -350,7 +351,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
                 "   /**\n" +
                 "    * @param <T> type parameter\n" +
                 "    * @param param2find regular parameter\n" +
-                "    * @see java.util.Collections\n" +
+                "    * @see java.util.Collections#enumeration(Collection)\n" +
                 "    * @throws ThrowsUnresolved\n" +
                 "    */\n" +
                 "   public <T> void m(T param2find) throws java.io.IOException {\n" +
@@ -374,6 +375,11 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertNotNull(exp);
         el = JavadocImports.findReferencedElement(info, code.indexOf("T>", code.indexOf("@param <T>")));
         assertEquals(exp, el);
+        
+        el = JavadocImports.findReferencedElement(info, code.indexOf("enumeration")+2);
+        assertEquals(el.getKind(), ElementKind.METHOD);
+        assertEquals(el.getSimpleName().toString(), "enumeration");
+        
     }
     
     public void testFindReferencedElement() throws Exception {
