@@ -43,6 +43,7 @@
 package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
+import java.awt.Graphics;
 
 /**
  * Provider of information about a specific grid.
@@ -142,5 +143,16 @@ public interface GridInfoProvider {
      * @return grid height of the given {@code component}.
      */
     int getGridHeight(Component component);
+
+    /**
+     * Paints additional information about component constraints.
+     * The origin of the graphics coordinate system is at the top left
+     * corner of the designed container.
+     * 
+     * @param g graphics to use for painting.
+     * @param component component whose constraint information should be painted.
+     * @param selected determines whether the component is selected in the designer.
+     */
+    void paintConstraints(Graphics g, Component component, boolean selected);
 
 }
