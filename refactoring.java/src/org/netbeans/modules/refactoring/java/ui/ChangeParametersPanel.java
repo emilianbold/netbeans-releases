@@ -412,6 +412,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         int rowCount = model.getRowCount();
         model.addRow(new Object[] { "par" + rowCount, "Object", "null", new Integer(-1), Boolean.TRUE }); // NOI18N
         paramTable.scrollRectToVisible(paramTable.getCellRect(rowCount, 0, false));
+        paramTable.changeSelection(rowCount, 0, false, false);
+        autoEdit(paramTable);
     }//GEN-LAST:event_addButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
