@@ -58,29 +58,11 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
+new
 End cursor position = 1068
-[<% for (Boolean b : list)  b.|, Boolean FALSE, <% for (Boolean b : list)  b.FALSE, 1167]
-Boolean FALSE
-Boolean TRUE
-Class <Boolean> TYPE
-boolean booleanValue ()
-int compareTo (Boolean b )
-boolean equals (Object obj )
-boolean getBoolean (String nam
-Class  getClass ()
-int hashCode ()
-void notify ()
-void notifyAll ()
-boolean parseBoolean (String s
-String toString ()
-String toString (boolean b )
-Boolean valueOf (String s )
-Boolean valueOf (boolean b )
-void wait ()
-void wait (long timeout )
-void wait (long timeout , int 
-End cursor position = 1202
-[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1252]
+[<% for (Boolean b : list)  b.F|, Boolean FALSE, <% for (Boolean b : list)  b.FALSE, 1168]
+End cursor position = 1203
+[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1253]
 int length
 Object clone ()
 boolean equals (Object obj )
@@ -92,8 +74,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1285
-[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1322]
+End cursor position = 1286
+[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1323]
 Suit CLUBS
 Suit DIAMONDS
 Suit HEARTS
@@ -108,24 +90,21 @@ void notify ()
 void notifyAll ()
 int ordinal ()
 String toString ()
-Suit valueOf (String name )
-T valueOf (Class <T> enumType 
-Suit[] values ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1339
-[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1435]
+End cursor position = 1340
+[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1436]
 RequestForEnhancement
 Second
-End cursor position = 1466
+End cursor position = 1467
 [<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date=)%>, 1556]
 String date = "[unimplemented]
 String engineer = "[unassigned
 int id
 String synopsis
-End cursor position = 1593
-[<%@ page import="|" %>, static, <%@ page import="static " %>, 1652]
+End cursor position = 1594
+[<%@ page import="|" %>, static, <%@ page import="static " %>, 1653]
 static
 com
 java
@@ -133,8 +112,8 @@ javax
 org
 sun
 sunw
-End cursor position = 1677
-[<% D| %>, int DECEMBER, <% DECEMBER %>, 1702]
+End cursor position = 1678
+[<% D| %>, int DECEMBER, <% DECEMBER %>, 1703]
 int DATE
 int DAY_OF_MONTH
 int DAY_OF_WEEK
@@ -155,8 +134,8 @@ double
 Deprecated
 DispatcherType
 Double
-End cursor position = 1714
-[<% get| %>, Calendar getInstance, <% getInstance() %>, 1767]
+End cursor position = 1715
+[<% get| %>, Calendar getInstance, <% getInstance() %>, 1768]
 Locale[] getAvailableLocales (
 Class  getClass ()
 String getInitParameter (Strin
@@ -170,8 +149,8 @@ ServletConfig getServletConfig
 ServletContext getServletConte
 String getServletInfo ()
 String getServletName ()
-End cursor position = 1784
-[<jsp:useBean id="bean" scope="application" class="|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1983]
+End cursor position = 1785
+[<jsp:useBean id="bean" scope="application" class="|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1984]
 AbstractMethodError
 ArithmeticException
 ArrayIndexOutOfBoundsException
@@ -259,4 +238,4 @@ javax
 org
 sun
 sunw
-End cursor position = 2044
+End cursor position = 2045

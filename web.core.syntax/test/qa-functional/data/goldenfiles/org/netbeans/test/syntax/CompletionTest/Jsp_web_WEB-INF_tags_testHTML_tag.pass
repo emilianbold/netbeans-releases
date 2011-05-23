@@ -5,36 +5,89 @@
 <h4 >
 <h5 >
 <h6 >
-<head >
+<handler >
+<header >
+<hgroup >
+<hkern >
 <hr >
+<head >
 <html >
 End cursor position = 98
 [<a |, href, <a href="", 167]
 accesskey
-charset
 class
-coords
+contenteditable
+contextmenu
 dir
+draggable
+hidden
 href
 hreflang
 id
+itemid
+itemprop
+itemref
+itemscope
+itemtype
 lang
-name
+media
+onabort
 onblur
+oncanplay
+oncanplaythrough
+onchange
 onclick
+oncontextmenu
 ondblclick
+ondrag
+ondragend
+ondragenter
+ondragleave
+ondragover
+ondragstart
+ondrop
+ondurationchange
+onemptied
+onended
+onerror
 onfocus
+onformchange
+onforminput
+oninput
+oninvalid
 onkeydown
 onkeypress
 onkeyup
+onload
+onloadeddata
+onloadedmetadata
+onloadstart
 onmousedown
 onmousemove
 onmouseout
 onmouseover
 onmouseup
+onmousewheel
+onpause
+onplay
+onplaying
+onprogress
+onratechange
+onreadystatechange
+onscroll
+onseeked
+onseeking
+onselect
+onshow
+onstalled
+onsubmit
+onsuspend
+ontimeupdate
+onvolumechange
+onwaiting
+ping
 rel
-rev
-shape
+spellcheck
 style
 tabindex
 target
@@ -46,16 +99,24 @@ ltr
 rtl
 End cursor position = 255
 [&q|, &quot;, &quot;, 313]
+? &qfr;
+? &qint;
+? &qopf;
+? &qprime;
+? &qscr;
+? &quaternions;
+? &quatint;
+? &quest;
+? &questeq;
 " &quot;
 End cursor position = 320
 [<b|, body, <body, 380]
 <b >
-<base >
-<basefont >
 <bdo >
-<big >
 <blockquote >
-<body >
 <br >
 <button >
+<bvar >
+<base >
+<body >
 End cursor position = 386

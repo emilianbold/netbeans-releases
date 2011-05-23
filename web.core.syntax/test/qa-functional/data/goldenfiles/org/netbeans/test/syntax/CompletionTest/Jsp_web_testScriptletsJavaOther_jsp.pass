@@ -1,4 +1,4 @@
-[<% request.getSession().|, void removeAttribute, <% request.getSession().removeAttribute(name), 487]
+[<% request.getSession().|, void removeAttribute, <% request.getSession().removeAttribute(name);, 488]
 boolean equals (Object obj )
 Object getAttribute (String na
 Enumeration <String> getAttrib
@@ -25,8 +25,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 532
-[<% session.|, Object getAttribute, <% session.getAttribute(name), 608]
+End cursor position = 533
+[<% session.|, Object getAttribute, <% session.getAttribute(name), 609]
 boolean equals (Object obj )
 Object getAttribute (String na
 Enumeration <String> getAttrib
@@ -53,9 +53,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 637
-[<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 785]
-long serialVersionUID
+End cursor position = 638
+[<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 786]
 Object clone ()
 void destroy ()
 void doDelete (HttpServletRequ
@@ -89,12 +88,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 824
-[<%= request.|, String getContextPath (), <%= request.getContextPath(), 934]
-String BASIC_AUTH
-String CLIENT_CERT_AUTH
-String DIGEST_AUTH
-String FORM_AUTH
+End cursor position = 825
+[<%= request.|, String getContextPath (), <%= request.getContextPath(), 935]
 String getAuthType ()
 String getCharacterEncoding ()
 String getContentType ()
@@ -170,4 +165,4 @@ AsyncContext startAsync (Servl
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 963
+End cursor position = 964
