@@ -861,7 +861,9 @@ public abstract class FileObject extends Object implements Serializable {
             if (nameExt.equals("..")) { // NOI18N
                 myObj = myObj.getParent();
             } else {
-                myObj = myObj.getFileObject(nameExt, null);
+                if (!nameExt.equals(".")) {
+                    myObj = myObj.getFileObject(nameExt, null);
+                }
             }
         }
 

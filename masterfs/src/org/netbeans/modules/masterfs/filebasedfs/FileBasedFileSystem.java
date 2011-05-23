@@ -206,7 +206,7 @@ public final class FileBasedFileSystem extends FileSystem {
             name = (name.startsWith("/")) ? name : ("/"+name);    
         }               
         File f = new File(name);
-        if (name.contains("..")) {
+        if (name.contains("..") || name.contains("./") || name.contains("/.")) { // NOI18N
             f = FileUtil.normalizeFile(f);
         }
         return getFileObject(f);
