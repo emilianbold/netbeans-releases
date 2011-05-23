@@ -43,6 +43,7 @@
  */
 package org.netbeans.qa.form;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
@@ -114,7 +115,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
                 "testInter", 
                 "testMidi", 
                 "testPanel",
-                "testBean", 
+                //"testBean", 
                 "testAppl",
                 "testOkCancel",
                 //AWT
@@ -130,9 +131,11 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public void setUp() throws IOException {
         openDataProjects(DATA_PROJECT_NAME);
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
+        setTestPackageName("<default package>");
+        setTestProjectName(DATA_PROJECT_NAME);
         System.out.println("########  " + getName() + "  #######");
         try {
-            Thread.sleep(15000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -147,7 +150,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     //method create new project in parent dir to workdir
     public void begin() throws InterruptedException {
         DeleteDir.delDir(workdirpath + System.getProperty("file.separator") + DATA_PROJECT_NAME);
-        Thread.sleep(10000);
+        Thread.sleep(2000);
         mainWindow = MainWindowOperator.getDefault();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         npwo.selectCategory(PROJECT_NAME);
@@ -164,7 +167,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         bo.push();
 
         log("Project " + DATA_PROJECT_NAME + " was created");
-        Thread.sleep(10000);
+        Thread.sleep(2000);
 
     }
 
@@ -182,7 +185,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         cbo.changeSelection(true);
         ndo.yes();
 
-        Thread.sleep(10000);
+        Thread.sleep(2000);
         //check if project was really deleted from disc
         File f = new File(workdirpath + System.getProperty("file.separator") + DATA_PROJECT_NAME);
         System.out.println("adresar:" + f);
@@ -199,29 +202,22 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      */
 
     public void closeDocument(String documentName) throws InterruptedException {
-        FormDesignerOperator fdo = new FormDesignerOperator(documentName);
-        fdo.editor();
-        Thread.sleep(1000);
-        DocumentsDialogOperator ddo = DocumentsDialogOperator.invoke();
-        Thread.sleep(1000);
-        ddo.selectDocument(documentName);
-        Thread.sleep(1000);
-        ddo.btCloseDocuments().doClick();
-
-
+        
+        removeFile(documentName);
+        
     }
 
     public void openTemplate(String templateName, String category) throws InterruptedException {
 
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DATA_PROJECT_NAME);
-        Thread.sleep(10000);
+        Thread.sleep(3000);
         nfwo.selectCategory(category);
         nfwo.selectFileType(templateName);
         nfwo.next();
         JComboBoxOperator jcb_package = new JComboBoxOperator(nfwo, 1);
         jcb_package.clearText();
-        Thread.sleep(5000);
+        Thread.sleep(1000);
 
         if (templateName.equals("Bean Form")) {
             nfwo.next();
@@ -232,8 +228,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         } else {
             nfwo.finish();
             log(templateName + " is created correctly");
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         }
+        
     }
 
     public void testTemplateMethod(String templateName, String category, String name) throws InterruptedException, IOException {
@@ -242,10 +239,10 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
         System.out.println(getWorkDir());
         testFormFile(name);
-        Thread.sleep(10000);
+        Thread.sleep(1000);
         testJavaFile(name);
-        Thread.sleep(10000);
-        closeDocument(name + ".java");
+        Thread.sleep(1000);
+        closeDocument(name);
 
     }
 
