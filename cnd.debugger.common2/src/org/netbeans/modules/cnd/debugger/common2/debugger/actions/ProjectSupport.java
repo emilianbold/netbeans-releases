@@ -526,7 +526,7 @@ public final class ProjectSupport {
 		// creating Project
 		try {
 		    final boolean open = true;
-                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectName, projectParentFolder));
+                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectParentFolder, projectName));
                     prjParams.setOpenFlag(open).setConfiguration(seed.conf);
 		    seed.project =  ProjectGenerator.createBlankProject(prjParams);
 		} catch (Exception e) {
