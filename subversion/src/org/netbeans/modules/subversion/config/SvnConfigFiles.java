@@ -61,6 +61,7 @@ import org.ini4j.Config;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -179,7 +180,7 @@ public class SvnConfigFiles {
      *     
      * @param host the host
      */
-    public void storeSvnServersSettings(SVNUrl url) {
+    public void storeSvnServersSettings(SVNUrl url, ConnectionType connType) {
                         
         assert url != null : "can\'t do anything for a null host";     // NOI18N
                          
@@ -202,7 +203,15 @@ public class SvnConfigFiles {
             RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
             if (rc != null && url.getProtocol().startsWith("svn+")) {   //NOI18N
                 // must set tunnel info for the repository url
-                setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
+                if (connType == ConnectionType.svnkit) {
+                    // hack for svnkit and ssh
+                    // ssh port is read only from ssh tunnel info and considered valid only when usernam and password are not empty
+                    // see implementation in SvnKit: org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager.getDefaultSSHAuthentication()
+                    // weird and ugly
+                    setExternalCommand("ssh", rc.getSshPortNumber() > 0 ? "ssh -p " + rc.getSshPortNumber() + " -l user -pw password" : "");
+                } else {
+                    setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
+                }
             }
             if(url.getProtocol().startsWith("https")) {
                 setSSLCert(rc, nbGlobalSection);
