@@ -141,9 +141,11 @@ public class RefactoringTestBase extends NbTestCase {
             assertEquals(gp.isFatal(), rp.isFatal());
             assertEquals(gp.getMessage(), rp.getMessage());
         }
+        boolean goldenHasNext = g.hasNext();
+        boolean realHasNext = r.hasNext();
 
-        assertFalse(g.hasNext());
-        assertFalse(r.hasNext());
+        assertFalse(goldenHasNext?"Expected: " + g.next().getMessage():"", goldenHasNext);
+        assertFalse(realHasNext?"Unexpected: " + r.next().getMessage():"", realHasNext);
     }
 
     static {

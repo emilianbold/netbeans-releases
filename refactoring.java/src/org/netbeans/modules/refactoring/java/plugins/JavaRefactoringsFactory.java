@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
+import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
@@ -124,6 +125,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
             } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
                 return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
+            } else if (refactoring instanceof InlineRefactoring) {
+                return new InlineRefactoringPlugin((InlineRefactoring) refactoring);
             }
         }
         return null;

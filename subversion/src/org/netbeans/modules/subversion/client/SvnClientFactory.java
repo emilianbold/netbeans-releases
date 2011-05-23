@@ -305,7 +305,7 @@ public class SvnClientFactory {
             }
             @Override
             protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.javahl);
             }
             @Override
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
@@ -376,7 +376,7 @@ public class SvnClientFactory {
             }
             @Override
             protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.svnkit);
             }
             @Override
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
