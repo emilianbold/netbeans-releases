@@ -300,9 +300,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 fastCheckProblem = createProblem(fastCheckProblem, true, msg);
             }
         } else if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
-            String msg = variableClashes(newName,treePath, info);
+            String msg = RetoucheUtils.variableClashes(newName,treePath, info);
             if (msg != null) {
-                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                fastCheckProblem = createProblem(fastCheckProblem, true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_LocVariableClash", msg));
                 return fastCheckProblem;
             }
         } else {
@@ -532,36 +532,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                 }
             }
-        }
-        return null;
-    }
-    
-    private String variableClashes(String newName, TreePath tp, CompilationInfo info) {
-        LocalVarScanner lookup = new LocalVarScanner(info, newName);
-        TreePath scopeBlok = tp;
-        EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
-        while (!set.contains(scopeBlok.getLeaf().getKind())) {
-            scopeBlok = scopeBlok.getParentPath();
-        }
-        Element var = info.getTrees().getElement(tp);
-        lookup.scan(scopeBlok, var);
-
-        if (lookup.hasRefernces())
-            return new MessageFormat(getString("ERR_LocVariableClash")).format(
-                new Object[] {newName}
-            );
-        
-        TreePath temp = tp;
-        while (temp != null && temp.getLeaf().getKind() != Tree.Kind.METHOD) {
-            Scope scope = info.getTrees().getScope(temp);
-            for (Element el:scope.getLocalElements()) {
-                if (el.getSimpleName().toString().equals(newName)) {
-                    return new MessageFormat(getString("ERR_LocVariableClash")).format(
-                            new Object[] {newName}
-                    );
-                }
-            }
-            temp = temp.getParentPath();
         }
         return null;
     }
