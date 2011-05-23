@@ -66,6 +66,7 @@ import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
 
 /**
  * Register {@link MultiViewElement}s for given mime types.
@@ -86,7 +87,12 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         if (roundEnv.processingOver()) {
             return false;
         }
-        TypeMirror pane = processingEnv.getElementUtils().getTypeElement(CloneableEditorSupport.Pane.class.getCanonicalName()).asType();
+        TypeMirror pane = null;
+        TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(CloneableEditorSupport.Pane.class.getCanonicalName());
+        if(typeElement != null) {
+            pane = typeElement.asType();
+        }
+        
         for (Element e : roundEnv.getElementsAnnotatedWith(MultiViewElement.Registration.class)) {
             MultiViewElement.Registration mvr = e.getAnnotation(MultiViewElement.Registration.class);
             if (mvr.mimeType().length == 0) {
@@ -99,7 +105,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 fileBaseName += "-" + binAndMethodNames[1];
             }
             for (String type : mvr.mimeType()) {
-                LayerBuilder.File f = layer(e).file("Editors/" + type + '/' + fileBaseName + ".instance");
+                LayerBuilder.File f = layer(e).file("Editors/" + (type.equals("") ? "" : type + '/') + fileBaseName + ".instance");
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
                 f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
@@ -111,7 +117,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 if (binAndMethodNames[1] != null) {
                     f.stringvalue("method", binAndMethodNames[1]);
                 }
-                if (processingEnv.getTypeUtils().isAssignable(exprType[0], pane)) {
+                if (pane != null && processingEnv.getTypeUtils().isAssignable(exprType[0], pane)) {
                     f.boolvalue("sourceview", true);
                 }
                 f.write();
