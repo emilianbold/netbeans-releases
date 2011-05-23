@@ -546,12 +546,11 @@ public class Flow {
 
             beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
 
-            scan(node.getInitializer(), null);
             scan(node.getCondition(), null);
             scan(node.getStatement(), null);
             scan(node.getUpdate(), null);
 
-            variable2State = beforeLoop;
+            variable2State = mergeOr(beforeLoop, variable2State);
 
             return null;
         }
@@ -565,6 +564,8 @@ public class Flow {
 
             scan(node.getBlock(), null);
 
+            HashMap<VariableElement, State> afterBlockVariable2State = new HashMap<VariableElement, Flow.State>(variable2State);
+
             for (CatchTree ct : node.getCatches()) {
                 Map<VariableElement, State> variable2StateBeforeCatch = variable2State;
 
@@ -575,7 +576,11 @@ public class Flow {
                 variable2State = mergeOr(variable2StateBeforeCatch, variable2State);
             }
 
-            scan(node.getFinallyBlock(), null);
+            if (node.getFinallyBlock() != null) {
+                variable2State = mergeOr(mergeOr(oldVariable2State, variable2State), afterBlockVariable2State);
+
+                scan(node.getFinallyBlock(), null);
+            }
             
             return null;
         }
