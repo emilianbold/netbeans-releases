@@ -318,18 +318,21 @@ public abstract class InlineAbstractTransformer {
             }
         }
         ClassTree classBody = newClassTree.getClassBody();
-        List<Tree> newMembers = new ArrayList<Tree>(classBody.getMembers().size());
-        for (ExpressionTree expressionTree : newClassTree.getArguments()) {
-            if (expressionTree != null) {
-                if (expressionTree.equals(node)) {
-                    newMembers.add(replaceExpression(expressionTree));
-                } else {
-                    newMembers.add(replacesExpression(expressionTree, node));
+        ClassTree newClassBody = null;
+        if (classBody != null) {
+            List<Tree> newMembers = new ArrayList<Tree>(classBody.getMembers().size());
+            for (ExpressionTree expressionTree : newClassTree.getArguments()) {
+                if (expressionTree != null) {
+                    if (expressionTree.equals(node)) {
+                        newMembers.add(replaceExpression(expressionTree));
+                    } else {
+                        newMembers.add(replacesExpression(expressionTree, node));
+                    }
                 }
             }
+            newClassBody = make.Class(classBody.getModifiers(), classBody.getSimpleName(), classBody.getTypeParameters(), classBody.getExtendsClause(), classBody.getImplementsClause(), newMembers);
         }
-        ClassTree newClassBody = make.Class(classBody.getModifiers(), classBody.getSimpleName(), classBody.getTypeParameters(), classBody.getExtendsClause(), classBody.getImplementsClause(), newMembers);
-        return make.NewClass(enclosingExpression, (List<? extends ExpressionTree>)newClassTree.getTypeArguments(), newClassTree.getIdentifier(), newArguments, newClassBody);
+        return make.NewClass(enclosingExpression, (List<? extends ExpressionTree>) newClassTree.getTypeArguments(), newClassTree.getIdentifier(), newArguments, newClassBody);
     }
 
     protected ExpressionTree replaceExpression(ParenthesizedTree parenthesizedTree, ExpressionTree node) {
