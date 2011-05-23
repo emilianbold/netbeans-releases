@@ -76,16 +76,18 @@ class BreakpointsXMLCodec extends XMLDecoder implements XMLEncoder {
         final List<? extends BreakpointType> breakpointTypes =
                 DebuggerManager.getDebuggerManager().lookup(null, BreakpointType.class);
 	if (breakpointTypes != null) {
-	    for (int btx = 0; btx < breakpointTypes.size(); btx++) {
-		BreakpointType bt = breakpointTypes.get(btx);
+	    for (BreakpointType bt : breakpointTypes) {
 		String category = bt.getCategoryDisplayName();
-		if (! NativeBreakpointType.isOurs(category))
+		if (!NativeBreakpointType.isOurs(category))
 		    continue;
                 // can not check with instance of, because manager uses lazy class objects
                 // not our real registered NativeBreakpointTypes
 //		if (! (bt instanceof NativeBreakpointType))
 //		    continue;
-		types.put(bt.getTypeDisplayName(), bt);
+		types.put(((NativeBreakpointType)bt).id(), bt);
+                
+                // for compatibility with old localized style
+                types.put(bt.getTypeDisplayName(), bt);
 	    }
 	}
     } 
