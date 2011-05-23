@@ -166,7 +166,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         openAction.perform(formnode);
 
         FormDesignerOperator designer = new FormDesignerOperator(CLASS_NAME);
-
+        
         // new class package
         findInCode("package data.subdata;", designer);
     }

@@ -302,7 +302,7 @@ class BreakpointXMLCodec extends XMLDecoder implements XMLEncoder {
     public void encode(XMLEncoderStream xes) {
 	bpt.prepareForSaving();
 
-	String type = bpt.getBreakpointType().getTypeDisplayName();
+	String type = bpt.getBreakpointType().id();
 	String timestampStr = Long.toString(bpt.timestamp().getTime());
 
 	AttrValuePair breakpointAttrs[] = new AttrValuePair[] {
