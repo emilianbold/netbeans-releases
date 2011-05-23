@@ -62,7 +62,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.netbeans.modules.profiler.stp.DefaultSettingsConfigurator;

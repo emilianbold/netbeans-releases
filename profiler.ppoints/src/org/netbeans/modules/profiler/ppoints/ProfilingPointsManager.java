@@ -53,12 +53,10 @@ import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
 import org.netbeans.lib.profiler.common.event.ProfilingStateListener;
 import org.netbeans.lib.profiler.global.CommonConstants;
-// FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
-// FIXXX import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsWindow;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityListener;
-// FIXXX import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -358,12 +356,10 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     public List<ProfilingPoint> getCompatibleProfilingPoints(Project project, ProfilingSettings profilingSettings, boolean sorted) {
-// FIXXX 
-//        List<ProfilingPoint> projectProfilingPoints = sorted ? getSortedProfilingPoints(project, 1, false)
-//                                                             : getProfilingPoints(project, ProfilerIDESettings.
-//                                                               getInstance().getIncludeProfilingPointsDependencies(), false); // TODO: define default sorting (current sorting of Profiling Points window?)
+ 
         List<ProfilingPoint> projectProfilingPoints = sorted ? getSortedProfilingPoints(project, 1, false)
-                                                             : getProfilingPoints(project, true, false); // TODO: define default sorting (current sorting of Profiling Points window?)
+                                                             : getProfilingPoints(project, ProfilerIDESettings.
+                                                               getInstance().getIncludeProfilingPointsDependencies(), false); // TODO: define default sorting (current sorting of Profiling Points window?)
         List<ProfilingPoint> compatibleProfilingPoints = new ArrayList();
 
         for (ProfilingPoint profilingPoint : projectProfilingPoints) {
@@ -444,10 +440,8 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     public List<ProfilingPoint> getSortedProfilingPoints(Project project, int sortBy, boolean sortOrder) {
-// FIXXX
-//        List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, ProfilerIDESettings.getInstance().
-//                                                                        getIncludeProfilingPointsDependencies(), false);
-        List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, true, false);
+        List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, ProfilerIDESettings.getInstance().
+                                                                        getIncludeProfilingPointsDependencies(), false);
         Collections.sort(sortedProfilingPoints, new ProfilingPointsComparator(sortBy, sortOrder));
 
         return sortedProfilingPoints;

@@ -52,7 +52,7 @@ import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.table.ExtendedTableModel;
 import org.netbeans.lib.profiler.ui.components.table.JExtendedTablePanel;
 import org.netbeans.lib.profiler.ui.components.table.SortableTableModel;
-// FIXXX import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
@@ -690,11 +690,11 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         dependenciesCheckbox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, INCL_SUBPROJ_CHECKBOX_TEXT);
-// FIXXX        dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
+        dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
         toolbar.add(dependenciesCheckbox);
         dependenciesCheckbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-// FIXXX                    ProfilerIDESettings.getInstance().setIncludeProfilingPointsDependencies(dependenciesCheckbox.isSelected());
+                    ProfilerIDESettings.getInstance().setIncludeProfilingPointsDependencies(dependenciesCheckbox.isSelected());
                     refreshProfilingPoints();
                 }
             });
