@@ -87,6 +87,8 @@ public class ContextActionInjectTest extends NbTestCase {
     }
 
     public void testContextAction() throws Exception {
+        Context.cnt = 0;
+        
         FileObject fo = FileUtil.getConfigFile(
             "actions/support/test/testInjectContext.instance"
         );
@@ -109,6 +111,36 @@ public class ContextActionInjectTest extends NbTestCase {
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Global Action stays same", 10, Context.cnt);
     }
+    
+    private static final InstanceContent contextI = new InstanceContent();
+    private static final Lookup context = new AbstractLookup(contextI);
+    public static Lookup context() {
+        return context;
+    }
+    
+    public void testOwnContextAction() throws Exception {
+        MultiContext.cnt = 0;
+        
+        FileObject fo = FileUtil.getConfigFile(
+            "actions/support/test/testOwnContext.instance"
+        );
+        assertNotNull("File found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Attribute present", obj);
+        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
+        ContextAwareAction a = (ContextAwareAction)obj;
+
+        InstanceContent ic = contextI;
+        ic.add(10);
+
+        assertEquals("Number lover!", a.getValue(Action.NAME));
+        a.actionPerformed(new ActionEvent(this, 300, ""));
+        assertEquals("Global Action not called", 10, MultiContext.cnt);
+
+        ic.remove(10);
+        a.actionPerformed(new ActionEvent(this, 200, ""));
+        assertEquals("Global Action stays same", 10, MultiContext.cnt);
+    }
 
     public static final class MultiContext implements ActionListener {
         private final List<Number> context;
@@ -128,6 +160,8 @@ public class ContextActionInjectTest extends NbTestCase {
     }
 
     public void testMultiContextAction() throws Exception {
+        MultiContext.cnt = 0;
+        
         FileObject fo = FileUtil.getConfigFile(
             "actions/support/test/testInjectContextMulti.instance"
         );

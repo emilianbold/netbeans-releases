@@ -48,8 +48,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
-
 //@BreakpointType.Registration(displayName="#LBL_LineFile")
+// Registered in META-INF! 
+// in case we register using Registration it will create ContextAware instance!
 public final class LineBreakpointType extends NativeBreakpointType {
 
     public LineBreakpointType() {
@@ -77,5 +78,10 @@ public final class LineBreakpointType extends NativeBreakpointType {
 	    return new LineBreakpointPanel();
 	else
 	    return new LineBreakpointPanel(editable);
+    }
+    
+    @Override
+    public String id() {
+        return "Line"; //NOI18N
     }
 }

@@ -338,16 +338,20 @@ public final class BreakpointBag {
 	    debugger().bm().postDeleteAllHandlers();
     }
 
-    private static final String moduleFolderName = "DbxGui";	// NOI18N
-    private static final String folderName = "DbxDebugBreakpoints";// NOI18N
+    /*package*/ static final String moduleFolderName = "DbxGui";	// NOI18N
+    /*package*/ static final String folderName = "DbxDebugBreakpoints";// NOI18N
     private static final String filename = "Breakpoints";	// NOI18N
 
     private static final UserdirFile userdirFile =
 	new UserdirFile(moduleFolderName, folderName, filename);
-
+    
     public void restore() {
+        doRestore(userdirFile, this);
+    }
+
+    static void doRestore(UserdirFile userdirFile, BreakpointBag bb) {
 	// DEBUG System.out.println("Restoring breakpoints...");
-	BreakpointXMLReader xr = new BreakpointXMLReader(userdirFile, this);
+	BreakpointXMLReader xr = new BreakpointXMLReader(userdirFile, bb);
 	try {
 	    xr.read();
 	} catch(Exception e) {
@@ -356,11 +360,11 @@ public final class BreakpointBag {
 
 	if (DebuggerManager.isPerTargetBpts()) {
 	    // In case we had an old Breakpoints.xml with global bpts.
-	    cleanupBpts();
+	    bb.cleanupBpts();
 	}
 
 	// DEBUG System.out.println("Done.");
-	breakpointUpdater().treeChanged();	// causes a pull
+	bb.breakpointUpdater().treeChanged();	// causes a pull
     }
 
     private boolean isDirty() {
@@ -380,17 +384,21 @@ public final class BreakpointBag {
 	    b.clearDirty();
 	}
     }
-
+    
     public void save() {
+        doSave(userdirFile, this);
+    }
+
+    static void doSave(UserdirFile userdirFile, BreakpointBag bb) {
 	// DEBUG System.out.println("Saving breakpoints...");
 
-	if (!isDirty())
+	if (!bb.isDirty())
 	    return;
 
-	BreakpointXMLWriter xw = new BreakpointXMLWriter(userdirFile, this);
+	BreakpointXMLWriter xw = new BreakpointXMLWriter(userdirFile, bb);
 	try {
 	    xw.write();
-	    clearDirty();
+	    bb.clearDirty();
 	} catch(Exception e) {
 	    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
 	}
