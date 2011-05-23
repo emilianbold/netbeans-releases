@@ -281,6 +281,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 g.setColor(GridDesigner.SELECTION_COLOR);
                 g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
             }
+            paintConstraints(g);
             paintSelection(g);
         }
         if (animation && (animPhase == 1f)) {
@@ -391,6 +392,24 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             header.setSize(headerWidth, h);
             header.paint(gg);
             gg.dispose();
+        }
+    }
+
+    /**
+     * Paints additional information about component constraints.
+     * 
+     * @param g graphics to use for painting.
+     */
+    private void paintConstraints(Graphics g) {
+        Point shift = fromComponentPane(new Point());
+        Graphics gg = g.create();
+        gg.translate(shift.x, shift.y);
+        for (Component comp : componentPane.getComponents()) {
+            if (GridUtils.isPaddingComponent(comp)) {
+                continue;
+            }
+            boolean selected = selection.contains(comp);
+            gridInfo.paintConstraints(gg, comp, selected);
         }
     }
 

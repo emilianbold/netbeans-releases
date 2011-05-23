@@ -121,7 +121,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private Image resizeHandle;
 
     private DropTarget dropTarget;
-    private NewComponentDropListener dropListener;
+    private DropTargetListener dropListener;
     
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
@@ -180,6 +180,16 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     //expose the drop listener so the MenuEditLayer can access it
     public DropTargetListener getNewComponentDropListener() {
         return dropListener;
+    }
+
+    // allow a wrapper listener if anybody needs to augment the incoming data
+    public void setNewComponentDropListener(DropTargetListener l) {
+        dropTarget.removeDropTargetListener(dropListener);
+        dropListener = l;
+        try {
+            dropTarget.addDropTargetListener(dropListener);                                        
+        } catch (TooManyListenersException ex) {
+        }
     }
 
     void setViewOnly(boolean viewOnly) {
