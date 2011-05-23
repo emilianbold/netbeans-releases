@@ -46,7 +46,7 @@ package org.netbeans.modules.profiler.options.ui;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.openide.util.NbBundle;
 import java.awt.*;
