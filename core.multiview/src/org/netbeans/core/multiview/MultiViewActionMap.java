@@ -98,9 +98,13 @@ final class MultiViewActionMap extends ActionMap {
                     preventRecursive = false;
                     return null;
                 }
+                Action a;
                 preventRecursive = true;
-                Action a = m.get (key);
-                preventRecursive = false;
+                try {
+                    a = m.get (key);
+                } finally {
+                    preventRecursive = false;
+                }
                 if (a != null) {
                     return a;
                 }
@@ -113,6 +117,9 @@ final class MultiViewActionMap extends ActionMap {
             if (found == null && (owner instanceof JComponent)) {
                 m = ((JComponent)owner).getActionMap ();
                 if (m != null) {
+                    if( m instanceof MultiViewActionMap && ((MultiViewActionMap)m).preventRecursive ) {
+                        break;
+                    }
                     found = m.get (key);
                 }
             }

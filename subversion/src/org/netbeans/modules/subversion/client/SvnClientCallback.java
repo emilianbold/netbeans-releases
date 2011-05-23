@@ -173,10 +173,6 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
         return sshPort;
     }
 
-    protected void setSSHPort (int sshPort) {
-        this.sshPort = sshPort;
-    }
-
     @Override
     public String getSSLClientCertPassword() {
         String pwd = getCertPassword();
@@ -231,6 +227,10 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
                 password = rc.getPassword();
                 certFilePath = rc.getCertFile();
                 certPassword = rc.getCertPassword();
+                sshPort = rc.getSshPortNumber();
+                if (sshPort <= 0) {
+                    sshPort = 22;
+                }
             }
         }
     }

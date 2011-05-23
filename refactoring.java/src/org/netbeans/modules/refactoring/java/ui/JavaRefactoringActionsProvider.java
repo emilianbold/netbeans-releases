@@ -631,6 +631,80 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
     }
     
+    @Override
+    public boolean canInline(Lookup lookup) {
+        Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node node = nodes.iterator().next();
+        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
+        }
+        DataObject dObj = node.getCookie(DataObject.class);
+        if (null == dObj) {
+            return false;
+        }
+        FileObject fileObj = dObj.getPrimaryFile();
+        if (null == fileObj || !RetoucheUtils.isRefactorable(fileObj)) {
+            return false;
+        }
+
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void doInline(Lookup lookup) {
+        Runnable task;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) { // From Editor
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, int startOffset, int endOffset, CompilationInfo info) {
+                    return new InlineRefactoringUI(selectedElement, info);
+                }
+            };
+        } else if (RefactoringActionsProvider.nodeHandle(lookup)) { // From Navigator
+            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo info) {
+                    ui = new InlineRefactoringUI(handle, info);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+            };
+        } else { // From Projects / Files
+            task = new NodeToFileObjectTask(Collections.singleton(lookup.lookup(Node.class))) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo info) {
+                    TreePathHandle tph = handles.iterator().next();
+                    ui = new InlineRefactoringUI(tph, info);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+            };
+        }
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
+    }
+    
     protected RefactoringUI wrap(RefactoringUI orig) {
         return orig;
     }

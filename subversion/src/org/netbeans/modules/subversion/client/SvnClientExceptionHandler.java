@@ -78,6 +78,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
@@ -111,8 +112,8 @@ public class SvnClientExceptionHandler {
     
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
-    private final boolean commandLine;
     private String methodName;
+    private final ConnectionType connectionType;
     
     private class CertificateFailure {
         int mask;
@@ -160,14 +161,14 @@ public class SvnClientExceptionHandler {
             
     static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser");
     
-    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions, boolean commandLine) {
+    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions, SvnClientFactory.ConnectionType connectionType) {
         this.exception = exception;                
         this.adapter = adapter;
         this.client = client;
         this.desc = desc;
         this.handledExceptions = handledExceptions;
         exceptionMask = getMask(exception.getMessage());
-        this.commandLine = commandLine;
+        this.connectionType = connectionType;
     }      
 
     public boolean handleException() throws SVNClientException {
@@ -195,7 +196,7 @@ public class SvnClientExceptionHandler {
         char[] password = pa.getPassword();
         
         adapter.setUsername(user != null ? user : "");
-        if (commandLine) {
+        if (connectionType != ConnectionType.javahl) {
             adapter.setPassword(password != null ? new String(password) : "");
         }
 
@@ -242,8 +243,8 @@ public class SvnClientExceptionHandler {
                 char[] password = rc.getPassword();
 
                 adapter.setUsername(username);
-                if (commandLine && password != null) {
-                    adapter.setPassword(new String(password));
+                if (connectionType != ConnectionType.javahl) {
+                    adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
                 }
                 SvnModuleConfig.getDefault().insertRecentUrl(rc);
             }
@@ -675,6 +676,7 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();       
         return msg.indexOf("host not found") > -1 ||                                        // NOI18N
                msg.indexOf("could not connect to server") > -1 ||                           // NOI18N
+               msg.contains("cannot connect to") && msg.contains("there was a problem while connecting to") || // NOI18N
                msg.indexOf("could not resolve hostname") > -1;                              // NOI18N
     }
     
