@@ -46,6 +46,7 @@ package org.netbeans.core;
 
 import java.awt.Dimension;
 import java.beans.BeanInfo;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.BorderFactory;
@@ -61,11 +62,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
+import org.netbeans.api.actions.Savable;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.SaveCookie;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -97,7 +97,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         setLayout (new java.awt.BorderLayout ());
 
         listModel = new DefaultListModel();
-        for (DataObject obj : DataObject.getRegistry().getModifiedSet()) {
+        for (Savable obj : Savable.REGISTRY.lookupAll(Savable.class)) {
             listModel.addElement(obj);
         }
         draw ();
@@ -161,7 +161,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         int index = 0;	// index of last removed item
 
         for (i = 0; i < count; i++) {
-            DataObject nextObject = (DataObject)array[i];
+            Savable nextObject = (Savable)array[i];
             index = listModel.indexOf(nextObject);
             save(nextObject);
         }
@@ -181,14 +181,13 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     /** Tries to save given data object using its save cookie.
      * Notifies user if excetions appear.
      */
-    private void save (DataObject dataObject) {
+    private void save (Savable sc) {
         try {
-            SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
             if (sc != null) {
                 sc.save();
             }
             // only remove the object if the save succeeded
-            listModel.removeElement(dataObject);
+            listModel.removeElement(sc);
         } catch (java.io.IOException exc) {
             Throwable t = exc;
             if (Exceptions.findLocalizedMessage(exc) == null) {
@@ -205,11 +204,11 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         // XXX(-ttran) result must be set before calling setVisible(false)
         // because this will unblock the thread which called Dialog.show()
         
-        for (int i = listModel.size() - 1; i >= 0; i--) {            
+/*        for (int i = listModel.size() - 1; i >= 0; i--) {            
             DataObject obj = (DataObject) listModel.getElementAt(i);
             obj.setModified(false);
         }
-
+*/
         result = true;
         exitDialog.setVisible (false);
         exitDialog.dispose();
@@ -226,7 +225,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
      * Opens the ExitDialog.
      */
     private static boolean innerShowDialog() {
-        Set<DataObject> set = DataObject.getRegistry().getModifiedSet();
+        Collection<? extends Savable> set = Savable.REGISTRY.lookupAll(Savable.class);
         if (!set.isEmpty()) {
 
             // XXX(-ttran) caching this dialog is fatal.  If the user
@@ -306,25 +305,13 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 boolean isSelected,      // is the cell selected
                 boolean cellHasFocus)    // the list and the cell have the focus
         {
-            final DataObject obj = (DataObject)value;
-            if (!obj.isValid()) {
-                // #17059: it might be invalid already.
-                // #18886: but if so, remove it later, otherwise BasicListUI gets confused.
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        listModel.removeElement(obj);
-                    }
-                });
-                setText("");
-                return this;
+            final Savable obj = (Savable)value;
+
+            if (obj instanceof Icon) {
+                super.setIcon((Icon)obj);
             }
-
-            Node node = obj.getNodeDelegate();
-
-            Icon icon = ImageUtilities.image2Icon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
-            super.setIcon(icon);
-
-            setText(node.getDisplayName());
+            
+            setText(obj.toString());
             if (isSelected){
                 this.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
                 this.setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
