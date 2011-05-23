@@ -358,7 +358,7 @@ public class TreeModelHyperNode extends TreeModelNode {
 
         public class HyperRefreshingInfo extends RefreshingInfo {
 
-            private final Set<Models.CompoundModel> models;
+            private Set<Models.CompoundModel> models;
 
             public HyperRefreshingInfo(RefreshingInfo ri, Set<Models.CompoundModel> models) {
                 super(ri.refreshSubNodes);
@@ -368,7 +368,13 @@ public class TreeModelHyperNode extends TreeModelNode {
             @Override
             public RefreshingInfo mergeWith(RefreshingInfo rinfo) {
                 if (rinfo instanceof HyperRefreshingInfo) {
-                    this.models.addAll(((HyperRefreshingInfo) rinfo).models);
+                    try {
+                        this.models.addAll(((HyperRefreshingInfo) rinfo).models);
+                    } catch (UnsupportedOperationException uoex) {
+                        // add not supported, probably a non-modifiable set
+                        this.models = new HashSet<CompoundModel>(models);
+                        this.models.addAll(((HyperRefreshingInfo) rinfo).models);
+                    }
                 }
                 this.refreshSubNodes = this.refreshSubNodes || rinfo.refreshSubNodes;
                 return this;
