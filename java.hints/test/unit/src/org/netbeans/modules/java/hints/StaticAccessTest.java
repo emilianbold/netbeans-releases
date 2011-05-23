@@ -233,6 +233,33 @@ public class StaticAccessTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", code);
     }
+
+    public void testInterface198646() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run(A a) {\n" +
+            "int i = a.I|II;\n" +
+            "}\n" +
+            "}\n" +
+            "interface A {\n" +
+            "    public static final int III = 0;\n" +
+            "}";
+
+        performAnalysisTest("test/Test.java", code, "2:10-2:13:verifier:AS0III");
+    }
+
+    public void testEnum198646() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run(A a) {\n" +
+            "int i = a.I|II;\n" +
+            "}\n" +
+            "}\n" +
+            "enum A {\n" +
+            "    A;\n" +
+            "    public static final int III = 0;\n" +
+            "}";
+
+        performAnalysisTest("test/Test.java", code, "2:10-2:13:verifier:AS0III");
+    }
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
