@@ -383,9 +383,11 @@ public class AstRenderer {
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                         return true;
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-                        CsmType type = TypeFactory.createType(child, file, null, 0);
-                        if (type != null && type.getClassifier().isValid()) {
-                            return true;
+                        if (!isAbstractDeclarator(child.getNextSibling())) {
+                            CsmType type = TypeFactory.createType(child, file, null, 0);
+                            if (type != null && type.getClassifier().isValid()) {
+                                return true;
+                            }
                         }
                     } else {
                         return false;
@@ -507,6 +509,9 @@ public class AstRenderer {
             return false;
         }
         node = node.getNextSibling();
+        if(node != null && node.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            node = node.getNextSibling();
+        }
         if(node == null || node.getType() != CPPTokenTypes.RPAREN) {
             return false;
         }
