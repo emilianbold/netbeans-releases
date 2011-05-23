@@ -150,7 +150,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         }
     }
 
-    void detachAnnotation(StyledDocument doc) {
+    synchronized void detachAnnotation(StyledDocument doc) {
         if (attached) {
             attached = false;
             NbDocument.removeAnnotation(doc, this);
