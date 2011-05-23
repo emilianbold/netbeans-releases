@@ -28,6 +28,7 @@ import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -115,13 +116,13 @@ public class SvnConfigFilesTest extends NbTestCase {
         SVNUrl url = new SVNUrl("https://feher.lo.nem.lo.com/kuon");
         RepositoryConnection rc = new RepositoryConnection(
                 url.toString(),
-                "usr", "psswd".toCharArray(), null, false, "/cert/file", "pssphrs".toCharArray());
+                "usr", "psswd".toCharArray(), null, false, "/cert/file", "pssphrs".toCharArray(), -1);
 
         SvnModuleConfig.getDefault().insertRecentUrl(rc);
         String path = "/tmp" + File.separator + "svn" + File.separator + "config" + System.currentTimeMillis();
         System.setProperty("netbeans.t9y.svn.nb.config.path", path);
         SvnConfigFiles scf = SvnConfigFiles.getInstance();
-        scf.storeSvnServersSettings(url);
+        scf.storeSvnServersSettings(url, ConnectionType.cli);
 
         File serversFile = new File(path + "/servers");
         long lastMod = serversFile.lastModified();
@@ -133,16 +134,16 @@ public class SvnConfigFilesTest extends NbTestCase {
         assertEquals("pssphrs", s.get("ssl-client-cert-password"));
 
         // nothing was changed ...
-        scf.storeSvnServersSettings(url);
+        scf.storeSvnServersSettings(url, ConnectionType.cli);
         // ... the file so also the file musn't change
         assertEquals(lastMod, serversFile.lastModified());
 
         // lets change the credentials ...
         rc = new RepositoryConnection(
                 url.toString(),
-                "usr", "psswd".toCharArray(), null, false, "/cert/file2", "pssphrs2".toCharArray());
+                "usr", "psswd".toCharArray(), null, false, "/cert/file2", "pssphrs2".toCharArray(), -1);
         SvnModuleConfig.getDefault().insertRecentUrl(rc);
-        scf.storeSvnServersSettings(url);
+        scf.storeSvnServersSettings(url, ConnectionType.cli);
         s = getSection(serversFile);
         // values were written
         assertNotNull(s);
@@ -154,10 +155,10 @@ public class SvnConfigFilesTest extends NbTestCase {
         url = url.appendPath("whatever");
         rc = new RepositoryConnection(
                 url.toString(),
-                "usr", "psswd".toCharArray(), null, false, "/cert/file3", "pssphrs3".toCharArray());
+                "usr", "psswd".toCharArray(), null, false, "/cert/file3", "pssphrs3".toCharArray(), -1);
         SvnModuleConfig.getDefault().insertRecentUrl(rc);
         lastMod = serversFile.lastModified();
-        scf.storeSvnServersSettings(url);
+        scf.storeSvnServersSettings(url, ConnectionType.cli);
         s = getSection(serversFile);
         // values were written
         assertNotNull(s);
@@ -228,7 +229,7 @@ public class SvnConfigFilesTest extends NbTestCase {
                 
         SvnConfigFiles scf = SvnConfigFiles.getInstance();
         try {
-            scf.storeSvnServersSettings(new SVNUrl("http://peterp.czech.sun.com/svn"));
+            scf.storeSvnServersSettings(new SVNUrl("http://peterp.czech.sun.com/svn"), ConnectionType.cli);
         } catch (MalformedURLException me) {
         }
 

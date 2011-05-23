@@ -92,7 +92,6 @@ public class SvnKitClientCallback extends SvnClientCallback {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "promptSSH for {0}, {1} [{2}]", new Object[] { realm, username, sshPort }); //NOI18N
         }
-        setSSHPort(sshPort);
         return promptedSSH = !promptedSSH;
     }
 
