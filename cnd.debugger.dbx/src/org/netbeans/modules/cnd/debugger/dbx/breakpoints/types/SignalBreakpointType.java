@@ -70,4 +70,9 @@ public class SignalBreakpointType extends NativeBreakpointType {
 	else
 	    return new SignalBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Signal"; //NOI18N
+    }
 }

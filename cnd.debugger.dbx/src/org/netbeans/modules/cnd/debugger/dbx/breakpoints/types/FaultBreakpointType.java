@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.debugger.dbx.breakpoints.types;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
-import org.netbeans.spi.debugger.ui.BreakpointType;
 
 //@BreakpointType.Registration(displayName="#LBL_Fault")
 public class FaultBreakpointType extends NativeBreakpointType {
@@ -70,5 +69,10 @@ public class FaultBreakpointType extends NativeBreakpointType {
 	    return new FaultBreakpointPanel();
 	else
 	    return new FaultBreakpointPanel(editable);
+    }
+    
+    @Override
+    public String id() {
+        return "Fault"; //NOI18N
     }
 }

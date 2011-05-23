@@ -70,4 +70,9 @@ public class ExceptionBreakpointType extends NativeBreakpointType {
 	else
 	    return new ExceptionBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Exception"; //NOI18N
+    }
 }

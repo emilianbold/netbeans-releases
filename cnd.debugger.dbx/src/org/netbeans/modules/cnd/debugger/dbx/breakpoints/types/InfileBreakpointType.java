@@ -70,4 +70,9 @@ public class InfileBreakpointType extends NativeBreakpointType {
 	else
 	    return new InfileBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Infile"; //NOI18N
+    }
 }

@@ -70,4 +70,9 @@ public class SysCallBreakpointType extends NativeBreakpointType {
 	else
 	    return new SysCallBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "SysCall"; //NOI18N
+    }
 }

@@ -70,4 +70,9 @@ public class LoadObjBreakpointType extends NativeBreakpointType {
 	else
 	    return new LoadObjBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "LoadObj"; //NOI18N
+    }
 }

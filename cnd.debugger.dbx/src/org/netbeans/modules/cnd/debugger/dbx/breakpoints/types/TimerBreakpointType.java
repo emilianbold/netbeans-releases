@@ -70,4 +70,9 @@ public class TimerBreakpointType extends NativeBreakpointType {
 	else
 	    return new TimerBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Timer"; //NOI18N
+    }
 }

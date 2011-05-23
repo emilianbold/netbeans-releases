@@ -70,4 +70,9 @@ public class VariableBreakpointType extends NativeBreakpointType {
 	else
 	    return new VariableBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Variable"; //NOI18N
+    }
 }

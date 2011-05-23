@@ -70,4 +70,9 @@ public class ObjectBreakpointType extends NativeBreakpointType {
 	else
 	    return new ObjectBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Object"; //NOI18N
+    }
 }

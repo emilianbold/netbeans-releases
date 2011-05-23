@@ -70,4 +70,9 @@ public class ClassMethodBreakpointType extends NativeBreakpointType {
 	else
 	    return new ClassMethodBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "ClassMethod"; //NOI18N
+    }
 }

@@ -70,4 +70,9 @@ public class AccessBreakpointType extends NativeBreakpointType {
 	else
 	    return new AccessBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Access"; //NOI18N
+    }
 }

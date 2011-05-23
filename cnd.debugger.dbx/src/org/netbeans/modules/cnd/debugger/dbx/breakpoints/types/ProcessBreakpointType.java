@@ -70,4 +70,9 @@ public class ProcessBreakpointType extends NativeBreakpointType {
 	else
 	    return new ProcessBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Process"; //NOI18N
+    }
 }
