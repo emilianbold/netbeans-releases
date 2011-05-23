@@ -178,9 +178,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     // hard-code various peoples favorite targets
     }
     
+    private static volatile boolean initialized = false;
+    
     private final static class LazyInitializer {
         private static final DebuggerManager singleton;
         static {
+            initialized = true;
             singleton = new DebuggerManager();
             
             // Initialize DebuggerManager
@@ -194,7 +197,14 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public static DebuggerManager get() {
         return LazyInitializer.singleton;
     }
-
+    
+    public static void close() {
+        if (initialized) {
+            get().shutDown();
+            get().saveGlobalState();
+        }
+    }
+    
     /**
      * Return whether we're using the Start or the Load/Run model.
      */
