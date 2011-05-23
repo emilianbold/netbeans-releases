@@ -341,7 +341,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
                     processOpenedProjectsChanged(); // will subsequently invoke projectOpened on all open projects
-// FIXXX                     NetBeansProfiler.getDefaultNB().addProfilingStateListener(ProfilingPointsManager.this);
+                    Profiler.getDefault().addProfilingStateListener(ProfilingPointsManager.this);
                     OpenProjects.getDefault().addPropertyChangeListener(ProfilingPointsManager.this);
                 }
             });

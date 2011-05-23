@@ -50,6 +50,8 @@ import org.netbeans.lib.profiler.results.DataManagerListener;
 // FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.lib.profiler.client.MonitoredData;
+import org.netbeans.lib.profiler.common.Profiler;
 
 
 /**
@@ -131,7 +133,7 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     private void init() {
 // FIXXX 
 //        profiledProject = NetBeansProfiler.getDefaultNB().getProfiledProject();
-//        profilingSettings = NetBeansProfiler.getDefaultNB().getLastProfilingSettings();
+//        profilingSettings = Profiler.getDefault().getLastProfilingSettings();
 //
 //        if ((profiledProject != null) && profilingSettings.useProfilingPoints()) {
 //            gpp = ProfilingPointsManager.getDefault().createGlobalProfilingConfiguration(profiledProject, profilingSettings);
@@ -143,32 +145,31 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     }
 
     private void initListeners() {
-// FIXXX         NetBeansProfiler.getDefaultNB().getVMTelemetryManager().addDataListener(this);
+        Profiler.getDefault().getVMTelemetryManager().addDataListener(this);
     }
 
     private void processTelemetryEvent() {
-// FIXXX 
-//        MonitoredData data = NetBeansProfiler.getDefaultNB().getVMTelemetryManager().getLastData();
-//
-//        if (data != null) {
-//            // ----------------------
-//            // Actually this is being called periodically each 1.2 sec from ProfilingMonitor, can be also used as a timer for timed Profiling Points
-//            // If no MonitoredData available, also other data most likely won't be available => that's why calling it here
-//            processTimeEvent();
-//
-//            // ----------------------
-//            long currentMaxHeap = NetBeansProfiler.getDefaultNB().getVMTelemetryManager().maxHeapSize;
-//            currentHeapSize = data.getTotalMemory();
-//
-//            long currentUsedHeap = currentHeapSize - data.getFreeMemory();
-//            currentHeapUsage = (long) Math.round(((double) currentUsedHeap / (double) currentMaxHeap) * 100);
-//            currentSurvGen = data.getNSurvivingGenerations();
-//            currentLoadedClasses = data.getLoadedClassesCount();
-//
-//            processTriggeredProfilingPoints();
-//        } else {
-//            // no telemetry data available yet
-//        }
+        MonitoredData data = Profiler.getDefault().getVMTelemetryManager().getLastData();
+
+        if (data != null) {
+            // ----------------------
+            // Actually this is being called periodically each 1.2 sec from ProfilingMonitor, can be also used as a timer for timed Profiling Points
+            // If no MonitoredData available, also other data most likely won't be available => that's why calling it here
+            processTimeEvent();
+
+            // ----------------------
+            long currentMaxHeap = Profiler.getDefault().getVMTelemetryManager().maxHeapSize;
+            currentHeapSize = data.getTotalMemory();
+
+            long currentUsedHeap = currentHeapSize - data.getFreeMemory();
+            currentHeapUsage = (long) Math.round(((double) currentUsedHeap / (double) currentMaxHeap) * 100);
+            currentSurvGen = data.getNSurvivingGenerations();
+            currentLoadedClasses = data.getLoadedClassesCount();
+
+            processTriggeredProfilingPoints();
+        } else {
+            // no telemetry data available yet
+        }
     }
 
     //// - Core functionality ----------------------------------------------------
@@ -262,7 +263,7 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     }
 
     private void resetListeners() {
-// FIXXX         NetBeansProfiler.getDefaultNB().getVMTelemetryManager().removeDataListener(this);
+        Profiler.getDefault().getVMTelemetryManager().removeDataListener(this);
     }
 
     private void scheduleProfilingPoint(GlobalProfilingPoint gpp) {
