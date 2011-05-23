@@ -77,7 +77,7 @@ public final class Specification {
     }
 
     /**
-     * Returns the name of the Java specification e.g. J2SE
+     * Returns the name of the Java specification, e.g. {@code j2se}
      * @return String
      */
     public final String getName () {
