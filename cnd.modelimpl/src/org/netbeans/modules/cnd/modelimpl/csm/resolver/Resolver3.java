@@ -91,6 +91,7 @@ public final class Resolver3 implements Resolver {
     private int currNamIdx;
     private int interestedKind;
     private boolean resolveInBaseClass;
+    private boolean isRendering;
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -639,7 +640,7 @@ public final class Resolver3 implements Resolver {
         currNamIdx = 0;
         this.interestedKind = interestedKind;
         if (FileImpl.isParsing()) {
-            return null;
+            isRendering = true;
         }
         if( nameTokens.length == 1 ) {
             result = resolveSimpleName(result, nameTokens[0], interestedKind);
@@ -681,7 +682,11 @@ public final class Resolver3 implements Resolver {
             }
         }
         if (result == null) {
-            gatherMaps(file, true, origOffset);
+            if (isRendering) {
+                gatherMaps(file, false, origOffset);
+            } else {
+                gatherMaps(file, true, origOffset);
+            }
             if (currLocalClassifier != null && needClassifiers()) {
                 result = currLocalClassifier;
             }
@@ -770,7 +775,11 @@ public final class Resolver3 implements Resolver {
             result = findNamespace(containingNS, fullName);
         }
         if (result == null && needClassifiers()) {
-            gatherMaps(file, true, origOffset);
+            if (isRendering) {
+                gatherMaps(file, false, origOffset);
+            } else {
+                gatherMaps(file, true, origOffset);
+            }
             if (currTypedef != null) {
                 CsmType type = currTypedef.getType();
                 if (type != null) {
