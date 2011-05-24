@@ -340,17 +340,20 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
     }
     
+    @Override
     public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
         RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem, "Unexpected file system class: " + fileSystem); // NOI18N
         ((RemoteFileSystem) fileSystem).getFactory().addFileChangeListener(path, listener);
         
     }
 
+    @Override
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path) {
         RemoteLogger.assertTrue(env.isRemote(), "Unexpected ExecutionEnvironment: should be remote"); // NOI18N
         RemoteFileSystemManager.getInstance().getFileSystem(env).getFactory().addFileChangeListener(path, listener);
     }    
 
+    @Override
     public boolean canExecute(FileObject fileObject) {
         RemoteLogger.assertTrue(fileObject instanceof RemoteFileObjectBase, "Unexpected file object class: " + fileObject); // NOI18N
         if (fileObject instanceof RemoteFileObjectBase) {
@@ -358,4 +361,9 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
         return false;
     }    
+    
+    @Override
+    public char getFileSeparatorChar(FileSystem fs) {
+        return '/';
+    }
 }
