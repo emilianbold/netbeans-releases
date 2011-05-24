@@ -112,7 +112,7 @@ public final class DeepReparsingUtils {
             }
         } else {
             if (scheduleParsing) {
-                ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getAbsolutePath()).getState(), ParserQueue.Position.HEAD);
+                ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -130,7 +130,7 @@ public final class DeepReparsingUtils {
                 coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
-                    ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getAbsolutePath()).getState(), ParserQueue.Position.HEAD);
+                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
                 }
             }
         }
@@ -326,7 +326,7 @@ public final class DeepReparsingUtils {
     private static void addToReparse(final ProjectBase project, final FileImpl parentImpl, final boolean invalidateCache) {
         project.invalidatePreprocState(parentImpl.getAbsolutePath());
         parentImpl.markReparseNeeded(invalidateCache);
-        ParserQueue.instance().add(parentImpl, project.getPreprocHandler(parentImpl.getAbsolutePath()).getState(), ParserQueue.Position.HEAD);
+        ParserQueue.instance().add(parentImpl, project.getPreprocHandlers(parentImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse " + parentImpl.getAbsolutePath()); // NOI18N
         }
