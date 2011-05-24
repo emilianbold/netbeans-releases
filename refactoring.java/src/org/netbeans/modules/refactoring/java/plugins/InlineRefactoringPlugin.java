@@ -303,6 +303,14 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 if (visitorMethod.usageCount <= 1) {
                     preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "WRN_InlineNotUsed")); //NOI18N
                 }
+                
+                // Method can not be polymorphic
+                Collection<ExecutableElement> overridenMethods = RetoucheUtils.getOverridenMethods((ExecutableElement) element, javac);
+                Collection<ExecutableElement> overridingMethods = RetoucheUtils.getOverridingMethods((ExecutableElement) element, javac);
+                if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
+                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodPolymorphic")); //NOI18N
+                    return preCheckProblem;
+                }
 
                 TreePath methodPath = javac.getTrees().getPath(element);
                 MethodTree methodTree = (MethodTree) methodPath.getLeaf();
@@ -336,13 +344,6 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 // Method can not be recursive
                 if (methodVisitor.isRecursive) {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodRecursion")); //NOI18N
-                    return preCheckProblem;
-                }
-                // Method can not be polymorphic
-                Collection<ExecutableElement> overridenMethods = RetoucheUtils.getOverridenMethods((ExecutableElement) element, javac);
-                Collection<ExecutableElement> overridingMethods = RetoucheUtils.getOverridingMethods((ExecutableElement) element, javac);
-                if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodPolymorphic")); //NOI18N
                     return preCheckProblem;
                 }
                 // Used accessors must not be local in public method

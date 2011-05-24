@@ -694,6 +694,25 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
         performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodNameClash"));
     }
+    
+    public void test198821() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A implements B{\n"
+                + "    public void printGreeting() {\n"
+                + "        System.out.println(\"Hello World\");\n"
+                + "    }\n"
+                + "    public void testMethod() {\n"
+                + "        if(true)\n"
+                + "            printGreeting();\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public interface B {\n"
+                + "    public void printGreeting();\n"
+                + "}"));
+        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodPolymorphic"));
+    }
 
     private void performInlineMethod(FileObject source, final int position, Problem... expectedProblems) throws Exception {
         final InlineRefactoring[] r = new InlineRefactoring[1];
