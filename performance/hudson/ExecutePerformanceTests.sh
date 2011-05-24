@@ -3,7 +3,7 @@ env
 #sanitize any orphaned JUnitTestRunners
 jps | grep JUnitTestRunner | cut -d' ' -f1 | xargs kill -9
 
-export ANT_OPTS=-Xmx768m
+export ANT_OPTS=-Xmx1024m
 export j2se_enabled=1
 export j2ee_enabled=1
 export languages_enabled=1
@@ -15,11 +15,7 @@ case $OSTYPE in
     export mobility_enabled=1
 esac
 
-cd "$WORKSPACE"/../../../../
-jobdir=`pwd`
-jobdir=`cygpath -m $jobdir`
-
-cd ..
+cd "$WORKSPACE"/../../../../../
 reposdir=`pwd`
 export reposdir=`cygpath -m $reposdir`
 
@@ -34,6 +30,8 @@ export platdefharness=`cygpath -m $platdefharness`
 
 performance=$project_root/performance
 export performance=`cygpath -m $performance`
+
+cp -f $performance/hudson/netbeans.conf $netbeans_dest/etc/
 
 # fix the permissions; they get reset after each hg pull ...
 chmod a+x $performance/hudson/*.sh

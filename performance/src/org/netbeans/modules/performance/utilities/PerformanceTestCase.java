@@ -945,6 +945,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             long result = end.getTimeMillis() - start.getTimeMillis();
             System.out.println("!*!*!Full tuples list for disgnostic purposes");
+                System.out.println("@@@@ Start tuple:"+start);
+                System.out.println("@@@@ End tuple:"+end);
                 for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
                     System.out.println(tuple);
                 }
