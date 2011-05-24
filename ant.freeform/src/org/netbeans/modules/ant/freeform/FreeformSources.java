@@ -49,9 +49,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -169,20 +171,20 @@ final class FreeformSources implements Sources, AntProjectListener {
     }
 
     private void updateFileListeners(final List<? extends File> newFiles) {       
-        synchronized (listenOnFiles) {            
-            for (final Iterator<Map.Entry<File,FileChangeListener>> it = listenOnFiles.entrySet().iterator();
-                 it.hasNext();) {
-                final Map.Entry<File,FileChangeListener> e = it.next();
-                FileUtil.removeFileChangeListener(e.getValue(), e.getKey());
-                it.remove();
+        synchronized (listenOnFiles) {
+            final Set<File> toRemove = new HashSet<File>(listenOnFiles.keySet());
+            toRemove.removeAll(newFiles);
+            final Set<File> toAdd = new HashSet<File>(newFiles);
+            toAdd.removeAll(listenOnFiles.keySet());
+            for (final File file : toRemove) {
+                final FileChangeListener fcl = listenOnFiles.remove(file);
+                FileUtil.removeFileChangeListener(fcl, file);
             }
 
-            for (File newFile : newFiles) {
-                if (!listenOnFiles.containsKey(newFile)) {
-                    final FileChangeListener wl = new WeakFileListener(this, newFile);
-                    listenOnFiles.put(newFile, wl);
-                    FileUtil.addFileChangeListener(wl,newFile);
-                }
+            for (File file : toAdd) {
+                final FileChangeListener wl = new WeakFileListener(this, file);
+                listenOnFiles.put(file, wl);
+                FileUtil.addFileChangeListener(wl, file);
             }
         }
     }
