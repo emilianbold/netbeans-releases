@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <description>SaveCookie extends Savable. To compile you need to include openide.awt on classpath.</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.openide.nodes" spec="7.21"/>
+                <module-dependency codenamebase="org.openide.nodes" spec="7.23"/>
             </trigger-dependency>
             <implies>
                 <result>
