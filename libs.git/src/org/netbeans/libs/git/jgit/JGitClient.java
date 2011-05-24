@@ -503,9 +503,9 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public GitRevertResult revert (String revision, ProgressMonitor monitor) throws MissingObjectException, GitException {
+    public GitRevertResult revert (String revision, String message, boolean commit, ProgressMonitor monitor) throws MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
-        RevertCommand cmd = new RevertCommand(repository, revision, monitor);
+        RevertCommand cmd = new RevertCommand(repository, revision, message, commit, monitor);
         cmd.execute();
         return cmd.getResult();
     }
