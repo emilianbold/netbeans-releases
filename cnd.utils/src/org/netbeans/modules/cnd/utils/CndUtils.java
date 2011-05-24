@@ -118,20 +118,32 @@ public class CndUtils {
     }
 
     public static void assertTrue(boolean value) {
-        if (isDebugMode()) {
-            assertTrue(value, "Assertion error"); //NOI18N
+        if (!value && isDebugMode()) {
+            severe("Assertion error"); //NOI18N
         }
     }
 
     public static void assertNotNull(Object object, String message) {
-        if (isDebugMode()) {
-            assertTrue(object != null, message); //NOI18N
+        if (object == null && isDebugMode()) {
+            severe(message);
+        }
+    }
+
+    public static void assertNotNull(Object object, CharSequence prefix, Object message) {
+        if (object == null && isDebugMode()) {
+            severe(prefix.toString() + message);
+        }
+    }
+
+    public static void assertNotNullInConsole(Object object, String message) {
+        if (object == null && isDebugMode()) {
+            info(message);
         }
     }
 
     public static void assertNull(Object object, String message) {
-        if (isDebugMode()) {
-            assertTrue(object == null, message); //NOI18N
+        if (object != null && isDebugMode()) {
+            severe(message);
         }
     }
 
@@ -146,8 +158,8 @@ public class CndUtils {
     }
 
     public static void assertFalse(boolean value) {
-       if ( isDebugMode()) {
-           assertTrue(!value, "Assertion error"); //NOI18N
+       if (value && isDebugMode()) {
+           severe("Assertion error"); //NOI18N
        }
    }
 
@@ -161,9 +173,31 @@ public class CndUtils {
         }
     }
 
-    public static void assertTrueInConsole(boolean value, String message) {
+    public static void assertTrue(boolean value, String prefix, Object message) {
         if (isDebugMode() && !value) {
+            LOG.log(Level.SEVERE, prefix + message, lastAssertion = new Exception(prefix + message));
+        }
+    }
+
+    private static void severe(String message) {
+        LOG.log(Level.SEVERE, message, lastAssertion = new Exception(message));
+    }
+
+    private static void info(String message) {
+        if (LOG.isLoggable(Level.INFO)) {
             LOG.log(Level.INFO, message, lastAssertion = new Exception(message));
+        }
+    }
+    
+    public static void assertTrueInConsole(boolean value, String message) {
+        if (isDebugMode() && !value && LOG.isLoggable(Level.INFO)) {
+            LOG.log(Level.INFO, message, lastAssertion = new Exception(message));
+        }
+    }
+
+    public static void assertTrueInConsole(boolean value, String prefix, Object message) {
+        if (isDebugMode() && !value && LOG.isLoggable(Level.INFO)) {
+            LOG.log(Level.INFO, prefix + message, lastAssertion = new Exception(prefix + message));
         }
     }
 

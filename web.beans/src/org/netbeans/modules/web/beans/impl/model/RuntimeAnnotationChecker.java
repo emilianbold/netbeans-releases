@@ -43,75 +43,43 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer;
 
 
 /**
  * @author ads
  *
  */
-public abstract class RuntimeAnnotationChecker {
+public abstract class RuntimeAnnotationChecker extends TargetAnalyzer {
     
     protected static final String VALUE = "value";                // NOI18N
-
-    public void init( TypeElement element, AnnotationModelHelper helper ) {
-        myHelper = helper;
-        myElement = element;
-    }
     
+    public void init( TypeElement element, AnnotationModelHelper helper  ) {
+        init( (Element)element , helper.getHelper() );
+    }
+
     public boolean check() {
         List<? extends AnnotationMirror> annotations = getElement()
                 .getAnnotationMirrors();
         boolean hasAnnotation = getHelper().hasAnnotation(annotations,
                 getAnnotation());
-        boolean hasRequiredRetention = getHelper().hasAnnotation(annotations,
-                Retention.class.getCanonicalName());
-        boolean hasRequiredTarget = getHelper().hasAnnotation(annotations,
-                Target.class.getCanonicalName());
-
+        
         if (!hasAnnotation) {
-            // this is not qualifier , just return false
+            // this is not subject annotation , just return false
             return false;
         }
-
-        if (!hasRequiredRetention) {
-            getLogger().log(Level.WARNING, "Annotation "
-                    + getElement().getQualifiedName()
-                    + "declared as " +getAnnotation()+" but has no Retention");// NOI18N
-            return false;
-        }
-
-        if (!hasRequiredTarget) {
-            getLogger().log(Level.WARNING, "Annotation "
-                    + getElement().getQualifiedName()
-                    + "declared as " +getAnnotation()+" but has no Target");// NOI18N
-            return false;
-        }
-
-        AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectEnumConstant(VALUE, getHelper().resolveType(
-                RetentionPolicy.class.getCanonicalName()), null);
-        Map<String, ? extends AnnotationMirror> types = getHelper()
-                .getAnnotationsByType(annotations);
-        AnnotationMirror retention = types.get(Retention.class
-                .getCanonicalName()); // NOI18N
-        String retentionPolicy = parser.parse(retention).get(VALUE,
-                String.class);
-        hasRequiredRetention = retentionPolicy.equals(RetentionPolicy.RUNTIME
-                .toString());
-        if (!hasRequiredRetention) {
+        
+        if ( !hasRuntimeRetention() ){
             getLogger().log(Level.WARNING, "Annotation "
                     + getElement().getQualifiedName()
                     + " declared as " +getAnnotation()+" but has wrong retention policy."
@@ -119,26 +87,36 @@ public abstract class RuntimeAnnotationChecker {
                     + RetentionPolicy.RUNTIME.toString());// NOI18N
             return false;
         }
-        hasRequiredTarget = checkTarget(types);
-
-        return hasRequiredTarget;
+        
+        return hasTarget();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.RuntimeRetentionAnalyzer#handleNoRetention()
+     */
+    @Override
+    protected void handleNoRetention() {
+        getLogger().log(Level.WARNING, "Annotation "
+                + getElement().getQualifiedName()
+                + "declared as " +getAnnotation()+" but has no Retention");// NOI18N        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#handleNoTarget()
+     */
+    @Override
+    protected void handleNoTarget() {
+        getLogger().log(Level.WARNING, "Annotation "
+                + getElement().getQualifiedName()
+                + "declared as " +getAnnotation()+" but has no Target");// NOI18N        
     }
     
     protected abstract Logger getLogger();
     
     protected abstract String getAnnotation();
     
-    protected abstract boolean checkTarget(
-            Map<String, ? extends AnnotationMirror> types);
-    
+    @Override
     protected TypeElement getElement(){
-        return myElement;
+        return (TypeElement)super.getElement();
     }
-    
-    protected AnnotationModelHelper getHelper(){
-        return myHelper;
-    }
-    
-    private AnnotationModelHelper myHelper;
-    private TypeElement myElement;
 }

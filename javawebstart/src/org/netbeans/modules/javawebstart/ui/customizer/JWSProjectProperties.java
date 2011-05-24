@@ -283,7 +283,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     }
     
     boolean isJWSEnabled() {
-        return enabledModel.isSelected();
+        return !jnlpImplOldOrModified && enabledModel.isSelected();
     }
     
     public DescType getDescTypeProp() {
@@ -871,7 +871,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         final String rcp = eval.getProperty(RUN_CP);        
         final String bc = eval.getProperty(BUILD_CLASSES);        
         final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
-        final File bcDir = PropertyUtils.resolveFile(prjDir, bc);
+        final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
         final List<File> lazyFileList = new ArrayList<File>();
         String[] paths;
         if (lz != null) {
@@ -883,8 +883,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         paths = PropertyUtils.tokenizePath(rcp);
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
+            if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
+                continue;
+            }
             final File f = PropertyUtils.resolveFile(prjDir, p);
-            if (!bcDir.equals(f)) {
+            if (bc == null || !bcDir.equals(f)) {
                 resFileList.add(f);
                 if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
                     lazyFileList.add(f);

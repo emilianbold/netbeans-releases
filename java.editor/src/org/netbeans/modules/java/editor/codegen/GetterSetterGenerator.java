@@ -45,7 +45,6 @@ package org.netbeans.modules.java.editor.codegen;
 
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
@@ -213,13 +212,19 @@ public class GetterSetterGenerator implements CodeGenerator {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            Element e = description.getElementHandle().resolve(copy);
+                            TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                            ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : panel.getVariables())
-                                variableElements.add((VariableElement)elementHandle.resolve(copy));
-                            GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
+                            if (path == null) {
+                                String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                            } else {
+                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
+                                ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
+                                for (ElementHandle<? extends Element> elementHandle : panel.getVariables())
+                                    variableElements.add((VariableElement)elementHandle.resolve(copy));
+                                GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
+                            }
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);

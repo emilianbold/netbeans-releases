@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -53,20 +52,20 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 
 /**
  * A key for CsmMacro objects
  */
 
-/*package*/
-final class MacroKey extends OffsetableKey {
+/*package*/ final class MacroKey extends OffsetableKey {
     
     MacroKey(CsmMacro obj) {
 	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getManager().getString(obj.getName())); // NOI18N
     }
     
-    /*package*/ MacroKey(DataInput aStream) throws IOException {
+    /*package*/ MacroKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
     }
 

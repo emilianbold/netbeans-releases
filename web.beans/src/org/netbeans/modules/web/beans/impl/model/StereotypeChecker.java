@@ -44,21 +44,16 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeVerifier;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetVerifier;
 
 
 /**
@@ -69,7 +64,7 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
     
     static final String STEREOTYPE = "javax.enterprise.inject.Stereotype";  //NOI18N
     
-    public StereotypeChecker(AnnotationModelHelper helper ){
+    public StereotypeChecker(AnnotationHelper helper ){
         init(null, helper);
     }
     
@@ -83,49 +78,16 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
         init( null , getHelper() );
     }
     
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#checkTarget(java.util.Map)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer#hasReqiredTarget(javax.lang.model.element.AnnotationMirror, java.util.Set)
      */
     @Override
-    protected boolean checkTarget( Map<String, ? extends AnnotationMirror> types )
+    public boolean hasReqiredTarget( AnnotationMirror target,
+            Set<ElementType> set )
     {
-        boolean hasRequiredTarget = false;
-        AnnotationParser parser;
-        parser = AnnotationParser.create(getHelper());
-        final Set<String> elementTypes = new HashSet<String>();
-        parser.expectEnumConstantArray( VALUE, getHelper().resolveType(
-                ElementType.class.getCanonicalName()), 
-                new ArrayValueHandler() {
-                    
-                    public Object handleArray( List<AnnotationValue> arrayMembers ) {
-                        for (AnnotationValue arrayMember : arrayMembers) {
-                            String value = arrayMember.getValue().toString();
-                            elementTypes.add(value);
-                        }
-                        return null;
-                    }
-                } , null);
-        
-        parser.parse( types.get(Target.class.getCanonicalName() ));
-        if ( elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()) &&
-                        elementTypes.contains( ElementType.TYPE.toString())
-                        && elementTypes.size() == 3)
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 2 && 
-                elementTypes.contains( ElementType.METHOD.toString()) &&
-                elementTypes.contains(ElementType.FIELD.toString()))
-        {
-            hasRequiredTarget = true;
-        }
-        else if ( elementTypes.size() == 1 ){
-            hasRequiredTarget = elementTypes.contains( ElementType.METHOD.toString()) ||
-                    elementTypes.contains( ElementType.FIELD.toString()) ||
-                            elementTypes.contains( ElementType.TYPE.toString());
-        }
-        else {
+        boolean hasRequiredTarget = super.hasReqiredTarget(target, set);
+        if(!hasRequiredTarget){
             getLogger().log(Level.WARNING,
                     "Annotation "+getElement().getQualifiedName()+
                     "declared as Qualifier but has wrong target values." +
@@ -133,6 +95,14 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
                     "{METHOD, FIELD} or TYPE or METHOD or FIELD");// NOI18N
         }
         return hasRequiredTarget;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analizer.annotation.TargetAnalyzer#getTargetVerifier()
+     */
+    @Override
+    protected TargetVerifier getTargetVerifier() {
+        return StereotypeVerifier.getInstance();
     }
 
     /* (non-Javadoc)
@@ -150,5 +120,5 @@ public class StereotypeChecker extends RuntimeAnnotationChecker {
     protected Logger getLogger() {
         return Logger.getLogger(StereotypeChecker.class.getName());
     }
-    
+
 }

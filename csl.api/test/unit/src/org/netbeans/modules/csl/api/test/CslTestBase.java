@@ -112,6 +112,7 @@ import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.ErrorManager;
@@ -2830,11 +2831,21 @@ public abstract class CslTestBase extends NbTestCase {
         isSmart = proposal.isSmart();
         sb.append("</pre>");
         sb.append("<h2>Documentation:</h2>");
-        sb.append(documentation);
+        sb.append(alterDocumentationForTest(documentation));
 
         sb.append("</body>");
         sb.append("</html>");
         return sb.toString();
+    }
+    
+    /**
+     * Sometimes the documentation can contain absolute path. When you overwrite
+     * this method, you can exclude such thinks from it.
+     * @param documentation
+     * @return changed documentation
+     */
+    protected String alterDocumentationForTest(String documentation) {
+        return documentation;
     }
     
     protected void assertAutoQuery(QueryType queryType, String source, String typedText) {
@@ -4250,8 +4261,8 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         @Override
-        public boolean isValid() throws IOException {
-            return true;
+        public Status getStatus() throws IOException {
+            return Status.VALID;
         }
 
         // --------------------------------------------------------------------

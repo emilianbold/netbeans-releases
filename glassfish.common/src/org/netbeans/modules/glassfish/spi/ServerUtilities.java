@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -55,8 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider;
-import org.netbeans.modules.glassfish.common.wizards.ServerDetails;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
@@ -76,6 +76,7 @@ public final class ServerUtilities {
     public static final int ACTION_TIMEOUT = 15000;
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
+    public static final String GFV3_LIB_DIR_NAME = "lib"; // NOI18N
     public static final String GFV3_VERSION_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
     public static final String GFV3_JAR_MATCHER = "glassfish" + GFV3_VERSION_MATCHER; // NOI18N
     static public final String PROP_FIRST_RUN = "first_run";
@@ -213,8 +214,12 @@ public final class ServerUtilities {
      * @return the File with full path of the jar or null
      */
     public static File getJarName(String glassfishInstallRoot, String jarNamePattern) {
-        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        return Utils.getFileFromPattern(jarNamePattern, modulesDir);
+        return getJarName(glassfishInstallRoot, jarNamePattern, GFV3_MODULES_DIR_NAME);
+    }
+
+    public static File getJarName(String glassfishInstallRoot, String jarNamePattern, String subdirectoryName) {
+        File searchDirectory = new File(glassfishInstallRoot + File.separatorChar + subdirectoryName);
+        return Utils.getFileFromPattern(jarNamePattern, searchDirectory);
     }
 
      /**

@@ -53,8 +53,6 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.filesystems.FileObject;
 
 /**
  * base Tree walker for APT
@@ -154,7 +152,12 @@ public abstract class APTWalker {
     protected abstract boolean onElse(APT apt, boolean wasInPrevBranch);
     
     protected abstract void onEndif(APT apt, boolean wasInBranch);
-    
+
+     /**
+     * Callback for #pragma node.
+     */
+    protected abstract void onPragmaNode(APT apt);
+
     // callback for stream node
     protected void onStreamNode(APT apt) {
         // do nothing
@@ -166,7 +169,7 @@ public abstract class APTWalker {
     protected void onErrorNode(APT apt) {
         // do nothing
     }
-    
+
     protected void onOtherNode(APT apt) {
         // do nothing
     }
@@ -228,9 +231,11 @@ public abstract class APTWalker {
             case APT.Type.ERROR:
 		onErrorNode(node);
 		break;
+            case APT.Type.PRAGMA:
+                onPragmaNode(node);
+                break;
             case APT.Type.INVALID:
             case APT.Type.LINE:
-            case APT.Type.PRAGMA:
             case APT.Type.PREPROC_UNKNOWN:   
                 onOtherNode(node);
                 break;
@@ -346,7 +351,11 @@ public abstract class APTWalker {
 		    stop();
 		    return;
 		}
-	    }
+	    } else if( curAPT.getType() == APT.Type.PRAGMA && isStopped()) {
+                if (stopOnErrorDirective()) {
+                    return;
+                }
+            }
             curAPT = curAPT.getNextSibling();
             while (curAPT == null && !finished()) {
                 popState();

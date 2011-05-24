@@ -32,14 +32,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.terminal</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.libs.jna</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -77,6 +69,14 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.terminal</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -176,6 +176,7 @@
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
+                <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>
@@ -183,12 +184,17 @@
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.targets.gui</friend>
+                <friend>com.sun.tools.analytics.ui.lib</friend>
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.discovery</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
                 <friend>com.sun.tools.dlight.apache</friend>
                 <friend>com.sun.tools.dlight.attachsupport</friend>
@@ -200,9 +206,25 @@
                 <friend>com.sun.tools.dlight.processlist</friend>
                 <friend>com.sun.tools.dlight.rfs</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
+                <friend>com.sun.tools.dlight.sysmon</friend>
+                <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
                 <friend>com.sun.tools.dlight.util</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.ide.remote</friend>
+                <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.nativeexecution.accessor</friend>
+                <friend>com.sun.tools.odb</friend>
+                <friend>com.sun.tools.sendto</friend>
+                <friend>com.sun.tools.swdev.analytics.server.windistsetup</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server.common</friend>
+                <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
@@ -211,12 +233,11 @@
                 <friend>org.netbeans.modules.cnd.cesredirector</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
-                <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.commonMC</friend>
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
-                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
@@ -242,6 +263,7 @@
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.procfs</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
+                <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
                 <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>

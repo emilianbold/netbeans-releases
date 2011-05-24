@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.FileFilterFactory.AbstractFileAndFileObjectFilter;
 import org.netbeans.modules.openfile.OpenFileDialogFilter;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -76,8 +78,8 @@ public class CndOpenFileDialogFilter {
     }
 
     private static class Adapter extends OpenFileDialogFilter {
-        private SourceFileFilter delegate;
-        public Adapter(SourceFileFilter delegate) {
+        private AbstractFileAndFileObjectFilter delegate;
+        public Adapter(AbstractFileAndFileObjectFilter delegate) {
             this.delegate = delegate;
         }
 

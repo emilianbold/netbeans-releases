@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
@@ -53,11 +54,14 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -66,6 +70,9 @@ import org.openide.filesystems.FileUtil;
 public final class FileObjectCrawler extends Crawler {
 
     private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
+    private static final boolean isUnix = Utilities.isUnix();
+    private static final boolean isMac = Utilities.isMac();
+    /*test*/ static Map<FileObject,LinkType> mockLinkTypes;
     
     private final FileObject root;
     private final ClassPath.Entry entry;
@@ -107,7 +114,15 @@ public final class FileObjectCrawler extends Crawler {
                     Set<FileObject> cluster = clusters.get(parent);
                     StringBuilder relativePath = getRelativePath(root, parent);
                     if (relativePath != null) {
-                        finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, relativePath);
+                        finished = collect(
+                                cluster.toArray(new FileObject[cluster.size()]),
+                                root,
+                                resources,
+                                allResources,
+                                stats,
+                                entry,
+                                null,
+                                relativePath);
                         if (!finished) {
                             break;
                         }
@@ -116,11 +131,11 @@ public final class FileObjectCrawler extends Crawler {
             } else if (files.length == 1) {
                 StringBuilder relativePath = getRelativePath(root, files[0].getParent());
                 if (relativePath != null) {
-                    finished = collect(files, root, resources, allResources, stats, entry, relativePath);
+                    finished = collect(files, root, resources, allResources, stats, entry, null, relativePath);
                 } // else invalid (eg. deleted) FileObject encountered
             }
         } else {
-            finished = collect(root.getChildren(), root, resources, allResources, stats, entry, new StringBuilder());
+            finished = collect(root.getChildren(), root, resources, allResources, stats, entry, null, new StringBuilder());
         }
 
         final long tm2 = System.currentTimeMillis();
@@ -145,16 +160,26 @@ public final class FileObjectCrawler extends Crawler {
 //                Stats.logHistogram(Level.FINER, stats.mimeTypes);
 //                LOG.finer("----");
             }
+            LOG.log(Level.FINE,
+                    "Symlink tests took {0}ms, {1} symlinks into root found.",    //NOI18N
+                    new Object[] {
+                        stats.linkCheckTime,
+                        stats.linkCount
+                    });
         }
 
         return finished;
     }
 
-    private boolean collect (FileObject[] fos, FileObject root,
-            final Collection<IndexableImpl> resources,
-            final Collection<IndexableImpl> allResources,
-            final Stats stats, final ClassPath.Entry entry,
-            final StringBuilder relativePathBuilder)
+    private boolean collect (
+            final @NonNull FileObject[] fos,
+            final @NonNull FileObject root,
+            final @NonNull Collection<IndexableImpl> resources,
+            final @NonNull Collection<IndexableImpl> allResources,
+            final @NullAllowed Stats stats,
+            final @NullAllowed ClassPath.Entry entry,
+            final @NullAllowed LinkType parentLinkType,
+            final @NonNull StringBuilder relativePathBuilder)
     {
         int parentPathEnd = relativePathBuilder.length();
 
@@ -163,7 +188,7 @@ public final class FileObjectCrawler extends Crawler {
             if (isCancelled()) {
                 return false;
             }
-            if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
+            if (!fo.isValid() || !isVisible(fo)) {
                 continue;
             }
 
@@ -176,8 +201,11 @@ public final class FileObjectCrawler extends Crawler {
                     continue;
                 }
                 if (folder) {
-                    if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, relativePathBuilder)) {
-                        return false;
+                    final LinkType linkType = getLinkType(fo, root, parentLinkType, stats);
+                    if (linkType != LinkType.IN) {
+                        if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, linkType, relativePathBuilder)) {
+                            return false;
+                        }
                     }
                 } else {
                     if (stats != null) {
@@ -211,6 +239,14 @@ public final class FileObjectCrawler extends Crawler {
             return null;
         }
     }
+
+    private boolean isVisible (final @NonNull FileObject fo) {
+        try {
+            return VisibilityQuery.getDefault().isVisible(fo);
+        } finally {
+            setListenOnVisibility(true);
+        }
+    }
     
     //Todo: Not exaclty correct. The correct implementation should find if whole root content
     //is covered by files. But correct implementation will be very very slow and probably no one
@@ -224,8 +260,77 @@ public final class FileObjectCrawler extends Crawler {
         return false;
     }
 
+    private static @NonNull LinkType getLinkType(
+            final @NonNull FileObject folder,
+            final @NonNull FileObject root,
+            final @NullAllowed LinkType parentLinkType,
+            final @NullAllowed Stats stats) {
+        final long st = System.currentTimeMillis();
+        boolean inLink = false;
+        try {
+            if (parentLinkType == LinkType.OUT) {
+                return parentLinkType;
+            }
+            if (mockLinkTypes != null) {
+                return mockLinkTypes.get(folder) != null ?
+                        mockLinkTypes.get(folder) : LinkType.NO;
+            }
+            if (!isUnix && !isMac) {
+                return LinkType.NO;
+            }            
+            final File directory = FileUtil.toFile(folder);
+            if (directory == null) {
+                return LinkType.NO;
+            }
+            final File canDirectory;
+            try {
+                canDirectory = directory.getCanonicalFile();
+            } catch (IOException ioe) {
+                return LinkType.NO;
+            }
+            final String dirPath = directory.getAbsolutePath();
+            final String canDirPath = canDirectory.getAbsolutePath();
+            final boolean notLink = isMac ? dirPath.equalsIgnoreCase(canDirPath) :
+                    dirPath.equals(canDirPath);
+            if (notLink) {
+                return LinkType.NO;
+            }
+            final File rootFile = FileUtil.toFile(root);
+            if (rootFile == null) {
+                return LinkType.OUT;
+            }
+            if (isParentOf(rootFile, canDirectory)) {
+                inLink = true;
+                return LinkType.IN;
+            } else {
+                return LinkType.OUT;
+            }
+        } finally {
+            if (stats != null) {
+                if (inLink) {
+                    stats.linkCount++;
+                }
+                stats.linkCheckTime+=(System.currentTimeMillis()-st);
+            }
+        }
+    }
+
+    private static boolean isParentOf(
+            @NonNull final File folder,
+            @NonNull final File file) {
+        return file.getAbsolutePath().startsWith(folder.getAbsolutePath());
+    }
+
+    /*test*/ static enum LinkType {
+        NO,
+        IN,
+        OUT
+    }
+    
     private static final class Stats {
         public int filesCount;
+        public long linkCheckTime;
+        public int linkCount;
         public Map<String, Integer> extensions = new HashMap<String, Integer>();
         public Map<String, Integer> mimeTypes = new HashMap<String, Integer>();
         public static void inc(Map<String, Integer> m, String k) {

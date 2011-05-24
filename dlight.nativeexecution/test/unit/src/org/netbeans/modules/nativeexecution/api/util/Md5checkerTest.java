@@ -82,7 +82,7 @@ public class Md5checkerTest extends NativeExecutionBaseTestCase {
         Result res = checker.check(localFile, remotePath);
         assertEquals("Check result", Md5checker.Result.INEXISTENT, res);
 
-        int rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, null).get().intValue();
+        int rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777).get().getExitCode();
         assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath, 0, rc);
         res = checker.check(localFile, remotePath);
         assertEquals("Check result", Md5checker.Result.UPTODATE, res);

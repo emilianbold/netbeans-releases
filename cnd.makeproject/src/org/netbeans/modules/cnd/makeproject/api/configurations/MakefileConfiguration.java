@@ -62,13 +62,14 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -149,15 +150,23 @@ public class MakefileConfiguration {
         return getBuildCommand().getValue().length() > 0;
     }
     
+    // the "Abs" part does not make sense for file objects, 
+    // but let's keep function name close to getAbsBuildCommandWorkingDir()
+    public FileObject getAbsBuildCommandFileObject() {        
+        String path = getAbsBuildCommandWorkingDir();
+        return FileSystemProvider.getFileObject(getSourceExecutionEnvironment(), path);
+    }
+
     public String getAbsBuildCommandWorkingDir() {
+        String wd;
         if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
-            return getBuildCommandWorkingDirValue();
+            wd = getBuildCommandWorkingDirValue();
         } else {
-            String wd = getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
-            // Normalize
-            wd = CndFileUtils.normalizeAbsolutePath(wd);
-            return wd;
+            wd = getMakeConfiguration().getSourceBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
         }
+        // Normalize            
+        wd = FileSystemProvider.normalizeAbsolutePath(wd, getSourceExecutionEnvironment());
+        return wd;
     }
     
     public boolean canClean() {
@@ -294,13 +303,17 @@ public class MakefileConfiguration {
         }
     }
 
-    private ExecutionEnvironment getExecutionEnvironment() {
+    private ExecutionEnvironment getSourceExecutionEnvironment() {
         ExecutionEnvironment env = null;
         MakeConfiguration mc = this.getMakeConfiguration();
-        if (mc != null && mc.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            DevelopmentHostConfiguration dhc = mc.getDevelopmentHost();
-            if (dhc != null) {
-                env = dhc.getExecutionEnvironment();
+        if (mc != null) {
+            if (mc.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                DevelopmentHostConfiguration dhc = mc.getDevelopmentHost();
+                if (dhc != null) {
+                    env = dhc.getExecutionEnvironment();
+                }
+            } else {
+                return FileSystemProvider.getExecutionEnvironment(mc.getBaseFSPath().getFileSystem());
             }
         }
         if (env == null) {
@@ -312,7 +325,7 @@ public class MakefileConfiguration {
     private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
         String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
         String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
-        final JFileChooser chooser = RemoteFileUtil.createFileChooser(getExecutionEnvironment(), titleText, buttonText,
+        final JFileChooser chooser = RemoteFileUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
                 FileChooser.DIRECTORIES_ONLY, null, seed, true);
         chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         chooser.setControlButtonsAreShown(false);
@@ -417,7 +430,7 @@ public class MakefileConfiguration {
     }
 
     private JFileChooser createElfPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
-        ExecutionEnvironment execEnv = getExecutionEnvironment();
+        ExecutionEnvironment execEnv = getSourceExecutionEnvironment();
         final JFileChooser chooser = RemoteFileUtil.createFileChooser(execEnv,
                 "", "", FileChooser.FILES_ONLY, null, seed, true); //NOI18N
         chooser.setControlButtonsAreShown(false);

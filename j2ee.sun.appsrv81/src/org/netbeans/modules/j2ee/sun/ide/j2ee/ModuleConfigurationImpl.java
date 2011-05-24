@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -102,9 +102,9 @@ public class ModuleConfigurationImpl implements
     private J2eeModule module;
     private Lookup lookup;
     
-    ModuleConfigurationImpl(J2eeModule module) throws ConfigurationException {
+    ModuleConfigurationImpl(J2eeModule module, SunDeploymentManagerInterface sdmi) throws ConfigurationException {
         this.module = module;
-        this.config = new SunONEDeploymentConfiguration(module);
+        this.config = new SunONEDeploymentConfiguration(module, sdmi);
         
         // Support build extension for new resource persistence strategy
         File f = module.getResourceDirectory();
@@ -120,7 +120,7 @@ public class ModuleConfigurationImpl implements
                 J2eeModuleProvider jmp = getProvider(p);
                 if (null != jmp) {
                     ResourceUtils.createSampleDataSource(jmp);
-                    InstanceListener il = new StaticBuildExtensionListener(f);
+                    InstanceListener il = new StaticBuildExtensionListener(f,sdmi);
                     
                     // TODO : reenable when GF 3317 is resolved
                     //jmp.addInstanceListener(il);
@@ -317,8 +317,10 @@ public class ModuleConfigurationImpl implements
 
     static class StaticBuildExtensionListener  implements InstanceListener {
         File projectDirectory;
-        StaticBuildExtensionListener(File pd) {
+        private final SunDeploymentManagerInterface sdmi;
+        StaticBuildExtensionListener(File pd, SunDeploymentManagerInterface sdmi) {
             projectDirectory = pd;
+            this.sdmi = sdmi;
         }
                 
         private void rewriteBuildImpl(FileObject tmp) {
@@ -331,12 +333,9 @@ public class ModuleConfigurationImpl implements
             }
             if (null != p) {
                 final boolean addExtension;// = false;
-                DeploymentManager dm = getDeploymentManager(p);
-                if (null == dm) {
+                if (null == sdmi) {
                     addExtension = false;
-                } else if (dm instanceof SunDeploymentManagerInterface) {
-                    SunDeploymentManagerInterface sdmi =
-                            (SunDeploymentManagerInterface) dm;
+                } else {
                     if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) < ServerLocationManager.GF_V2) {
                         addExtension = false;
                     } else {
@@ -344,10 +343,6 @@ public class ModuleConfigurationImpl implements
                         //addExtension = true;
                         addExtension = false;
                     }
-                } else { // null != dm && ! (dm instanceof SunDeploymentManagerInterface) 
-                    // remove the extension  -- the project isn't targeted
-                    // for us anymore
-                    addExtension = false;
                 }
                 J2eeModuleProvider jmp = getProvider(p);
                 if (null == jmp) {
@@ -374,22 +369,6 @@ public class ModuleConfigurationImpl implements
             }
         }
 
-        private DeploymentManager getDeploymentManager(Project p) {
-            DeploymentManager dm = null;
-            J2eeModuleProvider provider = getProvider(p);
-            if(provider != null) {
-                InstanceProperties ip = provider.getInstanceProperties();
-                if(ip != null) {
-                    dm = ip.getDeploymentManager();
-                } else {
-                    Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Null Server InstanceProperties");
-                }
-            } else {
-                Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Null J2eeModuleProvider");
-            }
-            return dm;
-        }
-        
         public void changeDefaultInstance(String oldServerInstanceID,
                                           String newServerInstanceID) {
             // Ignored

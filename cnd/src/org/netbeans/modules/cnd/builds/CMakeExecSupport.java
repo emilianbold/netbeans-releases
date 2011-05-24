@@ -58,9 +58,9 @@ public class CMakeExecSupport extends ExecutionSupport {
     private static final String PROP_RUN_DIRECTORY = "rundirectory"; // NOI18N
     private static final String PROP_ENVIRONMENT = "environment"; // NOI18N
     // The list of our properties
-    private PropertySupport cmakeRunDirectory;
-    private PropertySupport cmakeCommandProperty;
-    private PropertySupport cmakeEnvironmentProperty;
+    private PropertySupport<String> cmakeRunDirectory;
+    private PropertySupport<String> cmakeCommandProperty;
+    private PropertySupport<String> cmakeEnvironmentProperty;
 
     public CMakeExecSupport(MultiDataObject.Entry entry) {
         super(entry);
@@ -91,9 +91,11 @@ public class CMakeExecSupport extends ExecutionSupport {
     private PropertySupport<String> createQMakeCommandProperty() {
          PropertySupport<String> result = new PropertySupport.ReadWrite<String>(PROP_CMAKE_COMMAND, String.class,
                 getString("PROP_CMAKE_COMMAND"), getString("HINT_CMAKE_COMMAND")) { // NOI18N
+            @Override
             public String getValue() {
                 return getCMakeCommand();
             }
+            @Override
             public void setValue(String val) {
                 setCMakeCommand(val);
             }
@@ -135,9 +137,11 @@ public class CMakeExecSupport extends ExecutionSupport {
     private PropertySupport<String> createRunDirectoryProperty() {
         PropertySupport<String> result = new PropertySupport.ReadWrite<String>(PROP_RUN_DIRECTORY, String.class,
                 getString("PROP_RUN_CMAKE_DIRECTORY"), getString("HINT_RUN_CMAKE_DIRECTORY")) { // NOI18N
+            @Override
             public String getValue() {
                 return getRunDirectory();
             }
+            @Override
             public void setValue(String val) {
                 setRunDirectory(val);
             }

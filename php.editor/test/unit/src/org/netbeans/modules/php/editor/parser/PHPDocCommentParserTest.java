@@ -263,12 +263,43 @@ public class PHPDocCommentParserTest extends CslTestBase {
          "   * @see sfAction";
         perform(comment, "Example01");
     }
+    
+    public void testArrayParam01() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @param Car[] $test\n";
+        perform(comment, "ArrayParam01");
+    }
+    
+    public void testArrayParam02() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @param Car[] $test\n";
+        perform(comment, "ArrayParam02");
+    }
 
     public void testHTMLWrapper() throws Exception {
         String comment =
                 "*\n" +
                 "* @throws <b>sfInitializationException</b> If an error occurs while initializing this sfCache instance.";
         perform(comment, "HTMLWrapper");
+    }
+    
+    public void testIssue197946() throws Exception {
+        String comment = 
+                "/**\n" +
+                " * This is the model class for table \"cliente\".\n" +
+                " *\n" +
+                " * The followings are the available columns in table 'cliente':\n" +
+                " * @property string $id_cliente\n" +
+                " * ....\n" +
+                " * ....\n" +
+                " * @property integer $id_profissao\n" +
+                " * @property string $renda_mensal\n" +
+                " *\n" +
+                " * The followings are the available model relations:\n" +
+                " * ....\n" +
+                " * ....\n" +
+                " */\n";
+        perform(comment, "Issue197946");
     }
     
     public void perform(String comment, String filename) throws Exception {

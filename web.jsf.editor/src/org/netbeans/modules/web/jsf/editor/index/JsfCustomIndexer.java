@@ -90,7 +90,7 @@ public class JsfCustomIndexer extends CustomIndexer {
                         LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                     }
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.info(String.format("Error parsing %s file: %s", file.getPath(), ex.getMessage()));
                 }
 
             } else if (JsfIndexSupport.isTagLibraryDescriptor(file)) {
@@ -103,7 +103,7 @@ public class JsfCustomIndexer extends CustomIndexer {
                         LOGGER.log(Level.FINE, "The file {0} indexed as a Tag Library Descriptor", file); //NOI18N
                     }
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.info(String.format("Error parsing %s file: %s", file.getPath(), ex.getMessage()));
                 }
 
             }

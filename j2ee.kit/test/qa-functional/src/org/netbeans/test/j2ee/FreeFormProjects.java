@@ -53,14 +53,13 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.CloseAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -76,8 +75,9 @@ public class FreeFormProjects extends J2eeTestCase {
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(FreeFormProjects.class);
         conf = addServerTests(conf,
-                "testEarWithSources",
-                "testEjbWithSources");
+                "testEjbWithSources",
+                "testEarWithSources"
+                );
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -89,20 +89,9 @@ public class FreeFormProjects extends J2eeTestCase {
     }
 
     public void testEjbWithSources() {
-        String travelProjectPath = new File(getDataDir(), "freeform_projects/travel").getAbsolutePath();
-        createNewEjbProjectFromExistingSources(travelProjectPath, "Travel", travelProjectPath + "-projects",
-                new String[]{"TravelAgentEJB", "CabinEJB"},
-                new String[]{"TravelAgentBean", "CabinBean"});
-    }
-
-    public void testEarWithSources() {
-        String secureProjectPath = new File(getDataDir(), "freeform_projects/Secure").getAbsolutePath();
-        createNewEarProjectFromExistingSources(secureProjectPath, "Secure", secureProjectPath + "-projects");
-    }
-
-    private void createNewEjbProjectFromExistingSources(String location, String name, String folder, String beans[], String files[]) {
+        String location = new File(getDataDir(), "freeform_projects/Secure/Secure-ejb").getAbsolutePath();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
+        npwo.selectCategory("Java EE");
         npwo.selectProject("EJB Module with Existing Sources");
         npwo.next();
         NewWebProjectNameLocationStepOperator npnlso = new NewWebProjectNameLocationStepOperator();
@@ -116,59 +105,51 @@ public class FreeFormProjects extends J2eeTestCase {
         j.approveSelection();
         npnlso.finish();
         //wait project appear in projects view
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(name);
+        Node projectNode = new ProjectsTabOperator().getProjectRootNode("Secure-ejb");
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
-        Node beansNode = new Node(rootNode, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node"));
-        if (beans != null) {
-            for (int i = 0; i < beans.length; i++) {
-                Node node = new Node(beansNode, beans[i]);
-                node.expand();
-                String children[] = node.getChildren();
-                if (children == null || children.length <= 0) {
-                    fail("Bean node " + beans[i] + " has no children");
-                }
-                if (beans != null) {
-                    new OpenAction().perform(node);
-                    new EditorOperator(files[i]).close();
-                }
-            }
-        }
-        new Node(new ProjectsTabOperator().getProjectRootNode(name), "Configuration Files|ejb-jar.xml");
+        waitScanFinished();
+        Node beansNode = new Node(projectNode, Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node"));
+        Node node = new Node(beansNode, "AccountStateSB");
+        node.expand();
+        String children[] = node.getChildren();
+        assertTrue("AccountStateSB node has no children.", children.length > 0);
+        new OpenAction().perform(node);
+        new EditorOperator("AccountStateBean").close();
+        new Node(projectNode, "Configuration Files|ejb-jar.xml");
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         // Build project
-        //rootNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Actions/Build"));
-        rootNode.performPopupAction("Clean and Build");
+        projectNode.performPopupAction("Clean and Build");
         mwo.waitStatusText("Finished");
+        new CloseAction().perform(projectNode);
     }
 
-    private void createNewEarProjectFromExistingSources(String location, String name, String folder) {
+    public void testEarWithSources() {
+        String location = new File(getDataDir(), "freeform_projects/Secure").getAbsolutePath();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
+        npwo.selectCategory("Java EE");
         npwo.selectProject("Enterprise Application with Existing Sources");
         npwo.next();
         NewWebProjectNameLocationStepOperator npnlso = new NewWebProjectNameLocationStepOperator();
         npnlso.txtLocation().setText(location);
         npnlso.next();
-        new JComboBoxOperator(npnlso, 1).selectItem(1);
         npnlso.next();
         npnlso.btFinish().pushNoBlock();
         new NbDialogOperator("Warning").ok();
+        npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         npnlso.waitClosed();
         //wait project appear in projects view
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(name);
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode("Secure");
 
         Node n = new Node(rootNode, "Java EE Modules|Secure-war.war");
         n.performPopupAction("Open Project");
         n = new Node(rootNode, "Java EE Modules|Secure-ejb.jar");
         n.performPopupAction("Open Project");
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        waitScanFinished();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         // Build project
-        //rootNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Actions/Build"));
         rootNode.performPopupAction("Clean and Build");
         mwo.waitStatusText("Finished");
     }

@@ -44,19 +44,34 @@
 
 package org.netbeans.modules.java.editor.view;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.EventListenerList;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
@@ -67,8 +82,18 @@ import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
+import org.netbeans.spi.editor.highlighting.HighlightsContainer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -81,6 +106,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
         List<String> includes = new ArrayList<String>();
+//        includes.add("testToolTipView");
+//        includes.add("testSimpleBadListener");
+//        includes.add("testRemoveNewline");
 //        includes.add("testGap");
 //        includes.add("testNPEInRedo", "");
 //        includes.add("testRandomModsPlainText");
@@ -117,12 +145,15 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorBoxViewChildren").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseDocument.EDT").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseCaret.EDT").setLevel(Level.FINE);
+        ViewHierarchyRandomTesting.setDirectViewRebuild(true);
     }
 
     @Override
     protected Level logLevel() {
-        return Level.INFO;
 //        return Level.FINEST;
+//        return Level.FINE;
+//        return Level.INFO;
+        return null;
     }
 
     private RandomTestContainer createContainer() throws Exception {
@@ -131,7 +162,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         // org.netbeans.core.windows.actions.RecentViewListAction fails to load
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(kit); // no problem for both java and plain mime-types
         container.setName(this.getName());
-        boolean logOpAndDoc = true;
+        boolean logOpAndDoc = false; //true;
         container.setLogOp(logOpAndDoc);
         DocumentTesting.setLogDoc(container, logOpAndDoc);
         return container;
@@ -204,6 +235,16 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.undo(context, 1);
     }
 
+    public void testNewlineInEmptyDoc() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        RandomTestContainer.Context gContext = container.context();
+        DocumentTesting.insert(gContext, 0, "\n");
+    }
+    
     public void testSimple1() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();
@@ -227,6 +268,159 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.insert(gContext, 1, "c");
     }
     
+    public void testSimpleBadListener() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        DocumentTesting.setSameThreadInvoke(container.context(), true); // Do not post to EDT
+        doc.addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                throw new IndexOutOfBoundsException("Test exception from bad listener");
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        RandomTestContainer.Context gContext = container.context();
+        DocumentTesting.insert(gContext, 0, "a\nb");
+        DocumentTesting.insert(gContext, 1, "c");
+        try {
+            DocumentTesting.remove(gContext, 2, 1);
+            fail("Exception expected.");
+        } catch (IndexOutOfBoundsException ex) {
+            // Expected
+        }
+        DocumentTesting.insert(gContext, 1, "d\nx");
+    }
+    
+    public void testBeyondEndDocHighlightsLayer() throws Exception {
+        loggingOn();
+        String mimeType = "text/plain";
+//        MimeLookup.getLookup(MimePath.get(mimeType)).lookup(HighlightsLayer.class); // Init ML
+//        HighlightsLayerProvider.clear();
+        HighlightsLayerProvider.add("text/x-java", new HLFactory());
+        HighlightsLayerProvider.add(mimeType, new HLFactory());
+//        MemoryMimeDataProvider.reset(null);
+//        MemoryMimeDataProvider.addInstances("text/x-java", new HLFactory());
+//        MemoryMimeDataProvider.addInstances(mimeType, new HLFactory());
+
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", mimeType);
+        DocumentTesting.setSameThreadInvoke(container.context(), true); // Do not post to EDT
+        RandomTestContainer.Context gContext = container.context();
+        DocumentTesting.insert(gContext, 0, "a\nb");
+        DocumentTesting.insert(gContext, 1, "c");
+        DocumentTesting.remove(gContext, 2, 1);
+        DocumentTesting.insert(gContext, 1, "d\nx");
+    }
+    
+    public void testInsertRemoveTransaction() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        final Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        final RandomTestContainer.Context context = container.context();
+//        ViewHierarchyRandomTesting.disableHighlighting(container);
+        DocumentTesting.setSameThreadInvoke(container.context(), true); // Do not post to EDT
+        ((BaseDocument)doc).runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < 100; i++) {
+                        DocumentTesting.insert(context, 0, "a\nb\n\n");
+                        DocumentTesting.remove(context, i * 3, 1);
+                    }
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        });
+        DocumentTesting.setSameThreadInvoke(container.context(), false);
+        DocumentTesting.undo(context, 1);
+    }
+
+    public void testToolTipView() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        final JEditorPane pane = container.getInstance(JEditorPane.class);
+        final Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        RandomTestContainer.Context context = container.context();
+//        ViewHierarchyRandomTesting.disableHighlighting(container);
+        DocumentTesting.setSameThreadInvoke(context, true); // Do not post to EDT
+        DocumentTesting.insert(context, 0, "abc\ndef\nghi\n");
+        final JEditorPane[] toolTipPaneRef = new JEditorPane[1];
+        final BadLocationException[] excRef = new BadLocationException[1];
+        final JFrame[] toolTipFrameRef = new JFrame[1];
+        Runnable tooltipRun = new Runnable() {
+            @Override
+            public void run() {
+                JEditorPane toolTipPane = new JEditorPane();
+                toolTipPaneRef[0] = toolTipPane;
+                toolTipPane.setEditorKit(pane.getEditorKit());
+                try {
+                    Position startPos = doc.createPosition(4); // Line begining
+                    Position endPos = doc.createPosition(8); // Line boundary too
+                    toolTipPane.putClientProperty("document-view-start-position", startPos);
+                    toolTipPane.putClientProperty("document-view-end-position", endPos);
+                    toolTipPane.setDocument(doc);
+                    JFrame toolTipFrame = new JFrame("ToolTip Frame");
+                    toolTipFrameRef[0] = toolTipFrame;
+                    toolTipFrame.getContentPane().add(new JScrollPane(toolTipPane));
+                    toolTipFrame.setSize(100, 100);
+                    toolTipFrame.setVisible(true);
+
+                    doc.insertString(4, "o", null);
+                    toolTipPane.setFont(new Font("Monospaced", Font.PLAIN, 22)); // Force VH rebuild
+                    toolTipPane.modelToView(6);
+                    doc.remove(3, 3);
+                    doc.insertString(4, "ab", null);
+                    
+                    assert (endPos.getOffset() == 8);
+                    doc.remove(7, 2);
+                    toolTipPane.setFont(new Font("Monospaced", Font.PLAIN, 23)); // Force VH rebuild
+                    toolTipPane.modelToView(6);
+
+                } catch (BadLocationException ex) {
+                    excRef[0] = ex;
+                }
+
+            }
+        };
+        SwingUtilities.invokeAndWait(tooltipRun);
+        if (excRef[0] != null) {
+            throw new IllegalStateException(excRef[0]);
+        }
+
+        DocumentTesting.setSameThreadInvoke(context, false);
+        DocumentTesting.undo(context, 2);
+        DocumentTesting.undo(context, 1);
+        DocumentTesting.undo(context, 1);
+        DocumentTesting.redo(context, 4);
+        
+        // Hide tooltip's frame
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (toolTipFrameRef[0] != null) {
+                    toolTipFrameRef[0].setVisible(false);
+                }
+            }
+        });
+    }
+
     public void testInsertTextWithNewlines() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();
@@ -557,8 +751,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     public void testRandomModsPlainText() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();
-        JEditorPane pane = container.getInstance(JEditorPane.class);
-        Document doc = pane.getDocument();
+        final JEditorPane pane = container.getInstance(JEditorPane.class);
+        final Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
@@ -572,28 +766,106 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        RandomTestContainer.Context context = container.context();
 //        DocumentTesting.undo(context, 2);
 //        DocumentTesting.redo(context, 2);
+        // Simulate tooltip pane
+        final JEditorPane[] toolTipPaneRef = new JEditorPane[1];
+        final BadLocationException[] excRef = new BadLocationException[1];
+        final JFrame[] toolTipFrameRef = new JFrame[1];
+        Runnable tooltipRun = new Runnable() {
+            @Override
+            public void run() {
+                JEditorPane toolTipPane = new JEditorPane();
+                toolTipPaneRef[0] = toolTipPane;
+                toolTipPane.setEditorKit(pane.getEditorKit());
+                try {
+                    toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(4));
+                    toolTipPane.putClientProperty("document-view-end-position", doc.createPosition(20));
+                } catch (BadLocationException ex) {
+                    excRef[0] = ex;
+                }
+                toolTipPane.setDocument(doc);
+                JFrame toolTipFrame = new JFrame("ToolTip Frame");
+                toolTipFrameRef[0] = toolTipFrame;
+                toolTipFrame.getContentPane().add(new JScrollPane(toolTipPane));
+                toolTipFrame.setSize(100, 100);
+                toolTipFrame.setVisible(true);
+            }
+        };
+        SwingUtilities.invokeAndWait(tooltipRun);
+        if (excRef[0] != null) {
+            throw new IllegalStateException(excRef[0]);
+        }
+
         container.run(0L); // Test random ops
         // Exclude caret row highlighting
         excludeHighlights(pane);
         container.run(0L); // Re-run test
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (toolTipFrameRef[0] != null) {
+                    toolTipFrameRef[0].setVisible(false);
+                }
+            }
+        });
     }
 
     public void testRandomModsJava() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();
-        JEditorPane pane = container.getInstance(JEditorPane.class);
-        Document doc = pane.getDocument();
+        final JEditorPane pane = container.getInstance(JEditorPane.class);
+        final Document doc = pane.getDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
         container.run(1271946202898L);
+        
+        // Simulate tooltip pane
+        final JEditorPane[] toolTipPaneRef = new JEditorPane[1];
+        final BadLocationException[] excRef = new BadLocationException[1];
+        final JFrame[] toolTipFrameRef = new JFrame[1];
+        Runnable tooltipRun = new Runnable() {
+            @Override
+            public void run() {
+                JEditorPane toolTipPane = new JEditorPane();
+                toolTipPaneRef[0] = toolTipPane;
+                toolTipPane.setEditorKit(pane.getEditorKit());
+                try {
+                    toolTipPane.putClientProperty("document-view-start-position", doc.createPosition(4));
+                    toolTipPane.putClientProperty("document-view-end-position", doc.createPosition(20));
+                } catch (BadLocationException ex) {
+                    excRef[0] = ex;
+                }
+                toolTipPane.setDocument(doc);
+                JFrame toolTipFrame = new JFrame("ToolTip Frame");
+                toolTipFrameRef[0] = toolTipFrame;
+                toolTipFrame.getContentPane().add(new JScrollPane(toolTipPane));
+                toolTipFrame.setSize(100, 100);
+                toolTipFrame.setVisible(true);
+            }
+        };
+        SwingUtilities.invokeAndWait(tooltipRun);
+        if (excRef[0] != null) {
+            throw new IllegalStateException(excRef[0]);
+        }
+
+        
         container.run(1290550667174L);
         container.run(0L); // Test random ops
         // Exclude caret row highlighting
         excludeHighlights(pane);
         container.run(0L); // Re-run test
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (toolTipFrameRef[0] != null) {
+                    toolTipFrameRef[0].setVisible(false);
+                }
+            }
+        });
     }
 
     public void testRandomModsJavaSeed1() throws Exception {
@@ -642,6 +914,104 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
             });
         }
         task.waitFinished();
+    }
+
+    @org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.editor.mimelookup.MimeDataProvider.class)
+    public static final class HighlightsLayerProvider implements MimeDataProvider {
+
+        private static final Map<MimePath, Lookup> mime2Lookup = new HashMap<MimePath, Lookup>();
+
+        static void add(String mimePath, Object... instances) {
+            InstanceContent content = new InstanceContent();
+            content.set(Arrays.asList(instances), null);
+            Lookup lkp = new AbstractLookup(content);
+            mime2Lookup.put(MimePath.get(mimePath), lkp);
+        }
+
+        @Override
+        public Lookup getLookup(MimePath mimePath) {
+            return mime2Lookup.get(mimePath);
+        }
+
+    }
+
+    static final class HLFactory implements HighlightsLayerFactory {
+
+        @Override
+        public HighlightsLayer[] createLayers(Context context) {
+            return new HighlightsLayer[] { HighlightsLayer.create(
+                    "BeyondDocEndHighlightsLayer",
+                    ZOrder.DEFAULT_RACK,
+                    false,
+                    new BeyondDocEndHighlightsLayer(context.getDocument()))
+            };
+        }
+        
+    }
+    
+    private static final class BeyondDocEndHighlightsLayer implements HighlightsContainer {
+        
+        private final Document doc;
+        
+        private final EventListenerList listenerList = new EventListenerList();
+
+        public BeyondDocEndHighlightsLayer(Document doc) {
+            this.doc = doc;
+        }
+        
+        @Override
+        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+            return new HS(doc);
+        }
+
+        @Override
+        public void addHighlightsChangeListener(HighlightsChangeListener listener) {
+            listenerList.add(HighlightsChangeListener.class, listener);
+        }
+
+        @Override
+        public void removeHighlightsChangeListener(HighlightsChangeListener listener) {
+            listenerList.remove(HighlightsChangeListener.class, listener);
+        }
+        
+    }
+    
+    private static final class HS implements HighlightsSequence {
+
+        private final Document doc;
+        
+        private boolean done;
+
+        public HS(Document doc) {
+            this.doc = doc;
+        }
+
+        @Override
+        public boolean moveNext() {
+            if (!done) {
+                done = true;
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return 0;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return doc.getLength() + 5; // Beyond end of doc intentionally
+        }
+
+        @Override
+        public AttributeSet getAttributes() {
+            SimpleAttributeSet attrs = new SimpleAttributeSet();
+            attrs.addAttribute(StyleConstants.Foreground, Color.red);
+            return attrs;
+        }
+
     }
 
 }

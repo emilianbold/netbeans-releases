@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import java.io.File;
+import java.net.URI;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
@@ -504,12 +505,16 @@ public class JspCompletionQuery {
 
                         String FILE_PREFIX = "file:/"; //NOI18N
 
+                        File f;
                         if (jarPath.startsWith(FILE_PREFIX)) {
-                            jarPath = '/' + jarPath.substring(FILE_PREFIX.length());
+                            URI u = URI.create(jarPath);
+                            f = new File(u);
+                        } else {
+                            f = new File(jarPath);
                         }
 
                         try {
-                            JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(new File(jarPath)));
+                            JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(f));
                             FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
                             TldLibrary tldLib = TldLibrary.create(tldFile);
 

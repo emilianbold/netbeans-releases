@@ -48,7 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet2;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -58,7 +58,7 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
  * @author Petr Hejl
  */
 // FIXME user can configure the directory for JSP servlets
-public class WLFindJSPServlet implements FindJSPServlet {
+public class WLFindJSPServlet implements FindJSPServlet2 {
 
     private static final Logger LOGGER = Logger.getLogger(WLFindJSPServlet.class.getName());
 
@@ -70,6 +70,7 @@ public class WLFindJSPServlet implements FindJSPServlet {
 
     @Override
     public File getServletTempDirectory(String moduleContextPath) {
+        // XXX should it be always existing directory ?
         ApplicationDescriptor desc = getApplicationDescriptor(moduleContextPath);
         if (desc == null) {
             return null;
@@ -87,7 +88,8 @@ public class WLFindJSPServlet implements FindJSPServlet {
                     // FIXME multiple subdirs - what does that mean
                     File servletDir = new File(subdir, "jsp_servlet"); // NOI18N
                     if (servletDir.exists() && servletDir.isDirectory()) {
-                        return servletDir;
+                        // FIXME make simpler
+                        return servletDir.getParentFile();
                     }
                 }
             }
@@ -104,7 +106,7 @@ public class WLFindJSPServlet implements FindJSPServlet {
         String[] parts = fixedJspResourcePath.split("/"); // NOI18N
         String jspFile = parts[parts.length - 1];
 
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder("jsp_servlet/"); // NOI18N
         for (int i = 0; i < (parts.length - 1); i++) {
             result.append("_").append(parts[i]).append("/"); // NOI18N
         }
@@ -118,6 +120,28 @@ public class WLFindJSPServlet implements FindJSPServlet {
         }
         return result.toString();
     }
+
+    @Override
+    public String getServletBasePackageName(String moduleContextPath) {
+        return "jsp_servlet"; // NOI18N
+    }
+
+    @Override
+    public String getServletSourcePath(String moduleContextPath, String jspRelativePath) {
+        StringBuilder builder = new StringBuilder("jsp_servlet/"); // NOI18N
+        String parts[] = jspRelativePath.split("/"); // NOI18N
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (part.length() > 0 && i < (parts.length - 1)) {
+                builder.append("_"); // NOI18N
+            }
+            builder.append(part);
+            if (i < (parts.length - 1)) {
+                builder.append("/"); // NOI18N
+            }
+        }
+        return builder.toString();
+    } 
 
     @Override
     public String getServletEncoding(String moduleContextPath, String jspResourcePath) {

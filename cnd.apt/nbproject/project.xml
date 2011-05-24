@@ -28,7 +28,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.13.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -65,14 +65,17 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.microchip.mplab.nbide.csmbridge</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
-                <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <package>org.netbeans.modules.cnd.apt.debug</package>
                 <package>org.netbeans.modules.cnd.apt.structure</package>
                 <package>org.netbeans.modules.cnd.apt.support</package>
+                <package>org.netbeans.modules.cnd.apt.support.lang</package>
                 <package>org.netbeans.modules.cnd.apt.support.spi</package>
                 <package>org.netbeans.modules.cnd.apt.utils</package>
             </friend-packages>

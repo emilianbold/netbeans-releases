@@ -357,7 +357,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitBlock(BlockTree tree, Object p) {
 	return rewriteChildren(tree);
     }
-    public Tree visitDisjunctiveType(DisjunctiveTypeTree tree, Object p) {
+    public Tree visitUnionType(UnionTypeTree tree, Object p) {
         return rewriteChildren(tree);
     }
     public Tree visitDoWhileLoop(DoWhileLoopTree tree, Object p) {
@@ -629,10 +629,10 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
 
-    protected final DisjunctiveTypeTree rewriteChildren(DisjunctiveTypeTree tree) {
+    protected final UnionTypeTree rewriteChildren(UnionTypeTree tree) {
 	List<? extends Tree> newComponents = translate(tree.getTypeAlternatives());
 	if (newComponents!=tree.getTypeAlternatives()) {
-	    DisjunctiveTypeTree n = make.DisjunctiveType(newComponents);
+	    UnionTypeTree n = make.UnionType(newComponents);
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);
 	    tree = n;

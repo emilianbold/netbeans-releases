@@ -67,12 +67,10 @@ import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -391,7 +389,6 @@ public class DependenciesNode extends AbstractNode {
         public void actionPerformed(ActionEvent evnt) {
             RP.post(new Runnable() {
                 public void run() {
-                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                     Node[] nds = getChildren().getNodes();
                     ProgressContributor[] contribs = new ProgressContributor[nds.length];
                     for (int i = 0; i < nds.length; i++) {
@@ -407,9 +404,9 @@ public class DependenciesNode extends AbstractNode {
                         if (nds[i] instanceof DependencyNode) {
                             DependencyNode nd = (DependencyNode)nds[i];
                             if (javadoc && !nd.hasJavadocInRepository()) {
-                                nd.downloadJavadocSources(online, contribs[i], javadoc);
+                                nd.downloadJavadocSources(contribs[i], javadoc);
                             } else if (!javadoc && !nd.hasSourceInRepository()) {
-                                nd.downloadJavadocSources(online, contribs[i], javadoc);
+                                nd.downloadJavadocSources(contribs[i], javadoc);
                             } else {
                                 contribs[i].finish();
                             }

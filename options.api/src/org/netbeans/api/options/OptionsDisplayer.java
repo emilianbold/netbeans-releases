@@ -143,8 +143,10 @@ public final class OptionsDisplayer {
                     log.warning("Options Dialog is opened"); //NOI18N
                 }
                 if (retvalForRun) {
+                    log.fine("openImpl:impl.showOptionsDialog(" + categoryId+ ", " + subpath+ ")");
                     impl.showOptionsDialog(categoryId, subpath);
                 }
+                log.fine("openImpl return " + Boolean.valueOf(retvalForRun));
                 return Boolean.valueOf(retvalForRun);
             }
         });

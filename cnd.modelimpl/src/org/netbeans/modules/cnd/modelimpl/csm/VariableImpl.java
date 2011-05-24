@@ -46,8 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -57,6 +55,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -87,6 +87,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public static<T> VariableImpl<T> create(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         VariableImpl<T> variableImpl = new VariableImpl<T>(pos, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(registerInProject, variableImpl);
+        if (registerInProject && (type instanceof TypeImpl)) {
+            ((TypeImpl)type).setOwner(variableImpl);
+        }
         return variableImpl;
     }
 
@@ -103,6 +106,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
         VariableImpl<T> variableImpl = new VariableImpl<T>(ast, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(global, variableImpl);
+        if (global && (type instanceof TypeImpl)) {
+            ((TypeImpl)type).setOwner(variableImpl);
+        }
         return variableImpl;
     }
 
@@ -431,7 +437,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
@@ -444,7 +450,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
 
-    public VariableImpl(DataInput input) throws IOException {
+    public VariableImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
@@ -453,6 +459,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this._extern = (pack & 2) == 2;
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
+        if (type instanceof TypeImpl) {
+            ((TypeImpl)type).setOwner(this);
+        }
 
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // could be null UID (i.e. parameter)

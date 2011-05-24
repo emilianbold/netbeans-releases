@@ -188,16 +188,18 @@ public final class ClassSource {
             }
             // Backward compatibility for previously used ant artifacts. It resembles
             // AntArtifactQuery.findArtifactFromFile(file).getProject()
-            while (!file.exists()) {
+            while ((file != null) && !file.exists()) {
                 // Find some existing parent directory (hopefully in the same
                 // project) if the artifact is cleaned.
                 file = file.getParentFile();
             }
-            FileObject fob = FileUtil.toFileObject(file);
-            if (fob != null) {
-                Project project = FileOwnerQuery.getOwner(fob);
-                if (project != null) {
-                    return new ProjectEntry(project);
+            if (file != null) { // Issue 194202
+                FileObject fob = FileUtil.toFileObject(file);
+                if (fob != null) {
+                    Project project = FileOwnerQuery.getOwner(fob);
+                    if (project != null) {
+                        return new ProjectEntry(project);
+                    }
                 }
             }
             return null;
@@ -210,7 +212,6 @@ public final class ClassSource {
      * One logical component of the classpath.
      */
     public static abstract class Entry {
-        private Entry() {}
         /** List of folder URLs (dirs or roots of JARs) making up the classpath. */
         public abstract List<URL> getClasspath();
         /** Tries to add the classpath entries to a project, as with {@link ProjectClassPathModifier}. 

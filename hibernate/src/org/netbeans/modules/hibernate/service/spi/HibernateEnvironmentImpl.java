@@ -46,9 +46,11 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.hibernate.service.*;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     /** Handle to the current project to which this HibernateEnvironment is bound*/
     private Project project;
     private Logger logger = Logger.getLogger(HibernateEnvironmentImpl.class.getName());
+    private WeakReference<CustomClassLoader> loaderRef;
 
     /**
      * Creates a new hibernate environment for this NetBeans project.
@@ -582,8 +585,20 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      * @param classpaths, custom classpaths that are registered along with project based classpath.
      * @return classloader which is a URLClassLoader instance.
      */
+    @Override
     public ClassLoader getProjectClassLoader(URL[] classpaths) {
-        ClassLoader customClassLoader = new CustomClassLoader(classpaths, getClass().getClassLoader());
+        CustomClassLoader customClassLoader = new CustomClassLoader(classpaths, getClass().getClassLoader());
+        if(loaderRef !=null){
+            CustomClassLoader cL = loaderRef.get();
+            if(cL != null){
+                URL[] oldUrls = cL.getURLs();
+                classpaths = customClassLoader.getURLs();//reassign just in case if CustomClassLoader may modify assigned urls to have proper comparison below.
+                if(Arrays.equals(oldUrls, classpaths)) {
+                    return cL;
+                }
+            }
+        }
+        loaderRef = new WeakReference<CustomClassLoader>((CustomClassLoader) customClassLoader);
         return customClassLoader;
     }
 }

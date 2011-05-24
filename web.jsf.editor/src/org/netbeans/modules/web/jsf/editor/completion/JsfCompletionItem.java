@@ -47,7 +47,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,11 +64,11 @@ public class JsfCompletionItem {
     private static final int JSF_DEFAULT_SORT_PRIORITY = 5;
 
     //----------- Factory methods --------------
-    public static JsfTag createTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
+    public static JsfTag createTag(int substitutionOffset, AbstractFaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
         return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport);
     }
 
-    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, FaceletsLibrary library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
+    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, AbstractFaceletsLibrary library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
         return new JsfTagAttribute(name, substitutionOffset, library, tag, attr);
     }
 
@@ -76,16 +76,16 @@ public class JsfCompletionItem {
 
         private static final String BOLD_OPEN_TAG = "<b>"; //NOI18N
         private static final String BOLD_END_TAG = "</b>"; //NOI18N
-        private FaceletsLibrary.NamedComponent component;
+        private AbstractFaceletsLibrary.NamedComponent component;
         private boolean autoimport; //autoimport (declare) the tag namespace if set to true
 
-        public JsfTag(int substitutionOffset, FaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
+        public JsfTag(int substitutionOffset, AbstractFaceletsLibrary.NamedComponent component, String declaredPrefix, boolean autoimport) {
             super(generateItemText(component, declaredPrefix), substitutionOffset, null, true);
             this.component = component;
             this.autoimport = autoimport;
         }
 
-        private static String generateItemText(FaceletsLibrary.NamedComponent component, String declaredPrefix) {
+        private static String generateItemText(AbstractFaceletsLibrary.NamedComponent component, String declaredPrefix) {
             String libraryPrefix = component.getLibrary().getDefaultPrefix();
             return (declaredPrefix != null ? declaredPrefix : libraryPrefix) + ":" + component.getName(); //NOI18N
         }
@@ -105,7 +105,7 @@ public class JsfCompletionItem {
 
         private void autoimportLibrary(JTextComponent component) {
             final BaseDocument doc = (BaseDocument) component.getDocument();
-            FaceletsLibrary lib = JsfTag.this.component.getLibrary();
+            AbstractFaceletsLibrary lib = JsfTag.this.component.getLibrary();
             LibraryUtils.importLibrary(doc, lib, null);
         }
 
@@ -188,11 +188,11 @@ public class JsfCompletionItem {
 
     public static class JsfTagAttribute extends HtmlCompletionItem.Attribute {
 
-        private FaceletsLibrary library;
+        private AbstractFaceletsLibrary library;
         private org.netbeans.modules.web.jsfapi.api.Tag tag;
         private org.netbeans.modules.web.jsfapi.api.Attribute attr;
 
-        public JsfTagAttribute(String value, int offset, FaceletsLibrary library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
+        public JsfTagAttribute(String value, int offset, AbstractFaceletsLibrary library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
             super(value, offset, attr.isRequired(), null);
             this.library = library;
             this.tag = tag;
@@ -236,7 +236,7 @@ public class JsfCompletionItem {
 
     }
 
-    private static String getLibraryHelpHeader(FaceletsLibrary library) {
+    private static String getLibraryHelpHeader(AbstractFaceletsLibrary library) {
         StringBuilder sb = new StringBuilder();
         sb.append("<div><b>Library:</b> "); //NOI18N
         sb.append(library.getNamespace());

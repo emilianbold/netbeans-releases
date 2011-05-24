@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectSettingsValidator;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * Key for ProjectSettingsValidator data
@@ -59,7 +59,7 @@ public final class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
         super(project);
     }
 
-    ProjectSettingsValidatorKey(DataInput in) throws IOException {
+    ProjectSettingsValidatorKey(RepositoryDataInput in) throws IOException {
         super(in);
     }
 

@@ -80,7 +80,7 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName; // NOI18N
         File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null, false);
         assertNotNull(Utilities.openProject(projectDir));
     }
     
@@ -94,7 +94,7 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName; // NOI18N
         File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null, false);
         Utilities.openProject(projectDir);
         assertNotNull(Utilities.closeProject(projName));
     }

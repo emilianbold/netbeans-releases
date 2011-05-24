@@ -52,6 +52,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -64,9 +65,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
+import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.windows.TopComponent;
@@ -82,8 +82,8 @@ public final class MemoryWindow extends TopComponent
 {
 
     /** generated Serialized Version UID */
-    static final String preferredID = "MemoryWindow";	// NOI18N
-    static MemoryWindow DEFAULT;
+    private static final String preferredID = "MemoryWindow";	// NOI18N
+    private static MemoryWindow DEFAULT;
 
     private transient JComponent tree = null;
     private String name;
@@ -101,70 +101,49 @@ public final class MemoryWindow extends TopComponent
     private String memory_start;
     private String memory_length;
     private JTextField controlLengthText;
-    private String[] memory_formats = { 
-                                        Catalog.get("L_Hexadecimal"),    //NOI18N
-                                        Catalog.get("l_Hexadecimal"),    //NOI18N
-                                        Catalog.get("w_Hexadecimal"),    //NOI18N
-                                        Catalog.get("l_Decimal"),        //NOI18N
-                                        Catalog.get("l_Octal"),          //NOI18N
-                                        Catalog.get("L_Float"),          //NOI18N
-                                        Catalog.get("l_Float"),          //NOI18N
-                                        Catalog.get("L_Instructions"),   //NOI18N
-                                        Catalog.get("L_Characters"),     //NOI18N
-                                        Catalog.get("L_WideCharacters"), //NOI18N
-                                      };
-    private String[] short_memory_formats = {
-                                              "lX",       //NOI18N
-                                              "X",        //NOI18N
-                                              "x",        //NOI18N
-                                              "D",        //NOI18N
-                                              "O",        //NOI18N
-                                              "F",        //NOI18N
-                                              "f",        //NOI18N
-                                              "i",        //NOI18N
-                                              "c",        //NOI18N
-                                              "w",        //NOI18N
-                                             };
     private JComboBox controlFormatCombo;
     private FormatListener format_listener;
-    private int memory_format = 1;
+    private FormatOption memory_format;
 
     private boolean needInitData=true;
     private JComboBox controlAddressCombo;
     private String selected_text = null;
 
-    public static TopComponent getDefault() {
+    public static synchronized MemoryWindow getDefault() {
         if (DEFAULT == null) {
-            MemoryWindow tc = (MemoryWindow) WindowManager.getDefault().findTopComponent(preferredID);
-            if (tc == null)
-                new MemoryWindow();
+            DEFAULT = (MemoryWindow) WindowManager.getDefault().findTopComponent(preferredID);
+            if (DEFAULT == null) {
+                DEFAULT = new MemoryWindow();
+            }
         }
         return DEFAULT;
     }
     
-    public MemoryWindow() {
+    private MemoryWindow() {
 	name = Catalog.get("TITLE_MemoryWindow");    //NOI18N
 	view_name = Catalog.get("TITLE_MemoryView"); //NOI18N
 	super.setName(name);
-	DEFAULT = this;
 	final String iconDir = "org/netbeans/modules/cnd/debugger/common2/icons/";//NOI18N
 	setIcon(org.openide.util.ImageUtilities.loadImage
 	    (iconDir + "memory_browser.png")); // NOI18N
     }
 
+    @Override
     protected String preferredID() {
         return this.getClass().getName();
     }
 
+    @Override
     protected void componentShowing () {
-        super.componentShowing ();
-	// 6661013, always connect to current debugger
-	connectToDebugger(DebuggerManager.get().currentDebugger());
+        super.componentShowing();
         needInitData=true;
         updateWindow();
+        // 6661013, always connect to current debugger
+	connectToDebugger(DebuggerManager.get().currentDebugger());
     }
 
     // interface TopComponent
+    @Override
     protected void componentHidden() {
 	if (debugger != null) {
 	    debugger.registerMemoryWindow(null);
@@ -173,6 +152,7 @@ public final class MemoryWindow extends TopComponent
     }
     
     // interface TopComponent
+    @Override
     protected void componentClosed () {
 	if (debugger != null) {
 	    debugger.registerMemoryWindow(null);
@@ -186,43 +166,84 @@ public final class MemoryWindow extends TopComponent
         controlAddressCombo.requestFocusInWindow();
     }
 
-    public void setControlPanelData (String start, String length, int index) {
-	memory_start = start;
-	memory_length = length;
-	memory_format = index;
-        controlAddressCombo.getEditor().setItem(start);
-	controlLengthText.setText(length);
-        controlFormatCombo.setSelectedIndex(index);
+    public FormatOption getMemoryFormat() {
+        return memory_format;
+    }
+
+    private final WeakHashMap<NativeDebugger, Model> models = new WeakHashMap<NativeDebugger, Model>();
+    
+    public void setDebugger(NativeDebugger debugger) {
+//        boolean update = this.debugger != debugger;
+        
+        // persist current model
+        if (this.debugger != null) {
+            Model oldModel = models.get(this.debugger);
+            oldModel.start = memory_start;
+            oldModel.length = memory_length;
+            oldModel.format = memory_format;
+        }
+        
+	this.debugger = debugger;
+       
+        if (debugger == null) {
+            return;
+        }
+        
+        // find and set new model
+        Model newModel = models.get(debugger);
+        if (newModel == null) {
+            newModel = new Model();
+            models.put(debugger, newModel);
+        }
+        memory_start = newModel.start;
+	memory_length = newModel.length;
+	memory_format = newModel.format;
+        controlAddressCombo.getEditor().setItem(memory_start);
+	controlLengthText.setText(memory_length);
+        // set memory formats (causes update)
+        updateFormats();
     }
     
-    public void setDebugger (NativeDebugger debugger) {
-	this.debugger = debugger;
+    private void updateFormats() {
+        if (debugger != null) {
+            controlFormatCombo.setModel(new DefaultComboBoxModel(debugger.getMemoryFormats()));
+            updateSelectedFormat();
+        }
+    }
+    
+    private void updateSelectedFormat() {
+        if (memory_format != null) {
+            controlFormatCombo.setSelectedItem(memory_format);
+            if (controlFormatCombo.getSelectedItem() != null) {
+                return;
+            }
+        }
+        controlFormatCombo.setSelectedIndex(0);
     }
 
-    protected void connectToDebugger (NativeDebugger debugger) {
-	this.debugger = debugger;
+    private void connectToDebugger(NativeDebugger debugger) {
 	if (debugger == null) return;
 	debugger.registerMemoryWindow(this);
+        setDebugger(debugger);
     }
 
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
             
+    @Override
     public String getName () {
         return (name);
     }
     
+    @Override
     public String getToolTipText () {
         return (view_name);
     }
     
     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-        String ac = actionEvent.getActionCommand();
-        if (ac.equals("comboBoxChanged")) {	// NOI18N
-            JComboBox cb = (JComboBox) actionEvent.getSource();
-            memory_start = (String) cb.getSelectedItem();
-        }
+        memory_start = (String) controlAddressCombo.getSelectedItem();
         updateMems();
     }
     
@@ -238,13 +259,10 @@ public final class MemoryWindow extends TopComponent
 
     private void updateMems() {
         memory_length = controlLengthText.getText();
-        memory_format = controlFormatCombo.getSelectedIndex();
-	if (validate(memory_length))
-	    if (debugger != null) {
-		debugger.requestMems(memory_start, memory_length, 
-			    short_memory_formats[memory_format], 
-			    memory_format);
-	    }
+        memory_format = (FormatOption)controlFormatCombo.getSelectedItem();
+	if (validate(memory_length) && memory_format != null && debugger != null) {
+            debugger.requestMems(memory_start, memory_length, memory_format);
+        }
     }
 
     private int addrMap(String addr) {
@@ -257,81 +275,19 @@ public final class MemoryWindow extends TopComponent
     }
 
     public void updateData(List<String> memLines) {
-        if ((memLines == null) || (memLines.isEmpty())) {
-	    return;
-        }
-
 	// Add new address to addressList
 	int index = addrMap(memory_start);
 	if (index == -1) {
 	    // not found
             // Add address to the controlAddressCombo
             controlAddressCombo.addItem(memory_start);
+            controlAddressCombo.setSelectedItem(memory_start);
 	}
 
         current_addrs.clear();
         current_addrs.addAll(memLines);
         
         updateWindow();
-    }
-    
-    public String align_memvalue(String memvalue) {
-        int i, j, k, valuelen, maxvaluelen, total_len;
-        String value, new_memvalue;
-        char c;
-        
-        if ((memory_format == 3) || (memory_format == 4)) {
-            total_len = memvalue.length();
-            j = memvalue.indexOf(':', 0);
-            new_memvalue = "";		// NOI18N
-       	    if (j >= 0) {
-       	        // Symbol information
-       	        j++;
-       	        new_memvalue = memvalue.substring(0, j);
-       	    } else {
-       	        j = 0;
-       	    }
-       	    for (i = 0 ; i < 4 ; i++) {
-       	        for ( ; j < total_len ; j++) {
-       	            c = memvalue.charAt(j);
-       	            if ((c == ' ') || (c == '\t')) {
-       	                new_memvalue = new_memvalue + " ";	// NOI18N
-       	                continue;
-       	            }
-       	            break;
-       	        }
-       	        if (total_len <= j) break;
-       	        value = "";	// NOI18N
-       	        valuelen = 0;
-       	        maxvaluelen = 12;
-       	        if (memory_format == 3) {
-       	            if (memvalue.charAt(j) == '-') {
-       	                value = "-"; // NOI18N
-       	                j++;
-       	            } else {
-       	                value = "+"; // NOI18N
-       	            }
-       	            valuelen = 1;
-       	            maxvaluelen = 11;
-       	        }
-       	        for ( ; j < total_len ; j++) {
-       	            c = memvalue.charAt(j);
-       	            if ((c >= '0') && (c <= '9')) {
-       	                value = value + c;
-       	                valuelen++;
-       	                continue;
-       	            }
-       	            break;
-       	        }
-       	        if (valuelen > maxvaluelen) return memvalue; // something wrong
-       	        for ( ; valuelen < maxvaluelen ; valuelen++) {
-       	            value = " " + value; // NOI18N
-       	        }
-       	        new_memvalue = new_memvalue + value;
-            }
-            return new_memvalue;
-        }
-        return memvalue;
     }
     
     private void updateWindow () {
@@ -370,7 +326,6 @@ public final class MemoryWindow extends TopComponent
             // Default settings
             memory_start = "main"; // NOI18N
             memory_length = "80";  // NOI18N
-            memory_format = 1;
             
 	    //
 	    // control
@@ -398,8 +353,8 @@ public final class MemoryWindow extends TopComponent
 		new JLabel(Catalog.get("Mem_LBL_Format"));	// NOI18N
             controlFormatLabel.setToolTipText(Catalog.get("TIP_MemFormat"));	// NOI18N
 	    format_listener = new FormatListener();
-            controlFormatCombo = new JComboBox(memory_formats);
-            controlFormatCombo.setSelectedIndex(memory_format);
+            controlFormatCombo = new JComboBox();
+            updateFormats();
             controlFormatCombo.addActionListener(format_listener);
 
 	    // 6754292
@@ -505,32 +460,25 @@ public final class MemoryWindow extends TopComponent
 	    if (ac.equals("comboBoxChanged")) {		// NOI18N
 		// Changed start address
 		JComboBox cb = (JComboBox)ev.getSource();
-		String s = (String)cb.getSelectedItem();
-		for (int i=0; i < memory_formats.length; i++) {
-		    if (memory_formats[i].equals(s)) {
-			memory_format = i;
-			controlFormatCombo.setSelectedIndex(i);
-			updateMems();
-		    }
-		}
+                memory_format = (FormatOption)cb.getSelectedItem();
+                updateMems();
 	    }
         }
     }
 
-    class PopupListener extends MouseAdapter
-                           implements ActionListener, 
-                                      PopupMenuListener
-    {
+    class PopupListener extends MouseAdapter {
         JPopupMenu popup;
 
         PopupListener(JPopupMenu popupMenu) {
             popup = popupMenu;
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             maybeShowPopup(e);
         }
@@ -547,23 +495,6 @@ public final class MemoryWindow extends TopComponent
                            e.getX(), e.getY());
             }
         }
-        public void actionPerformed(ActionEvent ev) {
-            JMenuItem source = (JMenuItem)(ev.getSource());
-            String s = source.getText();
-            for (int i=0; i < memory_formats.length; i++) {
-                if (memory_formats[i].equals(s)) {
-                    memory_format = i;
-                    controlFormatCombo.setSelectedIndex(i);
-                    updateMems();
-                }
-            }
-        }
-        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-        }
-        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        }
-        public void popupMenuCanceled(PopupMenuEvent e) {
-        }
     }
 
     class FollowSelectedPointerAction extends AbstractAction
@@ -573,7 +504,7 @@ public final class MemoryWindow extends TopComponent
                 new ImageIcon("paste.gif"));			// NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
-            FollowSelectedPointer(selected_text);
+            followSelectedPointer(selected_text);
         }
     }
 
@@ -605,7 +536,7 @@ public final class MemoryWindow extends TopComponent
     }
     */
 
-    protected void FollowSelectedPointer(String s) {
+    protected void followSelectedPointer(String s) {
         int i;
         // Remove all spaces and tabs at the beginning
         for (i=0; i < s.length(); i++) {
@@ -634,7 +565,14 @@ public final class MemoryWindow extends TopComponent
         updateMems();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("MemoryBrowserWindow");
+    }
+    
+    private static class Model {
+        public String start = "main"; //NOI18N
+        public String length = "80"; //NOI18N
+        public FormatOption format = null;
     }
 }

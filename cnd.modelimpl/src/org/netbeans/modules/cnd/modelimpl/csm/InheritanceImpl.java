@@ -46,16 +46,19 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmInheritance implementation
@@ -140,6 +143,13 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
     public CsmClassifier getClassifier() {
         if (!CsmBaseUtilities.isValid(resolvedClassifier)) {
             resolvedClassifier = getAncestorType().getClassifier();
+            if (resolvedClassifier != null) {
+                if (UIDProviderIml.isPersistable(UIDs.get(this))) {
+                    if (UIDProviderIml.isPersistable(UIDs.get(resolvedClassifier))) {
+                        RepositoryUtils.put(this);
+                    }
+                }
+            }
         }
         return resolvedClassifier;
     }
@@ -183,46 +193,34 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
     // impl of persistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
         output.writeBoolean(this.virtual);
-        //assert this.ancestorName != null;
-        //output.writeUTF(ancestorName.toString());
         PersistentUtils.writeType(ancestorType, output);
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUID(scope, output);
-
         // save cache
-        /*UIDObjectFactory.getDefaultFactory().writeUID(classifierCacheUID, output);
-        boolean theSame = ((CsmUID)resolvedAncestorClassCacheUID == (CsmUID)classifierCacheUID);
-        output.writeBoolean(theSame);
-        if (!theSame) {
-            UIDObjectFactory.getDefaultFactory().writeUID(resolvedAncestorClassCacheUID, output);        
-        }*/
+        CsmUID<CsmClassifier> toSave = UIDCsmConverter.objectToUID(resolvedClassifier);
+        if (!UIDProviderIml.isPersistable(toSave)) {
+            toSave = null;
+        }
+        factory.writeUID(toSave, output);
     }
 
-    public InheritanceImpl(DataInput input) throws IOException {
+    public InheritanceImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();
-        /*this.ancestorName = input.readUTF();
-        this.ancestorName = ancestorName.toString().indexOf("::") == -1 ? NameCache.getManager().getString(ancestorName) : QualifiedNameCache.getManager().getString(ancestorName); // NOI18N
-        assert this.ancestorName != null;*/
         this.ancestorType = PersistentUtils.readType(input);
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.scope = factory.readUID(input);
 
         // restore cached value
-        /*this.classifierCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        boolean theSame = input.readBoolean();
-        if (!theSame) {
-            this.resolvedAncestorClassCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        } else {
-            this.resolvedAncestorClassCacheUID = (CsmUID)this.classifierCacheUID;
-        }*/
+        CsmUID<CsmClassifier> uid = factory.readUID(input);
+        this.resolvedClassifier = UIDCsmConverter.UIDtoIdentifiable(uid);
     }    
 
     @Override

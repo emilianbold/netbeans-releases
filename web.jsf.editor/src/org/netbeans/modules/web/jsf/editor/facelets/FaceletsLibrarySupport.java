@@ -46,6 +46,8 @@ import java.util.Enumeration;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.spi.ConfigurationResourceProvider;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -87,7 +89,7 @@ public class FaceletsLibrarySupport {
      * the default and the declared one when
      * there is a tag library descriptor for the composite library
      */
-    private Map<String, FaceletsLibrary> faceletsLibraries;
+    private Map<String, AbstractFaceletsLibrary> faceletsLibraries;
 
     private long libraries_hash;
 
@@ -148,7 +150,7 @@ public class FaceletsLibrarySupport {
     }
 
     /** @return URI -> library map */
-    public synchronized Map<String, FaceletsLibrary> getLibraries() {
+    public synchronized Map<String, AbstractFaceletsLibrary> getLibraries() {
         checkLibraryDescriptorsUpToDate();
 
         if (faceletsLibraries == null) {
@@ -194,12 +196,12 @@ public class FaceletsLibrarySupport {
     // This method creates a library instances for the composite libraries without
     // a library descriptor and also adds the default composite library
     // namespace as a new key to the libraries map.
-    private void updateCompositeLibraries(Map<String, FaceletsLibrary> faceletsLibraries) {
+    private void updateCompositeLibraries(Map<String, AbstractFaceletsLibrary> faceletsLibraries) {
         List<String> libraryNames = new ArrayList<String>(jsfSupport.getIndex().getAllCompositeLibraryNames());
         //go through all the declared libraries, filter composite libraries
         //and add default namespace to the libraries map
-        Map<String, FaceletsLibrary> cclibsMap = new HashMap<String, FaceletsLibrary>();
-        for (FaceletsLibrary lib : faceletsLibraries.values()) {
+        Map<String, AbstractFaceletsLibrary> cclibsMap = new HashMap<String, AbstractFaceletsLibrary>();
+        for (AbstractFaceletsLibrary lib : faceletsLibraries.values()) {
             if (lib instanceof CompositeComponentLibrary) {
                 CompositeComponentLibrary cclib = (CompositeComponentLibrary)lib;
                 //add default namespace to the map
@@ -212,9 +214,9 @@ public class FaceletsLibrarySupport {
 
         faceletsLibraries.putAll(cclibsMap);
 
-        //create libraries for the rest of undeclared libs
+        //create libraries for the rest of the libraries (which have no facelets library descriptor associated)
         for (String libraryName : libraryNames) {
-            CompositeComponentLibrary ccl = new CompositeComponentLibrary(this, libraryName);
+            CompositeComponentLibrary ccl = new PureCompositeComponentLibrary(this, libraryName);
             //map the library only to the default namespace, it has no declaration
             faceletsLibraries.put(ccl.getDefaultNamespace(), ccl);
         }
@@ -222,7 +224,7 @@ public class FaceletsLibrarySupport {
     }
 
     //handle progress
-    private Map<String, FaceletsLibrary> findLibraries() {
+    private Map<String, AbstractFaceletsLibrary> findLibraries() {
         ProgressHandle progress = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(FaceletsLibrarySupport.class, "MSG_ParsingFaceletsLibraries")); //NOI18N
         progress.start();
@@ -234,7 +236,7 @@ public class FaceletsLibrarySupport {
         }
     }
 
-    private Map<String, FaceletsLibrary> _findLibraries() {
+    private Map<String, AbstractFaceletsLibrary> _findLibraries() {
         //use this module classloader
         ClassLoader originalLoader = this.getClass().getClassLoader();
         LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class={0}, "
@@ -291,7 +293,7 @@ public class FaceletsLibrarySupport {
         }
     }
 
-    private Map<String, FaceletsLibrary> parseLibraries() {
+    private Map<String, AbstractFaceletsLibrary> parseLibraries() {
         // initialize the resource providers for facelet-taglib documents
         List<ConfigurationResourceProvider> faceletTaglibProviders =
                 new ArrayList<ConfigurationResourceProvider>();
@@ -300,17 +302,21 @@ public class FaceletsLibrarySupport {
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
         faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
-        //2. second add a provider returning URLs of library descriptors found during indexing
-        //   the URLs points to both source roots and binary roots of dependent libraries.
-        final Collection<URL> urls = new ArrayList<URL>();
+        //2. second add a provider returning URIs of library descriptors found during indexing
+        //   the URIs points to both source roots and binary roots of dependent libraries.
+        final Collection<URI> uris = new ArrayList<URI>();
         for (IndexedFile file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
-            urls.add(URLMapper.findURL(file.getFile(), URLMapper.EXTERNAL));
+            try {
+                uris.add(URLMapper.findURL(file.getFile(), URLMapper.EXTERNAL).toURI());
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
 
             @Override
-            public Collection<URL> getResources(ServletContext sc) {
-                return urls;
+            public Collection<URI> getResources(ServletContext sc) {
+                return uris;
             }
         });
 
@@ -328,18 +334,20 @@ public class FaceletsLibrarySupport {
         //be overridden if the descriptors are found in any of the jars
         //on compile classpath.
         Collection<FileObject> libraryDescriptorFiles = DefaultFaceletLibraries.getInstance().getLibrariesDescriptorsFiles();
-        final Collection<URL> libraryURLs = new ArrayList<URL>();
+        final Collection<URI> libraryURIs = new ArrayList<URI>();
         for(FileObject fo : libraryDescriptorFiles) {
             try {
-                libraryURLs.add(fo.getURL());
+                libraryURIs.add(fo.getURL().toURI());
             } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (URISyntaxException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
             @Override
-            public Collection<URL> getResources(ServletContext sc) {
-                return libraryURLs;
+            public Collection<URI> getResources(ServletContext sc) {
+                return libraryURIs;
             }
         });
 
@@ -353,8 +361,8 @@ public class FaceletsLibrarySupport {
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
         processor.process(null, documents);
 
-        Map<String, FaceletsLibrary> libsMap = new HashMap<String, FaceletsLibrary>();
-        for (FaceletsLibrary lib : processor.compiler.libraries) {
+        Map<String, AbstractFaceletsLibrary> libsMap = new HashMap<String, AbstractFaceletsLibrary>();
+        for (AbstractFaceletsLibrary lib : processor.compiler.libraries) {
             libsMap.put(lib.getNamespace(), lib);
         }
 
@@ -378,13 +386,13 @@ public class FaceletsLibrarySupport {
 
     public static class Compiler {
 
-        private Collection<FaceletsLibrary> libraries = new HashSet<FaceletsLibrary>();
+        private Collection<AbstractFaceletsLibrary> libraries = new HashSet<AbstractFaceletsLibrary>();
 
         //FaceletsTaglibConfigProcessor puts the libraries here and since the
         //equals on the libraries is defined by comparing the namespaces,
         //the first library with a namespace will be preserved, the other
         //will be ignored
-        public void addTagLibrary(FaceletsLibrary lib) {
+        public void addTagLibrary(AbstractFaceletsLibrary lib) {
             libraries.add(lib);
         }
     }

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -60,10 +59,12 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.CharSequences;
 
 
@@ -145,7 +146,7 @@ public final class Unresolved implements Disposable {
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             throw new IllegalCallException();
         }
     }
@@ -168,12 +169,12 @@ public final class Unresolved implements Disposable {
 
 
 	@Override
-	public void write(DataOutput output) throws IOException {
+	public void write(RepositoryDataOutput output) throws IOException {
 	    throw new IllegalCallException();
 	}
     }
 
-    private static final String UNRESOLVED_FILE_FAKE_PATH = CndFileUtils.createLocalFile((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$").getAbsolutePath(); // NOI18N
+    private static final String UNRESOLVED_FILE_FAKE_PATH = FileUtil.normalizeFile(CndFileUtils.createLocalFile((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$")).getAbsolutePath(); // NOI18N
     public final class UnresolvedFile implements CsmFile, CsmIdentifiable, Disposable {
 
         private UnresolvedFile() {

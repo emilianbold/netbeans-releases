@@ -156,4 +156,9 @@ public class OptionValue {
     public boolean isDirty() {
 	return dirty == true;
     }
+
+    @Override
+    public String toString() {
+        return currValue + (dirty ? " (dirty)" : ""); //NOI18N
+    }
 }

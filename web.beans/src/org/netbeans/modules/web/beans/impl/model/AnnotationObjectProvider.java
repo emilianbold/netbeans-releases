@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -100,12 +101,14 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createInitialObjects()
      */
+    @Override
     public List<BindingQualifier> createInitialObjects() throws InterruptedException {
         final List<BindingQualifier> result = new LinkedList<BindingQualifier>();
         final Set<TypeElement> set = new HashSet<TypeElement>(); 
         getHelper().getAnnotationScanner().findAnnotations(getAnnotationName(), 
                 AnnotationScanner.TYPE_KINDS, 
                 new AnnotationHandler() {
+                    @Override
                     public void handleAnnotation(TypeElement type, 
                             Element element, AnnotationMirror annotation) 
                     {
@@ -137,6 +140,7 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createObjects(javax.lang.model.element.TypeElement)
      */
+    @Override
     public List<BindingQualifier> createObjects( TypeElement type ) {
         final List<BindingQualifier> result = new ArrayList<BindingQualifier>();
         Map<String, ? extends AnnotationMirror> annotationsByType = 
@@ -162,6 +166,7 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#modifyObjects(javax.lang.model.element.TypeElement, java.util.List)
      */
+    @Override
     public boolean modifyObjects( TypeElement type, List<BindingQualifier> bindings ) {
         /*
          * Type element couldn't have the same annotation twice.
@@ -178,27 +183,19 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
         return false;
     }
     
-    static TypeElement checkSuper( TypeElement type , String annotationName, 
-            AnnotationModelHelper helper ) 
+    static void visitSpecializes( TypeElement type, AnnotationModelHelper helper,
+            SpecializeVisitor visitor ) 
     {
         if ( !hasSpecializes( type, helper )){
-            return null;
+            return;
         }
         
         TypeElement superClass = helper.getSuperclass(type);
-        if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.equals( 
-                annotationName))
-        {
-            if ( checkSpecializedDefault( superClass, helper )){
-                return superClass;
+        if ( superClass != null ){
+            if ( visitor.visit( superClass ) ){
+                return;
             }
-        }
-        if ( hasAnnotation( superClass , annotationName, helper)){
-            return superClass;
-        }
-        TypeElement foundSuper = checkSuper( superClass, annotationName , helper );
-        if ( foundSuper!= null ){
-            return foundSuper;
+            visitSpecializes(superClass, helper, visitor);
         }
         
         /* interfaces could not be injectables , but let's inspect them as possible 
@@ -211,49 +208,56 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
                 asElement(typeMirror);
             if ( el instanceof TypeElement ){
                 TypeElement interfaceElement = (TypeElement) el;
-                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.
-                        equals( annotationName))
-                {
-                    if ( checkSpecializedDefault( interfaceElement, helper )){
-                        return superClass;
-                    }
-                }
-                if ( hasAnnotation( interfaceElement  , annotationName, helper)){
-                    return interfaceElement;
-                }
-                foundSuper = checkSuper( interfaceElement , annotationName , helper);
-                if ( foundSuper != null ){
-                    return foundSuper;
-                }
+                visitSpecializes( interfaceElement , helper , visitor );
             }
         }
-        
-        return null;
+    }
+    
+    static TypeElement checkSuper( TypeElement type , final  String annotationName, 
+            final AnnotationModelHelper helper ) 
+    {
+        final TypeElement result[] = new TypeElement[1];
+        SpecializeVisitor visitor = new SpecializeVisitor(){
+
+            @Override
+            public boolean visit( TypeElement element ) {
+                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.equals( 
+                        annotationName))
+                {
+                    if ( checkSpecializedDefault( element, helper )){
+                        result[0] = element;
+                        return true;
+                    }
+                }
+                if ( hasAnnotation( element , annotationName, helper)){
+                    result[0] = element;
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean visit( ExecutableElement element ) {
+                return false;
+            }
+            
+        };
+        visitSpecializes(type, helper, visitor);
+        return result[0];
     }
     
     /*
      * This method is called only for parent which are specialized.
-     * In this case @Current is not "inherited" child from parents. 
+     * In this case @Default is not "inherited" by child from parents. 
      */
     static boolean checkSpecializedDefault( Element element , AnnotationModelHelper helper){
-        /*
-        Set<String> bindingNames = getBindings(element, helper);
-        if ( bindingNames.contains(
-                        WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
-        {
-            return true;
-        }
-        if ( bindingNames.size() == 0 ){
-            return true;
-        }
-        */
         return helper.hasAnnotation( helper.getCompilationController().
                 getElements().getAllAnnotationMirrors(element), 
                 WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION);
     }
     
     static  boolean checkDefault( Element element , AnnotationModelHelper helper){
-        Set<String> qualifierNames = getQualifiers(element, helper);
+        Set<String> qualifierNames = getQualifiers(element, helper , false );
         if ( qualifierNames.contains(
                 WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION))
         {
@@ -267,27 +271,45 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
         return false;
     }
     
-    static Set<String> getQualifiers(Element element , AnnotationModelHelper helper){
-        Set<String> bindingNames = new HashSet<String>();
+    static Set<String> getQualifiers(Element element , 
+            AnnotationModelHelper helper , boolean event )
+    {
+        final Set<String> result = new HashSet<String>();
+        AnnotationHandleStrategy strategy = new AnnotationHandleStrategy(){
+
+            @Override
+            public void handleAnnotation( AnnotationMirror annotationMirror , 
+                    TypeElement annotationElement) 
+            {
+                result.add(annotationElement.getQualifiedName().toString());
+            }
+        };
+        findQualifiers(element, helper, event, strategy);
+        return result;
+    }
+    
+    static void findQualifiers(Element element , 
+            AnnotationModelHelper helper , boolean event , 
+            AnnotationHandleStrategy strategy )
+    {
         List<? extends AnnotationMirror> allAnnotationMirrors = 
-            helper.getCompilationController().getElements().getAllAnnotationMirrors( element );
+            helper.getCompilationController().getElements().
+            getAllAnnotationMirrors( element );
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             DeclaredType annotationType = annotationMirror
                     .getAnnotationType();
             TypeElement annotationElement = (TypeElement) annotationType
                     .asElement();
-            if (isQualifier(annotationElement, helper )) {
-                bindingNames.add(annotationElement.getQualifiedName()
-                        .toString());
+            if (isQualifier(annotationElement, helper , event )) {
+                strategy.handleAnnotation(annotationMirror , annotationElement );
             }
         }
-        return bindingNames;
     }
     
     static boolean isQualifier( TypeElement annotationElement , 
-            AnnotationModelHelper helper) 
+            AnnotationModelHelper helper, boolean event ) 
     {
-        QualifierChecker checker = QualifierChecker.get();
+        QualifierChecker checker = QualifierChecker.get( event );
         checker.init(annotationElement, helper );
         return checker.check();
     }
@@ -454,6 +476,15 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
                 }
             }
         }
+    }
+    
+    static interface AnnotationHandleStrategy {
+        void handleAnnotation( AnnotationMirror mirror , TypeElement annotation );
+    }
+    
+    static interface SpecializeVisitor {
+        boolean visit( TypeElement superElement );
+        boolean visit( ExecutableElement overridenElement );
     }
     
     private AnnotationModelHelper myHelper;

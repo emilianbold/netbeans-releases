@@ -11,7 +11,7 @@ public class NbModuleSuiteMockServiceTest extends NbTestCase {
     public static Test suite() {
         NbModuleSuite.Configuration testConfig = NbModuleSuite.createConfiguration(NbModuleSuiteMockServiceTest.class);
         testConfig = testConfig.gui(false);
-        return NbModuleSuite.create(testConfig);
+        return testConfig.suite();
     }
 
     public NbModuleSuiteMockServiceTest(String name) {

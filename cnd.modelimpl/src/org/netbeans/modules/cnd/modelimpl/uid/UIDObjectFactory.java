@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.uid;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,9 +55,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl.FileNameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentDeclarations.OffsetSortedKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentMacros.NameSortedKey;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentReferences.ReferenceImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
@@ -89,6 +90,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnnamedOffsetableDecl
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedClassUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedFileUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedNamespaceUID;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
@@ -120,7 +123,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return theFactory;
     }
 
-    public void writeUID(CsmUID<?> anUID, DataOutput aStream) throws IOException {
+    public void writeUID(CsmUID<?> anUID, RepositoryDataOutput aStream) throws IOException {
         if (!(anUID == null || anUID instanceof SelfPersistent)) {
             assert false : anUID + ", " + anUID.getObject();
         }
@@ -128,14 +131,14 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     @SuppressWarnings("unchecked") // okay
-    public <T> CsmUID<T> readUID(DataInput aStream) throws IOException {
+    public <T> CsmUID<T> readUID(RepositoryDataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
         assert out == null || out instanceof CsmUID<?>;
         return (CsmUID<T>) out;
     }
 
-    public <T> void writeUIDCollection(Collection<CsmUID<T>> aCollection, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeUIDCollection(Collection<CsmUID<T>> aCollection, RepositoryDataOutput aStream, boolean sync) throws IOException {
         assert aStream != null;
         if (aCollection == null) {
             aStream.writeInt(NULL_POINTER);
@@ -151,14 +154,14 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <A, T extends Collection<CsmUID<A>>> T readUIDCollection(T aCollection, DataInput aStream) throws IOException {
+    public <A, T extends Collection<CsmUID<A>>> T readUIDCollection(T aCollection, RepositoryDataInput aStream) throws IOException {
         assert aCollection != null;
         assert aStream != null;
         int collSize = aStream.readInt();
         return readUIDCollection(aCollection, aStream, collSize);
     }
 
-    public <A, T extends Collection<CsmUID<A>>> T readUIDCollection(T aCollection, DataInput aStream, int collSize) throws IOException {
+    public <A, T extends Collection<CsmUID<A>>> T readUIDCollection(T aCollection, RepositoryDataInput aStream, int collSize) throws IOException {
         if (collSize == NULL_POINTER) {
             return null;
         } else {
@@ -172,7 +175,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
 
-    public <T> void writeStringToUIDMap(Map<CharSequence, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeStringToUIDMap(Map<CharSequence, CsmUID<T>> aMap, RepositoryDataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
@@ -189,7 +192,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void writeStringToUIDMapSet(Map<CharSequence, Set<CsmUID<T>>> aMap, DataOutput aStream) throws IOException {
+    public <T> void writeStringToUIDMapSet(Map<CharSequence, Set<CsmUID<T>>> aMap, RepositoryDataOutput aStream) throws IOException {
         assert aMap != null;
         assert aStream != null;
         int collSize = aMap.size();
@@ -208,7 +211,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void writeOffsetSortedToUIDMap(Map<OffsetSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeOffsetSortedToUIDMap(Map<OffsetSortedKey, CsmUID<T>> aMap, RepositoryDataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
@@ -223,7 +226,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void writeNameSortedToUIDMap(Map<NameSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeNameSortedToUIDMap(Map<NameSortedKey, CsmUID<T>> aMap, RepositoryDataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
@@ -238,7 +241,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void writeNameSortedToUIDMap2(Map<NamespaceImpl.FileNameSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public <T> void writeNameSortedToUIDMap2(Map<NamespaceImpl.FileNameSortedKey, CsmUID<T>> aMap, RepositoryDataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
@@ -253,7 +256,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public void writeStringToArrayUIDMap(Map<CharSequence, Object> aMap, DataOutput aStream, boolean sync) throws IOException {
+    public void writeStringToArrayUIDMap(Map<CharSequence, Object> aMap, RepositoryDataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
         assert aStream != null;
         aMap = sync ? copySyncMap(aMap) : aMap;
@@ -295,7 +298,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return out;
     }
 
-    public <T> void readStringToUIDMap(Map<CharSequence, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager, int collSize) throws IOException {
+    public <T> void readStringToUIDMap(Map<CharSequence, CsmUID<T>> aMap, RepositoryDataInput aStream, APTStringManager manager, int collSize) throws IOException {
         for (int i = 0; i < collSize; ++i) {
             CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
@@ -305,7 +308,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public <T> void readStringToUIDMapSet(Map<CharSequence, Set<CsmUID<T>>> aMap, DataInput aStream, APTStringManager manager, int collSize) throws IOException {
+    public <T> void readStringToUIDMapSet(Map<CharSequence, Set<CsmUID<T>>> aMap, RepositoryDataInput aStream, APTStringManager manager, int collSize) throws IOException {
         for (int i = 0; i < collSize; ++i) {
             CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
@@ -320,31 +323,38 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
-    public TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> readOffsetSortedToUIDMap(DataInput aStream, APTStringManager manager) throws IOException {
+    public TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> readOffsetSortedToUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperDeclarationsSortedMap helper = new HelperDeclarationsSortedMap(this, aStream, manager);
         return new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(helper);
     }
 
-    public TreeMap<NameSortedKey, CsmUID<CsmMacro>> readNameSortedToUIDMap(DataInput aStream, APTStringManager manager) throws IOException {
+    public TreeMap<NameSortedKey, CsmUID<CsmMacro>> readNameSortedToUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperMacrosSortedMap helper = new HelperMacrosSortedMap(this, aStream, manager);
         return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>(helper);
     }
 
-    public TreeMap<NamespaceImpl.FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> readNameSortedToUIDMap2(DataInput aStream, APTStringManager manager) throws IOException {
+    public TreeMap<ReferenceImpl, CsmUID<CsmObject>> readReferencesSortedToUIDMap(RepositoryDataInput aStream, CsmUID<CsmFile> fileUID) throws IOException {
+        assert aStream != null;
+        HelperReferencesSortedMap helper = new HelperReferencesSortedMap(this, aStream, fileUID);
+        return new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(helper);
+    }
+
+
+    public TreeMap<NamespaceImpl.FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> readNameSortedToUIDMap2(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperNamespaceDefinitionSortedMap helper = new HelperNamespaceDefinitionSortedMap(this, aStream, manager);
         return new TreeMap<NamespaceImpl.FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>(helper);
     }
 
-    public TreeMap<CharSequence, Object> readStringToArrayUIDMap(DataInput aStream, APTStringManager manager) throws IOException {
+    public TreeMap<CharSequence, Object> readStringToArrayUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperCharSequencesSortedMap helper = new HelperCharSequencesSortedMap(this, aStream, manager);
         return new TreeMap<CharSequence, Object>(helper);
     }
 
-    public TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>> readStringToUIDMap(DataInput aStream, APTStringManager manager) throws IOException {
+    public TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>> readStringToUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperCharSequencesSortedMap2 helper = new HelperCharSequencesSortedMap2(this, aStream, manager);
         return new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(helper);
@@ -398,7 +408,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     @Override
-    protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
+    protected SelfPersistent createObject(int handler, RepositoryDataInput aStream) throws IOException {
 
         SelfPersistent anUID;
         boolean share = false;
@@ -530,12 +540,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     };
 
     private static final class HelperDeclarationsSortedMap implements SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> {
-        private final DataInput aStream;
+        private final RepositoryDataInput aStream;
         private final int size;
         private final UIDObjectFactory factory;
         private final APTStringManager manager;
 
-        private HelperDeclarationsSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
+        private HelperDeclarationsSortedMap(UIDObjectFactory factory, RepositoryDataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
             this.aStream = aStream;
             this.factory = factory;
@@ -715,12 +725,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     };
 
     private static final class HelperMacrosSortedMap implements SortedMap<NameSortedKey, CsmUID<CsmMacro>> {
-        private final DataInput aStream;
+        private final RepositoryDataInput aStream;
         private final int size;
         private final UIDObjectFactory factory;
         private final APTStringManager manager;
 
-        private HelperMacrosSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
+        private HelperMacrosSortedMap(UIDObjectFactory factory, RepositoryDataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
             this.aStream = aStream;
             this.factory = factory;
@@ -893,12 +903,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final class HelperNamespaceDefinitionSortedMap implements SortedMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> {
-        private final DataInput aStream;
+        private final RepositoryDataInput aStream;
         private final int size;
         private final UIDObjectFactory factory;
         private final APTStringManager manager;
 
-        private HelperNamespaceDefinitionSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
+        private HelperNamespaceDefinitionSortedMap(UIDObjectFactory factory, RepositoryDataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
             this.aStream = aStream;
             this.factory = factory;
@@ -1070,12 +1080,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final class HelperCharSequencesSortedMap implements SortedMap<CharSequence, Object> {
-        private final DataInput aStream;
+        private final RepositoryDataInput aStream;
         private final int size;
         private final UIDObjectFactory factory;
         private final APTStringManager manager;
 
-        private HelperCharSequencesSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
+        private HelperCharSequencesSortedMap(UIDObjectFactory factory, RepositoryDataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
             this.aStream = aStream;
             this.factory = factory;
@@ -1260,12 +1270,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final class HelperCharSequencesSortedMap2 implements SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> {
-        private final DataInput aStream;
+        private final RepositoryDataInput aStream;
         private final int size;
         private final UIDObjectFactory factory;
         private final APTStringManager manager;
 
-        private HelperCharSequencesSortedMap2(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
+        private HelperCharSequencesSortedMap2(UIDObjectFactory factory, RepositoryDataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
             this.aStream = aStream;
             this.factory = factory;
@@ -1419,6 +1429,191 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 }
                 @Override
                 public boolean addAll(Collection<? extends Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean retainAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean removeAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public void clear() {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+            };
+        }
+    }
+    
+    private static final Comparator<ReferenceImpl> ReferenceComparator = new Comparator<ReferenceImpl>() {
+        @Override
+       public int compare(ReferenceImpl o1, ReferenceImpl o2) {
+            return o1.compareTo(o2);
+        }
+    };
+
+    private static final class HelperReferencesSortedMap implements SortedMap<ReferenceImpl, CsmUID<CsmObject>> {
+        private final RepositoryDataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final CsmUID<CsmFile> fileUID;
+
+        private HelperReferencesSortedMap(UIDObjectFactory factory, RepositoryDataInput aStream, CsmUID<CsmFile> fileUID) throws IOException {
+            size = aStream.readInt();
+            this.aStream = aStream;
+            this.factory = factory;
+            this.fileUID = fileUID;
+        }
+        @Override
+        public Comparator<? super ReferenceImpl> comparator() {
+            return ReferenceComparator;
+        }
+        @Override
+        public SortedMap<ReferenceImpl, CsmUID<CsmObject>> subMap(ReferenceImpl fromKey, ReferenceImpl toKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public SortedMap<ReferenceImpl, CsmUID<CsmObject>> headMap(ReferenceImpl toKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public SortedMap<ReferenceImpl, CsmUID<CsmObject>> tailMap(ReferenceImpl fromKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public ReferenceImpl firstKey() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public ReferenceImpl lastKey() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public int size() {
+            return size;
+        }
+        @Override
+        public boolean isEmpty() {
+            return size > 0;
+        }
+        @Override
+        public boolean containsKey(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public boolean containsValue(Object value) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public CsmUID<CsmObject> get(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public CsmUID<CsmObject> put(ReferenceImpl key, CsmUID<CsmObject> value) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public CsmUID<CsmObject> remove(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public void putAll(Map<? extends ReferenceImpl, ? extends CsmUID<CsmObject>> t) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public Set<ReferenceImpl> keySet() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public Collection<CsmUID<CsmObject>> values() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public Set<Entry<ReferenceImpl, CsmUID<CsmObject>>> entrySet() {
+            return new Set<Entry<ReferenceImpl, CsmUID<CsmObject>>>(){
+                @Override
+                public int size() {
+                    return size;
+                }
+                @Override
+                public boolean isEmpty() {
+                    return size > 0;
+                }
+                @Override
+                public boolean contains(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public Iterator<Entry<ReferenceImpl, CsmUID<CsmObject>>> iterator() {
+                    return new Iterator<Entry<ReferenceImpl, CsmUID<CsmObject>>>(){
+                        private int current = 0;
+                        @Override
+                        public boolean hasNext() {
+                            return current < size;
+                        }
+                        @Override
+                        public Entry<ReferenceImpl, CsmUID<CsmObject>> next() {
+                            if (current < size) {
+                                current++;
+                                try {
+                                    final CsmUID<CsmObject> uid = factory.<CsmObject>readUID(aStream);
+                                    assert uid != null;
+                                    final ReferenceImpl key = new ReferenceImpl(fileUID, uid, factory, aStream);
+                                    assert key != null;
+                                    return new Map.Entry<ReferenceImpl, CsmUID<CsmObject>>(){
+                                        @Override
+                                        public ReferenceImpl getKey() {
+                                            return key;
+                                        }
+                                        @Override
+                                        public CsmUID<CsmObject> getValue() {
+                                            return uid;
+                                        }
+                                        @Override
+                                        public CsmUID<CsmObject> setValue(CsmUID<CsmObject> value) {
+                                            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                                        }
+                                    };
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            return null;
+                        }
+                        @Override
+                        public void remove() {
+                            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                        }
+                    };
+                }
+                @Override
+                public Object[] toArray() {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public <T> T[] toArray(T[] a) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean add(Entry<ReferenceImpl, CsmUID<CsmObject>> o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean remove(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean containsAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean addAll(Collection<? extends Entry<ReferenceImpl, CsmUID<CsmObject>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
                 @Override

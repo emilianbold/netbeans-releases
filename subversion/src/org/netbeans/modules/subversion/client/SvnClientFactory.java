@@ -62,7 +62,6 @@ import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 
 /**
@@ -123,7 +122,9 @@ public class SvnClientFactory {
      * if the svn executable path was changed. 
      */
     public synchronized static void resetCLI() {
-        if(isCLI()) { 
+        if(exception != null || // looks like factory setup didn't work at all, so lets give it a shot
+           isCLI()) 
+        { 
             instance = null;
         }
     }
@@ -181,7 +182,11 @@ public class SvnClientFactory {
         if(exception != null) {
             throw exception;
         }
-        return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
+        try {
+            return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
+        } catch (Error err) {
+            throw new SVNClientException(err);
+        }
     }
 
     /**
@@ -206,10 +211,7 @@ public class SvnClientFactory {
                 }          
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
                 setupCommandline();
-            }
-            
-            if(factoryType.trim().equals("javahl"))
-            {
+            } else if (factoryType.trim().equals("javahl")) {
                 if(setupJavaHl()) {
                     return;
                 }
@@ -297,15 +299,19 @@ public class SvnClientFactory {
             writeJavahlInitFlag(initFile, JAVAHL_INIT_NOCRASH);
         }
         factory = new ClientAdapterFactory() {
+            @Override
             protected ISVNClientAdapter createAdapter() {
                 return f.createClient();
             }
+            @Override
             protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.javahl);
             }
+            @Override
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
                 return new JhlClientCallback(repositoryUrl, handledExceptions);
             }
+            @Override
             protected ConnectionType connectionType() {
                 return ConnectionType.javahl;
             }
@@ -364,15 +370,19 @@ public class SvnClientFactory {
             return false;
         }
         factory = new ClientAdapterFactory() {
+            @Override
             protected ISVNClientAdapter createAdapter() {
                 return f.createClient();
             }
+            @Override
             protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.svnkit);
             }
+            @Override
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
                 return new SvnKitClientCallback(repositoryUrl, handledExceptions);
             }
+            @Override
             protected ConnectionType connectionType() {
                 return ConnectionType.svnkit;
             }
@@ -395,6 +405,8 @@ public class SvnClientFactory {
                 adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             }
         };
+        LOG.fine("Setting svnkit prop: svnkit.http.methods=Basic");
+        System.setProperty("svnkit.http.methods", "Basic"); //NOI18N
         LOG.info("svnClientAdapter running on svnkit");
         return true;
     }
@@ -403,15 +415,19 @@ public class SvnClientFactory {
         if(!checkCLIExecutable()) return;
         
         factory = new ClientAdapterFactory() {
+            @Override
             protected ISVNClientAdapter createAdapter() {
                 return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
             }
+            @Override
             protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
                 return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
             }
+            @Override
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
                 return null;
             }
+            @Override
             protected ConnectionType connectionType() {
                 return ConnectionType.cli;
             }
@@ -520,6 +536,7 @@ public class SvnClientFactory {
 
         private SvnClientDescriptor createDescriptor(final SVNUrl repositoryUrl) {
             return new SvnClientDescriptor() {
+                @Override
                 public SVNUrl getSvnUrl() {
                     return repositoryUrl;
                 }

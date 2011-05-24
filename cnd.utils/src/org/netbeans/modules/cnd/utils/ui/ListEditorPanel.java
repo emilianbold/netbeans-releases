@@ -55,6 +55,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -181,6 +182,10 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         return listLabel;
     }
 
+    protected final void setCustomCellRenderer(ListCellRenderer renderer) {
+        targetList.setCellRenderer(renderer);
+    }
+    
     protected String getListLabelText() {
         return getString("TARGET_EDITOR_LIST_LBL");
     }
@@ -532,7 +537,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         defaultObjectAction();
     }//GEN-LAST:event_defaultButtonActionPerformed
 
-    public void editAction(E o) {
+    public void editAction(E o, int i) {
     }
 
     private synchronized void editObjectAction() {
@@ -543,7 +548,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         if (selectedIndex >= (listData.size())) {
             return;
         }
-        editAction(listData.get(selectedIndex));
+        editAction(listData.get(selectedIndex), selectedIndex);
         // Update gui
         isChanged = true;
         setData(listData);
@@ -594,6 +599,9 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
 //        processKeyEvent(evt);
 //    }
 
+    public void downAction(int from) {
+    }
+
     private synchronized void downAction() {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex < 0) {
@@ -602,6 +610,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         if (selectedIndex >= (listData.size() - 1)) {
             return;
         }
+        downAction(selectedIndex);
         // Update GUI
         isChanged = true;
         E tmp = listData.get(selectedIndex);
@@ -628,6 +637,9 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         downAction();
     }//GEN-LAST:event_downButtonActionPerformed
 
+    public void upAction(int from) {
+    }
+
     private synchronized void upAction() {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex <= 0) {
@@ -636,6 +648,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         if (selectedIndex >= (listData.size())) {
             return;
         }
+        upAction(selectedIndex);
         // Update GUI
         isChanged = true;
         E tmp = listData.get(selectedIndex);
@@ -662,7 +675,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         upAction();
     }//GEN-LAST:event_upButtonActionPerformed
 
-    public void removeAction(E o) {
+    public void removeAction(E o, int i) {
     }
 
     private synchronized void removeObjectAction() {
@@ -673,7 +686,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         if (selectedIndex >= (listData.size())) {
             return;
         }
-        removeAction(listData.get(selectedIndex));
+        removeAction(listData.get(selectedIndex), selectedIndex);
         // Update GUI
         isChanged = true;
         listData.remove(selectedIndex);
@@ -806,7 +819,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         return listData.get(i);
     }
 
-    protected synchronized void replaceElement(E oldElement, E newElement) {
+    protected synchronized void replaceElement(E oldElement, E newElement, int index) {
         Object[] arr = listData.toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == oldElement) {

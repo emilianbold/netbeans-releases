@@ -345,7 +345,15 @@ public final class LibrariesNode extends AbstractNode {
                         key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
                 case Key.TYPE_LIBRARY:
-                    result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
+                    result = new Node[] {ActionFilterNode.forLibrary(PackageView.createPackageView(key.getSourceGroup()),
+                        helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                    break;
+                case Key.TYPE_FILE_REFERENCE:
+                    result = new Node[] {ActionFilterNode.forArchive(PackageView.createPackageView(key.getSourceGroup()),
+                        helper, eval, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                    break;
+                case Key.TYPE_FILE:
+                    result = new Node[] {ActionFilterNode.forRoot(PackageView.createPackageView(key.getSourceGroup()),
                         helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
                 case Key.TYPE_OTHER:
@@ -366,7 +374,7 @@ public final class LibrariesNode extends AbstractNode {
             List<URL> rootsList = new ArrayList<URL>();
             List<Key> result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
             if (platformProperty!=null) {
-                result.add (new Key());
+                result.add (Key.platform());
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
@@ -432,7 +440,7 @@ public final class LibrariesNode extends AbstractNode {
                                     NbBundle.getMessage (LibrariesNode.class,"TXT_LibraryPartFormat"),
                                     new Object[] {lib.getDisplayName(), displayName});
                                 SourceGroup sg = new LibrariesSourceGroup (root, displayName, libIcon, libIcon);
-                                result.add (new Key(sg,currentClassPath, propName));
+                                result.add (Key.library(sg,currentClassPath, propName));
                             }
                         }
                     }
@@ -444,7 +452,7 @@ public final class LibrariesNode extends AbstractNode {
                     if (ref[0] != null && ref[1] != null) {
                         AntArtifact artifact = (AntArtifact)ref[0];
                         URI uri = (URI)ref[1];
-                        result.add(new Key(artifact, uri, currentClassPath, propName));                 
+                        result.add(Key.project(artifact, uri, currentClassPath, propName));
                     }
                 }
                 else if (prop.startsWith(FILE_REF_PREFIX)) {
@@ -454,7 +462,7 @@ public final class LibrariesNode extends AbstractNode {
                         File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
                         SourceGroup sg = createFileSourceGroup(file,rootsList);
                         if (sg !=null) {
-                            result.add (new Key(sg,currentClassPath, propName));
+                            result.add (Key.fileReference(sg,currentClassPath, propName));
                         }
                     }
                 }
@@ -467,7 +475,7 @@ public final class LibrariesNode extends AbstractNode {
                     File file = helper.getAntProjectHelper().resolveFile(prop);
                     SourceGroup sg = createFileSourceGroup(file,rootsList);
                     if (sg !=null) {
-                        result.add ( new Key(sg,currentClassPath, propName));
+                        result.add (Key.file(sg,currentClassPath, propName));
                     }
                 }
             }
@@ -500,11 +508,15 @@ public final class LibrariesNode extends AbstractNode {
         }        
     }
 
+    //XXX: Leaking of implementation, should be pkg private
+    //the reason why it's public is wrongly designed Callback interface
     public static final class Key {
-        static final int TYPE_PLATFORM = 0;
-        static final int TYPE_LIBRARY = 1;
-        static final int TYPE_PROJECT = 2;
-        static final int TYPE_OTHER = 3;
+        static final int TYPE_PLATFORM = 0;         //platform
+        static final int TYPE_LIBRARY = 1;          //library
+        static final int TYPE_FILE_REFERENCE = 2;   //file added by ReferenceHelper ${reference.
+        static final int TYPE_PROJECT = 3;          //project
+        static final int TYPE_OTHER = 4;            //extension provided by Callback
+        static final int TYPE_FILE = 5;             //direct file not added by ReferenceHelper
 
         private int type;
         private String classPathId;
@@ -513,9 +525,26 @@ public final class LibrariesNode extends AbstractNode {
         private AntArtifact antArtifact;
         private URI uri;
         private String anID;
+                
+
+        private static Key platform() {
+            return new Key();
+        }
         
-        Key () {
-            type = TYPE_PLATFORM;
+        private static Key project(AntArtifact a, URI uri, String classPathId, String entryId) {
+            return new Key(a, uri, classPathId, entryId);
+        }
+        
+        private static Key library(SourceGroup sg, String classPathId, String entryId) {
+            return new Key(TYPE_LIBRARY, sg, classPathId, entryId);
+        }
+        
+        private static Key fileReference(SourceGroup sg, String classPathId, String entryId) {
+            return new Key(TYPE_FILE_REFERENCE, sg, classPathId, entryId);
+        }
+
+        private static Key file(SourceGroup sg, String classPathId, String entryId) {
+            return new Key(TYPE_FILE, sg, classPathId, entryId);
         }
 
         public Key (String anID) {
@@ -524,14 +553,19 @@ public final class LibrariesNode extends AbstractNode {
 
         }
 
-        Key (SourceGroup sg, String classPathId, String entryId) {
-            this.type = TYPE_LIBRARY;
+        private Key () {
+            type = TYPE_PLATFORM;
+        }
+
+        private Key (int type, SourceGroup sg, String classPathId, String entryId) {
+            assert type == TYPE_LIBRARY || type == TYPE_FILE_REFERENCE || type == TYPE_FILE;
+            this.type = type;
             this.sg = sg;
             this.classPathId = classPathId;
             this.entryId = entryId;
         }
 
-        Key (AntArtifact a, URI uri, String classPathId, String entryId) {
+        private Key (AntArtifact a, URI uri, String classPathId, String entryId) {
             this.type = TYPE_PROJECT;
             this.antArtifact = a;
             this.uri = uri;
@@ -573,6 +607,8 @@ public final class LibrariesNode extends AbstractNode {
             int hashCode = this.type<<16;
             switch (this.type) {
                 case TYPE_LIBRARY:
+                case TYPE_FILE_REFERENCE:
+                case TYPE_FILE:
                     hashCode ^= this.sg == null ? 0 : this.sg.hashCode();
                     break;
                 case TYPE_PROJECT:
@@ -595,6 +631,8 @@ public final class LibrariesNode extends AbstractNode {
             }
             switch (type) {
                 case TYPE_LIBRARY:
+                case TYPE_FILE_REFERENCE:
+                case TYPE_FILE:
                     return (this.sg == null ? other.sg == null : this.sg.equals(other.sg)) &&
                         (this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId)) &&
                         (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
@@ -768,7 +806,7 @@ public final class LibrariesNode extends AbstractNode {
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, filePaths[i]);
                     FileObject fo = FileUtil.toFileObject(fl);
-                    assert fo != null : fl;
+                    assert fo != null || !fl.canRead(): fl;
                     if (fo != null && fileFilter.accept(fl)) {
                         URI u;
                         boolean isArchiveFile = FileUtil.isArchiveFile(fo);

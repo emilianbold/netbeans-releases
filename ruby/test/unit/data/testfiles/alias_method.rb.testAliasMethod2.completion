@@ -1,5 +1,0 @@
-Code completion result for source line:
-Close.new.so_|so_close
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     so_close                                   Close
-METHOD     so_so_close                                Close

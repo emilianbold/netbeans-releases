@@ -69,7 +69,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
-import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -213,6 +212,11 @@ public abstract class FromEntityBase {
             ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
             JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = null;
             for (ExecutableElement method : methods) {
+                // filter out @Transient methods
+                if (JpaControllerUtil.findAnnotation(method, "javax.persistence.Transient") != null) { //NOI18N
+                    continue;
+                }
+
                 FieldDesc fd = new FieldDesc(controller, method, bean, initValueGetters);
                 if (fd.isValid()) {
                     int relationship = fd.getRelationship();
@@ -445,6 +449,8 @@ public abstract class FromEntityBase {
                 return "Short.valueOf("+param+")";
             } else if ("BigDecimal".equals(idType.toString()) || "java.math.BigDecimal".equals(idType.toString())) {
                 return "new java.math.BigDecimal("+param+")";
+            } else if ("Date".equals(idType.toString()) || "java.util.Date".equals(idType.toString())) {
+                return "java.sql.Date.valueOf("+param+")";
             }
         }
         return param;

@@ -17,15 +17,21 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  */
 public class SwitchAction extends ActionNoBlock {
     
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
+    
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
-            
+
     /** "Switch" menu item. */
-    public static final String SWITCH_ITEM = "Switch to Copy...";
+    public static final String SWITCH_MENU_ITEM = "Switch to...";
+    
+    /** "Switch" menu item. */
+    public static final String SWITCH_POPUP_ITEM = "Switch to Copy...";
     
     /** Creates a new instance of SwitchAction */
     public SwitchAction() {
-        super("Versioning" + "|" + SWITCH_ITEM, SVN_ITEM + "|" + SWITCH_ITEM);
+        super(TEAM_ITEM + "|" + SWITCH_MENU_ITEM, SVN_ITEM + "|" + SWITCH_POPUP_ITEM);
     }
     
 }

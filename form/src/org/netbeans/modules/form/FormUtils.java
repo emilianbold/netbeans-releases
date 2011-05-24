@@ -1441,6 +1441,13 @@ public class FormUtils
             } else if (value instanceof ResourceValue) {
                 formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
             }
+            if (property instanceof RADProperty) {
+                RADProperty radProperty = (RADProperty)property;
+                String propName = radProperty.getName();
+                if ("alignOnBaseline".equals(propName) && radProperty.getRADComponent().getBeanClass().equals(FlowLayout.class)) { // NOI18N
+                    formModel.raiseVersionLevel(FormModel.FormVersion.NB71, FormModel.FormVersion.NB71);
+                }
+            }
         }
         // this method is not called for binding properties - see BindingProperty.setValue
     }

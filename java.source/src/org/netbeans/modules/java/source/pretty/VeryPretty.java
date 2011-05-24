@@ -93,6 +93,7 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -120,8 +121,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public Name enclClassName; // the enclosing class name.
     private int indentSize;
     private int prec; // visitor argument: the current precedence level.
-    private LinkedList<Comment> pendingComments = null;
-    private int lastReadCommentIdx = -1;
+    private boolean printingMethodParams;
     private DiffContext diffContext;
     private CommentHandlerService comments;
 
@@ -260,7 +260,28 @@ public final class VeryPretty extends JCTree.Visitor {
         int start = toString().length();
 
         if (!handlePossibleOldTrees(Collections.singletonList(t), false)) {
-            t.accept(this);
+            if (t instanceof FieldGroupTree) {
+                //XXX: should be able to use handlePossibleOldTrees over the individual variables:
+                FieldGroupTree fgt = (FieldGroupTree) t;
+                if (fgt.isEnum()) {
+                    printEnumConstants(List.from(fgt.getVariables().toArray(new JCTree[0])), !fgt.isEnum() || fgt.moreElementsFollowEnum());
+                } else {
+                    //XXX: this will unroll the field group (see FieldGroupTest.testMove187766)
+                    //XXX: copied from visitClassDef
+                    boolean firstMember = true;
+                    for (JCVariableDecl var : fgt.getVariables()) {
+                        oldTrees.remove(var);
+                        assert !isEnumerator(var);
+                        assert !isSynthetic(var);
+                        toColExactly(out.leftMargin);
+                        printStat(var, true, firstMember);
+                        newline();
+                        firstMember = false;
+                    }
+                }
+            } else {
+                t.accept(this);
+            }
         }
 
         int end = toString().length();
@@ -277,6 +298,9 @@ public final class VeryPretty extends JCTree.Visitor {
     public boolean handlePossibleOldTrees(java.util.List<? extends JCTree> toPrint, boolean includeStartingComments) {
         for (JCTree t : toPrint) {
             if (!oldTrees.contains(t)) return false;
+            if (t.getKind() == Kind.ARRAY_TYPE) {
+                return false;//XXX #197584: C-like array are cannot be copied as old trees.
+            }
         }
 
         JCTree firstTree = toPrint.get(0);
@@ -654,41 +678,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	if (!emptyClass) {
 	    blankLines(cs.getBlankLinesAfterClassHeader());
             if ((tree.mods.flags & ENUM) != 0) {
-                boolean first = true;
-                boolean hasNonEnumerator = false;
-                for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
-                    if (isEnumerator(l.head)) {
-                        if (first) {
-                            toColExactly(out.leftMargin);
-                            first = false;
-                        } else {
-                            print(cs.spaceBeforeComma() ? " ," : ",");
-                            switch(cs.wrapEnumConstants()) {
-                            case WRAP_IF_LONG:
-                                int rm = cs.getRightMargin();
-                                if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                                    if (cs.spaceAfterComma())
-                                        print(' ');
-                                    break;
-                                }
-                            case WRAP_ALWAYS:
-                                newline();
-                                toColExactly(out.leftMargin);
-                                break;
-                            case WRAP_NEVER:
-                                if (cs.spaceAfterComma())
-                                    print(' ');
-                                break;
-                            }
-                        }
-                        printStat(l.head, true, false);
-                    } else if (!isSynthetic(l.head))
-                        hasNonEnumerator = true;
-                }
-                if (hasNonEnumerator) {
-                    print(";");
-                    newline();
-                }
+                printEnumConstants(tree.defs, false);
             }
             boolean firstMember = true;
             for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
@@ -709,6 +699,44 @@ public final class VeryPretty extends JCTree.Visitor {
 	undent(old);
 	print('}');
 	enclClassName = enclClassNamePrev;
+    }
+
+    private void printEnumConstants(List<JCTree> defs, boolean forceSemicolon) {
+        boolean first = true;
+        boolean hasNonEnumerator = false;
+        for (List<JCTree> l = defs; l.nonEmpty(); l = l.tail) {
+            if (isEnumerator(l.head)) {
+                if (first) {
+                    toColExactly(out.leftMargin);
+                    first = false;
+                } else {
+                    print(cs.spaceBeforeComma() ? " ," : ",");
+                    switch(cs.wrapEnumConstants()) {
+                    case WRAP_IF_LONG:
+                        int rm = cs.getRightMargin();
+                        if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
+                            if (cs.spaceAfterComma())
+                                print(' ');
+                            break;
+                        }
+                    case WRAP_ALWAYS:
+                        newline();
+                        toColExactly(out.leftMargin);
+                        break;
+                    case WRAP_NEVER:
+                        if (cs.spaceAfterComma())
+                            print(' ');
+                        break;
+                    }
+                }
+                printStat(l.head, true, false);
+            } else if (!isSynthetic(l.head))
+                hasNonEnumerator = true;
+        }
+        if (hasNonEnumerator || forceSemicolon) {
+            print(";");
+            newline();
+        }
     }
 
     @Override
@@ -734,8 +762,11 @@ public final class VeryPretty extends JCTree.Visitor {
             print(cs.spaceBeforeMethodDeclParen() ? " (" : "(");
             if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 print(' ');
+            boolean oldPrintingMethodParams = printingMethodParams;
+            printingMethodParams = true;
             wrapTrees(tree.params, cs.wrapMethodParams(), cs.alignMultilineMethodParams()
                     ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+            printingMethodParams = oldPrintingMethodParams;
             if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 needSpace();
             print(')');
@@ -1458,7 +1489,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitTypeDisjunction(JCTypeDisjunction that) {
+    public void visitTypeUnion(JCTypeUnion that) {
         boolean first = true;
 
         for (JCExpression c : that.getTypeAlternatives()) {
@@ -1795,14 +1826,16 @@ public final class VeryPretty extends JCTree.Visitor {
         
         VeryPretty del = new VeryPretty(diffContext, cs, new HashMap<Tree, Object>(), new HashMap<Object, int[]>(), origText, 0);
         del.reallyPrintAnnotations = true;
+        del.printingMethodParams = printingMethodParams;
 
         del.printAnnotations(annotations);
 
         String str = del.out.toString();
+        int col = printingMethodParams ? out.leftMargin + cs.getContinuationIndentSize() : out.col;
+        
+        str = Reformatter.reformat(str + " class A{}", cs, cs.getRightMargin() - col);
 
-        str = Reformatter.reformat(str + " class A{}", cs, cs.getRightMargin() - out.col);
-
-        str = str.trim().replaceAll("\n", "\n" + whitespace(out.col));
+        str = str.trim().replaceAll("\n", "\n" + whitespace(col));
 
         adjustSpans(annotations, str);
 
@@ -1817,7 +1850,10 @@ public final class VeryPretty extends JCTree.Visitor {
         if (annotations.isEmpty()) return ;
 
         if (printAnnotationsFormatted(annotations)) {
-            toColExactly(out.leftMargin);
+            if (!printingMethodParams)
+                toColExactly(out.leftMargin);
+            else
+                out.needSpace();
             return ;
         }
         
@@ -1840,7 +1876,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             } else {
-                toColExactly(out.leftMargin);
+                if (!printingMethodParams)
+                    toColExactly(out.leftMargin);
             }
             annotations = annotations.tail;
         }

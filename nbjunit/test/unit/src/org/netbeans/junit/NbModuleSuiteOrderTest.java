@@ -54,11 +54,11 @@ public class NbModuleSuiteOrderTest extends TestCase {
 
     public void testTestOrder(){
         System.setProperty("order", "1");
-        Test instance = NbModuleSuite.create(
+        Test instance =
                 NbModuleSuite.emptyConfiguration().gui(false)
                 .addTest(TT2.class, "testOne")
                 .addTest(SS.class)
-                .addTest(TT2.class, "testTwo"));
+                .addTest(TT2.class, "testTwo").suite();
         junit.textui.TestRunner.run(instance);
 
         NbModuleSuiteTest.assertProperty("t.one", "2");
@@ -71,10 +71,10 @@ public class NbModuleSuiteOrderTest extends TestCase {
     public void testDontRunAllTests(){
         System.setProperty("order", "1");
         System.setProperty("t.two", "-1");
-        Test instance = NbModuleSuite.create(
+        Test instance =
                 NbModuleSuite.createConfiguration(TT2.class).gui(false)
                 .addTest(SS.class)
-                .addTest(TT2.class, "testOne"));
+                .addTest(TT2.class, "testOne").suite();
         junit.textui.TestRunner.run(instance);
 
         NbModuleSuiteTest.assertProperty("s.one", "2");
@@ -87,7 +87,7 @@ public class NbModuleSuiteOrderTest extends TestCase {
     public void testStaticOrder(){
         System.setProperty("order", "1");
         String[] methods = new String[]{"testTwo", "testOne"};
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(TT2.class).clusters(".*").enableModules(".*").gui(false).addTest(methods));
+        Test instance = NbModuleSuite.createConfiguration(TT2.class).clusters(".*").enableModules(".*").gui(false).addTest(methods).suite();
         junit.textui.TestRunner.run(instance);
 
         NbModuleSuiteTest.assertProperty("t.two", "2");
@@ -98,7 +98,7 @@ public class NbModuleSuiteOrderTest extends TestCase {
     public void testStaticOrderInConfiguration(){
         System.setProperty("order", "1");
         String[] methods = new String[]{"testTwo", "testOne"};
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(TT2.class).gui(false).addTest(methods));
+        Test instance = NbModuleSuite.createConfiguration(TT2.class).gui(false).addTest(methods).suite();
         junit.textui.TestRunner.run(instance);
 
         NbModuleSuiteTest.assertProperty("t.two", "2");
@@ -108,11 +108,11 @@ public class NbModuleSuiteOrderTest extends TestCase {
 
     public void testTestCaseOrder(){
         System.setProperty("order", "1");
-        Test instance = NbModuleSuite.create(
+        Test instance =
                 NbModuleSuite.emptyConfiguration().gui(false)
                 .addTest(TT2.class, "testOne")
                 .addTest(TT3.class)
-                .addTest(TT2.class, "testTwo"));
+                .addTest(TT2.class, "testTwo").suite();
         junit.textui.TestRunner.run(instance);
 
         NbModuleSuiteTest.assertProperty("t.one", "2");

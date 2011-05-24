@@ -121,6 +121,7 @@ public class ZendEditorExtender extends EditorExtender {
         private final FileObject action;
         private final PHPParseResult actionParseResult;
         private final PhpVariable view; // NOI18N
+        private final Set<String> addedFields;
 
         private String className = null;
         private String methodName = null;
@@ -146,6 +147,7 @@ public class ZendEditorExtender extends EditorExtender {
             this.actionParseResult = actionParseResult;
             actionName = ZendUtils.getActionName(viewFile);
             action = ZendUtils.getAction(viewFile);
+            this.addedFields = new HashSet<String>();
         }
 
         @Override
@@ -188,11 +190,17 @@ public class ZendEditorExtender extends EditorExtender {
                                     Variable field = node.getField();
 
                                     PhpClass type = view.getType();
-                                    type.addField(
-                                            "$" + CodeUtils.extractVariableName(field), // NOI18N
-                                            name != null ? new PhpClass(name, fqn) : null,
-                                            action,
-                                            ASTNodeInfo.toOffsetRangeVar(field).getStart());
+                                    String fieldName = "$" + CodeUtils.extractVariableName(field);  // NOI18N
+                                    PhpClass fieldType = name != null ? new PhpClass(name, fqn) : null;
+                                    String fieldTypesS = fieldName + "#" + (fieldType == null ? "null" : fieldType.getFullyQualifiedName()); // NOI18N
+                                    if (!addedFields.contains(fieldTypesS)) {
+                                        type.addField(
+                                                fieldName, 
+                                                fieldType,
+                                                action,
+                                                ASTNodeInfo.toOffsetRangeVar(field).getStart());
+                                        addedFields.add(fieldTypesS);
+                                    }
                                 }
                             }
                         }

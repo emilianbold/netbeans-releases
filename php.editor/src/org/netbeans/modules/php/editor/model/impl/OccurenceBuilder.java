@@ -788,7 +788,8 @@ class OccurenceBuilder {
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self")) {//NOI18N
+            if (clzName.getName().equalsIgnoreCase("self")          //NOI18N
+                    || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
@@ -1245,8 +1246,9 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
-                    if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                        if (clzName.getName().equalsIgnoreCase("self")) {
+                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                        if (clzName.getName().equalsIgnoreCase("self")  //NOI18N
+                                || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                             clzName = ((ClassScope) scope).getSuperClassName();
@@ -1349,16 +1351,21 @@ class OccurenceBuilder {
 
                         @Override
                         public Collection<? extends PhpElement> gotoDeclarations() {
-                            ElementQuery elementQuery = declaration.getElementQuery();
-                            if (declaration instanceof TypeElement && elementQuery != null && elementQuery.getQueryScope().isIndexScope()) {
-                                ElementQuery.Index index = (ElementQuery.Index) elementQuery;
-                                Set<MethodElement> declaredMethods = 
-                                        ElementFilter.forName(NameKind.exact(MethodElement.CONSTRUCTOR_NAME)).filter(index.getDeclaredMethods((TypeElement) declaration));
-                                if (!declaredMethods.isEmpty()) {
-                                    return declaredMethods;
+                            Collection<PhpElement> result = new ArrayList<PhpElement>(getAllDeclarations().size());
+                            for (PhpElement element: getAllDeclarations()) {
+                                ElementQuery elementQuery = element.getElementQuery();
+                                if (element instanceof TypeElement && elementQuery != null && elementQuery.getQueryScope().isIndexScope()) {
+                                    ElementQuery.Index index = (ElementQuery.Index) elementQuery;
+                                    Set<MethodElement> declaredMethods = 
+                                            ElementFilter.forName(NameKind.exact(MethodElement.CONSTRUCTOR_NAME)).filter(index.getDeclaredMethods((TypeElement) element));
+                                    if (!declaredMethods.isEmpty()) {
+                                        result.addAll(declaredMethods);
+                                    } 
                                 }
                             }
-
+                            if (result.size() > 0) {
+                                return result;
+                            }
                             return super.gotoDeclarations();
                         }
                     };
@@ -1711,7 +1718,6 @@ class OccurenceBuilder {
                 LazyBuild scope = (LazyBuild)entry.getValue();
                 if (!scope.isScanned()) {
                     scope.scan();
-                    System.out.println("Scanned " + scope.toString());
                 }
             }
         }

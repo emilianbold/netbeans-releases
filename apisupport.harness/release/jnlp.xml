@@ -143,7 +143,7 @@ made subject to such option by the copyright holder.
         
         <mkdir dir="${jnlp.signjar.keystore}/../"/>
         <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
-        <genkey 
+        <genkey validity="365"
             alias="${jnlp.signjar.alias}"
             keystore="${jnlp.signjar.keystore}"
             storepass="${jnlp.signjar.password}"
@@ -393,11 +393,11 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application">
-        <condition property="run.javaws" value="${nbjdk.home}/jre/javaws/javaws">
-            <available file="${nbjdk.home}/jre/javaws/javaws"/>
+        <condition property="run.javaws" value="${nbjdk.home}/jre/bin/javaws">
+            <available file="${nbjdk.home}/jre/bin/javaws"/>
         </condition>
-        <condition property="run.javaws" value="${nbjdk.home}/javaws/javaws">
-            <available file="${nbjdk.home}/javaws/javaws"/>
+        <condition property="run.javaws" value="${nbjdk.home}/bin/javaws">
+            <available file="${nbjdk.home}/bin/javaws"/>
         </condition>
         <condition property="run.javaws" value="${nbjdk.home}\jre\bin\javaws.exe">
             <available file="${nbjdk.home}\jre\bin\javaws.exe"/>

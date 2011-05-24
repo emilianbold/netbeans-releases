@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * implementation of offsetable object to represent functions' parameters
@@ -165,12 +165,12 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
     // persistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(_getUIDs(), output, false);
     }
 
-    public ParameterListImpl(DataInput input) throws IOException {
+    public ParameterListImpl(RepositoryDataInput input) throws IOException {
         super(input);
         int collSize = input.readInt();
         if (collSize <= 0) {

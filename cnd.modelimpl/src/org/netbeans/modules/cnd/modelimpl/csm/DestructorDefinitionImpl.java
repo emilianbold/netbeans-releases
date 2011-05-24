@@ -46,8 +46,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * @author Vladimir Kvashin
@@ -74,7 +74,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
-    public DestructorDefinitionImpl(DataInput input) throws IOException {
+    public DestructorDefinitionImpl(RepositoryDataInput input) throws IOException {
         super(input);
     }
 

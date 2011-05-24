@@ -47,10 +47,12 @@ package org.netbeans.modules.spring.beans;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -181,7 +183,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-
+    
     private void readConfiguration() {
         assert mutex().isReadAccess();
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
@@ -272,18 +274,42 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         assert mutex().isWriteAccess();
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
         if (projectDir == null) {
-            LOGGER.warning("The directory of project "+ project + "is null");
+            LOGGER.log(Level.WARNING, "The directory of project {0} is null", project);
             return;
         }
-        Document doc = XMLUtil.createDocument(SPRING_DATA, SPRING_DATA_NS, null, null);
-        Element springConfigEl = doc.getDocumentElement();
-        Element configFilesEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILES);
-        springConfigEl.appendChild(configFilesEl);
-        writeFiles(files, projectDir, configFilesEl);
-        Element configFileGroupsEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
-        springConfigEl.appendChild(configFileGroupsEl);
-        writeGroups(groups, projectDir, configFileGroupsEl);
-        auxConfig.putConfigurationFragment(springConfigEl, true);
+        if (differingFiles(files) || differingGroups(groups)) {
+            if (!files.isEmpty() || !groups.isEmpty()) {
+                Document doc = XMLUtil.createDocument(SPRING_DATA, SPRING_DATA_NS, null, null);
+                Element springConfigEl = doc.getDocumentElement();
+                Element configFilesEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILES);
+                springConfigEl.appendChild(configFilesEl);
+                writeFiles(files, projectDir, configFilesEl);
+                Element configFileGroupsEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
+                springConfigEl.appendChild(configFileGroupsEl);
+                writeGroups(groups, projectDir, configFileGroupsEl);
+                auxConfig.putConfigurationFragment(springConfigEl, true);
+            } else {
+                auxConfig.removeConfigurationFragment(SPRING_DATA, SPRING_DATA_NS, true);
+            }
+        }
+    }
+
+    private boolean differingFiles (List<File> files) {
+        if (this.files.size() == files.size()) {
+            return !Arrays.equals(
+                    this.files.toArray(new File[this.files.size()]),
+                    files.toArray(new File[files.size()]));
+        }
+        return true;
+    }
+
+    private boolean differingGroups (List<ConfigFileGroup> groups) {
+        if (this.groups.size() == groups.size()) {
+            return !Arrays.equals(
+                    this.groups.toArray(new ConfigFileGroup[this.groups.size()]),
+                    groups.toArray(new ConfigFileGroup[groups.size()]));
+        }
+        return true;
     }
 
     private void writeFiles(List<File> files, File basedir, Element parentEl) {

@@ -104,7 +104,7 @@ public final class HighlightsViewPart extends EditorView {
             return 0f;
         }
         float span = (axis == View.X_AXIS)
-            ? TextLayoutUtils.getWidth(textLayout)
+            ? TextLayoutUtils.getWidth(textLayout) // Can be negative
             : TextLayoutUtils.getHeight(textLayout);
         return span;
     }

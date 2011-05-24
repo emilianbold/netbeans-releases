@@ -59,6 +59,7 @@ import org.openide.nodes.Sheet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.api.xml.*;
+import org.openide.util.NbBundle;
 
 public class GdbProfile extends DbgProfile implements 
 			ConfigurationAuxObject, OptionSetOwner {
@@ -168,8 +169,8 @@ public class GdbProfile extends DbgProfile implements
 
 	set = new Sheet.Set();
 	set.setName("General"); // NOI18N
-	set.setDisplayName("General"); // FIXUP I18N // NOI18N
-	set.setShortDescription("General"); // FIXUP I18N // NOI18N
+	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "GeneralTxt")); // NOI18N
+	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "GeneralHint")); // NOI18N
 	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this));
 	set.put(new PathmapNodeProp(this, "SubPropDisplayName")); // NOI18N
 	// LATER set.put(new ExceptionsNodeProp(this));
@@ -178,8 +179,8 @@ public class GdbProfile extends DbgProfile implements
 
 	set = new Sheet.Set();
 	set.setName("Expression Presentation"); // NOI18N
-	set.setDisplayName("Expression Presentation"); // FIXUP I18N // NOI18N
-	set.setShortDescription("Expression Presentation"); // FIXUP I18N // NOI18N
+	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "Expression_PresentationTxt")); // NOI18N
+	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "Expression_PresentationHint")); // NOI18N
 	set.put(DebuggerOption.OUTPUT_BASE.createNodeProp(this));
 	// LATER set.put(DebuggerOption.OUTPUT_DYNAMIC_TYPE.createNodeProp(this));
 	set.put(DebuggerOption.OUTPUT_INHERITED_MEMBERS.createNodeProp(this));

@@ -66,7 +66,7 @@ public class WebJPATargetInfo implements JPATargetInfo {
     @Override
     public TargetType getType(FileObject target, final String fqn) {
         EjbJar ejbjar = EjbJar.getEjbJar(target);
-        MetadataModel<EjbJarMetadata> metadataModel = ejbjar.getMetadataModel();
+        MetadataModel<EjbJarMetadata> metadataModel = ejbjar==null ? null : ejbjar.getMetadataModel();
         boolean isEjb = false;
         if(metadataModel != null){
             try {

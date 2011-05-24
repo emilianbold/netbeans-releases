@@ -293,16 +293,16 @@ public class NetBeansUtils {
         FileUtils.deleteFile(productid);
     }
     
-    public static FilesList createLicenseAcceptedMarker(File nbLocation) throws IOException {
+    public static FilesList createLicenseAcceptedMarker(File nbLocation, String text) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
         File license_accepted = new File(nbCluster, LICENSE_ACCEPTED);
         
-        if (!license_accepted.exists()) {
-            return FileUtils.writeFile(license_accepted, "");
-        } else {
-            return new FilesList();
-        }
+        //if (!license_accepted.exists()) {
+            return FileUtils.writeFile(license_accepted, text, false);
+        //} else {
+        //    return new FilesList();
+        //}
     }
     
     public static void removeLicenseAcceptedMarker(File nbLocation) throws IOException {

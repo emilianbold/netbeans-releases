@@ -807,6 +807,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         StringBuffer searchBuf = new StringBuffer();
         
         java.util.List<TreePath> paths;
+        private final Timer resetBufferTimer = new Timer(2000, new ActionListener() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                resetBuffer();
+            }
+        });
                 
         @Override
         public void keyPressed(KeyEvent evt) {
@@ -848,16 +854,26 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     paths = getVisiblePaths();
                 }
                 searchBuf.append(keyChar);
-                String searchedText = searchBuf.toString().toLowerCase();
-                String curFileName = null;
-                for (TreePath path : paths) {
-                    curFileName = fileChooser.getName(((DirectoryNode) path.getLastPathComponent()).getFile());
-                    if (curFileName != null && curFileName.toLowerCase().startsWith(searchedText)) {
-                        tree.makeVisible(path);
-                        tree.scrollPathToVisible(path);
-                        tree.setSelectionPath(path);
-                        break;
+                resetBufferTimer.restart();
+                TreePath activePath = tree.getSelectionPath();
+                for (int i = 0; i < 2; ++i) {
+                    String searchedText = searchBuf.toString().toLowerCase();
+                    String curFileName = null;
+                    if (i == 0 && activePath != null && (curFileName = fileChooser.getName(((DirectoryNode) activePath.getLastPathComponent()).getFile())) != null 
+                            && curFileName.toLowerCase().startsWith(searchedText)) {
+                        // keep selection
+                        return;
                     }
+                    for (TreePath path : paths) {
+                        curFileName = fileChooser.getName(((DirectoryNode) path.getLastPathComponent()).getFile());
+                        if (curFileName != null && curFileName.toLowerCase().startsWith(searchedText)) {
+                            tree.makeVisible(path);
+                            tree.scrollPathToVisible(path);
+                            tree.setSelectionPath(path);
+                            return;
+                        }
+                    }
+                    searchBuf.delete(0, searchBuf.length() - 1);
                 }
             } else {
                 resetBuffer();
@@ -1066,17 +1082,37 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             synchronized (this) {
                 dir = d;
             }
+            List<File> files = new LinkedList<File>();
             File[] children = dir.listFiles();
+            if (children != null) {
+                for (File f : children) {
+                    if(fileChooser.accept(f)) {
+                        if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
+                            if(f.isDirectory()) {
+                                files.add(f);
+                            }
+                        } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_ONLY) {
+                            if(f.isFile()) {
+                                files.add(f);
+                            }
+                        } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
+                            files.add(f);
+                        }
+                    }
+                }
+            }
             synchronized (this) {
                 lastDir = dir;
-                lastChildren = children;
+                lastChildren = files.toArray(new File[files.size()]);
             }
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    updateCompletions();
-                }
-            });
+            if (lastChildren.length > 0) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateCompletions();
+                    }
+                });
+            }
         }
     }
     
@@ -1085,26 +1121,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         for(int i = children.length - 1; i >= 0; i--) {
             File completion = children[i];
-            
-            if(fileChooser.accept(completion)) {
-                String path = completion.getAbsolutePath();
-                
-                if (path.regionMatches(true, 0, text, 0, text.length())) {
-                    
-                    if(fileChooser.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
-                        if(completion.isDirectory()) {
-                            files.add(completion);
-                        }
-                    } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_ONLY) {
-                        if(completion.isFile()) {
-                            files.add(completion);
-                        }
-                    } else if(fileChooser.getFileSelectionMode() == JFileChooser.FILES_AND_DIRECTORIES) {
-                        files.add(completion);
-                    }
-                }
+            String path = completion.getAbsolutePath();
+            if (path.regionMatches(true, 0, text, 0, text.length())) {
+                files.add(completion);
             }
-
             if (files.size() >= max) {
                 break;
             }

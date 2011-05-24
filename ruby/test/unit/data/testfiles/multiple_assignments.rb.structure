@@ -1,8 +1,0 @@
-MultAssgn:CLASS:[]:ESCAPED{MultAssgn}:
-  a:FIELD:[PRIVATE]:ESCAPED{a}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-  b:FIELD:[PRIVATE]:ESCAPED{b}<font color='#777777'> : ESCAPED{String}</font>:
-  c:FIELD:[PRIVATE]:ESCAPED{c}<font color='#777777'> : ESCAPED{String}</font>:
-  d:FIELD:[PRIVATE]:ESCAPED{d}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-  e:FIELD:[PRIVATE]:ESCAPED{e}<font color='#777777'> : ESCAPED{String}</font>:
-  f:FIELD:[PRIVATE]:ESCAPED{f}<font color='#777777'> : ESCAPED{String}</font>:
-  initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}<font color='#777777'> : ESCAPED{Array}</font>:

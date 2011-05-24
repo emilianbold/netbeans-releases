@@ -139,7 +139,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
                         Element enclosingElement = tph.resolveElement(info);
                         enclosingClassName = enclosingElement.getSimpleName().toString();
-                        if (inheritedFromInterface(e, info.getElementUtilities())) {
+                        if (enclosingElement.getKind().isInterface() || inheritedFromInterface(e, info.getElementUtilities())) {
                             modifiersCombo.setEnabled(false);
                         }
                         initTableData(info);
@@ -411,6 +411,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         acceptEditedValue(); 
         int rowCount = model.getRowCount();
         model.addRow(new Object[] { "par" + rowCount, "Object", "null", new Integer(-1), Boolean.TRUE }); // NOI18N
+        paramTable.scrollRectToVisible(paramTable.getCellRect(rowCount, 0, false));
+        paramTable.changeSelection(rowCount, 0, false, false);
+        autoEdit(paramTable);
     }//GEN-LAST:event_addButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

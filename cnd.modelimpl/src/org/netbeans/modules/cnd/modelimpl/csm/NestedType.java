@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,6 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Class for types B and C in the compound type A::B::C
@@ -123,6 +123,7 @@ public final class NestedType extends TypeImpl {
                 classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]));
             }
             _setClassifier(classifier);
+            putTypeOwner();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
@@ -246,12 +247,12 @@ public final class NestedType extends TypeImpl {
     // impl of persistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeType(parentType, output);
     }
 
-    public NestedType(DataInput input) throws IOException {
+    public NestedType(RepositoryDataInput input) throws IOException {
         super(input);
         parentType = PersistentUtils.readType(input);
     }

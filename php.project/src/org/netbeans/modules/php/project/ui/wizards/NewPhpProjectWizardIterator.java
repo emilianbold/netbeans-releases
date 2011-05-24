@@ -398,7 +398,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     static File getSources(WizardDescriptor descriptor) {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
-        return new File(localServer.getSrcRoot());
+        if (localServer != null) {
+            return new File(localServer.getSrcRoot());
+        }
+        return null;
     }
 
     private RunAsType getRunAsType() {

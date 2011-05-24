@@ -526,7 +526,7 @@ final class NbInstaller extends ModuleInstaller {
      * Locale/branding variants are likewise loaded or unloaded.
      * If a module has no declared layer, does nothing.
      */
-    private void loadLayers(List<Module> modules, boolean load) {
+    void loadLayers(List<Module> modules, boolean load) {
         ev.log(load ? Events.LOAD_LAYERS : Events.UNLOAD_LAYERS, modules);
         // #23609: dependent modules should be able to override:
         modules = new ArrayList<Module>(modules);

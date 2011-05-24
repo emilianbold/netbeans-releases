@@ -47,10 +47,11 @@ import java.io.File;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class HeaderSourceFileFilter extends SourceFileFilter {
+public class HeaderSourceFileFilter extends FileAndFileObjectFilter {
 
     private static HeaderSourceFileFilter instance = null;
     private String[] suffixList = null;
@@ -63,24 +64,24 @@ public class HeaderSourceFileFilter extends SourceFileFilter {
     }
 
     @Override
-    public boolean accept(File f) {
-        if (f != null) {
-            if (f.isDirectory()) {
-                return true;
-            }
-            // headers could be without extensions
-            if (FileUtil.getExtension(f.getName()).length() == 0) {
-                return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(f));
-            } else {
-                return super.accept(f);
-            }
+    protected boolean mimeAccept(File f) {
+        if (FileUtil.getExtension(f.getName()).length() == 0) {
+            return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getSourceFileMIMEType(f));
         }
-        return false;
+        return super.mimeAccept(f);
+    }
+
+    @Override
+    protected boolean mimeAccept(FileObject f) {
+        if (f.getExt().isEmpty()) {
+            MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getSourceFileMIMEType(f));
+        }
+        return super.mimeAccept(f);
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_HEADER_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(HeaderSourceFileFilter.class, "FILECHOOSER_HEADER_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
 
     @Override

@@ -49,8 +49,13 @@ import org.netbeans.modules.web.jsf.palette.items.JsfFormFromEntity;
 import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.web.jsf.palette.items.JsfTableFromEntity;
 import org.netbeans.modules.web.jsf.palette.items.MetaData;
+import org.netbeans.modules.web.jsfapi.api.JsfUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
+ * Internal API for web.jsf.editor, it allows to get and insert the palette items
+ * programatically.
  *
  * @author marekfukala
  */
@@ -59,14 +64,14 @@ public final class PaletteItemsProvider {
     private static Collection<PaletteItem> ITEMS;
 
     public static final synchronized Collection<PaletteItem> getPaletteItems() {
-        if(ITEMS == null) {
-            ITEMS = new ArrayList<PaletteItem>();
-            ITEMS.add(new MetaData());
-            ITEMS.add(new JsfForm());
-            ITEMS.add(new JsfFormFromEntity());
-            ITEMS.add(new JsfTable());
-            ITEMS.add(new JsfTableFromEntity());
-        }
+            if(ITEMS == null) {
+                ITEMS = new ArrayList<PaletteItem>();
+                ITEMS.add(new MetaData());
+                ITEMS.add(new JsfForm());
+                ITEMS.add(new JsfFormFromEntity());
+                ITEMS.add(new JsfTable());
+                ITEMS.add(new JsfTableFromEntity());
+            }
         return ITEMS;
     }
 

@@ -127,20 +127,6 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         editorOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         repaintManager().resetRegionFilters();
     }    
-        
-    public void test_RB_EditorPopup() {
-        testProject = Projects.RUBY_PROJECT;
-        pathName = "Source Files"+"|";
-        docName = "ruby20kb.rb"; 
-        doMeasurement();
-    }
-
-    public void test_RHTML_EditorPopup() {
-        testProject = Projects.RAILS_PROJECT;
-        pathName = "Test Files|unit"+"|";
-        docName = "rhtml20kb.rhtml"; 
-        doMeasurement();        
-    }
 
     public void test_PHP_EditorPopup() {
         testProject = Projects.PHP_PROJECT;
@@ -167,13 +153,6 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "css20kb.css";
-        doMeasurement();        
-    }
-
-    public void test_YML_EditorPopup() {
-        testProject = Projects.RAILS_PROJECT;
-        pathName = "Test Files|unit"+"|";
-        docName = "yaml20kb.yml"; 
         doMeasurement();        
     }
 

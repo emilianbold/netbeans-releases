@@ -65,10 +65,10 @@ public class ValidateLayerToolbarTest extends ValidateLayerMenuTest {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.createConfiguration(ValidateLayerToolbarTest.class).
                 clusters(".*").enableModules(".*").gui(false)
-        );
+        .suite();
     }
     
     //

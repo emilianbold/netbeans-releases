@@ -43,21 +43,38 @@
 package org.netbeans.modules.cnd.utils;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;  
 
 /**
  * A FileSystem / path pair
  * @author Vladimir Kvashin
  */
-public class FSPath {
+public final class FSPath {
+
+    /**
+     * Converts a FileObject to FSPath
+     * NB: throws IllegalStateException if FileObject.getFileSystem throws FileStateInvalidException!
+     * @param fo
+     * @throws IllegalStateException if FileObject.getFileSystem throws FileStateInvalidException
+     * @return 
+     */
+    public static FSPath toFSPath(FileObject fo) {
+        try {
+            return new FSPath(fo.getFileSystem(), fo.getPath());
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
     
     private final FileSystem fileSystem;
     private final String path;
 
     public FSPath(FileSystem fileSystem, String path) {
         this.fileSystem = fileSystem;
-        this.path = path;
+        this.path = CndFileUtils.normalizeAbsolutePath(fileSystem, path);
     }
 
     public FileSystem getFileSystem() {
@@ -79,5 +96,31 @@ public class FSPath {
     @Override
     public String toString() {
         return "" + fileSystem + ':' + path;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FSPath other = (FSPath) obj;
+        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            return false;
+        }
+        if ((this.path == null) ? (other.path != null) : !this.path.equals(other.path)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+        hash = 97 * hash + (this.path != null ? this.path.hashCode() : 0);
+        return hash;
     }    
 }

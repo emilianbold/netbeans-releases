@@ -37,12 +37,17 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  * @author novakm
  */
 public class SvnPropertiesAction extends ActionNoBlock {
+    
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
+    
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
             
     /** "Copy..." menu item. */
     public static final String SVN_PROPERTIES_ITEM = "Svn Properties";
+    
     public SvnPropertiesAction() {
-        super(SVN_ITEM + "|" + SVN_PROPERTIES_ITEM, SVN_ITEM + "|" + SVN_PROPERTIES_ITEM);
+        super(TEAM_ITEM + "|" + SVN_PROPERTIES_ITEM, SVN_ITEM + "|" + SVN_PROPERTIES_ITEM);
     }
 }

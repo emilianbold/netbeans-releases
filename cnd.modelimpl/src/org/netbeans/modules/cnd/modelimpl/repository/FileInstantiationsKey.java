@@ -42,25 +42,25 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * Key for FileComponentInstantiationReferences.
  *
  * @author Nikolay Krasilnikov(nnnnnk@netbeans.org)
  */
-public class FileInstantiationsKey extends ProjectFileNameBasedKey {
+public final class FileInstantiationsKey extends ProjectFileNameBasedKey {
 
     public FileInstantiationsKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
     }
 
-    public FileInstantiationsKey(DataInput aStream) throws IOException {
+    public FileInstantiationsKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
     }
 

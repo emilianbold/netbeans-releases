@@ -99,7 +99,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
         }
 
         @Override
-        public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
+        public boolean canHandle(ProjectActionEvent.Type type, Lookup context,  Configuration conf) {
             if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
                 return true;
             } else {
@@ -109,7 +109,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public boolean canHandle(ProjectActionEvent pae) {
-            return canHandle(pae.getType(), pae.getConfiguration());
+            return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
         }
 
         @Override

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
@@ -55,14 +54,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 
 /**
  * File and offset -based key for declarations
  */
 
-/*package*/
-final class OffsetableDeclarationKey extends OffsetableKey {
+/*package*/ final class OffsetableDeclarationKey extends OffsetableKey {
     
     OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
 	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), obj.getName());
@@ -101,7 +100,7 @@ final class OffsetableDeclarationKey extends OffsetableKey {
         return super.getEndOffset() & 0x3FFFFFFF;
     }
     
-    /*package*/ OffsetableDeclarationKey(DataInput aStream) throws IOException {
+    /*package*/ OffsetableDeclarationKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
     }
     

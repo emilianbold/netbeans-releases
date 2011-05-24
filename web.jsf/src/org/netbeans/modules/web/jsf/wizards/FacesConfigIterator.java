@@ -55,7 +55,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -188,7 +187,8 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
 
-        folderPanel = Templates.createSimpleTargetChooser(project, sourceGroups);
+        folderPanel = new JSFValidationPanel(
+                Templates.createSimpleTargetChooser(project, sourceGroups));
 
         panels = new WizardDescriptor.Panel[] { folderPanel };
 

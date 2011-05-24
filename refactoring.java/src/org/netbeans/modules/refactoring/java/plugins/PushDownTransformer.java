@@ -49,6 +49,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -135,6 +136,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                             njuClass = make.removeClassMember(njuClass, t);
                             rewrite(tree, njuClass);
                         }
+                        fixVisibility(current);
                     }
                 }
                 
@@ -182,7 +184,6 @@ public class PushDownTransformer extends RefactoringVisitor {
                         TreePath path = workingCopy.getTrees().getPath(member);
                         Tree memberTree = genUtils.importComments(path.getLeaf(), path.getCompilationUnit());
                         memberTree = genUtils.importFQNs(memberTree);
-                        RetoucheUtils.copyJavadoc(member, memberTree, workingCopy);
                         if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
                             MethodTree oldOne = (MethodTree) memberTree;
                             MethodTree m = make.Method(
@@ -203,7 +204,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                     }
                 }
 
-                if (makeClassAbstract && !njuClass.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+                if (makeClassAbstract && !njuClass.getModifiers().getFlags().contains(Modifier.ABSTRACT) && (njuClass.getKind() != Tree.Kind.INTERFACE)) {
                     // make enclosing class abstract if necessary
                     njuClass = make.Class(RetoucheUtils.makeAbstract(make,
                             njuClass.getModifiers()), njuClass.getSimpleName(),
@@ -225,4 +226,48 @@ public class PushDownTransformer extends RefactoringVisitor {
         return super.visitClass(tree, p);
     }
     
+    void fixVisibility(final Element el) {
+        if (el.getKind() != ElementKind.METHOD) {
+            return;
+        }
+        
+        new TreePathScanner() {
+
+            @Override
+            public Object visitIdentifier(IdentifierTree node, Object p) {
+                check();
+                return super.visitIdentifier(node, p);
+            }
+
+            @Override
+            public Object visitMemberSelect(MemberSelectTree node, Object p) {
+                check();
+                return super.visitMemberSelect(node, p);
+            }
+
+            private void check() throws IllegalArgumentException {
+                Element thisElement = workingCopy.getTrees().getElement(getCurrentPath());
+                if (workingCopy.getElementUtilities().enclosingTypeElement(thisElement) == el.getEnclosingElement()) {
+                    Tree tree = workingCopy.getTrees().getTree(thisElement);
+                    if (thisElement.getKind().isField() && tree!=null) {
+                        makeProtectedIfPrivate(((VariableTree) tree).getModifiers());
+                    } else if (thisElement.getKind() == ElementKind.METHOD) {
+                        makeProtectedIfPrivate(((MethodTree) tree).getModifiers());
+                    } else if (thisElement.getKind().isClass() || thisElement.getKind().isInterface()) {
+                        makeProtectedIfPrivate(((ClassTree) tree).getModifiers());
+                    }
+                }
+            }
+            
+            private void makeProtectedIfPrivate(ModifiersTree modTree) {
+                if (modTree.getFlags().contains(Modifier.PRIVATE)) {
+                    ModifiersTree newMods = workingCopy.getTreeMaker().removeModifiersModifier(modTree, Modifier.PRIVATE);
+                    newMods = workingCopy.getTreeMaker().addModifiersModifier(newMods, Modifier.PROTECTED);
+                    rewrite(modTree, newMods);
+                }
+            }
+            
+        }.scan(workingCopy.getTrees().getPath(el), null);
+    }
 }
+

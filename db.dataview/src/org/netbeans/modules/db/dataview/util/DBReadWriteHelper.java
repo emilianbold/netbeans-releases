@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,6 +68,9 @@ import org.openide.util.NbBundle;
  */
 public class DBReadWriteHelper {
 
+    private static final long maxUnsignedInt = 4294967295L;
+    private static final int maxUnsignedShort = 65535;
+    private static final short maxUnsignedByte = 255;
     private static final Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
@@ -157,30 +160,25 @@ public class DBReadWriteHelper {
                     return bddata;
                 }
             }
-            case Types.INTEGER: {
-                int idata = rs.getInt(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    return new Integer(idata);
-                }
-            }
-            case Types.SMALLINT: {
-                short sidata = rs.getShort(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    return new Short(sidata);
-                }
-            }
+            case Types.INTEGER: 
+            case Types.SMALLINT: 
             case Types.TINYINT: {
-                // byte primitive data type is not enough for UNSIGNED TINYINT
-                short tidata = rs.getShort(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    return new Short(tidata);
-                }
+		try {
+			int idata = rs.getInt(index);
+			if (rs.wasNull()) {
+			    return null;
+			} else {
+			    return new Integer(idata);
+			}
+		} catch (java.sql.SQLDataException ex) {
+			long ldata = rs.getLong(index);
+			if (rs.wasNull()) {
+			    return null;
+			} else {
+			    return new Long(ldata);
+			}
+			
+		}
             }
             // JDBC/ODBC bridge JDK1.4 brings back -9 for nvarchar columns in
             // MS SQL Server tables.
@@ -317,14 +315,30 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.INTEGER:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
-                    ps.setInt(index, numberObj.intValue());
+                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Long.valueOf(valueObj.toString());
+                    if(numberObj.longValue() > ((long) Integer.MAX_VALUE)) {
+                        ps.setLong(index, numberObj.longValue());
+                    } else {
+                        ps.setInt(index, numberObj.intValue());
+                    }
                     break;
 
                 case Types.SMALLINT:
+                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
+                    if(numberObj.longValue() > ((long) Short.MAX_VALUE)) {
+                        ps.setInt(index, numberObj.intValue());
+                    } else {
+                        ps.setShort(index, numberObj.shortValue());
+                    }
+                    break;
+
                 case Types.TINYINT:
                     numberObj = (valueObj instanceof Number) ? (Number) valueObj : Short.valueOf(valueObj.toString());
-                    ps.setShort(index, numberObj.shortValue());
+                    if(numberObj.longValue() > ((long) Byte.MAX_VALUE)) {
+                        ps.setShort(index, numberObj.shortValue());
+                    } else {
+                        ps.setByte(index, numberObj.byteValue());
+                    }
                     break;
 
                 case Types.TIMESTAMP:
@@ -430,14 +444,38 @@ public class DBReadWriteHelper {
                 case Types.NUMERIC:
                     return valueObj instanceof BigDecimal ? valueObj : new BigDecimal(valueObj.toString());
 
-                case Types.INTEGER:
-                    return valueObj instanceof Integer ? valueObj : new Integer(valueObj.toString());
+                case Types.INTEGER: {
+                        long ldata = Long.parseLong(valueObj.toString());
+                        if(ldata >= ((long) Integer.MIN_VALUE) && ldata <= ((long) Integer.MAX_VALUE)) {
+                            return new Integer((int) ldata);
+                        } else if ( ldata < maxUnsignedInt ) {
+                            return new Long(ldata);
+                        } else {
+                            throw new NumberFormatException("Illegal value for java.sql.Type.Integer");
+                        }
+                }
 
-                case Types.SMALLINT:
-                    return valueObj instanceof Short ? valueObj : new Short(valueObj.toString());
+                case Types.SMALLINT: {
+                        int idata = Integer.parseInt(valueObj.toString());
+                        if(idata >= ((int) Short.MIN_VALUE) && idata <= ((int) Short.MAX_VALUE)) {
+                            return new Short((short) idata);
+                        } else if ( idata < maxUnsignedShort ) {
+                            return new Integer(idata);
+                        } else {
+                            throw new NumberFormatException("Illegal value for java.sql.Type.SMALLINT");
+                        }
+                }
 
-                case Types.TINYINT:
-                    return valueObj instanceof Byte ? valueObj : new Byte(valueObj.toString());
+                case Types.TINYINT: {
+                        short sdata = Short.parseShort(valueObj.toString());
+                        if(sdata >= ((short) Byte.MIN_VALUE) && sdata <= ((short) Byte.MAX_VALUE)) {
+                            return new Byte((byte) sdata);
+                        } else if ( sdata < maxUnsignedByte ) {
+                            return new Short(sdata);
+                        } else {
+                            throw new NumberFormatException("Illegal value for java.sql.Type.TINYINT");
+                        }
+                }
 
                 case Types.CHAR:
                 case Types.VARCHAR:

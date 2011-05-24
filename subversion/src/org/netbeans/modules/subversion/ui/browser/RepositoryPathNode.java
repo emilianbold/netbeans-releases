@@ -45,7 +45,9 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
@@ -63,7 +65,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -71,7 +72,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -178,10 +178,12 @@ public class RepositoryPathNode extends AbstractNode {
         setSheet(sheet);
     }
 
+    @Override
     public String getDisplayName() {
         return getName();
     }
 
+    @Override
     public String getName() {
         if(entry.getRepositoryFile().isRepositoryRoot()) {
             return entry.getRepositoryFile().getRepositoryUrl().toString();
@@ -190,6 +192,7 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
+    @Override
     public void setName(String name) {
         String oldName = getName();
         if(!oldName.equals(name)) {
@@ -216,11 +219,12 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return client.getActions();
     }
 
-    public RepositoryPathEntry getEntry() {
+    RepositoryPathEntry getEntry() {
         return entry;
     }
 
@@ -228,6 +232,7 @@ public class RepositoryPathNode extends AbstractNode {
         return client;
     }
 
+    @Override
     public boolean canRename() {
         return !repositoryFolder;
     }
@@ -270,6 +275,7 @@ public class RepositoryPathNode extends AbstractNode {
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(Object key) {
             if (key instanceof Node) {
                 return new Node[] {(Node) key};
@@ -300,6 +306,7 @@ public class RepositoryPathNode extends AbstractNode {
 
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
                 public void perform() {
                     try {
                         Collection<RepositoryPathEntry> listedEntries = client.listRepositoryPath(pathEntry, this);
@@ -441,26 +448,34 @@ public class RepositoryPathNode extends AbstractNode {
     private final static String HISTORY_DISPLAY_NAME = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Name");
     private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");
 
-    private class RevisionProperty extends NodeProperty<String> {
+    private class RevisionProperty extends NodeProperty<Object> {
         public RevisionProperty() {
-            super(PROPERTY_NAME_REVISION, String.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
+            super(PROPERTY_NAME_REVISION, Object.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
         }
 
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
             SVNRevision r = entry.getLastChangedRevision();
-            return r != null ? r.toString() : "";
+            if (r instanceof SVNRevision.Number) {
+                return ((SVNRevision.Number) r).getNumber();
+            } else if (r == null) {
+                return "";
+            } else {
+                return r.toString();
+            }
         }
     }
 
-    private class DateProperty extends NodeProperty<String> {
+    private class DateProperty extends NodeProperty<Object> {
 
         public DateProperty() {
-            super(PROPERTY_NAME_DATE, String.class, PROPERTY_NAME_DATE, PROPERTY_NAME_DATE);
+            super(PROPERTY_NAME_DATE, Object.class, PROPERTY_NAME_DATE, PROPERTY_NAME_DATE);
         }
 
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
+        @Override
+        public Object getValue() {
             Date date = entry.getLastChangedDate();
-            return date != null ? DateFormat.getDateTimeInstance().format(date) : "";
+            return date == null ? "" : date; //NOI18N
         }
     }
 
@@ -470,6 +485,7 @@ public class RepositoryPathNode extends AbstractNode {
             super(PROPERTY_NAME_AUTHOR, String.class, PROPERTY_NAME_AUTHOR, PROPERTY_NAME_AUTHOR);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return entry.getLastChangedAuthor();
         }
@@ -481,10 +497,12 @@ public class RepositoryPathNode extends AbstractNode {
             super(PROPERTY_NAME_HISTORY, String.class, HISTORY_DISPLAY_NAME, HISTORY_SHORT_DESC);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return "";
         }
 
+        @Override
         public String toString() {
             try {
                 Object obj = getValue();
@@ -495,6 +513,7 @@ public class RepositoryPathNode extends AbstractNode {
             }
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new HistoryPropertyEditor();
         }
@@ -505,9 +524,13 @@ public class RepositoryPathNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 Object obj = getValue();
+                if (obj instanceof Date) {
+                    obj = DateFormat.getDateTimeInstance().format((Date) obj);
+                }
                 return obj != null ? obj.toString() : "";
             } catch (Exception e) {
                 Subversion.LOG.log(Level.INFO, null, e);
@@ -515,12 +538,18 @@ public class RepositoryPathNode extends AbstractNode {
             }
         }
 
+        @Override
         public boolean canWrite() {
             return false;
         }
 
-        public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport();
+        @Override
+        public PropertyEditor getPropertyEditor () {
+            try {
+                return new RevisionPropertyEditor(getValue());
+            } catch (Exception e) {
+                return new PropertyEditorSupport();
+            }
         }
     }
 
@@ -530,10 +559,12 @@ public class RepositoryPathNode extends AbstractNode {
             setValue("");
         }
 
+        @Override
         public boolean supportsCustomEditor () {
             return true;
         }
 
+        @Override
         public Component getCustomEditor() {
             SVNRevision revision = entry.getLastChangedRevision();
             SVNUrl repositoryUrl = entry.getRepositoryFile().getRepositoryUrl();
@@ -594,6 +625,36 @@ public class RepositoryPathNode extends AbstractNode {
                     ++expanded;
                 }
             }
+        }
+    }
+    
+    private static class RevisionPropertyEditor extends PropertyEditorSupport {
+
+        private static final JLabel renderer = new JLabel();
+
+        static {
+            renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        }
+
+        public RevisionPropertyEditor(Object value) {
+            setValue(value);
+        }
+
+        @Override
+        public void paintValue (Graphics gfx, Rectangle box) {
+            renderer.setForeground(gfx.getColor());
+            Object val = getValue();
+            if (val instanceof Date) {
+                val = DateFormat.getDateTimeInstance().format((Date) val);
+            }
+            renderer.setText(val == null ? "" : val.toString());
+            renderer.setBounds(box);
+            renderer.paint(gfx);
+        }
+
+        @Override
+        public boolean isPaintable () {
+            return true;
         }
     }
 

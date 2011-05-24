@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -63,6 +61,8 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -142,7 +142,8 @@ public final class LibraryManager {
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
         String absPath = resolvedPath.getPath().toString();
-        ProjectBase res = searchInProjectFiles(baseProject, resolvedPath);
+        Set<ProjectBase> antiLoop = new HashSet<ProjectBase>();
+        ProjectBase res = searchInProjectFiles(baseProject, resolvedPath, antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -150,14 +151,15 @@ public final class LibraryManager {
             return res;
         }
         final String folder = resolvedPath.getFolder().toString(); // always normalized
-        res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath));
+        antiLoop.clear();
+        res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
             return res;
         }
-        res = searchInProjectFilesArtificial(baseProject, resolvedPath);
+        res = searchInProjectFilesArtificial(baseProject, resolvedPath, antiLoop);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -165,7 +167,8 @@ public final class LibraryManager {
             return res;
         }
         synchronized (lock) {
-            res = searchInProjectRootsArtificial(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath));
+            antiLoop.clear();
+            res = searchInProjectRootsArtificial(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
             if (res == null) {
                 if (resolvedPath.isDefaultSearchPath()) {
                     res = curFile.getProjectImpl(true);
@@ -217,10 +220,6 @@ public final class LibraryManager {
         return res;
     }
 
-    private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath resolvedPath) {
-        return searchInProjectFiles(baseProject, resolvedPath, new HashSet<ProjectBase>());
-    }
-
     private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
@@ -246,11 +245,12 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, ResolvedPath searchFor) {
+    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> antiLoop) {
         List<CsmProject> libraries = baseProject.getLibraries();
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
-                ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor);
+                antiLoop.clear();
+                ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor, antiLoop);
                 if (res != null) {
                     return res;
                 }
@@ -259,11 +259,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders) {
-        return searchInProjectRoots(baseProject, fs, folders, new HashSet<ProjectBase>());
-    }
-
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders, HashSet<ProjectBase> set) {
+    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
@@ -288,12 +284,13 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, FileSystem fs, List<String> folders) {
+    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
         List<CsmProject> libraries = baseProject.getLibraries();
         ProjectBase candidate = null;
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
-                ProjectBase res = searchInProjectRoots((ProjectBase) prj, fs, folders);
+                set.clear();
+                ProjectBase res = searchInProjectRoots((ProjectBase) prj, fs, folders, set);
                 if (res != null) {
                     if (candidate == null) {
                         candidate = res;
@@ -395,7 +392,7 @@ public final class LibraryManager {
     /**
      * Write artificial libraries for project
      */
-    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, DataOutput aStream) throws IOException {
+    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
         Set<LibraryKey> keys = new HashSet<LibraryKey>();
         for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
@@ -412,7 +409,7 @@ public final class LibraryManager {
     /**
      * Read artificial libraries for project
      */
-    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput input) throws IOException {
+    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, RepositoryDataInput input) throws IOException {
         assert input != null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
@@ -434,14 +431,40 @@ public final class LibraryManager {
             this.folder = folder;
         }
 
-        private LibraryKey(DataInput input) throws IOException {
+        private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
             this.folder = input.readUTF();
         }
         
-        private void write(DataOutput out) throws IOException {
+        private void write(RepositoryDataOutput out) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, out);
             out.writeUTF(folder);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LibraryKey other = (LibraryKey) obj;
+            if ((this.folder == null) ? (other.folder != null) : !this.folder.equals(other.folder)) {
+                return false;
+            }
+            if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.folder != null ? this.folder.hashCode() : 0);
+            hash = 83 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+            return hash;
         }
     }
 

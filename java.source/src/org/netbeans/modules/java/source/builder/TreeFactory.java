@@ -90,6 +90,7 @@ public class TreeFactory {
     ASTService model;
     Elements elements;
     Types types;
+    private final CommentHandlerService chs;
     
     private static final Context.Key<TreeFactory> contextKey = new Context.Key<TreeFactory>();
 
@@ -109,6 +110,7 @@ public class TreeFactory {
         make = com.sun.tools.javac.tree.TreeMaker.instance(context);
         elements = JavacElements.instance(context);
         types = JavacTypes.instance(context);
+        chs = CommentHandlerService.instance(context);
         make.toplevel = null;
     }
     
@@ -205,7 +207,7 @@ public class TreeFactory {
         return make.at(NOPOS).ClassDef((JCModifiers)modifiers,
                              names.fromString(simpleName.toString()),
                              typarams.toList(),
-                             (JCTree)extendsClause,
+                             (JCExpression)extendsClause,
                              impls.toList(),
                              defs.toList());
         
@@ -294,11 +296,11 @@ public class TreeFactory {
         return make.at(NOPOS).Continue(n);
     }
     
-    public DisjunctiveTypeTree DisjunctiveType(List<? extends Tree> typeComponents) {
+    public UnionTypeTree UnionType(List<? extends Tree> typeComponents) {
         ListBuffer<JCExpression> components = new ListBuffer<JCExpression>();
         for (Tree t : typeComponents)
             components.append((JCExpression)t);
-        return make.at(NOPOS).TypeDisjunction(components.toList());
+        return make.at(NOPOS).TypeUnion(components.toList());
     }
 
     public DoWhileLoopTree DoWhileLoop(ExpressionTree condition, StatementTree statement) {
@@ -1445,7 +1447,16 @@ public class TreeFactory {
         REMOVE
     }
     
-    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel) 
+    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel)
+            throws IllegalArgumentException {
+        N result = setLabelImpl(node, aLabel);
+
+        chs.copyComments(node, result);
+
+        return result;
+    }
+
+    private <N extends Tree> N setLabelImpl(final N node, final CharSequence aLabel)
             throws IllegalArgumentException
     {
         // todo (#pf): Shouldn't here be check that names are not the same?
@@ -1596,7 +1607,7 @@ public class TreeFactory {
         return make.at(NOPOS).ClassDef(make.at(NOPOS).Modifiers(modifiers, annotations),
                              names.fromString(simpleName.toString()),
                              typarams.toList(),
-                             (JCTree)extendsClause,
+                             (JCExpression)extendsClause,
                              impls.toList(),
                              defs.toList());
         

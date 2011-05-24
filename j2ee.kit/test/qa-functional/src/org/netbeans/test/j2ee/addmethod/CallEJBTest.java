@@ -41,27 +41,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.addmethod;
 
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.test.j2ee.*;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextAreaOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.EventTool;
 
 /**
- *
- * @author lm97939
+ *  Called from EJBValidation test suite.
+ * 
+ * @author Libor Martinek
  */
 public class CallEJBTest extends AddMethodBase {
 
@@ -69,35 +67,25 @@ public class CallEJBTest extends AddMethodBase {
     private boolean referencedLocal = true;
     private boolean convertExceptions = true;
     private String referenceName;
-    
+
     /** Creates a new instance of AddMethodTest */
     public CallEJBTest(String name) {
         super(name);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        junit.textui.TestRunner.run(new CallEJBTest("testCallEJB2InSB"));
-    }
-    
-    public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
-    }
-    
-    public void testCallEJB1InSB()  throws IOException{
+
+    public void testCallEJB1InSB() throws IOException {
         beanName = "TestingSession";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
+        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_CallEjbAction");
         calledBean = EJBValidation.EJB_PROJECT_NAME + "|TestingEntity";
-        toSearchInEditor = "TestingEntityLocalHome lookupTestingEntityBean()";
+        toSearchInEditor = "TestingEntityLocalHome lookupTestingEntityBeanLocal()";
         isDDModified = true;
         saveFile = true;
         addMethod();
     }
 
-    public void testCallEJB2InSB()  throws IOException{
+    public void testCallEJB2InSB() throws IOException {
         beanName = "TestingSession";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
+        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_CallEjbAction");
         calledBean = EJBValidation.EJB_PROJECT_NAME + "|TestingEntity";
         toSearchInEditor = "TestingEntityRemoteHome lookupMyTestingEntityBean()";
         referencedLocal = false;
@@ -107,18 +95,18 @@ public class CallEJBTest extends AddMethodBase {
         saveFile = true;
         addMethod();
     }
-    
-    public void testCallEJBInServlet()  throws IOException{
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
+
+    public void testCallEJBInServlet() throws IOException {
+        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_CallEjbAction");
         calledBean = EJBValidation.EJB_PROJECT_NAME + "|TestingSession";
-        toSearchInEditor = "TestingSessionRemote lookupTestingSessionBean()";
-        referencedLocal = false;
+        toSearchInEditor = "TestingSessionLocal lookupTestingSessionBeanLocal()";
+        referencedLocal = true;
         isDDModified = true;
         saveFile = true;
-        
+
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.WEB_PROJECT_NAME),
-                                 Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_Sources")
-                                 +"|test|TestingServlet.java");
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_Sources")
+                + "|test|TestingServlet.java");
         new OpenAction().performAPI(openFile);
         EditorOperator editor = EditorWindowOperator.getEditor("TestingServlet.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
@@ -128,45 +116,47 @@ public class CallEJBTest extends AddMethodBase {
         GenerateCodeOperator.openDialog(editorPopup, editor);
         CallEnterpriseBeanDialog dialog = new CallEnterpriseBeanDialog();
 
-        new Node(dialog.tree(),calledBean).select();
-        if (referencedLocal) 
+        new Node(dialog.tree(), calledBean).select();
+        if (referencedLocal) {
             dialog.local();
-        else
+        } else {
             dialog.remote();
+        }
         dialog.checkConvertCheckedExceptionsToRuntimeException(convertExceptions);
-        if (referenceName != null)
+        if (referenceName != null) {
             dialog.setReferenceName(referenceName);
-        
+        }
+
         dialog.ok();
-        
-        if (saveFile) 
+        editor.txtEditorPane().waitText(toSearchInEditor);
+        new EventTool().waitNoEvent(1000);
+        if (saveFile) {
             editor.save();
-        
-        waitForEditorText(editor, toSearchInEditor);
-        
+        }
+
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
         Utils utils = new Utils(this);
-        File WEB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME+"-war");
-        utils.assertFiles(new File(WEB_PROJECT_FILE, "src/java/test"), new String[] {"TestingServlet.java"}, getName()+"_");
-        String ddNames[] = { "web.xml", 
-                             "sun-web.xml"
+        File WEB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME + "-war");
+        utils.assertFiles(new File(WEB_PROJECT_FILE, "src/java/test"), new String[]{"TestingServlet.java"}, getName() + "_");
+        String ddNames[] = {"web.xml",
+            "glassfish-web.xml"
         };
-        utils.assertFiles(new File(WEB_PROJECT_FILE, "web/WEB-INF"), ddNames, isDDModified?getName()+"_":"");
+        utils.assertFiles(new File(WEB_PROJECT_FILE, "web/WEB-INF"), ddNames, isDDModified ? getName() + "_" : "");
 
         editor.closeDiscard();
-        
+
     }
 
-    public void testCallEJBInWS()  throws IOException{
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
+    public void testCallEJBInWS() throws IOException {
+        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle", "LBL_CallEjbAction");
         calledBean = EJBValidation.EJB_PROJECT_NAME + "|SampleSession";
         toSearchInEditor = "sample.SampleSessionRemote lookupSampleSessionBean()";
         referencedLocal = false;
         isDDModified = true;
         saveFile = true;
-        
+
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.WEB_PROJECT_NAME),
-                                 "Web Services|SampleWebService");
+                "Web Services|SampleWebService");
         new OpenAction().performAPI(openFile);
         EditorOperator editor = EditorWindowOperator.getEditor("SampleWebServiceImpl.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
@@ -176,50 +166,52 @@ public class CallEJBTest extends AddMethodBase {
         GenerateCodeOperator.openDialog(editorPopup, editor);
         CallEnterpriseBeanDialog dialog = new CallEnterpriseBeanDialog();
 
-        new Node(dialog.tree(),calledBean).select();
-        if (referencedLocal) 
+        new Node(dialog.tree(), calledBean).select();
+        if (referencedLocal) {
             dialog.local();
-        else
+        } else {
             dialog.remote();
+        }
         dialog.checkConvertCheckedExceptionsToRuntimeException(convertExceptions);
-        if (referenceName != null)
+        if (referenceName != null) {
             dialog.setReferenceName(referenceName);
-        
+        }
+
         dialog.ok();
-        
-        new Utils(this).checkAndModify("SampleWebServiceImpl.java", 19, "// TODO implement operation", 20, "return null;", 20, true, "return lookupSampleSessionBean().sampleBusinessMethod();\n");
-        
-        if (saveFile) 
+
+        editor.txtEditorPane().waitText(toSearchInEditor);
+        editor.replace("return null;", "return lookupSampleSessionBean().sampleBusinessMethod();");
+        if (saveFile) {
             editor.save();
-        
-        waitForEditorText(editor, toSearchInEditor);
-        
+        }
+
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
         Utils utils = new Utils(this);
-        File WEB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME+"-war");
-        utils.assertFiles(new File(WEB_PROJECT_FILE, "src/java/sample"), new String[] {"SampleWebServiceImpl.java"}, getName()+"_");
-        String ddNames[] = { "web.xml", 
-                             "sun-web.xml",
-                             "webservices.xml"
+        File WEB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME + "-war");
+        utils.assertFiles(new File(WEB_PROJECT_FILE, "src/java/sample"), new String[]{"SampleWebServiceImpl.java"}, getName() + "_");
+        String ddNames[] = {"web.xml",
+            "glassfish-web.xml",
+            "webservices.xml"
         };
-        utils.assertFiles(new File(WEB_PROJECT_FILE, "web/WEB-INF"), ddNames, isDDModified?getName()+"_":"");
+        utils.assertFiles(new File(WEB_PROJECT_FILE, "web/WEB-INF"), ddNames, isDDModified ? getName() + "_" : "");
 
         editor.closeDiscard();
     }
-        
+
     protected void addMethod() throws IOException {
-        EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName + "Bean.java");
         editor.select(20);
 
         // invoke Add Business Method dialog
         GenerateCodeOperator.openDialog(editorPopup, editor);
         CallEnterpriseBeanDialog dialog = new CallEnterpriseBeanDialog();
 
-        new Node(dialog.tree(),calledBean).select();
-        if (referencedLocal) 
+        new Node(dialog.tree(), calledBean).select();
+        if (referencedLocal) {
             dialog.local();
-        else
+        } else {
             dialog.remote();
+        }
         dialog.checkConvertCheckedExceptionsToRuntimeException(convertExceptions);
         if (referenceName != null) {
             dialog.clearReferenceName();
@@ -227,13 +219,12 @@ public class CallEJBTest extends AddMethodBase {
         }
 
         dialog.ok();
-        
-        if (saveFile) 
+        editor.txtEditorPane().waitText(toSearchInEditor);
+        new EventTool().waitNoEvent(1000);
+        if (saveFile) {
             editor.save();
-        
-        waitForEditorText(editor, toSearchInEditor);
-        
+        }
+
         compareFiles();
     }
-    
 }

@@ -263,6 +263,9 @@ abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
 
     public void visit(PHPDocNode phpDocNode) {
     }
+    
+    public void visit(PHPDocTypeNode phpDocNode) {
+    }
 
     public void visit(PHPDocTypeTag node) {
     }

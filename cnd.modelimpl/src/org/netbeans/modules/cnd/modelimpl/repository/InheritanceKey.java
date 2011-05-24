@@ -43,26 +43,25 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * A key for CsmInclude objects (file and offset -based)
  */
 
-/*package*/
-final class InheritanceKey extends OffsetableKey {
+/*package*/ final class InheritanceKey extends OffsetableKey {
 
     InheritanceKey(CsmInheritance obj) {
         super(obj, Utils.getCsmInheritanceKindKey(obj), obj.getAncestorType().getClassifierText()); // NOI18N
     }
 
-    /*package*/ InheritanceKey(DataInput aStream) throws IOException {
+    /*package*/ InheritanceKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 

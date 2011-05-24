@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -57,7 +58,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
@@ -71,6 +71,7 @@ import org.netbeans.modules.java.source.util.Iterators;
  *
  * @author Tomas Zezula
  */
+@Trusted
 public class ProxyFileManager implements JavaFileManager {
 
 
@@ -141,26 +142,13 @@ public class ProxyFileManager implements JavaFileManager {
         }
         else if (location == StandardLocation.SOURCE_PATH && this.sourcePath != null) {
             if (this.memoryFileManager != null) {
-                if (this.aptSources != null) {
-                    return new JavaFileManager[] {
-                        this.sourcePath,
-                        this.aptSources,
-                        this.memoryFileManager
-                    };
-                }
-                else {
-                    return new JavaFileManager[] {
-                        this.sourcePath,
-                        this.memoryFileManager
-                    };
-                }
+                return new JavaFileManager[] {
+                    this.sourcePath,
+                    this.memoryFileManager
+                };
             }
             else {
-                if (this.aptSources != null) {
-                    return new JavaFileManager[] {this.sourcePath, this.aptSources};
-                } else {
-                    return new JavaFileManager[] {this.sourcePath};
-                }
+                return new JavaFileManager[] {this.sourcePath};
             }
         }
         else if (location == StandardLocation.CLASS_OUTPUT && this.outputhPath != null) {
@@ -298,7 +286,7 @@ public class ProxyFileManager implements JavaFileManager {
                         }
                         sb.append(surl);
                     }
-                    LOG.log(Level.INFO, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL{0} using: {1}",  //NOI18N
+                    LOG.log(Level.FINE, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
                             new Object[]{sb.toString(), bestSoFar});
                 }
                 siblings.push(bestSoFar);
@@ -441,6 +429,7 @@ public class ProxyFileManager implements JavaFileManager {
         }
     }
 
+    @Trusted
     private static final class NullFileObject extends ForwardingInferableJavaFileObject {
         private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
             super (delegate);

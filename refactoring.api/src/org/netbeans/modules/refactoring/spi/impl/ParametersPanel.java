@@ -313,11 +313,21 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }//GEN-LAST:event_cancelActionPerformed
     private void refactor(final boolean previewAll) {
         LOGGER.log(Level.FINEST, "refactor - currentState={0}", currentState);
-        if (currentState == PRE_CHECK) {
+        if (currentState == PRE_CHECK && rui.hasParameters()) {
             LOGGER.finest("refactor - PRE_CHECK");
             //next is "Next>"
             placeCustomPanel();
             return;
+        }
+        
+        if(currentState == PRE_CHECK && !rui.hasParameters()) {
+            RefactoringSession session = putResult(RefactoringSession.create(rui.getName()));
+            try {
+                rui.getRefactoring().prepare(session);
+                return;
+            } finally {
+                setVisibleLater(false);
+            }
         }
         
         if (currentState == POST_CHECK && previewAll && currentProblemAction!=null) {
@@ -516,14 +526,16 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 }
                 if (problem != null) {
                     currentState = PRE_CHECK;
-                    if (!problem.isFatal()) {
+                    if (!problem.isFatal() && rui.hasParameters()) {
                         customComponent.initialize();
                     }
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            placeErrorPanel(problem);
-                            dialog.setVisible(true);
+                            if (dialog!=null) {
+                                placeErrorPanel(problem);
+                                dialog.setVisible(true);
+                            }
                         }
                     });
                 } else {
@@ -615,6 +627,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             //calculatePrefferedSize();
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class,"CTL_Next"));
             back.setVisible(false);
+            if(!rui.hasParameters()) {
+                next.setVisible(false);
+                previewButton.setVisible(true);
+                previewButton.setEnabled(true);
+            }
         } else {
             ProblemDetails details = getDetails(problem);
             if (details!=null) {

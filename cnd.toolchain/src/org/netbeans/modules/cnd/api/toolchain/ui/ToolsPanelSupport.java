@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -86,21 +87,27 @@ public class ToolsPanelSupport {
         return name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
 
-    private static Set<ChangeListener> listenerChanged = new WeakSet<ChangeListener>();
+    private static final Set<ChangeListener> listenerChanged = new WeakSet<ChangeListener>();
 
     public static void addCompilerSetChangeListener(ChangeListener l) {
-        listenerChanged.add(l);
+        synchronized (listenerChanged) {
+            listenerChanged.add(l);
+        }
     }
 
     public static void removeCompilerSetChangeListener(ChangeListener l) {
-        listenerChanged.remove(l);
+        synchronized (listenerChanged) {
+            listenerChanged.remove(l);
+        }
     }
 
     public static void fireCompilerSetChange(CompilerSet  set) {
         ChangeEvent ev = new ChangeEvent(set);
         currentCompilerSet = set;
-        for (ChangeListener l : listenerChanged) {
-            l.stateChanged(ev);
+        synchronized (listenerChanged) {
+            for (ChangeListener l : listenerChanged) {
+                l.stateChanged(ev);
+            }
         }
     }
 
@@ -171,20 +178,26 @@ public class ToolsPanelSupport {
         return res;
     }
 
-    private static Set<ChangeListener> codeAssistanceChanged = new WeakSet<ChangeListener>();
+    private static final Set<ChangeListener> codeAssistanceChanged = new WeakSet<ChangeListener>();
 
     public static void addCodeAssistanceChangeListener(ChangeListener l) {
-        codeAssistanceChanged.add(l);
+        synchronized (codeAssistanceChanged) {
+            codeAssistanceChanged.add(l);
+        }
     }
 
     public static void removeCodeAssistanceChangeListener(ChangeListener l) {
-        codeAssistanceChanged.remove(l);
+        synchronized (codeAssistanceChanged) {
+            codeAssistanceChanged.remove(l);
+        }
     }
 
     public static void fireCodeAssistanceChange(CompilerSetManager csm) {
         ChangeEvent ev = new ChangeEvent(csm);
-        for (ChangeListener l : codeAssistanceChanged) {
-            l.stateChanged(ev);
+        synchronized (codeAssistanceChanged) {
+            for (ChangeListener l : codeAssistanceChanged) {
+                l.stateChanged(ev);
+            }
         }
     }
 
@@ -192,7 +205,7 @@ public class ToolsPanelSupport {
      * returns toolchain manager component to be embedded in other containers
      * @param env execution environment for which manager is created
      * @param selectedCompilerSetName the name of the compiler set to select (null is allowed)
-     * @return toolchain manager component for specified execution environmen
+     * @return toolchain manager component for specified execution environment
      *  reference to listener to be used by containers to notify about OK is in component
      *  property OK_LISTENER_KEY (VetoableChangeListener)
      *  client can find selected toolchain after OK in property
@@ -226,7 +239,7 @@ public class ToolsPanelSupport {
      * This method must be called from EDT.
      *
      * @param env execution environment
-     * @return created toolchain, or <code>null</code> if the wizard was cancelled
+     * @return created toolchain, or <code>null</code> if the wizard was canceled
      */
     public static Future<CompilerSet> invokeNewCompilerSetWizard(final ExecutionEnvironment env) {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
@@ -294,12 +307,15 @@ public class ToolsPanelSupport {
                 cacheManager.restoreCompilerSets(oldCsm);
             }
         };
-        ModalMessageDlg.runLongTask(
-                WindowManager.getDefault().getMainWindow(),
-                runnable, null, null,
-                NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsTitle"), // NOI18N
-                NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsMessage")); // NOI18N
-
+        if (SwingUtilities.isEventDispatchThread()) {
+            ModalMessageDlg.runLongTask(
+                    WindowManager.getDefault().getMainWindow(),
+                    runnable, null, null,
+                    NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsTitle"), // NOI18N
+                    NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsMessage")); // NOI18N
+        } else {
+            runnable.run();
+        }
         return RequestProcessor.getDefault().post(
                 new CompilerSetAction(null, null, CompilerSetActionType.NONE));
     }

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.autoupdate.ui.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
@@ -51,14 +53,19 @@ import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CallableSystemAction;
 
-public final class CheckForUpdatesAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.autoupdate.ui.actions.CheckForUpdatesAction", category = "System")
+@ActionRegistration(displayName = "#CTL_CheckForUpdatesAction", iconInMenu=true)
+@ActionReference(path = "Menu/Help", position = 1300)
+public final class CheckForUpdatesAction implements ActionListener {
 
-    public void performAction () {
+    @Override
+    public void actionPerformed(ActionEvent ev) {
         boolean wizardFinished = false;
         RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
         if (t != null && ! t.isFinished ()) {
@@ -80,25 +87,5 @@ public final class CheckForUpdatesAction extends CallableSystemAction {
                 }
             }
         }
-    }
-
-    public String getName () {
-        return NbBundle.getMessage (CheckForUpdatesAction.class, "CTL_CheckForUpdatesAction");
-    }
-
-    @Override
-    protected void initialize () {
-        super.initialize ();
-        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
-        putValue ("noIconInMenu", Boolean.TRUE);
-    }
-
-    public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous () {
-        return false;
     }
 }

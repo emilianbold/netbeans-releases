@@ -1,7 +1,0 @@
-<templates>
-	<attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="sybase/config/tableExists.vm" /> 
-	<attr attributeName="select" attributeType="java.lang.String" attributeValue="sybase/config/select.vm" /> 
-	<attr attributeName="initialize" attributeType="java.lang.String" attributeValue="sybase/config/initialize.vm" /> 
-    <attr attributeName="update" attributeType="java.lang.String" attributeValue="sqlserver/config/update.vm" /> 
-    <attr attributeName="merge" attributeType="java.lang.String" attributeValue="sqlserver/config/merge.vm" /> 
-</templates>

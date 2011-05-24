@@ -46,6 +46,7 @@ package org.netbeans.modules.web.jsfapi.api;
  *
  * @author marekfukala
  */
+@Deprecated
 public enum LibraryType {
     CLASS, COMPOSITE;
 }

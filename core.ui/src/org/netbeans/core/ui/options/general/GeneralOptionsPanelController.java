@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.TopLevelRegistration(
     categoryName="#CTL_General_Options",
-    iconBase="org/netbeans/modules/options/resources/generalOptions.png",
+    iconBase="org/netbeans/core/ui/options/general/generalOptions.png",
     keywords="#KW_General",
     keywordsCategory="General",
     id="General", // #172844; XXX effectively an undocumented API

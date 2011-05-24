@@ -77,7 +77,8 @@ import org.netbeans.modules.hibernate.mapping.model.Version;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * Refactor the Java field names in the Hibernate mapping files
  * 
@@ -106,18 +107,31 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
             OutputStream outs = null;
             try {
                 InputStream is = mappingFileObject.getInputStream();
-                HibernateMapping hbMapping = HibernateMapping.createGraph(is);
+                HibernateMapping hbMapping = null;
+                try {
+                    hbMapping = HibernateMapping.createGraph(is);
+                } catch (RuntimeException ex) {
+                    //failed to create graph, corrupted mapping file
+                    Logger.getLogger(JavaFieldRenameTransaction.class.getName()).log(Level.WARNING, "Failed to refactor in {0}, verify if xml document is well formed", mappingFileObject.getPath());//NOI18N
+                }
+                if(hbMapping !=null ) {
+                    HibernateRefactoringUtil.ChangeTracker rewriteTrack = new HibernateRefactoringUtil.ChangeTracker();
+                    hbMapping.addPropertyChangeListener(rewriteTrack);
 
-                refactoringMyClasses(hbMapping.getMyClass());
+                    refactoringMyClasses(hbMapping.getMyClass());
 
-                refactoringSubclasses(hbMapping.getSubclass());
+                    refactoringSubclasses(hbMapping.getSubclass());
 
-                refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
+                    refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
 
-                refactoringUnionSubclasses(hbMapping.getUnionSubclass());
+                    refactoringUnionSubclasses(hbMapping.getUnionSubclass());
 
-                outs = mappingFileObject.getOutputStream();
-                hbMapping.write(outs);
+                    if(rewriteTrack.isChanged()){
+                        outs = mappingFileObject.getOutputStream();
+                        hbMapping.write(outs);
+                    }
+                    hbMapping.removePropertyChangeListener(rewriteTrack);
+                }
 
             } catch (FileAlreadyLockedException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);

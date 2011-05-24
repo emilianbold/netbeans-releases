@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26
+#Version 1.31.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -234,7 +234,7 @@ meth public static org.openide.nodes.Node createNodes(org.netbeans.spi.viewmodel
 meth public static void setModelsToView(javax.swing.JComponent,org.netbeans.spi.viewmodel.Models$CompoundModel)
 supr java.lang.Object
 hfds DEFAULT_DRAG_DROP_ALLOWED_ACTIONS,defaultExpansionModels,verbose
-hcls ActionSupport,CompoundAsynchronousModel,CompoundNodeActionsProvider,CompoundNodeModel,CompoundTableModel,CompoundTreeExpansionModel,CompoundTreeModel,DefaultAsynchronousModel,DefaultTreeExpansionModel,DefaultTreeFeatures,DelegatingNodeActionsProvider,DelegatingNodeModel,DelegatingTableModel,DelegatingTreeExpansionModel,DelegatingTreeModel,EmptyNodeActionsProvider,EmptyNodeModel,EmptyTableModel,EmptyTreeModel,ModelLists
+hcls ActionSupport,CompoundAsynchronousModel,CompoundNodeActionsProvider,CompoundNodeModel,CompoundTableModel,CompoundTableRendererModel,CompoundTreeExpansionModel,CompoundTreeModel,DefaultAsynchronousModel,DefaultTreeExpansionModel,DefaultTreeFeatures,DelegatingNodeActionsProvider,DelegatingNodeModel,DelegatingTableModel,DelegatingTableRendererModel,DelegatingTreeExpansionModel,DelegatingTreeModel,EmptyNodeActionsProvider,EmptyNodeModel,EmptyTableModel,EmptyTreeModel,ModelLists
 
 CLSS public abstract interface static org.netbeans.spi.viewmodel.Models$ActionPerformer
  outer org.netbeans.spi.viewmodel.Models
@@ -249,10 +249,13 @@ intf org.netbeans.spi.viewmodel.ExtendedNodeModel
 intf org.netbeans.spi.viewmodel.NodeActionsProvider
 intf org.netbeans.spi.viewmodel.ReorderableTreeModel
 intf org.netbeans.spi.viewmodel.TableModel
+intf org.netbeans.spi.viewmodel.TableRendererModel
 intf org.netbeans.spi.viewmodel.TreeExpansionModel
 meth public boolean canCopy(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean canCut(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public boolean canEditCell(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean canRename(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public boolean canRenderCell(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean canReorder(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean isCheckEnabled(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean isCheckable(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -277,6 +280,8 @@ meth public java.lang.String getShortDescription(java.lang.Object) throws org.ne
 meth public java.lang.String toString()
 meth public java.util.concurrent.Executor asynchronous(org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public javax.swing.Action[] getActions(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public javax.swing.table.TableCellEditor getCellEditor(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public javax.swing.table.TableCellRenderer getCellRenderer(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public org.netbeans.spi.viewmodel.ColumnModel[] getColumns()
 meth public org.openide.util.datatransfer.PasteType getDropType(java.lang.Object,java.awt.datatransfer.Transferable,int,int) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public org.openide.util.datatransfer.PasteType[] getPasteTypes(java.lang.Object,java.awt.datatransfer.Transferable) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -290,7 +295,7 @@ meth public void setName(java.lang.Object,java.lang.String) throws org.netbeans.
 meth public void setSelected(java.lang.Object,java.lang.Boolean) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void setValueAt(java.lang.Object,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 supr java.lang.Object
-hfds asynchModel,cnodeModel,columnModels,dndNodeModel,mainSubModel,nodeActionsProvider,nodeModel,propertiesHelpID,subModels,subModelsFilter,tableModel,treeExpansionModel,treeModel
+hfds asynchModel,cnodeModel,columnModels,dndNodeModel,mainSubModel,nodeActionsProvider,nodeModel,propertiesHelpID,subModels,subModelsFilter,tableModel,tableRendererModel,treeExpansionModel,treeModel
 
 CLSS public abstract static org.netbeans.spi.viewmodel.Models$TreeFeatures
  outer org.netbeans.spi.viewmodel.Models
@@ -352,6 +357,24 @@ meth public abstract void addModelListener(org.netbeans.spi.viewmodel.ModelListe
 meth public abstract void removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
 meth public abstract void setValueAt(org.netbeans.spi.viewmodel.TableModel,java.lang.Object,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 
+CLSS public abstract interface org.netbeans.spi.viewmodel.TableRendererModel
+intf org.netbeans.spi.viewmodel.Model
+meth public abstract boolean canEditCell(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean canRenderCell(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract javax.swing.table.TableCellEditor getCellEditor(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract javax.swing.table.TableCellRenderer getCellRenderer(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void addModelListener(org.netbeans.spi.viewmodel.ModelListener)
+meth public abstract void removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
+
+CLSS public abstract interface org.netbeans.spi.viewmodel.TableRendererModelFilter
+intf org.netbeans.spi.viewmodel.Model
+meth public abstract boolean canEditCell(org.netbeans.spi.viewmodel.TableRendererModel,java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean canRenderCell(org.netbeans.spi.viewmodel.TableRendererModel,java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract javax.swing.table.TableCellEditor getCellEditor(org.netbeans.spi.viewmodel.TableRendererModel,java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract javax.swing.table.TableCellRenderer getCellRenderer(org.netbeans.spi.viewmodel.TableRendererModel,java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void addModelListener(org.netbeans.spi.viewmodel.ModelListener)
+meth public abstract void removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
+
 CLSS public abstract interface org.netbeans.spi.viewmodel.TreeExpansionModel
 intf org.netbeans.spi.viewmodel.Model
 meth public abstract boolean isExpanded(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -387,5 +410,7 @@ meth public abstract void removeModelListener(org.netbeans.spi.viewmodel.ModelLi
 
 CLSS public org.netbeans.spi.viewmodel.UnknownTypeException
 cons public init(java.lang.Object)
+meth public java.lang.String getMessage()
 supr java.lang.Exception
+hfds node
 

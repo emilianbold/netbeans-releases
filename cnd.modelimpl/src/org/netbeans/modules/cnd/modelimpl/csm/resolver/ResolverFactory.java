@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Creates an instance of appropriate resolver
@@ -96,6 +98,18 @@ public class ResolverFactory {
             return null;
         }
         return aStack.peekLast();
+    }
+    
+    public static CsmUID<CsmFile> getCurrentStartFile(CsmOffsetable context) {
+        Resolver parent = null;
+        LinkedList<Resolver> aStack = stack.get();
+        if (!aStack.isEmpty()) {
+            parent = aStack.getLast();
+        } else {
+            parent = null;
+        }
+        CsmFile curFile = parent == null ? context.getContainingFile() : parent.getStartFile();
+        return UIDCsmConverter.fileToUID(curFile);
     }
     
     private static Resolver createResolver(CsmFile file, int offset, CsmFile contextFile) {

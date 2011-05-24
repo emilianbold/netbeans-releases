@@ -61,14 +61,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferSnapshot;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
@@ -93,9 +94,10 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     private Reference<Document> docRef = new WeakReference<Document>(null);
     private final FileImpl fileImpl;
     private SoftReference<FileBufferSnapshot> snapRef = new SoftReference<FileBufferSnapshot>(null);
+    private final APTFileBuffer.BufferType bufType;
     
     FileBufferImpl(FileObject fileObject, FileImpl fileImpl) {
-        this(getFileSystem(fileObject), CndFileUtils.getNormalizedPath(fileObject), fileImpl);
+        this(getFileSystem(fileObject), CndFileUtils.normalizePath(fileObject), fileImpl);
         attachListeners(fileObject);
     }
 
@@ -103,6 +105,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
         this.absPath = FilePathCache.getManager().getString(absPath);
         this.fileSystem = fileSystem;
         this.fileImpl = fileImpl;
+        this.bufType = (fileImpl.getFileType() == FileImpl.FileType.HEADER_FILE) ? APTFileBuffer.BufferType.INCLUDED : APTFileBuffer.BufferType.START_FILE;
     }
 
     private String getEncoding() {
@@ -119,7 +122,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     
     @Override
     public FileObject getFileObject() {
-        FileObject result = fileSystem.findResource(absPath.toString());
+        FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
         if (result == null) {
             CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
         }
@@ -128,6 +131,11 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     
     private DataObject getDataObject() {
         return getDataObjectImpl(getFileObject());
+    }
+
+    @Override
+    public APTFileBuffer.BufferType getType() {
+        return bufType;
     }
     
     public DataObject getDataObjectImpl(FileObject fo) {
@@ -186,7 +194,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     }
 
     @Override
-    public String getText() throws IOException {
+    public CharSequence getText() throws IOException {
         return getSnapshot().getText();
     }
 
@@ -218,7 +226,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
                     char[] buf = new char[length];
                     org.netbeans.editor.DocumentUtilities.copyText(doc, 0, length, buf, 0);
                     long timeStamp = org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentTimestamp(doc);
-                    out.set(new FileBufferSnapshot(fileSystem, absPath, buf, null, timeStamp));
+                    out.set(new FileBufferSnapshot(fileSystem, absPath, bufType, buf, null, timeStamp));
                 } catch (BadLocationException e) {
                     exc.set(e);
                 }
@@ -286,7 +294,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
 
                 char[] out = new char[output.length()];
                 output.getChars(0, output.length(), out, 0);
-                return new FileBufferSnapshot(fileSystem, absPath, out, lsoArr, timeStamp);
+                return new FileBufferSnapshot(fileSystem, absPath, bufType, out, lsoArr, timeStamp);
             } finally {
                 reader.close();
             }
@@ -360,7 +368,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
                 }
             } catch (OutOfMemoryError oome) {
                 // Use empty snapshot
-                out = new FileBufferSnapshot(fileSystem, absPath, new char[0], new int[0], lastModified());
+                out = new FileBufferSnapshot(fileSystem, absPath, bufType, new char[0], new int[0], lastModified());
 
                 // Diagnostics and workaround 
                 LOG.log(Level.INFO, null, oome);

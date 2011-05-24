@@ -595,10 +595,10 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 float ratio = ((float)w) / ((float)h);
                 if (w > h) {
                     w = MAX_W;
-                    h = Math.round(((float)MAX_W) / ratio);
+                    h = Math.max(1, Math.round(((float)MAX_W) / ratio));
                 } else {
                     h = MAX_H;
-                    w = Math.round(((float)MAX_H) * ratio);
+                    w = Math.max(1, Math.round(((float)MAX_H) * ratio));
                 }
             }
             return new Dimension(w, h);

@@ -194,35 +194,9 @@ public class OpenScriptingFiles_2 extends org.netbeans.modules.performance.utili
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }
-    
-    public void testOpening20kbRubyFile() {
-        testProject = Projects.RUBY_PROJECT;
-        setRubyEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = OPEN;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        doMeasurement();        
-    }
-    protected void setRubyEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }
-    public void testOpening20kbRHTMLFile() {
-        testProject = Projects.RAILS_PROJECT;
-        setRHTMLEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = OPEN;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";        
-        doMeasurement();          
-    }
-    protected void setRHTMLEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }
-    
+        
     public void testOpening20kbJSFile() {
         testProject = Projects.SCRIPTING_PROJECT;
-        setRubyEditorCaretFilteringOn();
         WAIT_AFTER_OPEN = 1500;
         menuItem = OPEN;
         fileName = "javascript20kb.js";
@@ -232,12 +206,15 @@ public class OpenScriptingFiles_2 extends org.netbeans.modules.performance.utili
 
     public void testOpening20kbPHPFile() {
         testProject = Projects.PHP_PROJECT;
-        setRubyEditorCaretFilteringOn();
         WAIT_AFTER_OPEN = 1500;
         menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
         doMeasurement();
+    }
+     
+    protected void setRHTMLEditorCaretFilteringOn() {
+        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
     }
 
     protected void setJSEditorCaretFilteringOn() {

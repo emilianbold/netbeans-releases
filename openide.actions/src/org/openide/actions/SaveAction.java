@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.actions.Savable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -67,6 +68,7 @@ import org.openide.util.actions.CookieAction;
 
 /** Save a one or more objects. Since version 6.20 this handles ANY selection
  * instead of EXACTLY_ONE selection.
+ * @see savable
  * @see SaveCookie
  *
  * @author   Jan Jancura, Petr Hamernik, Ian Formanek, Dafe Simonek
@@ -80,7 +82,7 @@ public class SaveAction extends CookieAction {
     }
 
     protected Class[] cookieClasses() {
-        return new Class[] { SaveCookie.class };
+        return new Class[] { Savable.class };
     }
 
     @Override
@@ -89,30 +91,30 @@ public class SaveAction extends CookieAction {
     }
 
     final void performAction(Lookup context) {
-        Collection<? extends SaveCookie> cookieList = context.lookupAll(SaveCookie.class);
+        Collection<? extends Savable> cookieList = context.lookupAll(Savable.class);
         Collection<? extends Node> nodeList = new LinkedList<Node>(context.lookupAll(Node.class));
 
-        COOKIE: for (SaveCookie saveCookie : cookieList) {
+        COOKIE: for (Savable savable : cookieList) {
 
-            //Determine if the saveCookie belongs to a node in our context
+            //Determine if the savable belongs to a node in our context
             for (Node node : nodeList) {
-                if (saveCookie.equals(node.getCookie(SaveCookie.class))) {
-                    performAction(saveCookie, node);
+                if (savable.equals(node.getLookup().lookup(Savable.class))) {
+                    performAction(savable, node);
                     nodeList.remove(node);
                     continue COOKIE;
                 }
             }
 
-            //The saveCookie was not found in any node in our context - save it by itself.
-            performAction(saveCookie, null);
+            //The savable was not found in any node in our context - save it by itself.
+            performAction(savable, null);
         }
     }
 
     protected void performAction(final Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++) {
             Node node = activatedNodes[i];
-            SaveCookie sc = node.getCookie(SaveCookie.class);
-            assert sc != null : "SaveCookie must be present on " + node + ". "
+            Savable sc = node.getLookup().lookup(Savable.class);
+            assert sc != null : "Savable must be present on " + node + ". "
                     + "See http://www.netbeans.org/issues/show_bug.cgi?id=68285 for details on overriding " + node.getClass().getName() + ".getCookie correctly.";
 
             // avoid NPE if disabled assertions
@@ -122,7 +124,7 @@ public class SaveAction extends CookieAction {
         }
     }
 
-    private void performAction(SaveCookie sc, Node n) {
+    private void performAction(Savable sc, Node n) {
         UserQuestionException userEx = null;
         for (;;) {
             try {
@@ -160,7 +162,7 @@ public class SaveAction extends CookieAction {
         return false;
     }
 
-    private String getSaveMessage(SaveCookie sc, Node n) {
+    private String getSaveMessage(Savable sc, Node n) {
         if (n == null) {
             return sc.toString();
         }
@@ -240,7 +242,7 @@ public class SaveAction extends CookieAction {
 
         @Override
         public boolean isEnabled() {
-            return context.lookup(SaveCookie.class) != null;
+            return context.lookup(Savable.class) != null;
         }
 
         public void actionPerformed(ActionEvent e) {

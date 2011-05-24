@@ -61,6 +61,9 @@ public final class Version {
 
     private static final Pattern JSR277_PATTERN = Pattern.compile(
             "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.(\\d+))?)?)?(-((\\w|-)+))?");
+    
+    private static final Pattern DOTTED_PATTERN = Pattern.compile(
+            "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.(\\d+))?)?)?)?(\\.(\\d+))*");    
 
     private final String version;
 
@@ -84,6 +87,24 @@ public final class Version {
         this.qualifier = qualifier;
     }
 
+    /**
+     * Creates the version from the spec version string.
+     * Expected format is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE_NUMBER]]][-QUALIFIER]</code>
+     * or <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE_NUMBER[.QUALIFIER]]]]</code>
+     * or <code>GENERIC_VERSION_STRING</code>. The string is evaluated in this order.
+     *
+     * @param version spec version string
+     */        
+    public static @NonNull Version fromJsr277OrDottedNotationWithFallback(@NonNull String version) {
+        Parameters.notNull("version", version);
+
+        Version parsed = fromJsr277NotationWithFallback(version);
+        if (parsed.getMajor() == null) {
+            return fromDottedNotationWithFallback(version);
+        }
+        return parsed;
+    }
+    
     /**
      * Creates the version from the spec version string.
      * Expected format is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE_NUMBER]]][-QUALIFIER]</code>
@@ -114,6 +135,37 @@ public final class Version {
             return new Version(version, null, null, null, null, null);
         }
     }
+    
+    /**
+     * Creates the version from the spec version string.
+     * Expected format is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE_NUMBER[.QUALIFIER]]]]</code>
+     * or <code>GENERIC_VERSION_STRING</code>.
+     *
+     * @param version spec version string with the following format:
+     *             <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE_NUMBER[.QUALIFIER]]]]</code>
+     *             or <code>GENERIC_VERSION_STRING</code>
+     */
+    public static @NonNull Version fromDottedNotationWithFallback(@NonNull String version) {
+        Parameters.notNull("version", version);
+
+        Matcher matcher = DOTTED_PATTERN.matcher(version);
+        if (matcher.matches()) {
+            String fragment = matcher.group(1);
+            Integer majorNumber = fragment != null ? Integer.valueOf(fragment) : null;
+            fragment = matcher.group(3);
+            Integer minorNumber = fragment != null ? Integer.valueOf(fragment) : null;
+            fragment = matcher.group(5);
+            Integer microNumber = fragment != null ? Integer.valueOf(fragment) : null;
+            fragment = matcher.group(7);
+            Integer updateNumber = fragment != null ? Integer.valueOf(fragment) : null;
+            String qualifier = matcher.group(9);
+
+            return new Version(version, majorNumber, minorNumber,
+                    microNumber, updateNumber, qualifier);
+        } else {
+            return new Version(version, null, null, null, null, null);
+        }
+    }    
 
     /**
      * Returns the major number. May return <code>null</code>.

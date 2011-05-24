@@ -68,10 +68,10 @@ class OpenProjectsListener implements PropertyChangeListener {
     }
     
     private void openCloseWindowGroup() {
+        final Project[] projects = OpenProjects.getDefault().getOpenProjects();
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                Project[] projects = OpenProjects.getDefault().getOpenProjects();
                 TopComponentGroup projectsGroup = WindowManager.getDefault().findTopComponentGroup("OpenedProjects"); //NOI18N
                 if( null == projectsGroup )
                     Logger.getLogger(OpenProjectsListener.class.getName()).log( Level.FINE, "OpenedProjects TopComponent Group not found." );

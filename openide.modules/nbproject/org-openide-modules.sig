@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.17
+#Version 7.22.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -85,7 +85,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 meth public static java.util.Set<org.openide.modules.Dependency> create(int,java.lang.String)
 supr java.lang.Object
-hfds comparison,name,serialVersionUID,type,version
+hfds FQN,IDENTIFIER,comparison,name,serialVersionUID,type,version
 hcls DependencyKey
 
 CLSS public abstract org.openide.modules.InstalledFileLocator
@@ -133,6 +133,13 @@ meth public void updated(int,java.lang.String)
 meth public void validate()
 supr org.openide.util.SharedClassObject
 hfds serialVersionUID
+
+CLSS public abstract org.openide.modules.Modules
+cons protected init()
+meth public abstract org.openide.modules.ModuleInfo ownerOf(java.lang.Class<?>)
+meth public static org.openide.modules.Modules getDefault()
+supr java.lang.Object
+hcls Trivial
 
 CLSS public abstract interface !annotation org.openide.modules.PatchedPublic
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)

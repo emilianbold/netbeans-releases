@@ -42,7 +42,6 @@
 package org.netbeans.modules.dlight.api.tool;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -133,8 +132,7 @@ final class ToolsConfiguration {
             try {
                 fileObject.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
-
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
                 return false;
             }
         }else   if (configurationsFolder.getFileObject(fname, shadowExt) == null) {
@@ -143,7 +141,7 @@ final class ToolsConfiguration {
                 fo.setAttribute("originalFile", fileObject.getPath()); // NOI18N
                 fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
                 return false;
             }
 
@@ -152,7 +150,7 @@ final class ToolsConfiguration {
             try {
                 fo.setAttribute(ENABLE_BY_DEFAULT_ATTRIBUTE, isEnabled);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
                 return false;
             }
         }
@@ -213,7 +211,7 @@ final class ToolsConfiguration {
 //                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
                     DLightToolConfigurationProvider configurationProvider = (DLightToolConfigurationProvider)ic.instanceCreate();
 
-                    if (configurationProvider instanceof ContextAwareDLightToolConfigurationProvider) {
+                    if (env != null && configurationProvider instanceof ContextAwareDLightToolConfigurationProvider) {
                         ((ContextAwareDLightToolConfigurationProvider)configurationProvider).setExecutionEnvironment(env);
                     }
 

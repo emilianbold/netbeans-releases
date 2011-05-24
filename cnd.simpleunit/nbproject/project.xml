@@ -151,6 +151,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <package>org.netbeans.modules.cnd.simpleunit.spi.wizard</package>
                 <package>org.netbeans.modules.cnd.simpleunit.utils</package>

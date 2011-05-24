@@ -76,6 +76,7 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         super( unit );
         myManagers = new HashMap<String, PersistentObjectManager<BindingQualifier>>();
         myStereotypedManagers = new HashMap<String, PersistentObjectManager<StereotypedObject>>();
+        myHelper = AnnotationModelHelper.create( getModelUnit().getClassPathInfo() );
     }
     
     public static MetadataModelImplementation<WebBeansModel> createMetaModel( 
@@ -83,10 +84,19 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     {
         return new WebBeansModelImplementation( unit );
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getBeansModel()
+     */
+    @Override
+    public BeansModel getBeansModel() {
+        return super.getBeansModel();
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#isReady()
      */
+    @Override
     public boolean isReady() {
         return !getHelper().isJavaScanInProgress();
     }
@@ -94,10 +104,12 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#runReadAction(org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction)
      */
+    @Override
     public <R> R runReadAction( final MetadataModelAction<WebBeansModel, R> action )
             throws MetadataModelException, IOException
     {
         return getHelper().runJavaSourceTask(new Callable<R>() {
+            @Override
             public R call() throws Exception {
                 return action.run(getModel());
             }
@@ -107,23 +119,21 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#runReadActionWhenReady(org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction)
      */
+    @Override
     public <R> Future<R> runReadActionWhenReady(
             final MetadataModelAction<WebBeansModel, R> action )
             throws MetadataModelException, IOException
     {
         return getHelper().runJavaSourceTaskWhenScanFinished(new Callable<R>() {
+            @Override
             public R call() throws Exception {
                 return action.run(getModel());
             }
         });
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getHelper()
-     */
-    @Override
     protected AnnotationModelHelper getHelper() {
-        return super.getHelper();
+        return myHelper;
     }
 
     /* (non-Javadoc)
@@ -132,13 +142,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     @Override
     protected WebBeansModel getModel() {
         return super.getModel();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getBeansModel()
-     */
-    protected BeansModel getBeansModel() {
-        return super.getBeansModel();
     }
     
     Map<String,PersistentObjectManager<BindingQualifier>> getManagers(){
@@ -185,6 +188,22 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return myStereotypedManagers;
     }
     
+    PersistentObjectManager<DecoratorObject> getDecoratorsManager(){
+        if ( myDecoratorsManager == null ){
+            myDecoratorsManager = getHelper().createPersistentObjectManager( 
+                    new DecoratorObjectProvider( getHelper()));
+        }
+        return myDecoratorsManager;
+    }
+    
+    PersistentObjectManager<InterceptorObject> getInterceptorsManager(){
+        if ( myInterceptorsManager == null ){
+            myInterceptorsManager = getHelper().createPersistentObjectManager( 
+                    new InterceptorObjectProvider( getHelper()));
+        }
+        return myInterceptorsManager;
+    }
+    
     Set<String> adjustStereotypesManagers(){
         Set<String> stereotypes = getStereotypedManagers().keySet();
         Collection<NamedStereotype> namedStereotypes = getNamedStereotypesManager().
@@ -214,5 +233,8 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     
     private Map<String,PersistentObjectManager<BindingQualifier>> myManagers;
     private PersistentObjectManager<NamedStereotype> myStereotypesManager;
+    private PersistentObjectManager<DecoratorObject> myDecoratorsManager;
+    private PersistentObjectManager<InterceptorObject> myInterceptorsManager;
     private Map<String,PersistentObjectManager<StereotypedObject>> myStereotypedManagers; 
+    private AnnotationModelHelper myHelper;
 }

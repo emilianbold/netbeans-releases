@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +61,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 
@@ -93,7 +93,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         put();
     }
 
-    public FileComponentMacros(DataInput input) throws IOException {
+    public FileComponentMacros(RepositoryDataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.macros = factory.readNameSortedToUIDMap(input, DefaultCache.getManager());
@@ -176,7 +176,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         try {
@@ -187,7 +187,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
     }
 
-    public static class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {
+    public static final class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {
 
         private int start = 0;
         private CharSequence name;
@@ -241,12 +241,12 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             output.writeInt(start);
             PersistentUtils.writeUTF(name, output);
         }
 
-        public NameSortedKey(DataInput input) throws IOException {
+        public NameSortedKey(RepositoryDataInput input) throws IOException {
             start = input.readInt();
             name = PersistentUtils.readUTF(input, NameCache.getManager());
         }

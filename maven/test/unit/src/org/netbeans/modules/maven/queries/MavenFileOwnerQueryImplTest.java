@@ -60,6 +60,10 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
         clearWorkDir();
     }
 
+    protected @Override int timeOut() {
+        return 300000;
+    }
+
     public void testMultipleVersions() throws Exception {
         File prj10 = new File(getWorkDir(), "prj10");
         TestFileUtils.writeFile(new File(prj10, "pom.xml"), "<project><modelVersion>4.0.0</modelVersion>"

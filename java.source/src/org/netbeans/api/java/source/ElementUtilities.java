@@ -555,6 +555,7 @@ public final class ElementUtilities {
             }
         }
         Types types = JavacTypes.instance(ctx);
+        com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
         DeclaredType implType = (DeclaredType)impl.asType();
         for (TypeMirror t : types.directSupertypes(element.asType())) {
             for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
@@ -577,8 +578,7 @@ public final class ElementUtilities {
                                     if (subType != null) {
                                         undef.remove(existing);
                                         MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);
-                                        MethodType mt = (MethodType)ms.type.clone();
-                                        mt.restype = (Type)subType;
+                                        Type mt = implTypes.createMethodTypeWithReturn((MethodType)ms.type, (Type)subType);
                                         ms.type = mt;
                                         undef.add(ms);
                                     }
