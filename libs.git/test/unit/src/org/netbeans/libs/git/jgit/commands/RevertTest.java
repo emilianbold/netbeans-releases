@@ -184,4 +184,22 @@ public class RevertTest extends AbstractGitTestCase {
         assertEquals(Arrays.asList(f), result.getConflicts());
         assertEquals(GitRevertResult.Status.CONFLICTING, result.getStatus());
     }
+    
+    public void testRevertNotIncluded () throws Exception {
+        File f = new File(workDir, "f");
+        File[] files = new File[] { f };
+        write(f, "init");
+        add(f);
+        commit(f);
+        
+        getClient(workDir).createBranch("branch", "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        // modify and commit
+        write(f, "change");
+        add(f);
+        GitRevisionInfo commit = getClient(workDir).commit(files, "modification", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).checkoutRevision("branch", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevertResult result = getClient(workDir).revert(commit.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(GitRevertResult.Status.NO_CHANGE, result.getStatus());
+    }
 }
