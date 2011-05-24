@@ -108,6 +108,10 @@ public abstract class CsmErrorProvider implements NamedEntity {
     public boolean isEnabledByDefault() {
         return true;
     }
+
+    public boolean hasHintControlPanel() {
+        return false;
+    }
     
     protected abstract void doGetErrors(Request request, Response response);
 
