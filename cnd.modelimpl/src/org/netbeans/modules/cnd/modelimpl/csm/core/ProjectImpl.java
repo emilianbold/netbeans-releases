@@ -295,7 +295,7 @@ public final class ProjectImpl extends ProjectBase {
             for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandler(file.getAbsolutePath()).getState(), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(file, getPreprocHandlers(file.getAbsolutePath()), ParserQueue.Position.TAIL);
                 }
             }
         }

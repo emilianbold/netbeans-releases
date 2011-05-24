@@ -1142,13 +1142,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return map;
     }
 
-    //@Deprecated
-    public final APTPreprocHandler getPreprocHandler(CharSequence absPath) {
-        final Collection<State> preprocStates = getFileContainer().getPreprocStates(absPath);
-        APTPreprocHandler.State state = preprocStates.isEmpty() ? null : preprocStates.iterator().next();
-        return createPreprocHandlerFromState(absPath, state);
-    }
-
     /*package*/ final APTPreprocHandler getPreprocHandler(CharSequence absPath, PreprocessorStatePair statePair) {
         assert statePair != null;
         return createPreprocHandlerFromState(absPath, statePair.state);
