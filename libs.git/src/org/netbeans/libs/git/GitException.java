@@ -142,4 +142,17 @@ public class GitException extends Exception {
             return GitRefUpdateResult.valueOf(result.name());
         }
     }
+
+    public static class NotMergedException extends GitException {
+        private final String unmergedRevision;
+
+        public NotMergedException (String unmergedRevision) {
+            super(unmergedRevision + " has not been fully merged yet");
+            this.unmergedRevision = unmergedRevision;
+        }
+        
+        public String getUnmergedRevision () {
+            return unmergedRevision;
+        }
+    }
 }
