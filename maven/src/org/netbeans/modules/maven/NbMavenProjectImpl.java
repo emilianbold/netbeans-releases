@@ -186,7 +186,7 @@ public final class NbMavenProjectImpl implements Project {
     private final ClassPathProviderImpl cppProvider;
 //    private ConfigurationProviderEnabler configEnabler;
     private final M2AuxilaryConfigImpl auxiliary;
-    private final MavenProjectPropsImpl auxprops;
+    private final @NonNull MavenProjectPropsImpl auxprops;
     private ProjectProfileHandlerImpl profileHandler;
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
     public static WatcherAccessor ACCESSOR = null;
@@ -666,7 +666,7 @@ public final class NbMavenProjectImpl implements Project {
         return EmbedderFactory.getProjectEmbedder();
     }
 
-    public MavenProjectPropsImpl getAuxProps() {
+    public @NonNull MavenProjectPropsImpl getAuxProps() {
         return auxprops;
     }
 
