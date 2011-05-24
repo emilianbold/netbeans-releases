@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -102,6 +100,7 @@ abstract class AbstractAssignabilityChecker  implements Checker {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.Checker#check()
      */
+    @Override
     public boolean check(){
         boolean check = checkAssignability( getVarType(), getType(), 
                 myOriginalElement);
@@ -142,8 +141,8 @@ abstract class AbstractAssignabilityChecker  implements Checker {
          */
         Types types = getImplementation().getHelper().getCompilationController().getTypes();
         if ( !types.isSameType( types.erasure( variableType ) , types.erasure(type)) ){
-            TypeMirror ancestor = getAncestor((TypeElement)refElement ,
-                types.erasure( variableType ) , types );
+            TypeMirror ancestor = getAncestor(type ,types.erasure( variableType ) , 
+                    types );
             // no appropriate type 
             if ( !(ancestor instanceof DeclaredType)){
                 return false;
@@ -338,66 +337,17 @@ abstract class AbstractAssignabilityChecker  implements Checker {
         return  !isGeneric && ( to instanceof DeclaredType );
     }
     
-    private TypeMirror getAncestor( TypeElement element , TypeMirror rawType ,
+    private TypeMirror getAncestor( TypeMirror subject , TypeMirror rawType ,
             Types types)
     {
-        Collection<TypeMirror> classes = new LinkedList<TypeMirror>();
-        
-        TypeMirror found = findInterface(element, rawType , types );
-        if ( found != null ){
-            return found;
-        }
-        
-        collectSuperClasses( element , classes );
-        for( TypeMirror clazz : classes ){
-            if ( types.isSameType ( types.erasure( clazz), rawType )){
-                return clazz;
-            }
-            Element classElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( clazz);
-            if ( classElement instanceof TypeElement ){
-                found = findInterface((TypeElement)classElement, 
-                        rawType , types);
-                if ( found != null ){
-                    return found;
-                }
-                
-            }
-        }
-        return null;
-    }
-    
-    private void  collectSuperClasses(TypeElement element, 
-            Collection<TypeMirror> collected )
-    {
-        TypeMirror superClass = element.getSuperclass();
-        if ( superClass != null ){
-            collected.add( superClass );
-            Element superElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( superClass);
-            if ( superElement instanceof TypeElement ){
-                TypeElement clazz = (TypeElement)superElement;
-                collectSuperClasses(clazz, collected);
-            }
-        }
-    }
-    
-    private TypeMirror findInterface( TypeElement element , 
-            TypeMirror rawType , Types types)
-    {
-        List<? extends TypeMirror> interfaces = element.getInterfaces();
-        for (TypeMirror typeMirror : interfaces) {
-            if ( types.isSameType ( types.erasure( typeMirror), rawType )){
+        List<? extends TypeMirror> directSupertypes = types.directSupertypes(subject);
+        for (TypeMirror typeMirror : directSupertypes) {
+            if ( types.isSameType(types.erasure( typeMirror), rawType)){
                 return typeMirror;
             }
-            Element interfaceElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( typeMirror);
-            if ( interfaceElement instanceof TypeElement ){
-                TypeElement interfaze = (TypeElement)interfaceElement;
-                TypeMirror found = findInterface(interfaze , rawType, types );
-                if ( found != null ){
-                    return found;
-                }
+            TypeMirror found = getAncestor(typeMirror, rawType, types);
+            if ( found != null ){
+                return found;
             }
         }
         return null;
