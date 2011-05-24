@@ -838,6 +838,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 151199 - Unresolved parameter of pointer to function type used as template parameter
         performTest("bug151199.cpp", 5, 26, "bug151199.cpp", 5, 22);
     }    
+
+    public void testBug198823() throws Exception {
+        // Bug 198823 - Wrong recognition of function instead of variable
+        performTest("bug198823.cpp", 17, 10, "bug198823.cpp", 3, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

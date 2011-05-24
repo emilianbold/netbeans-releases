@@ -638,7 +638,9 @@ public final class Resolver3 implements Resolver {
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
-
+        if (FileImpl.isParsing()) {
+            return null;
+        }
         if( nameTokens.length == 1 ) {
             result = resolveSimpleName(result, nameTokens[0], interestedKind);
         } else if( nameTokens.length > 1 ) {
