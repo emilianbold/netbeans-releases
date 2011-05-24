@@ -47,6 +47,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -85,6 +87,8 @@ import org.openide.util.actions.SystemAction;
  */
 public final class NewTestActionFactory {
 
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    
     private NewTestActionFactory() {
     }
 
@@ -157,10 +161,18 @@ public final class NewTestActionFactory {
                 templateWizard.putProperty("project", aProject); // NOI18N
                 Set<DataObject> files = templateWizard.instantiate(DataObject.find(FileUtil.getConfigFile(test.getPath())));
                 if (files != null && !files.isEmpty()) {
-                    MakeLogicalViewProvider.setVisible(project,
-                        getMakeConfigurationDescriptor(project).findProjectItemByPath(
-                        files.iterator().next().getPrimaryFile().getPath()).getFolder());
-
+                    MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor(project);
+                    if (mkd != null) {
+                        String path = files.iterator().next().getPrimaryFile().getPath();
+                        Item item = mkd.findProjectItemByPath(path);
+                        if (item != null) {
+                            MakeLogicalViewProvider.setVisible(project, item.getFolder());
+                        } else {
+                            LOGGER.log(Level.WARNING, "Can not find project item for {0}", path);
+                        }
+                    } else {
+                        LOGGER.warning("Can not get make configuration descriptor");
+                    }
                     for (DataObject file : files) {
                         Openable open = file.getLookup().lookup(Openable.class);
                         if (open != null) {
