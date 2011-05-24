@@ -45,6 +45,7 @@ package org.openide.filesystems.annotations;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,6 +70,14 @@ public class LayerGeneratingProcessorTest extends NbTestCase {
     }
 
     public void testProcessingEnvironmentLeak() throws Exception { // #198604
+        try {
+            if (Modifier.isStatic(Class.forName("com.sun.tools.javac.code.Symtab").getField("byteType").getModifiers())) {
+                System.err.println("Skipping testProcessingEnvironmentLeak due to old buggy version of javac");
+                return;
+            }
+        } catch (Exception x) {
+            System.err.println("Note: perhaps using non-javac compiler? " + x);
+        }
         clearWorkDir();
         File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + " public class C {}");
