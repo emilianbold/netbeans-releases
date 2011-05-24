@@ -57,6 +57,12 @@ public interface GitRevertResult {
                 return "Reverted";
             }
         },
+        REVERTED_IN_INDEX {
+            @Override
+            public String toString() {
+                return "Reverted In Index";
+            }
+        },
         CONFLICTING {
             @Override
             public String toString() {

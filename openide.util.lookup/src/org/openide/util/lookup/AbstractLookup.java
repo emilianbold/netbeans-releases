@@ -61,6 +61,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -521,7 +523,11 @@ public class AbstractLookup extends Lookup implements Serializable {
             while (it.hasNext()) {
                 LookupEvent ev = (LookupEvent)it.next();
                 LookupListener l = (LookupListener)it.next();
-                l.resultChanged(ev);
+                try {
+                    l.resultChanged(ev);
+                } catch (RuntimeException x) {
+                    Logger.getLogger(AbstractLookup.class.getName()).log(Level.WARNING, null, x);
+                }
             }
         }
     }
