@@ -44,6 +44,14 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -52,8 +60,15 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
@@ -66,17 +81,21 @@ final class FreeformSources implements Sources, AntProjectListener {
     
     private final FreeformProject project;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public FreeformSources(FreeformProject project) {
         this.project = project;
         project.helper().addAntProjectListener(this);
         initSources(); // have to register external build roots eagerly
     }
     
-    private Sources delegate;
+    private volatile Sources delegate;
+    private final Map<File,FileChangeListener> listenOnFiles = Collections.synchronizedMap(new HashMap<File, FileChangeListener>());
     private final ChangeSupport cs = new ChangeSupport(this);
     
+    @Override
     public SourceGroup[] getSourceGroups(final String type) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            @Override
             public SourceGroup[] run() {
                 if (delegate == null) {
                     delegate = initSources();
@@ -91,9 +110,11 @@ final class FreeformSources implements Sources, AntProjectListener {
         Element genldata = project.getPrimaryConfigurationData();
         Element foldersE = XMLUtil.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         if (foldersE != null) {
+            final List<File> newFiles = new ArrayList<File>();
             for (Element folderE : XMLUtil.findSubElements(foldersE)) {
                 Element locationE = XMLUtil.findElement(folderE, "location", FreeformProjectType.NS_GENERAL); // NOI18N
-                String location = XMLUtil.findText(locationE);
+                final String location = XMLUtil.findText(locationE);
+                newFiles.add(project.helper().resolveFile(project.evaluator().evaluate(location)));
                 if (folderE.getLocalName().equals("build-folder")) { // NOI18N
                     h.addNonSourceRoot(location);
                 } else if (folderE.getLocalName().equals("build-file")) { // NOI18N
@@ -121,26 +142,115 @@ final class FreeformSources implements Sources, AntProjectListener {
                     }
                 }
             }
+            updateFileListeners(newFiles);
         }
         h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return h.createSources();
     }
     
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
         cs.addChangeListener(changeListener);
     }
     
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
         cs.removeChangeListener(changeListener);
     }
     
+    @Override
     public void configurationXmlChanged(AntProjectEvent ev) {
+        reset();
+    }
+    
+    @Override
+    public void propertiesChanged(AntProjectEvent ev) {
+        // ignore
+    }
+
+    private void updateFileListeners(final List<? extends File> newFiles) {       
+        synchronized (listenOnFiles) {            
+            for (final Iterator<Map.Entry<File,FileChangeListener>> it = listenOnFiles.entrySet().iterator();
+                 it.hasNext();) {
+                final Map.Entry<File,FileChangeListener> e = it.next();
+                FileUtil.removeFileChangeListener(e.getValue(), e.getKey());
+                it.remove();
+            }
+
+            for (File newFile : newFiles) {
+                if (!listenOnFiles.containsKey(newFile)) {
+                    final FileChangeListener wl = new WeakFileListener(this, newFile);
+                    listenOnFiles.put(newFile, wl);
+                    FileUtil.addFileChangeListener(wl,newFile);
+                }
+            }
+        }
+    }
+
+    private void resetIfNeeded(final FileObject fo) {
+        final FileObject parent = fo.getParent();
+        if (parent != null) {
+            final File parentFile = FileUtil.toFile(parent);
+            if (parentFile != null) {
+                if (listenOnFiles.containsKey(parentFile)) {
+                    return;
+                }
+            }
+        }
+        reset();
+    }
+
+    private void reset() {
         delegate = null;
         cs.fireChange();
     }
-    
-    public void propertiesChanged(AntProjectEvent ev) {
-        // ignore
+
+    private class WeakFileListener extends WeakReference<FreeformSources> implements Runnable, FileChangeListener {
+
+        private final File file;
+
+        private WeakFileListener (
+                final FreeformSources source,
+                final File file) {
+            super (source, Utilities.activeReferenceQueue());
+            this.file = file;
+        }
+
+        @Override
+        public void run() {
+            FileUtil.removeFileChangeListener(this, file);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            resetIfNeeded(fe.getFile());
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            // ignore
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            // ignore
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            resetIfNeeded(fe.getFile());
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            resetIfNeeded(fe.getFile());
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // ignore
+        }
+
     }
     
 }
