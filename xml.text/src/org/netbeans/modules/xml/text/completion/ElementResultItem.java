@@ -116,50 +116,9 @@ class ElementResultItem extends XMLResultItem {
     
     @Override
     public CompletionTask createDocumentationTask() {
-        return new CompletionTask() {
-            public void query(CompletionResultSet resultSet) {
-                if (res != null && res.getDescription() != null) {
-                    resultSet.setDocumentation(new Docum(res.getDescription()));
-    
-                }
-                resultSet.finish();
-            }
-            public void refresh(CompletionResultSet resultSet) {
-                if (res != null && res.getDescription() != null) {
-                    resultSet.setDocumentation(new Docum(res.getDescription()));
-                }
-                resultSet.finish();
-            }
-            public void cancel() {}
-        };
+        return doCreateDocumentationTask(res);
     }
 
-    private class Docum implements CompletionDocumentation {
-        private String doc;
-
-        private Docum(String doc) {
-            this.doc = doc;
-        }
-
-        public String getText() {
-            return doc;
-        }
-
-        public URL getURL() {
-            return null;
-        }
-
-        public CompletionDocumentation resolveLink(String link) {
-            return null;
-        }
-
-        public Action getGotoSourceAction() {
-            return null;
-        }
-
-    }
-
-    
     /**
      * If called with <code>SHIFT_MASK</code> modified it createa a start tag and
      * end tag pair and place caret between them.
