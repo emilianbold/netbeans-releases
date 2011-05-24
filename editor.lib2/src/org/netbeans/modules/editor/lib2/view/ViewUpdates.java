@@ -417,7 +417,10 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     
     /*private*/ void incomingEvent(DocumentEvent evt) {
         if (incomingEvent != null) {
-            throw new IllegalStateException("Pending incoming event: " + incomingEvent); // NOI18N
+            // Rebuild the view hierarchy: temporary solution until the real cause is found.
+            docView.releaseChildren();
+            LOG.log(Level.INFO, "View hierarchy rebuild due to pending document event", // NOI18N
+                    new Exception("Pending incoming event: " + incomingEvent)); // NOI18N
         }
         incomingEvent = evt;
     }
