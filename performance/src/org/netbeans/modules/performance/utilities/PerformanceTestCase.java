@@ -947,6 +947,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             if (result < 0 || start.getTimeMillis() == 0) {
                 System.out.println("!!!!! Measuring failed, because start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0. Threads in which the measurements were taken:"+start.getMeasurementThreadName()+"   "+end.getMeasurementThreadName()+" !!!!!");
+                System.out.println("Tuples list at the time of failure:");
+                for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+                    System.out.println(tuple);
+                }
                 result=0;
             }
             return result;
