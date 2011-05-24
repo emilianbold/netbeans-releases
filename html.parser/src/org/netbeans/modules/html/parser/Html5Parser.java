@@ -211,7 +211,7 @@ public class Html5Parser implements HtmlParser {
             //end tags
             do {
                 if(!node.isVirtual()) {
-                    HtmlTag tag = HtmlTagProvider.getTagForElement(node.getNameWithoutPrefix());
+                    HtmlTag tag = HtmlTagProvider.getTagForElement(node.name());
                     if (!tag.isEmpty()) {
                         possible.add(tag);
                     }
