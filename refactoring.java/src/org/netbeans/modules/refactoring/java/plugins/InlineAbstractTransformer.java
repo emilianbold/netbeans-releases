@@ -616,8 +616,10 @@ public abstract class InlineAbstractTransformer {
                 break;
             case SYNCHRONIZED:
                 returnStatement = replaceStatement((SynchronizedTree) statement, statementPath, node);
+                break;
             case TRY:
                 returnStatement = replaceStatement((TryTree) statement, statementPath, node);
+                break;
             default:
                 returnStatement = statement;
         }

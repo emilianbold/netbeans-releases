@@ -156,6 +156,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                                     }
                                 }
                                 newStatementList.add(make.DoWhileLoop(doWhileCondition, doWhileLoopTree.getStatement()));
+                                break;
                             case ENHANCED_FOR_LOOP:
                                 EnhancedForLoopTree enhancedForLoopTree = (EnhancedForLoopTree) statementTree;
                                 ExpressionTree enhancedForLoopExpression = enhancedForLoopTree.getExpression();
@@ -168,6 +169,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                                 }
                                 newStatementList.add(make.EnhancedForLoop(enhancedForLoopTree.getVariable(),
                                         enhancedForLoopExpression, enhancedForLoopTree.getStatement()));
+                                break;
                             case EXPRESSION_STATEMENT:
                                 ExpressionStatementTree expressionStatementTree = (ExpressionStatementTree) statementTree;
                                 ExpressionTree expression = expressionStatementTree.getExpression();
@@ -426,7 +428,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     String msg = RetoucheUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
                     if (msg != null) {
                         problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InlineRefactoringPlugin.class,
-                                "ERR_InlineMethodNameClash", msg));
+                                "ERR_InlineMethodNameClash", msg)); // NOI18N
                     }
                     return super.visitIdentifier(node, p);
                 }

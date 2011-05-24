@@ -149,6 +149,7 @@ class InlineParametersTransformerVisitor extends TreeScanner<Tree, Element> {
                                 }
                             }
                             newStatementList.add(make.DoWhileLoop(doWhileCondition, doWhileLoopTree.getStatement()));
+                            break;
                         case ENHANCED_FOR_LOOP:
                             EnhancedForLoopTree enhancedForLoopTree = (EnhancedForLoopTree) statementTree;
                             ExpressionTree enhancedForLoopExpression = enhancedForLoopTree.getExpression();
@@ -161,6 +162,7 @@ class InlineParametersTransformerVisitor extends TreeScanner<Tree, Element> {
                             }
                             newStatementList.add(make.EnhancedForLoop(enhancedForLoopTree.getVariable(),
                                     enhancedForLoopExpression, enhancedForLoopTree.getStatement()));
+                            break;
                         case EXPRESSION_STATEMENT:
                             ExpressionStatementTree expressionStatementTree = (ExpressionStatementTree) statementTree;
                             ExpressionTree expression = expressionStatementTree.getExpression();
