@@ -1025,6 +1025,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     void updateLinesInfo(CharSequence s, int startLine, int startPos, OutputListener l, boolean important, boolean err, Color c) {
         int offset = 0;
+        /* If it's necessary to translate tabs to spaces, use this.
+         * But it seems that it works fine without the translation. Translation breaks character indexes.
         CharSequence noTabsStr = s;
         if (l != null) {
             for (int i = 0; i < s.length(); i++) {
@@ -1051,9 +1053,10 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 }
             }
         }
+         */
         int startLinePos = startPos - getLineStart(startLine);
         for (int i = startLine; i < getLineCount(); i++) {
-            offset += addSegment(noTabsStr, offset, i, startLinePos, l, important, err, c) + 1;
+            offset += addSegment(s, offset, i, startLinePos, l, important, err, c) + 1;
             startLinePos = 0;
         }
     }
