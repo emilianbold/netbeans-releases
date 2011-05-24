@@ -42,10 +42,14 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -72,28 +76,80 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
             TypeElement parent, CompilationInfo compInfo,
             List<ErrorDescription> descriptions , AtomicBoolean cancel )
     {
-        if (AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
+        if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
                 compInfo))
         {
-            if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                    compInfo))
-            {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateHasNoInject"));                    // NOI18N
-                descriptions.add( description );
+            return;
+        }
+        if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN,
+                compInfo))
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, NbBundle.getMessage(
+                            DelegateFieldAnalizer.class,
+                            "ERR_DelegateHasNoInject"));        // NOI18N
+            descriptions.add(description);
+        }
+        Element clazz = element.getEnclosingElement();
+        if (!AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR,
+                compInfo))
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, NbBundle.getMessage(
+                            DelegateFieldAnalizer.class,
+                            "ERR_DelegateIsNotInDecorator"));   // NOI18N
+            descriptions.add(description);
+        }
+        if ( cancel.get()){
+            return;
+        }
+        checkDelegateType(element, elementType, parent, compInfo, descriptions);
+    }
+
+    private void checkDelegateType( VariableElement element,
+            TypeMirror elementType, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        Collection<TypeMirror> decoratedTypes = getDecoratedTypes( parent , 
+                compInfo );
+        for (TypeMirror decoratedType : decoratedTypes) {
+            if ( !compInfo.getTypes().isSubtype( elementType,decoratedType )){
+                ErrorDescription description = CdiEditorAnalysisFactory
+                    .createError(element, compInfo, NbBundle.getMessage(
+                        DelegateFieldAnalizer.class,
+                        "ERR_DelegateTypeHasNoDecoratedType"));   // NOI18N
+                descriptions.add(description);
+                return;
             }
-            Element clazz = element.getEnclosingElement();
-            if ( !AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR, 
-                    compInfo))
+        }
+    }
+
+    private Collection<TypeMirror> getDecoratedTypes( TypeElement element , 
+            CompilationInfo info ) 
+    {
+        TypeElement serializable = info.getElements().getTypeElement(
+                Serializable.class.getCanonicalName());
+        Collection<TypeMirror> result = new LinkedList<TypeMirror>();
+        collectDecoratedTypes( element.asType() , result , serializable, info );
+        return result;
+    }
+
+    private void collectDecoratedTypes( TypeMirror type,
+            Collection<TypeMirror> result, TypeElement serializable, 
+            CompilationInfo info)
+    {
+        List<? extends TypeMirror> directSupertypes = info.getTypes().
+            directSupertypes(type);
+        for (TypeMirror superType : directSupertypes) {
+            Element element = info.getTypes().asElement(superType);
+            if( element.equals( serializable)  )
             {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, 
-                    NbBundle.getMessage(DelegateFieldAnalizer.class, 
-                            "ERR_DelegateIsNotInDecorator"));               // NOI18N
-                descriptions.add( description );
+                continue;
             }
+            if ( element.getKind() == ElementKind.INTERFACE ){
+                result.add( superType );
+            }
+            collectDecoratedTypes(superType, result, serializable, info);
         }
     }
 
