@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.openide.awt"/>
+                    <module-dependency codenamebase="org.openide.awt" spec="7.33"/>
                 </result>
             </implies>
         </transformation>
