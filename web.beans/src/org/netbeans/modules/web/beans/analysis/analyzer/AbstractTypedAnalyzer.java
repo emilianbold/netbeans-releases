@@ -42,15 +42,21 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -69,10 +75,79 @@ public abstract class AbstractTypedAnalyzer {
             CompilationInfo compInfo, List<ErrorDescription> descriptions, 
             AtomicBoolean cancel )
     {
+        List<TypeMirror> list = getRestrictedTypes(element, compInfo, cancel);
+        if ( list == null ){
+            return;
+        }
+        for (TypeMirror type : list) {
+            if ( cancel.get()){
+                return;
+            }
+            boolean isSubtype = hasBeanType(element, elementType, type, compInfo);
+            if (!isSubtype) {
+                addError(element, compInfo, descriptions);
+            }
+        }
+        // check @Specializes types restriction conformance
+        if ( cancel.get()){
+            return;
+        }
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
+                compInfo))
+        {
+            checkSpecializes( element , elementType , list, compInfo , 
+                    descriptions , cancel );
+        }
+    }
+    
+    protected abstract void checkSpecializes( Element element, TypeMirror elementType,
+            List<TypeMirror> restrictedTypes, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions,AtomicBoolean cancel );
+
+    protected boolean hasBeanType( Element subject, TypeMirror elementType, 
+            TypeMirror requiredBeanType,CompilationInfo compInfo )
+    {
+        return compInfo.getTypes().isSubtype(elementType, requiredBeanType);
+    }
+    
+    protected abstract void addError ( Element element , 
+            CompilationInfo compInfo , List<ErrorDescription> descriptions );
+
+    protected void collectAncestors(TypeElement type , Set<TypeElement> ancestors, 
+            CompilationInfo compInfo )
+    {
+        TypeMirror superclass = type.getSuperclass();
+        addAncestor( superclass, ancestors, compInfo);
+        List<? extends TypeMirror> interfaces = type.getInterfaces();
+        for (TypeMirror interfaze : interfaces) {
+            addAncestor(interfaze, ancestors, compInfo);
+        }
+    }
+    
+    private void addAncestor( TypeMirror parent , Set<TypeElement> ancestors,
+            CompilationInfo compInfo)
+    {
+        if ( parent == null ){
+            return;
+        }
+        Element parentElement = compInfo.getTypes().asElement( parent );
+        if ( parentElement instanceof TypeElement ){
+            if ( ancestors.contains( (TypeElement)parentElement))
+            {
+                return;
+            }
+            ancestors.add( (TypeElement)parentElement);
+            collectAncestors((TypeElement)parentElement, ancestors, compInfo);
+        }
+    }
+    
+    protected List<TypeMirror> getRestrictedTypes(Element element, 
+            CompilationInfo compInfo , AtomicBoolean cancel)
+    {
         AnnotationMirror typedMirror = AnnotationUtil.getAnnotationMirror(element, 
                 TYPED, compInfo);
         if ( typedMirror == null ){
-            return;
+            return null;
         }
         Map<? extends ExecutableElement, ? extends AnnotationValue> values = 
             typedMirror.getElementValues();
@@ -88,34 +163,46 @@ public abstract class AbstractTypedAnalyzer {
             }
         }
         if ( restrictedTypes == null ){
-            return;
+            return Collections.emptyList();
         }
         if ( cancel.get() ){
-            return;
+            return Collections.emptyList();
         }
         Object value = restrictedTypes.getValue();
         if ( value instanceof List<?> ){
+            List<TypeMirror> result = new ArrayList<TypeMirror>(((List<?>)value).size());
             for( Object type : (List<?>)value){
                 AnnotationValue annotationValue = (AnnotationValue)type;
                 type = annotationValue.getValue();
                 if (type instanceof TypeMirror){
-                    boolean isSubtype = hasBeanType(element, elementType, 
-                            (TypeMirror)type, compInfo);
-                    if ( !isSubtype){
-                        addError(element, compInfo, descriptions);
-                    }
+                    result.add( (TypeMirror)type);
                 }
             }
+            return result;
         }
+        return Collections.emptyList();
     }
     
-    protected boolean hasBeanType( Element subject, TypeMirror elementType, 
-            TypeMirror requiredBeanType,CompilationInfo compInfo )
+    protected Set<TypeElement> getUnrestrictedBeanTypes( TypeElement element,
+            CompilationInfo compInfo)
     {
-        return compInfo.getTypes().isSubtype(elementType, requiredBeanType);
+        Set<TypeElement> set = new HashSet<TypeElement>();
+        set.add( element );
+        collectAncestors(element, set, compInfo);
+        return set;
     }
     
-    protected abstract void addError ( Element element , 
-            CompilationInfo compInfo , List<ErrorDescription> descriptions );
+    protected Set<TypeElement> getElements( Collection<TypeMirror> types ,
+            CompilationInfo info  )
+    {
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        for (TypeMirror typeMirror : types) {
+            Element element = info.getTypes().asElement(typeMirror);
+            if ( element instanceof TypeElement  ){
+                result.add( (TypeElement)element);
+            }
+        }
+        return result;
+    }
     
 }
