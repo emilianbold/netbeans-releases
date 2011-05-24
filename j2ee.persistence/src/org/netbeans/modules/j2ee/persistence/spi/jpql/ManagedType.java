@@ -47,7 +47,6 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 
@@ -79,7 +78,7 @@ abstract public class ManagedType implements IManagedType {
 
     @Override
     public IType getType() {
-        return new Type(provider, null);//TODO create or get type from type repository
+        return new Type(null, null);//TODO create or get type from type repository
     }
 
     @Override

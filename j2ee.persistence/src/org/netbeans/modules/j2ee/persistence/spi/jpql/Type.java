@@ -54,6 +54,7 @@ import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
+import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 
 /**
  *
@@ -62,12 +63,12 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 public class Type implements IType{
     
     private final Element element;
-    private final IManagedTypeProvider provider;
+    private final ITypeRepository repository;
     private ITypeDeclaration tDeclaration;
 
-    public Type(IManagedTypeProvider provider, Element element){
+    public Type(TypeRepository typeRepository, Element element){
         this.element = element;
-        this.provider = provider;
+        this.repository = typeRepository;
     }
     
     @Override
