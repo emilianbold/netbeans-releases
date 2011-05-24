@@ -132,8 +132,12 @@ CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php
 CLASS      issue1480109                    [PUBLIC]   issue148109.php
 CLASS      pupil140784                     [PUBLIC]   issue140784.php
 CLASS      sfWidgetFormSchema              [PUBLIC]   issue197571.php
+CLASS      some_class                      [PUBLIC]   test.php
+CLASS      some_class                      [PUBLIC]   test.php
 CLASS      teacher140784                   [PUBLIC]   issue140784.php
+CLASS      test                            [PUBLIC]   declaration.php
 CLASS      test                            [PUBLIC]   issue194300.php
+CLASS      test                            [PUBLIC]   test.php
 METHOD     Barriers()                      [PUBLIC]   html.php
 METHOD     Body()                          [PUBLIC]   html.php
 METHOD     CaseIssues()                    [PUBLIC]   html.php
