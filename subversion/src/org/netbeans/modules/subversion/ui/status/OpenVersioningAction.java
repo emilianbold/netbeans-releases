@@ -47,12 +47,14 @@ package org.netbeans.modules.subversion.ui.status;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.subversion.Subversion;
 
-import javax.swing.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 
 /**
  * Open the Subversion view. It focuses recently opened
@@ -62,11 +64,18 @@ import javax.swing.*;
  *
  * @author Petr Kuzel
  */
+@ActionID(id = "org.netbeans.modules.subversion.ui.status.OpenVersioningAction", category = "Subversion")
+@ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
+@ActionReferences({
+   @ActionReference(path="Menu/Window/Versioning", position=200),
+   @ActionReference(path="OptionsDialog/Actions/Subversion")
+})
 public class OpenVersioningAction extends ShowAllChangesAction {
-
+    
+    public static final String ICON_BASE = "org/netbeans/modules/subversion/resources/icons/versioning-view.png";
+    
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/subversion/resources/icons/versioning-view.png", false)); // NOI18N
     }
 
     public String getName() {
