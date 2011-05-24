@@ -160,7 +160,7 @@ public final class CsmProjectContentResolver {
                 CsmEnum elemEnum = null;
                 if (CsmKindUtilities.isEnumerator(ob)) {
                     CsmEnumerator elem = (CsmEnumerator) ob;
-                    if (matchName(elem.getName().toString(), strPrefix, match)) {
+                    if (matchName(elem.getName(), strPrefix, match)) {
                         res.add((CsmEnumerator) ob);
                     }
                 } else if (CsmKindUtilities.isEnum(ob)) {
@@ -179,7 +179,7 @@ public final class CsmProjectContentResolver {
                 if (elemEnum != null) {
                     for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
                         CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
-                        if (matchName(elem.getName().toString(), strPrefix, match)) {
+                        if (matchName(elem.getName(), strPrefix, match)) {
                             res.add(elem);
                         }
                     }
