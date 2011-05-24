@@ -44,7 +44,7 @@ package org.netbeans.modules.maven.profiler.impl;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.profiler.categories.CategoryBuilder;
+import org.netbeans.modules.profiler.categorization.api.CategoryBuilder;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**

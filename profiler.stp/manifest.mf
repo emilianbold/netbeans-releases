@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.profiler.stp
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/profiler/stp/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
