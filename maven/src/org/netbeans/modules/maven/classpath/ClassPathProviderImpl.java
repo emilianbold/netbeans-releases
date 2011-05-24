@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
@@ -74,10 +75,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_WEB = 5;
     private static final int TYPE_UNKNOWN = -1;
     
-    private final NbMavenProjectImpl project;
+    private final @NonNull NbMavenProjectImpl project;
     private ClassPath[] cache = new ClassPath[9];
     
-    public ClassPathProviderImpl(NbMavenProjectImpl proj) {
+    public ClassPathProviderImpl(@NonNull NbMavenProjectImpl proj) {
         project = proj;
     }
     
