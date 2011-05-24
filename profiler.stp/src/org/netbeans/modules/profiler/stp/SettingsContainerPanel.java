@@ -69,6 +69,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
 
 
@@ -378,13 +379,8 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
 
         SelectProfilingTask.getDefault().updateHelpCtx();
 
-        if (showingPreset && showingAdvancedSettings) {
-// FIXXX
-//            ProfilerDialogs.DNSAMessage dnsa = new ProfilerDialogs.DNSAMessage("SettingsContainerPanel.switchToAdvancedSettings.presetNotification", //NOI18N
-//                                                                               READONLY_SETTINGS_MSG,
-//                                                                               ProfilerDialogs.DNSAMessage.INFORMATION_MESSAGE);
-//            dnsa.setDNSADefault(false);
-//            ProfilerDialogs.notify(dnsa);
-        }
+        if (showingPreset && showingAdvancedSettings)
+            ProfilerDialogs.displayInfoDNSA(READONLY_SETTINGS_MSG, null, null,
+                    "SettingsContainerPanel.switchToAdvancedSettings.presetNotification", false); //NOI18N
     }
 }
