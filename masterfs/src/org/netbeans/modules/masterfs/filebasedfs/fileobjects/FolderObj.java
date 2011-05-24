@@ -103,6 +103,9 @@ public final class FolderObj extends BaseFileObj {
 
     @Override
     public FileObject getFileObject(String relativePath) {
+        if (relativePath.equals(".")) { // NOI18N
+            return this;
+        }
         if(relativePath.indexOf('\\') != -1) {
             // #47885 - relative path must not contain back slashes
             return null;
@@ -111,7 +114,10 @@ public final class FolderObj extends BaseFileObj {
             relativePath = relativePath.substring(1);
         }
         File file = new File(getFileName().getFile(), relativePath);
-        if (relativePath.contains("..")) {
+        if (relativePath.contains("..") || // NOI18N
+            relativePath.contains("./") || // NOI18N
+            relativePath.contains("/.") // NOI18N
+        ) {
             file = FileUtil.normalizeFile(file);
         }
         

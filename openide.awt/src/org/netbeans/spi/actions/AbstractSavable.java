@@ -82,7 +82,7 @@ class MySavable extends AbstractSavable {
  * </pre>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
- * @since 7.31
+ * @since 7.33
  */
 public abstract class AbstractSavable implements Savable {
     /** Constructor for subclasses. 
