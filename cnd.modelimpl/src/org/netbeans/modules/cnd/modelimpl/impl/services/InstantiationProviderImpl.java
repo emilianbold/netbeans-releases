@@ -89,13 +89,16 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
 
@@ -354,9 +357,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                     // try to find partial specialization of class
                     if (specialization == null) {
-                        fqn = new StringBuilder(cls.getUniqueName());
+                        fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
+                        fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+                        fqn.append(cls.getQualifiedName());
                         fqn.append('<'); // NOI18N
                         Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
+                        fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
+                        fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+                        fqn.append(cls.getQualifiedName());
+                        fqn.append('<'); // NOI18N
+                        specs.addAll(((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString()));
                         specialization = findBestSpecialization(specs, params, cls);
                     }
                 }

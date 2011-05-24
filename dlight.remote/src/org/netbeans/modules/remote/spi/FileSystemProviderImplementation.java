@@ -85,4 +85,5 @@ public interface FileSystemProviderImplementation {
     boolean canExecute(FileObject fileObject);
     public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path);
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path);
+    public char getFileSeparatorChar(FileSystem fs);
 }

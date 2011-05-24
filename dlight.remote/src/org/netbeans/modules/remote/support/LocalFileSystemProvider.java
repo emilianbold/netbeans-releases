@@ -331,4 +331,9 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             task.waitFinished();
         }
     }
+
+    @Override
+    public char getFileSeparatorChar(FileSystem fs) {
+        return File.separatorChar;
+    }    
 }

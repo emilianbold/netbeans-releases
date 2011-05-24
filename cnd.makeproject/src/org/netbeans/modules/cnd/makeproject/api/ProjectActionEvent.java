@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Lookup;
@@ -168,10 +170,21 @@ public final class ProjectActionEvent {
     }
 
     public String getExecutable() {
+        String result;
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
-            return getExecutableFromRunCommand();
+            result = getExecutableFromRunCommand();
+        } else {
+            result = executable;
+        }                 
+        if (result != null && result.length() > 0) {
+            // for run, debug, step-into we return absolute path => let it be absolute in any case
+            FSPath baseFSPath = configuration.getBaseFSPath();
+            if (!CndPathUtilitities.isPathAbsolute(result)) {
+                result = baseFSPath.getPath() + FileSystemProvider.getFileSeparatorChar(baseFSPath.getFileSystem()) + result;            
+            }
+            result = FileSystemProvider.normalizeAbsolutePath(result, baseFSPath.getFileSystem());
         }
-	return executable;
+	return result;
     }
 
     private String[] getRunCommand() {

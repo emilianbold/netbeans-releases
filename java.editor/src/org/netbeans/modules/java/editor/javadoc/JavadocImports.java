@@ -346,8 +346,8 @@ public final class JavadocImports {
                                     ? result.getSimpleName ().length () + 1
                                     : 0;
                         }
-                        if (result != null) break;
                     }
+                    if (result != null) break;
                 }
             } else if (tag instanceof ParamTag && "@param".equals(tag.name())) { // NOI18N
                 ParamTag ptag = (ParamTag) tag;

@@ -85,6 +85,7 @@ import org.netbeans.libs.git.jgit.commands.GetCommonAncestorCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
 import org.netbeans.libs.git.jgit.commands.CreateTagCommand;
+import org.netbeans.libs.git.jgit.commands.DeleteBranchCommand;
 import org.netbeans.libs.git.jgit.commands.DeleteTagCommand;
 import org.netbeans.libs.git.jgit.commands.ExportCommitCommand;
 import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
@@ -232,6 +233,12 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         CreateTagCommand cmd = new CreateTagCommand(gitRepository.getRepository(), tagName, taggedObjectId, message, signed, forceUpdate, monitor);
         cmd.execute();
         return cmd.getTag();
+    }
+
+    @Override
+    public void deleteBranch (String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) throws GitException.NotMergedException, GitException {
+        DeleteBranchCommand cmd = new DeleteBranchCommand(gitRepository.getRepository(), branchName, forceDeleteUnmerged, monitor);
+        cmd.execute();
     }
 
     @Override

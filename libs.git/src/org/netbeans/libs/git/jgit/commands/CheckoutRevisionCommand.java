@@ -84,9 +84,12 @@ public class CheckoutRevisionCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             Ref headRef = repository.getRef(Constants.HEAD);
-            ObjectId headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
+            ObjectId headTree = null;
+            try {
+                headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
+            } catch (GitException.MissingObjectException ex) { }
             Ref ref = repository.getRef(revision);
-            if (ref != null && !ref.getName().startsWith(Constants.R_HEADS)) {
+            if (ref != null && !ref.getName().startsWith(Constants.R_HEADS) && !ref.getName().startsWith(Constants.R_REMOTES)) {
                 ref = null;
             }
             String fromName = headRef.getTarget().getName();
@@ -100,7 +103,7 @@ public class CheckoutRevisionCommand extends GitCommand {
             RevCommit commit;
             try {
                 commit = Utils.findCommit(repository, revision);
-                dco = new DirCacheCheckout(repository, headTree, cache, commit.getTree());
+                dco = headTree == null ? new DirCacheCheckout(repository, cache, commit.getTree()) : new DirCacheCheckout(repository, headTree, cache, commit.getTree());
                 dco.setFailOnConflict(failOnConflict);
                 dco.checkout();
                 File workDir = repository.getWorkTree();
@@ -115,25 +118,29 @@ public class CheckoutRevisionCommand extends GitCommand {
             }
             
             if (!monitor.isCanceled()) {
-                RefUpdate refUpdate = repository.updateRef(Constants.HEAD, ref == null);
-                refUpdate.setForceUpdate(false);
-                
                 String toName;
+                boolean detach = true;
                 if (ref == null) {
                     toName = commit.getName();
                 } else {
                     toName = ref.getName();
                     if (toName.startsWith(Constants.R_HEADS)) {
+                        detach = false;
                         toName = toName.substring(Constants.R_HEADS.length());
+                    } else if (toName.startsWith(Constants.R_REMOTES)) {
+                        toName = toName.substring(Constants.R_REMOTES.length());
                     }
-                }                
+                }
+                RefUpdate refUpdate = repository.updateRef(Constants.HEAD, detach);
+                refUpdate.setForceUpdate(false);
+                
                 refUpdate.setRefLogMessage(refLogMessage + " to " + toName, false); //NOI18N
                 RefUpdate.Result updateResult;
-                if (ref != null)
-                        updateResult = refUpdate.link(ref.getName());
+                if (!detach)
+                    updateResult = refUpdate.link(ref.getName());
                 else {
-                        refUpdate.setNewObjectId(commit);
-                        updateResult = refUpdate.forceUpdate();
+                    refUpdate.setNewObjectId(commit);
+                    updateResult = refUpdate.forceUpdate();
                 }
 
                 boolean ok = false;
