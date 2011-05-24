@@ -412,7 +412,7 @@
                         <Component class="javax.swing.JButton" name="btnAdd">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/add.png"/>
+                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/add.png"/>
                             </Property>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                               <ResourceString bundle="org/netbeans/modules/coherence/editor/pof/Bundle.properties" key="PofConfigGeneralView.btnAdd.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -425,7 +425,7 @@
                         <Component class="javax.swing.JButton" name="btnEdit">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/edit.png"/>
+                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/edit.png"/>
                             </Property>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                               <ResourceString bundle="org/netbeans/modules/coherence/editor/pof/Bundle.properties" key="PofConfigGeneralView.btnEdit.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -439,7 +439,7 @@
                         <Component class="javax.swing.JButton" name="btnRemove">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/delete.png"/>
+                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/delete.png"/>
                             </Property>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                               <ResourceString bundle="org/netbeans/modules/coherence/editor/pof/Bundle.properties" key="PofConfigGeneralView.btnRemove.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -479,7 +479,7 @@
                         <Component class="javax.swing.JButton" name="btnEditImage">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/edit.png"/>
+                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/edit.png"/>
                             </Property>
                             <Property name="borderPainted" type="boolean" value="false"/>
                             <Property name="contentAreaFilled" type="boolean" value="false"/>
@@ -495,7 +495,7 @@
                         <Component class="javax.swing.JButton" name="btnAddImage">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/add.png"/>
+                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/add.png"/>
                             </Property>
                             <Property name="borderPainted" type="boolean" value="false"/>
                             <Property name="contentAreaFilled" type="boolean" value="false"/>
@@ -510,7 +510,7 @@
                         <Component class="javax.swing.JButton" name="btnDeleteImage">
                           <Properties>
                             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/delete.png"/>
+                              <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/delete.png"/>
                             </Property>
                             <Property name="borderPainted" type="boolean" value="false"/>
                             <Property name="contentAreaFilled" type="boolean" value="false"/>

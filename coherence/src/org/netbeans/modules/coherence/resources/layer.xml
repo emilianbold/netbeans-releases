@@ -119,7 +119,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 </folder>
                 <folder name="Factories">
                     <file name="CacheConfigDataLoader.instance">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/cache.png"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/cache.png"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.coherence.editor.cache.CacheConfigDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/coh-cache+xml"/>
@@ -187,7 +187,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 </folder>
                 <folder name="Factories">
                     <file name="PofConfigDataLoader.instance">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/pof.png"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/pof.png"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.coherence.editor.pof.PofConfigDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/coh-pof+xml"/>
@@ -255,7 +255,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 </folder>
                 <folder name="Factories">
                     <file name="CoherenceConfigDataLoader.instance">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/coherence.png"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/coherence.png"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.coherence.editor.config.CoherenceConfigDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/coherence+xml"/>
@@ -266,14 +266,14 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
     </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="CacheConfigResolver.xml" url="editor/cache/CacheConfigResolver.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.Bundle#Services/MIMEResolver/CacheConfigResolver.xml"/>
+            <file name="CacheConfigResolver.xml" url="CacheConfigResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
             </file>
-            <file name="CoherenceConfigResolver.xml" url="editor/config/CoherenceConfigResolver.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.Bundle#Services/MIMEResolver/CoherenceConfigResolver.xml"/>
+            <file name="CoherenceConfigResolver.xml" url="CoherenceConfigResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
             </file>
-            <file name="PofConfigResolver.xml" url="editor/pof/PofConfigResolver.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.Bundle#Services/MIMEResolver/PofConfigResolver.xml"/>
+            <file name="PofConfigResolver.xml" url="PofConfigResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
             </file>
         </folder>
     </folder>
@@ -287,55 +287,58 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
     <!-- Templates -->
     <folder name="Templates">
         <folder name="Coherence">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.templates.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
 
             <file name="Aggregator.java" url="templates/Aggregator_java">
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/icon.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/AggregatorDesc.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/AggregatorDesc.html"/>
                 <!--Use this line only if your template makes use of the FreeMarker template language:-->
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="EntryProcessor.java" url="templates/EntryProcessor_java">
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/icon.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/EntryProcessorDesc.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/EntryProcessorDesc.html"/>
                 <!--Use this line only if your template makes use of the FreeMarker template language:-->
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="PofSerializer.java" url="templates/PofSerializer_java">
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/icon.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/PofSerializerDesc.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PofSerializerDesc.html"/>
                 <!--Use this line only if your template makes use of the FreeMarker template language:-->
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             
             <file name="PortableObject.java" url="templates/PortableObject_java">
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/icon.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/templates/PortableObjectDesc.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PortableObjectDesc.html"/>
                 <!--Use this line only if your template makes use of the FreeMarker template language:-->
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         <!--/folder>
         <folder name="Other"-->
-            <file name="CacheConfigTemplate.xml" url="editor/cache/CacheConfigTemplate.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.Bundle#Templates/Other/CacheConfigTemplate.xml"/>
+            <file name="CacheConfigTemplate.xml" url="templates/CacheConfigTemplate.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/CacheConfigTemplateDesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
-            <file name="CoherenceConfigTemplate.xml" url="editor/config/CoherenceConfigTemplate.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.Bundle#Templates/Other/CoherenceConfigTemplate.xml"/>
+            <file name="CoherenceConfigTemplate.xml" url="templates/CoherenceConfigTemplate.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/CoherenceConfigTemplateDesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
-            <file name="PofConfigTemplate.xml" url="editor/pof/PofConfigTemplate.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.Bundle#Templates/Other/PofConfigTemplate.xml"/>
+            <file name="PofConfigTemplate.xml" url="templates/PofConfigTemplate.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PofConfigTemplateDesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>

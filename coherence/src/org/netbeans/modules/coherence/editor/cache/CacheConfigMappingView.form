@@ -154,7 +154,7 @@
                 <Component class="javax.swing.JButton" name="btnAddImage">
                   <Properties>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/org/netbeans/modules/coherence/resources/add.png"/>
+                      <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/add.png"/>
                     </Property>
                     <Property name="contentAreaFilled" type="boolean" value="false"/>
                     <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -168,7 +168,7 @@
                 <Component class="javax.swing.JButton" name="btnEditImage">
                   <Properties>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/org/netbeans/modules/coherence/resources/edit.png"/>
+                      <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/edit.png"/>
                     </Property>
                     <Property name="contentAreaFilled" type="boolean" value="false"/>
                     <Property name="enabled" type="boolean" value="false"/>
@@ -183,7 +183,7 @@
                 <Component class="javax.swing.JButton" name="btnRemoveImage">
                   <Properties>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/org/netbeans/modules/coherence/resources/delete.png"/>
+                      <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/delete.png"/>
                     </Property>
                     <Property name="contentAreaFilled" type="boolean" value="false"/>
                     <Property name="enabled" type="boolean" value="false"/>
@@ -231,7 +231,7 @@
             <Component class="javax.swing.JButton" name="btnAddMapping">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/org/netbeans/modules/coherence/resources/add.png"/>
+                  <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/add.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/coherence/editor/cache/Bundle.properties" key="CacheConfigMappingView.btnAddMapping.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -244,7 +244,7 @@
             <Component class="javax.swing.JButton" name="btnEditMapping">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/org/netbeans/modules/coherence/resources/edit.png"/>
+                  <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/edit.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/coherence/editor/cache/Bundle.properties" key="CacheConfigMappingView.btnEditMapping.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -258,7 +258,7 @@
             <Component class="javax.swing.JButton" name="btnRemoveMapping">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/org/netbeans/modules/coherence/resources/delete.png"/>
+                  <Image iconType="3" name="/org/netbeans/modules/coherence/resources/icons/delete.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/coherence/editor/cache/Bundle.properties" key="CacheConfigMappingView.btnRemoveMapping.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

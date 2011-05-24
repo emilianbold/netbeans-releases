@@ -833,7 +833,7 @@ public class PofConfigGeneralView extends JPanel implements MultiViewDescription
         tabCustomUT.setFillsViewportHeight(true);
         jScrollPane2.setViewportView(tabCustomUT);
 
-        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/add.png"))); // NOI18N
+        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/add.png"))); // NOI18N
         btnAdd.setText(org.openide.util.NbBundle.getMessage(PofConfigGeneralView.class, "PofConfigGeneralView.btnAdd.text")); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -841,7 +841,7 @@ public class PofConfigGeneralView extends JPanel implements MultiViewDescription
             }
         });
 
-        btnEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/edit.png"))); // NOI18N
+        btnEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/edit.png"))); // NOI18N
         btnEdit.setText(org.openide.util.NbBundle.getMessage(PofConfigGeneralView.class, "PofConfigGeneralView.btnEdit.text")); // NOI18N
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(new java.awt.event.ActionListener() {
@@ -850,7 +850,7 @@ public class PofConfigGeneralView extends JPanel implements MultiViewDescription
             }
         });
 
-        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/delete.png"))); // NOI18N
+        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/delete.png"))); // NOI18N
         btnRemove.setText(org.openide.util.NbBundle.getMessage(PofConfigGeneralView.class, "PofConfigGeneralView.btnRemove.text")); // NOI18N
         btnRemove.setEnabled(false);
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
@@ -880,7 +880,7 @@ public class PofConfigGeneralView extends JPanel implements MultiViewDescription
                 .addComponent(btnRemove))
         );
 
-        btnEditImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/edit.png"))); // NOI18N
+        btnEditImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/edit.png"))); // NOI18N
         btnEditImage.setBorderPainted(false);
         btnEditImage.setContentAreaFilled(false);
         btnEditImage.setEnabled(false);
@@ -891,7 +891,7 @@ public class PofConfigGeneralView extends JPanel implements MultiViewDescription
             }
         });
 
-        btnAddImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/add.png"))); // NOI18N
+        btnAddImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/add.png"))); // NOI18N
         btnAddImage.setBorderPainted(false);
         btnAddImage.setContentAreaFilled(false);
         btnAddImage.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -901,7 +901,7 @@ public class PofConfigGeneralView extends JPanel implements MultiViewDescription
             }
         });
 
-        btnDeleteImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/delete.png"))); // NOI18N
+        btnDeleteImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/delete.png"))); // NOI18N
         btnDeleteImage.setBorderPainted(false);
         btnDeleteImage.setContentAreaFilled(false);
         btnDeleteImage.setEnabled(false);

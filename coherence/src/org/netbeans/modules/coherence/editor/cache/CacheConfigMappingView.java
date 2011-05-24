@@ -578,7 +578,7 @@ public class CacheConfigMappingView extends JPanel implements MultiViewDescripti
             .addComponent(tblScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
         );
 
-        btnAddImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/add.png"))); // NOI18N
+        btnAddImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/add.png"))); // NOI18N
         btnAddImage.setContentAreaFilled(false);
         btnAddImage.setMargin(new java.awt.Insets(2, 2, 2, 2));
         btnAddImage.addActionListener(new java.awt.event.ActionListener() {
@@ -587,7 +587,7 @@ public class CacheConfigMappingView extends JPanel implements MultiViewDescripti
             }
         });
 
-        btnEditImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/edit.png"))); // NOI18N
+        btnEditImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/edit.png"))); // NOI18N
         btnEditImage.setContentAreaFilled(false);
         btnEditImage.setEnabled(false);
         btnEditImage.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -597,7 +597,7 @@ public class CacheConfigMappingView extends JPanel implements MultiViewDescripti
             }
         });
 
-        btnRemoveImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/delete.png"))); // NOI18N
+        btnRemoveImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/delete.png"))); // NOI18N
         btnRemoveImage.setContentAreaFilled(false);
         btnRemoveImage.setEnabled(false);
         btnRemoveImage.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -643,7 +643,7 @@ public class CacheConfigMappingView extends JPanel implements MultiViewDescripti
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        btnAddMapping.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/add.png"))); // NOI18N
+        btnAddMapping.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/add.png"))); // NOI18N
         btnAddMapping.setText(org.openide.util.NbBundle.getMessage(CacheConfigMappingView.class, "CacheConfigMappingView.btnAddMapping.text")); // NOI18N
         btnAddMapping.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -651,7 +651,7 @@ public class CacheConfigMappingView extends JPanel implements MultiViewDescripti
             }
         });
 
-        btnEditMapping.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/edit.png"))); // NOI18N
+        btnEditMapping.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/edit.png"))); // NOI18N
         btnEditMapping.setText(org.openide.util.NbBundle.getMessage(CacheConfigMappingView.class, "CacheConfigMappingView.btnEditMapping.text")); // NOI18N
         btnEditMapping.setEnabled(false);
         btnEditMapping.addActionListener(new java.awt.event.ActionListener() {
@@ -660,7 +660,7 @@ public class CacheConfigMappingView extends JPanel implements MultiViewDescripti
             }
         });
 
-        btnRemoveMapping.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/delete.png"))); // NOI18N
+        btnRemoveMapping.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/delete.png"))); // NOI18N
         btnRemoveMapping.setText(org.openide.util.NbBundle.getMessage(CacheConfigMappingView.class, "CacheConfigMappingView.btnRemoveMapping.text")); // NOI18N
         btnRemoveMapping.setEnabled(false);
         btnRemoveMapping.addActionListener(new java.awt.event.ActionListener() {
