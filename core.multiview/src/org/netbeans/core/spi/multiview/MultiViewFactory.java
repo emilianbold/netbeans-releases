@@ -44,15 +44,31 @@
 
 package org.netbeans.core.spi.multiview;
 
+import java.awt.BorderLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
+import org.netbeans.core.multiview.SourceCheckDescription;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -163,6 +179,9 @@ public final class MultiViewFactory {
         return new DefaultCloseHandler();
     }
     
+    static MultiViewDescription createMultiViewDescription(Map map) {
+        return new MapMVD(map, null);
+    }
     
     private static final class Blank implements MultiViewElement, Serializable {
         
@@ -228,10 +247,12 @@ public final class MultiViewFactory {
     private static final class DefaultCloseHandler implements CloseOperationHandler, Serializable {
          private static final long serialVersionUID =-3126744916624172427L;        
        
+        @Override
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            Iterator<CloseOperationState> it;
             if (elements != null) {
                 boolean canBeClosed = true;
-                Collection badOnes = new ArrayList();
+                Collection<CloseOperationState> badOnes = new ArrayList<CloseOperationState>();
                 for (int i = 0; i < elements.length; i++) {
                     if (!elements[i].canClose()) {
                         badOnes.add(elements[i]);
@@ -239,63 +260,61 @@ public final class MultiViewFactory {
                     }
                 }
                 if (!canBeClosed) {
-                    //TODO SHOW dialog here.
-                    throw new IllegalStateException("Cannot close component. Some of the elements require close operation handling. See MultiViewFactory.createMultiView()");
-//                    Object[] options = new Object[] {
-//                        new JButton("Proceed"),
-//                        new JButton("Discard"),
-//                        new JButton("Cancel")
-//                    };
-//                    NotifyDescriptor desc = new NotifyDescriptor(createPanel(badOnes), "Cannot close component.", 
-//                                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, 
-//                                options, options[0]);
-//                    Object retVal = DialogDisplayer.getDefault().notify(desc);
-//                    if (retVal == options[0]) {
-//                        // do proceed.
-//                        Iterator it = badOnes.iterator();
-//                        while (it.hasNext()) {
-//                            Action act = ((CloseOperationState)it.next()).getProceedAction();
-//                            if (act != null) {
-//                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
-//                            }
-//                        }
-//                    } else if (retVal == options[1]) {
-//                        // do discard
-//                        Iterator it = badOnes.iterator();
-//                        while (it.hasNext()) {
-//                            Action act = ((CloseOperationState)it.next()).getDiscardAction();
-//                            if (act != null) {
-//                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "discard"));
-//                            }
-//                        }
-//                    } else {
-//                        // was cancel..
-//                        return false;
-//                    }
+                    Object[] options = new Object[] {
+                        "Proceed",
+                        "Discard",
+                        "Cancel"
+                    };
+                    NotifyDescriptor desc = new NotifyDescriptor(createPanel(badOnes), "Cannot close component.", 
+                                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, 
+                                options, options[0]);
+                    Object retVal = DialogDisplayer.getDefault().notify(desc);
+                    if (retVal == options[0]) {
+                        // do proceed.
+                        it = badOnes.iterator();
+                        while (it.hasNext()) {
+                            Action act = ((CloseOperationState)it.next()).getProceedAction();
+                            if (act != null) {
+                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
+                            }
+                        }
+                    } else if (retVal == options[1]) {
+                        // do discard
+                        it = badOnes.iterator();
+                        while (it.hasNext()) {
+                            Action act = ((CloseOperationState)it.next()).getDiscardAction();
+                            if (act != null) {
+                                act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "discard"));
+                            }
+                        }
+                    } else {
+                        // was cancel..
+                        return false;
+                    }
                 }
             }
             return true;
         }
         
-//        private JPanel createPanel(Collection elems) {
-//            JPanel panel = new JPanel();
-//            panel.setLayout(new BorderLayout());
-//            JLabel lbl = new JLabel("Cannot safely close component for following reasons:");
-//            panel.add(lbl, BorderLayout.NORTH);
-//            JScrollPane pane = new JScrollPane();
-//            String[] warnings = new String[elems.size()];
-//            int index = 0;
-//            Iterator it = elems.iterator();
-//            while (it.hasNext()) {
-//                CloseOperationState state = (CloseOperationState)it.next();
-//                warnings[index] = state.getCloseWarningMessage();
-//                index = index + 1;
-//            }
-//            JList list = new JList(warnings);
-//            pane.setViewportView(list);
-//            panel.add(pane);
-//            return panel;
-//        }
+        private JPanel createPanel(Collection elems) {
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            JLabel lbl = new JLabel("Cannot safely close component for following reasons:");
+            panel.add(lbl, BorderLayout.NORTH);
+            JScrollPane pane = new JScrollPane();
+            String[] warnings = new String[elems.size()];
+            int index = 0;
+            Iterator it = elems.iterator();
+            while (it.hasNext()) {
+                CloseOperationState state = (CloseOperationState)it.next();
+                warnings[index] = state.getCloseWarningID();
+                index = index + 1;
+            }
+            JList list = new JList(warnings);
+            pane.setViewportView(list);
+            panel.add(pane);
+            return panel;
+        }
     }
     
     /**
@@ -308,5 +327,98 @@ public final class MultiViewFactory {
         }
         
     }
-    
+
+    /** default MultiViewDescription */
+    private static final class MapMVD implements
+    MultiViewDescription, ContextAwareDescription , SourceCheckDescription {
+        private final Map map;
+        private final Lookup context;
+        public MapMVD(Map map, Lookup context) {
+            this.map = map;
+            this.context = context;
+        }
+        
+        private <T> T get(String attr, Class<T> type) {
+            Object obj = map.get(attr); // NOI18N
+            if (obj == null) {
+                throw new NullPointerException(attr + " attribute not specified");
+            }
+            if (type.isInstance(obj)) {
+                return type.cast(obj);
+            }
+            throw new IllegalArgumentException(attr + " not of type " + type + " but " + obj);
+        }
+        
+
+        @Override
+        public int getPersistenceType() {
+            return get("persistenceType", Integer.class);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return get("displayName", String.class);
+        }
+
+        @Override
+        public Image getIcon() {
+            String base = get("iconBase", String.class); // NOI18N
+            return ImageUtilities.loadImage(base, true);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        public String preferredID() {
+            return get("preferredID", String.class); // NOI18N
+        }
+
+        @Override
+        public MultiViewElement createElement() {
+            String name = get("class", String.class); // NOI18N
+            String method = (String)map.get("method"); // NOI18N
+            try {
+                ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+                if (cl == null) {
+                    cl = Thread.currentThread().getContextClassLoader();
+                }
+                if (cl == null) {
+                    cl = MultiViewFactory.class.getClassLoader();
+                }
+                Class<?> clazz = Class.forName(name, true, cl);
+                if (method == null) {
+                    try {
+                        Constructor<?> lookupC = clazz.getConstructor(Lookup.class);
+                        return (MultiViewElement)lookupC.newInstance(context);
+                    } catch (Exception ex) {
+                        Constructor<?> defC = clazz.getConstructor();
+                        return (MultiViewElement)defC.newInstance();
+                    }
+                } else {
+                    try {
+                        Method m = clazz.getMethod(method, Lookup.class);
+                        return (MultiViewElement) m.invoke(null, context);
+                    } catch (Exception ex) {
+                        Method m = clazz.getMethod(method);
+                        return (MultiViewElement) m.invoke(null);
+                    }
+                }
+            } catch (Exception ex) {
+                throw new IllegalStateException("Cannot instantiate " + name, ex);
+            }
+        }
+
+        @Override
+        public ContextAwareDescription createContextAwareDescription(Lookup context) {
+            return new MapMVD(map, context);
+        }
+
+        @Override
+        public boolean isSourceView() {
+            return Boolean.TRUE.equals(map.get("sourceview")); // NOI18N
+        }
+    }
 }

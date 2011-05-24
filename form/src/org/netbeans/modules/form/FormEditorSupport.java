@@ -123,6 +123,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 import org.openide.windows.CloneableOpenSupport;
@@ -141,7 +142,7 @@ import org.openide.xml.XMLUtil;
 public class FormEditorSupport extends DataEditorSupport implements EditorCookie.Observable, CloseCookie, PrintCookie {
     
     /** ID of the form designer (in the multiview) */
-    private static final String MV_FORM_ID = "form"; //NOI18N
+    static final String MV_FORM_ID = "form"; //NOI18N
     /** ID of the java editor (in the multiview) */
     private static final String MV_JAVA_ID = "java"; // NOI18N
     
@@ -153,7 +154,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     private static final String SECTION_VARIABLES = "variables"; // NOI18N
     
     /** Icon for the form editor multiview window */
-    private static final String iconURL =
+    static final String iconURL =
             "org/netbeans/modules/form/resources/form.gif"; // NOI18N
     
     /** The DataObject of the form */
@@ -833,14 +834,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (!formDataObject.isValid()) {
             return super.createPane(); // Issue 110249
         } 
-        MultiViewDescription[] descs = new MultiViewDescription[] {
-            new JavaDesc(formDataObject), new FormDesc(formDataObject) };
         
-        CloneableTopComponent mvtc =
-                MultiViewFactory.createCloneableMultiView(
-                descs,
-                descs[elementToOpen],
-                new CloseHandler(formDataObject));
+        CloneableTopComponent mvtc = MultiViews.createCloneableMultiView("text/x-form", getDataObject());
         
         // #45665 - dock into editor mode if possible..
         Mode editorMode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
@@ -1157,156 +1152,15 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
     }
     
-    // --------
-    
-    /** A descriptor for the FormDesigner element of multiview. Allows lazy
-     * creation of the FormDesigner (and thus form loading). */
-    private static class FormDesc implements MultiViewDescription, Serializable {
-        
-        private static final long serialVersionUID =-3126744316624172415L;
-        
-        private DataObject dataObject;
-        
-        private FormDesc() {
-        }
-        
-        public FormDesc(DataObject formDO) {
-            dataObject = formDO;
-        }
-        
-        private FormEditorSupport getFormEditor() {
-            return dataObject != null && dataObject instanceof FormDataObject ?
-                ((FormDataObject)dataObject).getFormEditorSupport() : null;
-        }
-        
-        @Override
-        public MultiViewElement createElement() {
-            return new FormDesignerTC(getFormEditor());
-        }
-        
-        @Override
-        public String getDisplayName() {
-            return FormUtils.getBundleString("CTL_DesignTabCaption"); // NOI18N
-        }
-        
-        @Override
-        public org.openide.util.HelpCtx getHelpCtx() {
-            return org.openide.util.HelpCtx.DEFAULT_HELP;
-        }
-        
-        @Override
-        public java.awt.Image getIcon() {
-            if (dataObject.isValid()) {
-                return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-            } else {
-                return ImageUtilities.loadImage(iconURL);
-            }
-        }
-        
-        @Override
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-        
-        @Override
-        public String preferredID() {
-            return MV_FORM_ID;
-        }
-        
-        public void writeExternal(ObjectOutput out) throws IOException {
-            out.writeObject(dataObject);
-        }
-        
-        public void readExternal(ObjectInput in)
-                throws IOException, ClassNotFoundException
-        {
-            Object firstObject = in.readObject();
-            if (firstObject instanceof FormDataObject)
-                dataObject = (DataObject) firstObject;
-        }
-    }
-    
-    // -------
-    
-    /** A descriptor for the java editor as an element in multiview. */
-    private static class JavaDesc implements MultiViewDescription, SourceViewMarker, Serializable {
-        
-        private static final long serialVersionUID =-3126744316624172415L;
-        
-        private DataObject dataObject;
-        
-        private JavaDesc() {
-        }
-        
-        public JavaDesc(DataObject formDO) {
-            dataObject = formDO;
-        }
-        
-        private FormEditorSupport getJavaEditor() {
-            return dataObject != null && dataObject instanceof FormDataObject ?
-                ((FormDataObject)dataObject).getFormEditorSupport() : null;
-        }
-        
-        @Override
-        public MultiViewElement createElement() {
-            FormEditorSupport javaEditor = getJavaEditor();
-            if (javaEditor != null) {
-                javaEditor.prepareDocument();
-                JavaEditorTopComponent editor = new JavaEditorTopComponent(dataObject.getCookie(FormEditorSupport.class));
-                Node[] nodes = editor.getActivatedNodes();
-                if ((nodes == null) || (nodes.length == 0)) {
-                    editor.setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
-                }
-                return (MultiViewElement) editor;
-            }
-            return MultiViewFactory.BLANK_ELEMENT;
-        }
-        
-        @Override
-        public String getDisplayName() {
-            return FormUtils.getBundleString("CTL_SourceTabCaption"); // NOI18N
-        }
-        
-        @Override
-        public org.openide.util.HelpCtx getHelpCtx() {
-            return org.openide.util.HelpCtx.DEFAULT_HELP;
-        }
-        
-        @Override
-        public java.awt.Image getIcon() {
-            if (dataObject.isValid()) {
-                return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-            } else {
-                return ImageUtilities.loadImage(iconURL);
-            }
-        }
-        
-        @Override
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ONLY_OPENED;
-        }
-        
-        @Override
-        public String preferredID() {
-            return MV_JAVA_ID;
-        }
-        
-        public void writeExternal(ObjectOutput out) throws IOException {
-            out.writeObject(dataObject);
-        }
-        
-        public void readExternal(ObjectInput in)
-                throws IOException, ClassNotFoundException
-        {
-            Object firstObject = in.readObject();
-            if (firstObject instanceof FormDataObject)
-                dataObject = (DataObject) firstObject;
-        }
-    }
-    
-    // --------
-    
-    private static class JavaEditorTopComponent
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase=iconURL,
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID=MV_JAVA_ID,
+        mimeType="text/x-form",
+        position=1000
+    )
+    public static class JavaEditorTopComponent
                      extends CloneableEditor
                      implements MultiViewElement
     {
@@ -1316,6 +1170,22 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         private transient MultiViewElementCallback multiViewObserver;
         
+        
+        public JavaEditorTopComponent(Lookup context) {
+            super(context.lookup(DataEditorSupport.class));
+            FormEditorSupport javaEditor = context.lookup(FormEditorSupport.class);
+            DataObject dataObject = context.lookup(DataObject.class);
+            if (javaEditor != null) {
+                javaEditor.prepareDocument();
+            }
+            if (dataObject != null) {
+                Node[] nodes = getActivatedNodes();
+                if ((nodes == null) || (nodes.length == 0)) {
+                    setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
+                }
+            }
+        }
+       
         JavaEditorTopComponent() {
             super();
         }

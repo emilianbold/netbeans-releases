@@ -45,6 +45,7 @@
 package org.openide.text;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -55,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.windows.CloneableOpenSupport;
@@ -75,16 +77,41 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
         }
     };
     
-    private CookieSet set;
+    private final CookieSet set;
+    private final Callable<Pane> factory;
     
     /** Constructor. 
      * @param obj data object to work on
      * @param set set to add/remove save cookie from
      */
     SimpleES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
+        this(obj, entry, set, null);
+    }
+
+    SimpleES(DataObject obj, Entry entry, CookieSet set, Callable<Pane> paneFactory) {
         super(obj, new Environment(obj, entry));
         this.set = set;
+        this.factory = paneFactory;
     }
+
+    @Override
+    protected boolean asynchronousOpen() {
+        return true;
+    }
+    
+    @Override
+    protected Pane createPane() {
+        if (factory != null) {
+            try {
+                return factory.call();
+            } catch (Exception ex) {
+                throw new IllegalStateException("Cannot create factory for " + getDataObject(), ex);
+            }
+        }
+        return super.createPane();
+    }
+    
+    
     
     /** 
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.

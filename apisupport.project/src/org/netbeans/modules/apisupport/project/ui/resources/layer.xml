@@ -218,6 +218,9 @@ made subject to such option by the copyright holder.
             <file name="templateDataNode.java" url="../wizard/loader/templateDataNode.javx"/>
             <file name="templateDataObject.java" url="../wizard/loader/templateDataObject.javx"/>
             <file name="templateDataObjectWithLookup.java" url="../wizard/loader/templateDataObjectWithLookup.javx"/>
+            <file name="templateDataObjectMulti.java" url="../wizard/loader/templateDataObjectMulti.javx"/>
+            <file name="templateDataObjectMultiForm.java" url="../wizard/loader/templateDataObjectMultiVisual.javx"/>
+            <file name="templateDataObjectMultiForm.form" url="../wizard/loader/templateDataObjectMultiVisual.forx"/>
             <file name="templateDataObjectInLayer.java" url="../wizard/loader/templateDataObjectInLayer.javx"/>
             <file name="templateNew1" url="../wizard/loader/templateNew1"/>
             <file name="templateNew2" url="../wizard/loader/templateNew2"/>
