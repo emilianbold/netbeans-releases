@@ -146,7 +146,7 @@ public class ProducerMethodAnalyzer extends AbstractProducerAnalyzer
         TypeMirror typeDirectSuper = containingClass.getSuperclass();
         if ( !superClass.equals(compInfo.getTypes().asElement(typeDirectSuper)) || 
                 !AnnotationUtil.hasAnnotation(overridenMethod, 
-                        AnnotationUtil.SPECIALIZES, compInfo))
+                        AnnotationUtil.PRODUCES_FQN, compInfo))
         {
             ErrorDescription description = CdiEditorAnalysisFactory.
                 createError( element, compInfo, NbBundle.getMessage(

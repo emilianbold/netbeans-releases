@@ -43,16 +43,22 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -98,6 +104,135 @@ public class TypedMethodAnalyzer extends AbstractTypedAnalyzer implements
             TypeMirror requiredBeanType, CompilationInfo compInfo )
     {
         return compInfo.getTypes().isSubtype(returnType, requiredBeanType);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     */
+    @Override
+    protected void checkSpecializes( Element element, TypeMirror elementType,
+            List<TypeMirror> restrictedTypes, CompilationInfo compInfo,
+            List<ErrorDescription> descriptions, AtomicBoolean cancel )
+    {
+        if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
+                compInfo))
+        {
+            return;
+        }
+        ExecutableElement method = (ExecutableElement)element;
+        ExecutableElement overriddenMethod = compInfo.getElementUtilities().
+            getOverriddenMethod(method);
+        if ( overriddenMethod == null ){
+            return;
+        }
+        TypeElement clazz = compInfo.getElementUtilities().
+            enclosingTypeElement(method);
+        TypeMirror superType = clazz.getSuperclass();
+        TypeElement superClass = compInfo.getElementUtilities().
+            enclosingTypeElement(overriddenMethod);
+        if ( !superClass.equals( compInfo.getTypes().asElement( superType))){
+            return;
+        }
+        if ( cancel.get()){
+            return;
+        }
+        List<TypeMirror> restrictedSuper = getRestrictedTypes(overriddenMethod, 
+                compInfo, cancel);
+        if ( cancel.get()){
+            return;
+        }
+        if ( restrictedSuper == null ) {
+            if (!hasUnrestrictedOverridenType(elementType, 
+                    restrictedTypes, compInfo,overriddenMethod, superClass) )
+            {
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, NbBundle.getMessage(
+                            TypedMethodAnalyzer.class, "ERR_BadSpecializesMethod"));  // NOI18N 
+                descriptions.add( description ); 
+            }
+        }
+        else { 
+            if (!hasRestrictedType(elementType, restrictedTypes, compInfo,
+                    restrictedSuper))
+            {
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                    createError( element, compInfo, NbBundle.getMessage(
+                            TypedMethodAnalyzer.class, "ERR_BadSpecializesMethod"));  // NOI18N 
+                descriptions.add( description );
+            }
+        }
+    }
+
+    private boolean hasRestrictedType( TypeMirror elementType,
+            List<TypeMirror> restrictedTypes, CompilationInfo compInfo,
+            List<TypeMirror> restrictedSuper )
+    {
+        if ( elementType.getKind() == TypeKind.ARRAY ){
+            for( TypeMirror mirror : restrictedSuper ){
+                boolean found = false;
+                for( TypeMirror restrictedType : restrictedTypes ){
+                    if ( compInfo.getTypes().isSameType( restrictedType, mirror)){
+                        found = true;
+                        break;
+                    }
+                }
+                if ( !found ){
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            Set<TypeElement> specializedBeanTypes = getElements( 
+                    restrictedSuper, compInfo);
+            Set<TypeElement> restrictedElements = getElements(restrictedTypes, 
+                    compInfo);
+            restrictedElements.add( compInfo.getElements().getTypeElement( 
+                    Object.class.getCanonicalName()));
+            return restrictedElements.containsAll( specializedBeanTypes );
+        }
+    }
+
+    private boolean hasUnrestrictedOverridenType( TypeMirror elementType,
+            List<TypeMirror> restrictedTypes, CompilationInfo compInfo,
+            ExecutableElement overriddenMethod, TypeElement superClass )
+    {
+        TypeMirror methodType = compInfo.getTypes().asMemberOf(
+                (DeclaredType)superClass.asType(), overriddenMethod);
+        TypeMirror returnOverriden = ((ExecutableType)methodType).getReturnType();
+        if ( elementType.getKind() == TypeKind.ARRAY ){
+            for( TypeMirror mirror : restrictedTypes ){
+                if ( compInfo.getTypes().isSameType( mirror, returnOverriden)){
+                    return true;
+                }
+            }
+            return false;
+        }
+        else if ( returnOverriden.getKind().isPrimitive() ) {
+            TypeElement boxed = compInfo.getTypes().boxedClass(
+                    (PrimitiveType)returnOverriden);
+            return hasUnrestrictedType(boxed, restrictedTypes, compInfo);
+        }
+        else if ( returnOverriden instanceof DeclaredType ){
+            Element returnElement = compInfo.getTypes().asElement( returnOverriden);
+            if ( returnElement instanceof TypeElement ){
+                return hasUnrestrictedType((TypeElement)returnElement, 
+                        restrictedTypes, compInfo);
+            }
+        }
+        return true;
+    }
+
+    private boolean hasUnrestrictedType( TypeElement overriden,
+            List<TypeMirror> restrictedTypes,CompilationInfo compInfo )
+    {
+        Set<TypeElement> specializedBeanTypes = getUnrestrictedBeanTypes(
+                    overriden, compInfo);
+        Set<TypeElement> restrictedElements = getElements(restrictedTypes, 
+                compInfo);
+        restrictedElements.add( compInfo.getElements().getTypeElement( 
+                Object.class.getCanonicalName()));
+        return restrictedElements.containsAll(specializedBeanTypes);
     }
 
 }
