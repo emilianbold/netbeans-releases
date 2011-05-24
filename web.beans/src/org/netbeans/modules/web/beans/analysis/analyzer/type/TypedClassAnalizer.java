@@ -43,10 +43,12 @@
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
@@ -81,8 +83,55 @@ public class TypedClassAnalizer extends AbstractTypedAnalyzer implements
     {
         ErrorDescription description = CdiEditorAnalysisFactory.
             createError( element, compInfo, NbBundle.getMessage(
-                TypedClassAnalizer.class, "ERR_BadRestritedType"));
+                TypedClassAnalizer.class, "ERR_BadRestritedType"));         // NOI18N
         descriptions.add( description );        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     */
+    @Override
+    protected void checkSpecializes( Element element, TypeMirror elementType,
+            List<TypeMirror> restrictedTypes, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions,AtomicBoolean cancel )
+    {
+        TypeElement typeElement = (TypeElement)element;
+        TypeMirror superclass = typeElement.getSuperclass();
+        Element superElement = compInfo.getTypes().asElement(superclass);
+        if ( !( superElement instanceof TypeElement )){
+            return;
+        }
+        List<TypeMirror> restrictedSuper = getRestrictedTypes(superElement, 
+                    compInfo, cancel);
+        if ( cancel.get()){
+            return;
+        }
+        /*
+         *  No need to look at the TypeMirrors here. The correctness of the
+         *  bean types are guaranteed by inheritance hierarchy.
+         *  TypeMirrors here couldn't be arrays or primitives.
+         *  ( But it is possible for production elements where TypeMirrors shouldn't
+         *  be checked only against corresponding TypeElement ).  
+         */
+        
+        Set<TypeElement> specializedBeanTypes;
+        if ( restrictedSuper == null ){
+            specializedBeanTypes = getUnrestrictedBeanTypes(
+                    (TypeElement)superElement, compInfo);
+        }
+        else {
+            specializedBeanTypes = getElements( restrictedSuper, compInfo);
+        }
+        Set<TypeElement> restrictedElements = getElements(restrictedTypes, 
+                compInfo);
+        restrictedElements.add( compInfo.getElements().getTypeElement( 
+                Object.class.getCanonicalName()));
+        if ( !restrictedElements.containsAll(specializedBeanTypes)){
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element, compInfo, NbBundle.getMessage(
+                        TypedClassAnalizer.class, "ERR_BadSpecializesBeanType"));  // NOI18N 
+            descriptions.add( description ); 
+        }
     }
     
 }

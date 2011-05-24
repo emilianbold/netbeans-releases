@@ -85,6 +85,7 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
+import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
@@ -870,6 +871,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             action.mergeRevision(currRepository, branchName);
                         }
                     }, 0);
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return !active;
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
+                    action.deleteBranch(currRepository, branchName);
                 }
 
                 @Override

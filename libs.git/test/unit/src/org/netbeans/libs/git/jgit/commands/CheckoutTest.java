@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -437,6 +438,20 @@ public class CheckoutTest extends AbstractGitTestCase {
         } catch (IllegalStateException ex) {
             assertEquals("Mixed stages not allowed: 2 file", ex.getMessage());
         }
+    }
+
+    public void testCheckoutNoHeadYet () throws Exception {
+        final File otherWT = new File(workDir.getParentFile(), "repo2");
+        GitClient client = getClient(otherWT);
+        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File f = new File(otherWT, "f");
+        write(f, "init");
+        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        client = getClient(workDir);
+        client.fetch(otherWT.getAbsolutePath(), Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("origin/master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
     private void unpack (String filename) throws IOException {
