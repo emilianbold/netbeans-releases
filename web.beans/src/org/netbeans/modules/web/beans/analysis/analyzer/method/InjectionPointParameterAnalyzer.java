@@ -42,13 +42,16 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -59,6 +62,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
 import org.netbeans.modules.web.beans.api.model.CdiException;
@@ -94,6 +98,10 @@ public class InjectionPointParameterAnalyzer implements MethodAnalyzer {
                         DependencyInjectionResult result = model.lookupInjectables(
                             var, (DeclaredType) parent.asType());
                         checkResult(result, element, var, model,descriptions, info );
+                        if ( AnnotationUtil.isDelegate(var, parent, model)){
+                            checkDecoratedBeans( result ,var, element, model, info , 
+                                    descriptions);
+                        }
                     }
                     if ( cancel.get()){
                         return;
@@ -111,6 +119,41 @@ public class InjectionPointParameterAnalyzer implements MethodAnalyzer {
             }
         }
 
+    }
+    
+    private void checkDecoratedBeans( DependencyInjectionResult result,
+            VariableElement element, ExecutableElement method,
+            WebBeansModel model, CompilationInfo info,
+            List<ErrorDescription> descriptions )
+    {
+        Set<TypeElement> decoratedBeans = null;
+        if ( result instanceof DependencyInjectionResult.ApplicableResult ){
+            DependencyInjectionResult.ApplicableResult appResult = 
+                (DependencyInjectionResult.ApplicableResult) result;
+            decoratedBeans = appResult.getTypeElements();
+        }
+        else if ( result instanceof DependencyInjectionResult.InjectableResult ){
+            Element decorated = ((DependencyInjectionResult.InjectableResult)result).
+                getElement();
+            if ( decorated instanceof TypeElement ){
+                decoratedBeans = Collections.singleton( (TypeElement)decorated);
+            }
+        }
+        if ( decoratedBeans == null ){
+            return;
+        }
+        for( TypeElement decorated : decoratedBeans ){
+            Set<Modifier> modifiers = decorated.getModifiers();
+            if ( modifiers.contains(Modifier.FINAL)){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element , method, model, info , 
+                        NbBundle.getMessage(InjectionPointAnalyzer.class, 
+                                "ERR_FinalDecoratedBean",                   // NOI18N
+                                decorated.getQualifiedName().toString()));
+                descriptions.add( description );
+                return;
+            }
+        }
     }
     
     private void checkInjectionPointMetadata( VariableElement var,
