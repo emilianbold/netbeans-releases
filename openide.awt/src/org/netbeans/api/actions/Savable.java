@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  * directly.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
- * @since 7.31
+ * @since 7.33
  */
 public interface Savable {
     /** Global registry of all {@link Savable}s that are modified in the
