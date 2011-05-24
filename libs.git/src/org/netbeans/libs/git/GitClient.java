@@ -178,16 +178,24 @@ public interface GitClient {
      * @param monitor
      * @return
      * @throws GitException 
-     * @throws GitException.RefUpdateException failed to create a reference in refs/tags/
      */
-    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException.RefUpdateException, GitException;
+    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Deletes a given branch from the repository
+     * @param branchName
+     * @param forceDeleteUnmerged if set to true then trying to delete an unmerged branch will not fail but will forcibly delete the branch
+     * @param monitor
+     * @throws GitException.NotMergedException branch has not been fully merged yet and forceDeleteUnmerged is set to false
+     * @throws GitException 
+     */
+    public void deleteBranch (String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) throws GitException.NotMergedException, GitException;
 
     /**
      * Deletes a given tag from the repository
      * @param tagName
      * @param monitor
      * @throws GitException 
-     * @throws GitException.RefUpdateException failed to delete a reference from refs/tags/
      */
     public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException;
 
