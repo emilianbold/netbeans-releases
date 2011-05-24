@@ -386,6 +386,16 @@ public final class FileSystemProvider {
         noProvidersWarning(env);
     }
     
+    public static char getFileSeparatorChar(FileSystem fileSystem) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                provider.getFileSeparatorChar(fileSystem);
+            }
+        }
+        noProvidersWarning(fileSystem);
+        return '/';
+    }
+    
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {

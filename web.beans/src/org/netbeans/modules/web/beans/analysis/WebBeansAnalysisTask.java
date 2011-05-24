@@ -112,6 +112,9 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
                     CompilationController controller = model.getCompilationController();
                     for (ElementHandle<TypeElement> handle : handles) {
                         TypeElement type = handle.resolve( controller );
+                        if ( type == null ){
+                            continue;
+                        }
                         analyzeType( type , null , model , compInfo );
                     }
                     return null;
@@ -141,11 +144,17 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
         List<? extends Element> enclosedElements = typeElement.getEnclosedElements();
         List<TypeElement> types = ElementFilter.typesIn(enclosedElements);
         for (TypeElement innerType : types) {
+            if ( innerType == null ){
+                continue;
+            }
             analyzeType(innerType, typeElement , model , info );
         }
         Set<Element> enclosedSet = new HashSet<Element>( enclosedElements );
         enclosedSet.removeAll( types );
         for(Element element : enclosedSet ){
+            if ( element == null ){
+                continue;
+            }
             analyze(typeElement, model, element, info );
         }
     }

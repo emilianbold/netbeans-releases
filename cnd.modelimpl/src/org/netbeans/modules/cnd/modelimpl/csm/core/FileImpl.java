@@ -117,6 +117,18 @@ import org.openide.util.Exceptions;
 public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
+    private static final ThreadLocal<AtomicBoolean> inParse = new ThreadLocal<AtomicBoolean>() {
+
+        @Override
+        protected AtomicBoolean initialValue() {
+            return new AtomicBoolean(false);
+        }
+    };
+
+    public static boolean isParsing() {
+        return inParse.get().get();
+    }
+    
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
     // the next flag(s) make sense only in the casew reportParse is true
@@ -805,25 +817,29 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
 
     private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull) {
-
-        Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-        if (reportParse || logState || TraceFlags.DEBUG) {
-            logParse("Parsing", preprocHandler); //NOI18N
-        }
-        CsmParserResult parsing = doParse(preprocHandler, aptFull);
-        if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
-            sw.stopAndReport("Parsing of " + fileBuffer.getUrl() + " took \t"); // NOI18N
-        }
-        if (parsing != null) {
-            Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-            if (isValid()) {   // FIXUP: use a special lock here
-                parsing.render();
-                if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
-                    sw2.stopAndReport("Rendering of " + fileBuffer.getUrl() + " took \t"); // NOI18N
+        inParse.get().set(true);
+        try {
+            Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                logParse("Parsing", preprocHandler); //NOI18N
+            }
+            CsmParserResult parsing = doParse(preprocHandler, aptFull);
+            if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
+                sw.stopAndReport("Parsing of " + fileBuffer.getUrl() + " took \t"); // NOI18N
+            }
+            if (parsing != null) {
+                Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
+                if (isValid()) {   // FIXUP: use a special lock here
+                    parsing.render();
+                    if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
+                        sw2.stopAndReport("Rendering of " + fileBuffer.getUrl() + " took \t"); // NOI18N
+                    }
                 }
             }
+            return parsing;
+        } finally {
+            inParse.get().set(false);
         }
-        return parsing;
     }
 
     private void logParse(String title, APTPreprocHandler preprocHandler) {

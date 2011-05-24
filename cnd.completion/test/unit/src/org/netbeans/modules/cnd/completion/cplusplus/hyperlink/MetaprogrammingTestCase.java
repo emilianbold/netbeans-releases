@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.ui;
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.spi.autoupdate.UpdateItem;
+/**
+ * @author Nikolay Krasilnikov
+ */
+public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
 
-public class UtilitiesTest extends NbTestCase {
-
-    public UtilitiesTest(String n) {
-        super(n);
+    public MetaprogrammingTestCase(String testName) {
+        super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDirPath());
-        MockServices.setServices(
-            MockUpdateProvider.class,
-            MockInstalledModuleProvider.class
-        );
-        MockModuleInfo enabled = MockModuleInfo.create("module.one", "1.0", true);
-        MockModuleInfo disabled = MockModuleInfo.create("module.two", "1.0", false);
-        MockInstalledModuleProvider.setModuleItems(enabled, disabled);
-        
-        Map<String,UpdateItem> ui = new HashMap<String, UpdateItem>();
-        ui.put(enabled.getCodeNameBase(), enabled.toUpdateItem("1.1"));
-        ui.put(disabled.getCodeNameBase(), disabled.toUpdateItem("1.1"));
-        MockUpdateProvider.setUpdateItems(ui);
+        System.setProperty("cnd.modelimpl.expression.evaluator.deep.variable.provider", "true");
+        System.setProperty("cnd.modelimpl.expression.evaluator.recursive.calc", "true");
+        super.setUp();
     }
 
-    @RandomlyFails // NB-Core-Build #5746: "Pending items are provided" from MockUpdateProvider.getUpdateItems
-    public void testIgnoresDisabledModules() {
-        List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits();
-        List<UnitCategory> categories = Utilities.makeUpdateCategories(uu, false);
-        
-        assertNotNull("Categories created", categories);
-        assertEquals("Something in there", 1, categories.size());
-        List<Unit> units = categories.get(0).getUnits();
-        assertEquals("Only one unit in category: " + units, 1, units.size());
-        assertEquals("Only the enabled module present: " + units, "module.one", units.get(0).getDisplayName());
+    public void testTemplateCalc() throws Exception {
+        // Some calculations on templates
+        performTest("template_calc.cpp", 10, 7, "template_calc.cpp", 5, 5);
     }
-
+    
+    public void testTemplateStaticCalc() throws Exception {
+        // Some calculations on templates
+        performTest("template_static_calc.cpp", 17, 7, "template_static_calc.cpp", 12, 5);
+    }
+    
 }
