@@ -365,7 +365,11 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 int startOffset = change.getStartOffset();
                 int endOffset = change.getEndOffset();
                 // Do not ignore empty <startOffset,endOffset> regions - should we??
-                rebuildRegion = OffsetRegion.union(rebuildRegion, docView.getDocument(), startOffset, endOffset, false);
+                Document doc = docView.getDocument();
+                int docTextLen = doc.getLength() + 1;
+                startOffset = Math.min(startOffset, docTextLen);
+                endOffset = Math.min(endOffset, docTextLen);
+                rebuildRegion = OffsetRegion.union(rebuildRegion, doc, startOffset, endOffset, false);
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("ViewUpdates.viewFactoryChanged: <" + startOffset + "," + endOffset + ">\n"); // NOI18N
                 }
