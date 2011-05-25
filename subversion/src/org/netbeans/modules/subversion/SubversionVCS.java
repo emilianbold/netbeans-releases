@@ -69,7 +69,7 @@ import java.util.logging.Level;
 @VersioningSystem.Registration(
     displayName="#CTL_Subversion_DisplayName", 
     menuLabel="#CTL_Subversion_MainMenu", 
-    metadataFolderNames={".svn", "_svn"},
+    metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"},
     actionsCategory="Subversion"
 )
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {

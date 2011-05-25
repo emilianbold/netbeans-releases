@@ -196,6 +196,16 @@ public class DelegatingVCSTest extends NbTestCase {
         }
     }
     
+    public void testMetadataGetEnv() {
+        DelegatingVCS delegate = getDelegatingVCS();
+        assertNotNull(delegate);
+        
+        assertTrue(delegate.isMetadataFile(new File(TestAnnotatedVCS.TEST_VCS_METADATA)));
+        assertTrue(delegate.isMetadataFile(new File("null")));
+        assertTrue(delegate.isMetadataFile(new File("set")));
+        assertFalse(delegate.isMetadataFile(new File("notset")));
+    }
+    
     private DelegatingVCS getDelegatingVCS() {
         Collection<? extends VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class)).allInstances();
         for(VersioningSystem s : systems) {

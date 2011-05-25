@@ -44,10 +44,12 @@ package org.netbeans.modules.versioning;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
@@ -72,6 +74,7 @@ public class DelegatingVCS extends VersioningSystem {
     public static DelegatingVCS create(Map<?, ?> map) {
         return new DelegatingVCS(map);
     }
+    private Set<String> metadataFolderNames;
     
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
@@ -117,23 +120,15 @@ public class DelegatingVCS extends VersioningSystem {
     @Override
     public File getTopmostManagedAncestor(File file) {
         if(!isAlive()) {
-            int i = 0;
-            while(true) {
-                String p = (String) map.get("metadataFolderName" + i++);        // NOI18N
-                if(p == null) {
-                    break;
-                }
-                if(p.equals(file.getName()) && file.isDirectory()) {
-                    
-                    VersioningManager.LOG.log(
-                            Level.FINE, 
-                            "will awake VCS {0} because of metadata folder {1}",// NOI18N 
-                            new Object[]{getProperty(PROP_DISPLAY_NAME), file}); 
-                    
-                    awake(); 
-                    return getDelegate().getTopmostManagedAncestor(file);
-                } 
-            }
+            if(getMetadataFolderNames().contains(file.getName()) && file.isDirectory()) {
+                VersioningManager.LOG.log(
+                        Level.FINE, 
+                        "will awake VCS {0} because of metadata folder {1}",// NOI18N 
+                        new Object[]{getProperty(PROP_DISPLAY_NAME), file}); 
+
+                awake(); 
+                return getDelegate().getTopmostManagedAncestor(file);
+            } 
             if(hasMetadata(file)) {
                 VersioningManager.LOG.log(
                         Level.FINE, 
@@ -151,16 +146,26 @@ public class DelegatingVCS extends VersioningSystem {
     }
     
     boolean isMetadataFile(File file) {
-        int i = 0;
-        while(true) {
-            String folderName = (String) map.get("metadataFolderName" + i++);   // NOI18N
-            if(folderName == null) {
-                return false;
-            }
-            if(file.getName().equals(folderName)) {
-                return true;
+        return getMetadataFolderNames().contains(file.getName());
+    }
+
+    private Collection<String> getMetadataFolderNames() {
+        if(metadataFolderNames == null) {
+            metadataFolderNames = new HashSet<String>();
+            int i = 0;
+            while(true) {
+                String name = (String) map.get("metadataFolderName" + i++);
+                if(name == null) {
+                    break;
+                }
+                name = parseName(name);
+                if(name == null) {
+                    continue;
+                }
+                metadataFolderNames.add(name);
             }
         }
+        return metadataFolderNames;
     }
     
     void awake() {
@@ -218,12 +223,7 @@ public class DelegatingVCS extends VersioningSystem {
         if(file == null) {
             return false;
         }
-        int i = 0;
-        while(true) {
-            String folderName = (String) map.get("metadataFolderName" + i++);            // NOI18N
-            if(folderName == null) {
-                return false;
-            }
+        for(String folderName : getMetadataFolderNames()) {
             File parent;
             if(file.isDirectory()) {
                 parent = file;
@@ -233,7 +233,6 @@ public class DelegatingVCS extends VersioningSystem {
             while(parent != null) {
                 final boolean metadataFolder = new File(parent, folderName).exists();
                 if(metadataFolder) {
-                    
                     VersioningManager.LOG.log(
                             Level.FINER, 
                             "found metadata folder {0} for file {1}",           // NOI18N
@@ -244,6 +243,7 @@ public class DelegatingVCS extends VersioningSystem {
                 parent = parent.getParentFile();
             }
         }
+        return false;
     }
     
     /**
@@ -251,6 +251,33 @@ public class DelegatingVCS extends VersioningSystem {
      */
     void reset() {
         delegate = null;
+    }
+
+    private String parseName(String name) {
+        if(name == null) {
+            return null;
+        }
+        int idx = name.indexOf(":");
+        
+        if(idx < 0) {
+            return name;
+        }
+        
+        String cmd[] = name.split(":");
+        
+        // "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"
+        if(cmd.length != 4 || !cmd[1].contains("getenv")) {
+            return name;
+        } else {
+            assert cmd[3].equals("notnull") || cmd[3].equals("null");
+            
+            boolean notnull = cmd[3].trim().equals("notnull");
+            if(notnull) {
+                return System.getenv(cmd[2]) != null ? cmd[0] : null;
+            } else {
+                return System.getenv(cmd[2]) == null ? cmd[0] : null;
+            }
+        }
     }
     
 }

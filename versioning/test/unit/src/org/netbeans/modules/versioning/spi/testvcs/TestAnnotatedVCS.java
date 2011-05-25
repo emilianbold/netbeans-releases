@@ -65,7 +65,7 @@ import org.openide.awt.ActionRegistration;
         actionsCategory="TestVCS", 
         displayName="TestVCSDisplay", 
         menuLabel="TestVCSMenu", 
-        metadataFolderNames=".testvcs")
+        metadataFolderNames={TestAnnotatedVCS.TEST_VCS_METADATA, "set:getenv:PATH:notnull", "notset:getenv:SOMENOTSETVARIABLE:notnull", "null:getenv:whatever:null"})
 public class TestAnnotatedVCS extends VersioningSystem {
 
     public static TestAnnotatedVCS INSTANCE;
