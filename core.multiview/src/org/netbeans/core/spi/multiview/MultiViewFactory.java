@@ -313,23 +313,16 @@ public final class MultiViewFactory {
                 return findDescription(elems.values().iterator().next());
             }
             
-            JPanel panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-            JLabel lbl = new JLabel("Cannot safely close component for following reasons:");
-            panel.add(lbl, BorderLayout.NORTH);
-            JScrollPane pane = new JScrollPane();
-            String[] warnings = new String[elems.size()];
-            int index = 0;
+            StringBuilder sb = new StringBuilder();
             Iterator it = elems.values().iterator();
             while (it.hasNext()) {
                 CloseOperationState state = (CloseOperationState)it.next();
-                warnings[index] = state.getCloseWarningID();
-                index = index + 1;
+                if (sb.length() > 0) {
+                    sb.append(" ");
+                }
+                sb.append(findDescription(state));
             }
-            JList list = new JList(warnings);
-            pane.setViewportView(list);
-            panel.add(pane);
-            return panel;
+            return sb;
         }
 
         private Object findDescription(final CloseOperationState e) {
