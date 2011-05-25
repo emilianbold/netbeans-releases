@@ -60,6 +60,7 @@ import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.merge.MergeMessageFormatter;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.merge.ResolveMerger;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -123,6 +124,9 @@ public class RevertCommand extends GitCommand {
             ResolveMerger merger = (ResolveMerger) MergeStrategy.RESOLVE.newMerger(repository);
             merger.setWorkingTreeIterator(new FileTreeIterator(repository));
             merger.setBase(revertedCommit.getTree());
+            String commitMessage = message == null || message.isEmpty() 
+                    ? "Revert \"" + revertedCommit.getShortMessage() + "\"" + "\n\n" + "This reverts commit " + revertedCommit.getId().getName() + "." //NOI18N
+                    : message;
             if (merger.merge(headCommit, srcParent)) {
                 if (AnyObjectId.equals(headCommit.getTree().getId(), merger.getResultTreeId())) {
                     result = JGitRevertResult.NO_CHANGE_INSTANCE;
@@ -130,9 +134,8 @@ public class RevertCommand extends GitCommand {
                     DirCacheCheckout dco = new DirCacheCheckout(repository, headCommit.getTree(), dc = repository.lockDirCache(), merger.getResultTreeId());
                     dco.setFailOnConflict(true);
                     dco.checkout();
-                    String newMessage = "Revert \"" + revertedCommit.getShortMessage() + "\"" + "\n\n" + "This reverts commit " + revertedCommit.getId().getName() + ".";
                     if (commit) {
-                        RevCommit newHead = new Git(getRepository()).commit().setMessage(message == null || message.isEmpty() ? newMessage : message).call();
+                        RevCommit newHead = new Git(getRepository()).commit().setMessage(commitMessage).call();
                         result = new JGitRevertResult(GitRevertResult.Status.REVERTED, new JGitRevisionInfo(newHead, repository), null, null);
                     } else {
                         result = new JGitRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
@@ -144,6 +147,8 @@ public class RevertCommand extends GitCommand {
                             merger.getMergeResults() == null ? null : getFiles(repository.getWorkTree(), merger.getMergeResults().keySet()),
                             getFiles(repository.getWorkTree(), merger.getFailingPaths().keySet()));
                 } else {
+                    String mergeMessageWithConflicts = new MergeMessageFormatter().formatWithConflicts(commitMessage, merger.getUnmergedPaths());
+                    repository.writeMergeCommitMsg(mergeMessageWithConflicts);
                     result = new JGitRevertResult(GitRevertResult.Status.CONFLICTING, null, 
                             merger.getMergeResults() == null ? null : getFiles(repository.getWorkTree(), merger.getMergeResults().keySet()),
                             null);
