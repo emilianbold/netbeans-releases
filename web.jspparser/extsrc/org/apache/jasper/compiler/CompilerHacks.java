@@ -93,7 +93,7 @@ public class CompilerHacks {
         if (comp == null) {
             comp = ctxt.createParser();
             setErrDispatcherInCompiler(comp, new ErrorDispatcher(false));
-            setPageInfoInCompiler(comp, new HackPageInfo(new BeanRepository(
+            comp.setPageInfo(new HackPageInfo(new BeanRepository(
                 ctxt.getClassLoader(), comp.getErrorDispatcher()), ctxt.getJspFile()));
         }
     }
@@ -101,14 +101,6 @@ public class CompilerHacks {
     Compiler getCompiler() throws JasperException {
         setupCompiler();
         return comp;
-    }
-    
-    private static void setPageInfoInCompiler(Compiler c, PageInfo pageInfo) throws JasperException {
-        try {
-            pageInfoF.set(c, pageInfo);
-        } catch (IllegalAccessException e) {
-            throw new JasperException(e);
-        }
     }
     
     private static void setErrDispatcherInCompiler(Compiler c, ErrorDispatcher errDispatcher) throws JasperException {
