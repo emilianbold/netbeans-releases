@@ -50,10 +50,13 @@ import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElement.Registration;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** Factory class for handling multi views.
  *
@@ -105,7 +108,8 @@ import org.openide.windows.TopComponent;
 
     /** Factory method to create cloneable multiview for a given mime type. 
      * The way to obtain individual elements is the same as in 
-     * {@link #createMultiView}.
+     * {@link #createMultiView}. By default the returned component is put
+     * into "editor" mode, if it exists.
      * 
      * @param context lookup representing the object to be displayed in the multiview
      * @param mimeType the mime type to seek for elements in
@@ -117,6 +121,11 @@ import org.openide.windows.TopComponent;
     ) {
         MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
         tc.setMimeLookup(mimeType, context);
+        // dock into editor mode if possible.
+        Mode editorMode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
+        if (editorMode != null) {
+            editorMode.dockInto(tc);
+        }
         return tc;
     }
 }
