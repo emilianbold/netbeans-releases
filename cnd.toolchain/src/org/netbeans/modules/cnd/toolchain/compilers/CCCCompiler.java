@@ -187,7 +187,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
     
     @Override
     public void loadSettings(Preferences prefs, String prefix) {
-        String version = prefs.get(CompilerSetPreferences.VERSION_KEY, "1.0");
+        String version = prefs.get(CompilerSetPreferences.VERSION_KEY, "1.0"); // NOI18N
         List<String> includeDirList = new ArrayList<String>();
         List<Integer> userAddedInclude = new ArrayList<Integer>();
         String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
@@ -195,14 +195,14 @@ public abstract class CCCCompiler extends AbstractCompiler {
         for (int i = 0; i < includeDirCount; ++i) {
             String includeDir = prefs.get(includeDirPrefix + '.' + i, null); // NOI18N
             if (includeDir != null) {
-                if ("1.1".equals(version)) {
+                if ("1.1".equals(version)) { // NOI18N
                     if (Utilities.isWindows()) {
-                        includeDir = includeDir.replace('\\', '/');
+                        includeDir = includeDir.replace('\\', '/'); // NOI18N
                     }
                     int start = includeDir.indexOf(NB69_VERSION_PATTERN);
                     if (start > 0) {
                         includeDir = includeDir.substring(start+NB69_VERSION_PATTERN.length());
-                        int index = includeDir.indexOf('/');
+                        int index = includeDir.indexOf('/'); // NOI18N
                         if (index > 0) {
                             includeDir = includeDir.substring(index);
                         }
