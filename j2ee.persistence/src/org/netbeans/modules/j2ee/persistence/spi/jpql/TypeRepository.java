@@ -41,29 +41,27 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.jpql.TypeHelper;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
-import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -79,66 +77,61 @@ public class TypeRepository implements ITypeRepository {
     TypeRepository(Project project){
         this.project = project;
         types = new HashMap<String, IType>();
-        initTypes();
     }
     
     @Override
-    public IType getEnumType(String string) {
-        IType ret = types.get(string);
+    public IType getEnumType(String fqn) {
+        IType ret = types.get(fqn);
         if(ret == null){
-            ret = new Type(null, null);
+            fillTypeElement(fqn);
+            ret = types.get(fqn);
         }
         return ret;
     }
 
     @Override
     public IType getType(Class<?> type) {
-        return types.get(type.getCanonicalName());
+        String fqn = type.getCanonicalName();
+        IType ret = types.get(fqn);
+        if(ret == null){
+            fillTypeElement(fqn);
+            ret = types.get(fqn);
+        }
+        return ret;
     }
 
     @Override
-    public IType getType(String val) {
-        return types.get(val);
+    public IType getType(String fqn) {
+        IType ret = types.get(fqn);
+        if(ret == null){
+            fillTypeElement(fqn);
+            ret = types.get(fqn);
+        }
+        return ret;
     }
 
     @Override
     public TypeHelper getTypeHelper() {
         return new TypeHelper(this);
     }
-
-    private void initTypes() {
-        //add only managed types (entities, mapped superclasses etc)
-        if(types == null && readHelper==null){
-            try {
-                dObj = ProviderUtil.getPUDataObject(project);
-            } catch (InvalidPersistenceXmlException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            EntityClassScope eScope = EntityClassScope.getEntityClassScope(dObj.getPrimaryFile());
-            MetadataModel<EntityMappingsMetadata> model = eScope.getEntityMappingsModel(true);
-            readHelper = MetadataModelReadHelper.create(
-                    model, 
-                    new MetadataModelAction<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>>() {
-                        @Override
-                        public List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> run(EntityMappingsMetadata metadata) {
-                            List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> result = new ArrayList<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>();
-                            result.addAll(Arrays.asList(metadata.getRoot().getEntity()));
-                            return result;
-                    }
-            });
-            readHelper.addChangeListener(new ChangeListener() {
+    
+    private void fillTypeElement(final String fqn){
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup firstGroup=groups[0];
+        FileObject fo=firstGroup.getRootFolder();
+        ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
+        JavaSource javaSource = JavaSource.create(classpathInfo);
+        try {
+            javaSource.runModificationTask(new Task<WorkingCopy>() {
                 @Override
-                public void stateChanged(ChangeEvent e) {
-                    if (readHelper.getState() == State.FINISHED) {
-                        try {
-                            readHelper.getResult();
-                        } catch (ExecutionException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
+                public void run(WorkingCopy wc) throws Exception {
+                    TypeElement te = wc.getElements().getTypeElement(fqn);
+                    types.put(fqn, new Type(TypeRepository.this, te));
                 }
             });
-            readHelper.start();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
