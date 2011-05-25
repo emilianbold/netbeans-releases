@@ -65,11 +65,17 @@ import java.util.logging.Level;
 
 /**
  * @author Maros Sandor
+ * 
+ * Warning:
+ * $FOLDER_NAME:getenv:$VARIABLE:null|notnull - private contract with Versioning to determine 
+ * the metadata folder name based on 
+ * System.getenv($VARIABLE) == null or System.getenv($VARIABLE) != null respectively.
+ * see also arch.xml in versioning.
  */
 @VersioningSystem.Registration(
     displayName="#CTL_Subversion_DisplayName", 
     menuLabel="#CTL_Subversion_MainMenu", 
-    metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"},
+    metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}, 
     actionsCategory="Subversion"
 )
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {

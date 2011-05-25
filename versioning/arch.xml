@@ -640,7 +640,21 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-property">
   <p>
-    Yes, it uses System.getProperty("java.io.tmpdir") to create temporary folders.
+    Yes:<br/>
+    a) System.getProperty("java.io.tmpdir") to create temporary folders.<br/><br/>
+    b) System.getEnv($VARIABLE) - A <b>private contract</b> used to determine a VCS Systems metadata folder name in case 
+    it is registered via <code>@VersioningSystem.Registration</code>. Might be changed in the future. Initialy created 
+    because of the Subversion module where the metadata folder name is given by the state of the environment variable 
+    $SVN_ASP_DOT_NET_HACK. In general - a VCS System doesn't have to provide in the 
+    <code>@VersioningSystem.Registration#metadataFolderNames</code> attribute the explicite folder name as defined in 
+    javadoc, but instead the necessary information how to determine the relevant folder name based on a environment variable: 
+    the expression <code>$FOLDER_NAME:getenv:$VARIABLE:null|notnull</code> will be interpreted so that 
+    <code>$FOLDER_NAME</code> will be used in case 
+    <code>System.getenv($VARIABLE) == null</code> or <code>System.getenv($VARIABLE) != null</code> respectively. <br/>
+    Example:<br/>
+    <code>metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}</code><br/>
+    metadata folder name will be ".svn" if <code>System.getenv("SVN_ASP_DOT_NET_HACK") == null</code>, or "_svn" 
+    if <code>System.getenv("SVN_ASP_DOT_NET_HACK") != null</code>.
   </p>
  </answer>
 
