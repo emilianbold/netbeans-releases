@@ -380,33 +380,48 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs
-	return decorateText(getClassifierText().toString() + getInstantiationText(this), this, false, null).toString();
+        CharSequence instantiationText = getInstantiationText(this);
+        if (instantiationText.length() == 0) {
+            return decorateText(getClassifierText(), this, false, null);
+        } else {
+            return decorateText(getClassifierText().toString() + instantiationText, this, false, null);
+        }
     }
 
-    protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
-        return decorateText(getClassifierText().toString()  + getInstantiationText(this), this, canonical, variableNameToInsert);
+    protected CharSequence getText(boolean canonical, CharSequence variableNameToInsert) {
+        CharSequence instantiationText = getInstantiationText(this);
+        if (instantiationText.length() == 0) {
+            return decorateText(getClassifierText(), this, canonical, variableNameToInsert);
+        } else {
+            return decorateText(getClassifierText().toString()  + instantiationText, this, canonical, variableNameToInsert);
+        }
     }
 
-    public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
-	StringBuilder sb = new StringBuilder();
-	if( decorator.isConst() ) {
-	    sb.append("const "); // NOI18N
-	}
-	sb.append(classifierText);
-	for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
-	    sb.append('*');
-	}
-	if( decorator.isReference() ) {
-	    sb.append('&');
-	}
-	for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
-	    sb.append(canonical ? "*" : "[]"); // NOI18N
-	}
-	if( variableNameToInsert != null ) {
-	    sb.append(' ');
-	    sb.append(variableNameToInsert);
-	}
-	return sb;
+    public CharSequence decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
+        if (decorator.isConst() || decorator.getPointerDepth() > 0 || 
+            decorator.isReference() || decorator.getArrayDepth() > 0 ||
+            variableNameToInsert != null) {
+            StringBuilder sb = new StringBuilder();
+            if( decorator.isConst() ) {
+                sb.append("const "); // NOI18N
+            }
+            sb.append(classifierText);
+            for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
+                sb.append('*');
+            }
+            if( decorator.isReference() ) {
+                sb.append('&');
+            }
+            for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+                sb.append(canonical ? "*" : "[]"); // NOI18N
+            }
+            if( variableNameToInsert != null ) {
+                sb.append(' ');
+                sb.append(variableNameToInsert);
+            }
+            return sb;
+        }
+        return classifierText;
     }
 
     final CharSequence initClassifierText(AST node) {
@@ -448,8 +463,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
 
     public static CharSequence getInstantiationText(CsmType type) {
-        StringBuilder sb = new StringBuilder();
         if (!type.getInstantiationParams().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
             sb.append('<');
             boolean first = true;
             for (CsmSpecializationParameter param : type.getInstantiationParams()) {
@@ -461,8 +476,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 sb.append(param.getText());
             }
             TemplateUtils.addGREATERTHAN(sb);
+            return sb;
         }
-	return sb;
+	return CharSequences.empty();
     }
 
     @Override
@@ -719,15 +735,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     @Override
     public String toString() {
         return "TYPE " + getText()  + getOffsetString(); // NOI18N
-    }
-
-    //package-local
-    /**
-     * Return display text for a variable of this type
-     * (we actually need this for function pointers, where simple typeName+' '+variableName does not work.
-     */
-    String getVariableDisplayName(String variableName) {
-	return decorateText(getClassifierText(), this, false, variableName).toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////

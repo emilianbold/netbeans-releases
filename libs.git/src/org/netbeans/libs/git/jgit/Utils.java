@@ -54,6 +54,7 @@ import java.util.Map;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -72,7 +73,6 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
-import org.netbeans.libs.git.GitTag;
 import org.openide.util.NbBundle;
 
 /**
@@ -195,6 +195,8 @@ public final class Utils {
     public static ObjectId parseObjectId (Repository repository, String objectId) throws GitException {
         try {
             return repository.resolve(objectId);
+        } catch (RevisionSyntaxException ex) {
+            throw new GitException.MissingObjectException(objectId, GitObjectType.COMMIT, ex);
         } catch (AmbiguousObjectException ex) {
             throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
         } catch (IOException ex) {

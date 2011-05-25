@@ -414,19 +414,20 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     @Override
     public CharSequence getDisplayText() {
-        StringBuilder sb = new StringBuilder();
         CsmType _type = getType();
         if (_type instanceof TypeImpl) {
-            return ((TypeImpl) _type).getText(false, this.getName()).toString();
+            return ((TypeImpl) _type).getText(false, this.getName());
         } else if (_type != null) {
+            StringBuilder sb = new StringBuilder();
             sb.append(_type.getText());
             CharSequence _name = getName();
             if (_name != null && _name.length() > 0) {
                 sb.append(' ');
                 sb.append(_name);
             }
+            return sb;
         }
-        return sb.toString();
+        return CharSequences.empty();
     }
 
     @Override
