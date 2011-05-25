@@ -53,6 +53,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -70,6 +72,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
@@ -162,7 +165,15 @@ public final class MultiViewFactory {
     /**
      * Utility method for MultiViewElements to create a CloseOperationState instance 
      * that warns about possible data loss. Corrective actions can be defined.
-     * @param warningId an id that idenfifies the problem, 
+     * <p>
+     * There is a default implementation of {@link CloseOperationHandler}. It 
+     * uses <code>warningId</code> of all elements with unsafe close state to
+     * select the unique ones. These unique elements are then presented in a 
+     * question box and user can decide to save or discard them. The user
+     * friendly message in such dialog is taken from 
+     * <code>proceedAction.getValue(Action.LONG_DESCRIPTION)</code>, if present.
+     * 
+     * @param warningId an id that identifies the problem, 
      *     the CloseOperationHandler used in the component should know about the warning's meaning and handle appropriately
      * @param proceedAction will be performed when the CloseOperationHandler decides that closing the component is ok and changes are to be saved.
      * @param discardAction will be performed when the CloseOperationHandler decides that the nonsaved data shall be discarded
@@ -248,39 +259,40 @@ public final class MultiViewFactory {
          private static final long serialVersionUID =-3126744916624172427L;        
        
         @Override
+        @Messages({
+            "CTL_Save=Save",
+            "CTL_Discard=&Discard"
+        })
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             Iterator<CloseOperationState> it;
             if (elements != null) {
                 boolean canBeClosed = true;
-                Collection<CloseOperationState> badOnes = new ArrayList<CloseOperationState>();
+                Map<String,CloseOperationState> badOnes = new LinkedHashMap<String, CloseOperationState>();
                 for (int i = 0; i < elements.length; i++) {
                     if (!elements[i].canClose()) {
-                        badOnes.add(elements[i]);
+                        badOnes.put(elements[i].getCloseWarningID(), elements[i]);
                         canBeClosed = false;
                     }
                 }
                 if (!canBeClosed) {
-                    Object[] options = new Object[] {
-                        "Proceed",
-                        "Discard",
-                        "Cancel"
-                    };
-                    NotifyDescriptor desc = new NotifyDescriptor(createPanel(badOnes), "Cannot close component.", 
-                                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, 
-                                options, options[0]);
+                    NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                        createPanel(badOnes), NotifyDescriptor.YES_NO_CANCEL_OPTION
+                    );
+                    Object[] choose = { Bundle.CTL_Save(), Bundle.CTL_Discard(), NotifyDescriptor.CANCEL_OPTION };
+                    desc.setOptions(choose);
                     Object retVal = DialogDisplayer.getDefault().notify(desc);
-                    if (retVal == options[0]) {
+                    if (retVal == choose[0]) {
                         // do proceed.
-                        it = badOnes.iterator();
+                        it = badOnes.values().iterator();
                         while (it.hasNext()) {
                             Action act = ((CloseOperationState)it.next()).getProceedAction();
                             if (act != null) {
                                 act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
                             }
                         }
-                    } else if (retVal == options[1]) {
+                    } else if (retVal == choose[1]) {
                         // do discard
-                        it = badOnes.iterator();
+                        it = badOnes.values().iterator();
                         while (it.hasNext()) {
                             Action act = ((CloseOperationState)it.next()).getDiscardAction();
                             if (act != null) {
@@ -296,7 +308,11 @@ public final class MultiViewFactory {
             return true;
         }
         
-        private JPanel createPanel(Collection elems) {
+        private Object createPanel(Map<String,CloseOperationState> elems) {
+            if (elems.size() == 1) {
+                return findDescription(elems.values().iterator().next());
+            }
+            
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
             JLabel lbl = new JLabel("Cannot safely close component for following reasons:");
@@ -304,7 +320,7 @@ public final class MultiViewFactory {
             JScrollPane pane = new JScrollPane();
             String[] warnings = new String[elems.size()];
             int index = 0;
-            Iterator it = elems.iterator();
+            Iterator it = elems.values().iterator();
             while (it.hasNext()) {
                 CloseOperationState state = (CloseOperationState)it.next();
                 warnings[index] = state.getCloseWarningID();
@@ -314,6 +330,21 @@ public final class MultiViewFactory {
             pane.setViewportView(list);
             panel.add(pane);
             return panel;
+        }
+
+        private Object findDescription(final CloseOperationState e) {
+            final Action a = e.getProceedAction();
+            Object msg = a.getValue(Action.LONG_DESCRIPTION);
+            if (msg == null) {
+                msg = a.getValue(Action.SHORT_DESCRIPTION);
+            }
+            if (msg == null) {
+                msg = a.getValue(Action.NAME);
+            }
+            if (msg == null) {
+                msg = e.getCloseWarningID();
+            }
+            return msg;
         }
     }
     

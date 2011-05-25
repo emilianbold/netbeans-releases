@@ -46,6 +46,7 @@ package org.netbeans.modules.form;
 
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -70,6 +71,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -111,6 +114,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -122,9 +126,12 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserQuestionException;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -971,6 +978,40 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             });
         }
     }
+
+    @Messages({
+        "MSG_MODIFIED=File {0} is modified. Save?"
+    })
+    final CloseOperationState canCloseElement(TopComponent tc) {
+        // if this is not the last cloned java editor component, closing is OK
+        if (!FormEditorSupport.isLastView(tc)) {
+            return CloseOperationState.STATE_OK;
+        }
+
+        if (!isModified()) {
+            return CloseOperationState.STATE_OK;
+        }
+        
+        AbstractAction save = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    saveDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_MODIFIED(
+            getDataObject().getPrimaryFile().getNameExt()
+        ));
+
+        // return a placeholder state - to be sure our CloseHandler is called
+        return MultiViewFactory.createUnsafeCloseState(
+                "ID_FORM_CLOSING", // NOI18N
+                save,
+                MultiViewFactory.NOOP_CLOSE_ACTION);
+    }
     
     static boolean isLastView(TopComponent tc) {
         if (!(tc instanceof CloneableTopComponent))
@@ -1167,13 +1208,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         private static final long serialVersionUID =-3126744316624172415L;
         
         private transient JComponent toolbar;
-        
+        private FormEditorSupport javaEditor;
         private transient MultiViewElementCallback multiViewObserver;
         
         
         public JavaEditorTopComponent(Lookup context) {
             super(context.lookup(DataEditorSupport.class));
-            FormEditorSupport javaEditor = context.lookup(FormEditorSupport.class);
+            javaEditor = context.lookup(FormEditorSupport.class);
             DataObject dataObject = context.lookup(DataObject.class);
             if (javaEditor != null) {
                 javaEditor.prepareDocument();
@@ -1318,15 +1359,10 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         @Override
         public CloseOperationState canCloseElement() {
-            // if this is not the last cloned java editor component, closing is OK
-            if (!FormEditorSupport.isLastView(multiViewObserver.getTopComponent()))
+            if (javaEditor == null) {
                 return CloseOperationState.STATE_OK;
-            
-            // return a placeholder state - to be sure our CloseHandler is called
-            return MultiViewFactory.createUnsafeCloseState(
-                    "ID_JAVA_CLOSING", // dummy ID // NOI18N
-                    MultiViewFactory.NOOP_CLOSE_ACTION,
-                    MultiViewFactory.NOOP_CLOSE_ACTION);
+            }
+            return javaEditor.canCloseElement(multiViewObserver.getTopComponent());
         }
         
         protected boolean isActiveTC() {
@@ -1346,41 +1382,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             return false;
         }
     }
-    
-    // ------
-    
-    /** Implementation of CloseOperationHandler for multiview. Ensures both form
-     * and java editor are correctly closed, data saved, etc. Holds a reference
-     * to form DataObject only - to be serializable with the multiview
-     * TopComponent without problems.
-     */
-    private static class CloseHandler implements CloseOperationHandler,
-                                                 Serializable
-    {
-        private static final long serialVersionUID =-3126744315424172415L;
-        
-        private DataObject dataObject;
-        
-        private CloseHandler() {
-        }
-        
-        public CloseHandler(DataObject formDO) {
-            dataObject = formDO;
-        }
-        
-        private FormEditorSupport getFormEditor() {
-            return dataObject != null && dataObject instanceof FormDataObject ?
-                ((FormDataObject)dataObject).getFormEditorSupport() : null;
-        }
-        
-        @Override
-        public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            FormEditorSupport formEditor = getFormEditor();
-            return formEditor != null ? formEditor.canClose() : true;
-        }
-    }
-    
-    // ------
     
     private static final class Environment extends DataEditorSupport.Env {
         
