@@ -44,9 +44,15 @@
 
 package org.netbeans.core.spi.multiview.text;
 
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.Enumeration;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.Document;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -54,6 +60,8 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -135,19 +143,23 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
         super.componentShowing();
     }
     
+    @Override
     public javax.swing.Action[] getActions() {
         return super.getActions();
     }
     
+    @Override
     public org.openide.util.Lookup getLookup() {
         return super.getLookup();
     }
     
+    @Override
     public String preferredID() {
         return super.preferredID();
     }
     
     
+    @Override
     public void requestVisible() {
         if (multiViewObserver != null) {
             multiViewObserver.requestVisible();
@@ -156,6 +168,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
         }
     }
     
+    @Override
     public void requestActive() {
         if (multiViewObserver != null) {
             multiViewObserver.requestActive();
@@ -177,6 +190,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
         }
     }
     
+    @Override
     public void open() {
         if (multiViewObserver != null) {
             multiViewObserver.requestVisible();
@@ -185,14 +199,43 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
         }
         
     }
-    
+
+    @Override
+    protected boolean closeLast() {
+        return super.closeLast(false);
+    }
+
+    @Messages({
+        "MSG_SaveModified=File {0} is modified. Save?"
+    })
     @Override
     public CloseOperationState canCloseElement() {
-        if (canClose()) {
-            return CloseOperationState.STATE_OK;
-        } else {
-            return MultiViewFactory.createUnsafeCloseState("editor", null, null);
+        final CloneableEditorSupport sup = getLookup().lookup(CloneableEditorSupport.class);
+        Enumeration en = getReference().getComponents();
+        if (en.hasMoreElements()) {
+            en.nextElement();
+            if (en.hasMoreElements()) {
+                // at least two is OK
+                return CloseOperationState.STATE_OK;
+            }
         }
+        
+        Savable sav = getLookup().lookup(Savable.class);
+        if (sav != null) {
+            AbstractAction save = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        sup.saveDocument();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(sav));
+            return MultiViewFactory.createUnsafeCloseState("editor", save, null);
+        } 
+        return CloseOperationState.STATE_OK;
     }
     
 }

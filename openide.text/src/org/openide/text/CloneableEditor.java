@@ -895,14 +895,27 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
     }
 
-    /** When closing last view, also close the document.
+    /** When closing last view, also close the document. 
+     * Calls {@link #closeLast(boolean) closeLast(true)}.
      * @return <code>true</code> if close succeeded
      */
     @Override
     protected boolean closeLast() {
-        if (!support.canClose()) {
-            // if we cannot close the last window
-            return false;
+        return closeLast(true);
+    }
+    
+    /** Utility method to close the document. 
+     * 
+     * @param ask verify and ask the user whether a document can be closed or not?
+     * @return true if the document was successfully closed
+     * @since 6.37
+     */
+    protected final boolean closeLast(boolean ask) {
+        if (ask) {
+            if (!support.canClose()) {
+                // if we cannot close the last window
+                return false;
+            }
         }
 
         // close everything and do not ask

@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="CE.closeLast.boolean">
+        <api name="text"/>
+        <summary>CloneableEditor.closeLast</summary>
+        <version major="6" minor="37"/>
+        <date day="7" month="4" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no"
+          deprecation="yes" modification="no" semantic="compatible" 
+        />
+        <description>
+            <p>
+                <code>CloneableEditor</code> has a new utility method
+                <code>closeLast</code>.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <issue number="196810"/>
+    </change>
     <change id="CE.associateLookup">
         <api name="text"/>
         <summary>CloneableEditor(associateLookup)</summary>

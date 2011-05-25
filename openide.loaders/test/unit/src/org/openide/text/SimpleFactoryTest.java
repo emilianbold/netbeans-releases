@@ -52,6 +52,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
@@ -151,6 +152,16 @@ public final class SimpleFactoryTest extends NbTestCase {
         ((SO)obj).addInteger();
         assertEquals("One integer in object", Integer.valueOf(10), obj.getLookup().lookup(Integer.class));
         assertEquals("One integer", Integer.valueOf(10), mice.getLookup().lookup(Integer.class));
+        
+        Savable sav = obj.getLookup().lookup(Savable.class);
+        assertNull("No savable yet", sav);
+        
+        ec.getDocument().insertString(0, "Ahoj!", null);
+        
+        sav = obj.getLookup().lookup(Savable.class);
+        assertNotNull("Now modified", sav);
+        
+        assertEquals(obj.getPrimaryFile().getNameExt(), sav.toString());
     }
     
     //

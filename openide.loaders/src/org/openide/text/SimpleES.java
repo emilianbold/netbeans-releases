@@ -72,8 +72,14 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
+        @Override
         public void save() throws IOException {
             SimpleES.this.saveDocument();
+        }
+
+        @Override
+        public String toString() {
+            return getDataObject().getPrimaryFile().getNameExt();
         }
     };
     
