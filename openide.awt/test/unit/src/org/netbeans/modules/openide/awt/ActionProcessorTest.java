@@ -58,7 +58,6 @@ import java.net.URLClassLoader;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JButton;
 import javax.swing.JSeparator;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionReference;
@@ -605,28 +604,20 @@ public class ActionProcessorTest extends NbTestCase {
         public void actionPerformed(ActionEvent e) { }
     }
 
-    public void testPopupText() throws Exception {
+    public void testPopupAndMenuText() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
         assertNotNull("Instance found", fo);
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Action created", obj);
         
+        Action a = (Action) obj;
+        assertEquals("This is an Action", a.getValue(Action.NAME));
         JMenuItem item = new JMenuItem();
-        Actions.connect(item, (Action) obj, true );
-        assertEquals("This is an Action", ((Action) obj).getValue(Action.NAME));
-        assertEquals("This is a Popup Action", item.getText());
-    }
-    
-    public void testMenuText() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        
-        JMenuItem item = new JMenuItem();
-        Actions.connect(item, (Action) obj, false );
-        assertEquals("This is an Action", ((Action) obj).getValue(Action.NAME));
+        Actions.connect(item, a, false);
         assertEquals("This is a Menu Action", item.getText());
+        item = new JMenuItem();
+        Actions.connect(item, a, true);
+        assertEquals("This is a Popup Action", item.getText());
     }
     
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
