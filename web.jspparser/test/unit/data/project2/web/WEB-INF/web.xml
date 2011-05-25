@@ -36,15 +36,15 @@ Microsystems, Inc. All Rights Reserved.
         <url-pattern>/NewServlet</url-pattern>
     </servlet-mapping>
     <session-config>
-    <session-timeout>
+        <session-timeout>
             30
         </session-timeout>
-  </session-config>
-  <welcome-file-list>
-    <welcome-file>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>
             inludePreludeCoda.jsp
         </welcome-file>
-  </welcome-file-list>
+    </welcome-file-list>
     <jsp-config>
         <jsp-property-group>
             <description>Testing Prelude and Coda</description>
@@ -52,6 +52,10 @@ Microsystems, Inc. All Rights Reserved.
             <url-pattern>/inludePreludeCoda.jsp</url-pattern>
             <include-prelude>/codaprelude/header.jsp</include-prelude>
             <include-coda>/codaprelude/footer.jsp</include-coda>
-            </jsp-property-group>
-        </jsp-config>
-    </web-app>
+        </jsp-property-group>
+        <jsp-property-group>
+            <url-pattern>/encoding198637.jsp</url-pattern>
+            <page-encoding>utf-8</page-encoding>
+        </jsp-property-group>    
+    </jsp-config>
+</web-app>
