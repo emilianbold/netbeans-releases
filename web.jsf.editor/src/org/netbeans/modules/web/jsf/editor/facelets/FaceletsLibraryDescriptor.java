@@ -64,6 +64,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -117,7 +118,10 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             InputSource is = new InputSource(content); //the ecoding should be autodetected
-            docBuilder.setEntityResolver(UserCatalog.getDefault().getEntityResolver()); //we count on TaglibCatalog from web.core module
+            EntityResolver resolver = UserCatalog.getDefault().getEntityResolver(); //we count on TaglibCatalog from web.core module
+            if(resolver != null) {
+                docBuilder.setEntityResolver(resolver); 
+            }
             Document doc = docBuilder.parse(is);
 
             //usually the default taglib prefix
