@@ -70,16 +70,17 @@ public class RepositoryConnection {
     private String certFile;
     private char[] certPassword;
     private static Boolean keepUserInHostname;
+    private int sshPortNumber;
     
     public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword, rc.certFile, rc.certPassword);
+        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword, rc.certFile, rc.certPassword, rc.sshPortNumber);
     }
     
     public RepositoryConnection(String url) {
-        this(url, null, null, null, false, null, null);
+        this(url, null, null, null, false, null, null, -1);
     }
             
-    public RepositoryConnection(String url, String username, char[] password, String externalCommand, boolean savePassword, String certFile, char[] certPassword) {
+    public RepositoryConnection(String url, String username, char[] password, String externalCommand, boolean savePassword, String certFile, char[] certPassword, int sshPortNumber) {
         this.setUrl(url);
         this.setUsername(username);
         this.setPassword(password);
@@ -87,6 +88,7 @@ public class RepositoryConnection {
         this.savePassword = savePassword;
         this.certFile = certFile;
         this.certPassword = certPassword;
+        setSshPortNumber(sshPortNumber);
     }
 
     public String getUrl() {
@@ -120,8 +122,17 @@ public class RepositoryConnection {
     public char[] getCertPassword() {
         return certPassword;
     }
-
     
+    public int getSshPortNumber () {
+        return sshPortNumber;
+    }
+
+    /**
+     * 
+     * @param fullForm if set to true then the returned value will contain port number (if specified) as well
+     * @return
+     * @throws MalformedURLException 
+     */
     public SVNUrl getSvnUrl() throws MalformedURLException {
         if(svnUrl == null) {
             parseUrlString(url);
@@ -170,6 +181,14 @@ public class RepositoryConnection {
 
     void setPassword(char[] password) {
         this.password = password;
+    }
+    
+    final void setSshPortNumber (int portNumber) {
+        if (portNumber > 0) {
+            this.sshPortNumber = portNumber;
+        } else {
+            this.sshPortNumber = -1;
+        }
     }
 
     void setExternalCommand(String externalCommand) {
@@ -267,6 +286,8 @@ public class RepositoryConnection {
         sb.append(rc.getCertFile());
         sb.append(RC_DELIMITER);
         sb.append(RC_DELIMITER);
+        sb.append(rc.getSshPortNumber());
+        sb.append(RC_DELIMITER);
         return sb.toString();
     }
     
@@ -280,8 +301,13 @@ public class RepositoryConnection {
         boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
         String certFile     = l > 5 && !fields[5].equals("") ? fields[5] : null;
         String certPassword = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
+        String portNumberString = l > 7 ? fields[7] : "-1";
+        int portNumber = -1;
+        try {
+            portNumber = Integer.parseInt(portNumberString);
+        } catch (NumberFormatException ex) {}
         return new RepositoryConnection(url, username, password == null ? null : password.toCharArray(), extCmd, save, certFile,
-                certPassword == null ? null : certPassword.toCharArray());
+                certPassword == null ? null : certPassword.toCharArray(), portNumber);
     }
 
     private static String ripUserFromHost (String hostname) {

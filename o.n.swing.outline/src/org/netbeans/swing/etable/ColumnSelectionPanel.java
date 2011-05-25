@@ -151,8 +151,12 @@ class ColumnSelectionPanel extends JPanel {
             ETableColumn etc = (ETableColumn) columns.get (col);
             JCheckBox checkBox = new JCheckBox();
             Object transformed = table.transformValue (etc);
-            Object transfEtc = table.transformValue(etc);
-            String dName = (transformed == etc || transfEtc == null) ? etc.getHeaderValue().toString() : transfEtc.toString();
+            String dName;
+            if (transformed == etc || transformed == null) {
+                dName = etc.getHeaderValue ().toString ();
+            } else {
+                dName = transformed.toString ();
+            }
             checkBox.setText(dName);
             JCheckBox transfCheckBox = (JCheckBox) table.transformValue(checkBox);
             if (transfCheckBox != null) {

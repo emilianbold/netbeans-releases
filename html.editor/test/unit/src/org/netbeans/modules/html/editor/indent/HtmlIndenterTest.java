@@ -127,7 +127,7 @@ public class HtmlIndenterTest extends TestBase2 {
                "<html>\n    <body>\n        <pre>Some\ntext which\n  should not be formatted.\n \n        </pre>\n    </body>\n</html>\n", null);
         format("<html>\n<head id=someid\nclass=class/>\n<body>",
                "<html>\n    <head id=someid\n          class=class/>\n    <body>",null);
-
+        
         // there was assertion failure discovered by this test:
         format("<html>\n        <head>\n<title>Localized Dates</title></head>",
                "<html>\n    <head>\n        <title>Localized Dates</title></head>", null);
@@ -207,6 +207,11 @@ public class HtmlIndenterTest extends TestBase2 {
 
     public void testFormattingHTML06() throws Exception {
         reformatFileContents("testfiles/simple06.html",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingHTML07() throws Exception {
+        // #198659
+        reformatFileContents("testfiles/simple07.html",new IndentPrefs(4,4));
     }
 
     public void testIndentation() throws Exception {

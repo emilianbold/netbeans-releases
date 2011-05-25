@@ -51,6 +51,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
 
 /**
@@ -176,6 +177,15 @@ public final class AnnotationUtil {
     {
         return getAnnotationMirror(element, compInfo, STATEFUL, STATELESS, 
                 SINGLETON)!= null;
+    }
+    
+    public static boolean isDelegate(Element element, TypeElement parent, 
+            WebBeansModel model )
+    {
+        return AnnotationUtil.hasAnnotation(element, 
+                AnnotationUtil.DELEGATE_FQN, model.getCompilationController())
+                && AnnotationUtil.hasAnnotation( parent, 
+                        AnnotationUtil.DECORATOR, model.getCompilationController());
     }
     
 }

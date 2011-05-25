@@ -218,6 +218,9 @@ class DBProxy {
                     String module = entry.getModulePath().toString();
                     long offsetInModule = entry.getOffsetInModule();
                     SourceFileInfo sourceFileInfo = entry.getSourceFileInfo();
+                    if (sourceFileInfo == null){
+                        sourceFileInfo = new SourceFileInfo(null, -1);//unknown file
+                    }
                     String srcFile = sourceFileInfo.getFileName();
                     long srcLine = sourceFileInfo.getLine();
                     long srcColumn = sourceFileInfo.getColumn();

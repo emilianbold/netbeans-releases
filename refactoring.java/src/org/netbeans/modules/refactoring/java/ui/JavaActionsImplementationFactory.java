@@ -200,5 +200,21 @@ public final class JavaActionsImplementationFactory {
         return false;
     }
     
+    public static boolean canInline(Lookup lookup) {
+        for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canInline(lookup)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
+    public static void doInline(Lookup lookup) {
+        for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canInline(lookup)) {
+                rafi.doInline(lookup);
+                return;
+            }
+        }
+    }
 }

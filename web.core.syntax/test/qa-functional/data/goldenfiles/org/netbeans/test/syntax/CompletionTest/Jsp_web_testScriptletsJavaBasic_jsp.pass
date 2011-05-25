@@ -15,7 +15,7 @@ ThreadLocal <T>
 Throwable
 TypeNotPresentException
 End cursor position = 627
-[<% testBean.|, void setName, <% testBean.setName(name), 763]
+[<% testBean.|, void setName, <% testBean.setName(name);, 764]
 boolean equals (Object obj )
 Class  getClass ()
 Integer getId ()
@@ -29,9 +29,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 788
-[<% "Hello World !".| %>, int indexOf (String str ), <% "Hello World !".indexOf(str); %>, 919]
-Comparator <String> CASE_INSEN
+End cursor position = 789
+[<% "Hello World !".| %>, int indexOf (String str ), <% "Hello World !".indexOf(str); %>, 920]
 char charAt (int index )
 int codePointAt (int index )
 int codePointBefore (int index
@@ -42,13 +41,9 @@ String concat (String str )
 boolean contains (CharSequence
 boolean contentEquals (CharSeq
 boolean contentEquals (StringB
-String copyValueOf (char[] dat
-String copyValueOf (char[] dat
 boolean endsWith (String suffi
 boolean equals (Object anObjec
 boolean equalsIgnoreCase (Stri
-String format (String format ,
-String format (Locale l , Stri
 byte[] getBytes ()
 byte[] getBytes (Charset chars
 byte[] getBytes (String charse
@@ -91,24 +86,15 @@ String toString ()
 String toUpperCase ()
 String toUpperCase (Locale loc
 String trim ()
-String valueOf (Object obj )
-String valueOf (boolean b )
-String valueOf (char c )
-String valueOf (char[] data )
-String valueOf (double d )
-String valueOf (float f )
-String valueOf (int i )
-String valueOf (long l )
-String valueOf (char[] data , 
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 950
-[<% Li|, LinkedList <E>, <% LinkedList, 1048]
+End cursor position = 951
+[<% Li|, LinkedList <E>, <% LinkedList, 1049]
 LinkageError
 LinkedList <E>
-End cursor position = 1062
-[<% C|, Card, <% Card, 1160]
+End cursor position = 1063
+[<% C|, Card, <% Card, 1161]
 ServletConfig config
 Object clone ()
 char
@@ -129,8 +115,8 @@ Compiler
 Cookie
 ch
 com
-End cursor position = 1168
-[<% LinkedList l = new LinkedList();l.| %>, void clear (), <% LinkedList l = new LinkedList();l.clear(); %>, 1385]
+End cursor position = 1169
+[<% LinkedList l = new LinkedList();l.| %>, void clear (), <% LinkedList l = new LinkedList();l.clear(); %>, 1386]
 boolean add (Object e )
 void add (int index , Object e
 boolean addAll (Collection c )
@@ -187,8 +173,8 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
 new
-End cursor position = 1431
-[<% org.test.TestBean t = new org.test.TestBean(); t.| %>, void setName, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>, 1645]
+End cursor position = 1432
+[<% org.test.TestBean t = new org.test.TestBean(); t.| %>, void setName, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>, 1646]
 boolean equals (Object obj )
 Class  getClass ()
 Integer getId ()
@@ -202,4 +188,4 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1710
+End cursor position = 1711

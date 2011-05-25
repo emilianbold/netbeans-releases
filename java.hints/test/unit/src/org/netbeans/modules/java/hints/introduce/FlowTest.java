@@ -266,6 +266,25 @@ public class FlowTest extends NbTestCase {
                     "3");
     }
 
+    public void testTryFinally2() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii = 0;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            ii = 2;\n" +
+                    "        } finally {\n" +
+                    "            System.err.println(i`i);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1",
+                    "2");
+    }
+
     public void testSwitch1() throws Exception {
         performTest("package test;\n" +
                     "public class Test {\n" +
@@ -306,6 +325,19 @@ public class FlowTest extends NbTestCase {
                     "}\n",
                     "1",
                     "4");
+    }
+
+    public void testForUpdate() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        for (int ii = 0; ii < 100; ii = ii + 1) {\n" +
+                    "            System.err.println(i`i);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "ii + 1");
     }
 
     private void prepareTest(String code, boolean allowErrors) throws Exception {

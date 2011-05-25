@@ -44,6 +44,7 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
@@ -276,6 +277,11 @@ public class GridBagInfoProvider implements GridInfoProvider {
     public Insets getInsets(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return constraints.insets;
+    }
+
+    @Override
+    public void paintConstraints(Graphics g, Component component, boolean selected) {
+        // PENDING painting of insets and remainders
     }
 
 }

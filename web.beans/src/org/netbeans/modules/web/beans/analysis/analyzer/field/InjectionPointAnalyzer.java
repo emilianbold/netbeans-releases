@@ -42,12 +42,15 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -64,6 +67,7 @@ import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -92,11 +96,50 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
                     DependencyInjectionResult result = 
                         model.lookupInjectables(element,null);
                     checkResult(result, element, model, descriptions, info );
+                    if ( AnnotationUtil.isDelegate(element, parent, model)){
+                        checkDecoratedBeans( result , element, model, info , 
+                                descriptions);
+                    }
                 }
+                
             }
         }
         catch (InjectionPointDefinitionError e) {
             informInjectionPointDefError(e, element, model, descriptions, info );
+        }
+    }
+    
+    private void checkDecoratedBeans( DependencyInjectionResult result,
+            VariableElement element, WebBeansModel model, CompilationInfo info,
+            List<ErrorDescription> descriptions )
+    {
+        Set<TypeElement> decoratedBeans = null;
+        if ( result instanceof DependencyInjectionResult.ApplicableResult ){
+            DependencyInjectionResult.ApplicableResult appResult = 
+                (DependencyInjectionResult.ApplicableResult) result;
+            decoratedBeans = appResult.getTypeElements();
+        }
+        else if ( result instanceof DependencyInjectionResult.InjectableResult ){
+            Element decorated = ((DependencyInjectionResult.InjectableResult)result).
+                getElement();
+            if ( decorated instanceof TypeElement ){
+                decoratedBeans = Collections.singleton( (TypeElement)decorated);
+            }
+        }
+        if ( decoratedBeans == null ){
+            return;
+        }
+        for( TypeElement decorated : decoratedBeans ){
+            Set<Modifier> modifiers = decorated.getModifiers();
+            if ( modifiers.contains(Modifier.FINAL)){
+                ErrorDescription description = CdiEditorAnalysisFactory.
+                createError( element , model, info , 
+                        NbBundle.getMessage(InjectionPointAnalyzer.class, 
+                                "ERR_FinalDecoratedBean",                   // NOI18N
+                                decorated.getQualifiedName().toString()));
+                descriptions.add( description );
+                return;
+            }
         }
     }
 

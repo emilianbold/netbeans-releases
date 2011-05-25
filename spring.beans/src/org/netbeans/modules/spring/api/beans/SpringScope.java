@@ -178,7 +178,7 @@ public final class SpringScope {
                 return null;
             }
             SpringMetaModelSupport metaModelSupport = new SpringMetaModelSupport(project);
-            return metaModelSupport.getMetaModel();
+            springAnnotationModel = metaModelSupport.getMetaModel();
         }
         return springAnnotationModel;
     }

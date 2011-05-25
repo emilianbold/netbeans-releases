@@ -112,7 +112,7 @@ public final class PersistentKey {
                 name = cls.getName();
             }
             CsmProject project = decl.getContainingFile().getProject();
-            if (name.length() > 0 && uniq.toString().indexOf("::::") < 0 && project != null){ // NOI18N
+            if (name.length() > 0 && CharSequences.indexOf(uniq, "::::") < 0 && project != null){ // NOI18N
                 return new PersistentKey(uniq, project, DECLARATION, getStateBit(object));
             } else {
                 //System.out.println("Skip "+uniq);

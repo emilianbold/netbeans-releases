@@ -51,13 +51,16 @@ import java.util.List;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.treewalk.EmptyTreeIterator;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.JGitRevisionInfo;
-import org.netbeans.libs.git.jgit.JGitUserInfo;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -87,17 +90,27 @@ public class ExportCommitCommand extends GitCommand {
         Repository repository = getRepository();
         String workTreePath = repository.getWorkTree().getAbsolutePath();
         RevCommit commit = Utils.findCommit(repository, revisionStr);
-        if (commit.getParentCount() != 1) {
+        if (commit.getParentCount() > 1) {
             throw new GitException("Unable to export a merge commit");
         }
-        RevCommit parentCommit = commit.getParent(0);
         DiffFormatter formatter = null;
         try {
             out.write(Constants.encode(formatCommitInfo(commit)));
             formatter = new DiffFormatter(out);
             formatter.setRepository(repository);
-            formatter.setDetectRenames(true);
-            List<DiffEntry> diffEntries = formatter.scan(parentCommit, commit);
+            List<DiffEntry> diffEntries;
+            if (commit.getParentCount() > 0) {
+                formatter.setDetectRenames(true);
+                diffEntries = formatter.scan(commit.getParent(0), commit);
+            } else {
+                TreeWalk walk = new TreeWalk(repository);
+                walk.reset();
+                walk.setRecursive(true);
+                walk.addTree(new EmptyTreeIterator());
+                walk.addTree(commit.getTree());
+                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
+                diffEntries = DiffEntry.scan(walk);
+            }
             for (DiffEntry ent : diffEntries) {
                 if (monitor.isCanceled()) {
                     break;

@@ -1,0 +1,243 @@
+<!--
+Copyright (c) 2000, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademarks of Oracle Corporation and/or its affiliates.
+
+This software is the confidential and proprietary information of
+Oracle Corporation. You shall not disclose such confidential and
+proprietary information and shall use it only in accordance with the
+terms of the license agreement you entered into with Oracle.
+
+This notice may not be removed or altered.
+-->
+
+<!--
+This is the XML DTD for the coherence-pof-config.xml configuration file.
+The configuration file should include a DOCTYPE of the following form:
+
+ <!DOCTYPE pof-config SYSTEM "pof-config.dtd">
+
+Version: Coherence 3.2
+Since  : Coherence 3.2
+Authors: cp
+-->
+
+<!--
+The pof-config element is the root element of the pof-config descriptor.
+
+Used in: n/a
+-->
+<!ELEMENT pof-config
+  (user-type-list, allow-interfaces?, allow-subclasses?, default-serializer?)>
+
+<!--
+The user-type-list element contains zero or more user-type elements. Each
+POF user type that will be used must be listed in the user-type-list.
+
+The user-type-list element may also contain zero or more include elements.
+Each include element is used to add user-type elements defined in another
+pof-config file.
+
+Used in: pof-config
+-->
+<!ELEMENT user-type-list
+  (user-type | include)*>
+
+<!--
+The user-type element contains the declaration of a POF user type. A POF
+user type is a uniquely identifiable, portable, versionable object class that
+can be communicated among systems regardless of language, OS, hardware and
+location.
+
+Within the user-type element, the type-id element is optional, but its use
+is strongly suggested in order to support schema versioning and evolution.
+
+Within the user-type element, the class-name element is required, and
+specifies the fully qualified name of the Java class or interface that all
+values of the user type are type-assignable to.
+
+If the serializer element is omitted, then the user type is assumed to
+implement the PortableObject interface, and the PortableObjectSerializer
+implementation is used as the PofSerializer.
+
+
+Used in: user-type-list
+-->
+<!ELEMENT user-type
+  (type-id?, class-name, serializer?)>
+
+<!--
+The include element specifies the location of a pof-config file to load
+user-type elements from.
+
+The value is a locator string (either a valid path or URL) that identifies
+the location of the target pof-config file.
+
+Used in: user-type-list
+-->
+<!ELEMENT include (#PCDATA)>
+
+<!--
+The type-id element specifies an integer value (n >= 0) that uniquely
+identifies the user type.
+
+If none of the user-type elements contains a type-id element, then the type
+IDs for the user types will be based on the order in which they appear in the
+user-type-list, with the first user type being assigned the type ID 0, the
+second user type being assigned the type ID 1, and so on.
+
+However, it is strongly recommended that user types IDs always be specified,
+in order to support schema versioning and evolution.
+
+Used in: user-type
+-->
+<!ELEMENT type-id (#PCDATA)>
+
+<!--
+The class-name element specifies the name of a Java class or interface.
+
+Within the user-type element, the class-name element is required, and
+specifies the fully qualified name of the Java class or interface that all
+values of the user type are type-assignable to.
+
+Within the serializer element, the class-name element is required.
+
+Used in: user-type, serializer
+-->
+<!ELEMENT class-name (#PCDATA)>
+
+<!--
+The serializer element specifies what PofSerializer to use to serialize and
+deserialize a specific user type.
+
+A PofSerializer is used to serialize and deserialize user type values to
+and from a POF stream. Within the serializer element, the class-name element
+is required, and zero or more constructor parameters can be defined within an
+init-params element.
+
+If the serializer element is omitted, then the user type is assumed to
+implement the PortableObject interface, and the PortableObjectSerializer
+implementation is used as the PofSerializer.
+
+If the init-params element is omitted from the serializer element, then the
+following four constructors are attempted on the specific PofSerializer
+implementation, and in this order:
+
+  - (int nTypeId, Class clz, ClassLoader loader)
+  - (int nTypeId, Class clz)
+  - (int nTypeId)
+  - ()
+
+Used in: user-type
+-->
+<!ELEMENT serializer
+  (class-name, init-params?)>
+
+<!--
+The init-params element contains zero or more arguments (each as an
+init-param) that correspond to the parameters of a constructor of the class
+that is being configured.
+
+Used in: serializer
+-->
+<!ELEMENT init-params
+  (init-param*)>
+
+<!--
+The init-param element provides a type for a configuration parameter and a
+corresponding value to pass as an argument.
+
+Used in: init-params
+-->
+<!ELEMENT init-param
+  (param-type, param-value)>
+
+<!--
+The param-type element specifies the Java type of initialization parameter.
+
+Supported types are:
+  - string   - indicates that the value is a java.lang.String
+  - boolean  - indicates that the value is a java.lang.Boolean
+  - int      - indicates that the value is a java.lang.Integer
+  - long     - indicates that the value is a java.lang.Long
+  - double   - indicates that the value is a java.lang.Double
+  - decimal  - indicates that the value is a java.math.BigDecimal
+  - file     - indicates that the value is a java.io.File
+  - date     - indicates that the value is a java.sql.Date
+  - time     - indicates that the value is a java.sql.Time
+  - datetime - indicates that the value is a java.sql.Timestamp
+  - xml      - indicates that the value is the entire init-param XmlElement
+
+The value is converted to the specified type, and the target constructor or
+method must have a parameter of that type in order for the instantiation to
+succeed.
+
+Used in: init-param
+-->
+<!ELEMENT param-type (#PCDATA)>
+
+<!--
+The param-value element specifies a value of the initialization parameter.
+
+The value is in a format specific to the type of the parameter.
+
+There are four reserved values that can be specified. Each of these values
+is replaced at runtime with a specific runtime value before the constructor
+is invoked:
+  - "{type-id}"      - replaced with the Type ID of the User Type;
+  - "{class-name}"   - replaced with the name of the class for the User Type;
+  - "{class}"        - replaced with the Class for the User Type;
+  - "{class-loader}" - replaced with the ConfigurablePofContext's
+                       ContextClassLoader.
+
+Used in: init-param
+-->
+<!ELEMENT param-value (#PCDATA)>
+
+<!--
+The allow-interfaces element indicates whether the user-type class-name can
+specify Java interface types in addition to Java class types.
+
+Valid values are "true" or "false". Default value is false.
+
+Used in: pof-config
+-->
+<!ELEMENT allow-interfaces (#PCDATA)>
+
+<!--
+The allow-subclasses element indicates whether the user-type class-name can
+specify a Java class type that is abstract, and whether sub-classes of any
+specified user-type class-name will be permitted at runtime and automatically
+mapped to the specified super-class for purposes of obtaining a serializer.
+
+Valid values are "true" or "false". Default value is false.
+
+Used in: pof-config
+-->
+<!ELEMENT allow-subclasses (#PCDATA)>
+
+<!--
+The default serializer element specifies what PofSerializer to use to
+serialize and deserialize all user types defined in this config. If a
+serializer is specified for a user type, then that serializer will be used
+for that user type instead of the default serializer.
+
+If the default serializer element is omitted, the serializer defined for
+  the specific user type will be used. If the serializer for the user type
+  is also omitted, then the user type is assumed to implement the
+  PortableObject interface, and the PortableObjectSerializer
+  implementation is used as the PofSerializer.
+
+If the init-params element is omitted from the default serializer element,
+then the following four constructors are attempted on the specific
+PofSerializer implementation, and in this order:
+
+  - (int nTypeId, Class clz, ClassLoader loader)
+  - (int nTypeId, Class clz)
+  - (int nTypeId)
+  - ()
+
+Used in: pof-config
+-->
+<!ELEMENT default-serializer
+  (class-name, init-params?)>

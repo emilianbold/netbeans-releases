@@ -85,4 +85,15 @@ public class TypedFieldAnalyzer extends AbstractTypedAnalyzer implements FieldAn
         descriptions.add( description );        
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     */
+    @Override
+    protected void checkSpecializes( Element element, TypeMirror elementType,
+            List<TypeMirror> restrictedTypes, CompilationInfo compInfo, 
+            List<ErrorDescription> descriptions,AtomicBoolean cancel )
+    {
+        // production fields cannot be specialized
+    }
+    
 }
