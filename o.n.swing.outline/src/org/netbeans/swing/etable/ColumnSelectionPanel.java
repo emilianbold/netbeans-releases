@@ -284,7 +284,13 @@ class ColumnSelectionPanel extends JPanel {
         for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
             final ETableColumn etc = (ETableColumn)it.next();
             JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
-            String dName = table.transformValue (etc).toString ();
+            Object transformed = table.transformValue (etc);
+            String dName;
+            if (transformed == etc || transformed == null) {
+                dName = etc.getHeaderValue ().toString ();
+            } else {
+                dName = transformed.toString ();
+            }
             checkBox.setText(dName);
             checkBox = (JCheckBoxMenuItem) table.transformValue (checkBox);
             checkBox.setSelected(! etcm.isColumnHidden(etc));
