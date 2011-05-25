@@ -453,9 +453,10 @@ public interface GitClient {
      * @param commit if set to false, the revert modifications will not be committed but will stay in index
      * @return 
      * @throws org.netbeans.libs.git.GitException.MissingObjectException
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
      * @throws GitException 
      */
-    public GitRevertResult revert (String revision, String commitMessage, boolean commit, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public GitRevertResult revert (String revision, String commitMessage, boolean commit, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException.CheckoutConflictException, GitException;
 
     /**
      * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
