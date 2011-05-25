@@ -238,7 +238,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         openTemplate(templateName, category);
 
         System.out.println(getWorkDir());
-        testFormFile(name);
+        //testFormFile(name);
         Thread.sleep(1000);
         testJavaFile(name);
         Thread.sleep(1000);
