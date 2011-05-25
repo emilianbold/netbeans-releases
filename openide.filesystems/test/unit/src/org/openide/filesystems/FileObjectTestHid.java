@@ -746,6 +746,24 @@ public class FileObjectTestHid extends TestBaseHid {
         assertEquals("Is parent", fold1, fold2.getParent());
         assertEquals(".. goes to parent", fold1, fold2.getFileObject(".."));
     }
+ 
+    public void testUsingSingleDot() {
+        FileObject fo = getTestFolder1(root);
+        FileObject fo2 = fo.getFileObject(".");
+        assertEquals("File objects are the same", fo, fo2);
+    }
+    
+    public void testResourceWithADot() throws FileStateInvalidException {
+        FileObject fo = getTestFolder1(root);
+        FileObject fo2 = fo.getFileSystem().findResource(fo.getPath().replace("/", "/./"));
+        assertEquals("File objects are the same", fo, fo2);
+    }
+    
+    public void testGetFOWithADot() throws FileStateInvalidException {
+        FileObject fo = getTestFolder1(root);
+        FileObject fo2 = fo.getFileSystem().getRoot().getFileObject(fo.getPath().replace("/", "/./"));
+        assertEquals("File objects are the same", fo, fo2);
+    }
 
     public void  testFindResourceWithDots() throws Exception {
         checkSetUp();
