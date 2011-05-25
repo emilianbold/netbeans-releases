@@ -43,6 +43,8 @@ package org.netbeans.modules.spring.api.beans.model;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
@@ -55,6 +57,8 @@ import org.netbeans.modules.spring.beans.model.impl.SpringModelImplementation;
  */
 public final class SpringModelFactory {
 
+    private static final Logger LOGGER = Logger.getLogger(SpringModelFactory.class.getName());    
+    
     //protected due to JUnit tests
     protected static HashMap<ModelUnit, WeakReference<MetadataModel<SpringModel>>> 
             MODELS = new HashMap<ModelUnit, WeakReference<MetadataModel<SpringModel>>>();
@@ -77,8 +81,10 @@ public final class SpringModelFactory {
             metadataModel = reference.get();
         }
         if (metadataModel == null) {
+            LOGGER.log(Level.FINE, "Metadata model not found in cache for model unit: {0}, reference: {1}", new Object[]{unit, reference});
             metadataModel = createMetaModel(unit);
             if (reference == null) {
+                LOGGER.log(Level.FINE, "No reference found, creating new one.");
                 reference = new WeakReference<MetadataModel<SpringModel>>(metadataModel);
             }
             MODELS.put(unit, reference);
@@ -92,6 +98,7 @@ public final class SpringModelFactory {
      * @return newly created {@link MetadataModel<SrpingModel>}
      */
     public static MetadataModel<SpringModel> createMetaModel(ModelUnit unit) {
+        LOGGER.log(Level.FINE, "Creating metadata model for model unit: {0}", unit);
         return MetadataModelFactory.createMetadataModel(SpringModelImplementation.createMetaModel(unit));
     }
 }
