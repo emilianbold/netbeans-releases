@@ -31,14 +31,12 @@ import org.openide.windows.TopComponent;
 public final class ${PREFIX}VisualElement extends JPanel implements MultiViewElement {
     private ${PREFIX}DataObject obj;
     private JToolBar toolbar = new JToolBar();
-    private transient Lookup lookup;
     private transient MultiViewElementCallback callback;
 
     public ${PREFIX}VisualElement(Lookup lkp) {
         obj = lkp.lookup(${PREFIX}DataObject.class);
         assert obj != null;
         initComponents();
-        this.lookup = lkp;
     }
 
     @Override
@@ -88,7 +86,7 @@ public final class ${PREFIX}VisualElement extends JPanel implements MultiViewEle
 
     @Override
     public Lookup getLookup() {
-        return lookup;
+        return obj.getLookup();
     }
 
     @Override
