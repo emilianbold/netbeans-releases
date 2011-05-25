@@ -71,8 +71,16 @@ made subject to such option by the copyright holder.
         </question>
 -->
 <answer id="arch-overall">
-        <api name="MultiView" group="java" type="export" category="devel" 
-             url="@TOP@/overview-summary.html"/>
+        <api name="MultiView" group="java" type="export" category="stable" 
+             url="@TOP@/overview-summary.html">
+                 Provides support for creation of editors composed from
+                 multiple (independent) elements. One can either specify
+                 the <a href="@TOP@/org/netbeans/core/spi/multiview/MultiViewFactory.html">
+                 elements directly</a> 
+                 or read them from a 
+                 <a href="@TOP@/org/netbeans/core/api/multiview/MultiViews.html">
+                 declarative registration</a> for a particular mime type.
+        </api>
 
 </answer>
 
