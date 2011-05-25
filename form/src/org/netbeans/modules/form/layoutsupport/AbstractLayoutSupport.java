@@ -101,7 +101,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     private static Method setLayoutMethod = null;
 
     // ------
-
+    
     private LayoutSupportContext layoutContext;
 
     private java.util.List<CodeExpression> componentCodeExpressions;
@@ -111,7 +111,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     private BeanCodeManager layoutBeanCode;
     private CodeGroup setLayoutCode;
 
-    private MetaLayout metaLayout;
+    protected MetaLayout metaLayout;
     private FormProperty[] allProperties;
 
     // ------------------

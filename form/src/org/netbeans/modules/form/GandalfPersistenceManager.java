@@ -3361,6 +3361,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (property.isChanged()) {
                 return LAYOUT_FROM_CODE;
             }
+        } else if (convIndex == LAYOUT_GRIDBAG) {
+            for (Node.PropertySet set : layoutSupport.getPropertySets()) {
+                if ("properties".equals(set.getName())) { // NOI18N
+                    for (Node.Property property : set.getProperties()) {
+                        if (((FormProperty)property).isChanged()) {
+                            return LAYOUT_FROM_CODE;
+                        }
+                    }
+                }
+            }
         }
 
         StringBuffer buf2 = new StringBuffer();
