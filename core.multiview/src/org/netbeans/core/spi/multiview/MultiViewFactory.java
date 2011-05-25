@@ -44,25 +44,19 @@
 
 package org.netbeans.core.spi.multiview;
 
-import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.multiview.ContextAwareDescription;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
@@ -105,6 +99,7 @@ public final class MultiViewFactory {
      * Use createCloneableMultiView() method in such a case.
      * @param descriptions array of descriptions of tabs in the multiview.
      * @param defaultDesc the initial selection, one of the descriptions array values.
+     * @see MultiViews#createMultiView for loosely coupled variant of this method
      */
     public static TopComponent createMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         return createMultiView(descriptions, defaultDesc, createDefaultCloseOpHandler());
@@ -117,6 +112,7 @@ public final class MultiViewFactory {
      * @param descriptions  array of descriptions of tabs in the multiview.
      * @param defaultDesc  the initial selection, one of the descriptions array values.
      * @param closeHandler handles closing of the multiview component, useful when any of the embedded elements can be in modified state and closing would cause a dataloss..
+     * @see MultiViews#createMultiView for loosely coupled variant of this method
      */
     public static TopComponent createMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc,
                                                 CloseOperationHandler closeHandler) {
@@ -132,6 +128,7 @@ public final class MultiViewFactory {
      * multi views 
      * @param descriptions  array of descriptions of tabs in the multiview.
      * @param defaultDesc  the initial selection, one of the descriptions array values.
+     * @see MultiViews#createCloneableMultiView for loosely coupled variant of this method
     */
     public static CloneableTopComponent createCloneableMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         return createCloneableMultiView(descriptions, defaultDesc, createDefaultCloseOpHandler());
@@ -142,6 +139,7 @@ public final class MultiViewFactory {
      * @param descriptions  array of descriptions of tabs in the multiview.
      * @param defaultDesc  the initial selection, one of the descriptions array values.
      * @param closeHandler handles closing of the multiview component, useful when any of the embedded elements can be in modified state and closing would cause a dataloss..
+     * @see MultiViews#createCloneableMultiView for loosely coupled variant of this method
      */
     public static CloneableTopComponent createCloneableMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc,
                                                 CloseOperationHandler closeHandler) {
