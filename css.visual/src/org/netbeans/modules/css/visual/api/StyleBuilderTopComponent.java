@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.css.visual.api;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -53,16 +51,10 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.editor.model.CssRule;
 import org.netbeans.modules.css.visual.ui.StyleBuilderAction;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -189,61 +181,53 @@ public final class StyleBuilderTopComponent extends TopComponent {
         return getDefault();
     }
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
+    @Override
     public void componentActivated() {
         super.componentActivated();
     }
 
-    @Override
-    public void requestActive() {
-        super.requestActive();
-        focusEditor();
-    }
-
-    @Override
-    public void requestVisible() {
-        super.requestVisible();
-        focusEditor();
-    }
-
-    private void focusEditor() {
-        //transfer the focus to the editor
-        Document doc = styleBuilderPanel.getActiveDocument();
-        if (doc != null) {
-            DataObject dob = NbEditorUtilities.getDataObject(doc);
-            if (dob != null) {
-                EditorCookie ec = dob.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    JEditorPane[] panes = ec.getOpenedPanes();
-                    if (panes != null && panes.length > 0) {
-                        final JEditorPane active = panes[0];
-                        RequestProcessor.getDefault().post(new Runnable() {
-
-                            public void run() {
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        Utilities.requestFocus(active);
-                                    }
-                                });
-                            }
-                        }, 100);
-
-                    }
-                }
-            }
-        }
-    }
+//    private void focusEditor() {
+//        //transfer the focus to the editor
+//        Document doc = styleBuilderPanel.getActiveDocument();
+//        if (doc != null) {
+//            DataObject dob = NbEditorUtilities.getDataObject(doc);
+//            if (dob != null) {
+//                EditorCookie ec = dob.getCookie(EditorCookie.class);
+//                if (ec != null) {
+//                    JEditorPane[] panes = ec.getOpenedPanes();
+//                    if (panes != null && panes.length > 0) {
+//                        final JEditorPane active = panes[0];
+//                        RequestProcessor.getDefault().post(new Runnable() {
+//
+//                            public void run() {
+//                                SwingUtilities.invokeLater(new Runnable() {
+//
+//                                    @Override
+//                                    public void run() {
+//                                        Utilities.requestFocus(active);
+//                                    }
+//                                });
+//                            }
+//                        }, 100);
+//
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     /** replaces this in object stream */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
 
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }
