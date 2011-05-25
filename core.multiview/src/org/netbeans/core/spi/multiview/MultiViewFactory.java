@@ -97,9 +97,12 @@ public final class MultiViewFactory {
      * multi views.
      * PLEASE NOTE: a non-cloneable TopComponent is not able to embed editors aka subclasses of CloneableEditor correctly.
      * Use createCloneableMultiView() method in such a case.
+     * <p>
+     * Please see {@link MultiViews#createMultiView} for loosely coupled variant
+     * of this method which may be more suitable for modular environment.
+     * 
      * @param descriptions array of descriptions of tabs in the multiview.
      * @param defaultDesc the initial selection, one of the descriptions array values.
-     * @see MultiViews#createMultiView for loosely coupled variant of this method
      */
     public static TopComponent createMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         return createMultiView(descriptions, defaultDesc, createDefaultCloseOpHandler());
@@ -109,10 +112,13 @@ public final class MultiViewFactory {
      * multi views.
      * PLEASE NOTE: a non-cloneable TopComponent is not able to embed editors aka subclasses of CloneableEditor correctly.
      * Use createCloneableMultiView() method in such a case.
+     * <p>
+     * Please see {@link MultiViews#createMultiView} for loosely coupled variant
+     * of this method which may be more suitable for modular environment.
+     * 
      * @param descriptions  array of descriptions of tabs in the multiview.
      * @param defaultDesc  the initial selection, one of the descriptions array values.
      * @param closeHandler handles closing of the multiview component, useful when any of the embedded elements can be in modified state and closing would cause a dataloss..
-     * @see MultiViews#createMultiView for loosely coupled variant of this method
      */
     public static TopComponent createMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc,
                                                 CloseOperationHandler closeHandler) {
@@ -125,10 +131,14 @@ public final class MultiViewFactory {
     }
     
    /** Creates and returns new instance of cloneable top component with
-     * multi views 
+     * multi views.
+     * <p>
+     * Please see {@link MultiViews#createCloneableMultiView} for loosely coupled variant
+     * of this method which may be more suitable for modular environment.
+     * 
+     * 
      * @param descriptions  array of descriptions of tabs in the multiview.
      * @param defaultDesc  the initial selection, one of the descriptions array values.
-     * @see MultiViews#createCloneableMultiView for loosely coupled variant of this method
     */
     public static CloneableTopComponent createCloneableMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         return createCloneableMultiView(descriptions, defaultDesc, createDefaultCloseOpHandler());
@@ -136,10 +146,13 @@ public final class MultiViewFactory {
 
     /** Creates and returns new instance of cloneable top component with
      * multi views.
+     * <p>
+     * Please see {@link MultiViews#createCloneableMultiView} for loosely coupled variant
+     * of this method which may be more suitable for modular environment.
+     * 
      * @param descriptions  array of descriptions of tabs in the multiview.
      * @param defaultDesc  the initial selection, one of the descriptions array values.
      * @param closeHandler handles closing of the multiview component, useful when any of the embedded elements can be in modified state and closing would cause a dataloss..
-     * @see MultiViews#createCloneableMultiView for loosely coupled variant of this method
      */
     public static CloneableTopComponent createCloneableMultiView (MultiViewDescription[] descriptions, MultiViewDescription defaultDesc,
                                                 CloseOperationHandler closeHandler) {

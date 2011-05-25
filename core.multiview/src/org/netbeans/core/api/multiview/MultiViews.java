@@ -85,11 +85,11 @@ import org.openide.windows.WindowManager;
     }
  
     /** Factory method to create multiview for a given mime type. The list
-     * of {@link MultiViewElement}s to display is taken from {@link MimeLookup#getLookup(mimeType)}.
+     * of {@link MultiViewElement}s to display is taken from {@link MimeLookup#getLookup}.
      * The <code>context</code> parameter has to be Serializable, so the top component
      * can be persisted and later, when deserialized, it can again recreate the 
      * {@link Lookup}. Suitable candidate for an object that implements both
-     * {@link Serializable} as well as {@link Lookup.Provider} is 
+     * {@link Serializable} as well as {@link org.openide.util.Lookup.Provider} is 
      * <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>.
      * To register your elements into particular mime type see {@link Registration}.
      * 
