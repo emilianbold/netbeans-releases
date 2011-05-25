@@ -42,7 +42,9 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Contains Spring annotations related constants.
@@ -51,10 +53,11 @@ import java.util.List;
  */
 public final class SpringAnnotations {
 
-    public static final List<String> SPRING_COMPONENTS = Arrays.asList(
+    public static final Set<String> SPRING_COMPONENTS = Collections.unmodifiableSet(
+            new HashSet<String>(Arrays.asList(
             "org.springframework.stereotype.Component", //NOI18N
             "org.springframework.stereotype.Controller", //NOI18N
             "org.springframework.stereotype.Repository", //NOI18N
             "org.springframework.stereotype.Service" //NOI18N
-            );
+            )));
 }
