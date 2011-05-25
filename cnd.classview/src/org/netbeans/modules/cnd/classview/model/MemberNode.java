@@ -63,15 +63,15 @@ public class MemberNode extends ObjectNode {
     
     private void init(CsmMember mem){
         boolean isTemplate = false;
-        String text = mem.getName().toString();
+        CharSequence text = mem.getName();
         if( mem.getKind() == CsmDeclaration.Kind.CLASS ) {
             isTemplate = CsmKindUtilities.isTemplate(mem);
         } else if( CsmKindUtilities.isFunction(mem) ) {
             CsmFunction fun = (CsmFunction) mem;
             isTemplate = CsmKindUtilities.isTemplate(fun);
-            text = CVUtil.getSignature(fun).toString();
+            text = CVUtil.getSignature(fun);
         }
-        String name = text;
+        String name = text.toString();
         if (isTemplate){
             name = text + "<>"; // NOI18N
         }

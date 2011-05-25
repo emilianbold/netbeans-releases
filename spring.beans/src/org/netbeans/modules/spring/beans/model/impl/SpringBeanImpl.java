@@ -140,7 +140,7 @@ public class SpringBeanImpl extends PersistentObject implements SpringBean, Refr
     }
 
     private static AnnotationMirror getAnnotationMirror(Map<String, ? extends AnnotationMirror> types) {
-        Iterator<String> it = SpringAnnotations.SPRING_COMPONENTS.listIterator();
+        Iterator<String> it = SpringAnnotations.SPRING_COMPONENTS.iterator();
         while (it.hasNext()) {
             AnnotationMirror annotationMirror = types.get(it.next());
             if (annotationMirror != null) {

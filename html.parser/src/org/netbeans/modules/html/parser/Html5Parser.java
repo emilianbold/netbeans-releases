@@ -215,6 +215,10 @@ public class Html5Parser implements HtmlParser {
                     if (!tag.isEmpty()) {
                         possible.add(tag);
                     }
+                    if(!tag.hasOptionalEndTag()) {
+                        //since the end tag is required, the parent elements cannot be closed here
+                        break;
+                    }
                 }
             } while ((node = node.parent()) != null && !node.isRootNode());
 
