@@ -176,6 +176,11 @@ public class WebProjectUtils {
         return basefiles;
     }
 
+    public static boolean isWebProject(Project p) {
+        assert p != null;
+        return p.getLookup().lookup(WebModule.class) != null;
+    }
+    
     public static ArrayList[] getFilterClasses(Document deploymentDescriptorDocument) {
         ArrayList mappedFilters = new ArrayList();
         ArrayList notMappedFilters = new ArrayList();
