@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.git.ui.merge;
+package org.netbeans.modules.git.ui.revert;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitMergeResult;
+import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
-import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.ResultProcessor;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -78,41 +75,39 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.merge.MergeRevisionAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_MergeRevisionAction_Name")
-public class MergeRevisionAction extends SingleRepositoryAction {
+@ActionID(id = "org.netbeans.modules.git.ui.revert.RevertCommitAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_RevertCommitAction_Name")
+public class RevertCommitAction extends SingleRepositoryAction {
 
-    private static final Logger LOG = Logger.getLogger(MergeRevisionAction.class.getName());
+    private static final Logger LOG = Logger.getLogger(RevertCommitAction.class.getName());
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
-        RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        mergeRevision(repository, info.getActiveBranch().getName().equals(GitBranch.NO_BRANCH) ? GitUtils.HEAD : info.getActiveBranch().getName());
+        revert(repository, roots, GitUtils.HEAD);
     }
 
-    public void mergeRevision (final File repository, String preselectedRevision) {
-        final MergeRevision mergeRevision = new MergeRevision(repository, new File[0], preselectedRevision);
-        if (mergeRevision.show()) {
-            GitProgressSupport supp = new GitProgressSupport() {
-                private String revision;
-                
+    public void revert (final File repository, File[] roots, String preselectedRevision) {
+        final RevertCommit revert = new RevertCommit(repository, roots, preselectedRevision);
+        if (revert.show()) {
+            new GitProgressSupport() {
                 @Override
                 protected void perform () {
                     try {
                         GitClient client = getClient();
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
-                        revision = mergeRevision.getRevision();
-                        LOG.log(Level.FINE, "Merging revision {0} into HEAD", revision); //NOI18N
+                        String revision = revert.getRevision();
+                        LOG.log(Level.FINE, "Reverting revision {0}", revision); //NOI18N
                         boolean cont;
-                        MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), this);
+                        RevertResultProcessor mrp = new RevertResultProcessor(client, repository, revision, getLogger(), this);
                         do {
                             cont = false;
                             try {
-                                GitMergeResult result = client.merge(revision, this);
+                                GitRevertResult result = client.revert(revision, revert.getMessage(), revert.isCommitEnabled(), this);
                                 mrp.processResult(result);
+                                GitUtils.headChanged(repository);
                             } catch (GitException.CheckoutConflictException ex) {
                                 if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                                    LOG.log(Level.FINE, "Local modifications in WT during revert: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
                                 }
                                 cont = mrp.resolveLocalChanges(ex.getConflicts());
                             }
@@ -122,51 +117,39 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                     } finally {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                         Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
-                        GitUtils.headChanged(repository);
                     }
                 }
-            };
-            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction.progressName"));
+            }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction.progress")); //NOI18N
         }
     }
     
-    public static class MergeResultProcessor extends ResultProcessor {
+    public static class RevertResultProcessor extends ResultProcessor {
 
-        private final GitClient client;
         private final OutputLogger logger;
         private final String revision;
         
-        public MergeResultProcessor (GitClient client, File repository, String revision, OutputLogger logger, ProgressMonitor pm) {
+        public RevertResultProcessor (GitClient client, File repository, String revision, OutputLogger logger, ProgressMonitor pm) {
             super(client, repository, revision, logger, pm);
-            this.client = client;
             this.revision = revision;
             this.logger = logger;
         }
-        
-        public void processResult (GitMergeResult result) {
-            StringBuilder sb = new StringBuilder(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result", result.getMergeStatus().toString())); //NOI18N
-            GitRevisionInfo info = null;
-            if (result.getNewHead() != null) {
-                try {
-                    info = client.log(result.getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR);
-                } catch (GitException ex) {
-                    GitClientExceptionHandler.notifyException(ex, true);
-                }
-            }
-            switch (result.getMergeStatus()) {
-                case ALREADY_UP_TO_DATE:
-                    sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.alreadyUpToDate", revision)); //NOI18N
+
+        public void processResult (GitRevertResult result) {
+            StringBuilder sb = new StringBuilder(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result", result.getStatus().toString())); //NOI18N
+            GitRevisionInfo info = result.getNewHead();
+            switch (result.getStatus()) {
+                case NO_CHANGE:
+                    sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.noChange", revision)); //NOI18N
                     break;
-                case FAST_FORWARD:
-                    sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.fastForward", revision)); //NOI18N
-                    GitUtils.printInfo(sb, info);
+                case REVERTED_IN_INDEX:
+                    sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.revertedIndex", revision)); //NOI18N
                     break;
-                case MERGED:
-                    sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.merged", revision)); //NOI18N
+                case REVERTED:
+                    sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.reverted", revision)); //NOI18N
                     GitUtils.printInfo(sb, info);
                     break;
                 case CONFLICTING:
-                    sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.conflict", revision)); //NOI18N
+                    sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.conflict", revision)); //NOI18N
                     printConflicts(sb, result.getConflicts());
                     resolveConflicts(result.getConflicts());
                     break;
@@ -177,22 +160,17 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                             EventQueue.invokeAndWait(new Runnable() {
                                 @Override
                                 public void run () {
-                                    openAction.actionPerformed(new ActionEvent(MergeResultProcessor.this, ActionEvent.ACTION_PERFORMED, null));
+                                    openAction.actionPerformed(new ActionEvent(RevertResultProcessor.this, ActionEvent.ACTION_PERFORMED, null));
                                 }
                             });
                         } catch (InterruptedException ex) {
                         } catch (InvocationTargetException ex) {
                         }
                     }
-                    sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failedFiles", revision)); //NOI18N
+                    sb.append(NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.failedFiles", revision)); //NOI18N
                     printConflicts(sb, result.getFailures());
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
-                    break;
-                case NOT_SUPPORTED:
-                    sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.unsupported")); //NOI18N
-                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.unsupported"), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+                            NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;
             }
             logger.output(sb.toString());

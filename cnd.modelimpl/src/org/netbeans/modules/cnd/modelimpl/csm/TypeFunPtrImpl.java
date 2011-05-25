@@ -106,7 +106,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     }
 
     @Override
-    public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
+    public CharSequence decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
         StringBuilder sb = new StringBuilder();
         if (decorator.isConst()) {
             sb.append("const "); // NOI18N

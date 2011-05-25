@@ -510,7 +510,6 @@ public final class RunProfile implements ConfigurationAuxObject {
      */
     public String getRunDirectory() {
         String runDirectory;
-        String runDirectoryCanonicalPath;
         String runDir2 = getRunDir();
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
@@ -521,33 +520,17 @@ public final class RunProfile implements ConfigurationAuxObject {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         }
         
-        if (makeConfiguration == null || makeConfiguration.getFileSystemHost().isLocal()) {
-            // TODO:fullRemote while cleaning up, remove the entire "if" branch - the "else" one should work in any case
-            // It's hight resistance mode now, that's why I'm leaving "local/classic remote" branch as it was - VK
-            // convert to canonical path
-            File runDirectoryFile = new File(runDirectory);
-            if (!runDirectoryFile.exists() || !runDirectoryFile.isDirectory()) {
-                return runDirectory; // ??? FIXUP
-            }
-            try {
-                runDirectoryCanonicalPath = runDirectoryFile.getCanonicalPath();
-            } catch (IOException ioe) {
-                runDirectoryCanonicalPath = runDirectory;
-            }
-            return runDirectoryCanonicalPath;
-        } else {
-            try {
-                String canonicalDir = FileSystemProvider.getCanonicalPath(makeConfiguration.getFileSystemHost(), runDirectory);
-                CndUtils.assertNotNullInConsole(canonicalDir, "Can not canonicalize " + runDirectory); //NOI18N
-                if (canonicalDir == null) {
-                    return runDirectory;
-                } else {
-                    return canonicalDir;
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N
+        try {
+            String canonicalDir = FileSystemProvider.getCanonicalPath(makeConfiguration.getFileSystemHost(), runDirectory);
+            CndUtils.assertNotNullInConsole(canonicalDir, "Can not canonicalize " + runDirectory); //NOI18N
+            if (canonicalDir == null) {
                 return runDirectory;
+            } else {
+                return canonicalDir;
             }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N
+            return runDirectory;
         }
     }
 

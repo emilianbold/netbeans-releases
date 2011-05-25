@@ -68,6 +68,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
+import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -306,6 +307,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                         public void actionPerformed (ActionEvent e) {
                             ExportCommitAction action = SystemAction.get(ExportCommitAction.class);
                             action.exportCommit(master.getRepository(), container.getLog().getRevision());
+                        }
+                    }));
+                    menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
+                            action.revert(master.getRepository(), master.getRoots(), container.getLog().getRevision());
                         }
                     }));
                 }

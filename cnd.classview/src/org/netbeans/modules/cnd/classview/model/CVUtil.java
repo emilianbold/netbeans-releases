@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.NameCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.nodes.*;
 
 /**
@@ -62,14 +63,16 @@ public class CVUtil {
     }
         
     public static CharSequence getNamespaceDisplayName(CsmNamespace ns){
-        String displayName = ns.getName().toString();
+        CharSequence displayName = ns.getName();
         if (displayName.length() == 0) {
-            displayName = ns.getQualifiedName().toString();
-            int scope = displayName.lastIndexOf("::"); // NOI18N
+            displayName = ns.getQualifiedName();
+            int scope = CharSequenceUtils.lastIndexOf(displayName, "::"); // NOI18N
             if (scope != -1) {
-                displayName = displayName.substring(scope + 2);
+                displayName = displayName.subSequence(scope + 2, displayName.length());
             }
-            displayName = displayName.replace('<', ' ').replace('>', ' '); // NOI18N
+            if (CharSequenceUtils.indexOf(displayName, '<') >=0 || CharSequenceUtils.indexOf(displayName, '>') >=0) { // NOI18N
+                displayName = displayName.toString().replace('<', ' ').replace('>', ' '); // NOI18N
+            }
         }
         return  NameCache.getManager().getString(displayName);
     }

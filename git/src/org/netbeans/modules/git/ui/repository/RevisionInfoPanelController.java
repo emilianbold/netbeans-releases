@@ -90,11 +90,11 @@ public class RevisionInfoPanelController {
         loadInfoWorker.monitor.cancel();
         currentCommit = revision;
         setValid(false);
-        if (revision != null) {
+        if (revision == null || revision.isEmpty()) {
+            setUnknownRevision();
+        } else {
             resetInfoFields();
             loadInfoTask.schedule(100);
-        } else {
-            setUnknownRevision();
         }
     }
 

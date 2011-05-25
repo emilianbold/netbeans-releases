@@ -88,6 +88,7 @@ import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.reset.ResetAction;
+import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
@@ -152,6 +153,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(SystemAction.get(CheckoutPathsAction.class));
                 actions.add(SystemAction.get(RevertChangesAction.class));
+                actions.add(SystemAction.get(RevertCommitAction.class));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
@@ -214,6 +216,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ExportCommitAction.class), NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertCommitAction.class), NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName"), lkp));
                 SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
                 if (a.isEnabled()) {
                     actions.add(null);
