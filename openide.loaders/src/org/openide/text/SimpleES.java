@@ -89,7 +89,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     }
 
     SimpleES(DataObject obj, Entry entry, CookieSet set, Callable<Pane> paneFactory) {
-        super(obj, new Environment(obj, entry));
+        super(obj, obj.getLookup(), new Environment(obj, entry));
         this.set = set;
         this.factory = paneFactory;
     }

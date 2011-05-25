@@ -47,9 +47,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.CharConversionException;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -63,7 +61,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.Reference;
-import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -106,6 +103,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -136,7 +134,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @param env environment to pass to 
     */
     public DataEditorSupport (DataObject obj, CloneableEditorSupport.Env env) {
-        super (env, new DOEnvLookup (obj));
+        this(obj, new DOEnvLookup (obj), env);
+    }
+    
+    DataEditorSupport(DataObject obj, Lookup lkp, CloneableEditorSupport.Env env) {
+        super (env, lkp);
         this.obj = obj;
     }
     

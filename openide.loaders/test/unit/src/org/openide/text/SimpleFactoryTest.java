@@ -62,6 +62,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;
+import org.openide.util.Lookup;
 
 /** Check behavior of 
  * {@link DataEditorSupport#create(org.openide.loaders.DataObject, org.openide.loaders.MultiDataObject.Entry, org.openide.nodes.CookieSet, java.util.concurrent.Callable)}
@@ -128,11 +129,13 @@ public final class SimpleFactoryTest extends NbTestCase {
         
         assertEquals("One", 1, gep.arr.length);
         
+        MyCE mice = null;
         Container c = gep.arr[0];
         for (;;) {
             if (c instanceof MyCE) {
                 // OK
-                return;
+                mice = (MyCE)c;
+                break;
             }
             if (c instanceof CloneableEditor) {
                 fail("Wrong CloneableEditor: " + c);
@@ -142,6 +145,12 @@ public final class SimpleFactoryTest extends NbTestCase {
             }
             c = c.getParent();
         }
+        
+        assertNotNull("MyCE found", mice);
+        assertNull("No integers", mice.getLookup().lookup(Integer.class));
+        ((SO)obj).addInteger();
+        assertEquals("One integer in object", Integer.valueOf(10), obj.getLookup().lookup(Integer.class));
+        assertEquals("One integer", Integer.valueOf(10), mice.getLookup().lookup(Integer.class));
     }
     
     //
@@ -180,14 +189,24 @@ public final class SimpleFactoryTest extends NbTestCase {
         }
         
         @Override
+        public Lookup getLookup() {
+            return getCookieSet().getLookup();
+        }
+        
+        @Override
         public Pane call() throws Exception {
             return new MyCE(support);
+        }
+        
+        public void addInteger() {
+            getCookieSet().assign(Integer.class, 10);            
         }
     } // end of SO
     
     private static final class MyCE extends CloneableEditor {
         private MyCE(CloneableEditorSupport support) {
             super(support);
+            this.associateLookup(support.getLookup());
         }
     }
 
