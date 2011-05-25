@@ -388,7 +388,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
 
-                    getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
+                    //getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
 
                 }catch(Exception exc){ // catch for prepare(), open()
                     log("------- [ " + i + " ] ---------------- Exception rises while measuring performance: " + exc);
@@ -550,7 +550,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             closeAllDialogs();
         }catch (Exception e) {
             e.printStackTrace(getLog());
-            getScreenshot("shutdown");
+            //getScreenshot("shutdown");
             exceptionDuringMeasurement = e;
         }finally{
         }
