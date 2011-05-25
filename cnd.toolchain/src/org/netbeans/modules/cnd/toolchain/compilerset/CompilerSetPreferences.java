@@ -182,8 +182,8 @@ public final class CompilerSetPreferences {
     }
 
     public static CompilerSetManagerImpl restoreFromDisk(ExecutionEnvironment env) {
-        String version = getPreferences().get(CSM + VERSION, "1.0");
-        if ("1.0".equals(version) && env.isLocal()) {
+        String version = getPreferences().get(CSM + VERSION, "1.0"); // NOI18N
+        if ("1.0".equals(version) && env.isLocal()) { // NOI18N
             return restoreFromDisk10();
         }
         String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(env);
