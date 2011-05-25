@@ -79,6 +79,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
+import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -88,6 +89,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.j2ee.specs.support.spi.JpaProviderFactory;
+import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportFactory;
+import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -758,7 +762,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
+            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()),
+                    JpaSupportFactory.createJpaSupport(new JpaSupportImpl(this)));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }
@@ -813,6 +818,35 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
     }
 
+    private static class JpaSupportImpl implements JpaSupportImplementation {
+
+        private final J2eePlatformImplImpl platformImpl;
+
+        public JpaSupportImpl(J2eePlatformImplImpl platformImpl) {
+            this.platformImpl = platformImpl;
+        }
+
+        @Override
+        public JpaProvider getDefaultProvider() {
+            String defaultProvider = platformImpl.getDefaultJpaProvider();
+            boolean jpa2 = platformImpl.isJpa2Available();
+            
+            return JpaProviderFactory.createJpaProvider(defaultProvider, true, true, jpa2);
+        }
+
+        @Override
+        public Set<JpaProvider> getProviders() {
+            String defaultProvider = platformImpl.getDefaultJpaProvider();
+            boolean jpa2 = platformImpl.isJpa2Available();
+            Set<JpaProvider> providers = new HashSet<JpaProvider>();
+            providers.add(JpaProviderFactory.createJpaProvider(OPENJPA_JPA_PROVIDER,
+                    OPENJPA_JPA_PROVIDER.equals(defaultProvider), true, false));
+            providers.add(JpaProviderFactory.createJpaProvider(ECLIPSELINK_JPA_PROVIDER,
+                    ECLIPSELINK_JPA_PROVIDER.equals(defaultProvider), true, jpa2));
+            return providers;
+        }
+    }
+    
     private static class JPAHandler extends DefaultHandler {
 
         private String defaultJPAProvider;
