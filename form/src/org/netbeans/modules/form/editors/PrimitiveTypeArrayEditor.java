@@ -314,8 +314,14 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
      */
     @Override
     public void setContext(FormModel formModel, FormProperty property) {
-        this.valueType = property.getValueType();
         this.formProperty = property;
+        if (property != null) {
+            setValueType(property.getValueType());
+        }
+    }
+
+    protected void setValueType(Class valueType) {
+        this.valueType = valueType;
     }
 
     @Override

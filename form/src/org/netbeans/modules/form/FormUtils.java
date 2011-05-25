@@ -1434,17 +1434,20 @@ public class FormUtils
 
     public static void checkVersionLevelForProperty(FormProperty property,
             Object value, PropertyEditor editor) {
-        FormModel formModel = property.getPropertyContext().getFormModel();
+        FormPropertyContext context = property.getPropertyContext();
+        FormModel formModel = context.getFormModel();
         if (formModel != null) {
             if (editor instanceof FormAwareEditor) {
                 ((FormAwareEditor)editor).updateFormVersionLevel();
             } else if (value instanceof ResourceValue) {
                 formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
             }
-            if (property instanceof RADProperty) {
-                RADProperty radProperty = (RADProperty)property;
-                String propName = radProperty.getName();
-                if ("alignOnBaseline".equals(propName) && radProperty.getRADComponent().getBeanClass().equals(FlowLayout.class)) { // NOI18N
+            Object owner = context.getOwner();
+            if (owner instanceof RADComponent) {
+                String propName = property.getName();
+                Class beanClass = ((RADComponent)owner).getBeanClass();
+                if (("alignOnBaseline".equals(propName) && beanClass.equals(FlowLayout.class)) // NOI18N
+                        || beanClass.equals(GridBagLayout.class)) {
                     formModel.raiseVersionLevel(FormModel.FormVersion.NB71, FormModel.FormVersion.NB71);
                 }
             }
