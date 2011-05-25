@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -72,10 +73,10 @@ class ObjectProviders {
 
     private static abstract class AbstractProvider<T extends Refreshable> implements ObjectProvider<T> {
 
-        private List<String> annotationTypeNames;
+        private Set<String> annotationTypeNames;
         private AnnotationModelHelper helper;
 
-        AbstractProvider(AnnotationModelHelper helper, List<String> annotationTypeNames) {
+        AbstractProvider(AnnotationModelHelper helper, Set<String> annotationTypeNames) {
             this.annotationTypeNames = annotationTypeNames;
             this.helper = helper;
         }
@@ -100,10 +101,8 @@ class ObjectProviders {
         public List<T> createObjects(TypeElement type) {
             final List<T> result = new ArrayList<T>();
             if (type.getKind() == ElementKind.CLASS || type.getKind() == ElementKind.INTERFACE) {
-                for (String annotationName : getAnnotationTypeNames()) {
-                    if (helper.hasAnnotation(type.getAnnotationMirrors(), annotationName)) {
-                        result.add(createObject(helper, type));
-                    }
+                if (helper.hasAnyAnnotation(type.getAnnotationMirrors(), getAnnotationTypeNames())) {
+                    result.add(createObject(helper, type));
                 }
             }
             return result;
@@ -123,7 +122,7 @@ class ObjectProviders {
 
         abstract T createObject(AnnotationModelHelper helper, TypeElement typeElement);
 
-        private List<String> getAnnotationTypeNames() {
+        private Set<String> getAnnotationTypeNames() {
             return annotationTypeNames;
         }
     }
