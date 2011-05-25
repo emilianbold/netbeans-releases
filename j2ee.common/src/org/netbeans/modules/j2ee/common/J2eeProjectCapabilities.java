@@ -167,9 +167,8 @@ public final class J2eeProjectCapabilities {
         if (!profiles.contains(Profile.JAVA_EE_5) && !profiles.contains(Profile.JAVA_EE_6_FULL)) {
             return false;
         }
-        JpaSupport support = platform.getLookup().lookup(JpaSupport.class);
-        return (support != null && support.getDefaultProvider() != null)
-                || platform.isToolSupported("defaultPersistenceProviderJavaEE5"); // NOI18N
+        JpaSupport support = JpaSupport.getInstance(platform);
+        return support.getDefaultProvider() != null;
     }
 
     private J2eePlatform getPlatform() {
