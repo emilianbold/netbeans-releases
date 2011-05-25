@@ -46,6 +46,7 @@
 
 package org.netbeans.swing.dirchooser;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.UIDefaults;
@@ -70,11 +71,19 @@ public class Module extends ModuleInstall {
     private static final String FORCE_STANDARD_CHOOSER = "standard-file-chooser"; // NOI18N
 
     @Override public void restored() {
-        install();
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                install();
+            }
+        });
     }
 
     @Override public void uninstalled() {
-        uninstall();
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                uninstall();
+            }
+        });
     }
         
     public static void install() {
