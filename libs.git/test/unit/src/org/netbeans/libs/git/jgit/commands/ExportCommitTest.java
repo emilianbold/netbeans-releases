@@ -159,6 +159,18 @@ public class ExportCommitTest extends AbstractGitTestCase {
         exportDiff(commit.getRevision(), patchFile);
         assertPatchFile(commit, getGoldenFile("exportCommitRename.patch"), patchFile);
     }
+    
+    public void testExportInitialCommit () throws Exception {
+        File patchFile = new File(workDir.getParentFile(), "diff.patch");
+        File file = new File(workDir, "file");
+        File[] files = new File[] { file };
+        write(file, "init\n");
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo commit = client.commit(files, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        exportDiff("master", patchFile);
+        assertPatchFile(commit, getGoldenFile("exportInitialCommit.patch"), patchFile);
+    }
 
     private void exportDiff (String commit, File patchFile) throws Exception {
         OutputStream out = new BufferedOutputStream(new FileOutputStream(patchFile));

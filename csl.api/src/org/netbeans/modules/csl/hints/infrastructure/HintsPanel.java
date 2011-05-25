@@ -87,7 +87,8 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_AsError"));
         model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_AsWarning"));
-        model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_WarningOnCurrentLine"));      
+        model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_WarningOnCurrentLine"));
+        model.addElement( NbBundle.getMessage(HintsPanel.class, "CTL_Info"));
         severityComboBox.setModel(model);
         
         toProblemCheckBox.setVisible(false);

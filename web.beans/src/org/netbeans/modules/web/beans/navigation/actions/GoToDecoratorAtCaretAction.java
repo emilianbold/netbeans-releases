@@ -138,18 +138,16 @@ public class GoToDecoratorAtCaretAction extends AbstractCdiAction {
             Logger.getLogger(GoToDecoratorAtCaretAction.class.getName()).log(
                     Level.INFO, e.getMessage(), e);
         }
-        if ( context[0] == null ){
-            return false;
-        }
         boolean result = context[0] instanceof TypeElement;
         
-        context[0] = ElementHandle.create( (TypeElement) context[0]);
-
         if ( !result ){
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToDecoratorAtCaretAction.class, 
                             "LBL_NotTypeElement"),                     // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        }
+        else {
+            context[0] = ElementHandle.create( (TypeElement) context[0]);
         }
             
         return result;

@@ -67,6 +67,7 @@ import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.diff.ExportCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -299,6 +300,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                         action.createTag(master.getRepository(), container.getLog().getRevision());
                     }
                 }));
+                if (container.getLog().getParents().length < 2) {
+                    menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            ExportCommitAction action = SystemAction.get(ExportCommitAction.class);
+                            action.exportCommit(master.getRepository(), container.getLog().getRevision());
+                        }
+                    }));
+                }
             }
         } else {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N

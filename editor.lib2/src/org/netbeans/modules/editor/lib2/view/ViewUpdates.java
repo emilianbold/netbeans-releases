@@ -365,7 +365,11 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 int startOffset = change.getStartOffset();
                 int endOffset = change.getEndOffset();
                 // Do not ignore empty <startOffset,endOffset> regions - should we??
-                rebuildRegion = OffsetRegion.union(rebuildRegion, docView.getDocument(), startOffset, endOffset, false);
+                Document doc = docView.getDocument();
+                int docTextLen = doc.getLength() + 1;
+                startOffset = Math.min(startOffset, docTextLen);
+                endOffset = Math.min(endOffset, docTextLen);
+                rebuildRegion = OffsetRegion.union(rebuildRegion, doc, startOffset, endOffset, false);
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("ViewUpdates.viewFactoryChanged: <" + startOffset + "," + endOffset + ">\n"); // NOI18N
                 }
@@ -413,7 +417,10 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     
     /*private*/ void incomingEvent(DocumentEvent evt) {
         if (incomingEvent != null) {
-            throw new IllegalStateException("Pending incoming event: " + incomingEvent); // NOI18N
+            // Rebuild the view hierarchy: temporary solution until the real cause is found.
+            docView.releaseChildren();
+            LOG.log(Level.INFO, "View hierarchy rebuild due to pending document event", // NOI18N
+                    new Exception("Pending incoming event: " + incomingEvent)); // NOI18N
         }
         incomingEvent = evt;
     }

@@ -852,7 +852,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private void discardProcessedMarkupItems(Stack<MarkupItem> stack, int startIndex, int endIndex) {
         for (int index = endIndex; index >= startIndex; index--) {
             MarkupItem item = stack.get(index);
-            assert item.processed || item.virtual : "assumption here is that a tag within process tag must be either processed or perhaps virtual: item="+item+" stack="+(getStack().size() < 30 ? getStack() : "[too many items]");
+            // #198659 - when a document is not valid (eg. accicentally a tag was not closed)
+            // then below assert can be triggered; disabling it for now
+            //assert item.processed || item.virtual : "assumption here is that a tag within process tag must be either processed or perhaps virtual: item="+item+" stack="+(getStack().size() < 30 ? getStack() : "[too many items]");
             stack.remove(index);
         }
     }

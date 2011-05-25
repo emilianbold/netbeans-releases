@@ -81,16 +81,25 @@ public class RevertCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final String revisionStr;
     private GitRevertResult result;
+    private final String message;
+    private final boolean commit;
 
-    public RevertCommand (Repository repository, String revision, ProgressMonitor monitor) {
+    public RevertCommand (Repository repository, String revision, String message, boolean commit, ProgressMonitor monitor) {
         super(repository, monitor);
         this.monitor = monitor;
         this.revisionStr = revision;
+        this.message = message;
+        this.commit = commit;
     }
 
     @Override
     protected String getCommandDescription () {
-        return "git revert " + revisionStr;
+        StringBuilder sb = new StringBuilder("git revert ");
+        if (!commit) {
+            sb.append("-n ");
+        }
+        sb.append(revisionStr);
+        return sb.toString();
     }
 
     @Override
@@ -122,8 +131,12 @@ public class RevertCommand extends GitCommand {
                     dco.setFailOnConflict(true);
                     dco.checkout();
                     String newMessage = "Revert \"" + revertedCommit.getShortMessage() + "\"" + "\n\n" + "This reverts commit " + revertedCommit.getId().getName() + ".";
-                    RevCommit newHead = new Git(getRepository()).commit().setMessage(newMessage).call();
-                    result = new JGitRevertResult(GitRevertResult.Status.REVERTED, new JGitRevisionInfo(newHead, repository), null, null);
+                    if (commit) {
+                        RevCommit newHead = new Git(getRepository()).commit().setMessage(message == null || message.isEmpty() ? newMessage : message).call();
+                        result = new JGitRevertResult(GitRevertResult.Status.REVERTED, new JGitRevisionInfo(newHead, repository), null, null);
+                    } else {
+                        result = new JGitRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
+                    }
                 }
             } else {
                 if (merger.getFailingPaths() != null) {

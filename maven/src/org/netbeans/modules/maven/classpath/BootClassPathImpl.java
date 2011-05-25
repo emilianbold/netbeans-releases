@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -61,7 +62,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.WeakListeners;
 
 /**
@@ -72,7 +72,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private final NbMavenProjectImpl project;
+    private final @NonNull NbMavenProjectImpl project;
     private String lastHintValue = null;
     private boolean activePlatformValid = true;
     private JavaPlatformManager platformManager;
@@ -82,7 +82,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     
 
-    BootClassPathImpl(NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
+    BootClassPathImpl(@NonNull NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
         this.project = project;
         this.ecpImpl = ecpImpl;
         ecpImpl.setBCP(this);
@@ -171,7 +171,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        String newVal = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
+        String newVal = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
         if (evt.getSource() == project && evt.getPropertyName().equals(NbMavenProjectImpl.PROP_PROJECT)) {
             if (ecpImpl.resetCache()) {
                 resetCache();
