@@ -173,17 +173,16 @@ public final class ProjectActionEvent {
         String result;
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             result = getExecutableFromRunCommand();
+            if (result != null && result.length() > 0) {
+                FSPath baseFSPath = configuration.getBaseFSPath();
+                if (!CndPathUtilitities.isPathAbsolute(result)) {
+                    result = baseFSPath.getPath() + FileSystemProvider.getFileSeparatorChar(baseFSPath.getFileSystem()) + result;            
+                }
+                result = FileSystemProvider.normalizeAbsolutePath(result, baseFSPath.getFileSystem());
+            }
         } else {
             result = executable;
         }                 
-        if (result != null && result.length() > 0) {
-            // for run, debug, step-into we return absolute path => let it be absolute in any case
-            FSPath baseFSPath = configuration.getBaseFSPath();
-            if (!CndPathUtilitities.isPathAbsolute(result)) {
-                result = baseFSPath.getPath() + FileSystemProvider.getFileSeparatorChar(baseFSPath.getFileSystem()) + result;            
-            }
-            result = FileSystemProvider.normalizeAbsolutePath(result, baseFSPath.getFileSystem());
-        }
 	return result;
     }
 

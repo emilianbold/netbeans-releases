@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -77,6 +78,7 @@ import org.openide.util.Utilities;
 public abstract class CCCCompiler extends AbstractCompiler {
 
     private static final String DEV_NULL = "/dev/null"; // NOI18N
+    private static final String NB69_VERSION_PATTERN = "/var/cache/cnd/remote-includes/"; // NOI18N
 
     private volatile Pair compilerDefinitions;
     private static File emptyFile = null;
@@ -182,8 +184,10 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
     }
 
+    
     @Override
     public void loadSettings(Preferences prefs, String prefix) {
+        String version = prefs.get(CompilerSetPreferences.VERSION_KEY, "1.0"); // NOI18N
         List<String> includeDirList = new ArrayList<String>();
         List<Integer> userAddedInclude = new ArrayList<Integer>();
         String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
@@ -191,6 +195,20 @@ public abstract class CCCCompiler extends AbstractCompiler {
         for (int i = 0; i < includeDirCount; ++i) {
             String includeDir = prefs.get(includeDirPrefix + '.' + i, null); // NOI18N
             if (includeDir != null) {
+                if ("1.1".equals(version)) { // NOI18N
+                    if (Utilities.isWindows()) {
+                        includeDir = includeDir.replace('\\', '/'); // NOI18N
+                    }
+                    int start = includeDir.indexOf(NB69_VERSION_PATTERN);
+                    if (start > 0) {
+                        includeDir = includeDir.substring(start+NB69_VERSION_PATTERN.length());
+                        int index = includeDir.indexOf('/'); // NOI18N
+                        if (index > 0) {
+                            includeDir = includeDir.substring(index);
+                        }
+                    }
+                    
+                }
                 includeDirList.add(includeDir);
                 String added = prefs.get(includeDirPrefix + ".useradded." + i, null); // NOI18N
                 if ("true".equals(added)) { // NOI18N

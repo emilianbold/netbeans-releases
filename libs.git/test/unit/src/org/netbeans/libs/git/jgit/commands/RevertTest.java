@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -56,6 +57,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class RevertTest extends AbstractGitTestCase {
     private File workDir;
+    private Repository repository;
 
     public RevertTest (String testName) throws IOException {
         super(testName);
@@ -65,6 +67,7 @@ public class RevertTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         workDir = getWorkingDirectory();
+        repository = getRepository(getLocalGitRepository());
     }
     
     public void testRevertLastCommitOneFile () throws Exception {
@@ -163,6 +166,7 @@ public class RevertTest extends AbstractGitTestCase {
         assertEquals("local change", read(f));
         assertEquals(Arrays.asList(f), result.getFailures());
         assertEquals(GitRevertResult.Status.FAILED, result.getStatus());
+        assertNull(repository.readMergeCommitMsg());
     }
     
     public void testRevertConflict () throws Exception {
@@ -183,6 +187,7 @@ public class RevertTest extends AbstractGitTestCase {
         assertEquals("<<<<<<< OURS\nlocal change\n=======\ninit\n>>>>>>> THEIRS", read(f));
         assertEquals(Arrays.asList(f), result.getConflicts());
         assertEquals(GitRevertResult.Status.CONFLICTING, result.getStatus());
+        assertEquals("Revert \"modification\"\n\nThis reverts commit " + commit.getRevision() + ".\n\nConflicts:\n\tf\n", repository.readMergeCommitMsg());
     }
     
     public void testRevertNotIncluded () throws Exception {
