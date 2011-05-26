@@ -41,76 +41,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.modules.web;
+package org.netbeans.jellytools;
 
-import org.netbeans.jellytools.*;
 import java.awt.Component;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-/**Keeps methods to access navigator component.
+/** Keeps methods to access navigator component.
  *
  * @author Jindrich Sedek
  */
-public class NavigatorOperator extends TopComponentOperator{
-    private JTreeOperator treeOperator;
-    
+public class NavigatorOperator extends TopComponentOperator {
+
     private static final String NAVIGATOR_TITLE =
             Bundle.getString("org.netbeans.modules.navigator.Bundle", "LBL_Navigator");
-    
+
     /** NavigatorOperator is created for navigator window. 
      *  Navigator window must be displayed.
-     */ 
-    public NavigatorOperator(){
+     */
+    public NavigatorOperator() {
         super(waitTopComponent(null, NAVIGATOR_TITLE, 0, new NavigatorComponentChooser()));
     }
-    
-    /** This function dislays navigator window and returns operator for it
+
+    /** This function displays navigator window and returns operator for it
      * 
      *@return navigator operator
      * 
-     */ 
+     */
     public static NavigatorOperator invokeNavigator() {
         new NavigatorAction().perform();
         return new NavigatorOperator();
     }
-    
-    /**Using navagation Tree you can access root node and then it's childen 
-     * recursively
+
+    /** Using navigation Tree you can access root node and then it's children 
+     * recursively.
      * 
      * @return Operator of the navigation tree
-     */ 
-    public JTreeOperator getTree(){
-        if (treeOperator == null){
-            treeOperator = new JTreeOperator(this, 0);
-        }
-        return treeOperator;
+     */
+    public JTreeOperator getTree() {
+        return new JTreeOperator(this);
     }
-    
-    private static final class NavigatorAction extends Action{
+
+    private static final class NavigatorAction extends Action {
+
         private static final String navigatorActionName = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-                + "|" +
-                Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator")
-                + "|" +
-                Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "LBL_Action");
-        
+                + "|"
+                + Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator")
+                + "|"
+                + Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "LBL_Action");
+
         public NavigatorAction() {
             super(navigatorActionName, null, "org.netbeans.modules.navigator.ShowNavigatorAction");
         }
     }
-    
+
     private static final class NavigatorComponentChooser implements ComponentChooser {
+
+        @Override
         public boolean checkComponent(Component comp) {
-            return(comp.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC"));
+            return (comp.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC"));
         }
-        
+
+        @Override
         public String getDescription() {
             return "Navigator Window";
         }
     }
-    
-    
-    
-    
 }

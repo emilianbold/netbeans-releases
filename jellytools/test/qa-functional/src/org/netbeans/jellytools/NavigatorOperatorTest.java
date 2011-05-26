@@ -47,13 +47,13 @@ package org.netbeans.jellytools;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jellytools.nodes.Node;
 
 
 /**
- * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
+ * Test of NavigatorOperator.
  * @author Jindrich Sedek
  */
 public class NavigatorOperatorTest extends JellyTestCase {
@@ -92,13 +92,4 @@ public class NavigatorOperatorTest extends JellyTestCase {
         assertNotNull(operator2);
         assertNotNull("TREE", operator.getTree());
     }
-    
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
 }
