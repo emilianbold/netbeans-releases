@@ -45,10 +45,11 @@ package org.netbeans.modules.cnd.spi.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -152,6 +153,22 @@ public abstract class CndFileSystemProvider {
         return getDefault().normalizeAbsolutePathImpl(fs, absPath);
     }
     
+    public static void addFileChangeListener(FileChangeListener listener) {
+        getDefault().addFileChangeListenerImpl(listener);
+    }
+
+    public static void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        getDefault().addFileChangeListenerImpl(listener, fileSystem, path);
+    }
+
+    public static void removeFileChangeListener(FileChangeListener listener) {
+        getDefault().removeFileChangeListenerImpl(listener);
+    }
+
+    public static void removeFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        getDefault().removeFileChangeListenerImpl(listener, fileSystem, path);
+    }
+    
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -177,6 +194,12 @@ public abstract class CndFileSystemProvider {
     protected abstract String getCanonicalPathImpl(FileObject fo) throws IOException;
     
     protected abstract String normalizeAbsolutePathImpl(FileSystem fs, String absPath);
+    
+    protected abstract boolean addFileChangeListenerImpl(FileChangeListener listener);
+    protected abstract boolean removeFileChangeListenerImpl(FileChangeListener listener);
+    
+    protected abstract boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path);    
+    protected abstract boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path);    
 
     private static class DefaultProvider extends CndFileSystemProvider {
 
@@ -344,5 +367,51 @@ public abstract class CndFileSystemProvider {
             }
             return absPath;
         }
+
+        @Override
+        protected boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+            for (CndFileSystemProvider provider : cache) {
+                if (provider.addFileChangeListenerImpl(listener, fileSystem, path)) {
+                    return true;
+                }
+            }
+            if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+                FileUtil.addFileChangeListener(listener, FileUtil.normalizeFile(new File(path)));
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+            for (CndFileSystemProvider provider : cache) {
+                if (provider.removeFileChangeListenerImpl(listener, fileSystem, path)) {
+                    return true;
+                }
+            }
+            if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+                FileUtil.removeFileChangeListener(listener, FileUtil.normalizeFile(new File(path)));
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected boolean addFileChangeListenerImpl(FileChangeListener listener) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.addFileChangeListenerImpl(listener);
+            }
+            return true;
+        }
+
+        @Override
+        protected boolean removeFileChangeListenerImpl(FileChangeListener listener) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.removeFileChangeListenerImpl(listener);
+            }
+            return true;
+        }        
     }
 }

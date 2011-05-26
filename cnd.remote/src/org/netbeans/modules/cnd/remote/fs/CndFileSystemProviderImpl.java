@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -179,6 +180,32 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
         return null;
     }
+
+    @Override
+    protected boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+       FileSystemProvider.addFileChangeListener(listener, fileSystem, path);
+       return true;
+    }
+
+    @Override
+    protected boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+        FileSystemProvider.removeRecursiveListener(listener, fileSystem, path);
+        return true;
+    }
+
+    @Override
+    protected boolean addFileChangeListenerImpl(FileChangeListener listener) {
+        FileSystemProvider.addFileChangeListener(listener);
+        return true;
+    }
+
+    @Override
+    protected boolean removeFileChangeListenerImpl(FileChangeListener listener) {
+        FileSystemProvider.removeFileChangeListener(listener);
+        return true;
+    }
+    
+    
 
     private FileSystemAndString getFileSystemAndRemotePath(CharSequence path) {
         String prefix = getPrefix();
