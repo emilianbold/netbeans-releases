@@ -46,11 +46,11 @@
 
 package org.netbeans.swing.dirchooser;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.plaf.FileChooserUI;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -61,7 +61,7 @@ import org.openide.modules.ModuleInstall;
 public class Module extends ModuleInstall {
     
     private static final String KEY = "FileChooserUI"; // NOI18N
-    private static Class<? extends FileChooserUI> originalImpl;
+    private static Class<?> originalImpl;
     private static PropertyChangeListener pcl;
     
     private static final String QUICK_CHOOSER_NAME = 
@@ -70,21 +70,29 @@ public class Module extends ModuleInstall {
     private static final String FORCE_STANDARD_CHOOSER = "standard-file-chooser"; // NOI18N
 
     @Override public void restored() {
-        install();
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                install();
+            }
+        });
     }
 
     @Override public void uninstalled() {
-        uninstall();
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                uninstall();
+            }
+        });
     }
         
-    public static void install() {
+    private static void install() {
         // don't install directory chooser if standard chooser is desired
         if (isStandardChooserForced()) {
             return;
         }
         final UIDefaults uid = UIManager.getDefaults();
-        originalImpl = (Class<? extends FileChooserUI>) uid.getUIClass(KEY);
-        Class impl = DelegatingChooserUI.class;
+        originalImpl = (Class<?>) uid.getUIClass(KEY);
+        Class<?> impl = DelegatingChooserUI.class;
         final String val = impl.getName();
         // don't install dirchooser if quickfilechooser is present
         if (!isQuickFileChooser(uid.get(KEY))) {
@@ -94,7 +102,7 @@ public class Module extends ModuleInstall {
         }
         // #61147: prevent NB from switching to a different UI later (under GTK):
         uid.addPropertyChangeListener(pcl = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
                 String name = evt.getPropertyName();
                 Object className = uid.get(KEY);
                 if ((name.equals(KEY) || name.equals("UIDefaults")) && !val.equals(className)
@@ -105,7 +113,7 @@ public class Module extends ModuleInstall {
         });
     }
     
-    public static void uninstall() {
+    private static void uninstall() {
         if (isInstalled()) {
             assert pcl != null;
             UIDefaults uid = UIManager.getDefaults();
@@ -118,11 +126,11 @@ public class Module extends ModuleInstall {
         }
     }
     
-    public static boolean isInstalled() {
+    private static boolean isInstalled() {
         return originalImpl != null;
     }
     
-    static Class<? extends FileChooserUI> getOrigChooser () {
+    static Class<?> getOrigChooser () {
         return originalImpl;
     }
     
