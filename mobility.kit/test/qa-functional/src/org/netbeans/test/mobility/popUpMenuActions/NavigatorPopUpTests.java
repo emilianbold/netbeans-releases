@@ -57,7 +57,7 @@ import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CompileJavaAction;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.ide.ProjectSupport;
