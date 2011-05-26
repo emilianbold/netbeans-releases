@@ -342,8 +342,10 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 try {
                     parentNodes = Arrays.toString(parent.getNodes());
                     chNodes = Arrays.toString(ch.getNodes());
+                } catch (StackOverflowError e) {
+                    t = e;
                 } catch (RuntimeException e) {
-                   t = e;
+                    t = e;
                 }
                 IllegalStateException ex = new IllegalStateException(
                     "Cannot initialize " + index + "th child of node " + parent.getNode() +

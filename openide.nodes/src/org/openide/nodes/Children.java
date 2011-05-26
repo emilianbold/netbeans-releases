@@ -792,8 +792,9 @@ public abstract class Children extends Object {
 
         /** Getter for nodes.
         */
+        private static final Object COLLECTION_LOCK = new Object();
         final Collection<Node> getCollection() {
-            synchronized (getNodesEntry()) {
+            synchronized (COLLECTION_LOCK) {
                 if (nodes == null) {
                     nodes = initCollection();
                 }
@@ -805,8 +806,9 @@ public abstract class Children extends Object {
         * @param arr nodes to add
         * @return true if changed false if not
         */
+        @Override
         public boolean add(final Node[] arr) {
-            synchronized (getNodesEntry()) {
+            synchronized (COLLECTION_LOCK) {
                 if (!getCollection().addAll(Arrays.asList(arr))) {
                     // no change to the collection
                     return false;
@@ -820,8 +822,9 @@ public abstract class Children extends Object {
         * @param arr nodes to remove
         * @return true if changed false if not
         */
+        @Override
         public boolean remove(final Node[] arr) {
-            synchronized (getNodesEntry()) {
+            synchronized (COLLECTION_LOCK) {
                 if (!getCollection().removeAll(Arrays.asList(arr))) {
                     // the collection was not changed
                     return false;
@@ -842,13 +845,16 @@ public abstract class Children extends Object {
 
             /** List of elements.
             */
+            @Override
             public Collection<Node> nodes(Object source) {
                 Collection<Node> c = getCollection();
 
                 if (c.isEmpty()) {
                     return Collections.emptyList();
                 } else {
-                    return new ArrayList<Node>(c);
+                    synchronized (COLLECTION_LOCK) {
+                        return new ArrayList<Node>(c);
+                    }
                 }
             }
 

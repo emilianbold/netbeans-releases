@@ -17,9 +17,9 @@ rm -rf build/test/qa-functional/results
 ant clean -Dnetbeans.dest.dir=$netbeans_dest
 ant -Dnetbeans.dest.dir=$netbeans_dest
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 
 buildnum=`cat "$reposdir"/build.number`
 str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
