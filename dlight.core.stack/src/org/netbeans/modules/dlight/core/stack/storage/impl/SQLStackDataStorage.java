@@ -862,9 +862,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
 
                         if (srcFile != null) {
                             qname.append(':').append(srcFile);
-                            if (srcLine > 0) {
+                            if (srcLine >= 0) {
                                 qname.append(':').append(srcLine);
-                                if (srcColumn > 0) {
+                                if (srcColumn >= 0) {
                                     qname.append(':').append(srcColumn);
                                 }
                             }

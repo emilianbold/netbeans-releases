@@ -50,10 +50,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
 /**
@@ -78,8 +78,59 @@ public abstract class CommonStackDataStorageTests {
     @After
     public void tearDown() {
         boolean shutdownResult = shutdownStorage(db);
-            assertTrue(shutdownResult);
-        
+        assertTrue(shutdownResult);
+
+    }
+
+    @Test
+    public void testStack() {
+        String stackString = ""
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:216,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:432,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1155,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1196,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1198,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:216,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1192,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:216,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:435,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1194,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1188,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1188,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1188,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1188,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1188,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1174,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:214,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1175,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1175,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1172,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:0,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1172,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:435,"
+                + "unknown+0x0`__1cMLinkerDriverIpre_link6M_v_+0x0:/some/long/path/to/sources/linker_driver.cc:1167";
+
+        String[] stack = stackString.split(",");
+        List<CharSequence> stackAsList = Arrays.<CharSequence>asList(stack);
+        Collections.reverse(stackAsList);
+        long stackId = db.putStack(1, stackAsList);
+        flush(db);
+
+        List<FunctionCall> callStack = db.getCallStack(stackId);
+        assertNotNull(callStack);
+        assertEquals(stack.length, callStack.size());
+
+        int i = 0;
+        for (FunctionCall functionCall : callStack) {
+            String e = stack[i++];
+            assertEquals(e.substring(e.lastIndexOf(':') + 1), Integer.toString(functionCall.getLineNumber()));
+        }
     }
 
     @Test
@@ -270,6 +321,7 @@ public abstract class CommonStackDataStorageTests {
 
     private static class FunctionCallComparator implements Comparator<FunctionCallWithMetric> {
 
+        @Override
         public int compare(FunctionCallWithMetric c1, FunctionCallWithMetric c2) {
             return c1.getFunction().getName().compareTo(c2.getFunction().getName());
         }
