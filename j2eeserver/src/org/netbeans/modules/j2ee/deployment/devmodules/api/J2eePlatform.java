@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
@@ -82,6 +83,8 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -91,7 +94,7 @@ import org.openide.util.Parameters;
  * @author Stepan Herold
  * @since 1.5
  */
-public final class J2eePlatform {
+public final class J2eePlatform implements Lookup.Provider {
 
     /**
      * Type of the library created by {@link #createLibrary(File, String)}.
@@ -734,7 +737,8 @@ public final class J2eePlatform {
      * @since 1.44
      */
     public Lookup getLookup() {
-        return impl.getLookup();
+        return LookupProviderSupport.createCompositeLookup(
+                new ProxyLookup(Lookups.fixed(this), impl.getLookup()), "J2EE/Platform/Lookup"); // NOI18N
     }
 
     @Override
