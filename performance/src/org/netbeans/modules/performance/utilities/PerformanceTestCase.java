@@ -944,15 +944,15 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             end.setMeasured(true);
 
             long result = end.getTimeMillis() - start.getTimeMillis();
-            System.out.println("!*!*!Full tuples list for disgnostic purposes");
             System.out.println("@@@@ Start tuple:"+start);
             System.out.println("@@@@ End tuple:"+end);
-            ActionTracker.EventList el = tr.getCurrentEvents();
-            for (ActionTracker.Tuple tuple : el) {
-                System.out.println(tuple);
-            }
             if (result < 0 || start.getTimeMillis() == 0) {
                 System.out.println("!!!!! Measuring failed, because start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0. Threads in which the measurements were taken:"+start.getMeasurementThreadName()+"   "+end.getMeasurementThreadName()+" !!!!!");
+                System.out.println("!*!*!Full tuples list for disgnostic purposes");
+                ActionTracker.EventList el = tr.getCurrentEvents();
+                for (ActionTracker.Tuple tuple : el) {
+                    System.out.println(tuple);
+                }
                 result=0;
             }
             return result;
