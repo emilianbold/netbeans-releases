@@ -47,6 +47,8 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -690,6 +692,7 @@ public class J2SEProjectProperties {
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
             rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);
+            validateURL(rootURLs[i],f);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
             rootsAreSame &= !oldRootURLs.isEmpty() &&
                             oldRootURLs.removeFirst().equals(rootURLs[i]) &&
@@ -697,6 +700,23 @@ public class J2SEProjectProperties {
         }
         if (!rootsAreSame || !oldRootURLs.isEmpty ()) {
             roots.putRoots(rootURLs,rootLabels);
+        }
+    }
+
+    private void validateURL(final URL url, final File file) {
+        try {
+            final URI uri = url.toURI();
+            if (!uri.isAbsolute()) {
+                throw new IllegalArgumentException("URI is not absolute: " + uri.toString() + " File: " + file.getAbsolutePath());   //NOI18N
+            }
+            if (uri.isOpaque()) {
+                throw new IllegalArgumentException("URI is not hierarchical: " + uri.toString() + " File: " + file.getAbsolutePath());   //NOI18N
+            }
+            if (!"file".equals(uri.getScheme())) {
+                throw new IllegalArgumentException("URI scheme is not \"file\": " + uri.toString() + " File: " + file.getAbsolutePath());   //NOI18N
+            }
+        } catch (URISyntaxException use) {
+            throw new IllegalArgumentException(use);
         }
     }
     
