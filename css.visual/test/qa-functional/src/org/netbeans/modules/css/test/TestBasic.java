@@ -49,7 +49,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jemmy.operators.AbstractButtonOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
