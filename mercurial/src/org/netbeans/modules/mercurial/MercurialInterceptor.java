@@ -346,6 +346,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             return getRemoteRepository(file);
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
+                @Override
                 public void run() {
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                     cache.refresh(file);
@@ -425,6 +426,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private class RefreshTask implements Runnable {
+        @Override
         public void run() {
             Thread.interrupted();
             if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Mercurial.STATUS_LOG, "MercurialInterceptor.refreshTask")) { //NOI18N
@@ -517,6 +519,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         private final HashSet<File> filesToInitialize = new HashSet<File>();
         private RequestProcessor rp = new RequestProcessor("MercurialInterceptorEventsHandlerRP", 1); //NOI18N
         private RequestProcessor.Task initializingTask = rp.create(new Runnable() {
+            @Override
             public void run() {
                 initializeFiles();
             }
