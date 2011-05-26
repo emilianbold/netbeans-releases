@@ -63,6 +63,8 @@ public class RemoteFileSystemManager {
     
     private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
     
+    private final Object lock = new Object();
+    
     private Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
             new HashMap<ExecutionEnvironment, SoftReference<RemoteFileSystem>>();
 
@@ -74,13 +76,13 @@ public class RemoteFileSystemManager {
     }
 
     /*package*/ void resetFileSystem(ExecutionEnvironment execEnv) {
-        synchronized(this) {
+        synchronized(lock) {
             fileSystems.remove(execEnv);
         }
     }
 
     public RemoteFileSystem getFileSystem(ExecutionEnvironment execEnv) {
-        synchronized(this) {
+        synchronized(lock) {
             SoftReference<RemoteFileSystem> ref = fileSystems.get(execEnv);
             RemoteFileSystem result = (ref == null) ? null : ref.get();
             if (result == null) {
