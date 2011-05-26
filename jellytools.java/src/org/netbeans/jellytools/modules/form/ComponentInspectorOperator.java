@@ -41,72 +41,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.modules.form;
 
 import java.awt.Component;
-import org.netbeans.jellytools.TopComponentOperator;
+import javax.swing.JTree;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
- * Provides access to org.netbeans.modules.form.ComponentInspector component.
+ * Provides access to Navigator TopComponent belonging to form editor.
  */
-public class ComponentInspectorOperator extends TopComponentOperator {
-    private JTreeOperator _treeComponents;
-    private PropertySheetOperator _properties;
+public class ComponentInspectorOperator extends NavigatorOperator {
 
-    /** Waits for the Component Inspector appearence and creates operator for it.
-     */
-    public ComponentInspectorOperator() {
-        super(waitTopComponent(null, null, 0, new ComponentInspectorChooser()));
-    }
+    private PropertySheetOperator _properties;
 
     /** Getter for component tree.
      * @return JTreeOperator instance
      */
     public JTreeOperator treeComponents() {
-        if(_treeComponents == null) {
-            _treeComponents = new JTreeOperator(this);
-        }
-        return(_treeComponents);
+        return new JTreeOperator(this, new FormTreeComponentChooser());
     }
-    
+
     /** Getter for PropertySheetOperator. It returns first found property
      * sheet within IDE. It is not guaranteed that it is the global property
      * placed next to Component Inspector by default.
      * @return PropertySheetOperator instance
      */
     public PropertySheetOperator properties() {
-        if(_properties == null) {
+        if (_properties == null) {
             _properties = new PropertySheetOperator();
         }
-        return(_properties);
+        return (_properties);
     }
 
     //shortcuts
-    
     /** Selects component in the tree.
      * @param componentPath path in component tree (e.g. "[JFrame]|jPanel1")
      */
     public void selectComponent(String componentPath) {
-        new Node(treeComponents(), componentPath).select();
+        new FormDesignerOperator(null).makeComponentVisible();
+        JTreeOperator treeOper = getTree();
+        // do not use Node.select() because it changes context of navigator
+        treeOper.setSelectionPath(new Node(treeOper, componentPath).getTreePath());
     }
 
-    private static class ComponentInspectorChooser implements ComponentChooser {
-        public boolean checkComponent(Component comp) {
-            return(comp.getClass().getName().equals("org.netbeans.modules.form.ComponentInspector"));
-        }
-        public String getDescription() {
-            return("Any ComponentInspector");
-        }
-    }
-
-    /** Performs verification by accessing all sub-components */    
+    /** Performs verification by accessing all sub-components */
     public void verify() {
-        treeComponents();
+        getTree();
         properties().verify();
+    }
+
+    private static final class FormTreeComponentChooser implements ComponentChooser {
+
+        @Override
+        public boolean checkComponent(Component comp) {
+            Object root = ((JTree) comp).getModel().getRoot();
+            return root != null && root.toString().startsWith("Form");
+        }
+
+        @Override
+        public String getDescription() {
+            return "Form Tree";  //NOI18N
+        }
     }
 }
