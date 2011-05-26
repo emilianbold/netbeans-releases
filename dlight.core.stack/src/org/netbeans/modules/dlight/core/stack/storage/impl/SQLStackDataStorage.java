@@ -847,7 +847,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
                             if (moduleOffset != null) {
                                 qname.append('+').append(moduleOffset);
                             }else{
-                                qname.append('+').append("0x0");
+                                qname.append('+').append("0x0");//NOI18N
                             }
                             qname.append('`');
                         }
@@ -857,14 +857,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2,
                         if (offset > 0) {
                             qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
                         }else{
-                            qname.append('+').append("0x0");
+                            qname.append('+').append("0x0");//NOI18N
                         }
 
                         if (srcFile != null) {
                             qname.append(':').append(srcFile);
-                            if (srcLine > 0) {
+                            if (srcLine >= 0) {
                                 qname.append(':').append(srcLine);
-                                if (srcColumn > 0) {
+                                if (srcColumn >= 0) {
                                     qname.append(':').append(srcColumn);
                                 }
                             }

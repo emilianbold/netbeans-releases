@@ -2438,6 +2438,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void attrMIVar(final GdbVariable v, final boolean evalValue) {
+        // see IZ 197562, on MacOSX -var-show-attributes on invalid watch breaks gdb
+        if (v.getNumChild() == -1) {
+            return;
+        }
         String expr = v.getMIName();
 	// editable ?
         String cmdString = "-var-show-attributes \"" + expr + "\""; // NOI18N

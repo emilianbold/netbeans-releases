@@ -626,6 +626,10 @@ public final class GitUtils {
             Git.getInstance().headChanged(openFiles);
         }
     }
+
+    public static boolean isRepositoryLocked (File repository) {
+        return new File(getGitFolderForRoot(repository), "index.lock").exists(); //NOI18N
+    }
     
     private GitUtils() {
     }

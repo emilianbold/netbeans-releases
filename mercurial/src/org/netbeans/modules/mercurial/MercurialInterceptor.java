@@ -54,9 +54,12 @@ import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -81,8 +84,9 @@ public class MercurialInterceptor extends VCSInterceptor {
     private final FileStatusCache   cache;
 
     private ConcurrentLinkedQueue<File> filesToRefresh = new ConcurrentLinkedQueue<File>();
+    private final Map<File, Set<File>> lockedRepositories = new HashMap<File, Set<File>>(5);
 
-    private RequestProcessor.Task refreshTask;
+    private final RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
@@ -92,6 +96,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
         refreshTask = rp.create(new RefreshTask());
+        lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         hgFolderEventsHandler = new HgFolderEventsHandler();
     }
 
@@ -341,6 +346,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             return getRemoteRepository(file);
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
+                @Override
                 public void run() {
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                     cache.refresh(file);
@@ -420,18 +426,87 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private class RefreshTask implements Runnable {
+        @Override
         public void run() {
             Thread.interrupted();
             if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Mercurial.STATUS_LOG, "MercurialInterceptor.refreshTask")) { //NOI18N
                 return;
             }
             // fill a fileset with all the modified files
-            HashSet<File> files = new HashSet<File>(filesToRefresh.size());
+            Collection<File> files = new HashSet<File>(filesToRefresh.size());
             File file;
             while ((file = filesToRefresh.poll()) != null) {
                 files.add(file);
             }
-            cache.refreshAllRoots(files);
+            if (!"false".equals(System.getProperty("versioning.mercurial.delayStatusForLockedRepositories"))) {
+                files = checkLockedRepositories(files, false);
+            }
+            if (!files.isEmpty()) {
+                cache.refreshAllRoots(files);
+            }
+            if (!lockedRepositories.isEmpty()) {
+                lockedRepositoryRefreshTask.schedule(5000);
+            }
+        }
+    }
+
+    private Collection<File> checkLockedRepositories (Collection<File> additionalFilesToRefresh, boolean keepCached) {
+        List<File> retval = new LinkedList<File>();
+        // at first sort the files under repositories
+        Map<File, Set<File>> sortedFiles = sortByRepository(additionalFilesToRefresh);
+        for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
+            Set<File> alreadyPlanned = lockedRepositories.get(e.getKey());
+            if (alreadyPlanned == null) {
+                alreadyPlanned = new HashSet<File>();
+                lockedRepositories.put(e.getKey(), alreadyPlanned);
+            }
+            alreadyPlanned.addAll(e.getValue());
+        }
+        // return all files that do not belong to a locked repository 
+        for (Iterator<Map.Entry<File, Set<File>>> it = lockedRepositories.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<File, Set<File>> entry = it.next();
+            File repository = entry.getKey();
+            if (!repository.exists()) {
+                // repository does not exist, no need to keep it
+                it.remove();
+            } else if (HgUtils.isRepositoryLocked(repository)) {
+                Mercurial.STATUS_LOG.log(Level.FINE, "checkLockedRepositories(): Repository {0} locked, status refresh delayed", repository); //NOI18N
+            } else {
+                // repo not locked, add all files into the returned collection
+                retval.addAll(entry.getValue());
+                if (!keepCached) {
+                    it.remove();
+                }
+            }
+        }
+        return retval;
+    }
+
+    private Map<File, Set<File>> sortByRepository (Collection<File> files) {
+        Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
+        for (File f : files) {
+            File repository = Mercurial.getInstance().getRepositoryRoot(f);
+            if (repository != null) {
+                Set<File> repoFiles = sorted.get(repository);
+                if (repoFiles == null) {
+                    repoFiles = new HashSet<File>();
+                    sorted.put(repository, repoFiles);
+                }
+                repoFiles.add(f);
+            }
+        }
+        return sorted;
+    }
+
+    private class LockedRepositoryRefreshTask implements Runnable {
+        @Override
+        public void run() {
+            if (!checkLockedRepositories(Collections.<File>emptySet(), true).isEmpty()) {
+                // there are some newly unlocked repositories to refresh
+                refreshTask.schedule(0);
+            } else if (!lockedRepositories.isEmpty()) {
+                lockedRepositoryRefreshTask.schedule(5000);
+            }
         }
     }
 
@@ -444,6 +519,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         private final HashSet<File> filesToInitialize = new HashSet<File>();
         private RequestProcessor rp = new RequestProcessor("MercurialInterceptorEventsHandlerRP", 1); //NOI18N
         private RequestProcessor.Task initializingTask = rp.create(new Runnable() {
+            @Override
             public void run() {
                 initializeFiles();
             }

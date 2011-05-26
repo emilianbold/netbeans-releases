@@ -351,8 +351,16 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path) {
         RemoteLogger.assertTrue(env.isRemote(), "Unexpected ExecutionEnvironment: should be remote"); // NOI18N
         RemoteFileSystemManager.getInstance().getFileSystem(env).getFactory().addFileChangeListener(path, listener);
-    }    
+    }
 
+    public void addFileChangeListener(FileChangeListener listener) {
+        RemoteFileSystemManager.getInstance().addFileChangeListener(listener);
+    }
+
+    public void removeFileChangeListener(FileChangeListener listener) {
+        RemoteFileSystemManager.getInstance().removeFileChangeListener(listener);
+    }
+    
     @Override
     public boolean canExecute(FileObject fileObject) {
         RemoteLogger.assertTrue(fileObject instanceof RemoteFileObjectBase, "Unexpected file object class: " + fileObject); // NOI18N

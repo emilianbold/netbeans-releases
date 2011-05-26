@@ -80,7 +80,7 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
             srcFileInfo = null;
             pos2 = entry.length();
         } else {
-            srcFileInfo = parceSourceFileInfo(entry.subSequence(pos2 + 1, entry.length()));
+            srcFileInfo = parseSourceFileInfo(entry.subSequence(pos2 + 1, entry.length()));
         }
 
         functionPart = EntryWithOffset.parse(entry.subSequence(pos1 + 1, pos2));
@@ -128,7 +128,7 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
         return -1;
     }
 
-    private SourceFileInfo parceSourceFileInfo(CharSequence entry) {
+    private SourceFileInfo parseSourceFileInfo(CharSequence entry) {
         int pos1, pos2;
         int line = -1, column = -1;
         pos1 = searchRight(entry, ':', 0);

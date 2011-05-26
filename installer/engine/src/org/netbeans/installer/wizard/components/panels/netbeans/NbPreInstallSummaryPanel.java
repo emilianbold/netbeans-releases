@@ -143,6 +143,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_REMOVE_NETBEANS_USERDIR_CHECKBOX);
         setProperty(REMOVE_NETBEANS_USERDIR_LINK_PROPERTY,
                 DEFAULT_REMOVE_NETBEANS_USERDIR_LINK);
+        setProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY,
+                DEFAULT_REMOVE_NETBEANS_INSTALLDIR_CHECKBOX);
     }
     
     @Override
@@ -204,7 +206,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         private NbiLabel downloadSizeValue;
 
         private NbiCheckBox removeUserdirCheckbox;
-        private NbiTextPane removeUserdirPane;
+        private NbiCheckBox removeInstalldirCheckbox;
+        private NbiTextPane removeUserdirPane;        
         private NbiPanel spacer;
         
         private List <Pair <Product, NbiCheckBox>> productCheckboxList;
@@ -430,10 +433,22 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
             removeUserdirCheckbox.setVisible(false);
             removeUserdirPane.setVisible(false);
-            for (Product product : Registry.getInstance().getProductsToUninstall()) {
+            
+            if(Boolean.getBoolean(REMOVE_NETBEANS_INSTALLDIR_PROPERTY)) {
+                removeInstalldirCheckbox.doClick();
+            }  
+            removeInstalldirCheckbox.setVisible(false);            
+            for (Product product : Registry.getInstance().getProductsToUninstall()) {                
                 if (product.getUid().equals(NB_BASE_UID)) {
-                    try {
+                    try {                       
                         File installLocation = product.getInstallationLocation();
+                        removeInstalldirCheckbox.setText(
+                                    StringUtils.format(
+                                    panel.getProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY),
+                                    installLocation.getAbsolutePath()));
+                        removeInstalldirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                        removeInstalldirCheckbox.setVisible(true);
+
                         File userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
                         if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {                            
                             removeUserdirCheckbox.setText(
@@ -806,6 +821,23 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             });
 
+            removeInstalldirCheckbox = new NbiCheckBox();            
+            add(removeInstalldirCheckbox, new GridBagConstraints(
+                                    0, gridy++, // x, y
+                                    1, 1, // width, height
+                                    1.0, 0.0, // weight-x, weight-y
+                                    GridBagConstraints.PAGE_START, // anchor
+                                    GridBagConstraints.HORIZONTAL, // fill
+                                    new Insets(11, 20, 0, 11), // padding
+                                    0, 0));                           // padx, pady - ???
+
+            removeInstalldirCheckbox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {                    
+                    System.setProperty(REMOVE_NETBEANS_INSTALLDIR_PROPERTY,
+                            "" + removeInstalldirCheckbox.isSelected());
+                }
+            });
+
             add(installationSizeLabel, new GridBagConstraints(
                     0, gridy++,                             // x, y
                     1, 1,                             // width, height
@@ -908,12 +940,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "error.cannot.write"; // NOI18N
     public static final String REMOVE_NETBEANS_USERDIR_PROPERTY =
             "remove.netbeans.userdir";
+    public static final String REMOVE_NETBEANS_INSTALLDIR_PROPERTY =
+            "remove.netbeans.installdir";
     public static final String REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY =
             "remove.netbeans.userdir.text";
     public static final String REMOVE_NETBEANS_USERDIR_LINK_PROPERTY =
             "remove.netbeans.userdir.link";
     public static final String REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY =
             "remove.netbeans.userdir.checkbox";
+    public static final String REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY =
+            "remove.netbeans.installdir.checkbox";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -993,6 +1029,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_REMOVE_NETBEANS_USERDIR_CHECKBOX =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.remove.netbeans.userdir.checkbox"); // NOI18N
+    public static final String DEFAULT_REMOVE_NETBEANS_INSTALLDIR_CHECKBOX =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.remove.netbeans.installdir.checkbox"); // NOI18N
 
     public static final String NB_BASE_UID = 
             "nb-base";//NOI18N

@@ -748,6 +748,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public RemovalMode getRemovalMode() {
+        if(Boolean.getBoolean("remove.netbeans.installdir")) {
+            return RemovalMode.ALL;
+        }
         return RemovalMode.LIST;
     }
 

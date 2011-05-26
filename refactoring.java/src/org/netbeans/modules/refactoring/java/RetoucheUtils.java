@@ -1121,4 +1121,44 @@ public class RetoucheUtils {
         }
         return null;
     }
+    
+    public static boolean isSetter(ExecutableElement el, Element propertyElement) {
+        String setterName = getSetterName(propertyElement.getSimpleName().toString());
+
+        return el.getSimpleName().contentEquals(setterName) && 
+                el.getReturnType().getKind() == TypeKind.VOID && 
+                el.getParameters().size() == 1 && 
+                el.getParameters().iterator().next().asType().equals(propertyElement.asType());
+    }
+
+    public static boolean isGetter(ExecutableElement el, Element propertyElement) {
+        String getterName = getGetterName(propertyElement.getSimpleName().toString());
+        return el.getSimpleName().contentEquals(getterName) && 
+                el.getReturnType().equals(propertyElement.asType()) && 
+                el.getParameters().isEmpty();
+    }
+
+    public static String getGetterName(String propertyName) {
+        return "get" + capitalizeFirstLetter(propertyName); //NOI18N
+    }
+
+    public static String getSetterName(String propertyName) {
+        return "set" + capitalizeFirstLetter(propertyName); //NOI18N
+    }
+    
+    /** Utility method capitalizes the first letter of string, used to
+     * generate method names for patterns
+     * @param str The string for capitalization.
+     * @return String with the first letter capitalized.
+     */
+    private static String capitalizeFirstLetter( String str ) {
+        if ( str == null || str.length() <= 0 )
+            return str;
+
+        char chars[] = str.toCharArray();
+        chars[0] = Character.toUpperCase(chars[0]);
+        return new String(chars);
+    }
+    
+
 }
