@@ -43,7 +43,7 @@ package org.netbeans.modules.refactoring.java.test;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-ßimport com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -92,8 +92,8 @@ public class RenameTest extends RefactoringTestBase {
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
                 + "    private int renamed;\n"
-                + "    public void setRenamed(int property) {\n"
-                + "        this.renamed = property;\n"
+                + "    public void setRenamed(int renamed) {\n"
+                + "        this.renamed = renamed;\n"
                 + "    }\n"
                 + "    public int getRenamed() {\n"
                 + "        return renamed;\n"

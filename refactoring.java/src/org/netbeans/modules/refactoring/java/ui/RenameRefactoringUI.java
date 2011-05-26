@@ -274,6 +274,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             ((RenameRefactoring) refactoring).setSearchInComments(panel.searchJavadoc());
             JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
             if (properties==null) {
+                properties = new JavaRenameProperties();
                 refactoring.getContext().add(properties);
             }
             properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
@@ -290,6 +291,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
+            JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
+            if (properties==null) {
+                properties = new JavaRenameProperties();
+                refactoring.getContext().add(properties);
+            }
+            properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);
 //        }

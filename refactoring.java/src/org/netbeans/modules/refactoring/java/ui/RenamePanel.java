@@ -227,6 +227,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         add(updateReferencesCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(renameGettersAndCheckersCheckBox, "Rename &Getters and Setters");
+        renameGettersAndCheckersCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renameGettersAndCheckersCheckBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -246,6 +251,10 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
         RefactoringModule.setOption("searchInComments.rename", b); // NOI18N
     }//GEN-LAST:event_textCheckBoxItemStateChanged
+
+    private void renameGettersAndCheckersCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameGettersAndCheckersCheckBoxActionPerformed
+        parent.stateChanged(null);
+    }//GEN-LAST:event_renameGettersAndCheckersCheckBoxActionPerformed
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;

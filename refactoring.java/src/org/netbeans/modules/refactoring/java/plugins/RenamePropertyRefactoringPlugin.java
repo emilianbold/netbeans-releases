@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -68,8 +68,9 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
     private RenameRefactoring refactoring;
     private TreePathHandle property;
-    private TreePathHandle getter;
-    private TreePathHandle setter;
+    private RenameRefactoring getterDelegate;
+    private RenameRefactoring setterDelegate;
+    private RenameRefactoring parameterDelegate;
 
     /** Creates a new instance of RenamePropertyRefactoringPlugin */
     public RenamePropertyRefactoringPlugin(RenameRefactoring rename) {
@@ -83,65 +84,183 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
-    public Problem prepare(RefactoringElementsBag reb) {
-        JavaRenameProperties renameProps = refactoring.getContext().lookup(JavaRenameProperties.class);
-        if (renameProps==null) {
+    public Problem checkParameters() {
+        if (!isRenameProperty()) {
             return null;
         }
-        if (!renameProps.isIsRenameGettersSetters()) {
-            return null;
-        }
-        initHandles();
-        fireProgressListenerStart(ProgressEvent.START, 2);
+
+        initDelegates();
+
         Problem p = null;
-        if (getter!=null) {
-            RenameRefactoring renameGetter = new RenameRefactoring(Lookups.singleton(getter));
-            renameGetter.setNewName(RetoucheUtils.getGetterName(refactoring.getNewName()));
-            p = renameGetter.prepare(reb.getSession());
+        if (getterDelegate != null) {
+            p = chainProblems(p, getterDelegate.checkParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        if (setterDelegate != null) {
+            p = chainProblems(p, setterDelegate.checkParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        if (parameterDelegate != null) {
+            p = chainProblems(p, parameterDelegate.checkParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        return p = chainProblems(p, super.checkParameters());
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        if (!isRenameProperty()) {
+            return null;
+        }
+        initDelegates();
+
+        Problem p = null;
+        if (getterDelegate != null) {
+            p = chainProblems(p, getterDelegate.fastCheckParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        if (setterDelegate != null) {
+            p = chainProblems(p, setterDelegate.fastCheckParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        if (parameterDelegate != null) {
+            p = chainProblems(p, parameterDelegate.fastCheckParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        return p = chainProblems(p, super.fastCheckParameters());
+    }
+
+    @Override
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        if (!isRenameProperty()) {
+            return null;
+        }
+        initDelegates();
+        Problem p = null;
+        if (getterDelegate != null) {
+            p = chainProblems(p, getterDelegate.preCheck());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        if (setterDelegate != null) {
+            p = chainProblems(p, setterDelegate.preCheck());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        if (parameterDelegate != null) {
+            p = chainProblems(p, parameterDelegate.preCheck());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        return p = chainProblems(p, super.preCheck(javac));
+    }
+
+    @Override
+    public Problem prepare(RefactoringElementsBag reb) {
+        if (!isRenameProperty()) {
+            return null;
+        }
+        initDelegates();
+        fireProgressListenerStart(ProgressEvent.START, 3);
+        Problem p = null;
+        if (getterDelegate != null) {
+            p = chainProblems(p, getterDelegate.prepare(reb.getSession()));
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        fireProgressListenerStep();
+        if (setterDelegate != null) {
+            p = chainProblems(p, setterDelegate.prepare(reb.getSession()));
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        fireProgressListenerStep();
+        if (parameterDelegate != null) {
+            p = chainProblems(p, parameterDelegate.prepare(reb.getSession()));
+            if (p != null && p.isFatal()) {
+                return p;
+            }
         }
         fireProgressListenerStep();
 
-        if (setter!=null) {
-            RenameRefactoring renameSetter = new RenameRefactoring(Lookups.singleton(setter));
-            renameSetter.setNewName(RetoucheUtils.getSetterName(refactoring.getNewName()));
-            chainProblems(p, renameSetter.prepare(reb.getSession()));
-        }
-
         fireProgressListenerStop();
+
         return p;
     }
 
-    private static Problem chainProblems(Problem p,Problem p1) {
+    private boolean isRenameProperty() {
+        JavaRenameProperties renameProps = refactoring.getContext().lookup(JavaRenameProperties.class);
+        if (renameProps != null && renameProps.isIsRenameGettersSetters()) {
+            return true;
+        }
+        return false;
+    }
+
+    private static Problem chainProblems(Problem p, Problem p1) {
         Problem problem;
 
-        if (p==null) return p1;
-        if (p1==null) return p;
-        problem=p;
-        while(problem.getNext()!=null) {
-            problem=problem.getNext();
+        if (p == null) {
+            return p1;
+        }
+        if (p1 == null) {
+            return p;
+        }
+        problem = p;
+        while (problem.getNext() != null) {
+            problem = problem.getNext();
         }
         problem.setNext(p1);
         return p;
     }
+    private boolean inited = false;
 
-    private void initHandles() {
+    private void initDelegates() {
+        if (inited) {
+            return;
+        }
         try {
             getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
+
                 @Override
                 public void run(CompilationController p) throws Exception {
                     p.toPhase(JavaSource.Phase.RESOLVED);
                     Element propertyElement = property.resolveElement(p);
-                    for (ExecutableElement el:ElementFilter.methodsIn(propertyElement.getEnclosingElement().getEnclosedElements())) {
+                    for (ExecutableElement el : ElementFilter.methodsIn(propertyElement.getEnclosingElement().getEnclosedElements())) {
                         if (RetoucheUtils.isGetter(el, propertyElement)) {
-                            getter = TreePathHandle.create(el, p);
+                            getterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
+                            getterDelegate.setNewName(RetoucheUtils.getGetterName(refactoring.getNewName()));
                         } else if (RetoucheUtils.isSetter(el, propertyElement)) {
-                            setter = TreePathHandle.create(el, p);
-                        } 
+                            setterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
+                            setterDelegate.setNewName(RetoucheUtils.getSetterName(refactoring.getNewName()));
+                            VariableElement par = el.getParameters().iterator().next();
+                            if (par.getSimpleName().contentEquals(propertyElement.getSimpleName())) {
+                                parameterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(p.getTrees().getPath(par), p)));
+                                parameterDelegate.setNewName(refactoring.getNewName());
+                            }
+                        }
                     }
                 }
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        inited = true;
     }
 }
