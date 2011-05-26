@@ -363,7 +363,20 @@ final class JavadocCompletionItem implements CompletionItem {
         }
 
         public boolean instantSubstitution(JTextComponent component) {
-            return delegate.instantSubstitution(component);
+            if (component != null) {
+                try {
+                    int caretOffset = component.getSelectionEnd();
+                    if (caretOffset > substitutionOffset) {
+                        String text = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                        if (!getInsertPrefix().toString().startsWith(text)) {
+                            return false;
+                        }
+                    }
+                }
+                catch (BadLocationException ble) {}
+            }
+            defaultAction(component);
+            return true;
         }
 
         public int getSortPriority() {
