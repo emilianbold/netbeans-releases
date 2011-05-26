@@ -258,7 +258,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
                 }
             }
             suffix = suffix + " " + this.dispOldName; // NOI18N
-            panel = new RenamePanel(name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
+            panel = new RenamePanel(handle,  name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
         }
         return panel;
     }
@@ -271,7 +271,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
-            ((RenameRefactoring) refactoring).setSearchInComments(panel.searchJavadoc());            
+            ((RenameRefactoring) refactoring).setSearchInComments(panel.searchJavadoc());
+            JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
+            if (properties==null) {
+                properties = new JavaRenameProperties();
+                refactoring.getContext().add(properties);
+            }
+            properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);
 //        }
@@ -284,6 +291,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
+            JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
+            if (properties==null) {
+                properties = new JavaRenameProperties();
+                refactoring.getContext().add(properties);
+            }
+            properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);
 //        }

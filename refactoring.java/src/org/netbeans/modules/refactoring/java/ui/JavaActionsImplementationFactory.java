@@ -75,6 +75,24 @@ public final class JavaActionsImplementationFactory {
         }
     }
 
+    public static boolean canIntroduceParameter(Lookup lookup) {
+        for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canIntroduceParameter(lookup)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static void doIntroduceParameter(Lookup lookup) {
+        for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canIntroduceParameter(lookup)) {
+                rafi.doIntroduceParameter(lookup);
+                return;
+            }
+        }
+    }
+    
     public static boolean canEncapsulateFields(Lookup lookup) {
         for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
             if (rafi.canEncapsulateFields(lookup)) {
