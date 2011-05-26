@@ -42,9 +42,6 @@
 package org.netbeans.modules.j2ee.specs.support.api;
 
 import java.util.Set;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.specs.support.bridge.BridgingJpaSupportImpl;
 import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportFactory;
 import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
 
@@ -68,15 +65,6 @@ public final class JpaSupport {
 
     private JpaSupport(JpaSupportImplementation impl) {
         this.impl = impl;
-    }
-
-    @NonNull
-    public static JpaSupport getInstance(J2eePlatform platform) {
-        JpaSupport support = platform.getLookup().lookup(JpaSupport.class);
-        if (support != null) {
-            return support;
-        }
-        return JpaSupportFactory.createJpaSupport(new BridgingJpaSupportImpl(platform));
     }
     
     public Set<JpaProvider> getProviders() {

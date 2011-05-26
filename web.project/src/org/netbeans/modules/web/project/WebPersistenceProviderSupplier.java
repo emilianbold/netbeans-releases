@@ -105,7 +105,11 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
     }
     
     private void addPersistenceProviders(Set<Provider> providers, J2eePlatform platform, List<Provider> result){
-        JpaSupport jpaSupport = JpaSupport.getInstance(platform);
+        JpaSupport jpaSupport = platform.getLookup().lookup(JpaSupport.class);
+        if (jpaSupport == null) {
+            return;
+        }
+
         Map<String, JpaProvider> map = new HashMap<String, JpaProvider>();
         for (JpaProvider provider : jpaSupport.getProviders()) {
             map.put(provider.getClassName(), provider);
