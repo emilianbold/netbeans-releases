@@ -57,6 +57,7 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -1327,6 +1328,11 @@ itor tabs #66700).
             roots = new File[] { root };
         }
         return roots;
+    }
+
+    public static boolean isRepositoryLocked (File repository) {
+        String[] locks = getHgFolderForRoot(repository).list();
+        return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
     }
 
     /**

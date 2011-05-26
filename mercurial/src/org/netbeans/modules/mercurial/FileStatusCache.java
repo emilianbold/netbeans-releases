@@ -431,7 +431,7 @@ public class FileStatusCache {
      * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
      * @param files roots to refresh
      */
-    public void refreshAllRoots (final Set<File> files) {
+    public void refreshAllRoots (final Collection<File> files) {
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();

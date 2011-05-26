@@ -401,6 +401,8 @@ class FilesystemInterceptor extends VCSInterceptor {
             if (!checkLockedRepositories(Collections.<File>emptySet(), true).isEmpty()) {
                 // there are some newly unlocked repositories to refresh
                 refreshTask.schedule(0);
+            } else if (!lockedRepositories.isEmpty()) {
+                lockedRepositoryRefreshTask.schedule(5000);
             }
         }
     }
