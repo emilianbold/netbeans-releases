@@ -323,7 +323,15 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         file = FileUtil.normalizeFile(file);
         FileUtil.addFileChangeListener(listener, file);
     }
-    
+
+    public void addFileChangeListener(FileChangeListener listener) {
+        FileUtil.addFileChangeListener(listener);
+    }
+
+    public void removeFileChangeListener(FileChangeListener listener) {
+        FileUtil.removeFileChangeListener(listener);
+    }
+
     /** for TEST purposes ONLY */
     public static void testWaitLastRefreshFinished() {
         Task task = lastRefreshTask;

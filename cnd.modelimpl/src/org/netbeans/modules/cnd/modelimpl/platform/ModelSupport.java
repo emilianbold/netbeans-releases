@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -132,12 +133,12 @@ public class ModelSupport implements PropertyChangeListener {
         this.theModel = model;
         synchronized (this) {
             if (fileChangeListener != null) {
-                FileUtil.removeFileChangeListener(fileChangeListener);
+                CndFileSystemProvider.removeFileChangeListener(fileChangeListener);
                 fileChangeListener = null;
             }
             if (model != null) {
                 fileChangeListener = new ExternalUpdateListener();
-                FileUtil.addFileChangeListener(fileChangeListener);
+                CndFileSystemProvider.addFileChangeListener(fileChangeListener);
             }
         }
     }

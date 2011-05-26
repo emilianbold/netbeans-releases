@@ -130,21 +130,36 @@ public class ListenersTestCase extends RemoteFileTestBase {
 //        FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
 //    }
 
-    private void doTestListeners(boolean recursive) throws Exception {
+    enum Kind {
+        ORDINARY,
+        RECURSIVE,
+        FILESYSTEM,
+        GLOBAL
+    }
+    private void doTestListeners(Kind kind) throws Exception {
         String baseDir = null;
         try {          
             baseDir = mkTempAndRefreshParent(true);
             Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
             FileObject baseDirFO = getFileObject(baseDir);
             FCL fcl = new FCL("baseDir", evMap);
-            if (recursive) {
-                FileSystemProvider.addRecursiveListener(fcl, fs, baseDir);
-            } else {
-                baseDirFO.addFileChangeListener(fcl);
+            switch (kind) {
+                case RECURSIVE:
+                    FileSystemProvider.addRecursiveListener(fcl, fs, baseDir);
+                    break;
+                case ORDINARY:
+                    baseDirFO.addFileChangeListener(fcl);
+                    break;
+                case FILESYSTEM:
+                    fs.addFileChangeListener(fcl);
+                    break;
+                case GLOBAL:
+                    FileSystemProvider.addFileChangeListener(fcl);
+                    break;
             }
             FileObject childFO = baseDirFO.createData("child_file_1");
             FileObject subdirFO = baseDirFO.createFolder("child_folder");
-            if (!recursive) {
+            if (kind == Kind.ORDINARY) {
                 subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), evMap));
             }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
@@ -158,11 +173,6 @@ public class ListenersTestCase extends RemoteFileTestBase {
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
-    }
-    
-    @ForAllEnvironments
-    public void testListeners() throws Exception {
-        doTestListeners(false);
     }
     
     @ForAllEnvironments
@@ -186,11 +196,26 @@ public class ListenersTestCase extends RemoteFileTestBase {
             removeRemoteDirIfNotNull(baseDir);
         }        
     }
+
+    @ForAllEnvironments
+    public void testListeners() throws Exception {
+        doTestListeners(Kind.ORDINARY);
+    }
+
+    @ForAllEnvironments
+    public void testRecursiveListeners() throws Exception {
+        doTestListeners(Kind.RECURSIVE);
+    }
            
-//    @ForAllEnvironments
-//    public void testRecursiveListeners() throws Exception {
-//        doTestListeners(true);
-//    }
+    @ForAllEnvironments
+    public void testFileSystemListeners() throws Exception {
+        doTestListeners(Kind.FILESYSTEM);
+    }
+           
+    @ForAllEnvironments
+    public void testGlobalListeners() throws Exception {
+        doTestListeners(Kind.GLOBAL);
+    }
            
     public static Test suite() {
         return RemoteApiTest.createSuite(ListenersTestCase.class);

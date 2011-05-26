@@ -386,6 +386,18 @@ public final class FileSystemProvider {
         noProvidersWarning(env);
     }
     
+    public static void addFileChangeListener(FileChangeListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.addFileChangeListener(listener);
+        }
+    }
+    
+    public static void removeFileChangeListener(FileChangeListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.removeFileChangeListener(listener);
+        }
+    }
+        
     public static char getFileSeparatorChar(FileSystem fileSystem) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
