@@ -157,7 +157,7 @@ final class ModuleListParser {
                 }
             }
             File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
-                    "private" + File.separatorChar + "scan-cache-" + (doFastScan ? "standard" : "full") + ".ser");
+                    "private" + File.separatorChar + "scan-cache-" + String.format("%H", root) + "-" + (doFastScan ? "standard" : "full") + ".ser");
             if (scanCache.isFile()) {
                 if (project != null) {
                     project.log("Loading module list from " + scanCache);

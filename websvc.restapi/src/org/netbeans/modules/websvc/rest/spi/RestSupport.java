@@ -329,7 +329,7 @@ public abstract class RestSupport {
     }
     
     public static ClassPath extendWithJsr311Api(ClassPath classPath) {
-        File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+        File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, "org.netbeans.modules.websvc.restlib", false);
         if (jerseyRoot != null && jerseyRoot.isDirectory()) {
             File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
             if (jsr311Jars != null && jsr311Jars.length>0) {
