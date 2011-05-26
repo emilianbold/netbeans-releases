@@ -51,6 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.CLIHandler;
+import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
@@ -135,6 +137,11 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             return;
         }
         LOG.log(Level.INFO, "EQ stuck in " + eq, new EQStuck(stack));
+        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.7")) >= 0) {
+            LOG.log(Level.WARNING, "#198918: will not hard restart EQ when running on JDK 7");
+            eq.interrupt(); // maybe this will be enough
+            return;
+        }
         for (StackTraceElement line : stack) {
             if (line.getMethodName().equals("<clinit>")) {
                 LOG.log(Level.WARNING, "Will not hard restart EQ when inside a static initializer: {0}", line);
