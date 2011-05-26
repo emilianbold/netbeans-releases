@@ -94,7 +94,7 @@ class DBProxy {
         StackNode node;
 
         synchronized (stackEntryToStackNode) {
-            node = stackEntryToStackNode.get(entry.getOriginalEntry());
+            node = stackEntryToStackNode.get(entry.getOriginalEntry().toString() + callerID);
 
             if (node == null) {
                 isnew = true;
@@ -139,7 +139,7 @@ class DBProxy {
         StackNode node = new StackNode(nodeID, callerID, funcID, offset);
         stackNodesCache.put(node.nodeID, node);
         callStackEntriesCache.put(nodeID, entry);
-        stackEntryToStackNode.put(entry.getOriginalEntry(), node);
+        stackEntryToStackNode.put(entry.getOriginalEntry().toString() + callerID, node);
         SQLRequest request = requestsProvider.addNode(nodeID, callerID, funcID, offset);
         requestsProcessor.queueRequest(request);
 
