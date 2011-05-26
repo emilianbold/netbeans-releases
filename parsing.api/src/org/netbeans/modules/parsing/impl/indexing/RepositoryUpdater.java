@@ -1422,7 +1422,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         }
                                         binDeps.add(rootURL);
                                     }
-                                    ctx.oldBinaries.remove(binaryRoot);
                                 } else {
                                     ctx.newBinariesToScan.add(binaryRoot);
                                     List<URL> binDeps = ctx.newBinaries2InvDeps.get(binaryRoot);
@@ -1431,7 +1430,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         ctx.newBinaries2InvDeps.put(binaryRoot, binDeps);
                                     }
                                     binDeps.add(rootURL);
-                                    ctx.oldBinaries.remove(binaryRoot);
                                 }
 
                                 Set<String> srcIdsForBinRoot = PathRegistry.getDefault().getSourceIdsFor(binaryRoot);
@@ -3099,12 +3097,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 LOGGER.log(Level.FINE, "PathRegistry.libraries="); printCollection(c, Level.FINE); //NOI18N
                 newRoots.addAll(c);
 
-                depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
-                for (Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
-                    if (depCtx.oldBinaries.remove(it.next())) {
-                        it.remove();
-                    }
-                }
+                depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());                
 
                 if (useInitialState) {
                     c = PathRegistry.getDefault().getUnknownRoots();
@@ -3119,6 +3112,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         // throw away depCtx that has not yet been fully initialized
                         depCtx = null;
                         return false;
+                    }
+                }
+
+                for (Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
+                    if (depCtx.oldBinaries.remove(it.next())) {
+                        it.remove();
                     }
                 }
 

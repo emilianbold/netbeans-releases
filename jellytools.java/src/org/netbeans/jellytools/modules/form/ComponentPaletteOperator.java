@@ -246,6 +246,7 @@ public class ComponentPaletteOperator extends org.netbeans.jellytools.PaletteOpe
     }
 
     /** Performs verification by accessing all sub-components */    
+    @Override
     public void verify() {
         lstComponents();
         cbSwingContainers();
