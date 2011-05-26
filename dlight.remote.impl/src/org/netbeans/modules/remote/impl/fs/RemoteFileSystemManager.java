@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,7 +63,7 @@ import org.openide.util.Exceptions;
 public class RemoteFileSystemManager {
     
     private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
-    
+
     private final Object lock = new Object();
     
     private Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
@@ -70,6 +71,8 @@ public class RemoteFileSystemManager {
 
     private final List<FileSystemProvider.DownloadListener> downloadListeners =
             new ArrayList<FileSystemProvider.DownloadListener>();
+    
+    private final List<FileChangeListener> globalListsners = new ArrayList<FileChangeListener>();
 
     public static RemoteFileSystemManager getInstance() {
         return INSTANCE;
@@ -89,11 +92,38 @@ public class RemoteFileSystemManager {
                 try {
                     result = new RemoteFileSystem(execEnv);
                     fileSystems.put(execEnv, new SoftReference<RemoteFileSystem>(result));
+                    for (FileChangeListener listener : globalListsners) {
+                        result.addFileChangeListener(listener);
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
             }
             return result;
+        }
+    }
+
+    public void addFileChangeListener(FileChangeListener listener) {
+        synchronized(lock) {
+            globalListsners.add(listener);
+            for (SoftReference<RemoteFileSystem> ref : fileSystems.values()) {
+                RemoteFileSystem fs = ref.get();
+                if (fs != null) {
+                    fs.addFileChangeListener(listener);
+                }
+            }
+        }
+    }
+    
+    public void removeFileChangeListener(FileChangeListener listener) {
+        synchronized(lock) {
+            globalListsners.add(listener);
+            for (SoftReference<RemoteFileSystem> ref : fileSystems.values()) {
+                RemoteFileSystem fs = ref.get();
+                if (fs != null) {
+                    fs.removeFileChangeListener(listener);
+                }
+            }
         }
     }
 
