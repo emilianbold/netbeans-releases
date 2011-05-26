@@ -233,7 +233,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), treePathHandle);
+            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring.getParameterInfo(), allMethods, refactoring.getModifiers()), treePathHandle);
             Problem p = createAndAddElements(a, transform, elements, refactoring);
             if (p != null) {
                 fireProgressListenerStop();
