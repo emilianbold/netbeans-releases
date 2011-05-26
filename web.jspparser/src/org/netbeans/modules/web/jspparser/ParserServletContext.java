@@ -81,6 +81,7 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.JspConfig;
 import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
+import org.netbeans.modules.j2ee.dd.api.web.Taglib;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.cookies.EditorCookie;
@@ -150,6 +151,34 @@ public class ParserServletContext implements ServletContext {
             
             @Override
             public Collection<TaglibDescriptor> getTaglibs() {
+                // #197633:
+                WebModule webModule = webModuleProvider.getWebModule();
+                if (webModule != null) {
+                    FileObject webxml = webModule.getDeploymentDescriptor();
+                    if (webxml != null) {
+                        try {
+                            WebApp w = DDProvider.getDefault().getDDRoot(webxml);   
+                            if (w != null) {
+                                JspConfig jc = w.getSingleJspConfig();
+                                if (jc != null) {
+                                    Collection<TaglibDescriptor> result = new ArrayList<TaglibDescriptor>();
+                                    for (Taglib tl : jc.getTaglib()) {
+                                        result.add(new TaglibDescriptorImpl(
+                                                tl.getTaglibUri(),
+                                                tl.getTaglibLocation()
+                                        ));
+                                    }
+                                    return result;
+                                }
+                            }
+                        } catch (IOException e) {
+                            LOGGER.log(Level.FINE, "getTaglibs for " + FileUtil.toFile(webxml), e);
+                        } catch (VersionNotSupportedException e) {
+                            LOGGER.log(Level.FINE, "getTaglibs for " + FileUtil.toFile(webxml), e);
+                        }
+                        
+                    }
+                }
                 return Collections.<TaglibDescriptor>emptyList();
             }
             
@@ -160,7 +189,7 @@ public class ParserServletContext implements ServletContext {
                     FileObject webxml = webModule.getDeploymentDescriptor();
                     if (webxml != null) {
                         try {
-                            WebApp w = DDProvider.getDefault().getDDRoot(webxml);
+                            WebApp w = DDProvider.getDefault().getDDRoot(webxml);   
                             if (w != null) {
                                 JspConfig jc = w.getSingleJspConfig();
                                 if (jc != null) {
@@ -198,6 +227,27 @@ public class ParserServletContext implements ServletContext {
         setAttribute(JSP_TAGFILE_JAR_URLS_CACHE, new ConcurrentHashMap<String, URL>());
     }
     
+    
+    private static final class TaglibDescriptorImpl implements TaglibDescriptor {
+
+        private String uri;
+        private String loc;
+
+        public TaglibDescriptorImpl(String uri, String loc) {
+            this.uri = uri;
+            this.loc = loc;
+        }
+        
+        @Override
+        public String getTaglibURI() {
+            return uri;
+        }
+
+        @Override
+        public String getTaglibLocation() {
+            return loc;
+        }
+    }
     
     // --------------------------------------------------------- Public Methods
     
