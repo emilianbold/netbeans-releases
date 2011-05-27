@@ -35,12 +35,58 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
+      <packaging>
+        <packType>Zip</packType>
+        <output>${CND_DISTDIR}/package/cnd-build-trace-1.0.zip</output>
+        <packTopDir></packTopDir>
+        <packFileList>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}Linux-x86/libBuildTrace.so"
+                            from="dist/Linux-x86/libBuildTrace.so"
+                            perm="755"
+                            owner="root"
+                            group="bin"/>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}Linux-x86_64/libBuildTrace.so"
+                            from="dist/Linux-x86_64/libBuildTrace.so"
+                            perm="755"
+                            owner="root"
+                            group="bin"/>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}SunOS-sparc/libBuildTrace.so"
+                            from="dist/SunOS-sparc/libBuildTrace.so"
+                            perm="755"
+                            owner="root"
+                            group="bin"/>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}SunOS-sparc_64/libBuildTrace.so"
+                            from="dist/SunOS-sparc_64/libBuildTrace.so"
+                            perm="755"
+                            owner="root"
+                            group="bin"/>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}SunOS-x86/libBuildTrace.so"
+                            from="dist/SunOS-x86/libBuildTrace.so"
+                            perm="755"
+                            owner="root"
+                            group="bin"/>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}SunOS-x86_64/libBuildTrace.so"
+                            from="dist/SunOS-x86_64/libBuildTrace.so"
+                            perm="755"
+                            owner="root"
+                            group="bin"/>
+        </packFileList>
+      </packaging>
     </conf>
     <conf name="SunOS-x86_64" type="2">
       <toolsSet>
@@ -49,9 +95,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -63,9 +112,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -77,9 +129,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -91,9 +146,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
@@ -108,9 +166,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
