@@ -86,7 +86,7 @@ public interface FileSystemProviderImplementation {
     public void addFileChangeListener(FileChangeListener listener);
     public void removeFileChangeListener(FileChangeListener listener);
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path);
-    public char getFileSeparatorChar(FileSystem fs);
+    public char getFileSeparatorChar();
     void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
 }

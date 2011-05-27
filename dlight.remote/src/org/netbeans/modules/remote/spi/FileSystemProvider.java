@@ -406,10 +406,20 @@ public final class FileSystemProvider {
     public static char getFileSeparatorChar(FileSystem fileSystem) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
-                provider.getFileSeparatorChar(fileSystem);
+                provider.getFileSeparatorChar();
             }
         }
         noProvidersWarning(fileSystem);
+        return '/';
+    }
+
+    public static char getFileSeparatorChar(ExecutionEnvironment env) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                provider.getFileSeparatorChar();
+            }
+        }
+        noProvidersWarning(env);
         return '/';
     }
     
