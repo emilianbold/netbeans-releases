@@ -130,11 +130,12 @@ public interface NativeDebugger {
 
     public void registerStackModel(StackModel model);
     public void postVerboseStack(boolean v);
-    public boolean getVerboseStack();
     public void moreFrame();
     public void makeFrameCurrent(Frame f);
+    public void copyStack();
+    public boolean getVerboseStack();
     public Frame[] getStack();
-    Frame getCurrentFrame();
+    public Frame getCurrentFrame();
     
     public boolean isMultiThreading();
     public void registerThreadModel(ThreadModel model);
