@@ -52,4 +52,10 @@ public enum EngineCapability {
     DERIVE_EXECUTABLE, // can derive executable from PID or Core file
     RTC_SUPPORT, // has RTC support
     RUN_AUTOSTART, // can do auto start after loading
+    STACK_VERBOSE, // stack args display can be on/off
+    STACK_MAXFRAME, // can set # of displayed frame
+    DYNAMIC_TYPE, // can display class with dynamic type
+    INHERITED_MEMBERS, // can display class with inherited members
+    STATIC_MEMBERS, // can display class with static members
+    MAX_OBJECT, // can set object size for display variables
 }
