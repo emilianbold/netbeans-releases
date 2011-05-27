@@ -77,8 +77,21 @@ public abstract class CndFileSystemProvider {
         }
     }
 
+    public interface CndFileSystemProblemListener {
+        void problemOccurred(FSPath fsPath);
+        void recovered(FileSystem fileSystem);
+    }
+
     private static CndFileSystemProvider getDefault() {
         return DEFAULT;
+    }
+
+    public static void addFileSystemProblemListener(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        getDefault().addFileSystemProblemListenerImpl(listener, fileSystem);
+    }
+    
+    public static void removeFileSystemProblemListener(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        getDefault().removeFileSystemProblemListenerImpl(listener, fileSystem);
     }
 
     public static File toFile(FileObject fileObject) {
@@ -201,6 +214,9 @@ public abstract class CndFileSystemProvider {
     protected abstract boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path);    
     protected abstract boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path);    
 
+    protected abstract void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
+    protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
+    
     private static class DefaultProvider extends CndFileSystemProvider {
 
         private CndFileSystemProvider[] cache;
@@ -412,6 +428,20 @@ public abstract class CndFileSystemProvider {
                 provider.removeFileChangeListenerImpl(listener);
             }
             return true;
+        }
+
+        @Override
+        protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.addFileSystemProblemListenerImpl(listener, fileSystem);
+            }
+        }
+
+        @Override
+        protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.removeFileSystemProblemListenerImpl(listener, fileSystem);
+            }
         }        
     }
 }

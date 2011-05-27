@@ -66,10 +66,11 @@ import org.openide.util.Utilities;
  */
 public final class FileSystemProvider {
 
-    public interface DownloadListener {
-        void postConnectDownloadFinished(ExecutionEnvironment env);
+    public interface FileSystemProblemListener {
+        void problemOccurred(FileSystem fileSystem, String path);
+        void recovered(FileSystem fileSystem);
     }
-
+    
     private static final  Collection<? extends FileSystemProviderImplementation> ALL_PROVIDERS =
             Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class);
 
@@ -303,18 +304,6 @@ public final class FileSystemProvider {
         }
     }
 
-    public static void addDownloadListener(DownloadListener listener) {
-        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
-            provider.addDownloadListener(listener);
-        }
-    }
-
-    public static void removeDownloadListener(DownloadListener listener) {
-        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
-            provider.addDownloadListener(listener);
-        }
-    }
-    
     public static void scheduleRefresh(FileObject fileObject) {
         Parameters.notNull("fileObject", fileObject); //NOI18N
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
@@ -397,7 +386,23 @@ public final class FileSystemProvider {
             provider.removeFileChangeListener(listener);
         }
     }
-        
+    
+    public static void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                provider.addFileSystemProblemListener(listener, fileSystem);
+            }
+        }
+    }
+
+    public static void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                provider.removeFileSystemProblemListener(listener, fileSystem);
+            }
+        }
+    }
+
     public static char getFileSeparatorChar(FileSystem fileSystem) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
