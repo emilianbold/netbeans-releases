@@ -355,11 +355,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     logMemoryUsage();
 
-                    initializeProfiling();
+                    //initializeProfiling();
                     tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
                     testedComponentOperator = open();
                     tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_AFTER);
-                    finishProfiling(i);
+                    //finishProfiling(i);
 
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
@@ -388,7 +388,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
 
-                    getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
+                    //getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
 
                 }catch(Exception exc){ // catch for prepare(), open()
                     log("------- [ " + i + " ] ---------------- Exception rises while measuring performance: " + exc);
@@ -550,7 +550,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             closeAllDialogs();
         }catch (Exception e) {
             e.printStackTrace(getLog());
-            getScreenshot("shutdown");
+            //getScreenshot("shutdown");
             exceptionDuringMeasurement = e;
         }finally{
         }
@@ -944,11 +944,13 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             end.setMeasured(true);
 
             long result = end.getTimeMillis() - start.getTimeMillis();
-
+            System.out.println("@@@@ Start tuple:"+start);
+            System.out.println("@@@@ End tuple:"+end);
             if (result < 0 || start.getTimeMillis() == 0) {
                 System.out.println("!!!!! Measuring failed, because start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0. Threads in which the measurements were taken:"+start.getMeasurementThreadName()+"   "+end.getMeasurementThreadName()+" !!!!!");
-                System.out.println("Tuples list at the time of failure:");
-                for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+                System.out.println("!*!*!Full tuples list for disgnostic purposes");
+                ActionTracker.EventList el = tr.getCurrentEvents();
+                for (ActionTracker.Tuple tuple : el) {
                     System.out.println(tuple);
                 }
                 result=0;
