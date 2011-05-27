@@ -59,7 +59,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -73,6 +77,8 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -96,9 +102,12 @@ public final class ELTypeUtilities {
 
     private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
     private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
-    private final ClasspathInfo cpInfo;
     private final FileObject file;
-
+    private final JavaSource javaSource;
+    
+//    private final static Logger LOGGER = Logger.getLogger(ELTypeUtilities.class.getName());
+//    private final static boolean LOG = LOGGER.isLoggable(Level.FINE);
+    
     private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
     static {
         put(AstFloatingPoint.class, TypeKind.FLOAT, TypeKind.DOUBLE);
@@ -112,20 +121,72 @@ public final class ELTypeUtilities {
         kindSet.addAll(Arrays.asList(kinds));
         TYPES.put(node, kindSet);
     }
+    
+    private static final Map<ClasspathInfo, JavaSource> classpathInfo2JavaSourceMap 
+            = new WeakHashMap<ClasspathInfo, JavaSource>();
+    
+    //possibly not necessary since the creation of the classpathinfo *may* be well optimized?!?!?
+    private static final Map<FileObject, ClasspathInfo> file2classpathInfoMap 
+            = new WeakHashMap<FileObject, ClasspathInfo>();
+    
+        
+    private static synchronized  JavaSource getJavaSource(FileObject file) {
+        ClasspathInfo classpathInfo = file2classpathInfoMap.get(file);
+        if(classpathInfo == null) {
+            classpathInfo = ClasspathInfo.create(file);
+            final ClasspathInfo cpi = classpathInfo;
+            classpathInfo.addChangeListener(new ChangeListener() {
 
-    private ELTypeUtilities(FileObject context, ClasspathInfo cpInfo) {
-        assert cpInfo != null;
-        this.cpInfo = cpInfo;
+                @Override
+                public void stateChanged(ChangeEvent ce) {
+                    //classpath invalidated
+                    classpathInfo2JavaSourceMap.remove(cpi);
+                    
+                    //remove all file2cpi entries which points to the invalidated classpathinfo
+                    Collection<FileObject> invalidatedKeys 
+                            = new ArrayList<FileObject>();
+                    for(Entry<FileObject, ClasspathInfo> entry : file2classpathInfoMap.entrySet()) {
+                        if(entry.getValue().equals(cpi)) {
+                            invalidatedKeys.add(entry.getKey());
+                        }
+                    }
+                    for(FileObject invalidated : invalidatedKeys) {
+                        file2classpathInfoMap.remove(invalidated);
+                    }
+                }
+            });
+            
+            file2classpathInfoMap.put(file, classpathInfo);
+        }
+        
+        JavaSource javaSource = classpathInfo2JavaSourceMap.get(classpathInfo);
+        if(javaSource == null) {
+            javaSource = JavaSource.create(classpathInfo);
+            classpathInfo2JavaSourceMap.put(classpathInfo, javaSource);
+        } 
+        
+        return javaSource;
+    }
+    
+    private ELTypeUtilities(FileObject context, JavaSource javaSource) {
+        assert javaSource != null;
         this.file = context;
+        this.javaSource = javaSource;
     }
 
+    /**
+     * Creates an instance of ELTypeUtilities with all java operations using a cached JavaSource
+     */
     public static ELTypeUtilities create(FileObject context) {
-        ClasspathInfo cp = ClasspathInfo.create(context);
-        return new ELTypeUtilities(context, cp);
+        return new ELTypeUtilities(context, getJavaSource(context));
     }
 
+    /**
+     * Creates an instance of ELTypeUtilities with all java operations using a *NOT* cached JavaSource.
+     * Use the create(FileObject context) method where possible!
+     */    
     public static ELTypeUtilities create(FileObject context, ClasspathInfo cpInfo) {
-        return new ELTypeUtilities(context, cpInfo);
+        return new ELTypeUtilities(context, JavaSource.create(cpInfo));
     }
 
     public String getTypeNameFor(Element element) {
@@ -353,7 +414,7 @@ public final class ELTypeUtilities {
     
     private void runTask(SourceTask<?> task) {
         try {
-            JavaSource.create(cpInfo).runUserActionTask(task, true);
+            javaSource.runUserActionTask(task, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
