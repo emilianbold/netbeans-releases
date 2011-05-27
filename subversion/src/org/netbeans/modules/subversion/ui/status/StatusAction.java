@@ -45,17 +45,23 @@
 package org.netbeans.modules.subversion.ui.status;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.openide.nodes.Node;
+import org.tigris.subversion.svnclientadapter.ISVNDirEntryWithLock;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNLock;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -135,8 +141,26 @@ public class StatusAction  extends ContextAction {
             return;
         }
         ISVNStatus[] statuses;
+        Map<File, ISVNLock> locks = new HashMap<File, ISVNLock>();
         try {
             statuses = client.getStatus(root, true, false, contactServer); // cache refires events
+            if (SvnModuleConfig.getDefault().isGetRemoteLocks()) {
+                try {
+                    ISVNInfo info = client.getInfoFromWorkingCopy(root);
+                    if (info != null && info.getUrl() != null) {
+                        ISVNDirEntryWithLock[] entries = client.getListWithLocks(info.getUrl(), info.getRevision(), info.getRevision(), true);
+                        if (entries != null) {
+                            for (ISVNDirEntryWithLock entry : entries) {
+                                if (entry.getLock() != null) {
+                                    locks.put(new File(root, entry.getDirEntry().getPath().replace("/", File.separator)), entry.getLock()); //NOI18N
+                                }
+                            }
+                        }
+                    }
+                } catch (SVNClientException ex) {
+                    Subversion.LOG.log(Level.INFO, null, ex);
+                }
+            }
         } catch (SVNClientException ex) {
             if (contactServer && SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())) {
                 Subversion.LOG.log(Level.INFO, "StatusAction.executeStatus: file under {0} not under version control, trying offline", root.getAbsolutePath()); //NOI8N
@@ -162,7 +186,7 @@ public class StatusAction  extends ContextAction {
                 // we will force the refresh recursivelly.
                 cache.refreshRecursively(file, false);
             } else {
-                cache.refresh(file, status);
+                cache.refresh(file, new FileStatusCache.RepositoryStatus(status, locks.get(file)));
             }
         }
     }

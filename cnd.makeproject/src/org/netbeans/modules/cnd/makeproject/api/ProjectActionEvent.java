@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -174,11 +175,17 @@ public final class ProjectActionEvent {
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             result = getExecutableFromRunCommand();
             if (result != null && result.length() > 0) {
-                FSPath baseFSPath = configuration.getBaseFSPath();
+                ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();                                
                 if (!CndPathUtilitities.isPathAbsolute(result)) {
-                    result = baseFSPath.getPath() + FileSystemProvider.getFileSeparatorChar(baseFSPath.getFileSystem()) + result;            
+                    CndUtils.assertTrueInConsole(false, "getExecutableFromRunCommand() returned non-absolute path", result); //NOI18N
+                    String baseDir = configuration.getBaseDir();
+                    if (execEnv.isRemote()) {
+                        PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+                        baseDir = mapper.getRemotePath(baseDir, true); // NOI18N
+                    }
+                    result = baseDir + FileSystemProvider.getFileSeparatorChar(execEnv) + result;            
                 }
-                result = FileSystemProvider.normalizeAbsolutePath(result, baseFSPath.getFileSystem());
+                result = FileSystemProvider.normalizeAbsolutePath(result, execEnv);
             }
         } else {
             result = executable;

@@ -11,9 +11,9 @@ CND_PLATFORM_SunOS-x86=OracleSolarisStudio-Solaris-x86
 CND_ARTIFACT_DIR_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86
 CND_ARTIFACT_NAME_SunOS-x86=libBuildTrace.so
 CND_ARTIFACT_PATH_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86/libBuildTrace.so
-CND_PACKAGE_DIR_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86/package
-CND_PACKAGE_NAME_SunOS-x86=libBuildTrace.so.tar
-CND_PACKAGE_PATH_SunOS-x86=dist/SunOS-x86/OracleSolarisStudio-Solaris-x86/package/libBuildTrace.so.tar
+CND_PACKAGE_DIR_SunOS-x86=dist/package
+CND_PACKAGE_NAME_SunOS-x86=cnd-build-trace-1.0.zip
+CND_PACKAGE_PATH_SunOS-x86=dist/package/cnd-build-trace-1.0.zip
 # SunOS-x86_64 configuration
 CND_PLATFORM_SunOS-x86_64=OracleSolarisStudio-Solaris-x86
 CND_ARTIFACT_DIR_SunOS-x86_64=dist/SunOS-x86_64/OracleSolarisStudio-Solaris-x86

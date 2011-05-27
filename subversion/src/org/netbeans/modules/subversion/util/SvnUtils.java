@@ -149,11 +149,12 @@ public class SvnUtils {
      */
     public static String createAnnotationFormat(final String format) {
         String string = format;
-        string = Utils.skipUnsupportedVariables(string, new String[]{"{status}", "{folder}", "{revision}", "{mime_type}"});     // NOI18N
+        string = Utils.skipUnsupportedVariables(string, new String[]{"{status}", "{lock}", "{folder}", "{revision}", "{mime_type}"});     // NOI18N
         string = string.replaceAll("\\{revision\\}", "\\{0\\}");            // NOI18N
         string = string.replaceAll("\\{status\\}", "\\{1\\}");              // NOI18N
         string = string.replaceAll("\\{folder\\}", "\\{2\\}");              // NOI18N
-        string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
+        string = string.replaceAll("\\{lock\\}", "\\{3\\}");              // NOI18N
+        string = string.replaceAll("\\{mime_type\\}", "\\{4\\}");           // NOI18N
         return string;
     }
 

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
 import java.awt.Toolkit;
@@ -60,11 +59,14 @@ import org.netbeans.junit.NbTest;
 /**
  *  Test of OutputOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class OutputOperatorTest extends JellyTestCase {
 
-    static final String[] tests = new String[] {
+    // OutputOperator instance used in tests
+    private static OutputOperator outputOperator;
+    private static final String OUTPUT_TITLE = "SampleProject (debug)";
+    static final String[] tests = new String[]{
         "testInvoke",
         "testGetOutputTab",
         "testGetText",
@@ -76,28 +78,22 @@ public class OutputOperatorTest extends JellyTestCase {
         "testSaveAs",
         "testClear",
         "testVerify"};
+
     public OutputOperatorTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {        
+
+    public static NbTest suite() {
         return (NbTest) createModuleTest(OutputOperatorTest.class, tests);
     }
-    
+
     /** Print out test name. */
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
-    // OutputOperator instance used in tests
-    private static OutputOperator outputOperator;
-    private static final String OUTPUT_TITLE = "SampleProject (debug)";
-    
+
     /**
      * Test of invoke method
      */
@@ -106,7 +102,7 @@ public class OutputOperatorTest extends JellyTestCase {
         // be sure it is opened
         outputOperator = OutputOperator.invoke();
     }
-    
+
     /**
      * Test of getOutputTab method
      */
@@ -118,11 +114,11 @@ public class OutputOperatorTest extends JellyTestCase {
         outputOperator.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         // wait for finish of debugging
         outputOperator.getOutputTab(OUTPUT_TITLE).waitText("total time");
-        
+
         OutputTabOperator oto = outputOperator.getOutputTab(OUTPUT_TITLE);
         assertTrue("Wrong OutputTabOperator found.", oto.getName().indexOf(OUTPUT_TITLE) > -1);
     }
-    
+
     /**
      * Test of getText method
      */
@@ -130,7 +126,7 @@ public class OutputOperatorTest extends JellyTestCase {
         String text = outputOperator.getText();
         assertTrue("Text is not from debugger term.", text.indexOf("debug") > -1); //NOI18N
     }
-    
+
     /**
      * Test of selectAll method
      */
@@ -150,7 +146,7 @@ public class OutputOperatorTest extends JellyTestCase {
         outputOperator.copy();
         assertTrue("Copy doesn't work.", getClipboardText().indexOf("debug") > -1);   // NOI18N
     }
-    
+
     /**
      * Test of find method
      */
@@ -168,7 +164,7 @@ public class OutputOperatorTest extends JellyTestCase {
         new EventTool().waitNoEvent(500);
         // verify "b" is selected
         outputOperator.copy();
-        if(!getClipboardText().equals("b")) {
+        if (!getClipboardText().equals("b")) {
             // repeat because find action was not executed
             outputOperator.find();
             findDialog = new NbDialogOperator(findTitle);
@@ -176,20 +172,20 @@ public class OutputOperatorTest extends JellyTestCase {
             new JButtonOperator(findDialog, findButtonLabel).push();
         }
     }
-    
+
     /**
      * Test of findNext method
      */
     public void testFindNext() {
         outputOperator.findNext();
     }
-    
+
     /** Test of nextError method. */
     public void testNextError() {
         // TODO add test some day
         //outputOperator.nextError();
     }
-    
+
     /** Test of previousError method. */
     public void testPreviousError() {
         // TODO add test some day
@@ -213,13 +209,13 @@ public class OutputOperatorTest extends JellyTestCase {
         String saveAsTitle = Bundle.getString("org.netbeans.core.output2.Bundle", "TITLE_SAVE_DLG");
         new NbDialogOperator(saveAsTitle).close();
     }
-    
+
     /** Test of clear method. */
     public void testClear() {
         outputOperator.clear();
         assertTrue("Text was not cleared.", outputOperator.getText().length() == 0);
     }
-    
+
     /**
      * Test of verify method
      */
@@ -231,20 +227,24 @@ public class OutputOperatorTest extends JellyTestCase {
     /** Wait until clipboard contains string data and returns the text. */
     private String getClipboardText() throws Exception {
         Waiter waiter = new Waiter(new Waitable() {
+
+            @Override
             public Object actionProduced(Object obj) {
                 Transferable contents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-                if(contents == null) {
+                if (contents == null) {
                     return null;
                 } else {
                     return contents.isDataFlavorSupported(DataFlavor.stringFlavor) ? Boolean.TRUE : null;
                 }
             }
+
+            @Override
             public String getDescription() {
-                return("Wait clipboard contains string data");
+                return ("Wait clipboard contains string data");
             }
         });
         waiter.waitAction(null);
         return Toolkit.getDefaultToolkit().getSystemClipboard().
-             getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
+                getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
     }
 }
