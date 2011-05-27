@@ -87,6 +87,7 @@ final class FormToolBar {
             toolbar = new ToolBar();
         }
         this.toolbar = toolbar;
+        toolbar.putClientProperty("isPrimary", Boolean.TRUE); // for JDev // NOI18N
 
         listener = new Listener();
 
