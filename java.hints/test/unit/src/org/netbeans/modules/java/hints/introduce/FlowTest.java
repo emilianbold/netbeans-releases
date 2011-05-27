@@ -340,6 +340,22 @@ public class FlowTest extends NbTestCase {
                     "ii + 1");
     }
 
+    public void testAnonymous() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        final String model = \"\";\n" +
+                    "        java.util.Collections.sort(java.util.Collections.emptyList(), new java.util.Comparator<Object>() {\n" +
+                    "            public int compare(Object o1, Object o2) {\n" +
+                    "                return 0;\n" +
+                    "            }\n" +
+                    "        });\n" +
+                    "        System.err.println(mod`el);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

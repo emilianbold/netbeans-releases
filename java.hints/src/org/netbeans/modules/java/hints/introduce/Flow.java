@@ -180,6 +180,8 @@ public class Flow {
         private Map<Tree, State> use2Values = new IdentityHashMap<Tree, State>();
         private Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private boolean inParameters;
+        private Tree nearestMethod;
+        private Set<VariableElement> currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
         private final Set<Tree> deadBranches = new HashSet<Tree>();
 
         public VisitorImpl(CompilationInfo info, AtomicBoolean cancel) {
@@ -263,6 +265,7 @@ public class Flow {
             
             if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
                 variable2State.put((VariableElement) e, State.create(node.getInitializer() != null ? new TreePath(getCurrentPath(), node.getInitializer()) : inParameters ? getCurrentPath() : null));
+                currentMethodVariables.add((VariableElement) e);
             }
             
             return null;
@@ -447,21 +450,32 @@ public class Flow {
 
         @Override
         public Boolean visitMethod(MethodTree node, Void p) {
-            scan(node.getModifiers(), p);
-            scan(node.getReturnType(), p);
-            scan(node.getTypeParameters(), p);
+            Tree oldNearestMethod = nearestMethod;
+            Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
 
-            inParameters = true;
-
+            nearestMethod = node;
+            currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
+            
             try {
-                scan(node.getParameters(), p);
-            } finally {
-                inParameters = false;
-            }
+                scan(node.getModifiers(), p);
+                scan(node.getReturnType(), p);
+                scan(node.getTypeParameters(), p);
 
-            scan(node.getThrows(), p);
-            scan(node.getBody(), p);
-            scan(node.getDefaultValue(), p);
+                inParameters = true;
+
+                try {
+                    scan(node.getParameters(), p);
+                } finally {
+                    inParameters = false;
+                }
+
+                scan(node.getThrows(), p);
+                scan(node.getBody(), p);
+                scan(node.getDefaultValue(), p);
+            } finally {
+                nearestMethod = oldNearestMethod;
+                currentMethodVariables = oldCurrentMethodVariables;
+            }
             
             return null;
         }
@@ -587,6 +601,12 @@ public class Flow {
 
         public Boolean visitReturn(ReturnTree node, Void p) {
             super.visitReturn(node, p);
+            variable2State = new HashMap<VariableElement, State>(variable2State);
+            //performance: limit ammount of held variables and their mapping:
+            for (VariableElement ve : currentMethodVariables) {
+                variable2State.remove(ve);
+            }
+            resumeAfter(nearestMethod, variable2State);
             variable2State = new HashMap<VariableElement, State>();
             return null;
         }
@@ -595,17 +615,22 @@ public class Flow {
             super.visitBreak(node, p);
 
             StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            
+            resumeAfter(target, variable2State);
+
+            variable2State = new HashMap<VariableElement, State>();
+            
+            return null;
+        }
+
+        private void resumeAfter(Tree target, Map<VariableElement, State> state) {
             Collection<Map<VariableElement, State>> r = resumeAfter.get(target);
 
             if (r == null) {
                 resumeAfter.put(target, r = new ArrayList<Map<VariableElement, State>>());
             }
 
-            r.add(new HashMap<VariableElement, State>(variable2State));
-
-            variable2State = new HashMap<VariableElement, State>();
-            
-            return null;
+            r.add(new HashMap<VariableElement, State>(state));
         }
 
         public Boolean visitSwitch(SwitchTree node, Void p) {
@@ -803,5 +828,5 @@ public class Flow {
             return new State(assignments);
         }
     }
-    
+
 }
