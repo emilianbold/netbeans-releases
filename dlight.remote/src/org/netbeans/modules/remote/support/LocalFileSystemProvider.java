@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
@@ -262,14 +263,6 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return file.getClass() == java.io.File.class;
     }
 
-    @Override
-    public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
-    }
-
-    @Override
-    public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
-    }
-
     public void scheduleRefresh(FileObject fileObject) {
         final File file = FileUtil.toFile(fileObject);
         scheduleRefresh(file);
@@ -341,7 +334,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public char getFileSeparatorChar(FileSystem fs) {
+    public char getFileSeparatorChar() {
         return File.separatorChar;
-    }    
+    }
+
+    public void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
+    }
+
+    public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
+    }
 }

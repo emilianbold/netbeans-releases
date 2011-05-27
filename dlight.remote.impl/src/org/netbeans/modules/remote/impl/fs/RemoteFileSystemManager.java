@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.Exceptions;
 
@@ -69,9 +68,6 @@ public class RemoteFileSystemManager {
     private Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
             new HashMap<ExecutionEnvironment, SoftReference<RemoteFileSystem>>();
 
-    private final List<FileSystemProvider.DownloadListener> downloadListeners =
-            new ArrayList<FileSystemProvider.DownloadListener>();
-    
     private final List<FileChangeListener> globalListsners = new ArrayList<FileChangeListener>();
 
     public static RemoteFileSystemManager getInstance() {
@@ -124,30 +120,6 @@ public class RemoteFileSystemManager {
                     fs.removeFileChangeListener(listener);
                 }
             }
-        }
-    }
-
-    public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
-        synchronized (downloadListeners) {
-            downloadListeners.remove(listener);
-            downloadListeners.add(listener);
-        }
-    }
-
-    public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
-        synchronized (downloadListeners) {
-            downloadListeners.remove(listener);
-            downloadListeners.add(listener);
-        }
-    }
-
-    public void fireDownloadListeners(ExecutionEnvironment env) {
-        List<FileSystemProvider.DownloadListener> listenersCopy;
-        synchronized (downloadListeners) {
-            listenersCopy = new ArrayList<FileSystemProvider.DownloadListener>(downloadListeners);
-        }
-        for (FileSystemProvider.DownloadListener l : listenersCopy) {
-            l.postConnectDownloadFinished(env);
         }
     }
 }

@@ -50,21 +50,26 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileSystem;
 
 /**
  * @author Vladimir Kvasihn
  */
-public final class LibProjectImpl extends ProjectBase {
+public final class LibProjectImpl extends ProjectBase implements CndFileSystemProvider.CndFileSystemProblemListener {
 
     private final CharSequence includePath;
+    private boolean hasFileSystemProblems;
+    private final Object fileSystemProblemsLock = new Object();
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
     private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName) {
@@ -72,6 +77,38 @@ public final class LibProjectImpl extends ProjectBase {
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
+        CndFileSystemProvider.addFileSystemProblemListener(this, getFileSystem());
+    }
+    
+    @Override
+    public void setDisposed() {
+        super.setDisposed();
+        CndFileSystemProvider.removeFileSystemProblemListener(this, getFileSystem());
+    }
+
+    @Override
+    public void problemOccurred(FSPath fsPath) {
+        CndUtils.assertTrue(fsPath.getFileSystem() == getFileSystem());
+        if (CharSequenceUtils.startsWith(fsPath.getPath(), includePath)) {
+            synchronized (fileSystemProblemsLock) {
+                hasFileSystemProblems = true;
+            }
+        }
+    }
+
+    @Override
+    public void recovered(FileSystem fileSystem) {
+        boolean prev;
+        synchronized (fileSystemProblemsLock) {
+            prev = hasFileSystemProblems;
+            hasFileSystemProblems = false;
+        }
+        if (prev) {
+            Collection<CsmProject> projects = LibraryManager.getInstance().getProjectsByLibrary(this);
+            if (!projects.isEmpty()) {
+                ModelImpl.instance().scheduleReparse(projects);
+            }
+        }
     }
 
     public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName) {

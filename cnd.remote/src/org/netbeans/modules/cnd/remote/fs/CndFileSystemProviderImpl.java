@@ -44,6 +44,10 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -55,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -66,14 +71,13 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 @ServiceProvider(service=CndFileSystemProvider.class)
-public class CndFileSystemProviderImpl extends CndFileSystemProvider implements FileSystemProvider.DownloadListener {
+public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
    private String cachePrefix;
 
     public CndFileSystemProviderImpl() {
-        FileSystemProvider.addDownloadListener(this);
     }
 
     @Override
@@ -273,12 +277,58 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
         return result;
     }
+    
+    private final List<WeakReference<ProblemListenerAdapter>> adapters = new ArrayList<WeakReference<ProblemListenerAdapter>>();    
+    
+    @Override
+    protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        ProblemListenerAdapter adapter = new ProblemListenerAdapter(listener);
+        synchronized (adapters) {
+            for (Iterator<WeakReference<ProblemListenerAdapter>> it = adapters.iterator(); it.hasNext(); ) {
+                WeakReference<ProblemListenerAdapter> ref = it.next();
+                if (ref.get() == null) {
+                    it.remove();
+                }
+            }
+            adapters.add(new WeakReference<ProblemListenerAdapter>(adapter));
+        }
+        FileSystemProvider.addFileSystemProblemListener(adapter, fileSystem);
+    }
 
     @Override
-    public void postConnectDownloadFinished(ExecutionEnvironment env) {
-        RemoteCodeModelUtils.scheduleReparse(env);
+    protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        synchronized (adapters) {
+            for (Iterator<WeakReference<ProblemListenerAdapter>> it = adapters.iterator(); it.hasNext(); ) {
+                ProblemListenerAdapter adapter = it.next().get();
+                if (adapter.delegate == listener) {
+                    FileSystemProvider.removeFileSystemProblemListener(adapter, fileSystem);
+                    it.remove();
+                } else if (adapter == null) {
+                    it.remove();
+                }
+            }
+        }
     }
     
+    private static class ProblemListenerAdapter implements FileSystemProblemListener {
+        
+        private final CndFileSystemProblemListener delegate;
+
+        public ProblemListenerAdapter(CndFileSystemProblemListener delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void problemOccurred(FileSystem fileSystem, String path) {
+            delegate.problemOccurred(new FSPath(fileSystem, path));
+        }
+
+        @Override
+        public void recovered(FileSystem fileSystem) {
+            delegate.recovered(fileSystem);
+        }        
+    }
+
     private static class FileSystemAndString {
 
         public final FileSystem fileSystem;
