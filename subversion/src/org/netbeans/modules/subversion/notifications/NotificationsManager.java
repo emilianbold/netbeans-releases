@@ -280,7 +280,7 @@ public class NotificationsManager {
                                 if (isModifiedInRepository(rev.getNumber(), repositoryRev)) {
                                     addToMap(notifications, file, repositoryRev);
                                     // this will refresh versioning view as well
-                                    cache.refresh(file, status);
+                                    cache.refresh(file, new FileStatusCache.RepositoryStatus(status, null));
                                 }
                             }
                         }
