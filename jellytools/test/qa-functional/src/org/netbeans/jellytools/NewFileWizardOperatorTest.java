@@ -45,7 +45,6 @@ package org.netbeans.jellytools;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -57,46 +56,31 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 public class NewFileWizardOperatorTest extends JellyTestCase {
 
     public static NewFileWizardOperator op;
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static final String[] tests = new String[] {
-        "testInvokeTitle", "testInvoke", "testSelectProjectAndCategoryAndFileType", 
-        "testGetDescription", "testCreate"};    
+    public static final String[] tests = new String[]{
+        "testInvokeTitle", "testInvoke", "testSelectProjectAndCategoryAndFileType",
+        "testGetDescription", "testCreate"};
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewFileWizardOperatorTest("testInvokeTitle"));
-        suite.addTest(new NewFileWizardOperatorTest("testInvoke"));
-        suite.addTest(new NewFileWizardOperatorTest("testSelectProjectAndCategoryAndFileType"));
-        suite.addTest(new NewFileWizardOperatorTest("testGetDescription"));
-        suite.addTest(new NewFileWizardOperatorTest("testCreate"));
-        return suite;
-         */
-        return createModuleTest(NewFileWizardOperatorTest.class, 
+        return createModuleTest(NewFileWizardOperatorTest.class,
                 tests);
     }
-    
+
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleProject");           
+        System.out.println("### " + getName() + " ###");
+        openDataProjects("SampleProject");
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public NewFileWizardOperatorTest(String testName) {
         super(testName);
     }
-    
+
     /** Test of invoke method with title parameter. Opens New File wizard, waits for the dialog and closes it. */
     public void testInvokeTitle() {
         // "New File"
@@ -104,12 +88,12 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
         op = NewFileWizardOperator.invoke(title);
         op.close();
     }
-    
+
     /** Test of invoke method. Opens New File wizard and waits for the dialog. */
     public void testInvoke() {
         op = NewFileWizardOperator.invoke();
     }
-    
+
     /** Test components on New File Wizard panel 
      *  sets category and filetype
      */
